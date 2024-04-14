@@ -32,6 +32,5 @@
 *.app
 
 # Visual Studio Junk
-*.vcxproj.filters
-MBAACC-Fuzzy-Practice-Tool.vcxproj.filters
+/MBAACC-Fuzzy-Practice-Tool.vcxproj.filters
 *.vcxproj.user
