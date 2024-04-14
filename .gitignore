@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Visual Studio Junk
+*.filters
+*.user
