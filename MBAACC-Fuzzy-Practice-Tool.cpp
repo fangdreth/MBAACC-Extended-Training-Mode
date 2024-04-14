@@ -82,6 +82,8 @@ int main(int argc, char* argv[])
     int nReadResult;
     int nWriteBuffer;
 
+    std::cout << "Fang's Fuzzy Practice Tool v1.0" << std::endl;
+
     while (1)
     {
         nWriteBuffer = eEnemyStatus::STAND;

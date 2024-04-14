@@ -22,9 +22,9 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{45ba045f-3791-4dd0-aa57-c77afeaad20c}</ProjectGuid>
-    <RootNamespace>FuzzyTool</RootNamespace>
+    <RootNamespace>MBAACCFuzzyPracticeTool</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Fuzzy-Tool</ProjectName>
+    <ProjectName>MBAACC-Fuzzy-Practice-Tool</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -144,7 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Fuzzy-Tool.cpp" />
+    <ClCompile Include="MBAACC-Fuzzy-Practice-Tool.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
