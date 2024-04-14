@@ -34,7 +34,7 @@ HANDLE GetProcessByName(const wchar_t* name)
 
     if (pid != 0)
     {
-        return OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+        return OpenProcess(PROCESS_ALL_ACCESS, false, pid);
     }
 
     return nullptr;
@@ -67,7 +67,10 @@ DWORD GetBaseAddressByName(HANDLE pHandle, const wchar_t* name)
 
 int main(int argc, char* argv[])
 {
-    HANDLE hProcess = GetProcessByName(L"MBAA.exe");
+    HANDLE hProcess = 0x0;
+    std::cout << "Looking for MBAA.exe...";
+    while (hProcess == 0x0)
+        hProcess = GetProcessByName(L"MBAA.exe");
     DWORD dwBaseAddress = GetBaseAddressByName(hProcess, L"MBAA.exe");
 
     DWORD dwP2Offset = 0xAFC;
@@ -81,7 +84,18 @@ int main(int argc, char* argv[])
 
     int nReadResult;
     int nWriteBuffer;
+    int nDelayFrames = 0;
 
+    bool bUpPressed = false;
+    bool bDownPressed = false;
+
+    static const HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO cursorInfo;
+    GetConsoleCursorInfo(hOut, &cursorInfo);
+    cursorInfo.bVisible = false;
+    SetConsoleCursorInfo(hOut, &cursorInfo);
+
+    system("cls");
     std::cout << "Fang's Fuzzy Practice Tool v1.0" << std::endl;
 
     while (1)
@@ -98,11 +112,39 @@ int main(int argc, char* argv[])
             if (nReadResult == eEnemyStance::STANDGUARDING)
                 break;
 
+            //system("cls");
+            std::cout.flush();
+            SetConsoleCursorPosition(hOut, { 0, 5 });
+            std::cout << "Delay before crouching: " << nDelayFrames << "              ";
+
             if (GetAsyncKeyState(VK_ESCAPE))
-            {
                 goto CLEANUP;
+
+            if (GetAsyncKeyState(VK_UP))
+            {
+                if (!bUpPressed)
+                {
+                    nDelayFrames++;
+                    bUpPressed = true;
+                }
             }
+            else
+                bUpPressed = false;
+
+            if (GetAsyncKeyState(VK_DOWN))
+            {
+                if (!bDownPressed)
+                {
+                    nDelayFrames = max(0, nDelayFrames - 1);
+                    bDownPressed = true;
+                }
+            }
+            else
+                bDownPressed = false;
+
         }
+
+        Sleep(16 * nDelayFrames);
 
         nWriteBuffer = eEnemyStatus::CROUCH;
         WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyStatus), &nWriteBuffer, 4, 0);
@@ -115,9 +157,6 @@ int main(int argc, char* argv[])
             ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwPlayerState + dwP2Offset), &nReadResult, 4, 0);
             if (nReadResult == eEnemyStance::CROUCHING)
                 break;
-
-            if (GetAsyncKeyState(VK_ESCAPE))
-                goto CLEANUP;
         }
 
         
