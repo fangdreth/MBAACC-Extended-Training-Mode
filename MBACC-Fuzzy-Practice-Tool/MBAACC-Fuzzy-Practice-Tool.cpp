@@ -10,7 +10,7 @@
 enum eEnemyStatus { STAND, JUMP, CROUCH, CPU, MANUAL, DUMMY };
 enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DODGE };
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
-enum ePresetSettings { FUZZY, HITCONFIRM, CUSTOM };
+enum ePresetSettings { DEFAULT, FUZZY, HITCONFIRM, CUSTOM };
 enum eEnemyDefenseBiasSetting { UNLIKELY, EVEN, LIKELY, OFF };
 
 HANDLE GetProcessByName(const wchar_t* name)
@@ -77,11 +77,18 @@ void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, i
 {
     switch (nPresetSetting)
     {
+    case ePresetSettings::DEFAULT:
+        *bSwitchToCrouch = false;
+        *nDelayFrames = 0;
+        *nEnemyStatusSetting = eEnemyStatus::STAND;
+        *nEnemyDefenseSetting = eEnemyDefense::NOGUARD;
+        *nEnemyDefenseBiasSetting = eEnemyDefenseBiasSetting::OFF;
+        break;
     case ePresetSettings::FUZZY:
         *bSwitchToCrouch = true;
         *nDelayFrames = 0;
         *nEnemyStatusSetting = eEnemyStatus::STAND;
-        *nEnemyDefenseSetting = eEnemyDefense::STATUSGUARD;
+        *nEnemyDefenseSetting = eEnemyDefense::ALLGUARD;
         *nEnemyDefenseBiasSetting = eEnemyDefenseBiasSetting::OFF;
         break;
     case ePresetSettings::HITCONFIRM:
@@ -90,6 +97,8 @@ void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, i
         *nEnemyStatusSetting = eEnemyStatus::CROUCH;
         *nEnemyDefenseSetting = eEnemyDefense::ALLGUARD;
         *nEnemyDefenseBiasSetting = eEnemyDefenseBiasSetting::LIKELY;
+        break;
+    default:
         break;
     }
 }
@@ -102,15 +111,14 @@ int main(int argc, char* argv[])
         hProcess = GetProcessByName(L"MBAA.exe");
     DWORD dwBaseAddress = GetBaseAddressByName(hProcess, L"MBAA.exe");
 
-    DWORD dwP2Offset = 0xAFC;
-    DWORD dwPlayerState = 0x155140;
-    DWORD dwEnemyStatus = 0x37C1E8; //0:STAND 1:JUMP 2:CROUCH 3:CPU 4:MANUAL 5:DUMMY
-    DWORD dwEnemyDefense = 0x37C1F0; //0:OFF 1:ALLGUARD 2:STATUSGUARD 3:ALLSHIELD 4:STATUSSHIELD 5:DODGE
+    const DWORD dwP2Offset = 0xAFC;
+    const DWORD dwPlayerState = 0x155140;  //0:STAND 13:CROUCH 17:STANDGUARDING
+    const DWORD dwEnemyStatus = 0x37C1E8; //0:STAND 1:JUMP 2:CROUCH 3:CPU 4:MANUAL 5:DUMMY
+    const DWORD dwEnemyDefense = 0x37C1F0; //0:OFF 1:ALLGUARD 2:STATUSGUARD 3:ALLSHIELD 4:STATUSSHIELD 5:DODGE
 
     int nReadResult;
     int nWriteBuffer;
-    int nDelayFrames = 0;
-
+    
     bool bUpPressed = false;
     bool bDownPressed = false;
     bool bRightPressed = false;
@@ -118,16 +126,17 @@ int main(int argc, char* argv[])
 
     bool bSwitchToCrouch = false;
     bool bRandomBlock = false;
-    int nPresetSetting = ePresetSettings::CUSTOM;
+    int nDelayFrames = 0;
+    int nPresetSetting = ePresetSettings::DEFAULT;
     int nEnemyDefenseSetting = eEnemyDefense::NOGUARD;
     int nEnemyDefenseBiasSetting = eEnemyDefenseBiasSetting::OFF;
     int nEnemyStatusSetting = eEnemyStatus::STAND;
-    std::vector<std::string> vPresetSettings = { "Fuzzy Overhead", "Hitconfirming from blockstring", "Custom" };
+    std::vector<std::string> vPresetSettings = { "Default", "Fuzzy Overhead", "Hitconfirming from blockstring", "Custom" };
     std::vector<std::string> vEnemyDefenseSettings = { "No Guard", "All Guard", "Status Guard", "All Shield", "Status Shield"};
     std::vector<std::string> vEnemyDefenseBiasSettings = { "Unlikely", "Even", "Likely", "Off" };
     std::vector<std::string> vEnemyStatusSettings = { "Stand", "Jump", "Crouch" };
 
-    int nCursorIndex = 0;
+    int nCursorIndex = 1;
 
     int nDebugBias = 0;
     int nDebugFrameCount = 0;
@@ -154,24 +163,24 @@ int main(int argc, char* argv[])
             std::cout.flush();
 
             SetConsoleCursorPosition(hOut, { 0, 2 });
-            std::cout << (nCursorIndex == 0 ? "=>  " : "    ") << "Preset: <- " << vPresetSettings[nPresetSetting] << " ->                                        ";
+            std::cout << (nCursorIndex == 0 ? "=>  " : "    ") << "Preset:\t\t\t\t<- " << vPresetSettings[nPresetSetting] << " ->                                        ";
 
             SetConsoleCursorPosition(hOut, { 0, 4 });
-            std::cout << (nCursorIndex == 1 ? "=>  " : "    ") << "Switch to crouching after blocking: <- " << (bSwitchToCrouch ? "On " : "Off") << " ->      ";
+            std::cout << (nCursorIndex == 1 ? "=>  " : "    ") << "Switch to crouching after blocking:\t<- " << (bSwitchToCrouch ? "On " : "Off") << " ->      ";
 
             SetConsoleCursorPosition(hOut, { 0, 5 });
-            std::cout << (nCursorIndex == 2 ? "=>  " : "    ") << "Delay before crouching: <- " << nDelayFrames << " ->              ";
+            std::cout << (nCursorIndex == 2 ? "=>  " : "    ") << "Delay before crouching:\t\t<- " << nDelayFrames << " ->              ";
 
             SetConsoleCursorPosition(hOut, { 0, 7 });
-            std::cout << (nCursorIndex == 3 ? "=>  " : "    ") << "Enemy Status: <- " << vEnemyStatusSettings[nEnemyStatusSetting] << " ->              ";
+            std::cout << (nCursorIndex == 3 ? "=>  " : "    ") << "Enemy Status:\t\t\t<- " << vEnemyStatusSettings[nEnemyStatusSetting] << " ->              ";
 
             SetConsoleCursorPosition(hOut, { 0, 9 });
-            std::cout << (nCursorIndex == 4 ? "=>  " : "    ") << "Enemy Defense: <- " << vEnemyDefenseSettings[nEnemyDefenseSetting] << " ->              ";
+            std::cout << (nCursorIndex == 4 ? "=>  " : "    ") << "Enemy Defense:\t\t\t<- " << vEnemyDefenseSettings[nEnemyDefenseSetting] << " ->              ";
 
             SetConsoleCursorPosition(hOut, { 0, 10 });
-            std::cout << (nCursorIndex == 5 ? "=>  " : "    ") << "Random Bias: <- " << vEnemyDefenseBiasSettings[nEnemyDefenseBiasSetting] << " ->              ";
+            std::cout << (nCursorIndex == 5 ? "=>  " : "    ") << "Random Bias:\t\t\t<- " << vEnemyDefenseBiasSettings[nEnemyDefenseBiasSetting] << " ->              ";
 
-            SetConsoleCursorPosition(hOut, { 0, 11 });
+            SetConsoleCursorPosition(hOut, { 60, 0 });
             std::cout << "Bias:" << nDebugBias << " FrameCount:" << nDebugFrameCount;
 
             if (GetAsyncKeyState(VK_ESCAPE))
@@ -278,25 +287,15 @@ int main(int argc, char* argv[])
             nWriteBuffer = nEnemyStatusSetting;
             WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyStatus), &nWriteBuffer, 4, 0);
 
+            nWriteBuffer = nEnemyDefenseSetting;
+            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
+
             int nRandVal = std::rand() % 4;
-            if (nEnemyDefenseBiasSetting != eEnemyDefenseBiasSetting::OFF && nDebugFrameCount % 10 == 0)
+            if (nDebugFrameCount % 10 == 0 && nRandVal < nEnemyDefenseBiasSetting + 1)
             {
-                if (nRandVal < nEnemyDefenseBiasSetting + 1)
-                {
-                    nDebugBias++;
-                    nWriteBuffer = nEnemyDefenseSetting;
-                    WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
-                }
-                else
-                {
-                    nDebugBias--;
-                    nWriteBuffer = eEnemyDefense::NOGUARD;
-                    WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
-                }
-            }
-            else
-            {
-                
+                nDebugBias--;
+                nWriteBuffer = eEnemyDefense::NOGUARD;
+                WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
             }
 
             ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwPlayerState + dwP2Offset), &nReadResult, 4, 0);
