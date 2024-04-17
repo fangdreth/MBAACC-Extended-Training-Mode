@@ -147,7 +147,9 @@
     <ClCompile Include="MBAACC-Fuzzy-Practice-Tool.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CharacterData.h" />
     <ClInclude Include="MBAACC-Fuzzy-Practice-Tool.h" />
+    <ClInclude Include="RawData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

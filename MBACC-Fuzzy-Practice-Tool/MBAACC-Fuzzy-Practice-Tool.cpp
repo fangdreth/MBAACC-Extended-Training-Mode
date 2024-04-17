@@ -1,4 +1,5 @@
 #include "MBAACC-Fuzzy-Practice-Tool.h"
+#include "CharacterData.h"
 
 int main(int argc, char* argv[])
 {
@@ -7,6 +8,8 @@ int main(int argc, char* argv[])
     while (hProcess == 0x0)
         hProcess = GetProcessByName(L"MBAA.exe");
     DWORD dwBaseAddress = GetBaseAddressByName(hProcess, L"MBAA.exe");
+
+    InitializeCharacterMaps();
 
     const DWORD dwP2Offset = 0xAFC;
     const DWORD dwRoundTime = 0x162A40; //0-inf
@@ -20,6 +23,9 @@ int main(int argc, char* argv[])
     const DWORD dwY = 0x155248;
     const DWORD dwP2PatternSet = 0x155F38;
     const DWORD dwP2PatternRead = 0x155C3C;
+    const DWORD dwCSSFlag = 0x155130;
+    const DWORD dwP2CharNumber = 0x34D91C;
+    const DWORD dwP2CharMoon = 0x34D924;
 
     const int nCArc22B = 323682455;
 
@@ -41,15 +47,19 @@ int main(int argc, char* argv[])
     int nEnemyStatusSetting = eEnemyStatus::STAND;
     bool bExGuard = false;
     int nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::ONEHUNDRED;
-    int nReversalPattern = -1;
+    int nReversalPattern = 0;
     int nReversalDelayFrames = 0;
     int nTempReversalDelayFrames = 0;
     bool bDelayingReversal = false;
+    bool bOnCSS = false;
+    int nReversalIndex = 0;
+    int nCharacterID = 0;
     std::vector<std::string> vPresetSettings = { "Default", "Fuzzy Overhead", "Blockstring", "Heat OS", "Defensive Fuzzy Mash", "Defensive Fuzzy Jump", "Custom" };
     std::vector<std::string> vEnemyDefenseSettings = { "No Guard", "All Guard", "Status Guard", "All Shield", "Status Shield"};
     std::vector<std::string> vEnemyDefenseBiasSettings = { "Unlikely", "Even", "Likely", "Off" };
     std::vector<std::string> vEnemyStatusSettings = { "Stand", "Jump", "Crouch" };
     std::vector<std::string> vEnemyGuardLevelSettings = { "Infinite", "100%", "75%", "50%", "25%", "0%" };
+    std::vector<std::string> vPatternNames = GetEmptyPatternList();
     std::vector<int> vGuardLevelLookupTable = { 1174011904, 1174011904, 1169915904, 1165623296, 1157234688, 0 };
 
     bool bReversaled = false;
@@ -110,7 +120,7 @@ int main(int argc, char* argv[])
             std::cout << (nCursorIndex == 7 ? "=>  " : "    ") << "Ex Guard:\t\t\t\t<- " << (bExGuard ? "On " : "Off") << " ->      ";
 
             SetConsoleCursorPosition(hOut, { 0, 16 });
-            std::cout << (nCursorIndex == 8 ? "=>  " : "    ") << "Reversal Pattern:\t\t\t" << (nReversalPattern == -1 ? "   " : "<- ") << nReversalPattern << "          ";
+            std::cout << (nCursorIndex == 8 ? "=>  " : "    ") << "Reversal:\t\t\t\t" << vPatternNames[nReversalIndex] << "                                    ";
             
             SetConsoleCursorPosition(hOut, { 0, 17 });
             std::cout << (nCursorIndex == 9 ? "=>  " : "    ") << "Delay:\t\t\t\t<- " << nReversalDelayFrames << " ->              ";
@@ -191,6 +201,9 @@ int main(int argc, char* argv[])
                     case 7:
                         bExGuard = !bExGuard;
                         break;
+                    case 8:
+                        nReversalIndex = min(nReversalIndex + 1, vPatternNames.size() - 1);
+                        break;
                     case 9:
                         nReversalDelayFrames++;
                         break;
@@ -240,7 +253,7 @@ int main(int argc, char* argv[])
                         bExGuard = !bExGuard;
                         break;
                     case 8:
-                        nReversalPattern = -1;
+                        nReversalIndex = max(0, nReversalIndex - 1);
                         break;
                     case 9:
                         nReversalDelayFrames = max(0, nReversalDelayFrames - 1);
@@ -272,11 +285,32 @@ int main(int argc, char* argv[])
             else
                 bSpacePressed = false;
 
+            ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
+            if (nReadResult == 0)
+            {
+                nReversalIndex = 0;
+                vPatternNames = GetEmptyPatternList();
+                continue;
+            }
+
             ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwRoundTime), &nReadResult, 4, 0);
             nTimer = nReadResult;
             if (nTimer == nOldTimer)
                 continue;
             nOldTimer = nTimer;
+
+            if (nTimer == 0 || vPatternNames.size() == 1)
+            {
+                ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2CharNumber), &nReadResult, 4, 0);
+                int nCharacterNumber = nReadResult;
+
+                ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2CharMoon), &nReadResult, 4, 0);
+                int nCharacterMoon = nReadResult;
+
+                nCharacterID = 10 * nCharacterNumber + nCharacterMoon;
+
+                vPatternNames = GetPatternList(nCharacterID);
+            }
 
             nWriteBuffer = nEnemyStatusSetting;
             WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyStatus), &nWriteBuffer, 4, 0);
@@ -326,7 +360,7 @@ int main(int argc, char* argv[])
                 bReversaled = true;
             if (nTimer == 2)
                 bReversaled = false;
-            if (nTimer != 0 && nReversalPattern != -1)
+            if (nTimer != 0 && GetPattern(nCharacterID, vPatternNames[nReversalIndex]) != 0)
             {
                 if (!bDelayingReversal && nMot == 0 && nMot != nOldMot && nP2Y == 0)
                 {
@@ -350,7 +384,7 @@ int main(int argc, char* argv[])
                 {
                     bDelayingReversal = false;
                     bReversaled = true;
-                    nWriteBuffer = nReversalPattern;
+                    nWriteBuffer = GetPattern(nCharacterID, vPatternNames[nReversalIndex]);
                     WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2PatternSet), &nWriteBuffer, 4, 0);
                 }
                 else
