@@ -1,6 +1,29 @@
 #include "MBAACC-Fuzzy-Practice-Tool.h"
 #include "CharacterData.h"
 
+
+/*
+TODO
+manual meter levels for both players
+permanent heat
+permanent blood heat
+fix up fuzzy overhead
+random ex guard
+random block
+random shield
+random dodge
+hold to scroll
+cap bottom of pause menu
+add dummy status
+see what's up with manual AD and AADs
+proof all the moves recorded x_x
+write readme
+new trailer
+
+*/
+
+
+
 int main(int argc, char* argv[])
 {
     HANDLE hProcess = 0x0;

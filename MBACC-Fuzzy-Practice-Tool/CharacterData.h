@@ -11,35 +11,35 @@ enum eCharacterValues
 	UNIVERSAL = 0,
 	CAOKO = 20, FAOKO = 21, HAOKO = 22,
 	CTOHNO = 30, FTOHNO = 31, HTOHNO = 32,
-	CHIME = 40, HHIME = 41, FHIME = 43,
-	CNANAYA = 50, HNANAYA = 51, FNANAYA = 52,
-	CKOUMA = 60, HKOUMA = 61, FKOUMA = 62,
-	CMIYAKO = 100, HMIYAKO = 101, FMIYAKO = 102,
-	CCIEL = 110, HCIEL = 111, FCIEL = 112,
-	CSION = 120, HSION = 121, FSION = 122,
-	CRIES = 130, HRIES = 131, FRIES = 132,
-	CVSION = 140, HVSION = 141, FVSION = 142,
-	CWARA = 150, HWARA = 151, FWARA = 152,
-	CROA = 160, HROA = 161, FROA = 162,
-	CMAIDS = 190, HMAIDS = 191, FMAIDS = 192,
-	CAKIHA = 200, HAKIHA = 201, FAKIHA = 202,
-	CARC = 210, HARC = 211, FARC = 212,
-	CPCIEL = 220, HPCIEL = 221, FPCIEL = 222,
-	CWARC = 230, HWARC = 231, FWARC = 232,
-	CVAKIHA = 240, HVAKIHA = 241, FVAKIHA = 242,
-	CMECH = 250, HMECH = 251, FMECH = 252,
-	CSEIFUKU = 280, HSEIFUKU = 281, FSEIFUKU = 282,
-	CSATSUKI = 290, HSATSUKI = 291, FSATSUKI = 292,
-	CLEN = 300, HLEN = 301, FLEN = 302,
-	CRYOUGI = 310, HRYOUGI = 311, FRYOUGI = 312,
-	CWLEN = 320, HWLEN = 321, FWLEN = 322,
-	CNERO = 330, HNERO = 331, FNERO = 332,
-	CNAC = 340, HNAC = 341, FNAC = 342,
-	CKOHAMECH = 380, HKOHAMECH = 381, FKOHAMECH = 382,
-	CHISUI = 390, HHISUI = 391, FHISUI = 392,
-	CNECO = 400, HNECO = 401, FNECO = 402,
-	CKOHAKU = 410, HKOHAKU = 411, FKOHAKU = 412,
-	CNECOMECH = 420, HNECOMECH = 421, FNECOMECH = 422
+	CHIME = 40, FHIME = 41, HHIME = 43,
+	CNANAYA = 50, FNANAYA = 51, HNANAYA = 52,
+	CKOUMA = 60, FKOUMA = 61, HKOUMA = 62,
+	CMIYAKO = 100, FMIYAKO = 101, HMIYAKO = 102,
+	CCIEL = 110, FCIEL = 111, HCIEL = 112,
+	CSION = 120, FSION = 121, HSION = 122,
+	CRIES = 130, FRIES = 131, HRIES = 132,
+	CVSION = 140, FVSION = 141, HVSION = 142,
+	CWARA = 150, FWARA = 151, HWARA = 152,
+	CROA = 160, FROA = 161, HROA = 162,
+	CMAIDS = 190, FMAIDS = 191, HMAIDS = 192,
+	CAKIHA = 200, FAKIHA = 201, HAKIHA = 202,
+	CARC = 210, FARC = 211, HARC = 212,
+	CPCIEL = 220, FPCIEL = 221, HPCIEL = 222,
+	CWARC = 230, FWARC = 231, HWARC = 232,
+	CVAKIHA = 240, FVAKIHA = 241, HVAKIHA = 242,
+	CMECH = 250, FMECH = 251, HMECH = 252,
+	CSEIFUKU = 280, FSEIFUKU = 281, HSEIFUKU = 282,
+	CSATSUKI = 290, FSATSUKI = 291, HSATSUKI = 292,
+	CLEN = 300, FLEN = 301, HLEN = 302,
+	CRYOUGI = 310, FRYOUGI = 311, HRYOUGI = 312,
+	CWLEN = 320, FWLEN = 321, HWLEN = 322,
+	CNERO = 330, FNERO = 331, HNERO = 332,
+	CNAC = 340, FNAC = 341, HNAC = 342,
+	CKOHAMECH = 380, FKOHAMECH = 381, HKOHAMECH = 382,
+	CHISUI = 390, FHISUI = 391, HHISUI = 392,
+	CNECO = 400, FNECO = 401, HNECO = 402,
+	CKOHAKU = 410, FKOHAKU = 411, HKOHAKU = 412,
+	CNECOMECH = 420, FNECOMECH = 421, HNECOMECH = 422
 };
 
 std::map<std::string, int> CharacterValues_Map =
@@ -104,7 +104,90 @@ const std::map<std::string, int> vUniversalPatterns_Map =
 void InitializeCharacterMaps()
 {
 	MBAACC_Map[eCharacterValues::UNIVERSAL] = vUniversalPatterns_Map;
+	MBAACC_Map[eCharacterValues::CAOKO] = vCAOKO_Map;
+	MBAACC_Map[eCharacterValues::FAOKO] = vFAOKO_Map;
+	MBAACC_Map[eCharacterValues::HAOKO] = vHAOKO_Map;
+	MBAACC_Map[eCharacterValues::CTOHNO] = vCTOHNO_Map;
+	MBAACC_Map[eCharacterValues::FTOHNO] = vFTOHNO_Map;
+	MBAACC_Map[eCharacterValues::HTOHNO] = vHTOHNO_Map;
+	MBAACC_Map[eCharacterValues::CHIME] = vCHIME_Map;
+	MBAACC_Map[eCharacterValues::HHIME] = vHHIME_Map;
+	MBAACC_Map[eCharacterValues::FHIME] = vFHIME_Map;
+	MBAACC_Map[eCharacterValues::CNANAYA] = vCNANAYA_Map;
+	MBAACC_Map[eCharacterValues::HNANAYA] = vHNANAYA_Map;
+	MBAACC_Map[eCharacterValues::FNANAYA] = vFNANAYA_Map;
+	MBAACC_Map[eCharacterValues::CKOUMA] = vCKOUMA_Map;
+	MBAACC_Map[eCharacterValues::HKOUMA] = vHKOUMA_Map;
+	MBAACC_Map[eCharacterValues::FKOUMA] = vFKOUMA_Map;
+	MBAACC_Map[eCharacterValues::CMIYAKO] = vCMIYAKO_Map;
+	MBAACC_Map[eCharacterValues::HMIYAKO] = vHMIYAKO_Map;
+	MBAACC_Map[eCharacterValues::FMIYAKO] = vFMIYAKO_Map;
+	MBAACC_Map[eCharacterValues::CCIEL] = vCCIEL_Map;
+	MBAACC_Map[eCharacterValues::HCIEL] = vHCIEL_Map;
+	MBAACC_Map[eCharacterValues::FCIEL] = vFCIEL_Map;
+	MBAACC_Map[eCharacterValues::CSION] = vCSION_Map;
+	MBAACC_Map[eCharacterValues::HSION] = vHSION_Map;
+	MBAACC_Map[eCharacterValues::FSION] = vFSION_Map;
+	MBAACC_Map[eCharacterValues::CRIES] = vCRIES_Map;
+	MBAACC_Map[eCharacterValues::HRIES] = vHRIES_Map;
+	MBAACC_Map[eCharacterValues::FRIES] = vFRIES_Map;
+	MBAACC_Map[eCharacterValues::CVSION] = vCVSION_Map;
+	MBAACC_Map[eCharacterValues::HVSION] = vHVSION_Map;
+	MBAACC_Map[eCharacterValues::FVSION] = vFVSION_Map;
+	MBAACC_Map[eCharacterValues::CWARA] = vCWARA_Map;
+	MBAACC_Map[eCharacterValues::HWARA] = vHWARA_Map;
+	MBAACC_Map[eCharacterValues::FWARA] = vFWARA_Map;
+	MBAACC_Map[eCharacterValues::CROA] = vCROA_Map;
+	MBAACC_Map[eCharacterValues::HROA] = vHROA_Map;
+	MBAACC_Map[eCharacterValues::FROA] = vFROA_Map;
+	MBAACC_Map[eCharacterValues::CMAIDS] = vCMAIDS_Map;
+	MBAACC_Map[eCharacterValues::HMAIDS] = vHMAIDS_Map;
+	MBAACC_Map[eCharacterValues::FMAIDS] = vFMAIDS_Map;
+	MBAACC_Map[eCharacterValues::CAKIHA] = vCAKIHA_Map;
+	MBAACC_Map[eCharacterValues::HAKIHA] = vHAKIHA_Map;
+	MBAACC_Map[eCharacterValues::FAKIHA] = vFAKIHA_Map;
+	MBAACC_Map[eCharacterValues::CARC] = vCARC_Map;
+	MBAACC_Map[eCharacterValues::HARC] = vHARC_Map;
+	MBAACC_Map[eCharacterValues::FARC] = vFARC_Map;
+	MBAACC_Map[eCharacterValues::CPCIEL] = vCPCIEL_Map;
+	MBAACC_Map[eCharacterValues::HPCIEL] = vHPCIEL_Map;
+	MBAACC_Map[eCharacterValues::FPCIEL] = vFPCIEL_Map;
+	MBAACC_Map[eCharacterValues::CWARC] = vCWARC_Map;
+	MBAACC_Map[eCharacterValues::HWARC] = vHWARC_Map;
+	MBAACC_Map[eCharacterValues::FWARC] = vFWARC_Map;
+	MBAACC_Map[eCharacterValues::CVAKIHA] = vCVAKIHA_Map;
+	MBAACC_Map[eCharacterValues::HVAKIHA] = vHVAKIHA_Map;
+	MBAACC_Map[eCharacterValues::FVAKIHA] = vFVAKIHA_Map;
+	MBAACC_Map[eCharacterValues::CMECH] = vCMECH_Map;
+	MBAACC_Map[eCharacterValues::HMECH] = vHMECH_Map;
+	MBAACC_Map[eCharacterValues::FMECH] = vFMECH_Map;
+	MBAACC_Map[eCharacterValues::CSEIFUKU] = vCSEIFUKU_Map;
+	MBAACC_Map[eCharacterValues::HSEIFUKU] = vHSEIFUKU_Map;
+	MBAACC_Map[eCharacterValues::FSEIFUKU] = vFSEIFUKU_Map;
+	MBAACC_Map[eCharacterValues::CSATSUKI] = vCSATSUKI_Map;
+	MBAACC_Map[eCharacterValues::HSATSUKI] = vHSATSUKI_Map;
+	MBAACC_Map[eCharacterValues::FSATSUKI] = vFSATSUKI_Map;
 	MBAACC_Map[eCharacterValues::CLEN] = vCLEN_Map;
+	MBAACC_Map[eCharacterValues::HLEN] = vHLEN_Map;
+	MBAACC_Map[eCharacterValues::FLEN] = vFLEN_Map;
+	MBAACC_Map[eCharacterValues::CRYOUGI] = vCRYOUGI_Map;
+	MBAACC_Map[eCharacterValues::HRYOUGI] = vHRYOUGI_Map;
+	MBAACC_Map[eCharacterValues::FRYOUGI] = vFRYOUGI_Map;
+	MBAACC_Map[eCharacterValues::CWLEN] = vCWLEN_Map;
+	MBAACC_Map[eCharacterValues::HWLEN] = vHWLEN_Map;
+	MBAACC_Map[eCharacterValues::FWLEN] = vFWLEN_Map;
+	MBAACC_Map[eCharacterValues::CNERO] = vCNERO_Map;
+	MBAACC_Map[eCharacterValues::HNERO] = vHNERO_Map;
+	MBAACC_Map[eCharacterValues::FNERO] = vFNERO_Map;
+	MBAACC_Map[eCharacterValues::CNAC] = vCNAC_Map;
+	MBAACC_Map[eCharacterValues::HNAC] = vHNAC_Map;
+	MBAACC_Map[eCharacterValues::FNAC] = vFNAC_Map;
+	MBAACC_Map[eCharacterValues::CKOHAMECH] = vCKOHAMECH_Map;
+	MBAACC_Map[eCharacterValues::HKOHAMECH] = vHKOHAMECH_Map;
+	MBAACC_Map[eCharacterValues::FKOHAMECH] = vFKOHAMECH_Map;
+	MBAACC_Map[eCharacterValues::CNECOMECH] = vCNECOMECH_Map;
+	MBAACC_Map[eCharacterValues::HNECOMECH] = vHNECOMECH_Map;
+	MBAACC_Map[eCharacterValues::FNECOMECH] = vFNECOMECH_Map;
 }
 
 int GetPattern(int nCharacterID, std::string sPatternName)
