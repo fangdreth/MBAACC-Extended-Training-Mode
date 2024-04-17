@@ -19,7 +19,10 @@ see what's up with manual AD and AADs
 proof all the moves recorded x_x
 write readme
 new trailer
-
+lock or disable training mode pause
+be smart about if mbaa is open
+change window size and fullscreen
+draw on game itself
 */
 
 
@@ -37,7 +40,7 @@ int main(int argc, char* argv[])
     const DWORD dwP2Offset = 0xAFC;
     const DWORD dwRoundTime = 0x162A40; //0-inf
     const DWORD dwMot = 0x1581CC;   // this one is mysterious.  I think it's an animation counter
-    const DWORD dwPlayerState = 0x155140;  //0:STAND 13:CROUCH 17:STANDGUARDING
+    const DWORD dwPlayerState = 0x155140;  //0:STAND 13:CROUCH 17:STANDGUARDING 12:STAND->CROUCH ETC
     const DWORD dwEnemyStatus = 0x37C1E8; //0:STAND 1:JUMP 2:CROUCH 3:CPU 4:MANUAL 5:DUMMY
     const DWORD dwEnemyDefense = 0x37C1F0; //0:OFF 1:ALLGUARD 2:STATUSGUARD 3:ALLSHIELD 4:STATUSSHIELD 5:DODGE
     const DWORD dwGuardLevel = 0x1551F4; //0-1174011904 aka 0.0f-8000.0f
@@ -50,9 +53,7 @@ int main(int argc, char* argv[])
     const DWORD dwP2CharNumber = 0x34D91C;
     const DWORD dwP2CharMoon = 0x34D924;
 
-    const int nCArc22B = 323682455;
-
-    int nReadResult;
+    int nReadResult = 0;
     int nWriteBuffer;
     
     bool bUpPressed = false;
@@ -77,13 +78,13 @@ int main(int argc, char* argv[])
     bool bOnCSS = false;
     int nReversalIndex = 0;
     int nCharacterID = 0;
-    std::vector<std::string> vPresetSettings = { "Default", "Fuzzy Overhead", "Blockstring", "Heat OS", "Defensive Fuzzy Mash", "Defensive Fuzzy Jump", "Custom" };
-    std::vector<std::string> vEnemyDefenseSettings = { "No Guard", "All Guard", "Status Guard", "All Shield", "Status Shield"};
-    std::vector<std::string> vEnemyDefenseBiasSettings = { "Unlikely", "Even", "Likely", "Off" };
-    std::vector<std::string> vEnemyStatusSettings = { "Stand", "Jump", "Crouch" };
-    std::vector<std::string> vEnemyGuardLevelSettings = { "Infinite", "100%", "75%", "50%", "25%", "0%" };
+    const std::vector<std::string> vPresetSettings = { "Default", "Fuzzy Overhead", "Blockstring", "Heat OS", "Defensive Fuzzy Mash", "Defensive Fuzzy Jump", "Custom" };
+    const std::vector<std::string> vEnemyDefenseSettings = { "No Guard", "All Guard", "Status Guard", "All Shield", "Status Shield"};
+    const std::vector<std::string> vEnemyDefenseBiasSettings = { "Unlikely", "Even", "Likely", "Off" };
+    const std::vector<std::string> vEnemyStatusSettings = { "Stand", "Jump", "Crouch" };
+    const std::vector<std::string> vEnemyGuardLevelSettings = { "Infinite", "100%", "75%", "50%", "25%", "0%" };
     std::vector<std::string> vPatternNames = GetEmptyPatternList();
-    std::vector<int> vGuardLevelLookupTable = { 1174011904, 1174011904, 1169915904, 1165623296, 1157234688, 0 };
+    const std::vector<int> vGuardLevelLookupTable = { 1174011904, 1174011904, 1169915904, 1165623296, 1157234688, 0 };
 
     bool bReversaled = false;
     int nTimer = 0;
