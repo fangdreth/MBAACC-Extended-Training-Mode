@@ -5,142 +5,142 @@
 const std::map<std::string, int> vCAKIHA_Map =
 {
 	{ "4C", 80 }, { "6C", 60 },
-	{ "Bunker", 91 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 54 }, { "Throw", 62 },
-	{ "Back Dash", 45 }, { "Forward Dash", 43 }, { "Forward Super Jump", 85 },
+	{ "BUNKER", 91 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 54 }, { "THROW", 62 },
+	{ "BACK DASH", 45 }, { "FORWARD DASH", 43 }, { "FORWARD SUPER JUMP", 85 },
 	{ "623A", 205 }, { "623B", 206 }, { "623C", 207 },
 	{ "22A", 160 }, { "22B", 161 }, { "22C", 162 },
 	{ "214A", 180 }, { "214B", 181 }, { "214C", 182 },
 	{ "236A", 114 }, { "236B", 115 }, { "236C", 116 },
 
 	{ "624A", 43 }, { "624B", 374 }, { "624C", 375 },
-	{ "Arc Drive", 219 }, { "Another Arc Drive", 219 },
+	{ "ARC DRIVE", 219 }, { "ANOTHER ARC DRIVE", 219 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCAOKO_Map =
 {
 	{ "6A", 180 }, { "4C", 46 }, { "3C", 170 },
-	{ "Bunker", 96 }, { "5D", 54 }, { "2D", 55 }, { "Dodge", 45 }, { "Throw", 63 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 58 },
+	{ "BUNKER", 96 }, { "5D", 54 }, { "2D", 55 }, { "DODGE", 45 }, { "THROW", 63 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 58 },
 	{ "623A", 68 }, { "623B", 69 }, { "623C", 70 },
 	{ "22A", 147 }, { "22B", 148 }, { "22C", 149 }, { "22D", 495 },
 	{ "214A", 72 }, { "214B", 73 }, { "214C", 74 },
 	{ "236A", 108 }, { "236B", 100 }, { "236C", 468 },
 	{ "421A", 207 }, { "421B", 208 }, { "421C", 562 },
 	{ "624A", 234 }, { "624B", 231 }, { "624C", 235 },
-	{ "Arc Drive", 115 }, { "Another Arc Drive", 115 },
+	{ "ARC DRIVE", 115 }, { "ANOTHER ARC DRIVE", 115 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCARC_Map =
 {
 	{ "4C", 104 }, { "3C", 120 },
-	{ "Bunker", 96 }, { "5D", 72 }, { "2D", 73 }, { "Dodge", 64 }, { "Throw", 55 },
-	{ "Back Dash", 43 }, { "Forward Dash", 46 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 96 }, { "5D", 72 }, { "2D", 73 }, { "DODGE", 64 }, { "THROW", 55 },
+	{ "BACK DASH", 43 }, { "FORWARD DASH", 46 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 175 }, { "623B", 425 }, { "623C", 177 },
 	{ "22A", 150 }, { "22B", 151 }, { "22C", 152 },
 	{ "214A", 122 }, { "214B", 123 }, { "214C", 124 },
 	{ "236A", 180 }, { "236B", 184 }, { "236C", 188 },
 
 	{ "624A", 390 }, { "624B", 391 }, { "624C", 411 },
-	{ "Arc Drive", 199 }, { "Another Arc Drive", 199 },
+	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCCIEL_Map =
 {
 	{ "4B", 90 }, { "3B", 390 }, { "4C", 61 },
-	{ "Bunker", 78 }, { "5D", 72 }, { "2D", 73 }, { "Dodge", 84 }, { "Throw", 65 },
-	{ "Back Dash", 46 }, { "Forward Dash", 45 }, { "Forward Super Jump", 80 },
+	{ "BUNKER", 78 }, { "5D", 72 }, { "2D", 73 }, { "DODGE", 84 }, { "THROW", 65 },
+	{ "BACK DASH", 46 }, { "FORWARD DASH", 45 }, { "FORWARD SUPER JUMP", 80 },
 	{ "623A", 485 }, { "623B", 486 }, { "623C", 487 },
 	{ "22A", 150 }, { "22B", 151 }, { "22C", 152 },
 	{ "214A", 415 }, { "214B", 121 }, { "214C", 122 },
 	{ "236A", 170 }, { "236B", 171 }, { "236C", 400 },
 
 
-	{ "Arc Drive", 197 }, { "Another Arc Drive", 197 },
+	{ "ARC DRIVE", 197 }, { "ANOTHER ARC DRIVE", 197 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCHIME_Map =
 {
 	{ "6C", 124 },
-	{ "Bunker", 72 }, { "5D", 56 }, { "2D", 57 }, { "Dodge", 66 }, { "Throw", 275 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 41 },
+	{ "BUNKER", 72 }, { "5D", 56 }, { "2D", 57 }, { "DODGE", 66 }, { "THROW", 275 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 41 },
 	{ "623A", 230 }, { "623B", 231 }, { "623C", 232 },
 	{ "22A", 170 }, { "22B", 171 }, { "22C", 172 }, { "22D", 89 },
 	{ "214A", 150 }, { "214B", 151 }, { "214C", 152 },
 	{ "236A", 160 }, { "236B", 161 }, { "236C", 162 },
 
 
-	{ "Arc Drive", 299 }, { "Another Arc Drive", 299 },
+	{ "ARC DRIVE", 299 }, { "ANOTHER ARC DRIVE", 299 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCHISUI_Map =
 {
 	{ "6B", 186 }, { "6C", 71 },
-	{ "Bunker", 181 }, { "5D", 81 }, { "2D", 82 }, { "Dodge", 104 }, { "Throw", 55 },
-	{ "Back Dash", 67 }, { "Forward Dash", 65 }, { "Forward Super Jump", 68 },
+	{ "BUNKER", 181 }, { "5D", 81 }, { "2D", 82 }, { "DODGE", 104 }, { "THROW", 55 },
+	{ "BACK DASH", 67 }, { "FORWARD DASH", 65 }, { "FORWARD SUPER JUMP", 68 },
 	{ "623A", 160 }, { "623B", 186 }, { "623C", 162 },
 	{ "22A", 410 }, { "22B", 411 }, { "22C", 412 },
 	{ "214A", 500 }, { "214B", 501 }, { "214C", 502 },
 	{ "236A", 370 }, { "236B", 371 }, { "236C", 372 },
 
 
-	{ "Arc Drive", 199 }, { "Another Arc Drive", 199 },
+	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCKOHAKU_Map =
 {
 	{ "4B", 381 }, { "6C", 466 },
-	{ "Bunker", 235 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 65 }, { "Throw", 64 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 385 },
+	{ "BUNKER", 235 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 65 }, { "THROW", 64 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 385 },
 
 	{ "22A", 125 }, { "22B", 126 }, { "22C", 127 }, { "2222C", 128 }, { "22222C", 127 },
 	{ "214A", 96 }, { "214B", 97 }, { "214C", 98 },
 	{ "236A", 385 }, { "236B", 385 }, { "236C", 385 },
 
 
-	{ "Arc Drive", 200 }, { "Another Arc Drive", 200 },
+	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCKOHAMECH_Map =
 {
 
-	{ "Bunker", 235 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 65 }, { "Throw", 64 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 63 },
+	{ "BUNKER", 235 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 65 }, { "THROW", 64 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 63 },
 	{ "22A", 685 }, { "22B", 686 }, { "22C", 687 },
 	{ "214A", 600 }, { "214B", 601 }, { "214C", 602 },
 	{ "236A", 170 }, { "236B", 171 }, { "236C", 172 },
 	{ "421A", 620 }, { "421B", 621 }, { "421C", 622 },
 
-	{ "Arc Drive", 200 }, { "Another Arc Drive", 200 },
+	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCKOUMA_Map =
 {
 	{ "6C", 206 },
-	{ "Bunker", 180 }, { "5D", 65 }, { "2D", 66 }, { "Dodge", 78 }, { "Throw", 70 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 57 },
+	{ "BUNKER", 180 }, { "5D", 65 }, { "2D", 66 }, { "DODGE", 78 }, { "THROW", 70 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 57 },
 	{ "623A", 417 }, { "623B", 186 }, { "623C", 187 },
 	{ "22A", 100 }, { "22B", 101 }, { "22C", 102 },
 	{ "214A", 110 }, { "214B", 115 }, { "214C", 117 },
 	{ "236A", 194 }, { "236B", 193 }, { "236C", 400 },
 
 
-	{ "Arc Drive", 149 }, { "Another Arc Drive", 149 },
+	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCLEN_Map =
 {
 	{ "4B", 210 }, { "3C", 66 },
-	{ "Bunker", 101 }, { "5D", 134 }, { "2D", 135 }, { "Dodge", 68 }, { "Throw", 105 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 59 },
+	{ "BUNKER", 101 }, { "5D", 134 }, { "2D", 135 }, { "DODGE", 68 }, { "THROW", 105 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 59 },
 	{ "623A", 59 }, { "623B", 59 }, { "623C", 59 },
 
 	{ "214A", 85 }, { "214B", 86 }, { "214C", 82 },
@@ -148,7 +148,7 @@ const std::map<std::string, int> vCLEN_Map =
 	{ "421A", 200 }, { "421B", 201 }, { "421C", 202 }, { "421D", 467 },
 	{ "624C", 400 },
 
-	{ "Arc Drive", 150 }, { "Another Arc Drive", 150 },
+	{ "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 150 },
 	{"filler",0}
 };
 
@@ -170,420 +170,420 @@ const std::map<std::string, int> vCMAIDS_Map =
 const std::map<std::string, int> vCMECH_Map =
 {
 	{ "4B", 172 }, { "6C", 71 },
-	{ "Bunker", 206 }, { "5D", 81 }, { "2D", 82 }, { "Dodge", 104 }, { "Throw", 55 },
-	{ "Back Dash", 67 }, { "Forward Dash", 65 }, { "Forward Super Jump", 43 },
+	{ "BUNKER", 206 }, { "5D", 81 }, { "2D", 82 }, { "DODGE", 104 }, { "THROW", 55 },
+	{ "BACK DASH", 67 }, { "FORWARD DASH", 65 }, { "FORWARD SUPER JUMP", 43 },
 	{ "623A", 143 }, { "623B", 144 }, { "623C", 146 },
 	{ "22A", 120 }, { "22B", 121 }, { "22C", 122 },
 	{ "214A", 150 }, { "214B", 151 }, { "214C", 152 },
 	{ "236A", 410 }, { "236B", 411 }, { "236C", 162 },
 	{ "421A", 416 }, { "421B", 417 }, { "421C", 129 },
 
-	{ "Arc Drive", 200 }, { "Another Arc Drive", 200 },
+	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCMIYAKO_Map =
 {
 	{ "6B", 62 }, { "6C", 60 },
-	{ "Bunker", 120 }, { "5D", 67 }, { "2D", 68 }, { "Dodge", 57 }, { "Throw", 74 },
-	{ "Back Dash", 55 }, { "Forward Dash", 54 }, { "Forward Super Jump", 85 },
+	{ "BUNKER", 120 }, { "5D", 67 }, { "2D", 68 }, { "DODGE", 57 }, { "THROW", 74 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 54 }, { "FORWARD SUPER JUMP", 85 },
 	{ "623A", 155 }, { "623B", 156 }, { "623C", 157 },
 	{ "22A", 160 }, { "22B", 161 }, { "22C", 162 },
 	{ "214A", 185 }, { "214B", 426 }, { "214C", 435 },
 	{ "236A", 150 }, { "236B", 151 }, { "236C", 152 },
 
 
-	{ "Arc Drive", 199 }, { "Another Arc Drive", 199 },
+	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCNAC_Map =
 {
 	{ "6C", 79 }, { "3C", 60 },
-	{ "Bunker", 61 }, { "5D", 83 }, { "2D", 84 }, { "Dodge", 56 }, { "Throw", 100 },
-	{ "Back Dash", 64 }, { "Forward Dash", 63 }, { "Forward Super Jump", 60 },
+	{ "BUNKER", 61 }, { "5D", 83 }, { "2D", 84 }, { "DODGE", 56 }, { "THROW", 100 },
+	{ "BACK DASH", 64 }, { "FORWARD DASH", 63 }, { "FORWARD SUPER JUMP", 60 },
 	{ "623A", 172 }, { "623B", 173 }, { "623C", 174 },
 	{ "22A", 150 }, { "22B", 151 }, { "22C", 152 },
 	{ "214A", 109 }, { "214B", 110 }, { "214C", 111 },
 	{ "236A", 90 }, { "236B", 91 }, { "236C", 92 },
 	{ "421A", 450 }, { "421B", 455 }, { "421C", 420 },
 
-	{ "Arc Drive", 79 }, { "Another Arc Drive", 79 },
+	{ "ARC DRIVE", 79 }, { "ANOTHER ARC DRIVE", 79 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCNANAYA_Map =
 {
 
-	{ "Bunker", 96 }, { "5D", 63 }, { "2D", 64 }, { "Dodge", 78 }, { "Throw", 59 },
-	{ "Back Dash", 55 }, { "Forward Dash", 56 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 96 }, { "5D", 63 }, { "2D", 64 }, { "DODGE", 78 }, { "THROW", 59 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 56 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 460 }, { "623B", 461 }, { "623C", 462 },
 	{ "22A", 114 }, { "22B", 451 }, { "22C", 116 },
 	{ "214A", 110 }, { "214B", 111 }, { "214C", 112 },
 	{ "236A", 160 }, { "236B", 161 }, { "236C", 162 },
 
 
-	{ "Arc Drive", 198 }, { "Another Arc Drive", 198 },
+	{ "ARC DRIVE", 198 }, { "ANOTHER ARC DRIVE", 198 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCNECO_Map =
 {
 	{ "6A", 191 },
-	{ "Bunker", 61 }, { "5D", 83 }, { "2D", 84 }, { "Dodge", 100 }, { "Throw", 100 },
-	{ "Back Dash", 64 }, { "Forward Dash", 63 }, { "Forward Super Jump", 60 },
+	{ "BUNKER", 61 }, { "5D", 83 }, { "2D", 84 }, { "DODGE", 100 }, { "THROW", 100 },
+	{ "BACK DASH", 64 }, { "FORWARD DASH", 63 }, { "FORWARD SUPER JUMP", 60 },
 	{ "623A", 60 }, { "623B", 60 }, { "623C", 60 },
 	{ "22A", 150 }, { "22B", 151 }, { "22C", 152 },
 	{ "214A", 61 }, { "214B", 61 }, { "214C", 61 },
 	{ "236A", 60 }, { "236B", 60 }, { "236C", 60 },
 	{ "421A", 61 }, { "421B", 61 }, { "421C", 61 },
 
-	{ "Arc Drive", 61 }, { "Another Arc Drive", 61 },
+	{ "ARC DRIVE", 61 }, { "ANOTHER ARC DRIVE", 61 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCNECOMECH_Map =
 {
 	{ "6C", 71 },
-	{ "Bunker", 206 }, { "5D", 81 }, { "2D", 82 }, { "Dodge", 104 }, { "Throw", 55 },
-	{ "Back Dash", 67 }, { "Forward Dash", 65 }, { "Forward Super Jump", 43 },
+	{ "BUNKER", 206 }, { "5D", 81 }, { "2D", 82 }, { "DODGE", 104 }, { "THROW", 55 },
+	{ "BACK DASH", 67 }, { "FORWARD DASH", 65 }, { "FORWARD SUPER JUMP", 43 },
 	{ "623A", 410 }, { "623B", 411 }, { "623C", 412 },
 	{ "22A", 430 }, { "22B", 431 }, { "22C", 432 },
 	{ "214A", 420 }, { "214B", 421 }, { "214C", 422 },
 	{ "236A", 400 }, { "236B", 401 }, { "236C", 402 },
 
 
-	{ "Arc Drive", 200 }, { "Another Arc Drive", 200 },
+	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCNERO_Map =
 {
 	{ "4C", 60 },
-	{ "Bunker", 90 }, { "5D", 73 }, { "2D", 74 }, { "Dodge", 83 }, { "Throw", 65 },
-	{ "Back Dash", 70 }, { "Forward Dash", 71 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 90 }, { "5D", 73 }, { "2D", 74 }, { "DODGE", 83 }, { "THROW", 65 },
+	{ "BACK DASH", 70 }, { "FORWARD DASH", 71 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 406 }, { "623B", 405 }, { "623C", 407 },
 
 	{ "214A", 130 }, { "214B", 131 }, { "214C", 133 },
 	{ "236A", 120 }, { "236B", 121 }, { "236C", 122 },
 	{ "421A", 105 }, { "421B", 106 }, { "421C", 107 },
 	{ "624C", 150 },
-	{ "Arc Drive", 160 }, { "Another Arc Drive", 160 },
+	{ "ARC DRIVE", 160 }, { "ANOTHER ARC DRIVE", 160 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCPCIEL_Map =
 {
 	{ "6B", 151 }, { "4C", 153 }, { "6C", 152 }, { "3C", 158 },
-	{ "Bunker", 75 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 66 }, { "Throw", 275 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 80 },
+	{ "BUNKER", 75 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 66 }, { "THROW", 275 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 80 },
 	{ "623A", 105 }, { "623B", 106 }, { "623C", 107 },
 
 	{ "214A", 130 }, { "214B", 131 }, { "214C", 132 },
 	{ "236A", 85 }, { "236B", 86 }, { "236C", 87 },
 
 
-	{ "Arc Drive", 200 }, { "Another Arc Drive", 200 },
+	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCRIES_Map =
 {
 	{ "6B", 374 }, { "6C", 490 },
-	{ "Bunker", 102 }, { "5D", 56 }, { "2D", 57 }, { "Dodge", 66 }, { "Throw", 85 },
-	{ "Back Dash", 71 }, { "Forward Dash", 70 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 102 }, { "5D", 56 }, { "2D", 57 }, { "DODGE", 66 }, { "THROW", 85 },
+	{ "BACK DASH", 71 }, { "FORWARD DASH", 70 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 425 }, { "623B", 426 }, { "623C", 427 },
 
 	{ "214A", 110 }, { "214B", 111 }, { "214C", 112 },
 	{ "236A", 125 }, { "236B", 126 }, { "236C", 127 },
 
 
-	{ "Arc Drive", 400 }, { "Another Arc Drive", 401 },
+	{ "ARC DRIVE", 400 }, { "ANOTHER ARC DRIVE", 401 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCROA_Map =
 {
 	{ "6C", 386 },
-	{ "Bunker", 85 }, { "5D", 80 }, { "2D", 81 }, { "Dodge", 64 }, { "Throw", 269 },
-	{ "Back Dash", 47 }, { "Forward Dash", 46 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 85 }, { "5D", 80 }, { "2D", 81 }, { "DODGE", 64 }, { "THROW", 269 },
+	{ "BACK DASH", 47 }, { "FORWARD DASH", 46 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 490 }, { "623B", 491 }, { "623C", 492 },
 	{ "22A", 105 }, { "22B", 101 }, { "22C", 102 },
 	{ "214A", 580 }, { "214B", 581 }, { "214C", 582 },
 	{ "236A", 400 }, { "236B", 401 }, { "236C", 402 },
 
 
-	{ "Arc Drive", 149 }, { "Another Arc Drive", 149 },
+	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCRYOUGI_Map =
 {
 	{ "6C", 430 },
-	{ "Bunker", 85 }, { "5D", 75 }, { "2D", 76 }, { "Dodge", 269 }, { "Throw", 70 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 85 }, { "5D", 75 }, { "2D", 76 }, { "DODGE", 269 }, { "THROW", 70 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 310 }, { "623B", 311 }, { "623C", 312 },
 	{ "22A", 720 }, { "22B", 721 }, { "22C", 732 },
 	{ "214A", 515 }, { "214B", 516 }, { "214C", 517 },
 	{ "236A", 371 }, { "236B", 372 }, { "236C", 420 },
 	{ "421A", 340 }, { "421B", 330 }, { "421C", 336 },
 
-	{ "Arc Drive", 645 }, { "Another Arc Drive", 645 },
+	{ "ARC DRIVE", 645 }, { "ANOTHER ARC DRIVE", 645 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCSATSUKI_Map =
 {
 	{ "3C", 490 },
-	{ "Bunker", 175 }, { "5D", 90 }, { "2D", 91 }, { "Dodge", 78 }, { "Throw", 85 },
-	{ "Back Dash", 81 }, { "Forward Dash", 80 }, { "Forward Super Jump", 75 },
+	{ "BUNKER", 175 }, { "5D", 90 }, { "2D", 91 }, { "DODGE", 78 }, { "THROW", 85 },
+	{ "BACK DASH", 81 }, { "FORWARD DASH", 80 }, { "FORWARD SUPER JUMP", 75 },
 	{ "623A", 462 }, { "623B", 461 }, { "623C", 142 },
 	{ "22A", 100 }, { "22B", 101 }, { "22C", 102 },
 	{ "214A", 475 }, { "214B", 476 }, { "214C", 112 },
 	{ "236A", 136 }, { "236B", 137 }, { "236C", 138 },
 	{ "421A", 450 }, { "421B", 451 }, { "421C", 452 },
 	{ "624C", 180 },
-	{ "Arc Drive", 150 }, { "Another Arc Drive", 150 },
+	{ "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 150 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCSEIFUKU_Map =
 {
 	{ "6B", 245 }, { "6C", 154 },
-	{ "Bunker", 75 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 66 }, { "Throw", 275 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 80 },
+	{ "BUNKER", 75 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 66 }, { "THROW", 275 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 80 },
 	{ "623A", 230 }, { "623B", 231 }, { "623C", 232 },
 	{ "22A", 390 }, { "22B", 391 }, { "22C", 392 },
 	{ "214A", 180 }, { "214B", 181 }, { "214C", 182 },
 	{ "236A", 310 }, { "236B", 311 }, { "236C", 312 },
 
 	{ "624C", 200 },
-	{ "Arc Drive", 370 }, { "Another Arc Drive", 370 },
+	{ "ARC DRIVE", 370 }, { "ANOTHER ARC DRIVE", 370 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCSION_Map =
 {
 	{ "6B", 58 }, { "6C", 59 }, { "3C", 61 },
-	{ "Bunker", 85 }, { "5D", 65 }, { "2D", 66 }, { "Dodge", 132 }, { "Throw", 62 },
-	{ "Back Dash", 56 }, { "Forward Dash", 55 }, { "Forward Super Jump", 54 },
+	{ "BUNKER", 85 }, { "5D", 65 }, { "2D", 66 }, { "DODGE", 132 }, { "THROW", 62 },
+	{ "BACK DASH", 56 }, { "FORWARD DASH", 55 }, { "FORWARD SUPER JUMP", 54 },
 	{ "623A", 110 }, { "623B", 111 }, { "623C", 112 },
 	{ "22D", 107 },
 	{ "214A", 115 }, { "214B", 116 }, { "214C", 117 },
 	{ "236A", 100 }, { "236B", 102 }, { "236C", 435 },
 	{ "421A", 81 }, { "421B", 82 }, { "421C", 83 },
 
-	{ "Arc Drive", 145 }, { "Another Arc Drive", 145 },
+	{ "ARC DRIVE", 145 }, { "ANOTHER ARC DRIVE", 145 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCTOHNO_Map =
 {
 	{ "6B", 130 },
-	{ "Bunker", 122 }, { "5D", 63 }, { "2D", 64 }, { "Dodge", 78 }, { "Throw", 59 },
-	{ "Back Dash", 55 }, { "Forward Dash", 56 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 122 }, { "5D", 63 }, { "2D", 64 }, { "DODGE", 78 }, { "THROW", 59 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 56 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 455 }, { "623B", 456 }, { "623C", 457 },
 	{ "22A", 244 }, { "22B", 246 }, { "22C", 234 }, { "22D", 247 },
 	{ "214A", 110 }, { "214B", 111 }, { "214C", 112 },
 	{ "236A", 105 }, { "236B", 106 }, { "236C", 107 },
 
 
-	{ "Arc Drive", 199 }, { "Another Arc Drive", 199 },
+	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCVAKIHA_Map =
 {
 	{ "4C", 80 }, { "6C", 60 },
-	{ "Bunker", 91 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 54 }, { "Throw", 62 },
-	{ "Back Dash", 45 }, { "Forward Dash", 43 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 91 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 54 }, { "THROW", 62 },
+	{ "BACK DASH", 45 }, { "FORWARD DASH", 43 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 205 }, { "623B", 206 }, { "623C", 207 },
 	{ "22A", 160 }, { "22B", 161 }, { "22C", 162 },
 	{ "214A", 180 }, { "214B", 181 }, { "214C", 182 },
 	{ "236A", 114 }, { "236B", 115 }, { "236C", 116 },
 
 
-	{ "Arc Drive", 540 }, { "Another Arc Drive", 540 },
+	{ "ARC DRIVE", 540 }, { "ANOTHER ARC DRIVE", 540 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCVSION_Map =
 {
 	{ "4B", 525 }, { "6C", 225 },
-	{ "Bunker", 85 }, { "5D", 65 }, { "2D", 66 }, { "Dodge", 132 }, { "Throw", 77 },
-	{ "Back Dash", 56 }, { "Forward Dash", 57 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 85 }, { "5D", 65 }, { "2D", 66 }, { "DODGE", 132 }, { "THROW", 77 },
+	{ "BACK DASH", 56 }, { "FORWARD DASH", 57 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 125 }, { "623B", 126 }, { "623C", 445 },
 
 	{ "214A", 165 }, { "214B", 166 }, { "214C", 167 },
 	{ "236A", 215 }, { "236B", 216 }, { "236C", 217 },
 	{ "421A", 531 }, { "421B", 532 }, { "421C", 533 },
 
-	{ "Arc Drive", 204 }, { "Another Arc Drive", 204 },
+	{ "ARC DRIVE", 204 }, { "ANOTHER ARC DRIVE", 204 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCWARA_Map =
 {
 	{ "6C", 72 },
-	{ "Bunker", 130 }, { "5D", 62 }, { "2D", 63 }, { "Dodge", 69 }, { "Throw", 45 },
-	{ "Back Dash", 55 }, { "Forward Dash", 56 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 130 }, { "5D", 62 }, { "2D", 63 }, { "DODGE", 69 }, { "THROW", 45 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 56 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 120 }, { "623B", 121 }, { "623C", 122 },
 	{ "22A", 100 }, { "22B", 101 }, { "22C", 102 },
 	{ "214A", 190 }, { "214B", 191 }, { "214C", 192 },
 	{ "236A", 180 }, { "236B", 181 }, { "236C", 182 },
 	{ "421A", 170 }, { "421B", 171 }, { "421C", 172 },
 
-	{ "Arc Drive", 149 }, { "Another Arc Drive", 150 },
+	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 150 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCWARC_Map =
 {
 	{ "6C", 500 }, { "3C", 49 },
-	{ "Bunker", 78 }, { "5D", 72 }, { "2D", 73 }, { "Dodge", 64 }, { "Throw", 55 },
-	{ "Back Dash", 43 }, { "Forward Dash", 46 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 78 }, { "5D", 72 }, { "2D", 73 }, { "DODGE", 64 }, { "THROW", 55 },
+	{ "BACK DASH", 43 }, { "FORWARD DASH", 46 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 155 }, { "623B", 156 }, { "623C", 157 },
 
 	{ "214A", 112 }, { "214B", 113 }, { "214C", 114 },
 	{ "236A", 150 }, { "236B", 151 }, { "236C", 152 },
 	{ "421A", 160 }, { "421B", 161 }, { "421C", 162 },
 
-	{ "Arc Drive", 223 }, { "Another Arc Drive", 223 },
+	{ "ARC DRIVE", 223 }, { "ANOTHER ARC DRIVE", 223 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vCWLEN_Map =
 {
 	{ "4B", 47 }, { "3C", 370 },
-	{ "Bunker", 101 }, { "5D", 134 }, { "2D", 135 }, { "Dodge", 68 }, { "Throw", 106 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 46 },
+	{ "BUNKER", 101 }, { "5D", 134 }, { "2D", 135 }, { "DODGE", 68 }, { "THROW", 106 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 46 },
 	{ "623A", 195 }, { "623B", 196 }, { "623C", 197 },
 	{ "22A", 182 }, { "22B", 183 }, { "22C", 184 }, { "22D", 185 },
 	{ "214A", 142 }, { "214B", 143 }, { "214C", 144 },
 	{ "236A", 115 }, { "236B", 116 }, { "236C", 117 },
 	{ "421A", 405 }, { "421B", 406 }, { "421C", 407 },
 	{ "624A", 110 }, { "624B", 111 }, { "624C", 112 },
-	{ "Arc Drive", 149 }, { "Another Arc Drive", 149 },
+	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFAKIHA_Map =
 {
 	{ "4C", 80 }, { "6C", 60 }, { "3C", 445 },
-	{ "Bunker", 91 }, { "5D", 70 }, { "2D", 71 }, { "Throw", 62 },
-	{ "Back Dash", 45 }, { "Forward Dash", 43 }, { "Forward Super Jump", 85 },
+	{ "BUNKER", 91 }, { "5D", 70 }, { "2D", 71 }, { "THROW", 62 },
+	{ "BACK DASH", 45 }, { "FORWARD DASH", 43 }, { "FORWARD SUPER JUMP", 85 },
 	{ "623A", 205 }, { "623B", 206 }, { "623C", 207 },
 	{ "22A", 420 }, { "22B", 421 }, { "22C", 422 },
 	{ "214A", 400 }, { "214B", 401 }, { "214C", 402 },
 	{ "236A", 114 }, { "236B", 115 }, { "236C", 116 },
 	{ "421A", 437 }, { "421B", 438 }, { "421C", 439 },
 
-	{ "Arc Drive", 219 }, { "Another Arc Drive", 219 },
+	{ "ARC DRIVE", 219 }, { "ANOTHER ARC DRIVE", 219 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFAOKO_Map =
 {
 	{ "4C", 46 }, { "3C", 170 },
-	{ "Bunker", 96 }, { "5D", 54 }, { "2D", 55 }, { "Throw", 63 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 58 },
+	{ "BUNKER", 96 }, { "5D", 54 }, { "2D", 55 }, { "THROW", 63 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 58 },
 	{ "623A", 400 }, { "623B", 401 }, { "623C", 402 },
 	{ "22A", 147 }, { "22B", 148 }, { "22C", 149 },
 	{ "214A", 72 }, { "214B", 73 }, { "214C", 475 },
 	{ "236A", 435 }, { "236B", 436 }, { "236C", 470 },
 	{ "421A", 511 }, { "421B", 512 }, { "421C", 530 },
 	{ "624A", 575 }, { "624B", 576 }, { "624C", 577 },
-	{ "Arc Drive", 115 }, { "Another Arc Drive", 265 },
+	{ "ARC DRIVE", 115 }, { "ANOTHER ARC DRIVE", 265 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFARC_Map =
 {
 	{ "6C", 459 }, { "3C", 440 },
-	{ "Bunker", 96 }, { "5D", 72 }, { "2D", 73 }, { "Throw", 55 },
-	{ "Back Dash", 43 }, { "Forward Dash", 46 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 96 }, { "5D", 72 }, { "2D", 73 }, { "THROW", 55 },
+	{ "BACK DASH", 43 }, { "FORWARD DASH", 46 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 175 }, { "623B", 425 }, { "623C", 177 },
 	{ "22A", 150 }, { "22B", 151 }, { "22C", 152 },
 	{ "214A", 122 }, { "214B", 123 }, { "214C", 124 },
 	{ "236A", 180 }, { "236B", 181 }, { "236C", 441 },
 	{ "421A", 155 }, { "421B", 156 }, { "421C", 157 },
 
-	{ "Arc Drive", 199 }, { "Another Arc Drive", 265 },
+	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 265 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFHIME_Map =
 {
 	{ "6C", 124 },
-	{ "Bunker", 72 }, { "5D", 56 }, { "2D", 57 }, { "Throw", 275 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 41 },
+	{ "BUNKER", 72 }, { "5D", 56 }, { "2D", 57 }, { "THROW", 275 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 41 },
 	{ "623A", 230 }, { "623B", 231 }, { "623C", 232 },
 	{ "22A", 170 }, { "22B", 171 }, { "22C", 172 }, { "22D", 89 },
 	{ "214A", 140 }, { "214B", 141 }, { "214C", 142 },
 	{ "236A", 160 }, { "236B", 161 }, { "236C", 162 },
 
 
-	{ "Arc Drive", 299 }, { "Another Arc Drive", 265 },
+	{ "ARC DRIVE", 299 }, { "ANOTHER ARC DRIVE", 265 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFHISUI_Map =
 {
 	{ "6A", 299 }, { "4B", 73 }, { "6C", 526 }, { "3C", 186 },
-	{ "Bunker", 181 }, { "5D", 81 }, { "2D", 82 }, { "Throw", 55 },
-	{ "Back Dash", 67 }, { "Forward Dash", 67 }, { "Forward Super Jump", 68 },
+	{ "BUNKER", 181 }, { "5D", 81 }, { "2D", 82 }, { "THROW", 55 },
+	{ "BACK DASH", 67 }, { "FORWARD DASH", 67 }, { "FORWARD SUPER JUMP", 68 },
 	{ "623A", 401 }, { "623B", 403 }, { "623C", 402 },
 	{ "22A", 430 }, { "22B", 444 }, { "22C", 437 },
 	{ "214A", 500 }, { "214B", 501 }, { "214C", 502 },
 	{ "236A", 370 }, { "236B", 371 }, { "236C", 372 },
 
 
-	{ "Arc Drive", 199 }, { "Another Arc Drive", 199 },
+	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFKOHAKU_Map =
 {
 	{ "4B", 465 }, { "3C", 520 },
-	{ "Bunker", 235 }, { "5D", 70 }, { "2D", 71 }, { "Throw", 64 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 63 },
+	{ "BUNKER", 235 }, { "5D", 70 }, { "2D", 71 }, { "THROW", 64 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 63 },
 
 	{ "22A", 125 }, { "22B", 126 }, { "22C", 127 }, { "22D", 128 }, { "2222C", 459 }, { "22222C", 459 },
 	{ "214A", 402 }, { "214B", 388 }, { "214C", 400 },
 	{ "236A", 470 }, { "236B", 471 }, { "236C", 472 },
 
 
-	{ "Arc Drive", 200 }, { "Another Arc Drive", 200 },
+	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFKOUMA_Map =
 {
 	{ "3B", 2 }, { "6C", 76 },
-	{ "Bunker", 180 }, { "5D", 65 }, { "2D", 66 }, { "Throw", 70 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 57 },
+	{ "BUNKER", 180 }, { "5D", 65 }, { "2D", 66 }, { "THROW", 70 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 57 },
 	{ "623A", 465 }, { "623B", 466 }, { "623C", 467 },
 	{ "22A", 100 }, { "22B", 101 }, { "22C", 102 },
 	{ "214A", 110 }, { "214B", 115 }, { "214C", 117 },
 	{ "236A", 125 }, { "236B", 128 }, { "236C", 131 },
 	{ "421A", 220 }, { "421B", 221 }, { "421C", 222 },
 
-	{ "Arc Drive", 149 }, { "Another Arc Drive", 265 },
+	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 265 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFLEN_Map =
 {
 	{ "4B", 210 }, { "3C", 66 },
-	{ "Bunker", 101 }, { "5D", 134 }, { "2D", 135 }, { "Throw", 105 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 59 },
+	{ "BUNKER", 101 }, { "5D", 134 }, { "2D", 135 }, { "THROW", 105 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 59 },
 	{ "623A", 59 }, { "623B", 59 }, { "623C", 59 },
 
 	{ "214A", 390 }, { "214B", 391 }, { "214C", 392 },
 	{ "236A", 59 }, { "236B", 59 }, { "236C", 59 },
 
 
-	{ "Arc Drive", 59 }, { "Another Arc Drive", 59 },
+	{ "ARC DRIVE", 59 }, { "ANOTHER ARC DRIVE", 59 },
 	{"filler",0}
 };
 
@@ -595,300 +595,300 @@ const std::map<std::string, int> vFMAIDS_Map =
 const std::map<std::string, int> vFMECH_Map =
 {
 	{ "6C", 71 },
-	{ "Bunker", 206 }, { "5D", 81 }, { "2D", 82 }, { "Throw", 55 },
-	{ "Back Dash", 67 }, { "Forward Dash", 65 }, { "Forward Super Jump", 43 },
+	{ "BUNKER", 206 }, { "5D", 81 }, { "2D", 82 }, { "THROW", 55 },
+	{ "BACK DASH", 67 }, { "FORWARD DASH", 65 }, { "FORWARD SUPER JUMP", 43 },
 	{ "623A", 484 }, { "623B", 485 }, { "623C", 486 },
 	{ "22A", 420 }, { "22B", 426 }, { "22C", 432 },
 	{ "214A", 510 }, { "214B", 511 }, { "214C", 463 },
 	{ "236A", 488 }, { "236B", 489 }, { "236C", 461 },
 
 
-	{ "Arc Drive", 200 }, { "Another Arc Drive", 200 },
+	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFMIYAKO_Map =
 {
 	{ "6C", 405 },
-	{ "Bunker", 120 }, { "5D", 67 }, { "2D", 68 }, { "Throw", 74 },
-	{ "Back Dash", 55 }, { "Forward Dash", 54 }, { "Forward Super Jump", 85 },
+	{ "BUNKER", 120 }, { "5D", 67 }, { "2D", 68 }, { "THROW", 74 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 54 }, { "FORWARD SUPER JUMP", 85 },
 	{ "623A", 450 }, { "623B", 452 }, { "623C", 157 },
 	{ "22A", 160 }, { "22B", 161 }, { "22C", 140 },
 	{ "214A", 185 }, { "214B", 426 }, { "214C", 435 },
 	{ "236A", 407 }, { "236B", 408 }, { "236C", 409 },
 	{ "421A", 411 }, { "421B", 412 }, { "421C", 413 },
 
-	{ "Arc Drive", 199 }, { "Another Arc Drive", 199 },
+	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFNAC_Map =
 {
 	{ "6C", 79 },
-	{ "Bunker", 169 }, { "5D", 83 }, { "2D", 84 }, { "Throw", 100 },
-	{ "Back Dash", 64 }, { "Forward Dash", 63 }, { "Forward Super Jump", 43 },
+	{ "BUNKER", 169 }, { "5D", 83 }, { "2D", 84 }, { "THROW", 100 },
+	{ "BACK DASH", 64 }, { "FORWARD DASH", 63 }, { "FORWARD SUPER JUMP", 43 },
 	{ "623A", 172 }, { "623B", 173 }, { "623C", 174 },
 	{ "22A", 480 }, { "22B", 485 }, { "22C", 410 },
 	{ "214A", 515 }, { "214B", 516 }, { "214C", 517 },
 	{ "236A", 570 }, { "236B", 571 }, { "236C", 572 },
 
 
-	{ "Arc Drive", 227 }, { "Another Arc Drive", 227 },
+	{ "ARC DRIVE", 227 }, { "ANOTHER ARC DRIVE", 227 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFNANAYA_Map =
 {
 
-	{ "Bunker", 96 }, { "5D", 63 }, { "2D", 64 }, { "Throw", 59 },
-	{ "Back Dash", 55 }, { "Forward Dash", 56 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 96 }, { "5D", 63 }, { "2D", 64 }, { "THROW", 59 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 56 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 460 }, { "623B", 461 }, { "623C", 462 },
 	{ "22A", 114 }, { "22B", 451 }, { "22C", 116 },
 	{ "214A", 110 }, { "214B", 111 }, { "214C", 112 },
 	{ "236A", 160 }, { "236B", 161 }, { "236C", 162 },
 
 
-	{ "Arc Drive", 198 }, { "Another Arc Drive", 198 },
+	{ "ARC DRIVE", 198 }, { "ANOTHER ARC DRIVE", 198 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFNECO_Map =
 {
 	{ "6A", 191 },
-	{ "Bunker", 61 }, { "5D", 83 }, { "2D", 84 }, { "Throw", 100 },
-	{ "Back Dash", 64 }, { "Forward Dash", 63 }, { "Forward Super Jump", 60 },
+	{ "BUNKER", 61 }, { "5D", 83 }, { "2D", 84 }, { "THROW", 100 },
+	{ "BACK DASH", 64 }, { "FORWARD DASH", 63 }, { "FORWARD SUPER JUMP", 60 },
 	{ "623A", 60 }, { "623B", 60 }, { "623C", 60 },
 	{ "22A", 150 }, { "22B", 151 }, { "22C", 152 },
 	{ "214A", 61 }, { "214B", 61 }, { "214C", 61 },
 	{ "236A", 60 }, { "236B", 60 }, { "236C", 60 },
 
 
-	{ "Arc Drive", 61 }, { "Another Arc Drive", 61 },
+	{ "ARC DRIVE", 61 }, { "ANOTHER ARC DRIVE", 61 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFNECOMECH_Map =
 {
 	{ "6C", 71 },
-	{ "Bunker", 206 }, { "5D", 81 }, { "2D", 82 }, { "Throw", 55 },
-	{ "Back Dash", 67 }, { "Forward Dash", 65 }, { "Forward Super Jump", 43 },
+	{ "BUNKER", 206 }, { "5D", 81 }, { "2D", 82 }, { "THROW", 55 },
+	{ "BACK DASH", 67 }, { "FORWARD DASH", 65 }, { "FORWARD SUPER JUMP", 43 },
 	{ "623A", 410 }, { "623B", 411 }, { "623C", 412 },
 	{ "22A", 430 }, { "22B", 431 }, { "22C", 432 },
 	{ "214A", 420 }, { "214B", 421 }, { "214C", 422 },
 	{ "236A", 400 }, { "236B", 401 }, { "236C", 402 },
 
 
-	{ "Arc Drive", 200 }, { "Another Arc Drive", 200 },
+	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFNERO_Map =
 {
 	{ "4C", 60 }, { "6C", 500 }, { "3C", 401 },
-	{ "Bunker", 90 }, { "5D", 73 }, { "2D", 74 }, { "Throw", 65 },
-	{ "Back Dash", 70 }, { "Forward Dash", 71 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 90 }, { "5D", 73 }, { "2D", 74 }, { "THROW", 65 },
+	{ "BACK DASH", 70 }, { "FORWARD DASH", 71 }, { "FORWARD SUPER JUMP", 95 },
 
 
 	{ "214A", 480 }, { "214B", 485 }, { "214C", 505 },
 	{ "236A", 120 }, { "236B", 420 }, { "236C", 122 },
 	{ "421A", 452 }, { "421B", 451 }, { "421C", 490 },
 	{ "624C", 450 },
-	{ "Arc Drive", 182 }, { "Another Arc Drive", 265 },
+	{ "ARC DRIVE", 182 }, { "ANOTHER ARC DRIVE", 265 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFPCIEL_Map =
 {
 	{ "6B", 154 }, { "3B", 151 }, { "3C", 158 },
-	{ "Bunker", 75 }, { "5D", 70 }, { "2D", 71 }, { "Throw", 275 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 80 },
+	{ "BUNKER", 75 }, { "5D", 70 }, { "2D", 71 }, { "THROW", 275 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 80 },
 	{ "623A", 105 }, { "623B", 106 }, { "623C", 107 },
 
 	{ "214A", 120 }, { "214B", 121 }, { "214C", 122 },
 	{ "236A", 110 }, { "236B", 111 }, { "236C", 112 },
 
 	{ "624A", 100 }, { "624B", 101 }, { "624C", 102 },
-	{ "Arc Drive", 200 }, { "Another Arc Drive", 200 },
+	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFRIES_Map =
 {
 	{ "6B", 374 }, { "6C", 92 },
-	{ "Bunker", 102 }, { "5D", 56 }, { "2D", 57 }, { "Throw", 85 },
-	{ "Back Dash", 71 }, { "Forward Dash", 70 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 102 }, { "5D", 56 }, { "2D", 57 }, { "THROW", 85 },
+	{ "BACK DASH", 71 }, { "FORWARD DASH", 70 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 440 }, { "623B", 441 }, { "623C", 442 },
 
 	{ "214A", 437 }, { "214B", 438 }, { "214C", 112 },
 	{ "236A", 175 }, { "236B", 179 }, { "236C", 485 },
 
 
-	{ "Arc Drive", 399 }, { "Another Arc Drive", 399 },
+	{ "ARC DRIVE", 399 }, { "ANOTHER ARC DRIVE", 399 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFROA_Map =
 {
 	{ "6C", 386 },
-	{ "Bunker", 85 }, { "5D", 80 }, { "2D", 81 }, { "Throw", 269 },
-	{ "Back Dash", 47 }, { "Forward Dash", 46 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 85 }, { "5D", 80 }, { "2D", 81 }, { "THROW", 269 },
+	{ "BACK DASH", 47 }, { "FORWARD DASH", 46 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 490 }, { "623B", 491 }, { "623C", 492 },
 
 	{ "214A", 408 }, { "214B", 409 }, { "214C", 445 },
 	{ "236A", 477 }, { "236B", 478 }, { "236C", 482 },
 
 
-	{ "Arc Drive", 149 }, { "Another Arc Drive", 149 },
+	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFRYOUGI_Map =
 {
 	{ "4C", 194 }, { "3C", 365 },
-	{ "Bunker", 85 }, { "5D", 75 }, { "2D", 76 }, { "Throw", 70 },
-	{ "Back Dash", 61 }, { "Forward Dash", 59 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 85 }, { "5D", 75 }, { "2D", 76 }, { "THROW", 70 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 59 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 590 }, { "623B", 591 }, { "623C", 592 },
 	{ "22A", 740 }, { "22B", 741 }, { "22C", 742 },
 	{ "214A", 515 }, { "214B", 516 }, { "214C", 517 },
 	{ "236A", 371 }, { "236B", 372 }, { "236C", 397 },
 	{ "421B", 594 }, { "421C", 595 },
 
-	{ "Arc Drive", 645 }, { "Another Arc Drive", 645 },
+	{ "ARC DRIVE", 645 }, { "ANOTHER ARC DRIVE", 645 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFSATSUKI_Map =
 {
 	{ "3C", 490 },
-	{ "Bunker", 175 }, { "5D", 90 }, { "2D", 91 }, { "Throw", 85 },
-	{ "Back Dash", 81 }, { "Forward Dash", 80 }, { "Forward Super Jump", 75 },
+	{ "BUNKER", 175 }, { "5D", 90 }, { "2D", 91 }, { "THROW", 85 },
+	{ "BACK DASH", 81 }, { "FORWARD DASH", 80 }, { "FORWARD SUPER JUMP", 75 },
 	{ "623A", 462 }, { "623B", 461 }, { "623C", 142 },
 	{ "22A", 380 }, { "22B", 381 }, { "22C", 382 },
 	{ "214A", 475 }, { "214B", 476 }, { "214C", 112 },
 	{ "236A", 508 }, { "236B", 509 }, { "236C", 510 },
 	{ "421A", 450 }, { "421B", 451 }, { "421C", 452 },
 	{ "624C", 180 },
-	{ "Arc Drive", 150 }, { "Another Arc Drive", 150 },
+	{ "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 150 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFSEIFUKU_Map =
 {
 	{ "3C", 152 },
-	{ "Bunker", 75 }, { "5D", 70 }, { "2D", 71 }, { "Throw", 275 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 80 },
+	{ "BUNKER", 75 }, { "5D", 70 }, { "2D", 71 }, { "THROW", 275 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 80 },
 	{ "623A", 230 }, { "623B", 231 }, { "623C", 232 },
 	{ "22A", 220 }, { "22B", 221 }, { "22C", 222 },
 	{ "214A", 480 }, { "214B", 481 }, { "214C", 482 },
 	{ "236A", 440 }, { "236B", 441 }, { "236C", 442 },
 
 	{ "624C", 200 },
-	{ "Arc Drive", 370 }, { "Another Arc Drive", 370 },
+	{ "ARC DRIVE", 370 }, { "ANOTHER ARC DRIVE", 370 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFSION_Map =
 {
 	{ "6B", 58 }, { "3B", 61 }, { "6C", 442 }, { "3C", 515 },
-	{ "Bunker", 85 }, { "5D", 65 }, { "2D", 66 }, { "Throw", 62 },
-	{ "Back Dash", 56 }, { "Forward Dash", 55 }, { "Forward Super Jump", 54 },
+	{ "BUNKER", 85 }, { "5D", 65 }, { "2D", 66 }, { "THROW", 62 },
+	{ "BACK DASH", 56 }, { "FORWARD DASH", 55 }, { "FORWARD SUPER JUMP", 54 },
 	{ "623A", 110 }, { "623B", 55 },
 	{ "22A", 428 }, { "22B", 386 }, { "22C", 429 }, { "22D", 65 },
 	{ "214A", 115 }, { "214B", 389 }, { "214C", 117 },
 	{ "236A", 411 }, { "236B", 412 }, { "236C", 413 },
 
 
-	{ "Arc Drive", 145 }, { "Another Arc Drive", 145 },
+	{ "ARC DRIVE", 145 }, { "ANOTHER ARC DRIVE", 145 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFTOHNO_Map =
 {
 	{ "6B", 191 },
-	{ "Bunker", 122 }, { "5D", 63 }, { "2D", 64 }, { "Throw", 59 },
-	{ "Back Dash", 55 }, { "Forward Dash", 56 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 122 }, { "5D", 63 }, { "2D", 64 }, { "THROW", 59 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 56 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 400 }, { "623B", 56 }, { "623C", 399 },
 	{ "22A", 244 }, { "22B", 246 }, { "22C", 234 }, { "22D", 247 },
 	{ "214A", 110 }, { "214B", 111 }, { "214C", 112 },
 	{ "236A", 405 }, { "236B", 406 }, { "236C", 407 },
 
 
-	{ "Another Arc Drive", 204 },
+	{ "ANOTHER ARC DRIVE", 204 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFVAKIHA_Map =
 {
 	{ "4C", 80 }, { "6C", 60 }, { "3C", 445 },
-	{ "Bunker", 91 }, { "5D", 70 }, { "2D", 71 }, { "Throw", 62 },
-	{ "Back Dash", 45 }, { "Forward Dash", 43 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 91 }, { "5D", 70 }, { "2D", 71 }, { "THROW", 62 },
+	{ "BACK DASH", 45 }, { "FORWARD DASH", 43 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 554 }, { "623B", 206 }, { "623C", 207 },
 	{ "22A", 400 }, { "22B", 401 }, { "22C", 402 },
 	{ "214A", 180 }, { "214B", 181 }, { "214C", 182 },
 	{ "236B", 506 }, { "236C", 507 },
 
 
-	{ "Arc Drive", 540 }, { "Another Arc Drive", 540 },
+	{ "ARC DRIVE", 540 }, { "ANOTHER ARC DRIVE", 540 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFVSION_Map =
 {
 	{ "6B", 470 }, { "6C", 225 },
-	{ "Bunker", 85 }, { "5D", 65 }, { "2D", 66 }, { "Throw", 77 },
-	{ "Back Dash", 56 }, { "Forward Dash", 57 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 85 }, { "5D", 65 }, { "2D", 66 }, { "THROW", 77 },
+	{ "BACK DASH", 56 }, { "FORWARD DASH", 57 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 125 }, { "623B", 126 }, { "623C", 445 },
 	{ "22A", 433 }, { "22B", 433 }, { "22C", 434 },
 	{ "214A", 471 }, { "214B", 472 }, { "214C", 473 },
 	{ "236A", 410 }, { "236B", 411 }, { "236C", 412 },
 
 
-	{ "Arc Drive", 204 }, { "Another Arc Drive", 204 },
+	{ "ARC DRIVE", 204 }, { "ANOTHER ARC DRIVE", 204 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFWARA_Map =
 {
 	{ "6C", 72 },
-	{ "Bunker", 130 }, { "5D", 62 }, { "2D", 63 }, { "Throw", 45 },
-	{ "Back Dash", 55 }, { "Forward Dash", 56 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 130 }, { "5D", 62 }, { "2D", 63 }, { "THROW", 45 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 56 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 410 }, { "623B", 411 }, { "623C", 412 },
 	{ "22A", 100 }, { "22B", 101 }, { "22C", 102 },
 	{ "214A", 398 }, { "214B", 399 }, { "214C", 400 },
 	{ "236A", 425 }, { "236B", 426 }, { "236C", 427 },
 	{ "421A", 170 }, { "421B", 171 }, { "421C", 172 },
 
-	{ "Arc Drive", 149 }, { "Another Arc Drive", 149 },
+	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFWARC_Map =
 {
 	{ "3C", 49 },
-	{ "Bunker", 78 }, { "5D", 72 }, { "2D", 73 }, { "Throw", 55 },
-	{ "Back Dash", 43 }, { "Forward Dash", 46 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 78 }, { "5D", 72 }, { "2D", 73 }, { "THROW", 55 },
+	{ "BACK DASH", 43 }, { "FORWARD DASH", 46 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 155 }, { "623B", 156 }, { "623C", 157 },
 
 	{ "214A", 112 }, { "214B", 113 }, { "214C", 114 },
 	{ "236A", 545 }, { "236B", 540 }, { "236C", 547 },
 	{ "421A", 160 }, { "421B", 161 }, { "421C", 162 },
 
-	{ "Arc Drive", 224 }, { "Another Arc Drive", 223 },
+	{ "ARC DRIVE", 224 }, { "ANOTHER ARC DRIVE", 223 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFWLEN_Map =
 {
 
-	{ "Bunker", 101 }, { "5D", 134 }, { "2D", 135 }, { "Throw", 106 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 46 },
+	{ "BUNKER", 101 }, { "5D", 134 }, { "2D", 135 }, { "THROW", 106 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 46 },
 	{ "623A", 480 }, { "623B", 481 }, { "623C", 482 },
 	{ "22A", 477 }, { "22B", 477 }, { "22C", 476 }, { "22D", 185 },
 	{ "214A", 486 }, { "214B", 487 }, { "214C", 485 },
 	{ "236A", 390 }, { "236B", 391 }, { "236C", 392 },
 
 
-	{ "Arc Drive", 150 }, { "Another Arc Drive", 149 },
+	{ "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 149 },
 	{"filler",0}
 };
 
@@ -897,180 +897,180 @@ const std::map<std::string, int> vFWLEN_Map =
 const std::map<std::string, int> vFCIEL_Map =
 {
 	{ "4B", 90 }, { "3B", 390 }, { "4C", 61 }, { "3C", 475 },
-	{ "Bunker", 78 }, { "5D", 72 }, { "2D", 73 }, { "Throw", 65 },
-	{ "Back Dash", 46 }, { "Forward Dash", 45 }, { "Forward Super Jump", 80 },
+	{ "BUNKER", 78 }, { "5D", 72 }, { "2D", 73 }, { "THROW", 65 },
+	{ "BACK DASH", 46 }, { "FORWARD DASH", 45 }, { "FORWARD SUPER JUMP", 80 },
 	{ "623A", 485 }, { "623B", 486 }, { "623C", 487 },
 	{ "22A", 150 }, { "22B", 151 }, { "22C", 152 },
 	{ "214A", 420 }, { "214B", 430 }, { "214C", 425 },
 	{ "236A", 470 }, { "236B", 471 }, { "236C", 472 },
 
 	{ "624A", 458 }, { "624B", 459 }, { "624C", 460 },
-	{ "Arc Drive", 197 },
+	{ "ARC DRIVE", 197 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vFKOHAMECH_Map =
 {
 	{ "4B", 465 }, { "3C", 520 },
-	{ "Bunker", 235 }, { "5D", 70 }, { "2D", 71 }, { "Throw", 64 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 63 },
+	{ "BUNKER", 235 }, { "5D", 70 }, { "2D", 71 }, { "THROW", 64 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 63 },
 	{ "623A", 620 }, { "623B", 621 }, { "623C", 622 },
 	{ "22A", 685 }, { "22B", 686 }, { "22C", 687 },
 	{ "214A", 600 }, { "214B", 601 }, { "214C", 602 },
 	{ "236A", 470 }, { "236B", 471 }, { "236C", 472 },
 
 
-	{ "Arc Drive", 200 },
+	{ "ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHAKIHA_Map =
 {
 	{ "4C", 80 }, { "6C", 60 },
-	{ "Bunker", 91 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 54 }, { "Throw", 62 },
-	{ "Back Dash", 45 }, { "Forward Dash", 43 }, { "Forward Super Jump", 85 },
+	{ "BUNKER", 91 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 54 }, { "THROW", 62 },
+	{ "BACK DASH", 45 }, { "FORWARD DASH", 43 }, { "FORWARD SUPER JUMP", 85 },
 	{ "623A", 205 }, { "623B", 206 }, { "623C", 207 },
 	{ "22A", 160 }, { "22B", 161 }, { "22C", 162 },
 	{ "214A", 180 }, { "214B", 181 }, { "214C", 182 },
 	{ "236A", 449 }, { "236B", 450 }, { "236C", 451 },
 
 
-	{ "Arc Drive", 219 },
+	{ "ARC DRIVE", 219 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHAOKO_Map =
 {
 	{ "4C", 46 }, { "3C", 170 },
-	{ "Bunker", 96 }, { "5D", 54 }, { "2D", 55 }, { "Dodge", 45 }, { "Throw", 63 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 58 },
+	{ "BUNKER", 96 }, { "5D", 54 }, { "2D", 55 }, { "DODGE", 45 }, { "THROW", 63 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 58 },
 	{ "623A", 68 }, { "623B", 69 }, { "623C", 70 },
 	{ "22A", 147 }, { "22B", 148 }, { "22C", 149 },
 	{ "214A", 445 }, { "214B", 446 }, { "214C", 447 },
 	{ "236A", 108 }, { "236B", 100 }, { "236C", 142 },
 	{ "421A", 207 }, { "421B", 208 }, { "421C", 209 },
 	{ "624A", 234 }, { "624B", 231 }, { "624C", 235 },
-	{ "Arc Drive", 115 },
+	{ "ARC DRIVE", 115 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHARC_Map =
 {
 	{ "4C", 104 }, { "3C", 120 },
-	{ "Bunker", 96 }, { "5D", 72 }, { "2D", 73 }, { "Dodge", 64 }, { "Throw", 55 },
-	{ "Back Dash", 43 }, { "Forward Dash", 46 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 96 }, { "5D", 72 }, { "2D", 73 }, { "DODGE", 64 }, { "THROW", 55 },
+	{ "BACK DASH", 43 }, { "FORWARD DASH", 46 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 175 }, { "623B", 425 }, { "623C", 177 },
 	{ "22A", 150 }, { "22B", 151 }, { "22C", 152 },
 	{ "214A", 122 }, { "214B", 123 }, { "214C", 124 },
 	{ "236A", 180 }, { "236B", 184 }, { "236C", 188 },
 	{ "421A", 155 }, { "421B", 5 }, { "421C", 157 },
 
-	{ "Arc Drive", 199 },
+	{ "ARC DRIVE", 199 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHCIEL_Map =
 {
 	{ "4B", 90 }, { "3B", 390 }, { "4C", 61 },
-	{ "Bunker", 78 }, { "5D", 72 }, { "2D", 73 }, { "Dodge", 84 }, { "Throw", 65 },
-	{ "Back Dash", 46 }, { "Forward Dash", 45 }, { "Forward Super Jump", 80 },
+	{ "BUNKER", 78 }, { "5D", 72 }, { "2D", 73 }, { "DODGE", 84 }, { "THROW", 65 },
+	{ "BACK DASH", 46 }, { "FORWARD DASH", 45 }, { "FORWARD SUPER JUMP", 80 },
 	{ "623A", 225 }, { "623B", 226 }, { "623C", 227 },
 	{ "22A", 150 }, { "22B", 151 }, { "22C", 152 },
 	{ "214A", 120 }, { "214B", 121 }, { "214C", 122 },
 	{ "236A", 505 }, { "236B", 506 }, { "236C", 400 },
 
 	{ "624A", 517 }, { "624B", 516 }, { "624C", 515 },
-	{ "Arc Drive", 197 },
+	{ "ARC DRIVE", 197 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHHIME_Map =
 {
 	{ "6C", 124 }, { "3C", 121 },
-	{ "Bunker", 72 }, { "5D", 56 }, { "2D", 57 }, { "Dodge", 66 }, { "Throw", 275 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 41 },
+	{ "BUNKER", 72 }, { "5D", 56 }, { "2D", 57 }, { "DODGE", 66 }, { "THROW", 275 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 41 },
 	{ "623A", 230 }, { "623B", 231 }, { "623C", 232 },
 	{ "22A", 170 }, { "22B", 171 }, { "22C", 172 }, { "22D", 89 },
 	{ "214A", 150 }, { "214B", 151 }, { "214C", 152 },
 	{ "236A", 160 }, { "236B", 161 }, { "236C", 162 },
 
 
-	{ "Arc Drive", 299 },
+	{ "ARC DRIVE", 299 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHHISUI_Map =
 {
 	{ "4B", 73 }, { "6B", 186 }, { "6C", 71 },
-	{ "Bunker", 181 }, { "5D", 81 }, { "2D", 82 }, { "Dodge", 104 }, { "Throw", 55 },
-	{ "Back Dash", 67 }, { "Forward Dash", 65 }, { "Forward Super Jump", 68 },
+	{ "BUNKER", 181 }, { "5D", 81 }, { "2D", 82 }, { "DODGE", 104 }, { "THROW", 55 },
+	{ "BACK DASH", 67 }, { "FORWARD DASH", 65 }, { "FORWARD SUPER JUMP", 68 },
 	{ "623A", 160 }, { "623B", 161 }, { "623C", 162 },
 	{ "22A", 410 }, { "22B", 411 }, { "22C", 460 },
 	{ "214A", 520 }, { "214B", 521 }, { "214C", 502 },
 	{ "236A", 365 }, { "236B", 366 }, { "236C", 372 },
 
 
-	{ "Arc Drive", 199 },
+	{ "ARC DRIVE", 199 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHKOHAKU_Map =
 {
 
-	{ "Bunker", 235 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 65 }, { "Throw", 64 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 63 },
+	{ "BUNKER", 235 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 65 }, { "THROW", 64 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 63 },
 	{ "623A", 450 }, { "623B", 451 }, { "623C", 452 },
 	{ "22A", 490 }, { "22B", 491 }, { "22C", 492 },
 	{ "214A", 96 }, { "214B", 97 }, { "214C", 98 },
 	{ "236A", 170 }, { "236B", 171 }, { "236C", 172 },
 
 	{ "624C", 112 },
-	{ "Arc Drive", 200 },
+	{ "ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHKOHAMECH_Map =
 {
 	{ "6A", 685 }, { "4B", 685 }, { "6B", 685 },
-	{ "Bunker", 235 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 65 }, { "Throw", 64 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 63 },
+	{ "BUNKER", 235 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 65 }, { "THROW", 64 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 63 },
 	{ "623A", 620 }, { "623B", 621 }, { "623C", 622 },
 	{ "22A", 685 }, { "22B", 686 }, { "22C", 687 },
 	{ "214A", 600 }, { "214B", 601 }, { "214C", 602 },
 	{ "236A", 170 }, { "236B", 171 }, { "236C", 172 },
 
 	{ "624C", 60 },
-	{ "Arc Drive", 200 },
+	{ "ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHKOUMA_Map =
 {
 	{ "6C", 76 },
-	{ "Bunker", 180 }, { "5D", 65 }, { "2D", 66 }, { "Dodge", 78 }, { "Throw", 70 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 57 },
+	{ "BUNKER", 180 }, { "5D", 65 }, { "2D", 66 }, { "DODGE", 78 }, { "THROW", 70 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 57 },
 	{ "623A", 417 }, { "623B", 186 }, { "623C", 187 },
 	{ "22A", 100 }, { "22B", 101 }, { "22C", 102 },
 	{ "214A", 110 }, { "214B", 115 }, { "214C", 117 },
 	{ "236A", 125 }, { "236B", 128 }, { "236C", 131 },
 
 
-	{ "Arc Drive", 149 },
+	{ "ARC DRIVE", 149 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHLEN_Map =
 {
 	{ "3C", 66 },
-	{ "Bunker", 101 }, { "5D", 134 }, { "2D", 135 }, { "Dodge", 68 }, { "Throw", 105 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 59 },
+	{ "BUNKER", 101 }, { "5D", 134 }, { "2D", 135 }, { "DODGE", 68 }, { "THROW", 105 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 59 },
 	{ "623A", 59 }, { "623B", 59 }, { "623C", 59 },
 
 	{ "214A", 85 }, { "214B", 86 }, { "214C", 82 },
 	{ "236A", 59 }, { "236B", 59 }, { "236C", 59 },
 	{ "421A", 415 }, { "421B", 417 }, { "421C", 420 },
 
-	{ "Arc Drive", 59 },
+	{ "ARC DRIVE", 59 },
 	{"filler",0}
 };
 
@@ -1092,299 +1092,299 @@ const std::map<std::string, int> vHMAIDS_Map =
 const std::map<std::string, int> vHMECH_Map =
 {
 	{ "4B", 172 },
-	{ "Bunker", 206 }, { "5D", 81 }, { "2D", 82 }, { "Dodge", 104 }, { "Throw", 55 },
-	{ "Back Dash", 67 }, { "Forward Dash", 65 }, { "Forward Super Jump", 43 },
+	{ "BUNKER", 206 }, { "5D", 81 }, { "2D", 82 }, { "DODGE", 104 }, { "THROW", 55 },
+	{ "BACK DASH", 67 }, { "FORWARD DASH", 65 }, { "FORWARD SUPER JUMP", 43 },
 	{ "623A", 500 }, { "623B", 501 }, { "623C", 502 },
 
 	{ "214A", 550 }, { "214B", 551 }, { "214C", 552 },
 	{ "236A", 554 }, { "236B", 555 }, { "236C", 556 },
 
 	{ "624A", 390 }, { "624B", 391 }, { "624C", 392 },
-	{ "Arc Drive", 200 },
+	{ "ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHMIYAKO_Map =
 {
 	{ "6A", 1 }, { "4B", 3 }, { "6C", 60 },
-	{ "Bunker", 120 }, { "5D", 67 }, { "2D", 68 }, { "Dodge", 57 }, { "Throw", 74 },
-	{ "Back Dash", 55 }, { "Forward Dash", 54 }, { "Forward Super Jump", 85 },
+	{ "BUNKER", 120 }, { "5D", 67 }, { "2D", 68 }, { "DODGE", 57 }, { "THROW", 74 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 54 }, { "FORWARD SUPER JUMP", 85 },
 	{ "623A", 155 }, { "623B", 156 }, { "623C", 157 },
 	{ "22A", 160 }, { "22B", 161 }, { "22C", 162 },
 	{ "214A", 185 }, { "214B", 426 }, { "214C", 435 },
 	{ "236A", 407 }, { "236B", 408 }, { "236C", 409 },
 	{ "421A", 411 }, { "421B", 412 }, { "421C", 413 },
 
-	{ "Arc Drive", 199 },
+	{ "ARC DRIVE", 199 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHNAC_Map =
 {
 	{ "6C", 79 }, { "3C", 78 },
-	{ "Bunker", 169 }, { "5D", 83 }, { "2D", 84 }, { "Dodge", 56 }, { "Throw", 100 },
-	{ "Back Dash", 64 }, { "Forward Dash", 63 }, { "Forward Super Jump", 43 },
+	{ "BUNKER", 169 }, { "5D", 83 }, { "2D", 84 }, { "DODGE", 56 }, { "THROW", 100 },
+	{ "BACK DASH", 64 }, { "FORWARD DASH", 63 }, { "FORWARD SUPER JUMP", 43 },
 	{ "623A", 172 }, { "623B", 173 }, { "623C", 174 },
 	{ "22A", 500 }, { "22B", 499 }, { "22C", 498 },
 	{ "214A", 540 }, { "214B", 541 }, { "214C", 542 },
 	{ "236A", 400 }, { "236B", 401 }, { "236C", 402 },
 
 
-	{ "Arc Drive", 227 },
+	{ "ARC DRIVE", 227 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHNANAYA_Map =
 {
 
-	{ "Bunker", 96 }, { "5D", 63 }, { "2D", 64 }, { "Dodge", 78 }, { "Throw", 59 },
-	{ "Back Dash", 55 }, { "Forward Dash", 56 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 96 }, { "5D", 63 }, { "2D", 64 }, { "DODGE", 78 }, { "THROW", 59 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 56 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 118 }, { "623B", 119 }, { "623C", 500 },
 	{ "22A", 114 }, { "22B", 115 }, { "22C", 116 },
 	{ "214A", 408 }, { "214B", 409 }, { "214C", 410 },
 	{ "236A", 413 }, { "236B", 414 }, { "236C", 415 },
 
 
-	{ "Arc Drive", 198 },
+	{ "ARC DRIVE", 198 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHNECO_Map =
 {
 
-	{ "Bunker", 61 }, { "5D", 83 }, { "2D", 84 }, { "Dodge", 56 }, { "Throw", 100 },
-	{ "Back Dash", 64 }, { "Forward Dash", 63 }, { "Forward Super Jump", 60 },
+	{ "BUNKER", 61 }, { "5D", 83 }, { "2D", 84 }, { "DODGE", 56 }, { "THROW", 100 },
+	{ "BACK DASH", 64 }, { "FORWARD DASH", 63 }, { "FORWARD SUPER JUMP", 60 },
 	{ "623A", 60 }, { "623B", 60 }, { "623C", 60 },
 	{ "22A", 150 }, { "22B", 151 }, { "22C", 152 },
 	{ "214A", 61 }, { "214B", 61 }, { "214C", 61 },
 	{ "236A", 60 }, { "236B", 91 }, { "236C", 60 },
 
 
-	{ "Arc Drive", 61 },
+	{ "ARC DRIVE", 61 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHNECOMECH_Map =
 {
 	{ "6C", 71 },
-	{ "Bunker", 206 }, { "5D", 81 }, { "2D", 82 }, { "Dodge", 104 }, { "Throw", 55 },
-	{ "Back Dash", 67 }, { "Forward Dash", 65 }, { "Forward Super Jump", 43 },
+	{ "BUNKER", 206 }, { "5D", 81 }, { "2D", 82 }, { "DODGE", 104 }, { "THROW", 55 },
+	{ "BACK DASH", 67 }, { "FORWARD DASH", 65 }, { "FORWARD SUPER JUMP", 43 },
 	{ "623A", 410 }, { "623B", 411 }, { "623C", 412 },
 	{ "22A", 430 }, { "22B", 431 }, { "22C", 432 },
 	{ "214A", 420 }, { "214B", 421 }, { "214C", 422 },
 	{ "236A", 400 }, { "236B", 401 }, { "236C", 402 },
 
 
-	{ "Arc Drive", 200 },
+	{ "ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHNERO_Map =
 {
 	{ "4C", 60 }, { "3C", 401 },
-	{ "Bunker", 90 }, { "5D", 73 }, { "2D", 74 }, { "Dodge", 83 }, { "Throw", 65 },
-	{ "Back Dash", 70 }, { "Forward Dash", 71 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 90 }, { "5D", 73 }, { "2D", 74 }, { "DODGE", 83 }, { "THROW", 65 },
+	{ "BACK DASH", 70 }, { "FORWARD DASH", 71 }, { "FORWARD SUPER JUMP", 95 },
 
 	{ "22A", 515 }, { "22B", 516 }, { "22C", 517 },
 	{ "214A", 130 }, { "214B", 131 }, { "214C", 133 },
 	{ "236A", 120 }, { "236B", 121 }, { "236C", 422 },
 	{ "421A", 105 }, { "421B", 106 }, { "421C", 107 },
 	{ "624C", 475 },
-	{ "Arc Drive", 160 },
+	{ "ARC DRIVE", 160 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHPCIEL_Map =
 {
 	{ "6B", 154 }, { "4C", 153 }, { "3C", 157 },
-	{ "Bunker", 75 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 66 }, { "Throw", 275 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 80 },
+	{ "BUNKER", 75 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 66 }, { "THROW", 275 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 80 },
 	{ "623A", 105 }, { "623B", 106 }, { "623C", 107 },
 
 	{ "214A", 125 }, { "214B", 126 }, { "214C", 132 },
 	{ "236A", 85 }, { "236B", 86 }, { "236C", 87 },
 
 
-	{ "Arc Drive", 200 },
+	{ "ARC DRIVE", 200 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHRIES_Map =
 {
 	{ "6B", 374 }, { "3C", 501 },
-	{ "Bunker", 102 }, { "5D", 56 }, { "2D", 57 }, { "Dodge", 66 }, { "Throw", 85 },
-	{ "Back Dash", 71 }, { "Forward Dash", 70 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 102 }, { "5D", 56 }, { "2D", 57 }, { "DODGE", 66 }, { "THROW", 85 },
+	{ "BACK DASH", 71 }, { "FORWARD DASH", 70 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 425 }, { "623B", 426 }, { "623C", 427 },
 
 	{ "214A", 110 }, { "214B", 111 }, { "214C", 112 },
 	{ "236A", 125 }, { "236B", 126 }, { "236C", 127 },
 
 	{ "624A", 130 }, { "624B", 131 }, { "624C", 132 },
-	{ "Arc Drive", 399 },
+	{ "ARC DRIVE", 399 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHROA_Map =
 {
 	{ "6C", 481 },
-	{ "Bunker", 85 }, { "5D", 80 }, { "2D", 81 }, { "Dodge", 64 }, { "Throw", 269 },
-	{ "Back Dash", 47 }, { "Forward Dash", 46 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 85 }, { "5D", 80 }, { "2D", 81 }, { "DODGE", 64 }, { "THROW", 269 },
+	{ "BACK DASH", 47 }, { "FORWARD DASH", 46 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 490 }, { "623B", 491 }, { "623C", 492 },
 
 	{ "214A", 500 }, { "214B", 501 }, { "214C", 540 },
 	{ "236A", 529 }, { "236B", 530 }, { "236C", 517 },
 
 
-	{ "Arc Drive", 149 },
+	{ "ARC DRIVE", 149 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHRYOUGI_Map =
 {
 	{ "4C", 194 }, { "3C", 402 },
-	{ "Bunker", 85 }, { "5D", 75 }, { "2D", 76 }, { "Dodge", 269 }, { "Throw", 70 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 85 }, { "5D", 75 }, { "2D", 76 }, { "DODGE", 269 }, { "THROW", 70 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 310 }, { "623B", 311 }, { "623C", 312 },
 	{ "22A", 740 }, { "22B", 741 }, { "22C", 722 }, { "22D", 75 },
 	{ "214A", 515 }, { "214B", 516 }, { "214C", 517 },
 	{ "236A", 371 }, { "236B", 372 }, { "236C", 397 },
 	{ "421A", 596 }, { "421B", 597 }, { "421C", 598 },
 	{ "624A", 508 }, { "624B", 510 }, { "624C", 573 },
-	{ "Arc Drive", 645 },
+	{ "ARC DRIVE", 645 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHSATSUKI_Map =
 {
 	{ "3C", 490 },
-	{ "Bunker", 175 }, { "5D", 90 }, { "2D", 91 }, { "Dodge", 78 }, { "Throw", 85 },
-	{ "Back Dash", 81 }, { "Forward Dash", 80 }, { "Forward Super Jump", 75 },
+	{ "BUNKER", 175 }, { "5D", 90 }, { "2D", 91 }, { "DODGE", 78 }, { "THROW", 85 },
+	{ "BACK DASH", 81 }, { "FORWARD DASH", 80 }, { "FORWARD SUPER JUMP", 75 },
 	{ "623A", 140 }, { "623B", 141 }, { "623C", 142 },
 	{ "22A", 380 }, { "22B", 381 }, { "22C", 382 },
 	{ "214A", 110 }, { "214B", 111 }, { "214C", 112 },
 	{ "236A", 515 }, { "236B", 516 }, { "236C", 517 },
 
 	{ "624C", 180 },
-	{ "Arc Drive", 150 },
+	{ "ARC DRIVE", 150 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHSEIFUKU_Map =
 {
 	{ "6B", 240 }, { "6C", 154 },
-	{ "Bunker", 75 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 66 }, { "Throw", 275 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 80 },
+	{ "BUNKER", 75 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 66 }, { "THROW", 275 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 80 },
 	{ "623A", 230 }, { "623B", 231 }, { "623C", 232 },
 	{ "22A", 220 }, { "22B", 221 }, { "22C", 222 },
 	{ "214A", 360 }, { "214B", 361 }, { "214C", 362 },
 	{ "236A", 470 }, { "236B", 471 }, { "236C", 472 },
 
 	{ "624C", 200 },
-	{ "Arc Drive", 370 },
+	{ "ARC DRIVE", 370 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHSION_Map =
 {
 	{ "6A", 1 }, { "6B", 58 }, { "6C", 440 }, { "3C", 61 },
-	{ "Bunker", 85 }, { "5D", 65 }, { "2D", 66 }, { "Dodge", 132 }, { "Throw", 62 },
-	{ "Back Dash", 56 }, { "Forward Dash", 55 }, { "Forward Super Jump", 54 },
+	{ "BUNKER", 85 }, { "5D", 65 }, { "2D", 66 }, { "DODGE", 132 }, { "THROW", 62 },
+	{ "BACK DASH", 56 }, { "FORWARD DASH", 55 }, { "FORWARD SUPER JUMP", 54 },
 	{ "623A", 110 }, { "623B", 111 }, { "623C", 112 },
 
 	{ "214A", 115 }, { "214B", 116 }, { "214C", 117 },
 	{ "236A", 460 }, { "236B", 462 }, { "236C", 413 },
 	{ "421A", 81 }, { "421B", 82 }, { "421C", 83 },
 
-	{ "Arc Drive", 145 },
+	{ "ARC DRIVE", 145 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHTOHNO_Map =
 {
 	{ "6C", 475 },
-	{ "Bunker", 122 }, { "5D", 63 }, { "2D", 64 }, { "Dodge", 78 }, { "Throw", 59 },
-	{ "Back Dash", 55 }, { "Forward Dash", 56 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 122 }, { "5D", 63 }, { "2D", 64 }, { "DODGE", 78 }, { "THROW", 59 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 56 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 140 }, { "623B", 141 }, { "623C", 142 },
 	{ "22A", 244 }, { "22B", 246 }, { "22C", 234 }, { "22D", 247 },
 	{ "214A", 110 }, { "214B", 111 }, { "214C", 112 },
 	{ "236A", 105 }, { "236B", 106 }, { "236C", 107 },
 
 
-	{ "Arc Drive", 199 },
+	{ "ARC DRIVE", 199 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHVAKIHA_Map =
 {
 	{ "4C", 80 }, { "6C", 60 },
-	{ "Bunker", 91 }, { "5D", 70 }, { "2D", 71 }, { "Dodge", 54 }, { "Throw", 62 },
-	{ "Back Dash", 45 }, { "Forward Dash", 43 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 91 }, { "5D", 70 }, { "2D", 71 }, { "DODGE", 54 }, { "THROW", 62 },
+	{ "BACK DASH", 45 }, { "FORWARD DASH", 43 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 205 }, { "623B", 206 }, { "623C", 207 },
 	{ "22A", 160 }, { "22B", 161 }, { "22C", 162 },
 	{ "214A", 180 }, { "214B", 181 }, { "214C", 182 },
 	{ "236A", 449 }, { "236B", 450 }, { "236C", 451 },
 
 
-	{ "Arc Drive", 540 },
+	{ "ARC DRIVE", 540 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHVSION_Map =
 {
 	{ "6B", 470 }, { "6C", 225 }, { "3C", 61 },
-	{ "Bunker", 85 }, { "5D", 65 }, { "2D", 66 }, { "Dodge", 132 }, { "Throw", 77 },
-	{ "Back Dash", 56 }, { "Forward Dash", 57 }, { "Forward Super Jump", 90 },
+	{ "BUNKER", 85 }, { "5D", 65 }, { "2D", 66 }, { "DODGE", 132 }, { "THROW", 77 },
+	{ "BACK DASH", 56 }, { "FORWARD DASH", 57 }, { "FORWARD SUPER JUMP", 90 },
 	{ "623A", 125 }, { "623B", 126 }, { "623C", 445 },
 
 	{ "214A", 165 }, { "214B", 166 }, { "214C", 167 },
 	{ "236A", 215 }, { "236B", 216 }, { "236C", 217 },
 
 
-	{ "Arc Drive", 205 },
+	{ "ARC DRIVE", 205 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHWARA_Map =
 {
 	{ "6C", 72 },
-	{ "Bunker", 130 }, { "5D", 62 }, { "2D", 63 }, { "Dodge", 69 }, { "Throw", 55 },
-	{ "Back Dash", 55 }, { "Forward Dash", 56 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 130 }, { "5D", 62 }, { "2D", 63 }, { "DODGE", 69 }, { "THROW", 55 },
+	{ "BACK DASH", 55 }, { "FORWARD DASH", 56 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 135 }, { "623B", 136 }, { "623C", 137 },
 	{ "22A", 100 }, { "22B", 101 }, { "22C", 102 },
 	{ "214A", 190 }, { "214B", 191 }, { "214C", 192 },
 	{ "236A", 180 }, { "236B", 181 }, { "236C", 182 },
 	{ "421A", 170 }, { "421B", 171 }, { "421C", 172 },
 
-	{ "Arc Drive", 149 },
+	{ "ARC DRIVE", 149 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHWARC_Map =
 {
 	{ "3C", 49 },
-	{ "Bunker", 78 }, { "5D", 72 }, { "2D", 73 }, { "Dodge", 64 }, { "Throw", 55 },
-	{ "Back Dash", 43 }, { "Forward Dash", 46 }, { "Forward Super Jump", 95 },
+	{ "BUNKER", 78 }, { "5D", 72 }, { "2D", 73 }, { "DODGE", 64 }, { "THROW", 55 },
+	{ "BACK DASH", 43 }, { "FORWARD DASH", 46 }, { "FORWARD SUPER JUMP", 95 },
 	{ "623A", 155 }, { "623B", 156 }, { "623C", 157 },
 	{ "22A", 396 }, { "22B", 397 }, { "22C", 398 },
 	{ "214A", 112 }, { "214B", 113 }, { "214C", 114 },
 	{ "236A", 563 }, { "236B", 564 }, { "236C", 152 },
 	{ "421A", 160 }, { "421B", 161 }, { "421C", 162 },
 
-	{ "Arc Drive", 223 },
+	{ "ARC DRIVE", 223 },
 	{"filler",0}
 };
 
 const std::map<std::string, int> vHWLEN_Map =
 {
 	{ "4B", 47 },
-	{ "Bunker", 101 }, { "5D", 134 }, { "2D", 135 }, { "Dodge", 68 }, { "Throw", 106 },
-	{ "Back Dash", 61 }, { "Forward Dash", 60 }, { "Forward Super Jump", 46 },
+	{ "BUNKER", 101 }, { "5D", 134 }, { "2D", 135 }, { "DODGE", 68 }, { "THROW", 106 },
+	{ "BACK DASH", 61 }, { "FORWARD DASH", 60 }, { "FORWARD SUPER JUMP", 46 },
 	{ "623A", 195 }, { "623B", 196 }, { "623C", 197 },
 	{ "22A", 182 }, { "22B", 495 }, { "22C", 184 }, { "22D", 185 },
 	{ "214A", 460 }, { "214B", 461 }, { "214C", 462 },
 	{ "236A", 115 }, { "236B", 116 }, { "236C", 117 },
 	{ "421A", 500 }, { "421B", 501 }, { "421C", 502 },
 	{ "624A", 110 }, { "624B", 111 }, { "624C", 112 },
-	{ "Arc Drive", 149 },
+	{ "ARC DRIVE", 149 },
 	{"filler",0}
 };

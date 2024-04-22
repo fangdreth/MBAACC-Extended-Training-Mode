@@ -5,19 +5,10 @@
 #include <string.h>
 #include <psapi.h>
 #include <iostream>
-#include <ctime>
-#include <vector>
 
-enum eEnemyStatus { STAND, JUMP, CROUCH, CPU, MANUAL, DUMMY };
-enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DODGE };
-enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
-enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
-enum eEnemyDefenseBiasSetting { UNLIKELY, EVEN, LIKELY, OFF };
-enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-
-const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
-const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases/tag/";
-const std::string GITHUB_README = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/README.md";
+#include "Constants.h"
+#include "CharacterData.h"
+#include "Menu.h"
 
 DWORD GetBaseAddressByName(HANDLE pHandle, const wchar_t* name)
 {

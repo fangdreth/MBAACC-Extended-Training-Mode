@@ -145,10 +145,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MBAACC-Fuzzy-Practice-Tool.cpp" />
+    <ClCompile Include="Menu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CharacterData.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="MBAACC-Fuzzy-Practice-Tool.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="RawData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,12 +1,9 @@
 #pragma once
-#include <map>
-#include <string>
-#include <Windows.h>
-#include <vector>
+#include "Constants.h"
 #include "RawData.h"
 
 // Character ID is created as a concatination of char number and moon.  Ex. Sats is 29 and C is 0, so CSats is 290
-enum eCharacterValues
+static enum eCharacterValues
 {
 	UNIVERSAL = 0,
 	CAOKO = 20, FAOKO = 21, HAOKO = 22,
@@ -42,7 +39,7 @@ enum eCharacterValues
 	CNECOMECH = 420, FNECOMECH = 421, HNECOMECH = 422
 };
 
-std::map<std::string, int> CharacterValues_Map =
+static std::map<std::string, int> CharacterValues_Map =
 {
 	{"CAOKO", 20}, {"FAOKO", 20}, {"HAOKO", 22},
 	{"CTOHNO", 30}, {"FTOHNO", 30}, {"HTOHNO", 32},
@@ -77,31 +74,31 @@ std::map<std::string, int> CharacterValues_Map =
 	{"CNECOMECH", 420}, {"FNECOMECH", 420}, {"HNECOMECH", 422}
 };
 
-std::map<int, std::map<std::string, int>> MBAACC_Map = { {} };
+static std::map<int, std::map<std::string, int>> MBAACC_Map = { {} };
 
-std::vector<std::string> vEveryPatternName =
+static std::vector<std::string> vEveryPatternName =
 {
 	"5A", "2A", "6A", "5B", "2B", "4B", "6B", "3B", "5C", "2C", "4C", "6C", "3C",
-	"Bunker", "5D", "2D", "Dodge", "Heat", "Throw",
-	"Back Dash", "Forward Dash", "Jump", "Forward Jump", "Backward Jump", "Super Jump", "Forward Super Jump",
+	"BUNKER", "5D", "2D", "DODGE", "HEAT", "THROW",
+	"BACK DASH", "FORWARD DASH", "JUMP", "FORWARD JUMP", "BACKWARD JUMP", "SUPER JUMP", "FORWARD SUPER JUMP",
 	"623A", "623B", "623C",
 	"22A", "22B", "22[B]", "22C", "22D", "2222C", "22222C",
 	"214A", "214B", "214C", "214214C",
 	"236A", "236B", "236C",
 	"421A", "421B", "421C",
 	"624A", "624B", "624C",
-	"Arc Drive", "Another Arc Drive",
-	"Drug Install"
+	"ARC DRIVE", "ANOTHER ARC DRIVE",
+	"DRUG INSTALL"
 };
 
-const std::map<std::string, int> vUniversalPatterns_Map =
+static const std::map<std::string, int> vUniversalPatterns_Map =
 {
 	{ "5A", 1 }, { "5B", 2 }, { "5C", 3 }, { "2A", 4 }, { "2B", 5 }, { "2C", 6 },
-	{ "Heat", 260 },
-	{ "Jump", 36 }, { "Forward Jump", 35 }, { "Backward Jump", 37 }, { "Super Jump", 360 }
+	{ "HEAT", 260 },
+	{ "JUMP", 36 }, { "FORWARD JUMP", 35 }, { "BACKWARD JUMP", 37 }, { "SUPER JUMP", 360 }
 };
 
-void InitializeCharacterMaps()
+static void InitializeCharacterMaps()
 {
 	MBAACC_Map[eCharacterValues::UNIVERSAL] = vUniversalPatterns_Map;
 	MBAACC_Map[eCharacterValues::CAOKO] = vCAOKO_Map;
@@ -190,13 +187,13 @@ void InitializeCharacterMaps()
 	MBAACC_Map[eCharacterValues::FNECOMECH] = vFNECOMECH_Map;
 }
 
-int GetPattern(int nCharacterID, std::string sPatternName)
+static int GetPattern(int nCharacterID, std::string sPatternName)
 {
 	// All patterns are positive integers.  If a pattern is not in a map, it is a 0
 	return max(MBAACC_Map[eCharacterValues::UNIVERSAL][sPatternName], MBAACC_Map[nCharacterID][sPatternName]);
 }
 
-std::vector<std::string> GetPatternList(int nCharacterID)
+static std::vector<std::string> GetPatternList(int nCharacterID)
 {
 	std::vector<std::string> vReturnList = { "None" };
 
@@ -209,7 +206,7 @@ std::vector<std::string> GetPatternList(int nCharacterID)
 	return vReturnList;
 }
 
-std::vector<std::string> GetEmptyPatternList()
+static std::vector<std::string> GetEmptyPatternList()
 {
-	return { "None" };
+	return { "OFF" };
 }
