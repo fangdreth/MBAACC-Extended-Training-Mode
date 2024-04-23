@@ -310,18 +310,11 @@ int main(int argc, char* argv[])
                             nEnemyActionIndex = 2;
                         }
 
-
                         nOldEnemyActionIndex = nEnemyActionIndex;
-
                     }
 
-
-
-
-
-
                     oMenu.UpdateProcessInfo(hProcess, dwBaseAddress);
-                    oMenu.DrawMenu();
+                    //oMenu.DrawMenu();
                 }
 
 
