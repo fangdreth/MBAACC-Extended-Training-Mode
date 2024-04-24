@@ -5,10 +5,10 @@
 #include <map>
 
 enum eEnemyStatus { STAND, JUMP, CROUCH, CPU, MANUAL, DUMMY };
+enum eEnemyOffOnRandom { OFF, ON, RANDOM };
 enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DODGE };
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
-enum eEnemyDefenseBiasSetting { UNLIKELY, EVEN, LIKELY, OFF };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
@@ -33,7 +33,7 @@ const DWORD dwP2CharNumber = 0x34D91C;
 const DWORD dwP2CharMoon = 0x34D924;
 const DWORD dwP1ButtonPress = 0x154654;
 const DWORD dwP1DirectionPress = 0x371448;
-const DWORD dwPausedFlag = 0x15807C;
+const DWORD dwPausedFlag = 0x162A64;
 const DWORD dwEnemyAction = 0x37C1EC;
 
 const std::vector<std::string> vPresetSettings = { "Default", "Fuzzy Overhead", "Blockstring", "Heat OS", "Defensive Fuzzy Mash", "Defensive Fuzzy Jump", "Custom" };

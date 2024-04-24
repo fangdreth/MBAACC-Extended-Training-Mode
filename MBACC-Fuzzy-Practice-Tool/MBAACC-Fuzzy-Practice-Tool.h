@@ -70,7 +70,7 @@ HANDLE GetProcessByName(const wchar_t* name)
     return nullptr;
 }
 
-void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, int* nEnemyStatusSetting, int* nEnemyDefenseSetting, int* nEnemyDefenseBiasSetting, int* nEnemyGuardLevelSetting, bool* bExGuard, int* nReversalPattern, int* nReversalDelayFrames)
+void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, int* nEnemyStatusSetting, int* nEnemyDefenseSetting, int* nEnemyGuardLevelSetting, bool* bExGuard, int* nReversalPattern, int* nReversalDelayFrames)
 {
     switch (nPresetSetting)
     {
@@ -79,7 +79,6 @@ void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, i
         *nDelayFrames = 0;
         *nEnemyStatusSetting = eEnemyStatus::STAND;
         *nEnemyDefenseSetting = eEnemyDefense::NOGUARD;
-        *nEnemyDefenseBiasSetting = eEnemyDefenseBiasSetting::OFF;
         *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::ONEHUNDRED;
         *bExGuard = false;
         *nReversalPattern = -1;
@@ -90,7 +89,6 @@ void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, i
         *nDelayFrames = 0;
         *nEnemyStatusSetting = eEnemyStatus::STAND;
         *nEnemyDefenseSetting = eEnemyDefense::ALLGUARD;
-        *nEnemyDefenseBiasSetting = eEnemyDefenseBiasSetting::OFF;
         *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::INF;
         *bExGuard = false;
         *nReversalPattern = -1;
@@ -101,7 +99,6 @@ void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, i
         *nDelayFrames = 0;
         *nEnemyStatusSetting = eEnemyStatus::CROUCH;
         *nEnemyDefenseSetting = eEnemyDefense::ALLGUARD;
-        *nEnemyDefenseBiasSetting = eEnemyDefenseBiasSetting::LIKELY;
         *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::INF;
         *bExGuard = false;
         *nReversalPattern = -1;
@@ -112,7 +109,6 @@ void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, i
         *nDelayFrames = 0;
         *nEnemyStatusSetting = eEnemyStatus::STAND;
         *nEnemyDefenseSetting = eEnemyDefense::NOGUARD;
-        *nEnemyDefenseBiasSetting = eEnemyDefenseBiasSetting::OFF;
         *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::INF;
         *bExGuard = false;
         *nReversalPattern = 260;
@@ -123,7 +119,6 @@ void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, i
         *nDelayFrames = 0;
         *nEnemyStatusSetting = eEnemyStatus::CROUCH;
         *nEnemyDefenseSetting = eEnemyDefense::ALLGUARD;
-        *nEnemyDefenseBiasSetting = eEnemyDefenseBiasSetting::OFF;
         *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::INF;
         *bExGuard = false;
         *nReversalPattern = 4;
@@ -134,7 +129,6 @@ void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, i
         *nDelayFrames = 0;
         *nEnemyStatusSetting = eEnemyStatus::CROUCH;
         *nEnemyDefenseSetting = eEnemyDefense::ALLGUARD;
-        *nEnemyDefenseBiasSetting = eEnemyDefenseBiasSetting::OFF;
         *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::INF;
         *bExGuard = false;
         *nReversalPattern = 36;
@@ -143,4 +137,431 @@ void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, i
     default:
         break;
     }
+}
+
+DWORD GetMainViewScreenStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34d7fc;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x34), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x24;
+
+    return dwTempAddress;
+}
+
+DWORD GetSubMenuEnumAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x84;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemySettingsMenuTitleStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x60), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x0;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyActionIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x58;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyDefenseIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x58;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyActionInfoStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xDC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x90), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xE58), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x36;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyActionStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x24;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyDefenseStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x24;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyActionActionAStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x64), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyActionActionBStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x64), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyActionActionCStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x64), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyActionRecoverCStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x64), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x1C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyActionRecoverDStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x64), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x20), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyDefenseOffStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x64), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyDefenseAllGuardStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x64), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyDefenseStatusGuardStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x64), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyDefenseAllShieldStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x64), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyDefenseStatusShieldStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x64), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyDefenseDodgeStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x64), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x14), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
 }
