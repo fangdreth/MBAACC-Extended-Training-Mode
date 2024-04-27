@@ -50,8 +50,12 @@ int main(int argc, char* argv[])
     int nDirectionPressed = 0;
     int nOldDirectionPressed = 0;*/
 
-    int nCharacterMoon = 0;
-    int nCharacterNumber = 0;
+    int nP1CharacterID = 0;
+    int nP2CharacterID = 0;
+    int nP1Moon = 0;
+    int nP2Moon = 0;
+    int nP1CharacterNumber = 0;
+    int nP2CharacterNumber = 0;
     bool bSwitchToCrouch = false;
     bool bRandomBlock = false;
     int nSwitchBlockDelayFrames = 0;
@@ -67,7 +71,6 @@ int main(int argc, char* argv[])
     bool bDelayingReversal = false;
     bool bOnCSS = false;
     int nReversalIndex = 0;
-    int nCharacterID = 0;
     bool bOnExtraMenu = false;
     int nOldEnemyActionIndex = -1;
     int nOldPresetIndex = -1;
@@ -75,6 +78,7 @@ int main(int argc, char* argv[])
     int nOldEnemyDefenseTypeIndex = -1;
     int nOldAirRecoveryIndex = -1;
     int nOldDownRecoveryIndex = -1;
+    int nOldLifeIndex = -1;
     std::vector<std::string> vPatternNames = GetEmptyPatternList();
     bool bReversaled = false;
     int nTimer = 0;
@@ -93,6 +97,7 @@ int main(int argc, char* argv[])
     int nCustomMeter = 10000;
     int nCustomHealth = 11400;
     int nHealthRefillTimer = 0;
+    int nLifeRecover = 0; //0:ON 1:OFF
 
     int nDebugBias = 0;
     int nDebugFrameCount = 0;
@@ -166,6 +171,7 @@ int main(int argc, char* argv[])
                             nOldEnemyDefenseTypeIndex = -1;
                             nOldAirRecoveryIndex = -1;
                             nOldDownRecoveryIndex = -1;
+                            nOldLifeIndex = -1;
 
                             nWriteBuffer = nStoredEnemyDefense;
                             WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
@@ -306,16 +312,28 @@ int main(int argc, char* argv[])
                             if (nOldAirRecoveryIndex == -1)
                                 nOldAirRecoveryIndex = nAirRecoveryIndex;
                             else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
+                            {
                                 nCustomMeter = max(0, nCustomMeter - (bAPressed ? 10 : 1000));
+                                SetMeter(hProcess, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
+                            }
                             else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
+                            {
                                 nCustomMeter = min(nCustomMeter + (bAPressed ? 10 : 1000), MAX_METER /*yes I know this lets hmoons go over 200*/);
+                                SetMeter(hProcess, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
+                            }
 
                             if (nOldDownRecoveryIndex == -1)
                                 nOldDownRecoveryIndex = nDownRecoveryIndex;
                             else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
+                            {
                                 nCustomHealth = max(0, nCustomHealth - (bAPressed ? 1 : 100));
+                                SetHealth(hProcess, dwBaseAddress, nCustomHealth);
+                            }
                             else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
+                            {
                                 nCustomHealth = min(nCustomHealth + (bAPressed ? 1 : 100), MAX_HEALTH);
+                                SetHealth(hProcess, dwBaseAddress, nCustomHealth);
+                            }
 
                             if (nExGuardSetting == eEnemyOffOnRandom::OFF)
                             {
@@ -569,6 +587,65 @@ int main(int argc, char* argv[])
                             nStoredDownRecovery = (nDownRecoveryIndex + 5) % 6; // different indices in-game vs in-menu
                         }
 
+                        // BATTLE SETTINGS
+                        if (nCurrentSubMenu == 6)
+                        {
+                            DWORD dwNoRecoverString = GetNoRecoverStringAddress(hProcess, dwBaseAddress);
+                            DWORD dwRecover25String = GetRecover25StringAddress(hProcess, dwBaseAddress);
+                            DWORD dwRecover50String = GetRecover50StringAddress(hProcess, dwBaseAddress);
+                            DWORD dwRecover75String = GetRecover75StringAddress(hProcess, dwBaseAddress);
+                            DWORD dwRecover100String = GetRecover100StringAddress(hProcess, dwBaseAddress);
+
+                            DWORD dwLifeIndex;
+                            do
+                            {
+                                dwLifeIndex = GetLifeIndexAddress(hProcess, dwBaseAddress);
+
+                                ReadProcessMemory(hProcess, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
+                                nCurrentSubMenu = nReadResult;
+
+                            } while ((dwLifeIndex == 0x58) && nCurrentSubMenu == 6);
+
+                            if (nCurrentSubMenu != 6)
+                                continue;
+
+                            ReadProcessMemory(hProcess, (LPVOID)(dwLifeIndex), &nReadResult, 4, 0);
+                            int nLifeIndex = nReadResult;
+
+                            if (nOldLifeIndex == -1)
+                                nOldLifeIndex = nLifeIndex;
+
+                            // left
+                            else if (nOldLifeIndex > nLifeIndex)
+                                nLifeRecover = max(0, nLifeRecover - 1);
+                            // right
+                            else if (nOldLifeIndex < nLifeIndex)
+                                nLifeRecover = min(nLifeRecover + 1, 1);
+
+                            if (nLifeRecover == 0)
+                            {
+                                char pcTemp[8] = "RECOVER";
+                                WriteProcessMemory(hProcess, (LPVOID)(dwNoRecoverString), &pcTemp, 8, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwRecover25String), &pcTemp, 8, 0);
+
+                                nWriteBuffer = 0;
+                                WriteProcessMemory(hProcess, (LPVOID)(dwLifeIndex), &nWriteBuffer, 4, 0);
+                                nLifeIndex = 0;
+                            }
+                            else
+                            {
+                                char pcTemp[11] = "NO RECOVER";
+                                WriteProcessMemory(hProcess, (LPVOID)(dwRecover75String), &pcTemp, 11, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwRecover100String), &pcTemp, 11, 0);
+
+                                nWriteBuffer = 4;
+                                WriteProcessMemory(hProcess, (LPVOID)(dwLifeIndex), &nWriteBuffer, 4, 0);
+                                nLifeIndex = 4;
+                            }
+
+                            nOldLifeIndex = nLifeIndex;
+                        }
+
                         oMenu.UpdateProcessInfo(hProcess, dwBaseAddress);
                         //oMenu.DrawMenu();
                     }
@@ -576,104 +653,14 @@ int main(int argc, char* argv[])
                     else // not paused
                         bOnExtraMenu = false;
 
-                    if (GetAsyncKeyState(VK_ESCAPE))
-                        goto CLEANUP;
-
-                    /*if (nDirectionPressed == 6 && nOldDirectionPressed != 6 && false)
-                    {
-                        if (nGameCursorIndex != 0)
-                            nPresetSetting = ePresetSettings::CUSTOM;
-
-                        switch (nGameCursorIndex)
-                        {
-                        case 0:
-                            nPresetSetting = min(nPresetSetting + 1, vPresetSettings.size() - 2);
-                            ApplyPreset(nPresetSetting, &bSwitchToCrouch, &nSwitchBlockDelayFrames, &nEnemyStatusSetting, &nEnemyDefenseSetting, &nEnemyGuardLevelSetting, &bExGuard, &nReversalPattern, &nReversalDelayFrames);
-                            break;
-                        case 1:
-                            bSwitchToCrouch = !bSwitchToCrouch;
-                            break;
-                        case 2:
-                            nSwitchBlockDelayFrames++;
-                            break;
-                        case 3:
-                            nEnemyStatusSetting = min(nEnemyStatusSetting + 1, vEnemyStatusSettings.size() - 1);
-                            break;
-                        case 4:
-                            nEnemyDefenseSetting = min(nEnemyDefenseSetting + 1, vEnemyDefenseSettings.size() - 1);
-                            break;
-                        case 5:
-                            
-                            break;
-                        case 6:
-                            nEnemyGuardLevelSetting = min(nEnemyGuardLevelSetting + 1, vEnemyGuardLevelSettings.size() - 1);
-                            nWriteBuffer = vGuardLevelLookupTable[nEnemyGuardLevelSetting + nCharacterMoon * 6];
-                            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwGuardAmount2 + dwP2Offset), &nWriteBuffer, 4, 0);
-                            break;
-                        case 7:
-                            bExGuard = !bExGuard;
-                            break;
-                        case 8:
-                            nReversalIndex = min(nReversalIndex + 1, vPatternNames.size() - 1);
-                            break;
-                        case 9:
-                            nReversalDelayFrames++;
-                            break;
-                        default:
-                            break;
-                        }
-                    }
-
-                    if (nDirectionPressed == 4 && nOldDirectionPressed != 4 && false)
-                    {
-                        if (nGameCursorIndex != 0)
-                            nPresetSetting = ePresetSettings::CUSTOM;
-
-                        switch (nGameCursorIndex)
-                        {
-                        case 0:
-                            nPresetSetting = max(nPresetSetting - 1, 0);
-                            ApplyPreset(nPresetSetting, &bSwitchToCrouch, &nSwitchBlockDelayFrames, &nEnemyStatusSetting, &nEnemyDefenseSetting, &nEnemyGuardLevelSetting, &bExGuard, &nReversalPattern, &nReversalDelayFrames);
-                            break;
-                        case 1:
-                            bSwitchToCrouch = !bSwitchToCrouch;
-                            break;
-                        case 2:
-                            nSwitchBlockDelayFrames = max(0, nSwitchBlockDelayFrames - 1);
-                            break;
-                        case 3:
-                            nEnemyStatusSetting = max(nEnemyStatusSetting - 1, 0);
-                            break;
-                        case 4:
-                            nEnemyDefenseSetting = max(nEnemyDefenseSetting - 1, 0);
-                            break;
-                        case 5:
-                            
-                            break;
-                        case 6:
-                            nEnemyGuardLevelSetting = max(nEnemyGuardLevelSetting - 1, 0);
-                            nWriteBuffer = vGuardLevelLookupTable[nEnemyGuardLevelSetting + nCharacterMoon * 6];
-                            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwGuardAmount2 + dwP2Offset), &nWriteBuffer, 4, 0);
-                            break;
-                        case 7:
-                            bExGuard = !bExGuard;
-                            break;
-                        case 8:
-                            nReversalIndex = max(0, nReversalIndex - 1);
-                            break;
-                        case 9:
-                            nReversalDelayFrames = max(0, nReversalDelayFrames - 1);
-                            break;
-                        default:
-                            break;
-                        }
-                    }*/
-
-
+                    
                     nWriteBuffer = 1;
                     if (nExGuardSetting == eEnemyOffOnRandom::ON || (rand() % 2 == 0 && nExGuardSetting == eEnemyOffOnRandom::RANDOM))
                         nWriteBuffer = 10;
                     WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwExGuard + dwP2Offset), &nWriteBuffer, 4, 0);
+
+                    nWriteBuffer = 4;
+                    WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwLifeRecover), &nWriteBuffer, 4, 0);
 
                     
                     //nWriteBuffer = 0;
@@ -705,22 +692,28 @@ int main(int argc, char* argv[])
 
                     if (nTimer == 0 || vPatternNames.size() == 1)
                     {
+                        ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1CharNumber), &nReadResult, 4, 0);
+                        nP1CharacterNumber = nReadResult;
                         ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2CharNumber), &nReadResult, 4, 0);
-                        nCharacterNumber = nReadResult;
+                        nP2CharacterNumber = nReadResult;
 
+                        ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1CharMoon), &nReadResult, 4, 0);
+                        nP1Moon = nReadResult;
                         ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2CharMoon), &nReadResult, 4, 0);
-                        nCharacterMoon = nReadResult;
+                        nP2Moon = nReadResult;
 
-                        nCharacterID = 10 * nCharacterNumber + nCharacterMoon;
+                        nP1CharacterID = 10 * nP1CharacterNumber + nP1Moon;
+                        nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
 
-                        vPatternNames = GetPatternList(nCharacterID);
+                        vPatternNames = GetPatternList(nP2CharacterID);
                     }
 
                     if (nTimer == 1)
                     {
-                        nWriteBuffer = nCustomMeter;
-                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1Meter), &nWriteBuffer, 4, 0);
-                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1Meter + dwP2Offset), &nWriteBuffer, 4, 0);
+                        SetMeter(hProcess, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
+
+                        nWriteBuffer = vGuardLevelLookupTable[nEnemyGuardLevelSetting + nP2Moon * 6];
+                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwGuardAmount2), &nWriteBuffer, 4, 0);
                     }
 
 
@@ -730,14 +723,9 @@ int main(int argc, char* argv[])
                     else
                         nHealthRefillTimer = 0;
 
-                    if (nTimer == 1 || nHealthRefillTimer == 20)
+                    if (nTimer == 1 || (nHealthRefillTimer == 20 && nLifeRecover == 0))
                     {
-                        nWriteBuffer = nCustomHealth;
-                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1Health), &nWriteBuffer, 4, 0);
-                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1RedHealth), &nWriteBuffer, 4, 0);
-                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1Health + dwP2Offset), &nWriteBuffer, 4, 0);
-                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1RedHealth + dwP2Offset), &nWriteBuffer, 4, 0);
-
+                        SetHealth(hProcess, dwBaseAddress, nCustomHealth);
                         nHealthRefillTimer = 0;
                     }
 
@@ -765,26 +753,13 @@ int main(int argc, char* argv[])
 
                     if (nEnemyGuardLevelSetting == eEnemyGuardLevelSettings::INF || nTimer == 1)
                     {
-                        nWriteBuffer = vGuardLevelLookupTable[nCharacterMoon * 6];
+                        nWriteBuffer = vGuardLevelLookupTable[nP2Moon * 6];
                         WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwGuardAmount2), &nWriteBuffer, 4, 0);
                     }
                     else
                     {
                         nWriteBuffer = nEnemyGuardLevelSetting - 1;
                         WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwGuardSetting), &nWriteBuffer, 4, 0);
-                    }
-
-                    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwRoundTime), &nReadResult, 4, 0);
-                    if (nReadResult == 0)
-                    {
-                        nWriteBuffer = vGuardLevelLookupTable[nEnemyGuardLevelSetting + nCharacterMoon * 6];
-                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwGuardAmount2), &nWriteBuffer, 4, 0);
-                    }
-
-                    if (nExGuardSetting == eEnemyOffOnRandom::ON)// || (rand() % 2 == 0 && nExGuardSetting == eEnemyOffOnRandom::RANDOM))
-                    {
-                        nWriteBuffer = 10;
-                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwExGuard + dwP2Offset), &nWriteBuffer, 4, 0);
                     }
 
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwY + dwP2Offset), &nReadResult, 4, 0);
@@ -795,7 +770,7 @@ int main(int argc, char* argv[])
                         bReversaled = true;
                     if (nTimer == 2)
                         bReversaled = false;
-                    if (nTimer != 0 && GetPattern(nCharacterID, vPatternNames[nReversalIndex]) != 0)
+                    if (nTimer != 0 && GetPattern(nP2CharacterID, vPatternNames[nReversalIndex]) != 0)
                     {
                         if (!bDelayingReversal && nMot == 0 && nMot != nOldMot && nP2Y == 0)
                         {
@@ -819,7 +794,7 @@ int main(int argc, char* argv[])
                         {
                             bDelayingReversal = false;
                             bReversaled = true;
-                            nWriteBuffer = GetPattern(nCharacterID, vPatternNames[nReversalIndex]);
+                            nWriteBuffer = GetPattern(nP2CharacterID, vPatternNames[nReversalIndex]);
                             WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2PatternSet), &nWriteBuffer, 4, 0);
                         }
                         else

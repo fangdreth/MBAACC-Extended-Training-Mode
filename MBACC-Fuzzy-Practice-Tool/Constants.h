@@ -37,11 +37,14 @@ const DWORD dwP2PatternRead = 0x155C3C;
 const DWORD dwCSSFlag = 0x155130;
 const DWORD dwP2CharNumber = 0x34D91C;
 const DWORD dwP2CharMoon = 0x34D924;
+const DWORD dwP1CharMoon = 0x34D900;
+const DWORD dwP1CharNumber = 0x34D8F8;
 const DWORD dwP1ButtonPress = 0x154654;
 const DWORD dwP1APressed = 0x371399;
 const DWORD dwP1DirectionPress = 0x371448;
 const DWORD dwPausedFlag = 0x162A64;
 const DWORD dwEnemyAction = 0x37C1EC;
+const DWORD dwLifeRecover = 0x37C1F8;
 
 const std::vector<std::string> vPresetSettings = { "Default", "Fuzzy Overhead", "Blockstring", "Heat OS", "Defensive Fuzzy Mash", "Defensive Fuzzy Jump", "Custom" };
 const std::vector<std::string> vEnemyDefenseSettings = { "No Guard", "All Guard", "Status Guard", "All Shield", "Status Shield" };

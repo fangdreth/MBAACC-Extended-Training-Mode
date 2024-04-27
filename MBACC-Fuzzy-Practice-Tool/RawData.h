@@ -13,7 +13,7 @@ const std::map<std::string, int> vCAKIHA_Map =
 	{ "236A", 114 }, { "236B", 115 }, { "236C", 116 },
 
 	{ "624A", 43 }, { "624B", 374 }, { "624C", 375 },
-	{ "ARC DRIVE", 219 }, { "ANOTHER ARC DRIVE", 219 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 219 }, { "ANOTHER ARC DRIVE", 219 },
 	{"filler",0}
 };
 
@@ -28,7 +28,7 @@ const std::map<std::string, int> vCAOKO_Map =
 	{ "236A", 108 }, { "236B", 100 }, { "236C", 468 },
 	{ "421A", 207 }, { "421B", 208 }, { "421C", 562 },
 	{ "624A", 234 }, { "624B", 231 }, { "624C", 235 },
-	{ "ARC DRIVE", 115 }, { "ANOTHER ARC DRIVE", 115 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 115 }, { "ANOTHER ARC DRIVE", 115 },
 	{"filler",0}
 };
 
@@ -43,7 +43,7 @@ const std::map<std::string, int> vCARC_Map =
 	{ "236A", 180 }, { "236B", 184 }, { "236C", 188 },
 
 	{ "624A", 390 }, { "624B", 391 }, { "624C", 411 },
-	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
@@ -58,7 +58,7 @@ const std::map<std::string, int> vCCIEL_Map =
 	{ "236A", 170 }, { "236B", 171 }, { "236C", 400 },
 
 
-	{ "ARC DRIVE", 197 }, { "ANOTHER ARC DRIVE", 197 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 197 }, { "ANOTHER ARC DRIVE", 197 },
 	{"filler",0}
 };
 
@@ -73,7 +73,7 @@ const std::map<std::string, int> vCHIME_Map =
 	{ "236A", 160 }, { "236B", 161 }, { "236C", 162 },
 
 
-	{ "ARC DRIVE", 299 }, { "ANOTHER ARC DRIVE", 299 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 299 }, { "ANOTHER ARC DRIVE", 299 },
 	{"filler",0}
 };
 
@@ -88,7 +88,7 @@ const std::map<std::string, int> vCHISUI_Map =
 	{ "236A", 370 }, { "236B", 371 }, { "236C", 372 },
 
 
-	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
@@ -103,7 +103,7 @@ const std::map<std::string, int> vCKOHAKU_Map =
 	{ "236A", 385 }, { "236B", 385 }, { "236C", 385 },
 
 
-	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
@@ -117,7 +117,7 @@ const std::map<std::string, int> vCKOHAMECH_Map =
 	{ "236A", 170 }, { "236B", 171 }, { "236C", 172 },
 	{ "421A", 620 }, { "421B", 621 }, { "421C", 622 },
 
-	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
@@ -132,7 +132,7 @@ const std::map<std::string, int> vCKOUMA_Map =
 	{ "236A", 194 }, { "236B", 193 }, { "236C", 400 },
 
 
-	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
 	{"filler",0}
 };
 
@@ -148,7 +148,7 @@ const std::map<std::string, int> vCLEN_Map =
 	{ "421A", 200 }, { "421B", 201 }, { "421C", 202 }, { "421D", 467 },
 	{ "624C", 400 },
 
-	{ "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 150 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 150 },
 	{"filler",0}
 };
 
@@ -178,7 +178,7 @@ const std::map<std::string, int> vCMECH_Map =
 	{ "236A", 410 }, { "236B", 411 }, { "236C", 162 },
 	{ "421A", 416 }, { "421B", 417 }, { "421C", 129 },
 
-	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
@@ -193,7 +193,7 @@ const std::map<std::string, int> vCMIYAKO_Map =
 	{ "236A", 150 }, { "236B", 151 }, { "236C", 152 },
 
 
-	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
@@ -208,7 +208,7 @@ const std::map<std::string, int> vCNAC_Map =
 	{ "236A", 90 }, { "236B", 91 }, { "236C", 92 },
 	{ "421A", 450 }, { "421B", 455 }, { "421C", 420 },
 
-	{ "ARC DRIVE", 79 }, { "ANOTHER ARC DRIVE", 79 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 79 }, { "ANOTHER ARC DRIVE", 79 },
 	{"filler",0}
 };
 
@@ -223,7 +223,7 @@ const std::map<std::string, int> vCNANAYA_Map =
 	{ "236A", 160 }, { "236B", 161 }, { "236C", 162 },
 
 
-	{ "ARC DRIVE", 198 }, { "ANOTHER ARC DRIVE", 198 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 198 }, { "ANOTHER ARC DRIVE", 198 },
 	{"filler",0}
 };
 
@@ -238,7 +238,7 @@ const std::map<std::string, int> vCNECO_Map =
 	{ "236A", 60 }, { "236B", 60 }, { "236C", 60 },
 	{ "421A", 61 }, { "421B", 61 }, { "421C", 61 },
 
-	{ "ARC DRIVE", 61 }, { "ANOTHER ARC DRIVE", 61 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 61 }, { "ANOTHER ARC DRIVE", 61 },
 	{"filler",0}
 };
 
@@ -253,7 +253,7 @@ const std::map<std::string, int> vCNECOMECH_Map =
 	{ "236A", 400 }, { "236B", 401 }, { "236C", 402 },
 
 
-	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
@@ -268,7 +268,7 @@ const std::map<std::string, int> vCNERO_Map =
 	{ "236A", 120 }, { "236B", 121 }, { "236C", 122 },
 	{ "421A", 105 }, { "421B", 106 }, { "421C", 107 },
 	{ "624C", 150 },
-	{ "ARC DRIVE", 160 }, { "ANOTHER ARC DRIVE", 160 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 160 }, { "ANOTHER ARC DRIVE", 160 },
 	{"filler",0}
 };
 
@@ -283,7 +283,7 @@ const std::map<std::string, int> vCPCIEL_Map =
 	{ "236A", 85 }, { "236B", 86 }, { "236C", 87 },
 
 
-	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
@@ -298,7 +298,7 @@ const std::map<std::string, int> vCRIES_Map =
 	{ "236A", 125 }, { "236B", 126 }, { "236C", 127 },
 
 
-	{ "ARC DRIVE", 400 }, { "ANOTHER ARC DRIVE", 401 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 400 }, { "ANOTHER ARC DRIVE", 401 },
 	{"filler",0}
 };
 
@@ -313,7 +313,7 @@ const std::map<std::string, int> vCROA_Map =
 	{ "236A", 400 }, { "236B", 401 }, { "236C", 402 },
 
 
-	{ "ARC DRIVE", 149 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 149 },
 	{"filler",0}
 };
 
@@ -328,7 +328,7 @@ const std::map<std::string, int> vCRYOUGI_Map =
 	{ "236A", 371 }, { "236B", 372 }, { "236C", 420 },
 	{ "421A", 340 }, { "421B", 330 }, { "421C", 336 },
 
-	{ "ARC DRIVE", 645 }, { "ANOTHER ARC DRIVE", 645 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 645 }, { "ANOTHER ARC DRIVE", 645 },
 	{"filler",0}
 };
 
@@ -343,7 +343,7 @@ const std::map<std::string, int> vCSATSUKI_Map =
 	{ "236A", 136 }, { "236B", 137 }, { "236C", 138 },
 	{ "421A", 450 }, { "421B", 451 }, { "421C", 452 },
 	{ "624C", 180 },
-	{ "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 150 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 150 },
 	{"filler",0}
 };
 
@@ -358,7 +358,7 @@ const std::map<std::string, int> vCSEIFUKU_Map =
 	{ "236A", 310 }, { "236B", 311 }, { "236C", 312 },
 
 	{ "624C", 200 },
-	{ "ARC DRIVE", 370 }, { "ANOTHER ARC DRIVE", 370 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 370 }, { "ANOTHER ARC DRIVE", 370 },
 	{"filler",0}
 };
 
@@ -373,7 +373,7 @@ const std::map<std::string, int> vCSION_Map =
 	{ "236A", 100 }, { "236B", 102 }, { "236C", 435 },
 	{ "421A", 81 }, { "421B", 82 }, { "421C", 83 },
 
-	{ "ARC DRIVE", 145 }, { "ANOTHER ARC DRIVE", 145 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 145 }, { "ANOTHER ARC DRIVE", 145 },
 	{"filler",0}
 };
 
@@ -388,7 +388,7 @@ const std::map<std::string, int> vCTOHNO_Map =
 	{ "236A", 105 }, { "236B", 106 }, { "236C", 107 },
 
 
-	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
@@ -403,7 +403,7 @@ const std::map<std::string, int> vCVAKIHA_Map =
 	{ "236A", 114 }, { "236B", 115 }, { "236C", 116 },
 
 
-	{ "ARC DRIVE", 540 }, { "ANOTHER ARC DRIVE", 540 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 540 }, { "ANOTHER ARC DRIVE", 540 },
 	{"filler",0}
 };
 
@@ -418,7 +418,7 @@ const std::map<std::string, int> vCVSION_Map =
 	{ "236A", 215 }, { "236B", 216 }, { "236C", 217 },
 	{ "421A", 531 }, { "421B", 532 }, { "421C", 533 },
 
-	{ "ARC DRIVE", 204 }, { "ANOTHER ARC DRIVE", 204 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 204 }, { "ANOTHER ARC DRIVE", 204 },
 	{"filler",0}
 };
 
@@ -433,7 +433,7 @@ const std::map<std::string, int> vCWARA_Map =
 	{ "236A", 180 }, { "236B", 181 }, { "236C", 182 },
 	{ "421A", 170 }, { "421B", 171 }, { "421C", 172 },
 
-	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 150 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 150 },
 	{"filler",0}
 };
 
@@ -448,7 +448,7 @@ const std::map<std::string, int> vCWARC_Map =
 	{ "236A", 150 }, { "236B", 151 }, { "236C", 152 },
 	{ "421A", 160 }, { "421B", 161 }, { "421C", 162 },
 
-	{ "ARC DRIVE", 223 }, { "ANOTHER ARC DRIVE", 223 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 223 }, { "ANOTHER ARC DRIVE", 223 },
 	{"filler",0}
 };
 
@@ -463,7 +463,7 @@ const std::map<std::string, int> vCWLEN_Map =
 	{ "236A", 115 }, { "236B", 116 }, { "236C", 117 },
 	{ "421A", 405 }, { "421B", 406 }, { "421C", 407 },
 	{ "624A", 110 }, { "624B", 111 }, { "624C", 112 },
-	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
 	{"filler",0}
 };
 
@@ -478,7 +478,7 @@ const std::map<std::string, int> vFAKIHA_Map =
 	{ "236A", 114 }, { "236B", 115 }, { "236C", 116 },
 	{ "421A", 437 }, { "421B", 438 }, { "421C", 439 },
 
-	{ "ARC DRIVE", 219 }, { "ANOTHER ARC DRIVE", 219 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 219 }, { "ANOTHER ARC DRIVE", 219 },
 	{"filler",0}
 };
 
@@ -493,7 +493,7 @@ const std::map<std::string, int> vFAOKO_Map =
 	{ "236A", 435 }, { "236B", 436 }, { "236C", 470 },
 	{ "421A", 511 }, { "421B", 512 }, { "421C", 530 },
 	{ "624A", 575 }, { "624B", 576 }, { "624C", 577 },
-	{ "ARC DRIVE", 115 }, { "ANOTHER ARC DRIVE", 265 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 115 }, { "ANOTHER ARC DRIVE", 265 },
 	{"filler",0}
 };
 
@@ -508,7 +508,7 @@ const std::map<std::string, int> vFARC_Map =
 	{ "236A", 180 }, { "236B", 181 }, { "236C", 441 },
 	{ "421A", 155 }, { "421B", 156 }, { "421C", 157 },
 
-	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 265 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 265 },
 	{"filler",0}
 };
 
@@ -523,7 +523,7 @@ const std::map<std::string, int> vFHIME_Map =
 	{ "236A", 160 }, { "236B", 161 }, { "236C", 162 },
 
 
-	{ "ARC DRIVE", 299 }, { "ANOTHER ARC DRIVE", 265 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 299 }, { "ANOTHER ARC DRIVE", 265 },
 	{"filler",0}
 };
 
@@ -538,7 +538,7 @@ const std::map<std::string, int> vFHISUI_Map =
 	{ "236A", 370 }, { "236B", 371 }, { "236C", 372 },
 
 
-	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
@@ -553,7 +553,7 @@ const std::map<std::string, int> vFKOHAKU_Map =
 	{ "236A", 470 }, { "236B", 471 }, { "236C", 472 },
 
 
-	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
@@ -568,7 +568,7 @@ const std::map<std::string, int> vFKOUMA_Map =
 	{ "236A", 125 }, { "236B", 128 }, { "236C", 131 },
 	{ "421A", 220 }, { "421B", 221 }, { "421C", 222 },
 
-	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 265 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 265 },
 	{"filler",0}
 };
 
@@ -583,7 +583,7 @@ const std::map<std::string, int> vFLEN_Map =
 	{ "236A", 59 }, { "236B", 59 }, { "236C", 59 },
 
 
-	{ "ARC DRIVE", 59 }, { "ANOTHER ARC DRIVE", 59 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 59 }, { "ANOTHER ARC DRIVE", 59 },
 	{"filler",0}
 };
 
@@ -603,7 +603,7 @@ const std::map<std::string, int> vFMECH_Map =
 	{ "236A", 488 }, { "236B", 489 }, { "236C", 461 },
 
 
-	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
@@ -618,7 +618,7 @@ const std::map<std::string, int> vFMIYAKO_Map =
 	{ "236A", 407 }, { "236B", 408 }, { "236C", 409 },
 	{ "421A", 411 }, { "421B", 412 }, { "421C", 413 },
 
-	{ "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 199 }, { "ANOTHER ARC DRIVE", 199 },
 	{"filler",0}
 };
 
@@ -633,7 +633,7 @@ const std::map<std::string, int> vFNAC_Map =
 	{ "236A", 570 }, { "236B", 571 }, { "236C", 572 },
 
 
-	{ "ARC DRIVE", 227 }, { "ANOTHER ARC DRIVE", 227 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 227 }, { "ANOTHER ARC DRIVE", 227 },
 	{"filler",0}
 };
 
@@ -648,7 +648,7 @@ const std::map<std::string, int> vFNANAYA_Map =
 	{ "236A", 160 }, { "236B", 161 }, { "236C", 162 },
 
 
-	{ "ARC DRIVE", 198 }, { "ANOTHER ARC DRIVE", 198 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 198 }, { "ANOTHER ARC DRIVE", 198 },
 	{"filler",0}
 };
 
@@ -663,7 +663,7 @@ const std::map<std::string, int> vFNECO_Map =
 	{ "236A", 60 }, { "236B", 60 }, { "236C", 60 },
 
 
-	{ "ARC DRIVE", 61 }, { "ANOTHER ARC DRIVE", 61 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 61 }, { "ANOTHER ARC DRIVE", 61 },
 	{"filler",0}
 };
 
@@ -678,7 +678,7 @@ const std::map<std::string, int> vFNECOMECH_Map =
 	{ "236A", 400 }, { "236B", 401 }, { "236C", 402 },
 
 
-	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
@@ -693,7 +693,7 @@ const std::map<std::string, int> vFNERO_Map =
 	{ "236A", 120 }, { "236B", 420 }, { "236C", 122 },
 	{ "421A", 452 }, { "421B", 451 }, { "421C", 490 },
 	{ "624C", 450 },
-	{ "ARC DRIVE", 182 }, { "ANOTHER ARC DRIVE", 265 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 182 }, { "ANOTHER ARC DRIVE", 265 },
 	{"filler",0}
 };
 
@@ -708,7 +708,7 @@ const std::map<std::string, int> vFPCIEL_Map =
 	{ "236A", 110 }, { "236B", 111 }, { "236C", 112 },
 
 	{ "624A", 100 }, { "624B", 101 }, { "624C", 102 },
-	{ "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 200 }, { "ANOTHER ARC DRIVE", 200 },
 	{"filler",0}
 };
 
@@ -723,7 +723,7 @@ const std::map<std::string, int> vFRIES_Map =
 	{ "236A", 175 }, { "236B", 179 }, { "236C", 485 },
 
 
-	{ "ARC DRIVE", 399 }, { "ANOTHER ARC DRIVE", 399 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 399 }, { "ANOTHER ARC DRIVE", 399 },
 	{"filler",0}
 };
 
@@ -738,7 +738,7 @@ const std::map<std::string, int> vFROA_Map =
 	{ "236A", 477 }, { "236B", 478 }, { "236C", 482 },
 
 
-	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
 	{"filler",0}
 };
 
@@ -753,7 +753,7 @@ const std::map<std::string, int> vFRYOUGI_Map =
 	{ "236A", 371 }, { "236B", 372 }, { "236C", 397 },
 	{ "421B", 594 }, { "421C", 595 },
 
-	{ "ARC DRIVE", 645 }, { "ANOTHER ARC DRIVE", 645 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 645 }, { "ANOTHER ARC DRIVE", 645 },
 	{"filler",0}
 };
 
@@ -768,7 +768,7 @@ const std::map<std::string, int> vFSATSUKI_Map =
 	{ "236A", 508 }, { "236B", 509 }, { "236C", 510 },
 	{ "421A", 450 }, { "421B", 451 }, { "421C", 452 },
 	{ "624C", 180 },
-	{ "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 150 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 150 },
 	{"filler",0}
 };
 
@@ -783,7 +783,7 @@ const std::map<std::string, int> vFSEIFUKU_Map =
 	{ "236A", 440 }, { "236B", 441 }, { "236C", 442 },
 
 	{ "624C", 200 },
-	{ "ARC DRIVE", 370 }, { "ANOTHER ARC DRIVE", 370 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 370 }, { "ANOTHER ARC DRIVE", 370 },
 	{"filler",0}
 };
 
@@ -798,7 +798,7 @@ const std::map<std::string, int> vFSION_Map =
 	{ "236A", 411 }, { "236B", 412 }, { "236C", 413 },
 
 
-	{ "ARC DRIVE", 145 }, { "ANOTHER ARC DRIVE", 145 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 145 }, { "ANOTHER ARC DRIVE", 145 },
 	{"filler",0}
 };
 
@@ -828,7 +828,7 @@ const std::map<std::string, int> vFVAKIHA_Map =
 	{ "236B", 506 }, { "236C", 507 },
 
 
-	{ "ARC DRIVE", 540 }, { "ANOTHER ARC DRIVE", 540 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 540 }, { "ANOTHER ARC DRIVE", 540 },
 	{"filler",0}
 };
 
@@ -843,7 +843,7 @@ const std::map<std::string, int> vFVSION_Map =
 	{ "236A", 410 }, { "236B", 411 }, { "236C", 412 },
 
 
-	{ "ARC DRIVE", 204 }, { "ANOTHER ARC DRIVE", 204 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 204 }, { "ANOTHER ARC DRIVE", 204 },
 	{"filler",0}
 };
 
@@ -858,7 +858,7 @@ const std::map<std::string, int> vFWARA_Map =
 	{ "236A", 425 }, { "236B", 426 }, { "236C", 427 },
 	{ "421A", 170 }, { "421B", 171 }, { "421C", 172 },
 
-	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
 	{"filler",0}
 };
 
@@ -873,7 +873,7 @@ const std::map<std::string, int> vFWARC_Map =
 	{ "236A", 545 }, { "236B", 540 }, { "236C", 547 },
 	{ "421A", 160 }, { "421B", 161 }, { "421C", 162 },
 
-	{ "ARC DRIVE", 224 }, { "ANOTHER ARC DRIVE", 223 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 224 }, { "ANOTHER ARC DRIVE", 223 },
 	{"filler",0}
 };
 
@@ -888,7 +888,7 @@ const std::map<std::string, int> vFWLEN_Map =
 	{ "236A", 390 }, { "236B", 391 }, { "236C", 392 },
 
 
-	{ "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 149 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 150 }, { "ANOTHER ARC DRIVE", 149 },
 	{"filler",0}
 };
 
@@ -905,7 +905,7 @@ const std::map<std::string, int> vFCIEL_Map =
 	{ "236A", 470 }, { "236B", 471 }, { "236C", 472 },
 
 	{ "624A", 458 }, { "624B", 459 }, { "624C", 460 },
-	{ "ARC DRIVE", 197 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 197 },
 	{"filler",0}
 };
 
@@ -920,7 +920,7 @@ const std::map<std::string, int> vFKOHAMECH_Map =
 	{ "236A", 470 }, { "236B", 471 }, { "236C", 472 },
 
 
-	{ "ARC DRIVE", 200 },
+	 { "HEAT", 260 }, { "ARC DRIVE", 200 },
 	{"filler",0}
 };
 
