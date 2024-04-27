@@ -313,7 +313,7 @@ const std::map<std::string, int> vCROA_Map =
 	{ "236A", 400 }, { "236B", 401 }, { "236C", 402 },
 
 
-	{ "ARC DRIVE", 149 }, { "ANOTHER ARC DRIVE", 149 },
+	{ "ARC DRIVE", 149 },
 	{"filler",0}
 };
 

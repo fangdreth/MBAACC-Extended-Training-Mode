@@ -3,7 +3,7 @@
 #include "RawData.h"
 
 // Character ID is created as a concatination of char number and moon.  Ex. Sats is 29 and C is 0, so CSats is 290
-static enum eCharacterValues
+enum eCharacterValues
 {
 	UNIVERSAL = 0,
 	CAOKO = 20, FAOKO = 21, HAOKO = 22,
@@ -87,7 +87,7 @@ static std::vector<std::string> vEveryPatternName =
 	"236A", "236B", "236C",
 	"421A", "421B", "421C",
 	"624A", "624B", "624C",
-	"ARC DRIVE", "ANOTHER ARC DRIVE",
+	"ARC DRIVE", /*"ANOTHER ARC DRIVE",*/
 	"DRUG INSTALL"
 };
 
