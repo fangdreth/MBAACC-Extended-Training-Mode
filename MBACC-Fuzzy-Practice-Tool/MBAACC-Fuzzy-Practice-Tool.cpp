@@ -111,10 +111,10 @@ int main(int argc, char* argv[])
     bool bP2XLocked = false;
     bool bP3XLocked = false;
     bool bP4XLocked = false;
-    int nP1X = 0;
-    int nP2X = 0;
-    int nP3X = 0;
-    int nP4X = 0;
+    int nP1X = -16384;
+    int nP2X = 16384;
+    int nP3X = -29184;
+    int nP4X = 29184;
     bool bP3Exists = false;
     bool bP4Exists = false;
 
@@ -159,7 +159,6 @@ int main(int argc, char* argv[])
                 }
                 else
                 {
-                    //nOldButtonsPressed = nButtonsPressed;
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1APressed), &nReadResult, 4, 0);
                     bAPressed = (nReadResult == 1 ? true : false);
 
@@ -168,6 +167,28 @@ int main(int argc, char* argv[])
                     bP3Exists = (nReadResult == 1 ? true : false);
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1Exists + dwP2Offset * 3), &nReadResult, 4, 0);
                     bP4Exists = (nReadResult == 1 ? true : false);
+
+                    // get the locations if not locked
+                    if (!bP1XLocked)
+                    {
+                        ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X), &nReadResult, 4, 0);
+                        nP1X = nReadResult;
+                    }
+                    if (!bP2XLocked)
+                    {
+                        ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset), &nReadResult, 4, 0);
+                        nP2X = nReadResult;
+                    }
+                    if (!bP3XLocked)
+                    {
+                        ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 2), &nReadResult, 4, 0);
+                        nP3X = nReadResult;
+                    }
+                    if (!bP4XLocked)
+                    {
+                        ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 3), &nReadResult, 4, 0);
+                        nP4X = nReadResult;
+                    }
 
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwPausedFlag), &nReadResult, 4, 0);
                     bPaused = (nReadResult == 1 ? true : false);
@@ -178,7 +199,7 @@ int main(int argc, char* argv[])
 
                         char pcExtendedSettings[18] = "EXTENDED SETTINGS";
                         char pcTrainingMenu[19];
-                        strcpy_s(pcTrainingMenu, ("TRAINING MOD " + VERSION).c_str());
+                        strcpy_s(pcTrainingMenu, ("WORLD OF STR  " + VERSION).c_str());
 
                         WriteProcessMemory(hProcess, (LPVOID)(dwMainViewScreenStringAddress), &pcExtendedSettings, 18, 0);
                         WriteProcessMemory(hProcess, (LPVOID)(dwTrainingMenuString), &pcTrainingMenu, 19, 0);
@@ -350,14 +371,14 @@ int main(int argc, char* argv[])
                             }
                             else if (nExtendedSettingsPage == 2)
                             {
-                                char pcP1XLock[15] = "P1 X A->LOCK";
-                                char pcP2XLock[15] = "P2 X A->LOCK";
-                                char pcP3XLock[15] = "P3 X A->LOCK";
-                                char pcP4XLock[15] = "P4 X A->LOCK";
-                                char pcP1XUnlock[15] = "P1 X A->UNLOCK";
-                                char pcP2XUnlock[15] = "P2 X A->UNLOCK";
-                                char pcP3XUnlock[15] = "P3 X A->UNLOCK";
-                                char pcP4XUnlock[15] = "P4 X A->UNLOCK";
+                                char pcP1XLock[19] = "P1X A->SLOW D->SET";
+                                char pcP2XLock[19] = "P2X A->SLOW D->SET";
+                                char pcP3XLock[19] = "P3X A->SLOW D->SET";
+                                char pcP4XLock[19] = "P4X A->SLOW D->SET";
+                                char pcP1XUnlock[19] = "P1X A->SLOW D->CLR";
+                                char pcP2XUnlock[19] = "P2X A->SLOW D->CLR";
+                                char pcP3XUnlock[19] = "P3X A->SLOW D->CLR";
+                                char pcP4XUnlock[19] = "P4X A->SLOW D->CLR";
                                 WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionString), &pcBlank, 2, 0);
                                 WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseString), (bP1XLocked ? &pcP1XUnlock : &pcP1XLock), 15, 0);
                                 WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeStringAddress), (bP2XLocked ? &pcP2XUnlock : &pcP2XLock), 15, 0);
@@ -444,13 +465,57 @@ int main(int argc, char* argv[])
                             }
                             else if (nExtendedSettingsPage == 2)
                             {
-                                ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X), &nReadResult, 4, 0);
-                                nP1X = nReadResult;
-                                ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset), &nReadResult, 4, 0);
-                                nP2X = nReadResult;
-                                ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 2), &nReadResult, 4, 0);
-                                nP3X = nReadResult;
-                                ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 3), &nReadResult, 4, 0);
+                                if (nOldEnemyDefenseIndex == -1)
+                                    nOldEnemyDefenseIndex = nEnemyDefenseIndex;
+                                else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
+                                {
+                                    nP1X = max(MIN_X, nP1X - (bAPressed ? 1 : 1000));
+                                    SetP1X(hProcess, dwBaseAddress, nP1X);
+                                }
+                                else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
+                                {
+                                    nP1X = min(MAX_X, nP1X + (bAPressed ? 1 : 1000));
+                                    SetP1X(hProcess, dwBaseAddress, nP1X);
+                                }
+
+                                if (nOldEnemyDefenseTypeIndex == -1)
+                                    nOldEnemyDefenseTypeIndex = nEnemyDefenseTypeIndex;
+                                else if (nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex)// left
+                                {
+                                    nP2X = max(MIN_X, nP2X - (bAPressed ? 1 : 1000));
+                                    SetP2X(hProcess, dwBaseAddress, nP2X);
+                                }
+                                else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
+                                {
+                                    nP2X = min(MAX_X, nP2X + (bAPressed ? 1 : 1000));
+                                    SetP2X(hProcess, dwBaseAddress, nP2X);
+                                }
+
+                                if (nOldAirRecoveryIndex == -1)
+                                    nOldAirRecoveryIndex = nAirRecoveryIndex;
+                                else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
+                                {
+                                    nP3X = max(MIN_X, nP3X - (bAPressed ? 1 : 1000));
+                                    SetP3X(hProcess, dwBaseAddress, nP3X);
+                                }
+                                else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
+                                {
+                                    nP3X = min(MAX_X, nP3X + (bAPressed ? 1 : 1000));
+                                    SetP3X(hProcess, dwBaseAddress, nP3X);
+                                }
+
+                                if (nOldDownRecoveryIndex == -1)
+                                    nOldDownRecoveryIndex = nDownRecoveryIndex;
+                                else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
+                                {
+                                    nP4X = max(MIN_X, nP4X - (bAPressed ? 1 : 1000));
+                                    SetP4X(hProcess, dwBaseAddress, nP4X);
+                                }
+                                else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
+                                {
+                                    nP4X = min(MAX_X, nP4X + (bAPressed ? 1 : 1000));
+                                    SetP4X(hProcess, dwBaseAddress, nP4X);
+                                }
                             }
                             else if (nExtendedSettingsPage == 3)
                             {
@@ -680,20 +745,21 @@ int main(int argc, char* argv[])
                             }
                             else if (nExtendedSettingsPage == 2)
                             {
-                                if (nRoaVisibleCharge == 0)
+                                if (nP1X == MIN_X)
                                 {
-                                    char pcTemp[2] = "0";
-                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseOffString), &pcTemp, 4, 0);
-                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 4, 0);
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(MIN_X).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseOffString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 7, 0);
 
                                     nWriteBuffer = 0;
                                     WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
                                     nEnemyDefenseIndex = 0;
                                 }
-                                else if (nRoaVisibleCharge == MAX_CHARGE)
+                                else if (nP1X == MAX_X)
                                 {
-                                    char pcTemp[3];
-                                    strcpy_s(pcTemp, std::to_string(MAX_CHARGE).c_str());
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(MAX_X).c_str());
                                     WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseDodgeString), &pcTemp, 7, 0);
                                     WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcTemp, 7, 0);
 
@@ -703,15 +769,120 @@ int main(int argc, char* argv[])
                                 }
                                 else
                                 {
-                                    char pcTemp[3];
-                                    strcpy_s(pcTemp, std::to_string(nRoaVisibleCharge).c_str());
-                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 3, 0);
-                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 3, 0);
-                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 3, 0);
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(nP1X).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 7, 0);
 
                                     nWriteBuffer = 2;
                                     WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
                                     nEnemyDefenseIndex = 2;
+                                }
+
+                                if (nP2X == MIN_X)
+                                {
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(MIN_X).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseTypeIndex = 0;
+                                }
+                                else if (nP2X == MAX_X)
+                                {
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(MAX_X).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 2;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseTypeIndex = 2;
+                                }
+                                else
+                                {
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(nP2X).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 1;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseTypeIndex = 1;
+                                }
+
+                                if (nP3X == MIN_X)
+                                {
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(MIN_X).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryOffString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 0;
+                                }
+                                else if (nP3X == MAX_X)
+                                {
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(MAX_X).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryRandom1String), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryRandom2String), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 5;
+                                }
+                                else
+                                {
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(nP3X).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryBackString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryForwardString), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 2;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 2;
+                                }
+                            
+                                if (nP4X == MIN_X)
+                                {
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(MIN_X).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryOffString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nDownRecoveryIndex = 0;
+                                }
+                                else if (nP4X == MAX_X)
+                                {
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(MAX_X).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryRandom1String), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryRandom2String), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nDownRecoveryIndex = 5;
+                                }
+                                else
+                                {
+                                    char pcTemp[7];
+                                    strcpy_s(pcTemp, std::to_string(nP4X).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryBackString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryForwardString), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 2;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nDownRecoveryIndex = 2;
                                 }
                             }
                             else if (nExtendedSettingsPage == 3)
@@ -1097,6 +1268,27 @@ int main(int argc, char* argv[])
                         SetSionBullets(hProcess, dwBaseAddress, nSionBullets);
                         SetRoaCharge(hProcess, dwBaseAddress, nRoaVisibleCharge, nRoaHiddenCharge);
                         SetGuard(hProcess, dwBaseAddress, 0, nP1Moon, nP2Moon);
+
+                        if (bP1XLocked)
+                        {
+                            nWriteBuffer = nP1X;
+                            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X), &nWriteBuffer, 4, 0);
+                        }
+                        if (bP2XLocked)
+                        {
+                            nWriteBuffer = nP2X;
+                            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset), &nWriteBuffer, 4, 0);
+                        }
+                        if (bP3XLocked)
+                        {
+                            nWriteBuffer = nP3X;
+                            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 2), &nWriteBuffer, 4, 0);
+                        }
+                        if (bP4XLocked)
+                        {
+                            nWriteBuffer = nP4X;
+                            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 3), &nWriteBuffer, 4, 0);
+                        }
                     }
 
                     // infinite guard bar

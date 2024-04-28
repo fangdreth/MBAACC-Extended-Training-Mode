@@ -73,3 +73,5 @@ const int MAX_METER = 30000;
 const int MAX_PAGES = 3;
 const int MAX_BULLETS = 13;
 const int MAX_CHARGE = 9;
+const int MIN_X = -65536;
+const int MAX_X = 65536;

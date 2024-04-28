@@ -177,6 +177,21 @@ void SetP1X(HANDLE hProcess, DWORD dwBaseAddress, int nValue)
     WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X), &nValue, 4, 0);
 }
 
+void SetP2X(HANDLE hProcess, DWORD dwBaseAddress, int nValue)
+{
+    WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset), &nValue, 4, 0);
+}
+
+void SetP3X(HANDLE hProcess, DWORD dwBaseAddress, int nValue)
+{
+    WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 2), &nValue, 4, 0);
+}
+
+void SetP4X(HANDLE hProcess, DWORD dwBaseAddress, int nValue)
+{
+    WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 3), &nValue, 4, 0);
+}
+
 void SetRoaCharge(HANDLE hProcess, DWORD dwBaseAddress, int nVisible, int nHidden)
 {
     // for some reason it matters the order that hidden/visible is set
