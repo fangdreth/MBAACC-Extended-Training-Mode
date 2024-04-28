@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
     int nEnemyStatusSetting = eEnemyStatus::STAND;
     bool bExGuard = false;
     int nExGuardSetting = eEnemyOffOnRandom::OFF;
-    int nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::ONEHUNDRED;
+    int nCustomGuard = eEnemyGuardLevelSettings::ONEHUNDRED;
     int nReversalPattern = 0;
     int nReversalDelayFrames = 0;
     int nTempReversalDelayFrames = 0;
@@ -78,6 +78,8 @@ int main(int argc, char* argv[])
     int nOldEnemyDefenseTypeIndex = -1;
     int nOldAirRecoveryIndex = -1;
     int nOldDownRecoveryIndex = -1;
+    int nOldThrowRecoveryIndex = -1;
+    int nOldReduceDamageIndex = -1;
     int nOldLifeIndex = -1;
     std::vector<std::string> vPatternNames = GetEmptyPatternList();
     bool bReversaled = false;
@@ -92,12 +94,29 @@ int main(int argc, char* argv[])
     int nStoredEnemyDefenseType = 0;
     int nStoredAirRecovery = 0;
     int nStoredDownRecovery = 0;
+    int nStoredThrowRecovery = 0;
+    int nStoredReduceDamage = 0;
     int nGameCursorIndex = 0;
     int nOldGameCursorIndex = 0;
     int nCustomMeter = 10000;
     int nCustomHealth = 11400;
     int nHealthRefillTimer = 0;
     int nLifeRecover = 0; //0:ON 1:OFF
+    int nInfGuard = 0; //0:OFF 1:ON
+    int nExtendedSettingsPage = 1;
+    int nSionBullets = 13;
+    int nRoaVisibleCharge = 0;
+    int nRoaHiddenCharge = 0;
+    bool bP1XLocked = false;
+    bool bP2XLocked = false;
+    bool bP3XLocked = false;
+    bool bP4XLocked = false;
+    int nP1X = 0;
+    int nP2X = 0;
+    int nP3X = 0;
+    int nP4X = 0;
+    bool bP3Exists = false;
+    bool bP4Exists = false;
 
     int nDebugBias = 0;
     int nDebugFrameCount = 0;
@@ -135,8 +154,6 @@ int main(int argc, char* argv[])
                 ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
                 if (nReadResult == 0)
                 {
-                    system("cls");
-                    std::cout << "On CSS";
                     nReversalIndex = 0;
                     vPatternNames = GetEmptyPatternList();
                 }
@@ -146,18 +163,25 @@ int main(int argc, char* argv[])
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1APressed), &nReadResult, 4, 0);
                     bAPressed = (nReadResult == 1 ? true : false);
 
-                    /*nOldDirectionPressed = nDirectionPressed;
-                    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1DirectionPress), &nReadResult, 4, 0);
-                    nDirectionPressed = nReadResult;*/
-
+                    // these flags are used to determine if assist chars exist
+                    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1Exists + dwP2Offset * 2), &nReadResult, 4, 0);
+                    bP3Exists = (nReadResult == 1 ? true : false);
+                    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1Exists + dwP2Offset * 3), &nReadResult, 4, 0);
+                    bP4Exists = (nReadResult == 1 ? true : false);
 
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwPausedFlag), &nReadResult, 4, 0);
                     bPaused = (nReadResult == 1 ? true : false);
                     if (bPaused)
                     {
                         DWORD dwMainViewScreenStringAddress = GetMainViewScreenStringAddress(hProcess, dwBaseAddress);
-                        char pcTemp[18] = "EXTENDED SETTINGS";
-                        WriteProcessMemory(hProcess, (LPVOID)(dwMainViewScreenStringAddress), &pcTemp, 18, 0);
+                        DWORD dwTrainingMenuString = GetTrainingMenuStringAddress(hProcess, dwBaseAddress);
+
+                        char pcExtendedSettings[18] = "EXTENDED SETTINGS";
+                        char pcTrainingMenu[19];
+                        strcpy_s(pcTrainingMenu, ("TRAINING MOD " + VERSION).c_str());
+
+                        WriteProcessMemory(hProcess, (LPVOID)(dwMainViewScreenStringAddress), &pcExtendedSettings, 18, 0);
+                        WriteProcessMemory(hProcess, (LPVOID)(dwTrainingMenuString), &pcTrainingMenu, 19, 0);
 
                         DWORD dwSubMenuAddress = GetSubMenuEnumAddress(hProcess, dwBaseAddress);
                         ReadProcessMemory(hProcess, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
@@ -171,6 +195,8 @@ int main(int argc, char* argv[])
                             nOldEnemyDefenseTypeIndex = -1;
                             nOldAirRecoveryIndex = -1;
                             nOldDownRecoveryIndex = -1;
+                            nOldThrowRecoveryIndex = -1;
+                            nOldReduceDamageIndex = -1;
                             nOldLifeIndex = -1;
 
                             nWriteBuffer = nStoredEnemyDefense;
@@ -183,6 +209,10 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwAirRecovery), &nWriteBuffer, 4, 0);
                             nWriteBuffer = nStoredDownRecovery;
                             WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwDownRecovery), &nWriteBuffer, 4, 0);
+                            nWriteBuffer = nStoredThrowRecovery;
+                            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwThrowRecovery), &nWriteBuffer, 4, 0);
+                            nWriteBuffer = nStoredReduceDamage;
+                            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwReduceRecovery), &nWriteBuffer, 4, 0);
                         }
 
                         // Turn "View Screen" into "Extended Settings" menu
@@ -200,6 +230,7 @@ int main(int argc, char* argv[])
                         {
                             DWORD dwEnemySettingsMenuTitle = GetEnemySettingsMenuTitleStringAddress(hProcess, dwBaseAddress);
 
+                            DWORD dwEnemyActionOffString = GetEnemyActionOffStringAddress(hProcess, dwBaseAddress);
                             DWORD dwEnemyActionAString = GetEnemyActionActionAStringAddress(hProcess, dwBaseAddress);
                             DWORD dwEnemyActionBString = GetEnemyActionActionBStringAddress(hProcess, dwBaseAddress);
                             DWORD dwEnemyActionCString = GetEnemyActionActionCStringAddress(hProcess, dwBaseAddress);
@@ -236,6 +267,20 @@ int main(int argc, char* argv[])
                             DWORD dwDownRecoveryRandom1String = GetDownRecoveryRandom1StringAddress(hProcess, dwBaseAddress);
                             DWORD dwDownRecoveryRandom2String = GetDownRecoveryRandom2StringAddress(hProcess, dwBaseAddress);
 
+                            DWORD dwThrowRecoveryString = GetThrowRecoveryStringAddress(hProcess, dwBaseAddress);
+                            DWORD dwThrowRecoveryNormalString = GetThrowRecoveryNormalStringAddress(hProcess, dwBaseAddress);
+                            DWORD dwThrowRecoveryAllFastString = GetThrowRecoveryAllFastStringAddress(hProcess, dwBaseAddress);
+                            DWORD dwThrowRecoveryAllLateString = GetThrowRecoveryAllLateStringAddress(hProcess, dwBaseAddress);
+                            DWORD dwThrowRecoveryAllRandomString = GetThrowRecoveryAllRandomStringAddress(hProcess, dwBaseAddress);
+                            DWORD dwThrowRecoveryRandomFastString = GetThrowRecoveryRandomFastStringAddress(hProcess, dwBaseAddress);
+                            DWORD dwThrowRecoveryRandomLateString = GetThrowRecoveryRandomLateStringAddress(hProcess, dwBaseAddress);
+                            DWORD dwThrowRecoveryRandomRandomString = GetThrowRecoveryRandomRandomStringAddress(hProcess, dwBaseAddress);
+
+                            DWORD dwReduceDamageString = GetReduceDamageStringAddress(hProcess, dwBaseAddress);
+                            DWORD dwReduceDamageNormalString = GetReduceDamageNormalStringAddress(hProcess, dwBaseAddress);
+                            DWORD dwReduceDamageAllString = GetReduceDamageAllStringAddress(hProcess, dwBaseAddress);
+                            DWORD dwReduceDamageRandomString = GetReduceDamageRandomStringAddress(hProcess, dwBaseAddress);
+
                             DWORD dwEnemyActionString = GetEnemyActionStringAddress(hProcess, dwBaseAddress);
                             DWORD dwEnemyDefenseString = GetEnemyDefenseStringAddress(hProcess, dwBaseAddress);
 
@@ -244,6 +289,8 @@ int main(int argc, char* argv[])
                             DWORD dwEnemyDefenseTypeIndex;
                             DWORD dwAirRecoveryIndex;
                             DWORD dwDownRecoveryIndex;
+                            DWORD dwThrowRecoveryIndex;
+                            DWORD dwReduceDamageIndex;
                             do
                             {
                                 dwEnemyActionIndex = GetEnemyActionIndexAddress(hProcess, dwBaseAddress);
@@ -251,30 +298,16 @@ int main(int argc, char* argv[])
                                 dwEnemyDefenseTypeIndex = GetEnemyDefenseTypeIndexAddress(hProcess, dwBaseAddress);
                                 dwAirRecoveryIndex = GetAirRecoveryIndexAddress(hProcess, dwBaseAddress);
                                 dwDownRecoveryIndex = GetDownRecoveryIndexAddress(hProcess, dwBaseAddress);
+                                dwThrowRecoveryIndex = GetThrowRecoveryIndexAddress(hProcess, dwBaseAddress);
+                                dwReduceDamageIndex = GetReduceDamageIndexAddress(hProcess, dwBaseAddress);
 
                                 ReadProcessMemory(hProcess, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
                                 nCurrentSubMenu = nReadResult;
 
-                            } while ((dwEnemyActionIndex == 0x58 || dwEnemyDefenseIndex == 0x58 || dwEnemyDefenseTypeIndex == 0x58 || dwAirRecoveryIndex == 0x58 || dwDownRecoveryIndex == 0x58) && nCurrentSubMenu == 7);
+                            } while ((dwEnemyActionIndex == 0x58 || dwEnemyDefenseIndex == 0x58 || dwEnemyDefenseTypeIndex == 0x58 || dwAirRecoveryIndex == 0x58 || dwDownRecoveryIndex == 0x58 || dwThrowRecoveryIndex == 0x58 || dwReduceDamageIndex == 0x58) && nCurrentSubMenu == 7);
 
                             if (nCurrentSubMenu != 7)
                                 continue;
-
-
-                            char pcTrainingPreset[17] = "training preset.";
-                            char pcExtendedSettings[18] = "EXTENDED SETTINGS";
-                            char pcPreset[7] = "PRESET";
-                            char pcExGuard[9] = "EX GUARD";
-                            char pcReversalDelay[15] = "REVERSAL DELAY";
-                            char pcMeter[18] = "METER [A]->SLOWER";
-                            char pcHealth[19] = "HEALTH [A]->SLOWER";
-                            WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionInfoStringAddress), &pcTrainingPreset, 18, 0);
-                            WriteProcessMemory(hProcess, (LPVOID)(dwEnemySettingsMenuTitle), &pcExtendedSettings, 18, 0);
-                            WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionString), &pcPreset, 7, 0);
-                            WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseString), &pcExGuard, 9, 0);
-                            WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcReversalDelay, 15, 0);
-                            WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryString), &pcMeter, 18, 0);
-                            WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryString), &pcHealth, 19, 0);
 
                             // Index values for menu items
                             ReadProcessMemory(hProcess, (LPVOID)(dwEnemyActionIndex), &nReadResult, 4, 0);
@@ -287,185 +320,536 @@ int main(int argc, char* argv[])
                             int nAirRecoveryIndex = nReadResult;
                             ReadProcessMemory(hProcess, (LPVOID)(dwDownRecoveryIndex), &nReadResult, 4, 0);
                             int nDownRecoveryIndex = nReadResult;
+                            ReadProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryIndex), &nReadResult, 4, 0);
+                            int nThrowRecoveryIndex = nReadResult;
+                            ReadProcessMemory(hProcess, (LPVOID)(dwReduceDamageIndex), &nReadResult, 4, 0);
+                            int nReduceDamageIndex = nReadResult;
 
-                            if (nOldEnemyActionIndex == -1)
-                                nOldEnemyActionIndex = nEnemyActionIndex;
-                            else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
-                                nReversalIndex = max(0, nReversalIndex - 1);
-                            else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
-                                nReversalIndex = min(nReversalIndex + 1, vPatternNames.size() - 1);
-
-                            if (nOldEnemyDefenseIndex == -1)
-                                nOldEnemyDefenseIndex = nEnemyDefenseIndex;
-                            else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
-                                nExGuardSetting = max(0, nExGuardSetting - 1);
-                            else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
-                                nExGuardSetting = min(nExGuardSetting + 1, eEnemyOffOnRandom::RANDOM);
-
-                            if (nOldEnemyDefenseTypeIndex == -1)
-                                nOldEnemyDefenseTypeIndex = nEnemyDefenseTypeIndex;
-                            else if (nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex)// left
-                                nReversalDelayFrames = max(0, nReversalDelayFrames - 1);
-                            else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
-                                nReversalDelayFrames = min(nReversalDelayFrames + 1, MAX_DELAY /*I chose this number arbitrarily*/);
-
-                            if (nOldAirRecoveryIndex == -1)
-                                nOldAirRecoveryIndex = nAirRecoveryIndex;
-                            else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
+                            char pcTrainingPreset[17] = "training preset.";
+                            char pcExtendedSettings[18] = "EXTENDED SETTINGS";
+                            char pcBlank[1] = "";
+                            WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionInfoStringAddress), &pcTrainingPreset, 18, 0);
+                            WriteProcessMemory(hProcess, (LPVOID)(dwEnemySettingsMenuTitle), &pcExtendedSettings, 18, 0);
+                            WriteProcessMemory(hProcess, (LPVOID)(dwReduceDamageString), &pcBlank, 1, 0);
+                            if (nExtendedSettingsPage == 1)
                             {
-                                nCustomMeter = max(0, nCustomMeter - (bAPressed ? 10 : 1000));
-                                SetMeter(hProcess, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
+                                char pcPreset[7] = "PRESET";
+                                char pcExGuard[9] = "EX GUARD";
+                                char pcReversalDelay[15] = "REVERSAL DELAY";
+                                char pcMeter[18] = "METER [A]->SLOWER";
+                                char pcHealth[19] = "HEALTH [A]->SLOWER";
+                                char pcGuardBar[10] = "GUARD BAR";
+                                char pcBlank[1] = "";
+                                
+                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionString), &pcPreset, 7, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseString), &pcExGuard, 9, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcReversalDelay, 15, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryString), &pcMeter, 18, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryString), &pcHealth, 19, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryString), &pcGuardBar, 10, 0);
                             }
-                            else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
+                            else if (nExtendedSettingsPage == 2)
                             {
-                                nCustomMeter = min(nCustomMeter + (bAPressed ? 10 : 1000), MAX_METER /*yes I know this lets hmoons go over 200*/);
-                                SetMeter(hProcess, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
+                                char pcP1XLock[15] = "P1 X A->LOCK";
+                                char pcP2XLock[15] = "P2 X A->LOCK";
+                                char pcP3XLock[15] = "P3 X A->LOCK";
+                                char pcP4XLock[15] = "P4 X A->LOCK";
+                                char pcP1XUnlock[15] = "P1 X A->UNLOCK";
+                                char pcP2XUnlock[15] = "P2 X A->UNLOCK";
+                                char pcP3XUnlock[15] = "P3 X A->UNLOCK";
+                                char pcP4XUnlock[15] = "P4 X A->UNLOCK";
+                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionString), &pcBlank, 2, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseString), (bP1XLocked ? &pcP1XUnlock : &pcP1XLock), 15, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeStringAddress), (bP2XLocked ? &pcP2XUnlock : &pcP2XLock), 15, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryString), &pcBlank, 2, 0);
+                                
+                                if (bP3Exists)
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryString), (bP3XLocked ? &pcP3XUnlock : &pcP3XLock), 15, 0);
+                                else
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryString), pcBlank, 2, 0);
+
+                                if (bP4Exists)
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryString), (bP4XLocked ? &pcP4XUnlock : &pcP4XLock), 15, 0);
+                                else
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryString), pcBlank, 2, 0);
+                            }
+                            else if (nExtendedSettingsPage == 3)
+                            {
+                                char pcSionBullets[13] = "SION BULLETS";
+                                char pcRoaVisibleCharge[19] = "ROA VISIBLE CHARGE";
+                                char pcRoaHiddenCharge[19] = "ROA HIDDEN CHARGE";
+                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionString), &pcSionBullets, 13, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseString), &pcRoaVisibleCharge, 19, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcRoaHiddenCharge, 19, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryString), &pcBlank, 2, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryString), &pcBlank, 2, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryString), &pcBlank, 2, 0);
                             }
 
-                            if (nOldDownRecoveryIndex == -1)
-                                nOldDownRecoveryIndex = nDownRecoveryIndex;
-                            else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
+                            if (nExtendedSettingsPage == 1)
                             {
-                                nCustomHealth = max(0, nCustomHealth - (bAPressed ? 1 : 100));
-                                SetHealth(hProcess, dwBaseAddress, nCustomHealth);
+                                if (nOldEnemyActionIndex == -1)
+                                    nOldEnemyActionIndex = nEnemyActionIndex;
+                                else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
+                                    nReversalIndex = max(0, nReversalIndex - 1);
+                                else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
+                                    nReversalIndex = min(nReversalIndex + 1, vPatternNames.size() - 1);
+
+                                if (nOldEnemyDefenseIndex == -1)
+                                    nOldEnemyDefenseIndex = nEnemyDefenseIndex;
+                                else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
+                                    nExGuardSetting = max(0, nExGuardSetting - 1);
+                                else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
+                                    nExGuardSetting = min(nExGuardSetting + 1, eEnemyOffOnRandom::RANDOM);
+
+                                if (nOldEnemyDefenseTypeIndex == -1)
+                                    nOldEnemyDefenseTypeIndex = nEnemyDefenseTypeIndex;
+                                else if (nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex)// left
+                                    nReversalDelayFrames = max(0, nReversalDelayFrames - 1);
+                                else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
+                                    nReversalDelayFrames = min(nReversalDelayFrames + 1, MAX_DELAY /*I chose this number arbitrarily*/);
+
+                                if (nOldAirRecoveryIndex == -1)
+                                    nOldAirRecoveryIndex = nAirRecoveryIndex;
+                                else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
+                                {
+                                    nCustomMeter = max(0, nCustomMeter - (bAPressed ? 10 : 1000));
+                                    SetMeter(hProcess, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
+                                }
+                                else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
+                                {
+                                    nCustomMeter = min(nCustomMeter + (bAPressed ? 10 : 1000), MAX_METER /*yes I know this lets hmoons go over 200*/);
+                                    SetMeter(hProcess, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
+                                }
+
+                                if (nOldDownRecoveryIndex == -1)
+                                    nOldDownRecoveryIndex = nDownRecoveryIndex;
+                                else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
+                                {
+                                    nCustomHealth = max(0, nCustomHealth - (bAPressed ? 1 : 100));
+                                    SetHealth(hProcess, dwBaseAddress, nCustomHealth);
+                                }
+                                else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
+                                {
+                                    nCustomHealth = min(nCustomHealth + (bAPressed ? 1 : 100), MAX_HEALTH);
+                                    SetHealth(hProcess, dwBaseAddress, nCustomHealth);
+                                }
+
+                                if (nOldThrowRecoveryIndex == -1)
+                                    nOldThrowRecoveryIndex = nThrowRecoveryIndex;
+                                else if (nOldThrowRecoveryIndex > nThrowRecoveryIndex)// left
+                                    nInfGuard = max(0, nInfGuard - 1);
+                                else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
+                                    nInfGuard = min(nInfGuard + 1, 1);
                             }
-                            else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
+                            else if (nExtendedSettingsPage == 2)
                             {
-                                nCustomHealth = min(nCustomHealth + (bAPressed ? 1 : 100), MAX_HEALTH);
-                                SetHealth(hProcess, dwBaseAddress, nCustomHealth);
+                                ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X), &nReadResult, 4, 0);
+                                nP1X = nReadResult;
+                                ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset), &nReadResult, 4, 0);
+                                nP2X = nReadResult;
+                                ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 2), &nReadResult, 4, 0);
+                                nP3X = nReadResult;
+                                ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 3), &nReadResult, 4, 0);
+                            }
+                            else if (nExtendedSettingsPage == 3)
+                            {
+                                if (nOldEnemyActionIndex == -1)
+                                    nOldEnemyActionIndex = nEnemyActionIndex;
+                                else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
+                                {
+                                    nSionBullets = min(nSionBullets + 1, MAX_BULLETS);
+                                    SetSionBullets(hProcess, dwBaseAddress, nSionBullets);
+                                }
+                                else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
+                                {
+                                    nSionBullets = max(1, nSionBullets - 1);
+                                    SetSionBullets(hProcess, dwBaseAddress, nSionBullets);
+                                }
+
+                                if (nOldEnemyDefenseIndex == -1)
+                                    nOldEnemyDefenseIndex = nEnemyDefenseIndex;
+                                else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
+                                {
+                                    nRoaVisibleCharge = max(0, nRoaVisibleCharge - 1);
+                                    SetRoaCharge(hProcess, dwBaseAddress, nRoaVisibleCharge, nRoaHiddenCharge);
+                                }
+                                else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
+                                {
+                                    nRoaVisibleCharge = min(nRoaVisibleCharge + 1, MAX_CHARGE);
+                                    SetRoaCharge(hProcess, dwBaseAddress, nRoaVisibleCharge, nRoaHiddenCharge);
+                                }
+
+                                if (nOldEnemyDefenseTypeIndex == -1)
+                                    nOldEnemyDefenseTypeIndex = nEnemyDefenseTypeIndex;
+                                else if (nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex)// left
+                                {
+                                    nRoaHiddenCharge = max(0, nRoaHiddenCharge - 1);
+                                    SetRoaCharge(hProcess, dwBaseAddress, nRoaVisibleCharge, nRoaHiddenCharge);
+                                }
+                                else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
+                                {
+                                    nRoaHiddenCharge = min(nRoaHiddenCharge + 1, MAX_CHARGE);
+                                    SetRoaCharge(hProcess, dwBaseAddress, nRoaVisibleCharge, nRoaHiddenCharge);
+                                }
+
                             }
 
-                            if (nExGuardSetting == eEnemyOffOnRandom::OFF)
+                            if (nOldReduceDamageIndex == -1)
+                                nOldReduceDamageIndex = nReduceDamageIndex;
+                            else if (nOldReduceDamageIndex > nReduceDamageIndex)// left
                             {
-                                char pcTemp[4] = "OFF";
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseOffString), &pcTemp, 4, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 4, 0);
+                                nExtendedSettingsPage = max(1, nExtendedSettingsPage - 1);
+
+                                nOldEnemyActionIndex = -1;
+                                nOldEnemyDefenseIndex = -1;
+                                nOldEnemyDefenseTypeIndex = -1;
+                                nOldAirRecoveryIndex = -1;
+                                nOldDownRecoveryIndex = -1;
+                                nOldThrowRecoveryIndex = -1;
+                                nOldReduceDamageIndex = -1;
+                            }
+                            else if (nOldReduceDamageIndex < nReduceDamageIndex)// right
+                            {
+                                nExtendedSettingsPage = min(nExtendedSettingsPage + 1, MAX_PAGES);
+
+                                nOldEnemyActionIndex = -1;
+                                nOldEnemyDefenseIndex = -1;
+                                nOldEnemyDefenseTypeIndex = -1;
+                                nOldAirRecoveryIndex = -1;
+                                nOldDownRecoveryIndex = -1;
+                                nOldThrowRecoveryIndex = -1;
+                                nOldReduceDamageIndex = -1;
+                            }
+
+                            if (nExtendedSettingsPage == 1)
+                            {
+                                if (nExGuardSetting == eEnemyOffOnRandom::OFF)
+                                {
+                                    char pcTemp[4] = "OFF";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseOffString), &pcTemp, 4, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 4, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseIndex = 0;
+                                }
+                                else if (nExGuardSetting == eEnemyOffOnRandom::RANDOM)
+                                {
+                                    char pcTemp[7] = "RANDOM";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseDodgeString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseIndex = 5;
+                                }
+                                else
+                                {
+                                    char pcTemp[3] = "ON";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 3, 0);
+
+                                    nWriteBuffer = 2;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseIndex = 2;
+                                }
+
+                                if (nReversalDelayFrames == 0)
+                                {
+                                    char pcTemp[2] = "0";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 2, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 2, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseTypeIndex = 0;
+                                }
+                                else if (nReversalDelayFrames == MAX_DELAY)
+                                {
+                                    char pcTemp[3];
+                                    strcpy_s(pcTemp, std::to_string(MAX_DELAY).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 3, 0);
+
+                                    nWriteBuffer = 2;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseTypeIndex = 2;
+                                }
+                                else
+                                {
+                                    char pcTemp[3];
+                                    strcpy_s(pcTemp, std::to_string(nReversalDelayFrames).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 3, 0);
+
+                                    nWriteBuffer = 1;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseTypeIndex = 1;
+                                }
+
+                                if (nCustomMeter == 0)
+                                {
+                                    char pcTemp[5] = "0.0%";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryOffString), &pcTemp, 5, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 5, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 0;
+                                }
+                                else if (nCustomMeter == MAX_METER)
+                                {
+                                    char pcTemp[7] = "300.0%";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryRandom1String), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryRandom2String), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 5;
+                                }
+                                else
+                                {
+                                    char pcTemp[8];
+                                    strcpy_s(pcTemp, (std::to_string(nCustomMeter / 100) + "." + std::to_string(nCustomMeter % 100 / 10) + "%").c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 8, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryBackString), &pcTemp, 8, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryForwardString), &pcTemp, 8, 0);
+
+                                    nWriteBuffer = 2;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 2;
+                                }
+
+                                if (nCustomHealth == 0)
+                                {
+                                    char pcTemp[7] = "0 (0%)";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryOffString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nDownRecoveryIndex = 0;
+                                }
+                                else if (nCustomHealth == MAX_HEALTH)
+                                {
+                                    char pcTemp[13] = "11400 (100%)";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryRandom1String), &pcTemp, 13, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryRandom2String), &pcTemp, 13, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nDownRecoveryIndex = 5;
+                                }
+                                else
+                                {
+                                    char pcTemp[19];
+                                    int nPercent = (int)((float)nCustomHealth / 11400.0f * 100.0f);
+                                    strcpy_s(pcTemp, (std::to_string(nCustomHealth) + " (" + std::to_string(nPercent) + ")%").c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 19, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryBackString), &pcTemp, 19, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryForwardString), &pcTemp, 19, 0);
+
+                                    nWriteBuffer = 2;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nDownRecoveryIndex = 2;
+                                }
+
+                                if (nInfGuard == 0)
+                                {
+                                    char pcTemp[7] = "NORMAL";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryNormalString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryAllFastString), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nThrowRecoveryIndex = 0;
+                                }
+                                else
+                                {
+                                    char pcTemp[9] = "INFINITE";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryRandomLateString), &pcTemp, 9, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryRandomRandomString), &pcTemp, 9, 0);
+
+                                    nWriteBuffer = 6;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nThrowRecoveryIndex = 6;
+                                }
+                            }
+                            else if (nExtendedSettingsPage == 2)
+                            {
+                                if (nRoaVisibleCharge == 0)
+                                {
+                                    char pcTemp[2] = "0";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseOffString), &pcTemp, 4, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 4, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseIndex = 0;
+                                }
+                                else if (nRoaVisibleCharge == MAX_CHARGE)
+                                {
+                                    char pcTemp[3];
+                                    strcpy_s(pcTemp, std::to_string(MAX_CHARGE).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseDodgeString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseIndex = 5;
+                                }
+                                else
+                                {
+                                    char pcTemp[3];
+                                    strcpy_s(pcTemp, std::to_string(nRoaVisibleCharge).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 3, 0);
+
+                                    nWriteBuffer = 2;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseIndex = 2;
+                                }
+                            }
+                            else if (nExtendedSettingsPage == 3)
+                            {
+                                if (nSionBullets == MAX_BULLETS)
+                                {
+                                    char pcTemp[3] = "13";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionOffString), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionAString), &pcTemp, 3, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyActionIndex = 0;
+                                }
+                                else if (nSionBullets == 1)
+                                {
+                                    char pcTemp[2] = "1";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyRecoverCString), &pcTemp, 2, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyRecoverDString), &pcTemp, 2, 0);
+
+                                    nWriteBuffer = 8;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyActionIndex = 8;
+                                }
+                                else
+                                {
+                                    char pcTemp[3];
+                                    strcpy_s(pcTemp, std::to_string(nSionBullets).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionAString), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionBString), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionCString), &pcTemp, 3, 0);
+
+                                    nWriteBuffer = 2;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyActionIndex = 2;
+                                }
+                            
+                                if (nRoaVisibleCharge == 0)
+                                {
+                                    char pcTemp[2] = "0";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseOffString), &pcTemp, 4, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 4, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseIndex = 0;
+                                }
+                                else if (nRoaVisibleCharge == MAX_CHARGE)
+                                {
+                                    char pcTemp[3];
+                                    strcpy_s(pcTemp, std::to_string(MAX_CHARGE).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseDodgeString), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseIndex = 5;
+                                }
+                                else
+                                {
+                                    char pcTemp[3];
+                                    strcpy_s(pcTemp, std::to_string(nRoaVisibleCharge).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 3, 0);
+
+                                    nWriteBuffer = 2;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseIndex = 2;
+                                }
+
+                                if (nRoaHiddenCharge == 0)
+                                {
+                                    char pcTemp[2] = "0";
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 4, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 4, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseTypeIndex = 0;
+                                }
+                                else if (nRoaHiddenCharge == MAX_CHARGE)
+                                {
+                                    char pcTemp[3];
+                                    strcpy_s(pcTemp, std::to_string(MAX_CHARGE).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 7, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 7, 0);
+
+                                    nWriteBuffer = 2;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseTypeIndex = 2;
+                                }
+                                else
+                                {
+                                    char pcTemp[3];
+                                    strcpy_s(pcTemp, std::to_string(nRoaHiddenCharge).c_str());
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 3, 0);
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 3, 0);
+
+                                    nWriteBuffer = 1;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
+                                    nEnemyDefenseTypeIndex = 1;
+                                }
+                            }
+
+                            if (nExtendedSettingsPage == 1)
+                            {
+                                char pcTemp[7] = "PAGE 1";
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReduceDamageNormalString), &pcTemp, 7, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReduceDamageAllString), &pcTemp, 7, 0);
 
                                 nWriteBuffer = 0;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
-                                nEnemyDefenseIndex = 0;
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReduceDamageIndex), &nWriteBuffer, 4, 0);
+                                nThrowRecoveryIndex = 0;
                             }
-                            else if (nExGuardSetting == eEnemyOffOnRandom::RANDOM)
+                            else if (nExtendedSettingsPage == MAX_PAGES)
                             {
-                                char pcTemp[7] = "RANDOM";
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseDodgeString), &pcTemp, 7, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcTemp, 7, 0);
+                                char pcTemp[7];
+                                strcpy_s(pcTemp, ("PAGE " + std::to_string(MAX_PAGES)).c_str());
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReduceDamageAllString), &pcTemp, 7, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReduceDamageRandomString), &pcTemp, 7, 0);
 
-                                nWriteBuffer = 5;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
-                                nEnemyDefenseIndex = 5;
+                                nWriteBuffer = 2;
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReduceDamageIndex), &nWriteBuffer, 4, 0);
+                                nReduceDamageIndex = 2;
                             }
                             else
                             {
-                                char pcTemp[3] = "ON";
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 3, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 3, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 3, 0);
-
-                                nWriteBuffer = 2;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
-                                nEnemyDefenseIndex = 2;
-                            }
-
-                            if (nReversalDelayFrames == 0)
-                            {
-                                char pcTemp[2] = "0";
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 2, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 2, 0);
-
-                                nWriteBuffer = 0;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
-                                nEnemyDefenseTypeIndex = 0;
-                            }
-                            else if (nReversalDelayFrames == MAX_DELAY)
-                            {
-                                char pcTemp[3];
-                                strcpy_s(pcTemp, std::to_string(MAX_DELAY).c_str());
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 3, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 3, 0);
-
-                                nWriteBuffer = 2;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
-                                nEnemyDefenseTypeIndex = 2;
-                            }
-                            else
-                            {
-                                char pcTemp[3];
-                                strcpy_s(pcTemp, std::to_string(nReversalDelayFrames).c_str());
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 3, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 3, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 3, 0);
+                                char pcTemp[7];
+                                strcpy_s(pcTemp, ("PAGE " + std::to_string(nExtendedSettingsPage)).c_str());
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReduceDamageNormalString), &pcTemp, 7, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReduceDamageAllString), &pcTemp, 7, 0);
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReduceDamageRandomString), &pcTemp, 7, 0);
 
                                 nWriteBuffer = 1;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
-                                nEnemyDefenseTypeIndex = 1;
-                            }
-
-                            if (nCustomMeter == 0)
-                            {
-                                char pcTemp[5] = "0.0%";
-                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryOffString), &pcTemp, 5, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 5, 0);
-
-                                nWriteBuffer = 0;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
-                                nAirRecoveryIndex = 0;
-                            }
-                            else if (nCustomMeter == MAX_METER)
-                            {
-                                char pcTemp[7] = "300.0%";
-                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryRandom1String), &pcTemp, 7, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryRandom2String), &pcTemp, 7, 0);
-
-                                nWriteBuffer = 5;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
-                                nAirRecoveryIndex = 5;
-                            }
-                            else
-                            {
-                                char pcTemp[8];
-                                strcpy_s(pcTemp, (std::to_string(nCustomMeter / 100) + "." + std::to_string(nCustomMeter % 100 / 10) + "%").c_str());
-                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 8, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryBackString), &pcTemp, 8, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryForwardString), &pcTemp, 8, 0);
-
-                                nWriteBuffer = 2;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
-                                nAirRecoveryIndex = 2;
-                            }
-
-                            if (nCustomHealth == 0)
-                            {
-                                char pcTemp[7] = "0 (0%)";
-                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryOffString), &pcTemp, 7, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 7, 0);
-
-                                nWriteBuffer = 0;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
-                                nDownRecoveryIndex = 0;
-                            }
-                            else if (nCustomHealth == MAX_HEALTH)
-                            {
-                                char pcTemp[13] = "11400 (100%)";
-                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryRandom1String), &pcTemp, 13, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryRandom2String), &pcTemp, 13, 0);
-
-                                nWriteBuffer = 5;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
-                                nDownRecoveryIndex = 5;
-                            }
-                            else
-                            {
-                                char pcTemp[19];
-                                int nPercent = (int)((float)nCustomHealth / 11400.0f * 100.0f);
-                                strcpy_s(pcTemp, (std::to_string(nCustomHealth) + " (" + std::to_string(nPercent) + ")%").c_str());
-                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 19, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryBackString), &pcTemp, 19, 0);
-                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryForwardString), &pcTemp, 19, 0);
-
-                                nWriteBuffer = 2;
-                                WriteProcessMemory(hProcess, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
-                                nDownRecoveryIndex = 2;
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReduceDamageIndex), &nWriteBuffer, 4, 0);
+                                nReduceDamageIndex = 1;
                             }
 
                             nOldEnemyActionIndex = nEnemyActionIndex;
@@ -473,6 +857,8 @@ int main(int argc, char* argv[])
                             nOldEnemyDefenseTypeIndex = nEnemyDefenseTypeIndex;
                             nOldAirRecoveryIndex = nAirRecoveryIndex;
                             nOldDownRecoveryIndex = nDownRecoveryIndex;
+                            nOldThrowRecoveryIndex = nThrowRecoveryIndex;
+                            nOldReduceDamageIndex = nReduceDamageIndex;
                         }
 
                         // ENEMEY SETTINGS
@@ -492,6 +878,8 @@ int main(int argc, char* argv[])
                             DWORD dwEnemyDefenseTypeIndex;
                             DWORD dwAirRecoveryIndex;
                             DWORD dwDownRecoveryIndex;
+                            DWORD dwThrowRecoveryIndex;
+                            DWORD dwReduceDamageIndex;
                             do
                             {
                                 dwEnemyActionIndex = GetEnemyActionIndexAddress(hProcess, dwBaseAddress);
@@ -499,11 +887,13 @@ int main(int argc, char* argv[])
                                 dwEnemyDefenseTypeIndex = GetEnemyDefenseTypeIndexAddress(hProcess, dwBaseAddress);
                                 dwAirRecoveryIndex = GetAirRecoveryIndexAddress(hProcess, dwBaseAddress);
                                 dwDownRecoveryIndex = GetDownRecoveryIndexAddress(hProcess, dwBaseAddress);
+                                dwThrowRecoveryIndex = GetThrowRecoveryIndexAddress(hProcess, dwBaseAddress);
+                                dwReduceDamageIndex = GetReduceDamageIndexAddress(hProcess, dwBaseAddress);
 
                                 ReadProcessMemory(hProcess, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
                                 nCurrentSubMenu = nReadResult;
 
-                            } while ((dwEnemyActionIndex == 0x58 || dwEnemyDefenseIndex == 0x58 || dwEnemyDefenseTypeIndex == 0x58 || dwAirRecoveryIndex == 0x58 || dwDownRecoveryIndex == 0x58) && nCurrentSubMenu == 7);
+                            } while ((dwEnemyActionIndex == 0x58 || dwEnemyDefenseIndex == 0x58 || dwEnemyDefenseTypeIndex == 0x58 || dwAirRecoveryIndex == 0x58 || dwDownRecoveryIndex == 0x58 || dwThrowRecoveryIndex == 0x58 || dwReduceDamageIndex == 0x58) && nCurrentSubMenu == 7);
 
                             if (nCurrentSubMenu != 7)
                                 continue;
@@ -526,6 +916,8 @@ int main(int argc, char* argv[])
                             int nAirRecoveryIndex = nReadResult;
                             ReadProcessMemory(hProcess, (LPVOID)(dwDownRecoveryIndex), &nReadResult, 4, 0);
                             int nDownRecoveryIndex = nReadResult;
+                            ReadProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryIndex), &nReadResult, 4, 0);
+                            int nThrowRecoveryIndex = nReadResult;
 
                             if (nOldEnemyActionIndex == -1)
                                 nOldEnemyActionIndex = nEnemyActionIndex;
@@ -585,6 +977,7 @@ int main(int argc, char* argv[])
                             nStoredEnemyDefenseType = nEnemyDefenseTypeIndex;
                             nStoredAirRecovery = (nAirRecoveryIndex + 5) % 6; // different indices in-game vs in-menu
                             nStoredDownRecovery = (nDownRecoveryIndex + 5) % 6; // different indices in-game vs in-menu
+                            nStoredThrowRecovery = nThrowRecoveryIndex;
                         }
 
                         // BATTLE SETTINGS
@@ -646,50 +1039,36 @@ int main(int argc, char* argv[])
                             nOldLifeIndex = nLifeIndex;
                         }
 
-                        oMenu.UpdateProcessInfo(hProcess, dwBaseAddress);
+                        // Depreciated :(
+                        //oMenu.UpdateProcessInfo(hProcess, dwBaseAddress);
                         //oMenu.DrawMenu();
                     }
-
                     else // not paused
                         bOnExtraMenu = false;
 
-                    
+                    // Enable Ex Guard.  randomly if applicable
                     nWriteBuffer = 1;
                     if (nExGuardSetting == eEnemyOffOnRandom::ON || (rand() % 2 == 0 && nExGuardSetting == eEnemyOffOnRandom::RANDOM))
                         nWriteBuffer = 10;
                     WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwExGuard + dwP2Offset), &nWriteBuffer, 4, 0);
 
+                    // Disable built-in health recovery
                     nWriteBuffer = 4;
                     WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwLifeRecover), &nWriteBuffer, 4, 0);
 
-                    
-                    //nWriteBuffer = 0;
-                    //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2PatternSet), &nWriteBuffer, 4, 0);
-                    //nWriteBuffer = 1;
-                    //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + 0x155da8/*Will block*/), &nWriteBuffer, 1, 0);
-                    //nWriteBuffer = 6;
-                    //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + 0x3713C4/*p2 direction*/), &nWriteBuffer, 1, 0);
-                    //nWriteBuffer = 0x6;
-                    //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + 0x371474/*edx*/), &nWriteBuffer, 4, 0);
-                    //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + 0x370f5c/*p2 direction*/), &nWriteBuffer, 1, 0);
-                    //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + 0x371524/*p2 direction*/), &nWriteBuffer, 1, 0);
-                    //nWriteBuffer = 1; // sorta works but makes them invincible...
-                    //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + 0x1553F4 + dwP2Offset /*dash disable flag*/), &nWriteBuffer, 1, 0);
-                    //continue;
-                    //nWriteBuffer = 0x9090;
-                    //WriteProcessMemory(hProcess, (LPVOID)(0x41f2fa/*nop slide*/), &nWriteBuffer, 2, 0);
-                    //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + 0x41f308/*nop slide*/), &nWriteBuffer, 2, 0);
-                    //nWriteBuffer = 0;
-                    //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + 0x15524c + dwP2Offset/*x-vel*/), &nWriteBuffer, 4, 0);
-                    
+                    // Disable built-in reversal action
+                    nWriteBuffer = 0;
+                    WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyAction), &nWriteBuffer, 4, 0);
 
-
+                    // This locks all the code that follows to the framerate of the game
+                    // put code that should run faster above this
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwRoundTime), &nReadResult, 4, 0);
                     nTimer = nReadResult;
                     if (nTimer == nOldTimer)
                         continue;
                     nOldTimer = nTimer;
 
+                    // populate the reversal patterns list and character data
                     if (nTimer == 0 || vPatternNames.size() == 1)
                     {
                         ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1CharNumber), &nReadResult, 4, 0);
@@ -708,61 +1087,38 @@ int main(int argc, char* argv[])
                         vPatternNames = GetPatternList(nP2CharacterID);
                     }
 
+                    // reset resources to the preset when training mode is reset
+                    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwGuardSetting), &nReadResult, 4, 0);
+                    nCustomGuard = nReadResult;
                     if (nTimer == 1)
                     {
                         SetMeter(hProcess, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
-
-                        nWriteBuffer = vGuardLevelLookupTable[nEnemyGuardLevelSetting + nP2Moon * 6];
-                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwGuardAmount2), &nWriteBuffer, 4, 0);
+                        SetGuard(hProcess, dwBaseAddress, nCustomGuard, nP1Moon, nP2Moon);
+                        SetSionBullets(hProcess, dwBaseAddress, nSionBullets);
+                        SetRoaCharge(hProcess, dwBaseAddress, nRoaVisibleCharge, nRoaHiddenCharge);
+                        SetGuard(hProcess, dwBaseAddress, 0, nP1Moon, nP2Moon);
                     }
 
+                    // infinite guard bar
+                    if (nInfGuard == 1)
+                        SetGuard(hProcess, dwBaseAddress, 0, nP1Moon, nP2Moon);
 
+                    // increase the counter every frame p2 is standing idle to delay regenerating health
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
                     if (nReadResult == 0)
                         nHealthRefillTimer++;
                     else
                         nHealthRefillTimer = 0;
 
+                    // refill health if training mode is reset or long enough time has passed
                     if (nTimer == 1 || (nHealthRefillTimer == 20 && nLifeRecover == 0))
                     {
                         SetHealth(hProcess, dwBaseAddress, nCustomHealth);
                         nHealthRefillTimer = 0;
                     }
 
-                    // Disable vanilla reversal action
-                    nWriteBuffer = 0;
-                    WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyAction), &nWriteBuffer, 4, 0);
-
-                    //nWriteBuffer = nEnemyStatusSetting;
-                    //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyStatus), &nWriteBuffer, 4, 0);
-
-                    //nWriteBuffer = eEnemyDefense::ALLGUARD;
-                    //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
-
-
-
-                    /*int nRandVal = std::rand() % 4;
-                    if (nTimer % 5 == 0)
-                    {
-                        if (nRandVal > nEnemyDefenseBiasSetting)
-                        {
-                            nWriteBuffer = eEnemyDefense::NOGUARD;
-                            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
-                        }
-                    }*/
-
-                    if (nEnemyGuardLevelSetting == eEnemyGuardLevelSettings::INF || nTimer == 1)
-                    {
-                        nWriteBuffer = vGuardLevelLookupTable[nP2Moon * 6];
-                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwGuardAmount2), &nWriteBuffer, 4, 0);
-                    }
-                    else
-                    {
-                        nWriteBuffer = nEnemyGuardLevelSetting - 1;
-                        WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwGuardSetting), &nWriteBuffer, 4, 0);
-                    }
-
-                    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwY + dwP2Offset), &nReadResult, 4, 0);
+                    // convoluted reversal pattern logic
+                    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2Y + dwP2Offset), &nReadResult, 4, 0);
                     nP2Y = nReadResult;
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwMot), &nReadResult, 4, 0);
                     nMot = nReadResult;
