@@ -275,6 +275,27 @@ DWORD GetEnemyActionIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
     return dwTempAddress;
 }
 
+DWORD GetEnemyActionOptionXAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x5C;
+
+    return dwTempAddress;
+}
+
 DWORD GetEnemyDefenseIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
 {
     DWORD dwTempAddress = 0x34D7FC;
@@ -292,6 +313,27 @@ DWORD GetEnemyDefenseIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
     dwTempAddress = nReadResult;
     ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
     dwTempAddress = nReadResult + 0x58;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyDefenseOptionXAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x5C;
 
     return dwTempAddress;
 }
@@ -774,6 +816,27 @@ DWORD GetEnemyDefenseTypeIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
     return dwTempAddress;
 }
 
+DWORD GetEnemyDefenseTypeOptionXAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x5C;
+
+    return dwTempAddress;
+}
+
 DWORD GetAirRecoveryIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
 {
     DWORD dwTempAddress = 0x34D7FC;
@@ -791,6 +854,27 @@ DWORD GetAirRecoveryIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
     dwTempAddress = nReadResult;
     ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x14), &nReadResult, 4, 0);
     dwTempAddress = nReadResult + 0x58;
+
+    return dwTempAddress;
+}
+
+DWORD GetAirRecoveryOptionXAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x14), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x5C;
 
     return dwTempAddress;
 }
@@ -983,6 +1067,27 @@ DWORD GetDownRecoveryIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
     dwTempAddress = nReadResult;
     ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x18), &nReadResult, 4, 0);
     dwTempAddress = nReadResult + 0x58;
+
+    return dwTempAddress;
+}
+
+DWORD GetDownRecoveryOptionXAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x18), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x5C;
 
     return dwTempAddress;
 }
@@ -1304,6 +1409,27 @@ DWORD GetLifeIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
     return dwTempAddress;
 }
 
+DWORD GetLifeOptionXAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xC8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x5C;
+
+    return dwTempAddress;
+}
+
 DWORD GetTrainingMenuStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
 {
     DWORD dwTempAddress = 0x34D7FC;
@@ -1359,6 +1485,27 @@ DWORD GetThrowRecoveryIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
     dwTempAddress = nReadResult;
     ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x20), &nReadResult, 4, 0);
     dwTempAddress = nReadResult + 0x58;
+
+    return dwTempAddress;
+}
+
+DWORD GetThrowRecoveryOptionXAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x20), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x5C;
 
     return dwTempAddress;
 }
@@ -1588,6 +1735,27 @@ DWORD GetReduceDamageIndexAddress(HANDLE hProcess, DWORD dwBaseAddress)
     return dwTempAddress;
 }
 
+DWORD GetReduceDamageOptionXAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x28), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x5C;
+
+    return dwTempAddress;
+}
+
 DWORD GetReduceDamageNormalStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
 {
     DWORD dwTempAddress = 0x34D7FC;
@@ -1659,6 +1827,44 @@ DWORD GetReduceDamageRandomStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
     dwTempAddress = nReadResult;
     ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
     dwTempAddress = nReadResult + 0x4;
+
+    return dwTempAddress;
+}
+
+DWORD GetDefaultStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x30), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x24;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemySettingsCursorAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xCC), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x40;
 
     return dwTempAddress;
 }
