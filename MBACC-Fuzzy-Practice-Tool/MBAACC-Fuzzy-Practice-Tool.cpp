@@ -83,6 +83,8 @@ int main(int argc, char* argv[])
     int nOldThrowRecoveryIndex = -1;
     int nOldReduceDamageIndex = -1;
     int nOldLifeIndex = -1;
+    int nCurrentSubMenu = 2;
+    int nOldCurrentSubMenu = -1;
     std::vector<std::string> vPatternNames = GetEmptyPatternList();
     bool bReversaled = false;
     int nTimer = 0;
@@ -103,7 +105,8 @@ int main(int argc, char* argv[])
     int nCustomMeter = 10000;
     int nCustomHealth = 11400;
     int nHealthRefillTimer = 0;
-    int nLifeRecover = 0; //0:ON 1:OFF
+    int nCharSpecificsRefillTimer = 0;
+    bool bLifeRecover = true;
     int nExtendedSettingsPage = 1;
     int nSionBullets = 13;
     int nRoaVisibleCharge = 0;
@@ -120,13 +123,21 @@ int main(int argc, char* argv[])
     bool bRandomReversal = false;
     int nEnemySettingsCursor = 0;
     int nOldEnemySettingsCursor = 0;
+    bool bNeedToAnnounceNewVersion = false;
+    int nMovingMessageIndex = 0;
+    int nStartingTime = 0;
 
     int nDebugBias = 0;
     int nDebugFrameCount = 0;
 
-
-    Menu oMenu = Menu();
     std::srand((unsigned int)std::time(nullptr));
+
+    std::string sOnlineVersion = GetLatestVersion();
+    if (sOnlineVersion != "" && sOnlineVersion != VERSION)
+        bNeedToAnnounceNewVersion = true;
+
+    std::cout << "Fang's Extended Training Mode Mod" << std::endl;
+    std::cout << GITHUB_RELEASE << std::endl;
 
     try
     {
@@ -148,10 +159,7 @@ int main(int argc, char* argv[])
                     Sleep(100);
                     dwBaseAddress = GetBaseAddressByName(hProcess, L"MBAA.exe");
 
-                    oMenu.UpdateProcessInfo(hProcess, dwBaseAddress);
                     InitializeCharacterMaps();
-
-                    system("cls");
                 }
 
                 ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
@@ -203,7 +211,8 @@ int main(int argc, char* argv[])
 
                         DWORD dwSubMenuAddress = GetSubMenuEnumAddress(hProcess, dwBaseAddress);
                         ReadProcessMemory(hProcess, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
-                        int nCurrentSubMenu = nReadResult;
+                        nOldCurrentSubMenu = nCurrentSubMenu;
+                        nCurrentSubMenu = nReadResult;
 
                         if (nCurrentSubMenu == 2)
                         {
@@ -231,6 +240,35 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwThrowRecovery), &nWriteBuffer, 4, 0);
                             nWriteBuffer = nStoredReduceDamage;
                             WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwReduceRecovery), &nWriteBuffer, 4, 0);
+                        
+                            DWORD dwReturnToMainMenuString = GetReturnToMainMenuStringAddress(hProcess, dwBaseAddress);
+                            if (bNeedToAnnounceNewVersion)
+                            {
+                                // assemble the string for the message
+                                std::string sNewVersionMessage = "    VERSION " + sOnlineVersion + " AVAILABLE NOW ON GITHUB";
+                                int nMessageLength = sNewVersionMessage.size();
+                                sNewVersionMessage += "     " + sNewVersionMessage;
+
+                                if (nStartingTime == 0 || nCurrentSubMenu != nOldCurrentSubMenu || nMovingMessageIndex >= nMessageLength + 16)
+                                    nStartingTime = std::time(nullptr);
+
+                                // move the index based on the timer
+                                int nCurrentTime = std::time(nullptr);
+                                nMovingMessageIndex = (nCurrentTime - nStartingTime) * 2;
+
+                                // chop the string up
+                                std::string sTempNewVersionMessage = "[" + sNewVersionMessage.substr(nMovingMessageIndex, 16) + "]";
+
+                                //send it
+                                char pcNewVersionMessage[19];
+                                strcpy_s(pcNewVersionMessage, (sTempNewVersionMessage).c_str());
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReturnToMainMenuString), &pcNewVersionMessage, 19, 0);
+                            }
+                            else
+                            {
+                                char pcBlank[19] = "LATEST VERSION";
+                                WriteProcessMemory(hProcess, (LPVOID)(dwReturnToMainMenuString), &pcBlank, 19, 0);
+                            }
                         }
 
                         // Turn "View Screen" into "Extended Settings" menu
@@ -320,6 +358,7 @@ int main(int argc, char* argv[])
                             DWORD dwDownRecoveryIndex;
                             DWORD dwThrowRecoveryIndex;
                             DWORD dwReduceDamageIndex;
+                            DWORD dwEnemyStatusIndex;
                             do
                             {
                                 dwEnemyActionIndex = GetEnemyActionIndexAddress(hProcess, dwBaseAddress);
@@ -329,11 +368,12 @@ int main(int argc, char* argv[])
                                 dwDownRecoveryIndex = GetDownRecoveryIndexAddress(hProcess, dwBaseAddress);
                                 dwThrowRecoveryIndex = GetThrowRecoveryIndexAddress(hProcess, dwBaseAddress);
                                 dwReduceDamageIndex = GetReduceDamageIndexAddress(hProcess, dwBaseAddress);
+                                dwEnemyStatusIndex = GetEnemyStatusAddress(hProcess, dwBaseAddress);
 
                                 ReadProcessMemory(hProcess, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
                                 nCurrentSubMenu = nReadResult;
 
-                            } while ((dwEnemyActionIndex == 0x58 || dwEnemyDefenseIndex == 0x58 || dwEnemyDefenseTypeIndex == 0x58 || dwAirRecoveryIndex == 0x58 || dwDownRecoveryIndex == 0x58 || dwThrowRecoveryIndex == 0x58 || dwReduceDamageIndex == 0x58) && nCurrentSubMenu == 7);
+                            } while ((dwEnemyActionIndex == 0x58 || dwEnemyDefenseIndex == 0x58 || dwEnemyDefenseTypeIndex == 0x58 || dwAirRecoveryIndex == 0x58 || dwDownRecoveryIndex == 0x58 || dwThrowRecoveryIndex == 0x58 || dwReduceDamageIndex == 0x58 || dwEnemyStatusIndex == 0x58) && nCurrentSubMenu == 7);
 
                             if (nCurrentSubMenu != 7)
                                 continue;
@@ -356,6 +396,12 @@ int main(int argc, char* argv[])
                             int nThrowRecoveryIndex = nReadResult;
                             ReadProcessMemory(hProcess, (LPVOID)(dwReduceDamageIndex), &nReadResult, 4, 0);
                             int nReduceDamageIndex = nReadResult;
+                            ReadProcessMemory(hProcess, (LPVOID)(dwEnemyStatusIndex), &nReadResult, 4, 0);
+                            int nEnemyStatusIndex = nReadResult;
+
+                            // Reset hits till burst if status is not manual
+                            if (nEnemyStatusIndex != eEnemyStatus::MANUAL)
+                                nHitsTillBurst = TOO_HIGH_TO_BURST;
 
                             // Replace static menu fields
                             char pcTrainingPreset[17] = "training preset.";
@@ -419,7 +465,7 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryString), &pcHitsUntilBurst, 17, 0);
                             }
 
-                            // Skip default
+                            // Skip DEFAULT
                             if (nOldEnemySettingsCursor == 10 && nEnemySettingsCursor == 12)
                             {
                                 nWriteBuffer = 14;
@@ -435,13 +481,27 @@ int main(int argc, char* argv[])
                                 nOldEnemySettingsCursor = 10;
                             }
 
-                            // Skipping menu items
+                            // Skipping blank menu items
                             if (nExtendedSettingsPage == 1)
                             {
                                 // don't skip anything
                             }
                             else if (nExtendedSettingsPage == 2)
                             {
+                                if (bPositionsLocked && nOldEnemySettingsCursor == 0 && nEnemySettingsCursor == 2)
+                                {
+                                    nWriteBuffer = 10;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                    nEnemySettingsCursor = 10;
+                                    nOldEnemySettingsCursor = 10;
+                                }
+                                if (bPositionsLocked && nOldEnemySettingsCursor == 10 && nEnemySettingsCursor == 8)
+                                {
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                    nEnemySettingsCursor = 0;
+                                    nOldEnemySettingsCursor = 0;
+                                }
                                 if (!bP3Exists && nOldEnemySettingsCursor == 2 && nEnemySettingsCursor == 3)
                                 {
                                     nWriteBuffer = 5;
@@ -591,7 +651,7 @@ int main(int argc, char* argv[])
                                 else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
                                 {
                                     nP2X = min(MAX_X, nP2X + (bAPressed ? 1 : 1000));
-                                    SetP3X(hProcess, dwBaseAddress, nP2X);
+                                    SetP2X(hProcess, dwBaseAddress, nP2X);
                                 }
 
                                 if (nOldDownRecoveryIndex == -1)
@@ -682,7 +742,7 @@ int main(int argc, char* argv[])
                                 }
                             }
 
-                            // Page number handler
+                            // PAGE number handler
                             if (nOldReduceDamageIndex == -1)
                                 nOldReduceDamageIndex = nReduceDamageIndex;
                             else if (nOldReduceDamageIndex > nReduceDamageIndex)// left
@@ -1192,6 +1252,9 @@ int main(int argc, char* argv[])
                                     nWriteBuffer = 0;
                                     WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
                                     nThrowRecoveryIndex = 0;
+
+                                    nWriteBuffer = eEnemyStatus::STAND;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
                                 }
                                 else if (nHitsTillBurst == MAX_BURST)
                                 {
@@ -1203,6 +1266,11 @@ int main(int argc, char* argv[])
                                     nWriteBuffer = 6;
                                     WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
                                     nThrowRecoveryIndex = 6;
+
+                                    nWriteBuffer = eEnemyStatus::MANUAL;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
+                                    nWriteBuffer = eMagicCircuit::UNLIMITED;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwMagicCircuitSetting), &nWriteBuffer, 4, 0);
                                 }
                                 else
                                 {
@@ -1215,10 +1283,15 @@ int main(int argc, char* argv[])
                                     nWriteBuffer = 3;
                                     WriteProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
                                     nThrowRecoveryIndex = 3;
+
+                                    nWriteBuffer = eEnemyStatus::MANUAL;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
+                                    nWriteBuffer = eMagicCircuit::UNLIMITED;
+                                    WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwMagicCircuitSetting), &nWriteBuffer, 4, 0);
                                 }
                             }
 
-                            // Replace page text
+                            // Replace PAGE text
                             if (nExtendedSettingsPage == 1)
                             {
                                 char pcTemp[7] = "PAGE 1";
@@ -1319,6 +1392,8 @@ int main(int argc, char* argv[])
                             int nDownRecoveryIndex = nReadResult;
                             ReadProcessMemory(hProcess, (LPVOID)(dwThrowRecoveryIndex), &nReadResult, 4, 0);
                             int nThrowRecoveryIndex = nReadResult;
+                            ReadProcessMemory(hProcess, (LPVOID)(dwReduceDamageIndex), &nReadResult, 4, 0);
+                            int nReduceDamageIndex = nReadResult;
 
                             if (nOldEnemyActionIndex == -1)
                                 nOldEnemyActionIndex = nEnemyActionIndex;
@@ -1362,10 +1437,10 @@ int main(int argc, char* argv[])
 
                             nOldEnemyActionIndex = nEnemyActionIndex;
 
-                            nWriteBuffer = nEnemyDefenseIndex;
-                            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
-                            nWriteBuffer = nEnemyDefenseTypeIndex;
-                            WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefenseType), &nWriteBuffer, 4, 0);
+                            //nWriteBuffer = nEnemyDefenseIndex;
+                            //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
+                            //nWriteBuffer = nEnemyDefenseTypeIndex;
+                            //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefenseType), &nWriteBuffer, 4, 0);
 
                             nStoredEnemyDefense = nEnemyDefenseIndex;
                             nStoredEnemyAction = nEnemyActionIndex;
@@ -1373,6 +1448,7 @@ int main(int argc, char* argv[])
                             nStoredAirRecovery = (nAirRecoveryIndex + 5) % 6; // different indices in-game vs in-menu
                             nStoredDownRecovery = (nDownRecoveryIndex + 5) % 6; // different indices in-game vs in-menu
                             nStoredThrowRecovery = nThrowRecoveryIndex;
+                            nStoredReduceDamage = nReduceDamageIndex;
                         }
 
                         // BATTLE SETTINGS
@@ -1405,12 +1481,12 @@ int main(int argc, char* argv[])
 
                             // left
                             else if (nOldLifeIndex > nLifeIndex)
-                                nLifeRecover = max(0, nLifeRecover - 1);
+                                bLifeRecover = true;
                             // right
                             else if (nOldLifeIndex < nLifeIndex)
-                                nLifeRecover = min(nLifeRecover + 1, 1);
+                                bLifeRecover = false;
 
-                            if (nLifeRecover == 0)
+                            if (bLifeRecover)
                             {
                                 char pcTemp[8] = "RECOVER";
                                 WriteProcessMemory(hProcess, (LPVOID)(dwNoRecoverString), &pcTemp, 8, 0);
@@ -1435,7 +1511,11 @@ int main(int argc, char* argv[])
                         }
                     }
                     else // not paused
+                    {
                         bOnExtraMenu = false;
+                        nOldCurrentSubMenu = -1;
+                        nCurrentSubMenu = 2;
+                    }
 
                     // Enable Ex Guard.  randomly if applicable
                     nWriteBuffer = 1;
@@ -1515,8 +1595,6 @@ int main(int argc, char* argv[])
                     {
                         SetMeter(hProcess, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
                         SetGuard(hProcess, dwBaseAddress, nCustomGuard, nP1Moon, nP2Moon);
-                        SetSionBullets(hProcess, dwBaseAddress, nSionBullets);
-                        SetRoaCharge(hProcess, dwBaseAddress, nRoaVisibleCharge, nRoaHiddenCharge);
                         SetGuard(hProcess, dwBaseAddress, 0, nP1Moon, nP2Moon);
 
                         if (bPositionsLocked)
@@ -1538,16 +1616,32 @@ int main(int argc, char* argv[])
 
                     // increase the counter every frame p2 is standing idle to delay regenerating health
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-                    if (nReadResult == 0)
+                    if (nReadResult == 0 && nHealthRefillTimer < 20)
+                    {
                         nHealthRefillTimer++;
+                        nCharSpecificsRefillTimer++;
+                    }
                     else
+                    {
                         nHealthRefillTimer = 0;
+                        nCharSpecificsRefillTimer = 0;
+                    }
 
                     // refill health if training mode is reset or long enough time has passed
-                    if (nTimer == 1 || (nHealthRefillTimer == 20 && nLifeRecover == 0))
+                    if (nTimer == 1 || (nHealthRefillTimer == 20 && bLifeRecover))
                     {
                         SetHealth(hProcess, dwBaseAddress, nCustomHealth);
+                        SetSionBullets(hProcess, dwBaseAddress, nSionBullets);
+                        SetRoaCharge(hProcess, dwBaseAddress, nRoaVisibleCharge, nRoaHiddenCharge);
                         nHealthRefillTimer = 0;
+                    }
+
+                    // refill character specifics
+                    if (nTimer == 1 || nCharSpecificsRefillTimer == 20)
+                    {
+                        SetSionBullets(hProcess, dwBaseAddress, nSionBullets);
+                        SetRoaCharge(hProcess, dwBaseAddress, nRoaVisibleCharge, nRoaHiddenCharge);
+                        nCharSpecificsRefillTimer = 0;
                     }
 
                     // might need this in other places
@@ -1697,7 +1791,7 @@ int main(int argc, char* argv[])
     {
         std:: cout << "erm..." << std::endl;
     }
-CLEANUP:
+
     CloseHandle(hProcess);
     return 0;
 }

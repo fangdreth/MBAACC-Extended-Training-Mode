@@ -5,10 +5,41 @@
 #include <string.h>
 #include <psapi.h>
 #include <iostream>
+#include <chrono>
+#include "json.hpp"
 
 #include "Constants.h"
 #include "CharacterData.h"
-#include "Menu.h"
+
+std::string exec(const char* cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd, "r"), _pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
+
+std::string GetLatestVersion()
+{
+    char pcCommand[] = "curl -s https://api.github.com/repos/fangdreth/MBAACC-Training-Tools/releases/latest";
+    std::string sOutputJSONBuffer = exec(pcCommand);
+    auto json = nlohmann::json::parse(sOutputJSONBuffer);
+    std::string sVersion = "";
+    try
+    {
+        sVersion = json["name"];
+    }
+    catch(...)
+    { 
+    }
+    
+    return sVersion;
+}
 
 DWORD GetBaseAddressByName(HANDLE pHandle, const wchar_t* name)
 {
@@ -1865,6 +1896,67 @@ DWORD GetEnemySettingsCursorAddress(HANDLE hProcess, DWORD dwBaseAddress)
     dwTempAddress = nReadResult;
     ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
     dwTempAddress = nReadResult + 0x40;
+
+    return dwTempAddress;
+}
+
+DWORD GetEnemyStatusAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x58;
+
+    return dwTempAddress;
+}
+
+DWORD GetMagicCircuitAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0xC8), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x58;
+
+    return dwTempAddress;
+}
+
+DWORD GetReturnToMainMenuStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = 0x34D7FC;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x40), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hProcess, (LPVOID)(dwTempAddress + 0x24), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x0;
 
     return dwTempAddress;
 }

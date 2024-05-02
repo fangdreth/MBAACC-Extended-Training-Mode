@@ -4,7 +4,9 @@
 #include <Windows.h>
 #include <map>
 
+
 enum eEnemyStatus { STAND, JUMP, CROUCH, CPU, MANUAL, DUMMY };
+enum eMagicCircuit { UNLIMITED = 3 };
 enum eRecover {};
 enum eEnemyOffOnRandom { OFF, ON, RANDOM };
 enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DODGE };
@@ -15,7 +17,7 @@ enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE,
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases/tag/";
 const std::string GITHUB_README = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/README.md";
-const std::string VERSION = "v1.0";
+const std::string VERSION = "v1.8";
 
 const DWORD dwP2Offset = 0xAFC;
 const DWORD dwRoundTime = 0x162A40; //0-inf
@@ -59,6 +61,7 @@ const DWORD dwP1NotInCombo = 0x155194; //1:InCombo 0:NotInCombo
 const DWORD dwP1HitstopRemaining = 0x1552D4; //0:not in hitstop
 const DWORD dwComboCount = 0x157E00; // there's another address that tracks this
 const DWORD dwP2E = 0x3713C9;
+const DWORD dwMagicCircuitSetting = 0x37C1FC;
 
 const std::vector<std::string> vPresetSettings = { "Default", "Fuzzy Overhead", "Blockstring", "Heat OS", "Defensive Fuzzy Mash", "Defensive Fuzzy Jump", "Custom" };
 const std::vector<std::string> vEnemyDefenseSettings = { "No Guard", "All Guard", "Status Guard", "All Shield", "Status Shield" };
@@ -85,3 +88,4 @@ const int OFFSCREEN_LOCATION = 0x10000000;
 const int ONSCREEN_LOCATION = 0x000000A0;
 const int TOO_HIGH_TO_BURST = 10000;
 const int MAX_BURST = 99;
+
