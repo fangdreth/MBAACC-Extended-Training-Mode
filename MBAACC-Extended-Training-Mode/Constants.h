@@ -4,7 +4,7 @@
 #include <Windows.h>
 #include <map>
 
-enum eMenu { MAIN = 2, BATTLE_SETTINGS = 7, ENEMY_SETTINGS = 6, VIEW_SCREEN = 12 };
+enum eMenu { MAIN = 2, BATTLE_SETTINGS = 6, ENEMY_SETTINGS = 7, VIEW_SCREEN = 12 };
 enum eEnemyStatus { STAND, JUMP, CROUCH, CPU, MANUAL, DUMMY };
 enum eMagicCircuit { UNLIMITED = 3 };
 enum eRecover {};
@@ -17,7 +17,7 @@ enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE,
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
 const std::string GITHUB_README = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/README.md";
-const std::string VERSION = "v1.0";
+const std::string VERSION = "v1.0b";
 
 const DWORD dwP2Offset = 0xAFC;
 const DWORD dwRoundTime = 0x162A40; //0-inf
@@ -94,3 +94,32 @@ const int ONSCREEN_LOCATION = 0x000000A0;
 const int TOO_HIGH_TO_BURST = 10000;
 const int MAX_BURST = 99;
 
+const char pcSionBullets_13[13] = "SION BULLETS";
+const char pcRoaVisibleCharge_19[19] = "ROA VISIBLE CHARGE";
+const char pcRoaHiddenCharge_19[19] = "ROA HIDDEN CHARGE";
+const char pcHitsUntilBurst_17[17] = "HITS UNTIL BURST";
+
+const char pcASlow_12[12] = "[A]->SLOWER";
+const char pcP1XLoc_11[11] = "P1 X-LOC";
+const char pcP2XLoc_11[11] = "P2 X-LOC";
+const char pcAssistLoc_13[13] = "ASSIST X-LOC";
+const char pcInvert_7[7] = "INVERT";
+const char pcUnstable_11[11] = "(UNSTABLE)";
+
+const char pcReversalType_14[14] = "REVERSAL TYPE";
+const char pcExGuard_9[9] = "EX GUARD";
+const char pcReversalDelay_15[15] = "REVERSAL DELAY";
+const char pcMeter_18[18] = "METER [A]->SLOWER";
+const char pcHealth_19[19] = "HEALTH [A]->SLOWER";
+const char pcGuardBar_10[10] = "GUARD BAR";
+const char pcBlank_1[1] = "";
+
+const char pcEnemyReversal_15[15] = "ENEMY REVERSAL";
+
+const char pcRecover_8[8] = "RECOVER";
+const char pcRecover_11[11] = "NO RECOVER";
+
+const char pcTrainingPreset_17[17] = "training preset.";
+const char pcExtendedSettings_18[18] = "EXTENDED SETTINGS";
+
+const char pcLatestVersion_19[19] = "LATEST VERSION";
