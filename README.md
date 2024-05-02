@@ -1,4 +1,4 @@
-![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Screenshots/Github Image.png?raw=true)
+![alt text]("https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Screenshots/Github Image.png"?raw=true)
 
 ### Features
 
