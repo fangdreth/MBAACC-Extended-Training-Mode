@@ -155,9 +155,6 @@ int main(int argc, char* argv[])
             dwBaseAddress = GetBaseAddressByName(hMBAAHandle, L"MBAA.exe");
 
             InitializeCharacterMaps();
-
-            SetConsoleCursorPosition(hConsoleHandle, { 0, 5 });
-            std::cout << "                                 ";
         }
 
         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
@@ -165,6 +162,8 @@ int main(int argc, char* argv[])
         {
             nReversalIndex = 0;
             vPatternNames = GetEmptyPatternList();
+
+            // TODO: add fun CSS features here
         }
         else
         {
@@ -192,14 +191,17 @@ int main(int argc, char* argv[])
 
             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwPausedFlag), &nReadResult, 4, 0);
             bPaused = (nReadResult == 1 ? true : false);
+
+            // This is the big if-else
             if (bPaused)
             {
                 if (nCurrentSubMenu != nOldCurrentSubMenu)
                 {
-                    Sleep(32); // it takes a moment a couple pointers to initialize
+                    Sleep(32); // it takes a moment for a couple pointers to initialize between menus.  wait 2 frames for safety
                     oPointerManager.InitializePointers(hMBAAHandle, dwBaseAddress);
                 }
 
+                // Replace the menu title and VIEW SCREEN
                 char pcTrainingMenu[19];
                 strcpy_s(pcTrainingMenu, ("EXTENDED MOD " + VERSION).c_str());
                 WriteProcessMemory(hMBAAHandle, (LPVOID)(oPointerManager.m_dwViewScreenStringAddress), &pcExtendedSettings_18, 18, 0);
@@ -223,7 +225,7 @@ int main(int argc, char* argv[])
                     nOldReduceDamageIndex = -1;
                     nOldLifeIndex = -1;
 
-                    // restore the Battle Settings menu after clobbering it in Extended Settings
+                    // restore the Battle Settings menu after clobbering it in EXTENDED SETTINGS
                     nWriteBuffer = nStoredEnemyDefense;
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
                     nWriteBuffer = nStoredEnemyDefenseType;
@@ -239,7 +241,8 @@ int main(int argc, char* argv[])
                     nWriteBuffer = nStoredReduceDamage;
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwReduceRecovery), &nWriteBuffer, 4, 0);
                         
-                    // Replace the Return To Main Menu option with fancy scrolling text
+                    // Replace the RETURN TO MAIN MENU option with fancy scrolling text
+                    // this is 100% unnecessary but I did it for fun
                     if (bNeedToAnnounceNewVersion)
                     {
                         // assemble the string for the message
@@ -268,10 +271,10 @@ int main(int argc, char* argv[])
                     }
                 }
 
-                // Turn "View Screen" into "Extended Settings" menu
+                // Turn VIEW SCREEN into EXTENDED SETTINGS
                 if (nCurrentSubMenu == eMenu::VIEW_SCREEN)
                 {
-                    nWriteBuffer = eMenu::BATTLE_SETTINGS;
+                    nWriteBuffer = eMenu::ENEMY_SETTINGS;
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(oPointerManager.m_dwSubMenuAddress), &nWriteBuffer, 4, 0);
 
                     bOnExtendedSettingsMenu = true;
@@ -1217,7 +1220,7 @@ int main(int argc, char* argv[])
                     nOldReduceDamageIndex = nReduceDamageIndex;
                 }
 
-                /// BATTLE SETTINGS
+                /// ENEMY SETTINGS
                 if (!bOnExtendedSettingsMenu && nCurrentSubMenu == eMenu::ENEMY_SETTINGS)
                 {
                     // enemy action.
@@ -1293,7 +1296,7 @@ int main(int argc, char* argv[])
                     nStoredReduceDamage = nReduceDamageIndex;
                 }
 
-                // ENEMY SETTINGS
+                // BATTLE SETTINGS
                 if (nCurrentSubMenu == eMenu::BATTLE_SETTINGS)
                 {
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(oPointerManager.m_dwLifeIndex), &nReadResult, 4, 0);
