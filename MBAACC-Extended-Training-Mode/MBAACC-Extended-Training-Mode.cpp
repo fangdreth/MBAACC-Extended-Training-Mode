@@ -1,6 +1,6 @@
 #pragma warning(suppress : 6387)
 
-#include "MBAACC-Fuzzy-Practice-Tool.h"
+#include "MBAACC-Extended-Training-Mode.h"
 
 
 /*
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
     int nOldThrowRecoveryIndex = -1;
     int nOldReduceDamageIndex = -1;
     int nOldLifeIndex = -1;
-    int nCurrentSubMenu = 2;
+    int nCurrentSubMenu = eMenu::MAIN;
     int nOldCurrentSubMenu = -1;
     std::vector<std::string> vPatternNames = GetEmptyPatternList();
     bool bReversaled = false;
@@ -163,6 +163,7 @@ int main(int argc, char* argv[])
                     std::cout << "|                                                                         |" << std::endl;
                 std::cout << "===========================================================================" << std::endl;
 
+                //MBAA.exe is not open || has closed.  259 exit code means still open
                 GetExitCodeProcess(hProcess, &dwExitCode);
                 if (hProcess == 0x0 || dwExitCode != 259)
                 {
@@ -176,6 +177,7 @@ int main(int argc, char* argv[])
 
                     hProcess = GetProcessByName(L"MBAA.exe");
 
+                    // don't do anything until we re-attach to mbaa
                     if (hProcess == 0x0)
                         continue;
 
@@ -201,9 +203,6 @@ int main(int argc, char* argv[])
                 {
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1APressed), &nReadResult, 4, 0);
                     bAPressed = (nReadResult == 1 ? true : false);
-                    ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1DPressed), &nReadResult, 4, 0);
-                    bOldDPressed = bDPressed;
-                    bDPressed = (nReadResult == 1 ? true : false);
 
                     // these flags are used to determine if assist chars exist
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1Exists + dwP2Offset * 2), &nReadResult, 4, 0);
@@ -211,7 +210,7 @@ int main(int argc, char* argv[])
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1Exists + dwP2Offset * 3), &nReadResult, 4, 0);
                     bP4Exists = (nReadResult == 1 ? true : false);
 
-                    // get the locations if not locked
+                    // update the location variables if not locked
                     if (!bPositionsLocked)
                     {
                         ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1X), &nReadResult, 4, 0);
@@ -228,14 +227,13 @@ int main(int argc, char* argv[])
                     bPaused = (nReadResult == 1 ? true : false);
                     if (bPaused)
                     {
-                        DWORD dwMainViewScreenStringAddress = GetMainViewScreenStringAddress(hProcess, dwBaseAddress);
+                        DWORD dwViewScreenStringAddress = GetViewScreenStringAddress(hProcess, dwBaseAddress);
                         DWORD dwTrainingMenuString = GetTrainingMenuStringAddress(hProcess, dwBaseAddress);
 
                         char pcExtendedSettings[18] = "EXTENDED SETTINGS";
                         char pcTrainingMenu[19];
                         strcpy_s(pcTrainingMenu, ("EXTENDED MOD  " + VERSION).c_str());
-
-                        WriteProcessMemory(hProcess, (LPVOID)(dwMainViewScreenStringAddress), &pcExtendedSettings, 18, 0);
+                        WriteProcessMemory(hProcess, (LPVOID)(dwViewScreenStringAddress), &pcExtendedSettings, 18, 0);
                         WriteProcessMemory(hProcess, (LPVOID)(dwTrainingMenuString), &pcTrainingMenu, 19, 0);
 
                         DWORD dwSubMenuAddress = GetSubMenuEnumAddress(hProcess, dwBaseAddress);
@@ -243,7 +241,8 @@ int main(int argc, char* argv[])
                         nOldCurrentSubMenu = nCurrentSubMenu;
                         nCurrentSubMenu = nReadResult;
 
-                        if (nCurrentSubMenu == 2)
+                        // Main Start Menu
+                        if (nCurrentSubMenu == eMenu::MAIN)
                         {
                             // these are used in the menus.
                             nOldEnemyActionIndex = -1;
@@ -255,6 +254,7 @@ int main(int argc, char* argv[])
                             nOldReduceDamageIndex = -1;
                             nOldLifeIndex = -1;
 
+                            // restore the Battle Settings menu after clobbering it in Extended Settings
                             nWriteBuffer = nStoredEnemyDefense;
                             WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
                             nWriteBuffer = nStoredEnemyDefenseType;
@@ -270,6 +270,7 @@ int main(int argc, char* argv[])
                             nWriteBuffer = nStoredReduceDamage;
                             WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwReduceRecovery), &nWriteBuffer, 4, 0);
                         
+                            // Replace the Return To Main Menu option with fancy scrolling text
                             DWORD dwReturnToMainMenuString = GetReturnToMainMenuStringAddress(hProcess, dwBaseAddress);
                             if (bNeedToAnnounceNewVersion)
                             {
@@ -301,14 +302,14 @@ int main(int argc, char* argv[])
                         }
 
                         // Turn "View Screen" into "Extended Settings" menu
-                        if (nCurrentSubMenu == 12)
+                        if (nCurrentSubMenu == eMenu::VIEW_SCREEN)
                         {
-                            nWriteBuffer = 7;
+                            nWriteBuffer = eMenu::BATTLE_SETTINGS;
                             WriteProcessMemory(hProcess, (LPVOID)(dwSubMenuAddress), &nWriteBuffer, 4, 0);
 
                             bOnExtraMenu = true;
                         }
-                        else if (nCurrentSubMenu != 7)
+                        else if (nCurrentSubMenu != eMenu::BATTLE_SETTINGS)
                             bOnExtraMenu = false;
 
                         if (bOnExtraMenu)
@@ -402,9 +403,9 @@ int main(int argc, char* argv[])
                                 ReadProcessMemory(hProcess, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
                                 nCurrentSubMenu = nReadResult;
 
-                            } while ((dwEnemyActionIndex == 0x58 || dwEnemyDefenseIndex == 0x58 || dwEnemyDefenseTypeIndex == 0x58 || dwAirRecoveryIndex == 0x58 || dwDownRecoveryIndex == 0x58 || dwThrowRecoveryIndex == 0x58 || dwReduceDamageIndex == 0x58 || dwEnemyStatusIndex == 0x58) && nCurrentSubMenu == 7);
+                            } while ((dwEnemyActionIndex == 0x58 || dwEnemyDefenseIndex == 0x58 || dwEnemyDefenseTypeIndex == 0x58 || dwAirRecoveryIndex == 0x58 || dwDownRecoveryIndex == 0x58 || dwThrowRecoveryIndex == 0x58 || dwReduceDamageIndex == 0x58 || dwEnemyStatusIndex == 0x58) && nCurrentSubMenu == eMenu::BATTLE_SETTINGS);
 
-                            if (nCurrentSubMenu != 7)
+                            if (nCurrentSubMenu != eMenu::BATTLE_SETTINGS)
                                 continue;
 
                             // Index values for menu items
@@ -1365,7 +1366,7 @@ int main(int argc, char* argv[])
                         }
 
                         // ENEMEY SETTINGS
-                        if (!bOnExtraMenu && nCurrentSubMenu == 7)
+                        if (!bOnExtraMenu && nCurrentSubMenu == eMenu::BATTLE_SETTINGS)
                         {
                             DWORD dwEnemyActionAString = GetEnemyActionActionAStringAddress(hProcess, dwBaseAddress);
                             DWORD dwEnemyActionBString = GetEnemyActionActionBStringAddress(hProcess, dwBaseAddress);
@@ -1396,9 +1397,9 @@ int main(int argc, char* argv[])
                                 ReadProcessMemory(hProcess, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
                                 nCurrentSubMenu = nReadResult;
 
-                            } while ((dwEnemyActionIndex == 0x58 || dwEnemyDefenseIndex == 0x58 || dwEnemyDefenseTypeIndex == 0x58 || dwAirRecoveryIndex == 0x58 || dwDownRecoveryIndex == 0x58 || dwThrowRecoveryIndex == 0x58 || dwReduceDamageIndex == 0x58) && nCurrentSubMenu == 7);
+                            } while ((dwEnemyActionIndex == 0x58 || dwEnemyDefenseIndex == 0x58 || dwEnemyDefenseTypeIndex == 0x58 || dwAirRecoveryIndex == 0x58 || dwDownRecoveryIndex == 0x58 || dwThrowRecoveryIndex == 0x58 || dwReduceDamageIndex == 0x58) && nCurrentSubMenu == eMenu::BATTLE_SETTINGS);
 
-                            if (nCurrentSubMenu != 7)
+                            if (nCurrentSubMenu != eMenu::BATTLE_SETTINGS)
                                 continue;
 
                             // enemy action.
@@ -1466,11 +1467,6 @@ int main(int argc, char* argv[])
 
                             nOldEnemyActionIndex = nEnemyActionIndex;
 
-                            //nWriteBuffer = nEnemyDefenseIndex;
-                            //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
-                            //nWriteBuffer = nEnemyDefenseTypeIndex;
-                            //WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyDefenseType), &nWriteBuffer, 4, 0);
-
                             nStoredEnemyDefense = nEnemyDefenseIndex;
                             nStoredEnemyAction = nEnemyActionIndex;
                             nStoredEnemyDefenseType = nEnemyDefenseTypeIndex;
@@ -1481,7 +1477,7 @@ int main(int argc, char* argv[])
                         }
 
                         // BATTLE SETTINGS
-                        if (nCurrentSubMenu == 6)
+                        if (nCurrentSubMenu == eMenu::ENEMY_SETTINGS)
                         {
                             DWORD dwNoRecoverString = GetNoRecoverStringAddress(hProcess, dwBaseAddress);
                             DWORD dwRecover25String = GetRecover25StringAddress(hProcess, dwBaseAddress);
@@ -1497,9 +1493,9 @@ int main(int argc, char* argv[])
                                 ReadProcessMemory(hProcess, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
                                 nCurrentSubMenu = nReadResult;
 
-                            } while ((dwLifeIndex == 0x58) && nCurrentSubMenu == 6);
+                            } while (dwLifeIndex == 0x58 && nCurrentSubMenu == eMenu::ENEMY_SETTINGS);
 
-                            if (nCurrentSubMenu != 6)
+                            if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
                                 continue;
 
                             ReadProcessMemory(hProcess, (LPVOID)(dwLifeIndex), &nReadResult, 4, 0);
@@ -1543,7 +1539,7 @@ int main(int argc, char* argv[])
                     {
                         bOnExtraMenu = false;
                         nOldCurrentSubMenu = -1;
-                        nCurrentSubMenu = 2;
+                        nCurrentSubMenu = eMenu::MAIN;
                     }
 
                     // Enable Ex Guard.  randomly if applicable
@@ -1561,7 +1557,7 @@ int main(int argc, char* argv[])
                     WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwEnemyAction), &nWriteBuffer, 4, 0);
 
                     // This locks all the code that follows to the framerate of the game
-                    // put code that should run faster above this
+                    // put code that needs to run faster above this
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwRoundTime), &nReadResult, 4, 0);
                     nTimer = nReadResult;
                     if (nTimer == nOldTimer)
@@ -1569,6 +1565,7 @@ int main(int argc, char* argv[])
                     nOldTimer = nTimer;
 
                     // populate the reversal patterns list and character data
+                    // may be able to remove the timer condition, since CSS clears patternname list
                     if (nTimer == 0 || vPatternNames.size() == 1)
                     {
                         ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1CharNumber), &nReadResult, 4, 0);
@@ -1610,6 +1607,7 @@ int main(int argc, char* argv[])
                                     break;
                                 }
 
+                                // mash the hell out of E
                                 nWriteBuffer = 1;
                                 WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2E), &nWriteBuffer, 1, 0);
 
@@ -1643,12 +1641,13 @@ int main(int argc, char* argv[])
                     if (bInfGuard)
                         SetGuard(hProcess, dwBaseAddress, 0, nP1Moon, nP2Moon);
 
-                    // increase the counter every frame p2 is standing idle to delay regenerating health
+                    // increase the counter every frame p2 is standing idle to delay regenerating health and char specifics
+                    // taking an extra step to cap these at 20 to avoid any unexpected behavior if tmode is left running forever
                     ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-                    if (nReadResult == 0 && nHealthRefillTimer < 20)
+                    if (nReadResult == 0)
                     {
-                        nHealthRefillTimer++;
-                        nCharSpecificsRefillTimer++;
+                        nHealthRefillTimer = min(nHealthRefillTimer + 1, 20);
+                        nCharSpecificsRefillTimer = min(nCharSpecificsRefillTimer + 1, 20);
                     }
                     else
                     {
@@ -1660,8 +1659,6 @@ int main(int argc, char* argv[])
                     if (nTimer == 1 || (nHealthRefillTimer == 20 && bLifeRecover))
                     {
                         SetHealth(hProcess, dwBaseAddress, nCustomHealth);
-                        SetSionBullets(hProcess, dwBaseAddress, nSionBullets);
-                        SetRoaCharge(hProcess, dwBaseAddress, nRoaVisibleCharge, nRoaHiddenCharge);
                         nHealthRefillTimer = 0;
                     }
 
@@ -1673,7 +1670,7 @@ int main(int argc, char* argv[])
                         nCharSpecificsRefillTimer = 0;
                     }
 
-                    // might need this in other places
+                    // easy access debug screen clear
                     /*if (GetKeyState(VK_RETURN) < 0)
                     {
                         system("cls");
@@ -1705,7 +1702,6 @@ int main(int argc, char* argv[])
 
                     if (nMot != 0)
                     {
-                        //std::cout << "bDelayingReversal = false;1377" << std::endl;
                         bDelayingReversal = false;
                     }
 
@@ -1713,7 +1709,6 @@ int main(int argc, char* argv[])
                     {
                         if (nTempReversalDelayFrames == 0)
                         {
-                            //std::cout << "bDelayingReversal = false;1385" << std::endl;
                             bDelayingReversal = false;
                             nWriteBuffer = GetPattern(nP2CharacterID, vPatternNames[nReversalIndex]);
                             bReversaled = true;
@@ -1733,7 +1728,8 @@ int main(int argc, char* argv[])
                         break;
                 }
             }
-
+            
+            // this is the WIP fuzzy code.  it don't work, but you can point and laugh if you want
             //bSwitchToCrouch = true;
             if (bSwitchToCrouch)
             {

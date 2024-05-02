@@ -22,9 +22,9 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{45ba045f-3791-4dd0-aa57-c77afeaad20c}</ProjectGuid>
-    <RootNamespace>MBAACCFuzzyPracticeTool</RootNamespace>
+    <RootNamespace>MBAACCExtendedTrainingMode</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>MBAACC-Fuzzy-Practice-Tool</ProjectName>
+    <ProjectName>MBAACC-Extended-Training-Mode</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -148,12 +148,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="MBAACC-Fuzzy-Practice-Tool.cpp" />
+    <ClCompile Include="MBAACC-Extended-Training-Mode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CharacterData.h" />
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="MBAACC-Fuzzy-Practice-Tool.h" />
+    <ClInclude Include="MBAACC-Extended-Training-Mode.h" />
     <ClInclude Include="RawData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

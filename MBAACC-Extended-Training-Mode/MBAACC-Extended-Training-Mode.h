@@ -235,7 +235,7 @@ void SetRoaCharge(HANDLE hProcess, DWORD dwBaseAddress, int nVisible, int nHidde
     WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1RoaVisibleCharge + dwP2Offset), &nVisible, 4, 0);
 }
 
-DWORD GetMainViewScreenStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
+DWORD GetViewScreenStringAddress(HANDLE hProcess, DWORD dwBaseAddress)
 {
     DWORD dwTempAddress = 0x34d7fc;
     int nReadResult = 0;

@@ -4,7 +4,7 @@
 #include <Windows.h>
 #include <map>
 
-
+enum eMenu { MAIN = 2, BATTLE_SETTINGS = 7, ENEMY_SETTINGS = 6, VIEW_SCREEN = 12 };
 enum eEnemyStatus { STAND, JUMP, CROUCH, CPU, MANUAL, DUMMY };
 enum eMagicCircuit { UNLIMITED = 3 };
 enum eRecover {};
