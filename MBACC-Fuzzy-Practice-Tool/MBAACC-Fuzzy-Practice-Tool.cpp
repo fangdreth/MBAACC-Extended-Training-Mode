@@ -130,14 +130,17 @@ int main(int argc, char* argv[])
     int nDebugBias = 0;
     int nDebugFrameCount = 0;
 
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO cursorInfo;
+    GetConsoleCursorInfo(hConsole, &cursorInfo);
+    cursorInfo.bVisible = false;
+    SetConsoleCursorInfo(hConsole, &cursorInfo);
+
     std::srand((unsigned int)std::time(nullptr));
 
     std::string sOnlineVersion = GetLatestVersion();
     if (sOnlineVersion != "" && sOnlineVersion != VERSION)
         bNeedToAnnounceNewVersion = true;
-
-    std::cout << "Fang's Extended Training Mode Mod" << std::endl;
-    std::cout << GITHUB_RELEASE << std::endl;
 
     try
     {
@@ -147,19 +150,45 @@ int main(int argc, char* argv[])
             {
                 std::cout.flush();
 
+                int nCurrentTime = std::time(nullptr);
+
+                SetConsoleCursorPosition(hConsole, { 0, 0 });
+                std::cout << "===========================================================================" << std::endl;
+                std::cout << "|   Fang's Extended Training Mode Mod " << VERSION << "                                |" << std::endl;
+                std::cout << "|                                                                         |" << std::endl;
+                std::cout << "|   " << GITHUB_RELEASE << "   |" << std::endl;
+                if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
+                    std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                  |" << std::endl;
+                else
+                    std::cout << "|                                                                         |" << std::endl;
+                std::cout << "===========================================================================" << std::endl;
+
                 GetExitCodeProcess(hProcess, &dwExitCode);
                 if (hProcess == 0x0 || dwExitCode != 259)
                 {
-                    system("cls");
-
                     hProcess = 0x0;
-                    std::cout << "Looking for MBAA.exe...";
-                    while (hProcess == 0x0)
-                        hProcess = GetProcessByName(L"MBAA.exe");
+
+                    SetConsoleCursorPosition(hConsole, { 0, 7 });
+                    std::string sLookingForMelty = "Looking for MBAA.exe                 ";
+                    for (int i = 0; i < nCurrentTime % 8; i++)
+                        sLookingForMelty[20 + i] = '.';
+                    std::cout << sLookingForMelty;
+
+                    hProcess = GetProcessByName(L"MBAA.exe");
+
+                    if (hProcess == 0x0)
+                        continue;
+
+                    SetConsoleCursorPosition(hConsole, { 0, 7 });
+                    std::cout << "                                              ";
+
                     Sleep(100);
                     dwBaseAddress = GetBaseAddressByName(hProcess, L"MBAA.exe");
 
                     InitializeCharacterMaps();
+
+                    SetConsoleCursorPosition(hConsole, { 0, 5 });
+                    std::cout << "                                 ";
                 }
 
                 ReadProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
@@ -1688,7 +1717,7 @@ int main(int argc, char* argv[])
                             bDelayingReversal = false;
                             nWriteBuffer = GetPattern(nP2CharacterID, vPatternNames[nReversalIndex]);
                             bReversaled = true;
-                            if (!bRandomReversal || nTimer % 2 == 0)
+                            if (!bRandomReversal || rand() % 2 == 0)
                                 WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP2PatternSet), &nWriteBuffer, 4, 0);
                             else
                                 bReversaled = false;

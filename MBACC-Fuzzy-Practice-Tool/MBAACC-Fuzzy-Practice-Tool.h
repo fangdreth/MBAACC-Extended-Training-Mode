@@ -26,7 +26,8 @@ std::string exec(const char* cmd) {
 
 std::string GetLatestVersion()
 {
-    char pcCommand[] = "curl -s https://api.github.com/repos/fangdreth/MBAACC-Training-Tools/releases/latest";
+    char pcCommand[1024];
+    strcpy_s(pcCommand, ("curl -s " + GITHUB_LATEST).c_str());
     std::string sOutputJSONBuffer = exec(pcCommand);
     auto json = nlohmann::json::parse(sOutputJSONBuffer);
     std::string sVersion = "";
