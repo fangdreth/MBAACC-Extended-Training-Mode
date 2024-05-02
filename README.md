@@ -1,5 +1,7 @@
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Screenshots/Github%20Image.png?raw=true)
 
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Screenshots/Features%20Release%201.png?raw=true)
+
 ### Features
 
 + New "EXTENDED SETTINGS" menu
@@ -65,11 +67,14 @@ In order of priority
 + Character stats on CSS, such as backdash data, wakeup timings, health, and more
 + Control seed for RNG elements
 + Fix training-mode glitch that allows blocking 1f early out of ground tech
++ Permanent HEAT/BLOOD HEAT mode.
 
 # Known Issues
 + Left and right in EXTENDED SETTINGS feels sticky sometimes
 + Random crashes
 	+ Most commonly seen when changing characters' X locations
++ Specific situations can cause the configured reversal to not come out.
++ Some of the enemy reversals are the wrong moves.  PLEASE LET ME KNOW IF YOU FIND ONE.
 
 # FAQ
 
