@@ -1,7 +1,5 @@
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Screenshots/Github%20Image.png?raw=true)
 
-![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Screenshots/Features%20Release%201.png?raw=true)
-
 ### Features
 
 + New "EXTENDED SETTINGS" menu
@@ -33,6 +31,14 @@
 + Character Specific Resources
 	+ Roa visible and hidden charges
 	+ Sion bullets
+
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Screenshots/BATTLE%20SETTINGS.png?raw=true)
+
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Screenshots/EXTENDED%20SETTINGS%20PAGE%201.png?raw=true)
+
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Screenshots/EXTENDED%20SETTINGS%20PAGE%202.png?raw=true)
+
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Screenshots/EXTENDED%20SETTINGS%20PAGE%203.png?raw=true)
 
 ### Where is the fuzzy overhead from the trailer?
 The current implementation does not produce behavior 1-to-1 to the vanilla game.  It's very important for Training Mode to behave as similar as possible to Versus mode, so I have chosen to withold this feature until I can make something appropriate for the MBAACC community to practice with.
