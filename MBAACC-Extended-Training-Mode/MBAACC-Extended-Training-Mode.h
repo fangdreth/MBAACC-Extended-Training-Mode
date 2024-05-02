@@ -102,75 +102,6 @@ HANDLE GetProcessByName(const wchar_t* name)
     return nullptr;
 }
 
-void ApplyPreset(int nPresetSetting, bool* bSwitchToCrouch, int* nDelayFrames, int* nEnemyStatusSetting, int* nEnemyDefenseSetting, int* nEnemyGuardLevelSetting, bool* bExGuard, int* nReversalPattern, int* nReversalDelayFrames)
-{
-    switch (nPresetSetting)
-    {
-    case ePresetSettings::DEFAULT:
-        *bSwitchToCrouch = false;
-        *nDelayFrames = 0;
-        *nEnemyStatusSetting = eEnemyStatus::STAND;
-        *nEnemyDefenseSetting = eEnemyDefense::NOGUARD;
-        *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::ONEHUNDRED;
-        *bExGuard = false;
-        *nReversalPattern = -1;
-        nReversalDelayFrames = 0;
-        break;
-    case ePresetSettings::FUZZY:
-        *bSwitchToCrouch = true;
-        *nDelayFrames = 0;
-        *nEnemyStatusSetting = eEnemyStatus::STAND;
-        *nEnemyDefenseSetting = eEnemyDefense::ALLGUARD;
-        *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::INF;
-        *bExGuard = false;
-        *nReversalPattern = -1;
-        nReversalDelayFrames = 0;
-        break;
-    case ePresetSettings::BLOCKSTRING:
-        *bSwitchToCrouch = false;
-        *nDelayFrames = 0;
-        *nEnemyStatusSetting = eEnemyStatus::CROUCH;
-        *nEnemyDefenseSetting = eEnemyDefense::ALLGUARD;
-        *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::INF;
-        *bExGuard = false;
-        *nReversalPattern = -1;
-        nReversalDelayFrames = 0;
-        break;
-    case ePresetSettings::HEATOS:
-        *bSwitchToCrouch = false;
-        *nDelayFrames = 0;
-        *nEnemyStatusSetting = eEnemyStatus::STAND;
-        *nEnemyDefenseSetting = eEnemyDefense::NOGUARD;
-        *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::INF;
-        *bExGuard = false;
-        *nReversalPattern = 260;
-        *nReversalDelayFrames = 0;
-        break;
-    case ePresetSettings::FUZZYMASH:
-        *bSwitchToCrouch = false;
-        *nDelayFrames = 0;
-        *nEnemyStatusSetting = eEnemyStatus::CROUCH;
-        *nEnemyDefenseSetting = eEnemyDefense::ALLGUARD;
-        *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::INF;
-        *bExGuard = false;
-        *nReversalPattern = 4;
-        *nReversalDelayFrames = 6;
-        break;
-    case ePresetSettings::FUZZYJUMP:
-        *bSwitchToCrouch = false;
-        *nDelayFrames = 0;
-        *nEnemyStatusSetting = eEnemyStatus::CROUCH;
-        *nEnemyDefenseSetting = eEnemyDefense::ALLGUARD;
-        *nEnemyGuardLevelSetting = eEnemyGuardLevelSettings::INF;
-        *bExGuard = false;
-        *nReversalPattern = 36;
-        *nReversalDelayFrames = 6;
-        break;
-    default:
-        break;
-    }
-}
-
 void SetHealth(HANDLE hProcess, DWORD dwBaseAddress, int nValue)
 {
     WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1Health), &nValue, 4, 0);
@@ -190,10 +121,10 @@ void SetMeter(HANDLE hProcess, DWORD dwBaseAddress, int nValue, int nP1Moon, int
 
 void SetGuard(HANDLE hProcess, DWORD dwBaseAddress, int nLevel, int nP1Moon, int nP2Moon)
 {
-    int nWriteBuffer = vGuardLevelLookupTable[nP1Moon * 6 + nLevel];
+    int nWriteBuffer = vGuardLevelLookupTable[nP1Moon * 5 + nLevel];
     WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1GuardAmount), &nWriteBuffer, 4, 0);
     
-    nWriteBuffer = vGuardLevelLookupTable[nP2Moon * 6 + nLevel];
+    nWriteBuffer = vGuardLevelLookupTable[nP2Moon * 5 + nLevel];
     WriteProcessMemory(hProcess, (LPVOID)(dwBaseAddress + dwP1GuardAmount + dwP2Offset), &nWriteBuffer, 4, 0);
 }
 
