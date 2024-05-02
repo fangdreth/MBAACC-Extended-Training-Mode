@@ -149,11 +149,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MBAACC-Extended-Training-Mode.cpp" />
+    <ClCompile Include="PointerManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CharacterData.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="MBAACC-Extended-Training-Mode.h" />
+    <ClInclude Include="PointerManager.h" />
     <ClInclude Include="RawData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
