@@ -64,12 +64,6 @@ const DWORD dwP2E = 0x3713C9;
 const DWORD dwMagicCircuitSetting = 0x37C1FC;
 const DWORD dwBasePointer = 0x34D7FC;
 
-const std::vector<std::string> vPresetSettings = { "Default", "Fuzzy Overhead", "Blockstring", "Heat OS", "Defensive Fuzzy Mash", "Defensive Fuzzy Jump", "Custom" };
-const std::vector<std::string> vEnemyDefenseSettings = { "No Guard", "All Guard", "Status Guard", "All Shield", "Status Shield" };
-const std::vector<std::string> vEnemyDefenseBiasSettings = { "Unlikely", "Even", "Likely", "Off" };
-const std::vector<std::string> vEnemyStatusSettings = { "Stand", "Jump", "Crouch" };
-const std::vector<std::string> vEnemyGuardLevelSettings = { "Infinite", "100%", "75%", "50%", "25%", "0%" };
-
 const std::vector<int> vGuardLevelLookupTable =
 {
     1174011904/*C 100*/, 1169915904/*C 75*/, 1165623296/*C 50*/, 1157234688/*C 25*/, 0/*C 0*/,
