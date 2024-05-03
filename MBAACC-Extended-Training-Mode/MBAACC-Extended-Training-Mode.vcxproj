@@ -149,7 +149,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MBAACC-Extended-Training-Mode.cpp" />
-    <ClCompile Include="PointerManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CharacterData.h" />

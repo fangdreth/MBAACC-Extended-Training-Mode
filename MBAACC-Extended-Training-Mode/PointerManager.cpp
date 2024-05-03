@@ -89,7 +89,37 @@ PointerManager::~PointerManager()
 {
 }
 
-void PointerManager::InitializePointers(HANDLE hMBAAHandle, DWORD dwBaseAddress)
+void PointerManager::InitializeMainPointers(HANDLE hMBAAHandle, DWORD dwBaseAddress)
+{
+    m_hMBAAHandle = hMBAAHandle;
+    m_dwBaseAddress = dwBaseAddress;
+
+    m_dwViewScreenStringAddress = GetViewScreenStringAddress();
+    m_dwTrainingMenuString = GetTrainingMenuStringAddress();
+
+    m_dwSubMenuAddress = GetSubMenuEnumAddress();
+
+    m_dwReturnToMainMenuString = GetReturnToMainMenuStringAddress();
+}
+
+void PointerManager::InitializeBattleSettingsPointers(HANDLE hMBAAHandle, DWORD dwBaseAddress)
+{
+    m_hMBAAHandle = hMBAAHandle;
+    m_dwBaseAddress = dwBaseAddress;
+
+    m_dwNoRecoverString = GetNoRecoverStringAddress();
+    m_dwRecover25String = GetRecover25StringAddress();
+    m_dwRecover50String = GetRecover50StringAddress();
+    m_dwRecover75String = GetRecover75StringAddress();
+    m_dwRecover100String = GetRecover100StringAddress();
+
+    do
+    {
+        m_dwLifeIndex = GetLifeIndexAddress();
+    } while (m_dwLifeIndex == 0x58);
+}
+
+void PointerManager::InitializeEnemySettingsPointers(HANDLE hMBAAHandle, DWORD dwBaseAddress)
 {
     m_hMBAAHandle = hMBAAHandle;
     m_dwBaseAddress = dwBaseAddress;
@@ -161,28 +191,17 @@ void PointerManager::InitializePointers(HANDLE hMBAAHandle, DWORD dwBaseAddress)
 
     m_dwEnemySettingsCursor = GetEnemySettingsCursorAddress();
 
-    m_dwNoRecoverString = GetNoRecoverStringAddress();
-    m_dwRecover25String = GetRecover25StringAddress();
-    m_dwRecover50String = GetRecover50StringAddress();
-    m_dwRecover75String = GetRecover75StringAddress();
-    m_dwRecover100String = GetRecover100StringAddress();
-
-    m_dwViewScreenStringAddress = GetViewScreenStringAddress();
-    m_dwTrainingMenuString = GetTrainingMenuStringAddress();
-
-    m_dwSubMenuAddress = GetSubMenuEnumAddress();
-
-    m_dwReturnToMainMenuString = GetReturnToMainMenuStringAddress();
-
-    m_dwEnemyActionIndex = GetEnemyActionIndexAddress();
-    m_dwEnemyDefenseIndex = GetEnemyDefenseIndexAddress();
-    m_dwEnemyDefenseTypeIndex = GetEnemyDefenseTypeIndexAddress();
-    m_dwAirRecoveryIndex = GetAirRecoveryIndexAddress();
-    m_dwDownRecoveryIndex = GetDownRecoveryIndexAddress();
-    m_dwThrowRecoveryIndex = GetThrowRecoveryIndexAddress();
-    m_dwReduceDamageIndex = GetReduceDamageIndexAddress();
-    m_dwEnemyStatusIndex = GetEnemyStatusAddress();
-    m_dwLifeIndex = GetLifeIndexAddress();
+    do
+    {
+        m_dwEnemyActionIndex = GetEnemyActionIndexAddress();
+        m_dwEnemyDefenseIndex = GetEnemyDefenseIndexAddress();
+        m_dwEnemyDefenseTypeIndex = GetEnemyDefenseTypeIndexAddress();
+        m_dwAirRecoveryIndex = GetAirRecoveryIndexAddress();
+        m_dwDownRecoveryIndex = GetDownRecoveryIndexAddress();
+        m_dwThrowRecoveryIndex = GetThrowRecoveryIndexAddress();
+        m_dwReduceDamageIndex = GetReduceDamageIndexAddress();
+        m_dwEnemyStatusIndex = GetEnemyStatusAddress();
+    } while (m_dwEnemyActionIndex == 0x58 || m_dwEnemyDefenseIndex == 0x58 || m_dwEnemyDefenseTypeIndex == 0x58 || m_dwAirRecoveryIndex == 0x58 || m_dwDownRecoveryIndex == 0x58 || m_dwThrowRecoveryIndex == 0x58 || m_dwReduceDamageIndex == 0x58 || m_dwEnemyStatusIndex == 0x58);
 }
 
 #endif

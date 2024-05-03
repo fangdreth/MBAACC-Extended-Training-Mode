@@ -63,7 +63,10 @@ const DWORD dwComboCount = 0x157E00; // there's another address that tracks this
 const DWORD dwP2E = 0x3713C9;
 const DWORD dwMagicCircuitSetting = 0x37C1FC;
 const DWORD dwBasePointer = 0x34D7FC;
+const DWORD dwBurstCooldown = 0x155DBE;
 
+// integer representations of raw float values
+// not interested in messing with converting them when a table is good enough
 const std::vector<int> vGuardLevelLookupTable =
 {
     1174011904/*C 100*/, 1169915904/*C 75*/, 1165623296/*C 50*/, 1157234688/*C 25*/, 0/*C 0*/,
@@ -75,7 +78,7 @@ const int MAX_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
 const int MAX_PAGES = 3;
-const int MAX_BULLETS = 13;
+const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
 const int MIN_X = -65536;
 const int MAX_X = 65536;
@@ -92,6 +95,9 @@ const char pcSionBullets_13[13] = "SION BULLETS";
 const char pcRoaVisibleCharge_19[19] = "ROA VISIBLE CHARGE";
 const char pcRoaHiddenCharge_19[19] = "ROA HIDDEN CHARGE";
 const char pcHitsUntilBurst_17[17] = "HITS UNTIL BURST";
+const char pcNormal_7[7] = "NORMAL";
+const char pcInfinite_10[10] = "INFINITE";
+const char pcOne_2[2] = "1";
 
 const char pcASlow_12[12] = "[A]->SLOWER";
 const char pcP1XLoc_11[11] = "P1 X-LOC";
@@ -117,3 +123,4 @@ const char pcTrainingPreset_17[17] = "training preset.";
 const char pcExtendedSettings_18[18] = "EXTENDED SETTINGS";
 
 const char pcLatestVersion_19[19] = "LATEST VERSION";
+const char pcOffline_8[8] = "OFFLINE";
