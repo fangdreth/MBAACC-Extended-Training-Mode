@@ -54,7 +54,7 @@ Right now there isn't a CMAKE file, so if you want to download the mod yourself,
 Please understand that I am the only person working on this mod and it was created from scratch.  Bugs are expected, and some are already known about.  Let me know if you have any problems!
 
 # Planned Features
-In order of priority
+Roughly in order of priority, but not in order they will be implemented.
 + Fuzzy Overhead Practice
 + Fuzzy Overhead Practice
 + Fuzzy Overhead Practice
@@ -65,7 +65,8 @@ In order of priority
 + Character stats on CSS, such as backdash data, wakeup timings, health, and more
 + Control seed for RNG elements
 + Fix training-mode glitch that allows blocking 1f early out of ground tech
-+ Permanent HEAT/BLOOD HEAT mode.
++ Permanent HEAT/BLOOD HEAT mode
++ Re-add VIEW SCREEN somewhere else
 
 # Known Issues
 + Left and right in EXTENDED SETTINGS feels sticky sometimes
@@ -86,7 +87,7 @@ This is most likely because you are using the HITS UNTIL BURST option.  This set
 My handle is Fang\_\_\_ (that's three underscores).  Message me on Discord.  I'm in most major Discords so you'll be able to find me pretty easily.
 
 ### Can I suggest features?
-By all means.  Reach out to me on discord, but also make sure to read the Planned Features section first.  Don't think your idea is stupid--I'd love to discuss it, and who knows maybe it's already possible with clever settings already.
+By all means.  Reach out to me on discord, but also make sure to read the Planned Features section first.  Don't think your idea is stupid--I'd love to discuss it, and who knows maybe it's already possible with clever settings.
 
 ### Can I contribute?
 Sure.  Reach out and we can talk about it.

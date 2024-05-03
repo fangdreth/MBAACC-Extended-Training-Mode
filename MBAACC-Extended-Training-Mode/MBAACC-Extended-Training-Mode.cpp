@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     int nP2CharacterNumber = 0;
     bool bSwitchToCrouch = false;
     
-    int nSwitchBlockDelayFrames = 0;
+    //int nSwitchBlockDelayFrames = 0;
 
     int nExGuardSetting = eEnemyOffOnRandom::OFF;
     int nCustomGuard = eEnemyGuardLevelSettings::ONEHUNDRED;
@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
 
         SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
         std::cout << "===========================================================================" << std::endl;
-        std::cout << "|   Fang's Extended Training Mode Mod " << VERSION << "                                |" << std::endl;
+        std::cout << "|   Fang's Extended Training Mode Mod " << VERSION << "                                " << std::endl;
         std::cout << "|                                                                         |" << std::endl;
         std::cout << "|   " << GITHUB_RELEASE << "   |" << std::endl;
         if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
@@ -1336,6 +1336,7 @@ int main(int argc, char* argv[])
             }
             else // not paused
             {
+                // want to reset these for a clean setup next time the game is paused
                 bOnExtendedSettingsMenu = false;
                 nOldCurrentSubMenu = -1;
                 nCurrentSubMenu = eMenu::MAIN;
@@ -1499,9 +1500,7 @@ int main(int argc, char* argv[])
                 nOldMot = nMot;
 
                 if (nMot != 0)
-                {
                     bDelayingReversal = false;
-                }
 
                 if (bDelayingReversal)
                 {
@@ -1516,15 +1515,13 @@ int main(int argc, char* argv[])
                             bReversaled = false;
                     }
                     else
-                    {
                         nTempReversalDelayFrames--;
-                    }
                 }
 
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwPlayerState + dwP2Offset), &nReadResult, 4, 0);
                 if (bSwitchToCrouch && nReadResult == eEnemyStance::STANDGUARDING)
                 {
-                    // TODO: Fuzzy block
+                    // TODO: Fuzzy Overhead
                 }
             }
         }
