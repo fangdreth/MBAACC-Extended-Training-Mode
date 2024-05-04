@@ -48,7 +48,7 @@ And that's it.
 
 # Building the mod yourself
 
-Right now there isn't a CMAKE file, so if you want to download the mod yourself, get the [latest version of Visual Studio](https://visualstudio.microsoft.com/vs/) and be sure to target x86.
+Right now there isn't a CMAKE file, so if you want to build the mod yourself, get the [latest version of Visual Studio](https://visualstudio.microsoft.com/vs/) and be sure to target x86.
 
 # This is a beta
 
