@@ -977,10 +977,10 @@ int main(int argc, char* argv[])
 
                         if (nP1X == MIN_X)
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(MIN_X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOffString), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOffString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 8, 0);
 
                             nWriteBuffer = 0;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
@@ -988,10 +988,10 @@ int main(int argc, char* argv[])
                         }
                         else if (nP1X == MAX_X)
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(MAX_X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseDodgeString), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseDodgeString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcTemp, 8, 0);
 
                             nWriteBuffer = 5;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
@@ -999,11 +999,11 @@ int main(int argc, char* argv[])
                         }
                         else
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(nP1X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 8, 0);
 
                             nWriteBuffer = 2;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
@@ -1012,10 +1012,10 @@ int main(int argc, char* argv[])
 
                         if (nP2X == MIN_X)
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(MIN_X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 8, 0);
 
                             nWriteBuffer = 0;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
@@ -1023,10 +1023,10 @@ int main(int argc, char* argv[])
                         }
                         else if (nP2X == MAX_X)
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(MAX_X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 8, 0);
 
                             nWriteBuffer = 2;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
@@ -1034,11 +1034,11 @@ int main(int argc, char* argv[])
                         }
                         else
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(nP3X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 8, 0);
 
                             nWriteBuffer = 1;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
@@ -1047,10 +1047,10 @@ int main(int argc, char* argv[])
 
                         if (nP3X == MIN_X)
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(MIN_X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOffString), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOffString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 8, 0);
 
                             nWriteBuffer = 0;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
@@ -1058,10 +1058,10 @@ int main(int argc, char* argv[])
                         }
                         else if (nP3X == MAX_X)
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(MAX_X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom1String), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom2String), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom1String), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom2String), &pcTemp, 8, 0);
 
                             nWriteBuffer = 5;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
@@ -1069,11 +1069,11 @@ int main(int argc, char* argv[])
                         }
                         else
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(nP2X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryBackString), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryForwardString), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryBackString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryForwardString), &pcTemp, 8, 0);
 
                             nWriteBuffer = 2;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
@@ -1082,10 +1082,10 @@ int main(int argc, char* argv[])
                             
                         if (nP4X == MIN_X)
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(MIN_X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOffString), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOffString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 8, 0);
 
                             nWriteBuffer = 0;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
@@ -1093,10 +1093,10 @@ int main(int argc, char* argv[])
                         }
                         else if (nP4X == MAX_X)
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(MAX_X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom1String), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom2String), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom1String), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom2String), &pcTemp, 8, 0);
 
                             nWriteBuffer = 5;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
@@ -1104,11 +1104,11 @@ int main(int argc, char* argv[])
                         }
                         else
                         {
-                            char pcTemp[7];
+                            char pcTemp[8];
                             strcpy_s(pcTemp, std::to_string(nP4X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryBackString), &pcTemp, 7, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryForwardString), &pcTemp, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryBackString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryForwardString), &pcTemp, 8, 0);
 
                             nWriteBuffer = 2;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
@@ -1695,9 +1695,13 @@ int main(int argc, char* argv[])
                     bReversaled = true;
                 if (nFrameCounter == 2)
                     bReversaled = false;
+
+                // extra check for current pattern == reversal pattern
                 if (nFrameCounter != 0 && GetPattern(nP2CharacterID, vPatternNames[nReversalIndex]) != 0)
                 {
-                    if (!bDelayingReversal && nMot == 0 && nMot != nOldMot && nP2Y == 0 && nBurstCooldown == 0)
+                    //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);/* || nReadResult == GetPattern(nP2CharacterID, vPatternNames[nReversalIndex])*/
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x155DD0/*recieved hitstop*/), &nReadResult, 4, 0);
+                    if ((!bDelayingReversal && nMot == 0 && nMot != nOldMot && nP2Y == 0 && nBurstCooldown == 0) || nReadResult != 0)
                     {
                         if (!bReversaled)
                         {
