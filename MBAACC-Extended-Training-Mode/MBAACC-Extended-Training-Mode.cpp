@@ -1699,8 +1699,7 @@ int main(int argc, char* argv[])
                 // extra check for current pattern == reversal pattern
                 if (nFrameCounter != 0 && GetPattern(nP2CharacterID, vPatternNames[nReversalIndex]) != 0)
                 {
-                    //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);/* || nReadResult == GetPattern(nP2CharacterID, vPatternNames[nReversalIndex])*/
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x155DD0/*recieved hitstop*/), &nReadResult, 4, 0);
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RecievedHitstop), &nReadResult, 4, 0);
                     if ((!bDelayingReversal && nMot == 0 && nMot != nOldMot && nP2Y == 0 && nBurstCooldown == 0) || nReadResult != 0)
                     {
                         if (!bReversaled)

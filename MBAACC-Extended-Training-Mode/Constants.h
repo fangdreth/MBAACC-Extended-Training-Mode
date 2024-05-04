@@ -64,6 +64,7 @@ const DWORD dwP2E = 0x3713C9;
 const DWORD dwMagicCircuitSetting = 0x37C1FC;
 const DWORD dwBasePointer = 0x34D7FC;
 const DWORD dwBurstCooldown = 0x155DBE;
+const DWORD dwP2RecievedHitstop = 0x155DD0;
 
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
