@@ -59,6 +59,7 @@ Roughly in order of priority, but not in order they will be implemented.
 + Fuzzy Overhead Practice
 + Fuzzy Overhead Practice
 + Fuzzy Overhead Practice
++ Dummy action out of shield
 + Option for dummy to repeat a move over and over
 + Air Reversals
 + Configurable Aoko Repeat Magic
