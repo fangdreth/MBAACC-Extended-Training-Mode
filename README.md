@@ -73,7 +73,7 @@ Roughly in order of priority, but not in order they will be implemented.
 + Left and right in EXTENDED SETTINGS feels sticky sometimes
 + Random crashes
 	+ Most commonly seen when changing characters' X locations
-+ Specific situations can cause the configured reversal to not come out.
++ Specific situations can cause the configured reversal to repeat
 + Some of the enemy reversals are the wrong moves.  PLEASE LET ME KNOW IF YOU FIND ONE.
 
 # FAQ
