@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
 
         SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
         std::cout << "===========================================================================" << std::endl;
-        std::cout << "|   Fang's Extended Training Mode Mod " << VERSION << "                                " << std::endl;
+        std::cout << "|   Fang's Extended Training Mode Mod " << VERSION << "                               |  " << std::endl;
         std::cout << "|                                                                         |" << std::endl;
         std::cout << "|   " << GITHUB_RELEASE << "   |" << std::endl;
         if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)

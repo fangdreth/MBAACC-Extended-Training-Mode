@@ -77,6 +77,7 @@ Roughly in order of priority, but not in order they will be implemented.
 	+ Most commonly seen when changing characters' X locations
 + Specific situations can cause the configured reversal to repeat
 + Some of the enemy reversals are the wrong moves.  PLEASE LET ME KNOW IF YOU FIND ONE.
++ ALL GUARD COMBO setting does not behave correctly with Ex Guard
 
 # FAQ
 
