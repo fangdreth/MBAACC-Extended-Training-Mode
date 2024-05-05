@@ -59,8 +59,9 @@ Roughly in order of priority, but not in order they will be implemented.
 + Fuzzy Overhead Practice
 + Fuzzy Overhead Practice
 + Fuzzy Overhead Practice
++ Logging
 + Dummy action out of shield
-+ Dummy 1AD, 1A~D
++ Multiple reversal patterns
 + Option for dummy to repeat a move over and over
 + Air Reversals
 + Configurable Aoko Repeat Magic
@@ -70,6 +71,7 @@ Roughly in order of priority, but not in order they will be implemented.
 + Fix training-mode glitch that allows blocking 1f early out of ground tech
 + Permanent HEAT/BLOOD HEAT mode
 + Re-add VIEW SCREEN somewhere else
++ Dummy 1AD, 1A~D
 
 # Known Issues
 + Left and right in EXTENDED SETTINGS feels sticky sometimes
@@ -78,6 +80,9 @@ Roughly in order of priority, but not in order they will be implemented.
 + Specific situations can cause the configured reversal to repeat
 + Some of the enemy reversals are the wrong moves.  PLEASE LET ME KNOW IF YOU FIND ONE.
 + ALL GUARD COMBO setting does not behave correctly with Ex Guard
++ Heat reversal on hisui and kohaku
++ Randomlf 1f slow reversals
++ Some situations like wallbounce prevent bursting
 
 # FAQ
 
