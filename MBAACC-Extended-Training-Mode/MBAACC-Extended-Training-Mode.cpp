@@ -1,4 +1,5 @@
 #include "MBAACC-Extended-Training-Mode.h"
+#include "Logger.h"
 
 // the -1 when loading the menu glitch is in full force
 
@@ -40,7 +41,7 @@ int main(int argc, char* argv[])
     int nMot = 0;
     int nOldMot = 0;
     int nP2Y = 0;
-    int nBurstCooldown;
+    int nBurstCooldown = 0;
 
     int nOldEnemyActionIndex = -1;
     int nOldPresetIndex = -1;
@@ -106,23 +107,31 @@ int main(int argc, char* argv[])
 
     std::srand((unsigned int)std::time(nullptr));
 
-    sOnlineVersion = GetLatestVersion();
-    if (sOnlineVersion != "" && sOnlineVersion != VERSION)
-        bNeedToAnnounceNewVersion = true;
-
     hConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(hConsoleHandle, &cursorInfo);
     cursorInfo.bVisible = false;
     SetConsoleCursorInfo(hConsoleHandle, &cursorInfo);
-
   
+    InitializeLogger(hConsoleHandle);
+
+    try
+    {
+        sOnlineVersion = GetLatestVersion();
+        if (sOnlineVersion != "" && sOnlineVersion != VERSION)
+            bNeedToAnnounceNewVersion = true;
+        
+    }
+    catch (...)
+    {
+        sOnlineVersion = "";
+        LogError("Cannot fetch latest version");
+    }
+
     while (1)
     {
-        std::cout.flush();
-
         nCurrentTime = std::time(nullptr);
-
+        
         SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
         std::cout << "===========================================================================" << std::endl;
         std::cout << "|   Fang's Extended Training Mode Mod " << VERSION << "                               |  " << std::endl;
@@ -134,10 +143,14 @@ int main(int argc, char* argv[])
             std::cout << "|                                                                         |" << std::endl;
         std::cout << "===========================================================================" << std::endl;
 
-        //MBAA.exe is not open || has closed.  259 exit code means still open
         GetExitCodeProcess(hMBAAHandle, &dwExitCode);
+
         if (hMBAAHandle == 0x0 || dwExitCode != 259)
         {
+            // Print the variable values when MBAA closes, possibly from a crash
+            if (hMBAAHandle != 0x0)
+                CloseLog(bPaused, bAPressed, bOnCSS, bOnExtendedSettingsMenu, nP1CharacterID, nP2CharacterID, nP1Moon, nP2Moon, nP1CharacterNumber, nP2CharacterNumber, bSwitchToCrouch, nExGuardSetting, nCustomGuard, nReversalPattern, nReversalDelayFrames, nTempReversalDelayFrames, bDelayingReversal, bReversaled, bRandomReversal, nReversalIndex, vPatternNames, nMot, nOldMot, nP2Y, nBurstCooldown ,nOldEnemyActionIndex, nOldPresetIndex, nOldEnemyDefenseIndex, nOldEnemyDefenseTypeIndex, nOldAirRecoveryIndex, nOldDownRecoveryIndex, nOldThrowRecoveryIndex, nOldReduceDamageIndex, nOldLifeIndex, nCurrentSubMenu, nOldCurrentSubMenu, nFrameCounter, nOldFrameCounter, nStoredEnemyAction, nStoredEnemyDefense, nStoredEnemyDefenseType, nStoredAirRecovery, nStoredDownRecovery, nStoredThrowRecovery, nStoredReduceDamage, nGameCursorIndex, nOldGameCursorIndex, nEnemySettingsCursor, nOldEnemySettingsCursor, nCustomMeter, nCustomHealth, nHealthRefillTimer, nCharSpecificsRefillTimer, bLifeRecover, nSionBullets, nRoaVisibleCharge, nRoaHiddenCharge, nSionBulletsRefillTimer, nRoaHiddenChargeRefillTimer, nRoaVisibleChargeRefillTimer, nExtendedSettingsPage, bPositionsLocked, nP1X, nP2X, nP3X, nP4X, bP3Exists, bP4Exists, nHitsTillBurst, bInfGuard);
+
             hMBAAHandle = 0x0;
 
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
@@ -147,16 +160,19 @@ int main(int argc, char* argv[])
             std::cout << sLookingForMelty;
 
             hMBAAHandle = GetProcessByName(L"MBAA.exe");
+            LogInfo("GetProcessByName");
 
             // don't do anything until we re-attach to mbaa
             if (hMBAAHandle == 0x0)
                 continue;
+            LogInfo("Attached to MBAA");
 
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             std::cout << "                                              ";
 
             Sleep(100);
             dwBaseAddress = GetBaseAddressByName(hMBAAHandle, L"MBAA.exe");
+            LogInfo("Got BaseAddressByName");
 
             InitializeCharacterMaps();
         }
@@ -1563,12 +1579,21 @@ int main(int argc, char* argv[])
                     vPatternNames = GetPatternList(nP2CharacterID);
                 }
 
+                // this works but only by disabling hit particles
+                /*ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstopRemaining + dwP2Offset), &nReadResult, 4, 0);
+                int nHitstopRemaining_temp = nReadResult;
+                if (nReadResult > 10000)
+                {
+                    nWriteBuffer = 0;
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstopRemaining + dwP2Offset), &nWriteBuffer, 4, 0);
+                }*/
+
                 // burst a combo
                 if (nHitsTillBurst != TOO_HIGH_TO_BURST)
                 {
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwComboCount), &nReadResult, 4, 0);
                     int nComboCount = nReadResult;
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstopRemaining + dwP2Offset), &nReadResult, 4, 0);
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstopRemaining + dwP2Offset), &nReadResult, 1, 0);
                     int nHitstopRemaining = nReadResult;
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 4, 0);
                     int nHitstunRemaining = nReadResult;
@@ -1700,7 +1725,7 @@ int main(int argc, char* argv[])
                 if (nFrameCounter != 0 && GetPattern(nP2CharacterID, vPatternNames[nReversalIndex]) != 0)
                 {
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RecievedHitstop), &nReadResult, 4, 0);
-                    if ((!bDelayingReversal && nMot == 0 && nMot != nOldMot && nP2Y == 0 && nBurstCooldown == 0) || nReadResult != 0)
+                    if ((!bDelayingReversal && nMot == 0 && nMot != nOldMot && nP2Y == 0 && nBurstCooldown == 0) || (nReadResult != 0 && nReadResult < 10000))
                     {
                         if (!bReversaled)
                         {
@@ -1741,6 +1766,7 @@ int main(int argc, char* argv[])
         }
     }
 
+    CloseLogger();
     CloseHandle(hMBAAHandle);
     return 0;
 }
