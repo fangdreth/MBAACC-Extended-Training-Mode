@@ -1722,10 +1722,11 @@ int main(int argc, char* argv[])
                     bReversaled = false;
 
                 // extra check for current pattern == reversal pattern
+
                 if (nFrameCounter != 0 && GetPattern(nP2CharacterID, vPatternNames[nReversalIndex]) != 0)
                 {
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RecievedHitstop), &nReadResult, 4, 0);
-                    if ((!bDelayingReversal && nMot == 0 && nMot != nOldMot && nP2Y == 0 && nBurstCooldown == 0) || (nReadResult != 0 && nReadResult < 10000))
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RecievedHitstop), &nReadResult, 1, 0);
+                    if ((!bDelayingReversal && nMot == 0 && nMot != nOldMot && nP2Y == 0 /* && nBurstCooldown == 0*/) || nReadResult != 0)
                     {
                         if (!bReversaled)
                         {
