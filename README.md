@@ -78,10 +78,11 @@ Roughly in order of priority, but not in order they will be implemented.
 + Random crashes
 	+ Most commonly seen when changing characters' X locations
 + Specific situations can cause the configured reversal to repeat
+	+ Fixed
 + Some of the enemy reversals are the wrong moves.  PLEASE LET ME KNOW IF YOU FIND ONE.
 + ALL GUARD COMBO setting does not behave correctly with Ex Guard
 + Heat reversal on hisui and kohaku
-+ Randomlf 1f slow reversals
++ Random 1f slow reversals
 + Some situations like wallbounce prevent bursting
 
 # FAQ
