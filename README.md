@@ -89,6 +89,9 @@ Roughly in order of priority, but not in order they will be implemented.
 ### "Looking for MBAA.exe..." when MBAA.exe is already open
 Check Task Manager too see if you have a zombie MBAA.exe process running.  You may have to restart your computer to kill this program.
 
+### "VCRUNTIME140.dll" was not found
+This means your VC++ redistributable is missing or needs repaired.  There are step-by-step instructions on Google, so you're best off searching this error to find the best way to fix it.
+
 ### Some of my settings change on their own
 This is most likely because you are using the HITS UNTIL BURST option.  This setting requires MANUAL for the dummy and INFINITE for the meter, and turning HITS UNTIL BURST on automatically changes these.
 

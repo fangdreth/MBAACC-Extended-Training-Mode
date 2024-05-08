@@ -84,6 +84,8 @@ int main(int argc, char* argv[])
     int nRoaVisibleChargeRefillTimer = 0;
 
     int nExtendedSettingsPage = 1;
+
+    int nGameMode = 0;
     
     bool bPositionsLocked = false;
     int nP1X = P1_DEFAULT_X;
@@ -132,13 +134,14 @@ int main(int argc, char* argv[])
     {
         nCurrentTime = std::time(nullptr);
         
+        
         SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
         std::cout << "===========================================================================" << std::endl;
         std::cout << "|   Fang's Extended Training Mode Mod " << VERSION << "                               |  " << std::endl;
         std::cout << "|                                                                         |" << std::endl;
         std::cout << "|   " << GITHUB_RELEASE << "   |" << std::endl;
         if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
-            std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                  |" << std::endl;
+            std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                 |" << std::endl;
         else
             std::cout << "|                                                                         |" << std::endl;
         std::cout << "===========================================================================" << std::endl;
@@ -149,7 +152,7 @@ int main(int argc, char* argv[])
         {
             // Print the variable values when MBAA closes, possibly from a crash
             if (hMBAAHandle != 0x0)
-                CloseLog(bPaused, bAPressed, bOnCSS, bOnExtendedSettingsMenu, nP1CharacterID, nP2CharacterID, nP1Moon, nP2Moon, nP1CharacterNumber, nP2CharacterNumber, bSwitchToCrouch, nExGuardSetting, nCustomGuard, nReversalPattern, nReversalDelayFrames, nTempReversalDelayFrames, bDelayingReversal, bReversaled, bRandomReversal, nReversalIndex, vPatternNames, nMot, nOldMot, nP2Y, nBurstCooldown ,nOldEnemyActionIndex, nOldPresetIndex, nOldEnemyDefenseIndex, nOldEnemyDefenseTypeIndex, nOldAirRecoveryIndex, nOldDownRecoveryIndex, nOldThrowRecoveryIndex, nOldReduceDamageIndex, nOldLifeIndex, nCurrentSubMenu, nOldCurrentSubMenu, nFrameCounter, nOldFrameCounter, nStoredEnemyAction, nStoredEnemyDefense, nStoredEnemyDefenseType, nStoredAirRecovery, nStoredDownRecovery, nStoredThrowRecovery, nStoredReduceDamage, nGameCursorIndex, nOldGameCursorIndex, nEnemySettingsCursor, nOldEnemySettingsCursor, nCustomMeter, nCustomHealth, nHealthRefillTimer, nCharSpecificsRefillTimer, bLifeRecover, nSionBullets, nRoaVisibleCharge, nRoaHiddenCharge, nSionBulletsRefillTimer, nRoaHiddenChargeRefillTimer, nRoaVisibleChargeRefillTimer, nExtendedSettingsPage, bPositionsLocked, nP1X, nP2X, nP3X, nP4X, bP3Exists, bP4Exists, nHitsTillBurst, bInfGuard);
+                CloseLog(bPaused, bAPressed, bOnCSS, bOnExtendedSettingsMenu, nP1CharacterID, nP2CharacterID, nP1Moon, nP2Moon, nP1CharacterNumber, nP2CharacterNumber, bSwitchToCrouch, nExGuardSetting, nCustomGuard, nReversalPattern, nReversalDelayFrames, nTempReversalDelayFrames, bDelayingReversal, bReversaled, bRandomReversal, nReversalIndex, vPatternNames, nMot, nOldMot, nP2Y, nBurstCooldown ,nOldEnemyActionIndex, nOldPresetIndex, nOldEnemyDefenseIndex, nOldEnemyDefenseTypeIndex, nOldAirRecoveryIndex, nOldDownRecoveryIndex, nOldThrowRecoveryIndex, nOldReduceDamageIndex, nOldLifeIndex, nCurrentSubMenu, nOldCurrentSubMenu, nFrameCounter, nOldFrameCounter, nStoredEnemyAction, nStoredEnemyDefense, nStoredEnemyDefenseType, nStoredAirRecovery, nStoredDownRecovery, nStoredThrowRecovery, nStoredReduceDamage, nGameCursorIndex, nOldGameCursorIndex, nEnemySettingsCursor, nOldEnemySettingsCursor, nCustomMeter, nCustomHealth, nHealthRefillTimer, nCharSpecificsRefillTimer, bLifeRecover, nSionBullets, nRoaVisibleCharge, nRoaHiddenCharge, nSionBulletsRefillTimer, nRoaHiddenChargeRefillTimer, nRoaVisibleChargeRefillTimer, nExtendedSettingsPage, bPositionsLocked, nP1X, nP2X, nP3X, nP4X, bP3Exists, bP4Exists, nHitsTillBurst, bInfGuard, nGameMode);
 
             hMBAAHandle = 0x0;
 
@@ -158,23 +161,47 @@ int main(int argc, char* argv[])
             for (int i = 0; i < nCurrentTime % 8; i++)
                 sLookingForMelty[20 + i] = '.';
             std::cout << sLookingForMelty;
+            SetConsoleCursorPosition(hConsoleHandle, { 0, 8 });
+            std::cout << "                                              ";
 
             hMBAAHandle = GetProcessByName(L"MBAA.exe");
             LogInfo("GetProcessByName");
 
             // don't do anything until we re-attach to mbaa
             if (hMBAAHandle == 0x0)
+            {
+                Sleep(100);
                 continue;
+            }
             LogInfo("Attached to MBAA");
 
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             std::cout << "                                              ";
+
+            
 
             Sleep(100);
             dwBaseAddress = GetBaseAddressByName(hMBAAHandle, L"MBAA.exe");
             LogInfo("Got BaseAddressByName");
 
             InitializeCharacterMaps();
+        }
+
+        // check this to prevent attaching to netplay
+        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwGameMode), &nReadResult, 4, 0);
+        nGameMode = nReadResult;
+        if (nGameMode != 0)
+        {
+            SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
+            std::cout << "Cannot attach to versus mode....                 ";
+            LogInfo("MBAA is in versus mode");
+            continue;
+        }
+        else
+        {
+            SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
+            std::cout << "Attached to MBAA.exe                                              ";
+            LogInfo("MBAA is in training mode");
         }
 
         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
@@ -1703,10 +1730,10 @@ int main(int argc, char* argv[])
                 }
 
                 // easy access debug screen clear
-                /*if (GetKeyState(VK_RETURN) < 0)
+                if (GetKeyState(VK_RETURN) < 0)
                 {
-                    system("cls");
-                }*/
+                    //system("cls");
+                }
 
                 // convoluted reversal pattern logic
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwBurstCooldown), &nReadResult, 1, 0);
@@ -1725,11 +1752,11 @@ int main(int argc, char* argv[])
 
                 if (nFrameCounter != 0 && GetPattern(nP2CharacterID, vPatternNames[nReversalIndex]) != 0)
                 {
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RecievedHitstop), &nReadResult, 1, 0);
-                    if ((!bDelayingReversal && nMot == 0 && nMot != nOldMot && nP2Y == 0 /* && nBurstCooldown == 0*/) || nReadResult != 0)
+                    if (!bDelayingReversal && nMot == 0 && nMot != nOldMot && nP2Y == 0)
                     {
                         if (!bReversaled)
                         {
+                            
                             bDelayingReversal = true;
                             nTempReversalDelayFrames = nReversalDelayFrames;
                         }
@@ -1740,12 +1767,15 @@ int main(int argc, char* argv[])
                 nOldMot = nMot;
 
                 if (nMot != 0)
+                {
                     bDelayingReversal = false;
+                }
 
                 if (bDelayingReversal)
                 {
                     if (nTempReversalDelayFrames == 0)
                     {
+                        
                         bDelayingReversal = false;
                         nWriteBuffer = GetPattern(nP2CharacterID, vPatternNames[nReversalIndex]);
                         bReversaled = true;
