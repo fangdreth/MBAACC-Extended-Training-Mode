@@ -33,7 +33,7 @@
 	+ Sion bullets
 	+ Normal, auto-refill, and infinite options
 
-### Where is the fuzzy overhead from the trailer?
+### Where is the fuzzy overhead from the first trailer?
 The current implementation does not produce behavior 1-to-1 to the vanilla game.  It's very important for Training Mode to behave as similar as possible to Versus mode, so I have chosen to withold this feature until I can make something appropriate for the MBAACC community to practice with.
 
 # How do I get the mod?
