@@ -194,14 +194,14 @@ int main(int argc, char* argv[])
         {
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             std::cout << "Cannot attach to versus mode....                 ";
-            LogInfo("MBAA is in versus mode");
+            //LogInfo("MBAA is in versus mode");
             continue;
         }
         else
         {
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             std::cout << "Attached to MBAA.exe                                              ";
-            LogInfo("MBAA is in training mode");
+            //LogInfo("MBAA is in training mode");
         }
 
         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
