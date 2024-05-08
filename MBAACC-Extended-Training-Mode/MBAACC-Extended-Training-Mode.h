@@ -34,12 +34,12 @@ std::string GetLatestVersion()
     std::string sVersion = "";
     try
     {
-        sVersion = json["name"];
+        sVersion = json["tag_name"];
     }
-    catch(...)
-    { 
+    catch (...)
+    {
     }
-    
+
     return sVersion;
 }
 
