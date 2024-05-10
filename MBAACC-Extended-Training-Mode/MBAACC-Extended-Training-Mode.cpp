@@ -482,7 +482,7 @@ int main(int argc, char* argv[])
                     }
                     else if (nExtendedSettingsPage == STATS_PAGE)
                     {
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcReversalType_14, 14, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcBlank_1, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcExGuard_9, 9, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcGuardBar_10, 10, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcMeter_18, 18, 0);
@@ -513,7 +513,7 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcRoaHiddenCharge_19, 19, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcBlank_1, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcHitsUntilBurst_17, 17, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
                     }
 
                     // Skip DEFAULT
@@ -539,7 +539,20 @@ int main(int argc, char* argv[])
                     }
                     else if (nExtendedSettingsPage == STATS_PAGE)
                     {
-                        // don't skip anything
+                        if (nOldEnemySettingsCursor == 14 && nEnemySettingsCursor == 0)
+                        {
+                            nWriteBuffer = 2;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                            nEnemySettingsCursor = 2;
+                            nOldEnemySettingsCursor = 2;
+                        }
+                        if (nOldEnemySettingsCursor == 2 && nEnemySettingsCursor == 0)
+                        {
+                            nWriteBuffer = 14;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                            nEnemySettingsCursor = 14;
+                            nOldEnemySettingsCursor = 14;
+                        }
                     }
                     else if (nExtendedSettingsPage == POSITIONS_PAGE)
                     {
@@ -590,12 +603,12 @@ int main(int argc, char* argv[])
                     {
                         if (nOldEnemySettingsCursor == 3 && nEnemySettingsCursor == 5)
                         {
-                            nWriteBuffer = 8;
+                            nWriteBuffer = 10;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                            nEnemySettingsCursor = 8;
-                            nOldEnemySettingsCursor = 8;
+                            nEnemySettingsCursor = 10;
+                            nOldEnemySettingsCursor = 10;
                         }
-                        else if (nOldEnemySettingsCursor == 8 && nEnemySettingsCursor == 6)
+                        else if (nOldEnemySettingsCursor == 10 && nEnemySettingsCursor == 8)
                         {
                             nWriteBuffer = 3;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
@@ -882,6 +895,7 @@ int main(int argc, char* argv[])
                     if (nExtendedSettingsPage == REVERSALS_PAGE)
                     {
                         nWriteBuffer = ONSCREEN_LOCATION;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
@@ -1095,6 +1109,9 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
 
+                        nWriteBuffer = OFFSCREEN_LOCATION;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
+
                         /*if (!bRandomReversal)
                         {
                             char pcTemp[7] = "NORMAL";
@@ -1285,6 +1302,8 @@ int main(int argc, char* argv[])
                     {
                         nWriteBuffer = ONSCREEN_LOCATION;
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
                         if (bP3Exists)
                             nWriteBuffer = ONSCREEN_LOCATION;
                         else
@@ -1469,6 +1488,7 @@ int main(int argc, char* argv[])
                         nWriteBuffer = OFFSCREEN_LOCATION;
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
 
                         if (nSionBullets == MAX_BULLETS + 2)
                         {
@@ -1654,6 +1674,10 @@ int main(int argc, char* argv[])
 
                     DWORD dwEnemyActionInfoStringAddress = GetEnemyActionInfoStringAddress(hMBAAHandle, dwBaseAddress);
 
+                    DWORD dwEnemySettingsCursor = GetEnemySettingsCursorAddress(hMBAAHandle, dwBaseAddress);
+
+                    DWORD dwEnemyActionOptionX = GetEnemyActionOptionXAddress(hMBAAHandle, dwBaseAddress);
+
                     DWORD dwEnemyActionIndex;
                     DWORD dwEnemyDefenseIndex;
                     DWORD dwEnemyDefenseTypeIndex;
@@ -1684,8 +1708,11 @@ int main(int argc, char* argv[])
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionInfoStringAddress), &pcEnemyActionInfo, 16, 0);
 
                     // ENEMY ACTION
-                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcEnemyReversal_15, 15, 0);
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcBlank_1, 1, 0);
 
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nReadResult, 4, 0);
+                    nOldEnemySettingsCursor = nEnemySettingsCursor;
+                    nEnemySettingsCursor = nReadResult;
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionIndex), &nReadResult, 4, 0);
                     int nEnemyActionIndex = nReadResult;
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nReadResult, 4, 0);
@@ -1701,14 +1728,32 @@ int main(int argc, char* argv[])
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageIndex), &nReadResult, 4, 0);
                     int nReduceDamageIndex = nReadResult;
 
-                    if (nOldEnemyActionIndex == -1)
+                    if (nOldEnemySettingsCursor == 14 && nEnemySettingsCursor == 0)
+                    {
+                        nWriteBuffer = 2;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                        nEnemySettingsCursor = 2;
+                        nOldEnemySettingsCursor = 2;
+                    }
+                    if (nOldEnemySettingsCursor == 2 && nEnemySettingsCursor == 0)
+                    {
+                        nWriteBuffer = 14;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                        nEnemySettingsCursor = 14;
+                        nOldEnemySettingsCursor = 14;
+                    }
+
+                    nWriteBuffer = OFFSCREEN_LOCATION;
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
+
+                    /*if (nOldEnemyActionIndex == -1)
                         nOldEnemyActionIndex = nEnemyActionIndex;
                     else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
                         nReversalIndex1 = max(0, nReversalIndex1 - 1);
                     else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
-                        nReversalIndex1 = min(nReversalIndex1 + 1, vPatternNames.size() - 1);
+                        nReversalIndex1 = min(nReversalIndex1 + 1, vPatternNames.size() - 1);*/
 
-                    if (nReversalIndex1 == 0)
+                    /*if (nReversalIndex1 == 0)
                     {
                         char pcTemp[4] = "OFF";
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionAString), &pcTemp, 4, 0);
@@ -1741,7 +1786,7 @@ int main(int argc, char* argv[])
                         nEnemyActionIndex = 2;
                     }
 
-                    nOldEnemyActionIndex = nEnemyActionIndex;
+                    nOldEnemyActionIndex = nEnemyActionIndex;*/
 
                     nStoredEnemyDefense = nEnemyDefenseIndex;
                     nStoredEnemyAction = nEnemyActionIndex;
@@ -1926,8 +1971,11 @@ int main(int argc, char* argv[])
 
                 // increase the counter every frame p2 is standing idle to delay regenerating health and char specifics
                 // taking an extra step to cap these at 20 to avoid any unexpected behavior if tmode is left running forever
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-                if (nReadResult == 0 || nReadResult == 13)
+                //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 1, 0);
+                //int nHitstun = nReadResult;
+                //if (nReadResult == 0 || nReadResult == 13)
+                if (nReadResult == 0)
                 {
                     nHealthRefillTimer = min(nHealthRefillTimer + 1, 20);
                     nSionBulletsRefillTimer = min(nSionBulletsRefillTimer + 1, 20);
@@ -1997,6 +2045,7 @@ int main(int argc, char* argv[])
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Y + dwP2Offset), &nReadResult, 4, 0);
                 nP2Y = nReadResult;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMot), &nReadResult, 4, 0);
+                nOldMot = nMot;
                 nMot = nReadResult;
                 if (nFrameCounter == 0)
                     bReversaled = true;
@@ -2019,7 +2068,7 @@ int main(int argc, char* argv[])
                             bDelayingReversal = true;
                     }
                 }
-                nOldMot = nMot;
+                
 
                 if (nMot != 0)
                 {
