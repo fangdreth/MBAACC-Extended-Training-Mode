@@ -13,11 +13,13 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
+enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, POSITIONS_PAGE = 3, CHARACTER_SPECIFICS = 4 };
+enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, REVERSAL_REPEAT };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
 const std::string GITHUB_README = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/README.md";
-const std::string VERSION = "v1.2b";
+const std::string VERSION = "v1.3b";
 
 const DWORD dwP2Offset = 0xAFC;
 const DWORD dwRoundTime = 0x162A40; //0-inf
@@ -76,10 +78,10 @@ const std::vector<int> vGuardLevelLookupTable =
     1176768512/*H 100*/, 1173755904/*H 75*/, 1168379904/*H 50*/, 1159991296/*H 25*/, 0/*H 0*/
 };
 
-const int MAX_DELAY = 99;
+const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
-const int MAX_PAGES = 3;
+const int MAX_PAGES = 4;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
 const int MIN_X = -65536;
@@ -108,6 +110,10 @@ const char pcAssistLoc_13[13] = "ASSIST X-LOC";
 const char pcInvert_7[7] = "INVERT";
 const char pcUnstable_11[11] = "(UNSTABLE)";
 
+const char pcReversalSlot1_16[16] = "REVERSAL SLOT 1";
+const char pcReversalSlot2_16[16] = "REVERSAL SLOT 2";
+const char pcReversalSlot3_16[16] = "REVERSAL SLOT 3";
+const char pcReversalSlot4_16[16] = "REVERSAL SLOT 4";
 const char pcReversalType_14[14] = "REVERSAL TYPE";
 const char pcExGuard_9[9] = "EX GUARD";
 const char pcReversalDelay_15[15] = "REVERSAL DELAY";

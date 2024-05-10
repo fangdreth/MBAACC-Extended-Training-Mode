@@ -64,7 +64,7 @@ static void LogError(std::string sError)
 	m_fLogFile.flush();
 }
 
-static void CloseLog(bool bPaused, bool bAPressed, bool bOnCSS, bool bOnExtendedSettingsMenu, int nP1CharacterID, int nP2CharacterID, int nP1Moon, int nP2Moon, int nP1CharacterNumber, int nP2CharacterNumber, bool bSwitchToCrouch, int nExGuardSetting, int nCustomGuard, int nReversalPattern, int nReversalDelayFrames, int nTempReversalDelayFrames, bool bDelayingReversal, bool bReversaled, bool bRandomReversal, int nReversalIndex, std::vector<std::string> vPatternNames, int nMot, int nOldMot, int nP2Y, int nBurstCooldown, int nOldEnemyActionIndex, int nOldPresetIndex, int nOldEnemyDefenseIndex, int nOldEnemyDefenseTypeIndex, int nOldAirRecoveryIndex, int nOldDownRecoveryIndex, int nOldThrowRecoveryIndex, int nOldReduceDamageIndex, int nOldLifeIndex, int nCurrentSubMenu, int nOldCurrentSubMenu, int nFrameCounter, int nOldFrameCounter, int nStoredEnemyAction, int nStoredEnemyDefense, int nStoredEnemyDefenseType, int nStoredAirRecovery, int nStoredDownRecovery, int nStoredThrowRecovery, int nStoredReduceDamage, int nGameCursorIndex, int nOldGameCursorIndex, int nEnemySettingsCursor, int nOldEnemySettingsCursor, int nCustomMeter, int nCustomHealth, int nHealthRefillTimer, int nCharSpecificsRefillTimer, bool bLifeRecover, int nSionBullets, int nRoaVisibleCharge, int nRoaHiddenCharge, int nSionBulletsRefillTimer, int nRoaHiddenChargeRefillTimer, int nRoaVisibleChargeRefillTimer, int nExtendedSettingsPage, bool bPositionsLocked, int nP1X, int nP2X, int nP3X, int nP4X, bool bP3Exists, bool bP4Exists, int nHitsTillBurst, bool bInfGuard, int nGameMode)
+static void CloseLog(bool bPaused, bool bAPressed, bool bOnCSS, bool bOnExtendedSettingsMenu, int nP1CharacterID, int nP2CharacterID, int nP1Moon, int nP2Moon, int nP1CharacterNumber, int nP2CharacterNumber, bool bSwitchToCrouch, int nExGuardSetting, int nCustomGuard, int nReversalPattern, int nReversalDelayFrames, int nTempReversalDelayFrames, bool bDelayingReversal, bool bReversaled, int nReversalType, int nReversalIndex1, int nReversalIndex2, int nReversalIndex3, int nReversalIndex4, std::vector<std::string> vPatternNames, int nMot, int nOldMot, int nP2Y, int nBurstCooldown, int nOldEnemyActionIndex, int nOldPresetIndex, int nOldEnemyDefenseIndex, int nOldEnemyDefenseTypeIndex, int nOldAirRecoveryIndex, int nOldDownRecoveryIndex, int nOldThrowRecoveryIndex, int nOldReduceDamageIndex, int nOldLifeIndex, int nCurrentSubMenu, int nOldCurrentSubMenu, int nFrameCounter, int nOldFrameCounter, int nStoredEnemyAction, int nStoredEnemyDefense, int nStoredEnemyDefenseType, int nStoredAirRecovery, int nStoredDownRecovery, int nStoredThrowRecovery, int nStoredReduceDamage, int nGameCursorIndex, int nOldGameCursorIndex, int nEnemySettingsCursor, int nOldEnemySettingsCursor, int nCustomMeter, int nCustomHealth, int nHealthRefillTimer, int nCharSpecificsRefillTimer, bool bLifeRecover, int nSionBullets, int nRoaVisibleCharge, int nRoaHiddenCharge, int nSionBulletsRefillTimer, int nRoaHiddenChargeRefillTimer, int nRoaVisibleChargeRefillTimer, int nExtendedSettingsPage, bool bPositionsLocked, int nP1X, int nP2X, int nP3X, int nP4X, bool bP3Exists, bool bP4Exists, int nHitsTillBurst, bool bInfGuard, int nGameMode)
 {
 	m_fLogFile << "\n";
 	m_fLogFile << "*** INFO ***";
@@ -89,8 +89,11 @@ static void CloseLog(bool bPaused, bool bAPressed, bool bOnCSS, bool bOnExtended
 	m_fLogFile << "\tnTempReversalDelayFrames: " << nTempReversalDelayFrames << "\n";
 	m_fLogFile << "\tbDelayingReversal: " << bDelayingReversal << "\n";
 	m_fLogFile << "\tbReversaled: " << bReversaled << "\n";
-	m_fLogFile << "\tbRandomReversal: " << bRandomReversal << "\n";
-	m_fLogFile << "\tnReversalIndex: " << nReversalIndex << "\n";
+	m_fLogFile << "\tnReversalType: " << nReversalType << "\n";
+	m_fLogFile << "\tnReversalIndex1: " << nReversalIndex1 << "\n";
+	m_fLogFile << "\tnReversalIndex2: " << nReversalIndex2 << "\n";
+	m_fLogFile << "\tnReversalIndex3: " << nReversalIndex3 << "\n";
+	m_fLogFile << "\tnReversalIndex4: " << nReversalIndex4 << "\n";
 	m_fLogFile << "\tnMot: " << nMot << "\n";
 	m_fLogFile << "\tnOldMot: " << nOldMot << "\n";
 	m_fLogFile << "\tnP2Y: " << nP2Y << "\n";
