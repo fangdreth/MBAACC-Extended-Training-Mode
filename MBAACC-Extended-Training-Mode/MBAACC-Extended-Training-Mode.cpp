@@ -1927,7 +1927,7 @@ int main(int argc, char* argv[])
                 // increase the counter every frame p2 is standing idle to delay regenerating health and char specifics
                 // taking an extra step to cap these at 20 to avoid any unexpected behavior if tmode is left running forever
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-                if (nReadResult == 0)
+                if (nReadResult == 0 || nReadResult == 13)
                 {
                     nHealthRefillTimer = min(nHealthRefillTimer + 1, 20);
                     nSionBulletsRefillTimer = min(nSionBulletsRefillTimer + 1, 20);
@@ -1991,6 +1991,9 @@ int main(int argc, char* argv[])
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwBurstCooldown), &nReadResult, 1, 0);
                 nBurstCooldown = nReadResult;
 
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 1, 0);
+                int nHitstun = nReadResult;
+
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Y + dwP2Offset), &nReadResult, 4, 0);
                 nP2Y = nReadResult;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMot), &nReadResult, 4, 0);
@@ -2000,11 +2003,9 @@ int main(int argc, char* argv[])
                 if (nFrameCounter == 2)
                     bReversaled = false;
 
-                // extra check for current pattern == reversal pattern
-
                 if (nFrameCounter != 0 && (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) != 0))
                 {
-                    if (!bDelayingReversal && nMot == 0 && (nMot != nOldMot || nReversalType == REVERSAL_REPEAT) && nP2Y == 0)
+                    if (!bDelayingReversal && (nMot == 0 || nHitstun != 0) && (nMot != nOldMot || nReversalType == REVERSAL_REPEAT) && nP2Y == 0)
                     {
                         if (!bReversaled)
                         {
