@@ -119,6 +119,7 @@ int main(int argc, char* argv[])
     SetConsoleCursorInfo(hConsoleHandle, &cursorInfo);
   
     InitializeLogger(hConsoleHandle);
+    InitializeCharacterMaps();
 
     try
     {
@@ -192,8 +193,6 @@ int main(int argc, char* argv[])
             Sleep(100);
             dwBaseAddress = GetBaseAddressByName(hMBAAHandle, L"MBAA.exe");
             LogInfo("Got BaseAddressByName");
-
-            InitializeCharacterMaps();
         }
 
         // check this to prevent attaching to netplay

@@ -91,12 +91,6 @@ static std::vector<std::string> vEveryPatternName =
 	"DRUG INSTALL"
 };
 
-static const std::map<std::string, int> vUniversalPatterns_Map =
-{
-	{ "5A", 1 }, { "5B", 2 }, { "5C", 3 }, { "2A", 4 }, { "2B", 5 }, { "2C", 6 },
-	{ "JUMP", 36 }, { "FORWARD JUMP", 35 }, { "BACKWARD JUMP", 37 }, { "SUPER JUMP", 360 }
-};
-
 static void InitializeCharacterMaps()
 {
 	MBAACC_Map[eCharacterValues::UNIVERSAL] = vUniversalPatterns_Map;
