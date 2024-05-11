@@ -7,10 +7,11 @@
 + Will re-attach to MBAACC without requiring you to close the mod
 + ENEMY REVERSAL
 	+ Replaces ENEMY ACTION
-	+ Can set to RANDOM
+	+ Can set to RANDOM or REPEAT
 	+ Adjustable delay
 	+ Fixed 1f delay glitch
 	+ Compatible with DUMMY status
+	+ Four slots
 + Ex Guard
 	+ Can set to RANDOM
 + Meter and Health Controls
