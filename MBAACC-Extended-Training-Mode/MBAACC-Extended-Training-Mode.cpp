@@ -201,7 +201,7 @@ int main(int argc, char* argv[])
         // check this to prevent attaching to netplay
         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwGameMode), &nReadResult, 4, 0);
         nGameMode = nReadResult;
-        if (nGameMode != 0)
+        if (nGameMode != 4112)
         {
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             std::cout << "Cannot attach to versus mode....                 ";

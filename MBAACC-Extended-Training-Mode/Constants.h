@@ -67,7 +67,7 @@ const DWORD dwMagicCircuitSetting = 0x37C1FC;
 const DWORD dwBasePointer = 0x34D7FC;
 const DWORD dwBurstCooldown = 0x155DBE;
 const DWORD dwP2RecievedHitstop = 0x155DD0;
-const DWORD dwGameMode = 0x37BF2C; // 0:training
+const DWORD dwGameMode = 0x162A74; // 16:training
 
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
