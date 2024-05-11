@@ -1,8 +1,6 @@
 #include "MBAACC-Extended-Training-Mode.h"
 #include "Logger.h"
 
-// the -1 when loading the menu glitch is in full force
-
 int main(int argc, char* argv[])
 {
     HANDLE hMBAAHandle = 0x0;
