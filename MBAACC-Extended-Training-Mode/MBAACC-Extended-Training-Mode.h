@@ -11,6 +11,7 @@
 #include "Constants.h"
 #include "CharacterData.h"
 #include "PointerManager.h"
+#include "FrameDisplay.h"
 
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;

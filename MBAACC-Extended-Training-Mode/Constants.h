@@ -4,7 +4,7 @@
 #include <Windows.h>
 #include <map>
 
-enum eMenu { MAIN = 2, BATTLE_SETTINGS = 6, ENEMY_SETTINGS = 7, VIEW_SCREEN = 12 };
+enum eMenu { MAIN = 2, BATTLE_SETTINGS = 6, ENEMY_SETTINGS = 7, VIEW_SCREEN = 12, COMMAND_LIST = 13 };
 enum eEnemyStatus { STAND, JUMP, CROUCH, CPU, MANUAL, DUMMY };
 enum eMagicCircuit { UNLIMITED = 3 };
 enum eRecover {};
@@ -13,13 +13,14 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, POSITIONS_PAGE = 3, CHARACTER_SPECIFICS = 4 };
+enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, POSITIONS_PAGE = 3, FRAME_TOOL = 4, CHARACTER_SPECIFICS = 5 };
 enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, REVERSAL_REPEAT };
+enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
 const std::string GITHUB_README = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/README.md";
-const std::string VERSION = "v1.3b";
+const std::string VERSION = "v1.4b";
 
 const DWORD dwP2Offset = 0xAFC;
 const DWORD dwRoundTime = 0x162A40; //0-inf
@@ -69,6 +70,25 @@ const DWORD dwBurstCooldown = 0x155DBE;
 const DWORD dwP2RecievedHitstop = 0x155DD0;
 const DWORD dwGameMode = 0x162A74; // 16:training
 
+//FrameDisplay Constants
+typedef DWORD ADDRESS; //I think doing this + adXxxxYyyy looks nice
+
+const int BAR_SIZE = 59; //Number of frames displayed at once
+const int BAR_MEMORY_SIZE = 400; //Number of frames stored before overriding (FIFO). For use when scrolling is implemented
+const int BAR_INTERVAL = 40; //Number of frames of no new bars before the bar resets on the next bar
+
+const char REVERSE_INPUT_MAP[10] = { 0, 3, 2, 1, 6, 0, 4, 9, 8, 7 };
+const char CH_MAP[3] = { ' ', 'H', 'L' };
+
+const DWORD dwPlayerStructSize = 0xAFC;
+const ADDRESS adP1Base = 0x155130; //0x155130
+const ADDRESS adP2Base = 0x155130 + dwPlayerStructSize; //0x155C2C
+const ADDRESS adP3Base = 0x155130 + 2 * dwPlayerStructSize; //0x156728
+const ADDRESS adP4Base = 0x155130 + 3 * dwPlayerStructSize; //0x157224
+
+const DWORD dwProjectileStructSize = 0x3CC;
+const ADDRESS adProjectileBase = 0x27BDE8;
+
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
 const std::vector<int> vGuardLevelLookupTable =
@@ -81,7 +101,7 @@ const std::vector<int> vGuardLevelLookupTable =
 const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
-const int MAX_PAGES = 4;
+const int MAX_PAGES = 5;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
 const int MIN_X = -65536;
@@ -132,3 +152,13 @@ const char pcExtendedSettings_18[18] = "EXTENDED SETTINGS";
 
 const char pcLatestVersion_19[19] = "LATEST VERSION";
 const char pcOffline_8[8] = "OFFLINE";
+
+const char pcFrameData_11[11] = "FRAME DATA";
+const char pcSaveStates_12[12] = "SAVE STATES";
+const char pcClearSaveStates_18[18] = "CLEAR SAVE STATES";
+const char pcNoSaveStates_15[15] = "NO SAVE STATES";
+const char pcIgnoreExFlash_16[16] = "IGNORE EX FLASH";
+const char pcDisplayInputs_15[15] = "DISPLAY INPUTS";
+const char pcAdvanced_9[9] = "ADVANCED";
+const char pcOff_4[4] = "OFF";
+const char pcOn_3[3] = "ON";

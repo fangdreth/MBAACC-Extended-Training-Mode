@@ -1727,3 +1727,22 @@ static DWORD GetViewScreenStringAddress(HANDLE hMBAAHandle, DWORD dwBaseAddress)
 
     return dwTempAddress;
 }
+
+static DWORD GetCommandListStringAddress(HANDLE hMBAAHandle, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = dwBasePointer;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwTempAddress + 0x10), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwTempAddress + 0x0), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwTempAddress + 0x4C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult;
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwTempAddress + 0x2C), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x24;
+
+    return dwTempAddress;
+}
