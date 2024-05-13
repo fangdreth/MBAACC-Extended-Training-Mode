@@ -1,4 +1,4 @@
-![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Screenshots/Github%20Image.png?raw=true)
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Images/Github%20Image.png?raw=true)
 
 ### Features
 
@@ -7,11 +7,11 @@
 + Will re-attach to MBAACC without requiring you to close the mod
 + ENEMY REVERSAL
 	+ Replaces ENEMY ACTION
+	+ Four slots
 	+ Can set to RANDOM or REPEAT
 	+ Adjustable delay
 	+ Fixed 1f delay glitch
 	+ Compatible with DUMMY status
-	+ Four slots
 + Ex Guard
 	+ Can set to RANDOM
 + Meter and Health Controls
@@ -33,6 +33,13 @@
 	+ Roa visible and hidden charges
 	+ Sion bullets
 	+ Normal, auto-refill, and infinite options
++ Frame Data Display
+	+ Very in-depth information about the game state
+	+ Gameplay timeline
+	+ Frame advantage
+	+ And a lot of other nerdy bits
++ Save States
+	+ When enabled, F1 and F2 are changed to save and load save states
 
 ### Where is the fuzzy overhead from the first trailer?
 The current implementation does not produce behavior 1-to-1 to the vanilla game.  It's very important for Training Mode to behave as similar as possible to Versus mode, so I have chosen to withold this feature until I can make something appropriate for the MBAACC community to practice with.
@@ -51,9 +58,9 @@ And that's it.
 
 Right now there isn't a CMAKE file, so if you want to build the mod yourself, get the [latest version of Visual Studio](https://visualstudio.microsoft.com/vs/) and be sure to target x86.
 
-# This is a beta
+# Save State Controls
 
-Please understand that I am the only person working on this mod and it was created from scratch.  Bugs are expected, and some are already known about.  Let me know if you have any problems!
+First, save states must be enabled from the EXTENDED SETTINGS menu.  After that, a save state can be created anywhere (even while paused) by pressing F1 on your controller.  From that point, pressing F2 will restore that save state.  You can clear your save states by either holding up and pressing F1, or going into the EXTENDED SETTINGS menu and selecting CLEAR SAVE STATES.
 
 # Planned Features
 Roughly in order of priority, but not in order they will be implemented.
@@ -78,8 +85,6 @@ Roughly in order of priority, but not in order they will be implemented.
 + Left and right in EXTENDED SETTINGS feels sticky sometimes
 + Random crashes
 	+ Most commonly seen when changing characters' X locations
-+ Specific situations can cause the configured reversal to repeat
-	+ Fixed
 + Some of the enemy reversals are the wrong moves.  PLEASE LET ME KNOW IF YOU FIND ONE.
 + ALL GUARD COMBO setting does not behave correctly with Ex Guard
 + Heat reversal on hisui and kohaku
