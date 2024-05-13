@@ -127,6 +127,7 @@ int main(int argc, char* argv[])
     GetConsoleCursorInfo(hConsoleHandle, &cursorInfo);
     cursorInfo.bVisible = false;
     SetConsoleCursorInfo(hConsoleHandle, &cursorInfo);
+    SetConsoleMode(hConsoleHandle, 7);
   
     InitializeLogger(hConsoleHandle);
     InitializeCharacterMaps();
