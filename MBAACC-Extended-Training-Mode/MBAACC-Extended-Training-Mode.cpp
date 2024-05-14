@@ -451,6 +451,8 @@ int main(int argc, char* argv[])
 
                     } while ((dwEnemyActionIndex == 0x58 || dwEnemyDefenseIndex == 0x58 || dwEnemyDefenseTypeIndex == 0x58 || dwAirRecoveryIndex == 0x58 || dwDownRecoveryIndex == 0x58 || dwThrowRecoveryIndex == 0x58 || dwReduceDamageIndex == 0x58 || dwEnemyStatusIndex == 0x58) && nCurrentSubMenu == eMenu::ENEMY_SETTINGS);
 
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
+                    nCurrentSubMenu = nReadResult;
                     if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
                         continue;
 
@@ -478,6 +480,11 @@ int main(int argc, char* argv[])
                     // Reset hits till burst if status is not manual
                     if (nEnemyStatusIndex != eEnemyStatus::MANUAL)
                         nHitsTillBurst = TOO_HIGH_TO_BURST;
+
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
+                    nCurrentSubMenu = nReadResult;
+                    if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
+                        continue;
 
                     // Replace static menu fields
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionInfoStringAddress), &pcTrainingPreset_17, 17, 0);
@@ -539,6 +546,11 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
                     }
 
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
+                    nCurrentSubMenu = nReadResult;
+                    if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
+                        continue;
+
                     // Skip DEFAULT
                     if (nOldEnemySettingsCursor == 10 && nEnemySettingsCursor == 12)
                     {
@@ -554,6 +566,11 @@ int main(int argc, char* argv[])
                         nEnemySettingsCursor = 10;
                         nOldEnemySettingsCursor = 10;
                     }
+
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
+                    nCurrentSubMenu = nReadResult;
+                    if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
+                        continue;
 
                     // Skipping blank menu items
                     if (nExtendedSettingsPage == REVERSALS_PAGE)
@@ -656,6 +673,11 @@ int main(int argc, char* argv[])
                             nOldEnemySettingsCursor = 3;
                         }
                     }
+
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
+                    nCurrentSubMenu = nReadResult;
+                    if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
+                        continue;
 
                     // Left/Right on menu handlers
                     if (nExtendedSettingsPage == REVERSALS_PAGE)
@@ -952,6 +974,11 @@ int main(int argc, char* argv[])
                         }
                     }
 
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
+                    nCurrentSubMenu = nReadResult;
+                    if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
+                        continue;
+
                     // A Press handler
                     if (bAPressed && !bOldAPressed)
                     {
@@ -1005,6 +1032,11 @@ int main(int argc, char* argv[])
                         nOldThrowRecoveryIndex = -1;
                         nOldReduceDamageIndex = -1;
                     }
+
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
+                    nCurrentSubMenu = nReadResult;
+                    if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
+                        continue;
 
                     // Replacing dynamic menu fields
                     if (nExtendedSettingsPage == REVERSALS_PAGE)
@@ -1854,6 +1886,11 @@ int main(int argc, char* argv[])
                             nEnemyDefenseTypeIndex = 1;
                         }
                     }
+
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
+                    nCurrentSubMenu = nReadResult;
+                    if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
+                        continue;
 
                     // Replace PAGE text
                     if (nExtendedSettingsPage == 1)
