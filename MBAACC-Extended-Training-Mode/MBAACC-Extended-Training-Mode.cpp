@@ -351,6 +351,8 @@ int main(int argc, char* argv[])
                     nWriteBuffer = eMenu::ENEMY_SETTINGS;
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nWriteBuffer, 4, 0);
 
+                    bOldAPressed = bAPressed = true;
+
                     bOnExtendedSettingsMenu = true;
                 }
                 else if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
@@ -955,14 +957,17 @@ int main(int argc, char* argv[])
                     {
                         if (nExtendedSettingsPage == POSITIONS_PAGE)
                         {
-                            nP1X *= -1;
-                            nP2X *= -1;
-                            nP3X *= -1;
-                            nP4X *= -1;
-                            SetP1X(hMBAAHandle, dwBaseAddress, nP1X);
-                            SetP2X(hMBAAHandle, dwBaseAddress, nP2X);
-                            SetP3X(hMBAAHandle, dwBaseAddress, nP3X);
-                            SetP4X(hMBAAHandle, dwBaseAddress, nP4X);
+                            if (nEnemySettingsCursor == 8)
+                            {
+                                nP1X *= -1;
+                                nP2X *= -1;
+                                nP3X *= -1;
+                                nP4X *= -1;
+                                SetP1X(hMBAAHandle, dwBaseAddress, nP1X);
+                                SetP2X(hMBAAHandle, dwBaseAddress, nP2X);
+                                SetP3X(hMBAAHandle, dwBaseAddress, nP3X);
+                                SetP4X(hMBAAHandle, dwBaseAddress, nP4X);
+                            }
                         }
                         if (nExtendedSettingsPage == FRAME_TOOL)
                         {
