@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 
     int nReadResult = 0;
     int nWriteBuffer = 0;
-    
+
     bool bPaused = false;
     bool bAPressed = false;
     bool bOldAPressed = false;
@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     int nP1CharacterNumber = 0;
     int nP2CharacterNumber = 0;
     bool bSwitchToCrouch = false;
-    
+
     //int nSwitchBlockDelayFrames = 0;
 
     int nExGuardSetting = eEnemyOffOnRandom::OFF;
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 
     int nFrameCounter = 0;
     int nOldFrameCounter = 0;
-    
+
     int nStoredEnemyAction = 0;
     int nStoredEnemyDefense = 0;
     int nStoredEnemyDefenseType = 0;
@@ -69,12 +69,12 @@ int main(int argc, char* argv[])
     int nStoredDownRecovery = 0;
     int nStoredThrowRecovery = 0;
     int nStoredReduceDamage = 0;
-    
+
     int nGameCursorIndex = 0;
     int nOldGameCursorIndex = 0;
     int nEnemySettingsCursor = 0;
     int nOldEnemySettingsCursor = 0;
-    
+
     int nCustomMeter = 10000;
     int nCustomHealth = 11400;
     int nHealthRefillTimer = 0;
@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
     int nExtendedSettingsPage = 1;
 
     int nGameMode = 0;
-    
+
     bool bPositionsLocked = false;
     int nP1X = P1_DEFAULT_X;
     int nP2X = P2_DEFAULT_X;
@@ -898,15 +898,30 @@ int main(int argc, char* argv[])
                             nOldEnemyDefenseIndex = nEnemyDefenseIndex;
                         else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                         {
-                            bSaveStates = false;
-                            bEnableFN1Save = false;
-                            bEnableFN2Load = false;
+                            nSaveSlot--;
+                            //bSaveStates = false;
+                            //bEnableFN1Save = false;
+                            //bEnableFN2Load = false;
                         }
                         else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
+                        {
+                            nSaveSlot++;
+                            //bSaveStates = true;
+                            //bEnableFN1Save = true;
+                            //bEnableFN2Load = true;
+                        }
+
+                        if (nSaveSlot > 0)
                         {
                             bSaveStates = true;
                             bEnableFN1Save = true;
                             bEnableFN2Load = true;
+                        }
+                        else
+                        {
+                            bSaveStates = false;
+                            bEnableFN1Save = false;
+                            bEnableFN2Load = false;
                         }
 
                         /*if (nOldEnemyDefenseTypeIndex == -1)
@@ -1690,10 +1705,24 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
                             nEnemyDefenseIndex = 0;
                         }
+                        else if (nSaveSlot < MAX_SAVES)
+                        {
+                            char pcTemp[3];
+                            strcpy_s(pcTemp, std::to_string(nSaveSlot).c_str());
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 8, 0);
+
+                            nWriteBuffer = 2;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
+                            nEnemyDefenseIndex = 2;
+                        }
                         else
                         {
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseDodgeString), &pcOn_3 , 3, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcOn_3, 3, 0);
+                            char pcTemp[3];
+                            strcpy_s(pcTemp, std::to_string(nSaveSlot).c_str());
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseDodgeString), &pcTemp, 3, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcTemp, 3, 0);
 
                             nWriteBuffer = 5;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);

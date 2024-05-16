@@ -75,6 +75,7 @@ typedef DWORD ADDRESS; //I think doing this + adXxxxYyyy looks nice
 
 const int BAR_MEMORY_SIZE = 400; //Number of frames stored before overriding (FIFO). For use when scrolling is implemented
 const int BAR_INTERVAL = 40; //Number of frames of no new bars before the bar resets on the next bar
+const int MAX_SAVES = 3;
 
 const char REVERSE_INPUT_MAP[10] = { 0, 3, 2, 1, 6, 0, 4, 9, 8, 7 };
 const char CH_MAP[3] = { ' ', 'H', 'L' };
