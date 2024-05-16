@@ -339,7 +339,7 @@ void ResetBars(Player& P)
 	nBarIntervalCounter = 0;
 	nBarScrolling = 0;
 	bDoBarReset = false;
-	nBarIntervalMax = BAR_SIZE;
+	nBarIntervalMax = nBarDisplayRange;
 	for (int i = 0; i < BAR_MEMORY_SIZE; i++)
 	{
 		P.sBar1[i] = "";
@@ -656,7 +656,7 @@ void BarHandling(Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
 		nBarIntervalCounter++;
 	}
 
-	if (nBarCounter >= BAR_SIZE)
+	if (nBarCounter >= nBarDisplayRange)
 	{
 		nBarIntervalMax = BAR_INTERVAL;
 	}

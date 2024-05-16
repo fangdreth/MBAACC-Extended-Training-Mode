@@ -158,6 +158,7 @@ const char pcClearSaveStates_18[18] = "CLEAR SAVE STATES";
 const char pcNoSaveStates_15[15] = "NO SAVE STATES";
 const char pcIgnoreExFlash_16[16] = "IGNORE EX FLASH";
 const char pcDisplayInputs_15[15] = "DISPLAY INPUTS";
+const char pcScrollFrames_14[14] = "SCROLL FRAMES";
 const char pcAdvanced_9[9] = "ADVANCED";
 const char pcOff_4[4] = "OFF";
 const char pcOn_3[3] = "ON";

@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
             hMBAAHandle = 0x0;
 
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
-            std::string sLookingForMelty = "Looking for MBAA.exe\x1b[K";
+            std::string sLookingForMelty = "Looking for MBAA.exe        \x1b[K";
             for (int i = 0; i < nCurrentTime % 8; i++)
                 sLookingForMelty[20 + i] = '.';
             std::cout << sLookingForMelty;
@@ -539,7 +539,7 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcNoSaveStates_15, 15, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcIgnoreExFlash_16, 16, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcDisplayInputs_15, 15, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcScrollFrames_14, 14, 0);
                     }
                     else if (nExtendedSettingsPage == CHARACTER_SPECIFICS)
                     {
@@ -646,6 +646,7 @@ int main(int argc, char* argv[])
                     }
                     else if (nExtendedSettingsPage == FRAME_TOOL)
                     {
+                        /*
                         if (nOldEnemySettingsCursor == 10 && nEnemySettingsCursor == 8)
                         {
                             nWriteBuffer = 6;
@@ -660,6 +661,7 @@ int main(int argc, char* argv[])
                             nEnemySettingsCursor = 10;
                             nOldEnemySettingsCursor = 10;
                         }
+                        */
                     }
                     else if (nExtendedSettingsPage == CHARACTER_SPECIFICS)
                     {
@@ -935,6 +937,23 @@ int main(int argc, char* argv[])
                             bDisplayInputs = true;
                             bShowBar4 = true;
                             bShowBar5 = true;
+                        }
+
+                        if (nOldThrowRecoveryIndex == -1)
+                            nOldThrowRecoveryIndex = nThrowRecoveryIndex;
+                        else if (nOldThrowRecoveryIndex > nThrowRecoveryIndex)// left
+                        {
+                            if (nBarScrolling < min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange))
+                            {
+                                nBarScrolling++;
+                            }
+                        }
+                        else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
+                        {
+                            if (nBarScrolling > 0)
+                            {
+                                nBarScrolling--;
+                            }
                         }
                     }
                     else if (nExtendedSettingsPage == CHARACTER_SPECIFICS)
@@ -1638,9 +1657,9 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
 
                         nWriteBuffer = OFFSCREEN_LOCATION;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
 
                         if (nFrameData == FRAMEDISPLAY_NORMAL)
@@ -1752,6 +1771,41 @@ int main(int argc, char* argv[])
                             nWriteBuffer = 5;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
                             nDownRecoveryIndex = 5;
+                        }
+
+                        if (nBarScrolling == 0)
+                        {
+                            char pcTemp[3];
+                            strcpy_s(pcTemp, std::to_string(nBarScrolling).c_str());
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomLateString), &pcTemp, 3, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomRandomString), &pcTemp, 3, 0);
+
+                            nWriteBuffer = 6;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                            nThrowRecoveryIndex = 6;
+                        }
+                        else if (nBarScrolling >= min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange))
+                        {
+                            char pcTemp[3];
+                            strcpy_s(pcTemp, std::to_string(nBarScrolling).c_str());
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryNormalString), &pcTemp, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcTemp, 4, 0);
+
+                            nWriteBuffer = 0;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                            nThrowRecoveryIndex = 0;
+                        }
+                        else
+                        {
+                            char pcTemp[3];
+                            strcpy_s(pcTemp, std::to_string(nBarScrolling).c_str());
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllLateString), &pcTemp, 3, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllRandomString), &pcTemp, 3, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomFastString), &pcTemp, 3, 0);
+
+                            nWriteBuffer = 3;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                            nThrowRecoveryIndex = 3;
                         }
                     }
                     else if (nExtendedSettingsPage == CHARACTER_SPECIFICS)
