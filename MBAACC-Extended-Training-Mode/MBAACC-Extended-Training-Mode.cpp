@@ -121,13 +121,15 @@ int main(int argc, char* argv[])
     HANDLE hConsoleHandle;
 
     std::srand((unsigned int)std::time(nullptr));
-
+   
     hConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(hConsoleHandle, &cursorInfo);
     cursorInfo.bVisible = false;
     SetConsoleCursorInfo(hConsoleHandle, &cursorInfo);
     SetConsoleMode(hConsoleHandle, 7);
+
+    std::cout << "\x1b]0;Extended Training " << VERSION << "\x07";
   
     InitializeLogger(hConsoleHandle);
     InitializeCharacterMaps();
@@ -158,17 +160,20 @@ int main(int argc, char* argv[])
         
         
         SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
-        std::cout << "===========================================================================" << std::endl;
-        std::cout << "|   Fang and gonp's Extended Training Mode Mod " << VERSION << "                      |  " << std::endl;
-        std::cout << "|                                                                         |" << std::endl;
-        std::cout << "|   " << GITHUB_RELEASE << "   |" << std::endl;
+        std::cout << "===========================================================================\x1b[K" << std::endl;
+        std::cout << "|   Fang and gonp's Extended Training Mode Mod " << VERSION << "                      |\x1b[K" << std::endl;
+        std::cout << "|                                                                         |\x1b[K" << std::endl;
+        std::cout << "|   " << GITHUB_RELEASE << "   |\x1b[K" << std::endl;
         if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
-            std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                 |" << std::endl;
+            std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                 |\x1b[K" << std::endl;
         else
-            std::cout << "|                                                                         |" << std::endl;
-        std::cout << "===========================================================================" << std::endl;
+            std::cout << "|                                                                         |\x1b[K" << std::endl;
+        std::cout << "===========================================================================\x1b[K" << std::endl;
 
         GetExitCodeProcess(hMBAAHandle, &dwExitCode);
+
+        SetConsoleCursorPosition(hConsoleHandle, { 0, 6 });
+        std::cout << "\x1b[K";
 
         if (hMBAAHandle == 0x0 || dwExitCode != 259)
         {
@@ -179,12 +184,12 @@ int main(int argc, char* argv[])
             hMBAAHandle = 0x0;
 
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
-            std::string sLookingForMelty = "Looking for MBAA.exe                 ";
+            std::string sLookingForMelty = "Looking for MBAA.exe\x1b[K";
             for (int i = 0; i < nCurrentTime % 8; i++)
                 sLookingForMelty[20 + i] = '.';
             std::cout << sLookingForMelty;
             SetConsoleCursorPosition(hConsoleHandle, { 0, 8 });
-            std::cout << "                                              ";
+            std::cout << "\x1b[J";
 
             hMBAAHandle = GetProcessByName(L"MBAA.exe");
 
@@ -212,14 +217,14 @@ int main(int argc, char* argv[])
         if (nGameMode != 4112)
         {
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
-            std::cout << "Cannot attach to versus mode....                 ";
+            std::cout << "Cannot attach to versus mode....\x1b[K";
             //LogInfo("MBAA is in versus mode");
             continue;
         }
         else
         {
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
-            std::cout << "Attached to MBAA.exe                                              " << "\n\n";
+            std::cout << "Attached to MBAA.exe\x1b[K" << "\n\x1b[K\n";
             //LogInfo("MBAA is in training mode");
         }
 

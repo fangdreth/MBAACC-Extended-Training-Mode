@@ -73,7 +73,6 @@ const DWORD dwGameMode = 0x162A74; // 16:training
 //FrameDisplay Constants
 typedef DWORD ADDRESS; //I think doing this + adXxxxYyyy looks nice
 
-const int BAR_SIZE = 59; //Number of frames displayed at once
 const int BAR_MEMORY_SIZE = 400; //Number of frames stored before overriding (FIFO). For use when scrolling is implemented
 const int BAR_INTERVAL = 40; //Number of frames of no new bars before the bar resets on the next bar
 

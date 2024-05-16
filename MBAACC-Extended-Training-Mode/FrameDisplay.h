@@ -24,6 +24,7 @@ int nBarCounter = 0;
 int nBarScrolling = 0;
 int nBarIntervalCounter = 0;
 int nBarIntervalMax = 0;
+int nBarDisplayRange = 0;
 bool bIsBarReset = false;
 bool bDoBarReset = false;
 bool bUpdateBar = false;
@@ -555,7 +556,8 @@ void UpdateBars(Player& P, Player& Assist)
 
 		if (P.bLastOnRight != P.bIsOnRight)
 		{
-			sLeftFont = "\x1b[4m" + sLeftFont;
+			sLeftFont += "\x1b[4m";
+			sRightFont += "\x1b[4m";
 		}
 
 		P.sBar4[nBarCounter % BAR_MEMORY_SIZE] = sLeftFont + sLeftValue + sRightFont + sRightValue + "\x1b[0m";
@@ -605,7 +607,8 @@ void UpdateBars(Player& P, Player& Assist)
 
 		if (P.bLastOnRight != P.bIsOnRight)
 		{
-			sLeftFont = "\x1b[4m" + sLeftFont;
+			sLeftFont += "\x1b[4m";
+			sRightFont += "\x1b[4m";
 		}
 
 		P.sBar5[nBarCounter % BAR_MEMORY_SIZE] = sLeftFont + sLeftValue + sRightFont + sRightValue + "\x1b[0m";
@@ -716,12 +719,26 @@ void BarHandling(Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
 
 void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 {
+	std::string sColumnHeader = "\x1b[0;4m";
+	for (int i = 1; i <= nBarDisplayRange; i++)
+	{
+		if (i % 10 != 0)
+		{
+			sColumnHeader += std::format("{:2}", i % 10);
+		}
+		else
+		{
+			sColumnHeader += std::format("\x1b[7;4m{:2}\x1b[0;4m", i % 100);
+		}
+	}
+	sColumnHeader += "\x1b[0m\x1b[K\n";
+
 	P1.sBarString1 = "";
 	P1.sBarString2 = "";
 	P1.sBarString3 = "";
 	P1.sBarString4 = "";
 	P1.sBarString5 = "";
-	for (int i = (nBarCounter % BAR_MEMORY_SIZE) - BAR_SIZE - nBarScrolling; i < (nBarCounter % BAR_MEMORY_SIZE) - nBarScrolling; i++)
+	for (int i = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - nBarScrolling; i < (nBarCounter % BAR_MEMORY_SIZE) - nBarScrolling; i++)
 	{
 		if (i < 0)
 		{
@@ -751,7 +768,7 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 	P2.sBarString3 = "";
 	P2.sBarString4 = "";
 	P2.sBarString5 = "";
-	for (int i = (nBarCounter % BAR_MEMORY_SIZE) - BAR_SIZE - nBarScrolling; i < (nBarCounter % BAR_MEMORY_SIZE) - nBarScrolling; i++)
+	for (int i = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - nBarScrolling; i < (nBarCounter % BAR_MEMORY_SIZE) - nBarScrolling; i++)
 	{
 		if (i < 0)
 		{
@@ -822,13 +839,7 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 
 	if (bShowBar1 || bShowBar2 || bShowBar3)
 	{
-		printf("\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[7m10\x1b[0m"
-			"\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[7m20\x1b[0m"
-			"\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[7m30\x1b[0m"
-			"\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[7m40\x1b[0m"
-			"\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[7m50\x1b[0m"
-			"\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[0m\x1b[0m\x1b[K\n");
-
+		std::cout << sColumnHeader;
 	}
 
 	if (bShowBar1)
@@ -867,12 +878,7 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 
 	if (bShowBar4 || bShowBar5)
 	{
-		printf("\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[7m10\x1b[0m"
-			"\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[7m20\x1b[0m"
-			"\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[7m30\x1b[0m"
-			"\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[7m40\x1b[0m"
-			"\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[7m50\x1b[0m"
-			"\x1b[4m 1 2 3 4 5 6 7 8 9\x1b[0m\x1b[0m\x1b[K\n");
+		std::cout << sColumnHeader;
 	}
 
 	if (bShowBar4)
@@ -892,6 +898,8 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 	{
 		std::cout << P2.sBarString5;
 	}
+
+	std::cout << "\x1b[J";
 }
 
 void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P2, Player& P3, Player& P4)
@@ -901,8 +909,13 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 	if (cGameState != 1) //If not in game (any gamemode)
 	{
 		bIsStateSaved = false;
+		std::cout << "\x1b[J";
 		return;
 	}
+
+	CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screenBufferInfo);
+	nBarDisplayRange = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left) / 2;
 
 	if (cFN1Input > 0 && bEnableFN1Save)
 	{
