@@ -157,12 +157,13 @@ const char pcLatestVersion_19[19] = "LATEST VERSION";
 const char pcOffline_8[8] = "OFFLINE";
 
 const char pcFrameData_11[11] = "FRAME DATA";
-const char pcSaveStates_12[12] = "SAVE STATES";
+const char pcSaveState_11[11] = "SAVE STATE";
 const char pcClearSaveStates_18[18] = "CLEAR SAVE STATES";
 const char pcNoSaveStates_15[15] = "NO SAVE STATES";
 const char pcIgnoreExFlash_16[16] = "IGNORE EX FLASH";
 const char pcDisplayInputs_15[15] = "DISPLAY INPUTS";
-const char pcScrollFrames_14[14] = "SCROLL FRAMES";
+const char pcScrollDisplay_15[15] = "SCROLL DISPLAY";
 const char pcAdvanced_9[9] = "ADVANCED";
 const char pcOff_4[4] = "OFF";
 const char pcOn_3[3] = "ON";
+const char pcNone_5[5] = "NONE";
