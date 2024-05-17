@@ -635,7 +635,7 @@ int main(int argc, char* argv[])
                             nEnemySettingsCursor = 2;
                             nOldEnemySettingsCursor = 2;
                         }
-                        if (nOldEnemySettingsCursor == 2 && nEnemySettingsCursor == 0)
+                        if (nEnemySettingsCursor == 0)
                         {
                             nWriteBuffer = 14;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
@@ -652,7 +652,7 @@ int main(int argc, char* argv[])
                             nEnemySettingsCursor = 10;
                             nOldEnemySettingsCursor = 10;
                         }
-                        if (bPositionsLocked && nOldEnemySettingsCursor == 10 && nEnemySettingsCursor == 8)
+                        if (bPositionsLocked && nEnemySettingsCursor == 8)
                         {
                             nWriteBuffer = 0;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
@@ -666,7 +666,7 @@ int main(int argc, char* argv[])
                             nEnemySettingsCursor = 5;
                             nOldEnemySettingsCursor = 5;
                         }
-                        else if (!bP3Exists && nOldEnemySettingsCursor == 5 && nEnemySettingsCursor == 3)
+                        else if (!bP3Exists && nEnemySettingsCursor == 3)
                         {
                             nWriteBuffer = 2;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
@@ -680,7 +680,7 @@ int main(int argc, char* argv[])
                             nEnemySettingsCursor = 8;
                             nOldEnemySettingsCursor = 8;
                         }
-                        else if (!bP4Exists && nOldEnemySettingsCursor == 8 && nEnemySettingsCursor == 6)
+                        else if (!bP4Exists && nEnemySettingsCursor == 6)
                         {
                             nWriteBuffer = 5;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
@@ -701,7 +701,7 @@ int main(int argc, char* argv[])
                             nEnemySettingsCursor = 10;
                             nOldEnemySettingsCursor = 10;
                         }
-                        else if (nOldEnemySettingsCursor == 10 && nEnemySettingsCursor == 8)
+                        else if (nEnemySettingsCursor == 5 || nEnemySettingsCursor == 6 || nEnemySettingsCursor == 8)
                         {
                             nWriteBuffer = 3;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
