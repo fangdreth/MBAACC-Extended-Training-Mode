@@ -31,6 +31,7 @@ static bool bHideFreeze = true; //Whether to hide global ex flashes and frames w
 
 static bool bEnableFN1Save = false;
 static bool bEnableFN2Load = false;
+static bool bInExtendedSettings = false;
 
 static bool bShowInfo1 = false; //Position, pattern + state, speed, acceleration, health, circuit
 bool bShowInfo2 = true; //Distance, advantage
@@ -941,7 +942,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screenBufferInfo);
 	nBarDisplayRange = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left) / 2;
 
-	if (cFN1Input > 0 && bEnableFN1Save)
+	if (cFN1Input > 0 && bEnableFN1Save && !bInExtendedSettings)
 	{
 		if (!bLockInput)
 		{
@@ -952,7 +953,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 		char c5 = 5;
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x162A48), &c5, 1, 0);
 	}
-	else if (cFN2Input > 0 && bEnableFN2Load)
+	else if (cFN2Input > 0 && bEnableFN2Load && !bInExtendedSettings)
 	{
 		if (!bLockInput)
 		{

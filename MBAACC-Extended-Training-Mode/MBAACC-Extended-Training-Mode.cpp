@@ -13,6 +13,10 @@ int main(int argc, char* argv[])
     bool bPaused = false;
     bool bAPressed = false;
     bool bOldAPressed = false;
+    bool bF1Pressed = false;
+    bool bOldF1Pressed = false;
+    bool bF2Pressed = false;
+    bool bOldF2Pressed = false;
 
     bool bOnCSS = false;
     bool bOnExtendedSettingsMenu = false;
@@ -100,7 +104,7 @@ int main(int argc, char* argv[])
     bool bP4Exists = false;
 
     int nFrameData = FRAMEDISPLAY_NORMAL;
-    bool bSaveStates = false;
+    //bool bSaveStates = false;
     bool bDisplayInputs = false;
 
     Player P1{ 1, dwBaseAddress + adP1Base };
@@ -242,9 +246,15 @@ int main(int argc, char* argv[])
         }
         else
         {
-            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1APressed), &nReadResult, 4, 0);
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1APressed), &nReadResult, 1, 0);
             bOldAPressed = bAPressed;
             bAPressed = (nReadResult == 1 ? true : false);
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1F1Pressed), &nReadResult, 1, 0);
+            bOldF1Pressed = bF1Pressed;
+            bF1Pressed = (nReadResult == 1 ? true : false);
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1F2Pressed), &nReadResult, 1, 0);
+            bOldF2Pressed = bF2Pressed;
+            bF2Pressed = (nReadResult == 1 ? true : false);
 
             // these flags are used to determine if assist chars exist
             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Exists + dwP2Offset * 2), &nReadResult, 4, 0);
@@ -317,36 +327,43 @@ int main(int argc, char* argv[])
                         
                     // Replace the RETURN TO MAIN MENU option with fancy scrolling text
                     // this is 100% unnecessary but I did it for fun
-                    DWORD dwReturnToMainMenuString = GetReturnToMainMenuStringAddress(hMBAAHandle, dwBaseAddress);
-                    if (bNeedToAnnounceNewVersion)
+                    try
                     {
-                        // assemble the string for the message
-                        std::string sNewVersionMessage = "             VERSION " + sOnlineVersion + " AVAILABLE NOW ON GITHUB";
-                        int nMessageLength = sNewVersionMessage.size();
-                        sNewVersionMessage += "             " + sNewVersionMessage;
+                        DWORD dwReturnToMainMenuString = GetReturnToMainMenuStringAddress(hMBAAHandle, dwBaseAddress);
+                        if (bNeedToAnnounceNewVersion)
+                        {
+                            // assemble the string for the message
+                            std::string sNewVersionMessage = "             VERSION " + sOnlineVersion + " AVAILABLE NOW ON GITHUB";
+                            int nMessageLength = sNewVersionMessage.size();
+                            sNewVersionMessage += "             " + sNewVersionMessage;
 
-                        if (nStartingTime == 0 || nCurrentSubMenu != nOldCurrentSubMenu || nMovingMessageIndex >= nMessageLength + 16)
-                            nStartingTime = std::time(nullptr);
+                            if (nStartingTime == 0 || nCurrentSubMenu != nOldCurrentSubMenu || nMovingMessageIndex >= nMessageLength + 16)
+                                nStartingTime = std::time(nullptr);
 
-                        // move the index based on the timer
-                        int nCurrentTime = std::time(nullptr);
-                        nMovingMessageIndex = (nCurrentTime - nStartingTime) * 2;
+                            // move the index based on the timer
+                            int nCurrentTime = std::time(nullptr);
+                            nMovingMessageIndex = (nCurrentTime - nStartingTime) * 2;
 
-                        // chop the string up
-                        std::string sTempNewVersionMessage = "[" + sNewVersionMessage.substr(nMovingMessageIndex, 16) + "]";
+                            // chop the string up
+                            std::string sTempNewVersionMessage = "[" + sNewVersionMessage.substr(nMovingMessageIndex, 16) + "]";
 
-                        //send it
-                        char pcNewVersionMessage[19];
-                        strcpy_s(pcNewVersionMessage, (sTempNewVersionMessage).c_str());
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReturnToMainMenuString), &pcNewVersionMessage, 19, 0);
+                            //send it
+                            char pcNewVersionMessage[19];
+                            strcpy_s(pcNewVersionMessage, (sTempNewVersionMessage).c_str());
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReturnToMainMenuString), &pcNewVersionMessage, 19, 0);
+                        }
+                        else if (sOnlineVersion != "")
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReturnToMainMenuString), &pcLatestVersion_19, 19, 0);
+                        }
+                        else
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReturnToMainMenuString), &pcOffline_8, 8, 0);
+                        }
                     }
-                    else if (sOnlineVersion != "")
+                    catch (...)
                     {
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReturnToMainMenuString), &pcLatestVersion_19, 19, 0);
-                    }
-                    else
-                    {
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReturnToMainMenuString), &pcOffline_8, 8, 0);
+                        LogError("Error from scrolling text");
                     }
                 }
 
@@ -359,6 +376,7 @@ int main(int argc, char* argv[])
                     bOldAPressed = bAPressed = true;
 
                     bOnExtendedSettingsMenu = true;
+                    bInExtendedSettings = true;
                 }
                 else if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
                     bOnExtendedSettingsMenu = false;
@@ -482,7 +500,7 @@ int main(int argc, char* argv[])
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nReadResult, 4, 0);
                     int nEnemyStatusIndex = nReadResult;
 
-                    // Reset hits till burst if status is not manual
+                    // Reset "hits till burst" if status is not manual
                     if (nEnemyStatusIndex != eEnemyStatus::MANUAL)
                         nHitsTillBurst = TOO_HIGH_TO_BURST;
 
@@ -490,6 +508,32 @@ int main(int argc, char* argv[])
                     nCurrentSubMenu = nReadResult;
                     if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
                         continue;
+
+                    // A Press handler
+                    if (bAPressed && !bOldAPressed)
+                    {
+                        if (nExtendedSettingsPage == POSITIONS_PAGE)
+                        {
+                            if (nEnemySettingsCursor == 8)
+                            {
+                                nP1X *= -1;
+                                nP2X *= -1;
+                                nP3X *= -1;
+                                nP4X *= -1;
+                                SetP1X(hMBAAHandle, dwBaseAddress, nP1X);
+                                SetP2X(hMBAAHandle, dwBaseAddress, nP2X);
+                                SetP3X(hMBAAHandle, dwBaseAddress, nP3X);
+                                SetP4X(hMBAAHandle, dwBaseAddress, nP4X);
+                            }
+                        }
+                        if (nExtendedSettingsPage == FRAME_TOOL)
+                        {
+                            if (nEnemySettingsCursor == 3)
+                            {
+                                bIsStateSaved = false;
+                            }
+                        }
+                    }
 
                     // Replace static menu fields
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionInfoStringAddress), &pcTrainingPreset_17, 17, 0);
@@ -646,22 +690,7 @@ int main(int argc, char* argv[])
                     }
                     else if (nExtendedSettingsPage == FRAME_TOOL)
                     {
-                        /*
-                        if (nOldEnemySettingsCursor == 10 && nEnemySettingsCursor == 8)
-                        {
-                            nWriteBuffer = 6;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                            nEnemySettingsCursor = 6;
-                            nOldEnemySettingsCursor = 6;
-                        }
-                        if (nOldEnemySettingsCursor == 6 && nEnemySettingsCursor == 8)
-                        {
-                            nWriteBuffer = 10;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                            nEnemySettingsCursor = 10;
-                            nOldEnemySettingsCursor = 10;
-                        }
-                        */
+                        
                     }
                     else if (nExtendedSettingsPage == CHARACTER_SPECIFICS)
                     {
@@ -856,23 +885,6 @@ int main(int argc, char* argv[])
                             nP4X = min(MAX_X, nP4X + (bAPressed ? 1 : 1000));
                             SetP4X(hMBAAHandle, dwBaseAddress, nP4X);
                         }
-
-                        /*if (nOldThrowRecoveryIndex == -1)
-                            nOldThrowRecoveryIndex = nThrowRecoveryIndex;
-                        else if (nOldThrowRecoveryIndex > nThrowRecoveryIndex)// left
-                        {
-                        }
-                        else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
-                        {
-                            nP1X *= -1;
-                            nP2X *= -1;
-                            nP3X *= -1;
-                            nP4X *= -1;
-                            SetP1X(hMBAAHandle, dwBaseAddress, nP1X);
-                            SetP2X(hMBAAHandle, dwBaseAddress, nP2X);
-                            SetP3X(hMBAAHandle, dwBaseAddress, nP3X);
-                            SetP4X(hMBAAHandle, dwBaseAddress, nP4X);
-                        }*/
                     }
                     else if (nExtendedSettingsPage == FRAME_TOOL)
                     {
@@ -910,16 +922,15 @@ int main(int argc, char* argv[])
                             //bEnableFN1Save = true;
                             //bEnableFN2Load = true;
                         }
-
                         if (nSaveSlot > 0)
                         {
-                            bSaveStates = true;
+                            //bSaveStates = true;
                             bEnableFN1Save = true;
                             bEnableFN2Load = true;
                         }
                         else
                         {
-                            bSaveStates = false;
+                            //bSaveStates = false;
                             bEnableFN1Save = false;
                             bEnableFN2Load = false;
                         }
@@ -1018,36 +1029,10 @@ int main(int argc, char* argv[])
                     if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
                         continue;
 
-                    // A Press handler
-                    if (bAPressed && !bOldAPressed)
-                    {
-                        if (nExtendedSettingsPage == POSITIONS_PAGE)
-                        {
-                            if (nEnemySettingsCursor == 8)
-                            {
-                                nP1X *= -1;
-                                nP2X *= -1;
-                                nP3X *= -1;
-                                nP4X *= -1;
-                                SetP1X(hMBAAHandle, dwBaseAddress, nP1X);
-                                SetP2X(hMBAAHandle, dwBaseAddress, nP2X);
-                                SetP3X(hMBAAHandle, dwBaseAddress, nP3X);
-                                SetP4X(hMBAAHandle, dwBaseAddress, nP4X);
-                            }
-                        }
-                        if (nExtendedSettingsPage == FRAME_TOOL)
-                        {
-                            if (nEnemySettingsCursor == 3)
-                            {
-                                bIsStateSaved = false;
-                            }
-                        }
-                    }
-
                     // PAGE number handler
                     if (nOldReduceDamageIndex == -1)
                         nOldReduceDamageIndex = nReduceDamageIndex;
-                    else if (nOldReduceDamageIndex > nReduceDamageIndex)// left
+                    else if (nOldReduceDamageIndex > nReduceDamageIndex || (bF1Pressed && !bOldF1Pressed))// left
                     {
                         nExtendedSettingsPage = max(1, nExtendedSettingsPage - 1);
 
@@ -1059,7 +1044,7 @@ int main(int argc, char* argv[])
                         nOldThrowRecoveryIndex = -1;
                         nOldReduceDamageIndex = -1;
                     }
-                    else if (nOldReduceDamageIndex < nReduceDamageIndex)// right
+                    else if (nOldReduceDamageIndex < nReduceDamageIndex || (bF2Pressed && !bOldF2Pressed))// right
                     {
                         nExtendedSettingsPage = min(nExtendedSettingsPage + 1, MAX_PAGES);
 
@@ -1696,7 +1681,7 @@ int main(int argc, char* argv[])
                             nEnemyActionIndex = 8;
                         }
 
-                        if (!bSaveStates)
+                        if (nSaveSlot == 0)
                         {
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOffString), &pcOff_4, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcOff_4, 4, 0);
@@ -1728,41 +1713,6 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
                             nEnemyDefenseIndex = 5;
                         }
-
-                        /*if (nP2X == MIN_X)
-                        {
-                            char pcTemp[8];
-                            strcpy_s(pcTemp, std::to_string(MIN_X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 8, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 8, 0);
-
-                            nWriteBuffer = 0;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
-                            nEnemyDefenseTypeIndex = 0;
-                        }
-                        else if (nP2X == MAX_X)
-                        {
-                            char pcTemp[8];
-                            strcpy_s(pcTemp, std::to_string(MAX_X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 8, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 8, 0);
-
-                            nWriteBuffer = 2;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
-                            nEnemyDefenseTypeIndex = 2;
-                        }
-                        else
-                        {
-                            char pcTemp[8];
-                            strcpy_s(pcTemp, std::to_string(nP3X).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 8, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 8, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 8, 0);
-
-                            nWriteBuffer = 1;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
-                            nEnemyDefenseTypeIndex = 1;
-                        }*/
 
                         if (bHideFreeze)
                         {
@@ -1815,10 +1765,10 @@ int main(int argc, char* argv[])
                         }
                         else if (nBarScrolling >= min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange))
                         {
-                            char pcTemp[3];
-                            strcpy_s(pcTemp, std::to_string(nBarScrolling).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryNormalString), &pcTemp, 4, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcTemp, 4, 0);
+                            char pcTemp[6];
+                            strcpy_s(pcTemp, ("-" + std::to_string(nBarScrolling)).c_str());
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryNormalString), &pcTemp, 6, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcTemp, 6, 0);
 
                             nWriteBuffer = 0;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
@@ -1826,11 +1776,11 @@ int main(int argc, char* argv[])
                         }
                         else
                         {
-                            char pcTemp[3];
-                            strcpy_s(pcTemp, std::to_string(nBarScrolling).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllLateString), &pcTemp, 3, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllRandomString), &pcTemp, 3, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomFastString), &pcTemp, 3, 0);
+                            char pcTemp[6];
+                            strcpy_s(pcTemp, ("-" + std::to_string(nBarScrolling)).c_str());
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllLateString), &pcTemp, 6, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllRandomString), &pcTemp, 6, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomFastString), &pcTemp, 6, 0);
 
                             nWriteBuffer = 3;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
@@ -2220,6 +2170,7 @@ int main(int argc, char* argv[])
             {
                 // want to reset these for a clean setup next time the game is paused
                 bOnExtendedSettingsMenu = false;
+                bInExtendedSettings = false;
                 nOldCurrentSubMenu = -1;
                 nCurrentSubMenu = eMenu::MAIN;
 
@@ -2334,24 +2285,26 @@ int main(int argc, char* argv[])
                 // increase the counter every frame p2 is standing idle to delay regenerating health and char specifics
                 // taking an extra step to cap these at 20 to avoid any unexpected behavior if tmode is left running forever
                 //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 1, 0);
-                //int nHitstun = nReadResult;
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 4, 0);
+                int nHitstunRemaining = nReadResult;
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
+                int nP2Pattern = nReadResult;
                 //if (nReadResult == 0 || nReadResult == 13)
-                if (nReadResult == 0)
+                if (nHitstunRemaining == 0 && nP2Pattern != 350)
                 {
-                    nHealthRefillTimer = min(nHealthRefillTimer + 1, 20);
-                    nSionBulletsRefillTimer = min(nSionBulletsRefillTimer + 1, 20);
+                    nHealthRefillTimer = 1;
+                    nSionBulletsRefillTimer = 1;
                     
                     // roa needs to be reset a little differently
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RoaVisibleCharge), &nReadResult, 4, 0);
                     if (nReadResult < nRoaVisibleCharge)
-                        nRoaVisibleChargeRefillTimer = min(nRoaVisibleChargeRefillTimer + 1, 20);
+                        nRoaVisibleChargeRefillTimer = 1;
                     else
                         nRoaVisibleChargeRefillTimer = 0;
 
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RoaHiddenCharge), &nReadResult, 4, 0);
                     if (nReadResult < nRoaVisibleCharge)
-                        nRoaHiddenChargeRefillTimer = min(nRoaHiddenChargeRefillTimer + 1, 20);
+                        nRoaHiddenChargeRefillTimer = 1;
                     else
                         nRoaHiddenChargeRefillTimer = 0;
                 }
@@ -2364,28 +2317,28 @@ int main(int argc, char* argv[])
                 
 
                 // refill health if training mode is reset or long enough time has passed
-                if (nFrameCounter == 1 || (nHealthRefillTimer == 20 && bLifeRecover))
+                if (nFrameCounter == 1 || (nHealthRefillTimer == 1 && bLifeRecover))
                 {
                     SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth);
                     nHealthRefillTimer = 0;
                 }
 
                 // refill character specifics
-                if ((nFrameCounter == 1 || nSionBulletsRefillTimer == 20 || nSionBullets == 15) && nSionBullets != 14)
+                if ((nFrameCounter == 1 || nSionBulletsRefillTimer == 1 || nSionBullets == 15) && nSionBullets != 14)
                 {
                     SetSionBullets(hMBAAHandle, dwBaseAddress, nSionBullets);
                     nSionBulletsRefillTimer = 0;
                 }
 
                 // refill character specifics
-                if (nFrameCounter == 1 || nRoaHiddenChargeRefillTimer == 20 || nRoaHiddenCharge == -2 && nRoaHiddenCharge != -1)
+                if (nFrameCounter == 1 || nRoaHiddenChargeRefillTimer == 1 || nRoaHiddenCharge == -2 && nRoaHiddenCharge != -1)
                 {
                     SetRoaHiddenCharge(hMBAAHandle, dwBaseAddress, nRoaHiddenCharge);
                     nRoaHiddenChargeRefillTimer = 0;
                 }
 
                 // refill character specifics
-                if ((nFrameCounter == 1 || nRoaVisibleChargeRefillTimer == 20 || nRoaVisibleCharge == -2) && nRoaVisibleCharge != -1)
+                if ((nFrameCounter == 1 || nRoaVisibleChargeRefillTimer == 1 || nRoaVisibleCharge == -2) && nRoaVisibleCharge != -1)
                 {
                     SetRoaVisibleCharge(hMBAAHandle, dwBaseAddress, nRoaVisibleCharge);
                     nRoaVisibleChargeRefillTimer = 0;
