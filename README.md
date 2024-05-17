@@ -4,6 +4,7 @@
 
 + New "EXTENDED SETTINGS" menu
 + All features are available in-game instead of needing you to look at a separate program
++ Navigate through the menu with FN1 and FN2
 + Will re-attach to MBAACC without requiring you to close the mod
 + ENEMY REVERSAL
 	+ Replaces ENEMY ACTION
@@ -61,6 +62,8 @@ Right now there isn't a CMAKE file, so if you want to build the mod yourself, ge
 # Save State Controls
 
 First, save states must be enabled from the EXTENDED SETTINGS menu.  After that, a save state can be created anywhere (even while paused) by pressing F1 on your controller.  From that point, pressing F2 will restore that save state.  You can clear your save states by either holding up and pressing F1, or going into the EXTENDED SETTINGS menu and selecting CLEAR SAVE STATES.
+
+Three save slots available.
 
 # Planned Features
 Roughly in order of priority, but not in order they will be implemented.
