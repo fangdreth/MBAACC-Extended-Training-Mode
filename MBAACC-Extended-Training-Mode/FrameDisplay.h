@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include "Constants.h"
 
@@ -26,6 +27,8 @@ bool bIsBarReset = false;
 bool bDoBarReset = false;
 bool bUpdateBar = false;
 bool bDoAdvantage = false;
+
+bool bLockInput = false;
 
 static bool bHideFreeze = true; //Whether to hide global ex flashes and frames where both chars are in hitstop
 
@@ -54,14 +57,14 @@ struct Save {
 	char cSaveGlobalEXFlash = 0;
 	DWORD dwSaveAttackDisplayInfo[52 / 4] = {}; //Ends just before Max Damage
 	DWORD dwSaveAttackDisplayInfo2[1004 / 4] = {}; //Starts after Max Damage, maybe also has current combo info
-	DWORD dwSaveDestinationCamX = {};
-	DWORD dwSaveCurrentCamX = {};
-	DWORD dwSaveDestinationCamY = {};
-	DWORD dwSaveCurrentCamY = {};
-	DWORD dwSaveDestinationCamZoom = {};
-	DWORD dwSaveCurrentCamZoom = {};
-	DWORD dwSaveContlFlag = {}; //No idea
-	DWORD dwSaveContlFlag2 = {}; //No idea
+	DWORD dwSaveDestinationCamX = 0x0;
+	DWORD dwSaveCurrentCamX = 0x0;
+	DWORD dwSaveDestinationCamY = 0x0;
+	DWORD dwSaveCurrentCamY = 0x0;
+	DWORD dwSaveDestinationCamZoom = 0x0;
+	DWORD dwSaveCurrentCamZoom = 0x0;
+	DWORD dwSaveContlFlag = 0x0; //No idea
+	DWORD dwSaveContlFlag2 = 0x0; //No idea
 
 	DWORD dwSaveP1[972 / 4] = {}; //Player data from pattern to just before input buffers
 	DWORD dwSaveP2[972 / 4] = {};
@@ -70,29 +73,6 @@ struct Save {
 };
 
 Save Saves[MAX_SAVES];
-
-/*
-DWORD dwSaveEffects[74576 / 4]; //Effect and projectile data
-DWORD dwSaveStopSituation[1632 / 4];
-char cSaveGlobalEXFlash;
-DWORD dwSaveAttackDisplayInfo[52 / 4]; //Ends just before Max Damage
-DWORD dwSaveAttackDisplayInfo2[1004 / 4]; //Starts after Max Damage, maybe also has current combo info
-DWORD dwSaveDestinationCamX;
-DWORD dwSaveCurrentCamX;
-DWORD dwSaveDestinationCamY;
-DWORD dwSaveCurrentCamY;
-DWORD dwSaveDestinationCamZoom;
-DWORD dwSaveCurrentCamZoom;
-DWORD dwSaveContlFlag; //No idea
-DWORD dwSaveContlFlag2; //No idea
-
-DWORD dwSaveP1[972 / 4]; //Player data from pattern to just before input buffers
-DWORD dwSaveP2[972 / 4];
-DWORD dwSaveP3[972 / 4];
-DWORD dwSaveP4[972 / 4];
-*/
-
-bool bLockInput = false;
 
 void CheckGameState(HANDLE hMBAAHandle, DWORD dwBaseAddress)
 {
@@ -313,20 +293,102 @@ void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, Save &S)
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157234), &S.dwSaveP4, 972, 0);
 }
 
-void SetStringLength(std::string &sString, int nDesiredLength, std::string sPadding = " ")
+void SaveStateToFile(Save& S)
 {
-	int nStringLength = sString.length();
-	if (nStringLength > nDesiredLength)
+	std::ofstream SaveOutFile;
+	SaveOutFile.open("MBAA.save");
+	for (int i = 0; i < 74576 / 4; i++)
 	{
-		sString = sString.substr(nStringLength-2, nStringLength);
+		SaveOutFile << S.dwSaveEffects[i] << std::endl;
 	}
-	else if (nStringLength < nDesiredLength)
+	for (int i = 0; i < 1632 / 4; i++)
 	{
-		for (int i = 0; i < nDesiredLength - nStringLength; i++)
-		{
-			sString = sPadding + sString;
-		}
+		SaveOutFile << S.dwSaveStopSituation[i] << std::endl;
 	}
+	SaveOutFile << S.cSaveGlobalEXFlash << std::endl;
+	for (int i = 0; i < 52 / 4; i++)
+	{
+		SaveOutFile << S.dwSaveAttackDisplayInfo[i] << std::endl;
+	}
+	for (int i = 0; i < 1004 / 4; i++)
+	{
+		SaveOutFile << S.dwSaveAttackDisplayInfo2[i] << std::endl;
+	}
+	SaveOutFile << S.dwSaveDestinationCamX << std::endl;
+	SaveOutFile << S.dwSaveCurrentCamX << std::endl;
+	SaveOutFile << S.dwSaveDestinationCamY << std::endl;
+	SaveOutFile << S.dwSaveCurrentCamY << std::endl;
+	SaveOutFile << S.dwSaveCurrentCamZoom << std::endl;
+	SaveOutFile << S.dwSaveDestinationCamZoom << std::endl;
+	SaveOutFile << S.dwSaveContlFlag << std::endl;
+	SaveOutFile << S.dwSaveContlFlag2 << std::endl;
+	for (int i = 0; i < 972 / 4; i++)
+	{
+		SaveOutFile << S.dwSaveP1[i] << std::endl;
+	}
+	for (int i = 0; i < 972 / 4; i++)
+	{
+		SaveOutFile << S.dwSaveP2[i] << std::endl;
+	}
+	for (int i = 0; i < 972 / 4; i++)
+	{
+		SaveOutFile << S.dwSaveP3[i] << std::endl;
+	}
+	for (int i = 0; i < 972 / 4; i++)
+	{
+		SaveOutFile << S.dwSaveP4[i] << std::endl;
+	}
+	SaveOutFile.close();
+}
+
+void LoadStateFromFile(Save& S)
+{
+	DWORD dwIn;
+	std::ifstream SaveInFile;
+	SaveInFile.open("MBAA.save");
+	for (int i = 0; i < 74576 / 4; i++)
+	{
+		SaveInFile >> S.dwSaveEffects[i];
+	}
+	for (int i = 0; i < 1632 / 4; i++)
+	{
+		SaveInFile >> S.dwSaveStopSituation[i];
+	}
+	SaveInFile >> S.cSaveGlobalEXFlash;
+	for (int i = 0; i < 52 / 4; i++)
+	{
+		SaveInFile >> S.dwSaveAttackDisplayInfo[i];
+	}
+	for (int i = 0; i < 1004 / 4; i++)
+	{
+		SaveInFile >> S.dwSaveAttackDisplayInfo2[i];
+	}
+	SaveInFile >> S.dwSaveDestinationCamX;
+	SaveInFile >> S.dwSaveCurrentCamX;
+	SaveInFile >> S.dwSaveDestinationCamY;
+	SaveInFile >> S.dwSaveCurrentCamY;
+	SaveInFile >> S.dwSaveCurrentCamZoom;
+	SaveInFile >> S.dwSaveDestinationCamZoom;
+	SaveInFile >> S.dwSaveContlFlag;
+	SaveInFile >> S.dwSaveContlFlag2;
+	for (int i = 0; i < 972 / 4; i++)
+	{
+		SaveInFile >> S.dwSaveP1[i];
+	}
+	for (int i = 0; i < 972 / 4; i++)
+	{
+		SaveInFile >> S.dwSaveP2[i];
+	}
+	for (int i = 0; i < 972 / 4; i++)
+	{
+		SaveInFile >> S.dwSaveP3[i];
+	}
+	for (int i = 0; i < 972 / 4; i++)
+	{
+		SaveInFile >> S.dwSaveP4[i];
+	}
+	S.bIsThisStateSaved = true;
+	SaveInFile.close();
 }
 
 void CalculateAdvantage(Player& P1, Player& P2)
@@ -388,43 +450,43 @@ void UpdateBars(Player& P, Player& Assist)
 	if (bShowBar1)
 	{
 		//Bar 1 - General action information
-		if (P.nInactionableFrames != 0)
+		if (P.nInactionableFrames != 0) //Doing something with limited actionability
 		{
 			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;65;200;0m";
-			sBarValue = std::to_string(P.nInactionableFrames);
+			sBarValue = std::format("{:2}", P.nInactionableFrames % 100);
 			if (P.nPattern >= 35 && P.nPattern <= 37) //Jump Startup
 			{
 				sFont = "\x1b[38;2;177;177;255m\x1b[48;2;241;224;132m";
 			}
-			else if (P.nHitstunRemaining != 0 && P.bBlockstunFlag == 0)
+			else if (P.nHitstunRemaining != 0 && P.bBlockstunFlag == 0) //Hitstun
 			{
 				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;140;140;140m";
-				if (P.cStance == 1)
+				if (P.cStance == 1) //Airborne
 				{
-					if (P.sUntechCounter < P.sUntechTotal)
+					if (P.sUntechCounter < P.sUntechTotal) //Still has untech remaining
 					{
-						sBarValue = std::to_string(P.sUntechTotal - P.sUntechCounter);
+						sBarValue = std::format("{:2}", (P.sUntechTotal - P.sUntechCounter) % 100);
 					}
 				}
-				else
+				else //Grounded
 				{
-					if (P.nHitstunRemaining > 1)
-						sBarValue = std::to_string(P.nHitstunRemaining - 1);
+					if (P.nHitstunRemaining > 1) //Still has hitstun remaining
+						sBarValue = std::format("{:2}", P.nHitstunRemaining - 1 % 100);
 				}
 			}
-			else if (P.bBlockstunFlag)
+			else if (P.bBlockstunFlag) //Blockstun
 			{
 				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;180;180;180m";
 			}
 		}
-		else
+		else //Fully actionable
 		{
 			sFont = "\x1b[38;2;92;92;92m\x1b[48;2;0;0;0m";
-			sBarValue = std::to_string(P.nPattern);
+			sBarValue = std::format("{:2}", P.nPattern % 100);
 
-			if (bDoAdvantage)
+			if (bDoAdvantage) //Has advantage
 			{
-				sBarValue = std::to_string(P.nAdvantageCounter);
+				sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
 				if (P.nAdvantageCounter != 0)
 				{
 					sFont = "\x1b[38;2;255;255;255m\x1b[48;2;0;0;0m";
@@ -432,42 +494,41 @@ void UpdateBars(Player& P, Player& Assist)
 			}
 		}
 
-		if (P.bThrowFlag != 0)
+		if (P.bThrowFlag != 0) //Being thrown
 		{
 			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;110;110;110m";
 			sBarValue = " t";
 		}
-		else if (P.cBoxIndex == 12)
+		else if (P.cBoxIndex == 12) //Clash
 		{
 			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;225;184;0m";
 		}
-		else if (P.cBoxIndex == 10)
+		else if (P.cBoxIndex == 10) //Shield
 		{
 			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;145;194;255m";
 		}
-		else if (P.cBoxIndex <= 1 || P.sGrantedStrikeInvuln != 0 || P.cStateInvuln == 3)
+		else if (P.cBoxIndex <= 1 || P.sGrantedStrikeInvuln != 0 || P.cStateInvuln == 3) //Various forms of invuln
 		{
-			if (P.nInactionableFrames != 0)
+			if (P.nInactionableFrames != 0) //Doing something with limited actionability
 			{
 				sFont = "\x1b[38;2;160;160;160m\x1b[48;2;255;255;255m";
 			}
-			else
+			else //Fully actionable
 			{
 				sFont = "\x1b[38;2;100;100;100m\x1b[48;2;255;255;255m";
 			}
 
 		}
 
-		if (cGlobalEXFlash != 0 || cP1EXFlash != 0 || cP2EXFlash != 0)
+		if (cGlobalEXFlash != 0 || cP1EXFlash != 0 || cP2EXFlash != 0) //Screen is frozen
 		{
 			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
 		}
-		else if (P.cHitstop != 0)
+		else if (P.cHitstop != 0) //in hitstop
 		{
 			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;80;128m";
 		}
 
-		SetStringLength(sBarValue, 2);
 		P.sBar1[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
 
 		sFont = "\x1b[0m";
@@ -484,7 +545,7 @@ void UpdateBars(Player& P, Player& Assist)
 
 		if (P.dwAttackDataPointer != 0)
 		{
-			sBarValue = std::to_string(P.nActiveCounter);
+			sBarValue = std::format("{:2}", P.nActiveCounter % 100);
 			if (cGlobalEXFlash != 0 || cP1EXFlash != 0 || cP2EXFlash != 0)
 			{
 				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
@@ -504,7 +565,6 @@ void UpdateBars(Player& P, Player& Assist)
 			}
 		}
 
-		SetStringLength(sBarValue, 2);
 		P.sBar2[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
 
 		sFont = "";
@@ -516,12 +576,12 @@ void UpdateBars(Player& P, Player& Assist)
 		if (P.nActiveProjectileCount != 0 || Assist.nActiveProjectileCount != 0)
 		{
 			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;255;0;0m";
-			sBarValue = std::to_string(P.nActiveProjectileCount + Assist.nActiveProjectileCount);
+			sBarValue = std::format("{:2}", (P.nActiveProjectileCount + Assist.nActiveProjectileCount) % 100);
 		}
 
 		if (Assist.dwAttackDataPointer != 0)
 		{
-			sBarValue = std::to_string(Assist.nActiveCounter);
+			sBarValue = std::format("{:2}", Assist.nActiveCounter  % 100);
 			if (cGlobalEXFlash != 0 || cP1EXFlash != 0 || cP2EXFlash != 0)
 			{
 				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
@@ -541,7 +601,6 @@ void UpdateBars(Player& P, Player& Assist)
 			}
 		}
 
-		SetStringLength(sBarValue, 2);
 		P.sBar3[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
 
 		sFont = "";
