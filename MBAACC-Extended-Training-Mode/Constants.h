@@ -89,7 +89,7 @@ const ADDRESS adP2Base = 0x155130 + dwPlayerStructSize; //0x155C2C
 const ADDRESS adP3Base = 0x155130 + 2 * dwPlayerStructSize; //0x156728
 const ADDRESS adP4Base = 0x155130 + 3 * dwPlayerStructSize; //0x157224
 
-const DWORD dwProjectileStructSize = 0x3CC;
+const DWORD dwProjectileStructSize = 0x33C;
 const ADDRESS adProjectileBase = 0x27BDE8;
 
 // integer representations of raw float values
@@ -160,7 +160,7 @@ const char pcFrameData_11[11] = "FRAME DATA";
 const char pcSaveState_11[11] = "SAVE STATE";
 const char pcClearSaveStates_18[18] = "CLEAR SAVE STATES";
 const char pcNoSaveStates_15[15] = "NO SAVE STATES";
-const char pcIgnoreExFlash_16[16] = "IGNORE EX FLASH";
+const char pcFreezeFrames_14[14] = "FREEZE FRAMES";
 const char pcDisplayInputs_15[15] = "DISPLAY INPUTS";
 const char pcScrollDisplay_15[15] = "SCROLL DISPLAY";
 const char pcAdvanced_9[9] = "ADVANCED";

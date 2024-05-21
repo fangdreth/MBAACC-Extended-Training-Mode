@@ -581,7 +581,7 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcClearSaveStates_18, 18, 0);
                         else
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcNoSaveStates_15, 15, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcIgnoreExFlash_16, 16, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcFreezeFrames_14, 14, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcDisplayInputs_15, 15, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcScrollDisplay_15, 15, 0);
                     }
@@ -895,7 +895,6 @@ int main(int argc, char* argv[])
                             nFrameData = FRAMEDISPLAY_NORMAL;
                             bShowInfo1 = false;
                             bShowInfo3 = false;
-                            bShowBar3 = false;
                             system("cls");
                         }
                         else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
@@ -903,7 +902,6 @@ int main(int argc, char* argv[])
                             nFrameData = FRAMEDISPLAY_ADVANCED;
                             bShowInfo1 = true;
                             bShowInfo3 = true;
-                            bShowBar3 = true;
                         }
 
                         if (nOldEnemyDefenseIndex == -1)
@@ -1716,8 +1714,8 @@ int main(int argc, char* argv[])
 
                         if (bHideFreeze)
                         {
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOffString), &pcOn_3, 3, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcOn_3, 3, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOffString), &pcOff_4, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcOff_4, 4, 0);
 
                             nWriteBuffer = 0;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
@@ -1725,8 +1723,8 @@ int main(int argc, char* argv[])
                         }
                         else
                         {
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom1String), &pcOff_4, 4, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom2String), &pcOff_4, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom1String), &pcOn_3, 3, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom2String), &pcOn_3, 3, 0);
 
                             nWriteBuffer = 5;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);

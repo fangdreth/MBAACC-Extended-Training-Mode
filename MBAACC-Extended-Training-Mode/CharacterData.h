@@ -175,6 +175,12 @@ static void InitializeCharacterMaps()
 	MBAACC_Map[eCharacterValues::CKOHAMECH] = vCKOHAMECH_Map;
 	MBAACC_Map[eCharacterValues::HKOHAMECH] = vHKOHAMECH_Map;
 	MBAACC_Map[eCharacterValues::FKOHAMECH] = vFKOHAMECH_Map;
+	MBAACC_Map[eCharacterValues::CHISUI] = vCHISUI_Map;
+	MBAACC_Map[eCharacterValues::HHISUI] = vHHISUI_Map;
+	MBAACC_Map[eCharacterValues::FHISUI] = vFHISUI_Map;
+	MBAACC_Map[eCharacterValues::CKOHAKU] = vCKOHAKU_Map;
+	MBAACC_Map[eCharacterValues::HKOHAKU] = vHKOHAKU_Map;
+	MBAACC_Map[eCharacterValues::FKOHAKU] = vFKOHAKU_Map;
 	MBAACC_Map[eCharacterValues::CNECOMECH] = vCNECOMECH_Map;
 	MBAACC_Map[eCharacterValues::HNECOMECH] = vHNECOMECH_Map;
 	MBAACC_Map[eCharacterValues::FNECOMECH] = vFNECOMECH_Map;

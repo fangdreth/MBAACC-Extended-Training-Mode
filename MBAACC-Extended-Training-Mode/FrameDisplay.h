@@ -42,7 +42,7 @@ static bool bShowInfo3 = false; //EX flash, counter hit, guard gauge, scaling, p
 
 bool bShowBar1 = true; //General action info
 bool bShowBar2 = true; //Active Frames
-static bool bShowBar3 = false; //Projectile and assist active frames
+bool bShowBar3 = true; //Projectile and assist active frames
 static bool bShowBar4 = false; //A, B, E inputs
 static bool bShowBar5 = false; //C, D, directional inputs
 
@@ -177,7 +177,7 @@ void CheckProjectiles(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
 			{
 				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adProjectileBase + dwProjectileStructSize * i + 0x10), &nProjectilePattern, 4, 0);
 				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adProjectileBase + dwProjectileStructSize * i + 0x324), &dwProjectileAttackDataPointer, 4, 0);
-				if (dwProjectileAttackDataPointer != 0 && nProjectilePattern >= 100)
+				if (dwProjectileAttackDataPointer != 0 && nProjectilePattern >= 60)
 				{
 					nCount++;
 				}
