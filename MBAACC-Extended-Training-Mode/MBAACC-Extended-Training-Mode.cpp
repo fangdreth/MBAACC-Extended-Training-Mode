@@ -234,6 +234,9 @@ int main(int argc, char* argv[])
 
         FrameDisplay(hMBAAHandle, dwBaseAddress, P1, P2, P3, P4);
 
+        nWriteBuffer = nPlayerAdvantage;
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwFPS), &nWriteBuffer, 4, 0);
+
         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
         if (nReadResult == 0)
         {
@@ -1095,6 +1098,17 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionAString), &pcTemp, 7, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionBString), &pcTemp, 7, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionCString), &pcTemp, 7, 0);
+
+                            nWriteBuffer = 2;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
+                            nEnemyActionIndex = 2;
+                        }
+                        else if (nReversalType == REVERSAL_SEQUENCE)
+                        {
+                            char pcTemp[9] = "SEQUENCE";
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionAString), &pcTemp, 9, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionBString), &pcTemp, 9, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionCString), &pcTemp, 9, 0);
 
                             nWriteBuffer = 2;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
@@ -2259,6 +2273,8 @@ int main(int argc, char* argv[])
                 nCustomGuard = nReadResult;
                 if (nFrameCounter == 1)
                 {
+                    nPlayerAdvantage = 0;
+
                     SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
                     SetGuard(hMBAAHandle, dwBaseAddress, nCustomGuard, nP1Moon, nP2Moon);
                     SetGuard(hMBAAHandle, dwBaseAddress, 0, nP1Moon, nP2Moon);
@@ -2352,6 +2368,7 @@ int main(int argc, char* argv[])
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwBurstCooldown), &nReadResult, 1, 0);
                 nBurstCooldown = nReadResult;
 
+                nReadResult = 0;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 1, 0);
                 int nHitstun = nReadResult;
 
@@ -2363,7 +2380,10 @@ int main(int argc, char* argv[])
                 if (nFrameCounter == 0)
                     bReversaled = true;
                 if (nFrameCounter == 2)
+                {
                     bReversaled = false;
+                    bDelayingReversal = false;
+                }
 
                 if (nFrameCounter != 0 && (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) != 0))
                 {
@@ -2398,14 +2418,14 @@ int main(int argc, char* argv[])
                         if (nReversalType != REVERSAL_RANDOM || rand() % 2 == 0)
                         {
                             int pnReversals[4] = { GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) };
-                            int nRandomReversalIndex = 0;
+                            int nTempReversalIndex = 0;
                             while (1)
                             {
-                                nRandomReversalIndex = rand() % 4;
-                                if (pnReversals[nRandomReversalIndex] != 0)
+                                nTempReversalIndex = rand() % 4;
+                                if (pnReversals[nTempReversalIndex] != 0)
                                     break;
                             }
-                            nWriteBuffer = pnReversals[nRandomReversalIndex];
+                            nWriteBuffer = pnReversals[nTempReversalIndex];
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternSet), &nWriteBuffer, 4, 0);
                         }
                         else

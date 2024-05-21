@@ -49,6 +49,8 @@ static bool bShowBar5 = false; //C, D, directional inputs
 static bool bIsStateSaved = false;
 static int nSaveSlot = 0;
 
+static int nPlayerAdvantage;
+
 struct Save {
 	bool bIsThisStateSaved = false;
 
@@ -1063,6 +1065,8 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 			LoadState(hMBAAHandle, dwBaseAddress, Saves[nSaveSlot - 1]);
 		}
 	}
+
+	nPlayerAdvantage = (P1.nAdvantageCounter - P2.nAdvantageCounter) % 100;
 
 	PrintFrameDisplay(*Player1, *Player2, *Player3, *Player4);
 }

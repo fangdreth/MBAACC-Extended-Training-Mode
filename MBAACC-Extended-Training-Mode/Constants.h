@@ -14,7 +14,7 @@ enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
 enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, POSITIONS_PAGE = 3, FRAME_TOOL = 4, CHARACTER_SPECIFICS = 5 };
-enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, REVERSAL_REPEAT };
+enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, REVERSAL_SEQUENCE, REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
@@ -72,6 +72,7 @@ const DWORD dwBasePointer = 0x34D7FC;
 const DWORD dwBurstCooldown = 0x155DBE;
 const DWORD dwP2RecievedHitstop = 0x155DD0;
 const DWORD dwGameMode = 0x162A74; // 16:training
+const DWORD dwFPS = 0x374A70;
 
 //FrameDisplay Constants
 typedef DWORD ADDRESS; //I think doing this + adXxxxYyyy looks nice
