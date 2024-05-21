@@ -143,6 +143,7 @@ struct Player
 	char cBoxIndex = 0;
 
 	int nInactionableFrames = 0;
+	int nLastInactionableFrames = 0;
 
 	std::string sBar1[BAR_MEMORY_SIZE];
 	std::string sBar2[BAR_MEMORY_SIZE];
@@ -190,6 +191,7 @@ void CheckProjectiles(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
 }
 
 void UpdatePlayer(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P) {
+	P.nLastInactionableFrames = P.nInactionableFrames;
 	P.nLastFrameCount = P.nFrameCount;
 	P.bLastOnRight = P.bIsOnRight;
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress), &P.cExists, 1, 0);
@@ -345,7 +347,6 @@ void SaveStateToFile(Save& S)
 
 void LoadStateFromFile(Save& S)
 {
-	DWORD dwIn;
 	std::ifstream SaveInFile;
 	SaveInFile.open("MBAA.save");
 	for (int i = 0; i < 74576 / 4; i++)
@@ -493,6 +494,11 @@ void UpdateBars(Player& P, Player& Assist)
 				{
 					sFont = "\x1b[38;2;255;255;255m\x1b[48;2;0;0;0m";
 				}
+			}
+			
+			if (P.nLastInactionableFrames != 0) //Neutral frame
+			{
+				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;32;90;0m";
 			}
 		}
 
