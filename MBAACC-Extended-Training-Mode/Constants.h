@@ -73,6 +73,8 @@ const DWORD dwBurstCooldown = 0x155DBE;
 const DWORD dwP2RecievedHitstop = 0x155DD0;
 const DWORD dwGameMode = 0x162A74; // 16:training
 const DWORD dwFPS = 0x374A70;
+const DWORD dwP1Color = 0x34D83C;
+const DWORD dwP2Color = 0x34D868;
 
 //FrameDisplay Constants
 typedef DWORD ADDRESS; //I think doing this + adXxxxYyyy looks nice
@@ -90,7 +92,7 @@ const ADDRESS adP2Base = 0x155130 + dwPlayerStructSize; //0x155C2C
 const ADDRESS adP3Base = 0x155130 + 2 * dwPlayerStructSize; //0x156728
 const ADDRESS adP4Base = 0x155130 + 3 * dwPlayerStructSize; //0x157224
 
-const DWORD dwProjectileStructSize = 0x33C;
+const DWORD dwProjectileStructSize = 0x3CC;
 const ADDRESS adProjectileBase = 0x27BDE8;
 
 // integer representations of raw float values
