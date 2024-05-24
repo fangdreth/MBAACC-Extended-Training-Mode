@@ -238,13 +238,13 @@ int main(int argc, char* argv[])
         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwFPS), &nWriteBuffer, 4, 0);
 
         // overwrite p1 and p2 color numbers with the current pattern number
-        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead - dwP2Offset), &nReadResult, 4, 0);
-        nWriteBuffer = nReadResult - 1;
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Color), &nWriteBuffer, 4, 0);
+        //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead - dwP2Offset), &nReadResult, 4, 0);
+        //nWriteBuffer = nReadResult - 1;
+        //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Color), &nWriteBuffer, 4, 0);
 
-        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-        nWriteBuffer = nReadResult - 1;
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Color), &nWriteBuffer, 4, 0);
+        //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
+        //nWriteBuffer = nReadResult - 1;
+        //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Color), &nWriteBuffer, 4, 0);
 
         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
         if (nReadResult == 0)

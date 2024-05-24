@@ -5,7 +5,8 @@
 const std::map<std::string, int> vUniversalPatterns_Map =
 {
 	{ "5A", 1 }, { "5B", 2 }, { "5C", 3 }, { "2A", 4 }, { "2B", 5 }, { "2C", 6 },
-	{ "JUMP", 36 }, { "FORWARD JUMP", 35 }, { "BACKWARD JUMP", 37 }, { "SUPER JUMP", 360 }
+	{"j.A", 7}, {"j.B", 8}, {"j.C", 9},
+	{ "JUMP", 36 }, {"DBL JUMP", 39}, { "FORWARD JUMP", 35 }, {"FORWARD DBL JUMP", 38}, {"BACKWARD JUMP", 37}, {"BACKWARD DBL JUMP", 40}, {"SUPER JUMP", 360}, {"SUPER DBL JUMP", 38}
 };
 
 const std::map<std::string, int> vCAKIHA_Map =
@@ -17,7 +18,6 @@ const std::map<std::string, int> vCAKIHA_Map =
 	{ "22A", 160 }, { "22B", 161 }, { "22C", 162 },
 	{ "214A", 180 }, { "214B", 181 }, { "214C", 182 },
 	{ "236A", 114 }, { "236B", 115 }, { "236C", 116 },
-
 	{ "624A", 43 }, { "624B", 374 }, { "624C", 375 },
 	 { "HEAT", 260 }, { "ARC DRIVE", 219 }, { "ANOTHER ARC DRIVE", 219 },
 	{"filler",0}

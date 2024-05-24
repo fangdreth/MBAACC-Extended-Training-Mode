@@ -79,15 +79,23 @@ static std::map<int, std::map<std::string, int>> MBAACC_Map = { {} };
 static std::vector<std::string> vEveryPatternName =
 {
 	"5A", "2A", "6A", "5B", "2B", "4B", "6B", "3B", "5C", "2C", "4C", "6C", "3C",
-	"BUNKER", "5D", "2D", "DODGE", "HEAT", "THROW",
-	"BACK DASH", "FORWARD DASH", "JUMP", "FORWARD JUMP", "BACKWARD JUMP", "SUPER JUMP", "FORWARD SUPER JUMP",
+	"j.A", "j.6A", "j.B", "j.6B", "j.C", "j.6C",
+	"BUNKER", "5D", "2D", "j.D", "DODGE", "AIR DODGE", "HEAT", "THROW", "AIR THROW", "FLOAT",
+	"BACK DASH", "BACK AIRDASH", "FORWARD DASH", "FORWARD AIRDASH", "FASTFALL", "JUMP", "DBL JUMP", "FORWARD JUMP", "FORWARD DBL JUMP", "BACKWARD JUMP", "BACKWARD DBL JUMP", "SUPER JUMP", "FORWARD SUPER JUMP", "SUPER DBL JUMP",
 	"623A", "623B", "623C",
-	"22A", "22B", "22[B]", "22C", "22D", "2222C", "22222C",
+	"j.623A", "j.623B", "j.623C",
+	"22A", "22B", "22C", "22D", "2222C", "22222C",
+	"j.22A", "j.22B", "j.22C",
+	"NEKO TECH",
 	"214A", "214B", "214C", "214214C",
+	"j.214A", "j.214B", "j.214C",
 	"236A", "236B", "236C",
+	"j.236A", "j.236B", "j.236C",
 	"421A", "421B", "421C",
+	"j.421A", "j.421B", "j.421C",
 	"624A", "624B", "624C",
-	"ARC DRIVE", /*"ANOTHER ARC DRIVE",*/
+	"j.624A", "j.624B", "j.624C",
+	"ARC DRIVE",
 	"DRUG INSTALL"
 };
 
