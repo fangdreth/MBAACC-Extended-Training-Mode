@@ -165,6 +165,22 @@ struct Player
 
 void CheckProjectiles(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
 {
+	char cCharacterNumber = 0;
+	char cMoon = 0;
+	int nCharacterID = 0;
+	if (P.nPlayerNumber % 2 == 1)
+	{
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharNumber), &cCharacterNumber, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharMoon), &cMoon, 1, 0);
+	}
+	else
+	{
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharNumber), &cCharacterNumber, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharMoon), &cMoon, 1, 0);
+	}
+	nCharacterID = 10 * cCharacterNumber + cMoon;
+	std::map<std::string, int> CharacterMap = MBAACC_Map[nCharacterID];
+
 	bool bProjectileExists = 0;
 	char cProjectileSource = 0;
 	int nProjectilePattern = 0;
@@ -182,7 +198,19 @@ void CheckProjectiles(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
 				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adProjectileBase + dwProjectileStructSize * i + 0x324), &dwProjectileAttackDataPointer, 4, 0);
 				if (dwProjectileAttackDataPointer != 0 && nProjectilePattern >= 60)
 				{
-					nCount++;
+					bool bIncrement = true;
+					for (auto const& [key, val] : CharacterMap)
+					{
+						if (nProjectilePattern == val)
+						{
+							bIncrement = false;
+							break;
+						}
+					}
+					if (bIncrement)
+					{
+						nCount++;
+					}
 				}
 			}
 		}
