@@ -2345,26 +2345,29 @@ int main(int argc, char* argv[])
                 }
 
                 // refill character specifics
-                if ((nFrameCounter == 1 || nSionBulletsRefillTimer == 1 || nSionBullets == 15) && nSionBullets != 14)
+                if (!bIsStateSaved)
                 {
-                    SetSionBullets(hMBAAHandle, dwBaseAddress, nSionBullets);
-                    nSionBulletsRefillTimer = 0;
-                }
+                    if ((nFrameCounter == 1 || nSionBulletsRefillTimer == 1 || nSionBullets == 15) && nSionBullets != 14)
+                    {
+                        SetSionBullets(hMBAAHandle, dwBaseAddress, nSionBullets);
+                        nSionBulletsRefillTimer = 0;
+                    }
 
-                // refill character specifics
-                if (nFrameCounter == 1 || nRoaHiddenChargeRefillTimer == 1 || nRoaHiddenCharge == -2 && nRoaHiddenCharge != -1)
-                {
-                    SetRoaHiddenCharge(hMBAAHandle, dwBaseAddress, nRoaHiddenCharge);
-                    nRoaHiddenChargeRefillTimer = 0;
-                }
+                    // refill character specifics
+                    if (nFrameCounter == 1 || nRoaHiddenChargeRefillTimer == 1 || nRoaHiddenCharge == -2 && nRoaHiddenCharge != -1)
+                    {
+                        SetRoaHiddenCharge(hMBAAHandle, dwBaseAddress, nRoaHiddenCharge);
+                        nRoaHiddenChargeRefillTimer = 0;
+                    }
 
-                // refill character specifics
-                if ((nFrameCounter == 1 || nRoaVisibleChargeRefillTimer == 1 || nRoaVisibleCharge == -2) && nRoaVisibleCharge != -1)
-                {
-                    SetRoaVisibleCharge(hMBAAHandle, dwBaseAddress, nRoaVisibleCharge);
-                    nRoaVisibleChargeRefillTimer = 0;
+                    // refill character specifics
+                    if ((nFrameCounter == 1 || nRoaVisibleChargeRefillTimer == 1 || nRoaVisibleCharge == -2) && nRoaVisibleCharge != -1)
+                    {
+                        SetRoaVisibleCharge(hMBAAHandle, dwBaseAddress, nRoaVisibleCharge);
+                        nRoaVisibleChargeRefillTimer = 0;
+                    }
                 }
-
+                
                 // easy access debug screen clear
                 if (GetKeyState(VK_RETURN) < 0)
                 {
