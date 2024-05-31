@@ -90,6 +90,12 @@ int main(int argc, char* argv[])
     int nSionBulletsRefillTimer = 0;
     int nRoaHiddenChargeRefillTimer = 0;
     int nRoaVisibleChargeRefillTimer = 0;
+    int nP1ControlledCharacter = 0;
+    int nP2ControlledCharacter = 1;
+    int nP1TagFlag = 0;
+    int nP2TagFlag = 0;
+    int nP3TagFlag = 1;
+    int nP4TagFlag = 1;
 
     int nExtendedSettingsPage = 1;
 
@@ -602,8 +608,22 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcSionBullets_13, 13, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcRoaVisibleCharge_19, 19, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcRoaHiddenCharge_19, 19, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcBlank_1, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
+                        if (bP3Exists)
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcP1ControlledChar_19, 19, 0);
+                        }
+                        else
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcBlank_1, 1, 0);
+                        }
+                        if (bP4Exists)
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcP2ControlledChar_19, 19, 0);
+                        }
+                        else
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
+                        }
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
                     }
 
@@ -706,19 +726,87 @@ int main(int argc, char* argv[])
                     }
                     else if (nExtendedSettingsPage == CHARACTER_SPECIFICS)
                     {
-                        if (nOldEnemySettingsCursor == 3 && nEnemySettingsCursor == 5)
+                        if (bP3Exists && bP4Exists)
                         {
-                            nWriteBuffer = 10;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                            nEnemySettingsCursor = 10;
-                            nOldEnemySettingsCursor = 10;
+                            if (nOldEnemySettingsCursor == 6 && nEnemySettingsCursor == 8)
+                            {
+                                nWriteBuffer = 10;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 10;
+                                nOldEnemySettingsCursor = 10;
+                            }
+                            else if (nEnemySettingsCursor == 8)
+                            {
+                                nWriteBuffer = 5;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 5;
+                                nOldEnemySettingsCursor = 5;
+                            }
                         }
-                        else if (nEnemySettingsCursor == 5 || nEnemySettingsCursor == 6 || nEnemySettingsCursor == 8)
+                        else if (bP3Exists)
                         {
-                            nWriteBuffer = 3;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                            nEnemySettingsCursor = 3;
-                            nOldEnemySettingsCursor = 3;
+                            if (nOldEnemySettingsCursor == 5 && nEnemySettingsCursor == 6)
+                            {
+                                nWriteBuffer = 10;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 10;
+                                nOldEnemySettingsCursor = 10;
+                            }
+                            else if (nEnemySettingsCursor == 6 || nEnemySettingsCursor == 8)
+                            {
+                                nWriteBuffer = 5;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 5;
+                                nOldEnemySettingsCursor = 5;
+                            }
+                        }
+                        else if (bP4Exists)
+                        {
+                            if (nOldEnemySettingsCursor == 3 && nEnemySettingsCursor == 5)
+                            {
+                                nWriteBuffer = 6;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 6;
+                                nOldEnemySettingsCursor = 6;
+                            }
+                            else if (nOldEnemySettingsCursor == 6 && nEnemySettingsCursor == 8)
+                            {
+                                nWriteBuffer = 10;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 10;
+                                nOldEnemySettingsCursor = 10;
+                            }
+                            else if (nEnemySettingsCursor == 5)
+                            {
+                                nWriteBuffer = 3;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 3;
+                                nOldEnemySettingsCursor = 3;
+                            }
+                            else if (nEnemySettingsCursor == 8)
+                            {
+                                nWriteBuffer = 6;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 6;
+                                nOldEnemySettingsCursor = 6;
+                            }
+                        }
+                        else
+                        {
+                            if (nOldEnemySettingsCursor == 3 && nEnemySettingsCursor == 5)
+                            {
+                                nWriteBuffer = 10;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 10;
+                                nOldEnemySettingsCursor = 10;
+                            }
+                            else if (nEnemySettingsCursor == 5 || nEnemySettingsCursor == 6 || nEnemySettingsCursor == 8)
+                            {
+                                nWriteBuffer = 3;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 3;
+                                nOldEnemySettingsCursor = 3;
+                            }
                         }
                     }
 
@@ -1031,6 +1119,58 @@ int main(int argc, char* argv[])
                         {
                             nRoaHiddenCharge = min(nRoaHiddenCharge + 1, MAX_CHARGE);
                             SetRoaHiddenCharge(hMBAAHandle, dwBaseAddress, nRoaHiddenCharge);
+                        }
+
+                        if (nOldAirRecoveryIndex == -1)
+                            nOldAirRecoveryIndex = nAirRecoveryIndex;
+                        else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
+                        {
+                            DWORD dw0 = 0x0;
+                            DWORD dw1 = 0x1;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID) (dwBaseAddress + adP1ControlledCharacter), &dw0, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1TagFlag), &dw0, 1, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3TagFlag), &dw1, 1, 0);
+                            nP1ControlledCharacter = 0;
+                            nP1TagFlag = 0;
+                            nP3TagFlag = 1;
+                        }
+                        else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
+                        {
+                            DWORD dw0 = 0x0;
+                            DWORD dw1 = 0x1;
+                            DWORD dw2 = 0x2;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID) (dwBaseAddress + adP1ControlledCharacter), &dw2, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1TagFlag), &dw1, 1, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3TagFlag), &dw0, 1, 0);
+                            nP1ControlledCharacter = 2;
+                            nP1TagFlag = 1;
+                            nP3TagFlag = 0;
+                        }
+
+                        if (nOldDownRecoveryIndex == -1)
+                            nOldDownRecoveryIndex = nDownRecoveryIndex;
+                        else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
+                        {
+                            DWORD dw0 = 0x0;
+                            DWORD dw1 = 0x1;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &dw1, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2TagFlag), &dw0, 1, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4TagFlag), &dw1, 1, 0);
+                            nP2ControlledCharacter = 1;
+                            nP2TagFlag = 0;
+                            nP4TagFlag = 1;
+                        }
+                        else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
+                        {
+                            DWORD dw0 = 0x0;
+                            DWORD dw1 = 0x1;
+                            DWORD dw3 = 0x3;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &dw3, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2TagFlag), &dw1, 1, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4TagFlag), &dw0, 1, 0);
+                            nP2ControlledCharacter = 3;
+                            nP2TagFlag = 1;
+                            nP4TagFlag = 0;
                         }
                     }
 
@@ -1814,9 +1954,25 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
 
                         nWriteBuffer = OFFSCREEN_LOCATION;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
+
+                        if (bP3Exists)
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &ONSCREEN_LOCATION, 4, 0);
+                        }
+                        else
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &OFFSCREEN_LOCATION, 4, 0);
+                        }
+                        if (bP4Exists)
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &ONSCREEN_LOCATION, 4, 0);
+                        }
+                        else
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &OFFSCREEN_LOCATION, 4, 0);
+                        }
 
                         if (nSionBullets == MAX_BULLETS + 2)
                         {
@@ -1943,6 +2099,100 @@ int main(int argc, char* argv[])
                             nWriteBuffer = 1;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
                             nEnemyDefenseTypeIndex = 1;
+                        }
+
+                        ReadProcessMemory(hMBAAHandle, (LPVOID) (dwBaseAddress + adP1ControlledCharacter), &nP1ControlledCharacter, 4, 0);
+                        if (bP3Exists)
+                        {
+                            if (nP1ControlledCharacter == 0)
+                            {
+                                if (nP1CharacterNumber == 19)
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOffString), &pcHisui_6, 6, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcHisui_6, 6, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 0;
+                                }
+                                else
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOffString), &pcMain_5, 5, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcMain_5, 5, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 0;
+                                }
+                            }
+                            else
+                            {
+                                if (nP1CharacterNumber == 19)
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom1String), &pcKohaku_8, 8, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom2String), &pcKohaku_8, 8, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 5;
+                                }
+                                else
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom1String), &pcAssist_7, 7, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom2String), &pcAssist_7, 7, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 5;
+                                }
+                            }
+                        }
+
+                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &nP2ControlledCharacter, 4, 0);
+                        if (bP4Exists)
+                        {
+                            if (nP2ControlledCharacter == 1)
+                            {
+                                if (nP2CharacterNumber == 19)
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOffString), &pcHisui_6, 6, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcHisui_6, 6, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nDownRecoveryIndex = 0;
+                                }
+                                else
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOffString), &pcMain_5, 5, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcMain_5, 5, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nDownRecoveryIndex = 0;
+                                }
+                            }
+                            else
+                            {
+                                if (nP2CharacterNumber == 19)
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom1String), &pcKohaku_8, 8, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom2String), &pcKohaku_8, 8, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nDownRecoveryIndex = 5;
+                                }
+                                else
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom1String), &pcAssist_7, 7, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom2String), &pcAssist_7, 7, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nDownRecoveryIndex = 5;
+                                }
+                            }
                         }
                     }
 
@@ -2365,6 +2615,22 @@ int main(int argc, char* argv[])
                     {
                         SetRoaVisibleCharge(hMBAAHandle, dwBaseAddress, nRoaVisibleCharge);
                         nRoaVisibleChargeRefillTimer = 0;
+                    }
+
+                    //reset character specifics
+                    if (nFrameCounter == 1 && bP3Exists)
+                    {
+                        WriteProcessMemory(hMBAAHandle, (LPVOID) (dwBaseAddress + adP1ControlledCharacter), &nP1ControlledCharacter, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1TagFlag), &nP1TagFlag, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3TagFlag), &nP3TagFlag, 1, 0);
+                    }
+
+                    //reset character specifics
+                    if (nFrameCounter == 1 && bP4Exists)
+                    {
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &nP2ControlledCharacter, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2TagFlag), &nP2TagFlag, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4TagFlag), &nP4TagFlag, 1, 0);
                     }
                 }
                 

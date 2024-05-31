@@ -92,6 +92,13 @@ const ADDRESS adP2Base = 0x155130 + dwPlayerStructSize; //0x155C2C
 const ADDRESS adP3Base = 0x155130 + 2 * dwPlayerStructSize; //0x156728
 const ADDRESS adP4Base = 0x155130 + 3 * dwPlayerStructSize; //0x157224
 
+const ADDRESS adP1ControlledCharacter = 0x157DB8;
+const ADDRESS adP2ControlledCharacter = 0x157FC4;
+const ADDRESS adP1TagFlag = 0x155130 + 0x178; //0x1552A8
+const ADDRESS adP2TagFlag = 0x155130 + 0x178 + dwPlayerStructSize; //0x155DA4
+const ADDRESS adP3TagFlag = 0x155130 + 0x178 + 2 * dwPlayerStructSize; //0x1568A0
+const ADDRESS adP4TagFlag = 0x155130 + 0x178 + 3 * dwPlayerStructSize; //0x15739C
+
 const DWORD dwProjectileStructSize = 0x33C;
 const ADDRESS adProjectileBase = 0x27BDE8;
 
@@ -124,10 +131,16 @@ const int MAX_BURST = 99;
 const char pcSionBullets_13[13] = "SION BULLETS";
 const char pcRoaVisibleCharge_19[19] = "ROA VISIBLE CHARGE";
 const char pcRoaHiddenCharge_19[19] = "ROA HIDDEN CHARGE";
+const char pcP1ControlledChar_19[19] = "P1 CONTROLLED CHAR";
+const char pcP2ControlledChar_19[19] = "P2 CONTROLLED CHAR";
 const char pcHitsUntilBurst_17[17] = "HITS UNTIL BURST";
 const char pcNormal_7[7] = "NORMAL";
 const char pcInfinite_10[10] = "INFINITE";
 const char pcOne_2[2] = "1";
+const char pcMain_5[5] = "MAIN";
+const char pcAssist_7[7] = "ASSIST";
+const char pcHisui_6[6] = "HISUI";
+const char pcKohaku_8[8] = "KOHAKU";
 
 const char pcASlow_12[12] = "[A]->SLOWER";
 const char pcP1XLoc_11[11] = "P1 X-LOC";
