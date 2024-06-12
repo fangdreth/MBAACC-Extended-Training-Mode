@@ -12,6 +12,7 @@
 static HANDLE m_hConsole;
 static std::string m_sLogFile;
 static std::ofstream m_fLogFile;
+static bool bLogOpen = false;
 
 static void LogInfo(std::string sInfo);
 
@@ -30,19 +31,26 @@ static void InitializeLogger(HANDLE hConsole)
 	m_sLogFile = sTempPath + "ExtendedTrainingMode__" + sTime + ".log";
 
 	m_fLogFile.open(m_sLogFile);
-
+	
 	LogInfo(VERSION);
+
+	bLogOpen = true;
 }
 
 static void CloseLogger()
 {
+	if (!bLogOpen) return;
+
 	LogInfo("Closed Extended Training Mode");
 
 	m_fLogFile.close();
+	bLogOpen = false;
 }
 
 static void LogInfo(std::string sInfo)
 {
+	if (!bLogOpen) return;
+
 	m_fLogFile << "\n";
 	m_fLogFile << "*** INFO *** Time: " << Time() << "\n";
 	m_fLogFile << "\n";
@@ -54,6 +62,8 @@ static void LogInfo(std::string sInfo)
 
 static void LogError(std::string sError)
 {
+	if (!bLogOpen) return;
+
 	m_fLogFile << "\n";
 	m_fLogFile << "*** ERROR ***";
 	m_fLogFile << "\tTime: " << Time() << "\n";
@@ -66,6 +76,8 @@ static void LogError(std::string sError)
 
 static void CloseLog(bool bPaused, bool bAPressed, bool bOnCSS, bool bOnExtendedSettingsMenu, int nP1CharacterID, int nP2CharacterID, int nP1Moon, int nP2Moon, int nP1CharacterNumber, int nP2CharacterNumber, bool bSwitchToCrouch, int nExGuardSetting, int nCustomGuard, int nReversalPattern, int nReversalDelayFrames, int nTempReversalDelayFrames, bool bDelayingReversal, bool bReversaled, int nReversalType, int nReversalIndex1, int nReversalIndex2, int nReversalIndex3, int nReversalIndex4, std::vector<std::string> vPatternNames, int nMot, int nOldMot, int nP2Y, int nBurstCooldown, int nOldEnemyActionIndex, int nOldPresetIndex, int nOldEnemyDefenseIndex, int nOldEnemyDefenseTypeIndex, int nOldAirRecoveryIndex, int nOldDownRecoveryIndex, int nOldThrowRecoveryIndex, int nOldReduceDamageIndex, int nOldLifeIndex, int nCurrentSubMenu, int nOldCurrentSubMenu, int nFrameCounter, int nOldFrameCounter, int nStoredEnemyAction, int nStoredEnemyDefense, int nStoredEnemyDefenseType, int nStoredAirRecovery, int nStoredDownRecovery, int nStoredThrowRecovery, int nStoredReduceDamage, int nGameCursorIndex, int nOldGameCursorIndex, int nEnemySettingsCursor, int nOldEnemySettingsCursor, int nCustomMeter, int nCustomHealth, int nHealthRefillTimer, int nCharSpecificsRefillTimer, bool bLifeRecover, int nSionBullets, int nRoaVisibleCharge, int nRoaHiddenCharge, int nSionBulletsRefillTimer, int nRoaHiddenChargeRefillTimer, int nRoaVisibleChargeRefillTimer, int nExtendedSettingsPage, bool bPositionsLocked, int nP1X, int nP2X, int nP3X, int nP4X, bool bP3Exists, bool bP4Exists, int nHitsTillBurst, bool bInfGuard, int nGameMode)
 {
+	if (!bLogOpen) return;
+
 	m_fLogFile << "\n";
 	m_fLogFile << "*** INFO ***";
 	m_fLogFile << "MBAA CLOSED " <<"\n";

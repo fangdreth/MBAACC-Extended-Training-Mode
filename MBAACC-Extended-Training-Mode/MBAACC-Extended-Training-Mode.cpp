@@ -141,7 +141,15 @@ int main(int argc, char* argv[])
 
     std::cout << "\x1b]0;Extended Training " << VERSION << "\x07";
   
-    InitializeLogger(hConsoleHandle);
+    try
+    {
+        InitializeLogger(hConsoleHandle);
+    }
+    catch (...)
+    { 
+        
+    }
+    
     InitializeCharacterMaps();
 
     try
