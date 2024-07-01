@@ -863,7 +863,7 @@ const std::map<std::string, int> vCRYOUGI_Map =
 	{ "421B", 330 },
 	{ "421C", 336 },
 	{ "624C", 705 },
-	{ "NEKOTECH", 480 },
+	{ "NEKO TECH", 480 },
 	{ "ARC DRIVE", 645 }
 };
 

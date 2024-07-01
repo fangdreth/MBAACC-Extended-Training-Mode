@@ -86,7 +86,7 @@ static std::vector<std::string> vEveryPatternName =
 	"j.623A", "j.623B", "j.623C",
 	"22A", "22B", "22C", "22D", "2222C", "22222C",
 	"j.22A", "j.22B", "j.22C",
-	"NEKO TECH",
+	//"NEKO TECH", // don't work right :|
 	"214A", "214B", "214C", "214214C",
 	"j.214A", "j.214B", "j.214C",
 	"236A", "236B", "236C",
@@ -220,5 +220,5 @@ static std::vector<std::string> GetEmptyPatternList()
 
 static bool IsAir(std::string sMove)
 {
-	return sMove.substr(0, 1) == "j" || sMove.find("AIR") != std::string::npos || sMove.find("DBL") != std::string::npos || sMove == "NEKO TECH" || sMove == "FASTFALL";
+	return sMove.substr(0, 1) == "j" || sMove.find("FLOAT") != std::string::npos || sMove.find("DBL") != std::string::npos || sMove == "NEKO TECH" || sMove == "FASTFALL";
 }
