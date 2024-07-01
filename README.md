@@ -27,9 +27,6 @@
 	+ INVERT positions on screen i.e. switch side of screen
 	+ LOCK positions for custom reset positions
 + Burst After X Hits
-	+ Experimental
-	+ Requires MANUAL status and UNLIMITED meter, but it sets them for you at least
-	+ Does not work against Half Moons
 + Character Specific Resources
 	+ Roa visible and hidden charges
 	+ Sion bullets
@@ -42,9 +39,6 @@
 + Save States
 	+ When enabled, F1 and F2 are changed to save and load save states
 
-### Where is the fuzzy overhead from the first trailer?
-The current implementation does not produce behavior 1-to-1 to the vanilla game.  It's very important for Training Mode to behave as similar as possible to Versus mode, so I have chosen to withold this feature until I can make something appropriate for the MBAACC community to practice with.
-
 # How do I get the mod?
 
 - [Download the latest .EXE from this link.](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases)  
@@ -53,7 +47,7 @@ The current implementation does not produce behavior 1-to-1 to the vanilla game.
 
 - Run the .EXE while you have Melty Blood open.
 
-And that's it.
+- It is not necessary to put the executable in the same directory as MBAA.exe.
 
 # Building the mod yourself
 
@@ -64,35 +58,6 @@ Right now there isn't a CMAKE file, so if you want to build the mod yourself, ge
 First, save states must be enabled from the EXTENDED SETTINGS menu.  After that, a save state can be created anywhere (even while paused) by pressing F1 on your controller.  From that point, pressing F2 will restore that save state.  You can clear your save states by either holding up and pressing F1, or going into the EXTENDED SETTINGS menu and selecting CLEAR SAVE STATES.
 
 Three save slots available.
-
-# Planned Features
-Roughly in order of priority, but not in order they will be implemented.
-+ Fuzzy Overhead Practice
-+ Fuzzy Overhead Practice
-+ Fuzzy Overhead Practice
-+ Logging
-+ Dummy action out of shield
-+ Multiple reversal patterns
-+ Option for dummy to repeat a move over and over
-+ Air Reversals
-+ Configurable Aoko Repeat Magic
-+ P1 follows training mode configuration for P2 when F1 is held
-+ Character stats on CSS, such as backdash data, wakeup timings, health, and more
-+ Control seed for RNG elements
-+ Fix training-mode glitch that allows blocking 1f early out of ground tech
-+ Permanent HEAT/BLOOD HEAT mode
-+ Re-add VIEW SCREEN somewhere else
-+ Dummy 1AD, 1A~D
-
-# Known Issues
-+ Left and right in EXTENDED SETTINGS feels sticky sometimes
-+ Random crashes
-	+ Most commonly seen when changing characters' X locations
-+ Some of the enemy reversals are the wrong moves.  PLEASE LET ME KNOW IF YOU FIND ONE.
-+ ALL GUARD COMBO setting does not behave correctly with Ex Guard
-+ Heat reversal on hisui and kohaku
-+ Random 1f slow reversals
-+ Some situations like wallbounce prevent bursting
 
 # FAQ
 
@@ -109,7 +74,7 @@ This is most likely because you are using the HITS UNTIL BURST option.  This set
 My handle is Fang\_\_\_ (that's three underscores).  Message me on Discord.  I'm in most major Discords so you'll be able to find me pretty easily.
 
 ### Can I suggest features?
-By all means.  Reach out to me on discord, but also make sure to read the Planned Features section first.  Don't think your idea is stupid--I'd love to discuss it, and who knows maybe it's already possible with clever settings.
+By all means.  Reach out to me on discord.  Don't be afraid your idea is stupid--I'd love to discuss it, and who knows maybe it's already possible with clever settings.
 
 ### Can I contribute?
 Sure.  Reach out and we can talk about it.
