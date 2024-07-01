@@ -2544,7 +2544,7 @@ int main(int argc, char* argv[])
                     SetGuard(hMBAAHandle, dwBaseAddress, nCustomGuard, nP1Moon, nP2Moon);
                     SetGuard(hMBAAHandle, dwBaseAddress, 0, nP1Moon, nP2Moon);
 
-                    if (bPositionsLocked)
+                    if (bPositionsLocked && !bIsStateSaved)
                     {
                         nWriteBuffer = nP1X;
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X), &nWriteBuffer, 4, 0);
@@ -2596,7 +2596,7 @@ int main(int argc, char* argv[])
                 
 
                 // refill health if training mode is reset or long enough time has passed
-                if (nFrameCounter == 1 || (nHealthRefillTimer == 1 && bLifeRecover))
+                if ((nFrameCounter == 1 && !bIsStateSaved) || (nHealthRefillTimer == 1 && bLifeRecover))
                 {
                     SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth);
                     nHealthRefillTimer = 0;
