@@ -2669,9 +2669,10 @@ int main(int argc, char* argv[])
                     bDelayingReversal = false;
                 }
 
+                // if training was not just reset and if at least one move was selected
                 if (nFrameCounter != 0 && (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) != 0))
                 {
-                    if (!bDelayingReversal && (nMot == 0 || nHitstun != 0) && (nMot != nOldMot || nReversalType == REVERSAL_REPEAT) && nP2Y == 0)
+                    if (!bDelayingReversal && (nMot == 0 || nHitstun != 0) && (nMot != nOldMot || nReversalType == REVERSAL_REPEAT) /* && nP2Y == 0*/)
                     {
                         if (!bReversaled)
                         {
@@ -2701,16 +2702,39 @@ int main(int argc, char* argv[])
                         bReversaled = true;
                         if (nReversalType != REVERSAL_RANDOM || rand() % 2 == 0)
                         {
-                            int pnReversals[4] = { GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) };
-                            int nTempReversalIndex = 0;
-                            while (1)
+                            std::vector<int> vAirReversals = {};
+                            std::vector<int> vGroundReversals = {};
+                            if (IsAir(vPatternNames[nReversalIndex1]))
+                                vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]));
+                            else
+                                vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]));
+                            if (IsAir(vPatternNames[nReversalIndex2]))
+                                vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]));
+                            else
+                                vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]));
+                            if (IsAir(vPatternNames[nReversalIndex3]))
+                                vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]));
+                            else
+                                vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]));
+                            if (IsAir(vPatternNames[nReversalIndex4]))
+                                vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]));
+                            else
+                                vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]));
+
+                            //int pnReversals[4] = { GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) };
+                            std::vector<int> vValidReversals = (nP2Y == 0 ? vGroundReversals : vAirReversals);
+                            if (vValidReversals.size() != 0)
                             {
-                                nTempReversalIndex = rand() % 4;
-                                if (pnReversals[nTempReversalIndex] != 0)
-                                    break;
+                                int nTempReversalIndex = 0;
+                                while (1)
+                                {
+                                    nTempReversalIndex = rand() % vValidReversals.size();
+                                    if (vValidReversals[nTempReversalIndex] != 0)
+                                        break;
+                                }
+                                nWriteBuffer = vValidReversals[nTempReversalIndex];
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternSet), &nWriteBuffer, 4, 0);
                             }
-                            nWriteBuffer = pnReversals[nTempReversalIndex];
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternSet), &nWriteBuffer, 4, 0);
                         }
                         else
                             bReversaled = false;

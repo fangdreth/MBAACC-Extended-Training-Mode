@@ -217,3 +217,8 @@ static std::vector<std::string> GetEmptyPatternList()
 {
 	return { "OFF" };
 }
+
+static bool IsAir(std::string sMove)
+{
+	return sMove.substr(0, 1) == "j" || sMove.find("AIR") != std::string::npos || sMove.find("DBL") != std::string::npos || sMove == "NEKO TECH" || sMove == "FASTFALL";
+}
