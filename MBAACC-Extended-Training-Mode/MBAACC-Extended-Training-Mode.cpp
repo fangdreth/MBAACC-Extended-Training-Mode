@@ -2704,22 +2704,34 @@ int main(int argc, char* argv[])
                         {
                             std::vector<int> vAirReversals = {};
                             std::vector<int> vGroundReversals = {};
-                            if (IsAir(vPatternNames[nReversalIndex1]))
-                                vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]));
-                            else
-                                vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]));
-                            if (IsAir(vPatternNames[nReversalIndex2]))
-                                vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]));
-                            else
-                                vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]));
-                            if (IsAir(vPatternNames[nReversalIndex3]))
-                                vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]));
-                            else
-                                vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]));
-                            if (IsAir(vPatternNames[nReversalIndex4]))
-                                vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]));
-                            else
-                                vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]));
+                            if (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]) != 0)
+                            {
+                                if (IsAir(vPatternNames[nReversalIndex1]))
+                                    vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]));
+                                else
+                                    vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]));
+                            }
+                            if (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]) != 0)
+                            {
+                                if (IsAir(vPatternNames[nReversalIndex2]))
+                                    vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]));
+                                else
+                                    vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]));
+                            }
+                            if (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]) != 0)
+                            {
+                                if (IsAir(vPatternNames[nReversalIndex3]))
+                                    vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]));
+                                else
+                                    vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]));
+                            }
+                            if (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) != 0)
+                            {
+                                if (IsAir(vPatternNames[nReversalIndex4]))
+                                    vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]));
+                                else
+                                    vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]));
+                            }
 
                             //int pnReversals[4] = { GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) };
                             std::vector<int> vValidReversals = (nP2Y == 0 ? vGroundReversals : vAirReversals);

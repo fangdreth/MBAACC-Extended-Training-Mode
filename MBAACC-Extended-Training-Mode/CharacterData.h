@@ -80,7 +80,7 @@ static std::vector<std::string> vEveryPatternName =
 {
 	"5A", "2A", "6A", "5B", "2B", "4B", "6B", "3B", "5C", "2C", "4C", "6C", "3C",
 	"j.A", "j.6A", "j.B", "j.6B", "j.C", "j.6C",
-	"BUNKER", "5D", "2D", "j.D", "DODGE", "AIR DODGE", "HEAT", "THROW", "AIR THROW", "FLOAT",
+	"BUNKER", "5D", "2D", "j.D", "DODGE", "AIR DODGE", "HEAT", "THROW", "AIR THROW", "FLOAT", "AIR FLOAT",
 	"BACK DASH", "BACK AIRDASH", "FORWARD DASH", "FORWARD AIRDASH", "FASTFALL", "JUMP", "DBL JUMP", "FORWARD JUMP", "FORWARD DBL JUMP", "BACKWARD JUMP", "BACKWARD DBL JUMP", "SUPER JUMP", "FORWARD SUPER JUMP", "SUPER DBL JUMP",
 	"623A", "623B", "623C",
 	"j.623A", "j.623B", "j.623C",
@@ -220,5 +220,5 @@ static std::vector<std::string> GetEmptyPatternList()
 
 static bool IsAir(std::string sMove)
 {
-	return sMove.substr(0, 1) == "j" || sMove.find("FLOAT") != std::string::npos || sMove.find("DBL") != std::string::npos || sMove == "NEKO TECH" || sMove == "FASTFALL";
+	return sMove.substr(0, 1) == "j" || sMove.find("AIR") != std::string::npos || sMove.find("DBL") != std::string::npos || sMove == "NEKO TECH" || sMove == "FASTFALL";
 }

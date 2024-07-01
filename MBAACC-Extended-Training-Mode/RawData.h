@@ -208,6 +208,7 @@ const std::map<std::string, int> vCHIME_Map =
 	{ "THROW", 275 },
 	{ "AIR THROW", 270 },
 	{ "FLOAT", 89 },
+	{ "AIR FLOAT", 90 },
 	{ "BACK DASH", 61 },
 	{ "BACK AIRDASH", 64 },
 	{ "FORWARD DASH", 60 },
