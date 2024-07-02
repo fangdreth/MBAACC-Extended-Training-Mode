@@ -31,7 +31,9 @@
 	+ Roa visible and hidden charges
 	+ Sion bullets
 	+ Normal, auto-refill, and infinite options
++ Take Control of Assist Characters
 + Frame Data Display
+	+ Frame advantage is always displayed in the top left instead of framerate
 	+ Very in-depth information about the game state
 	+ Gameplay timeline
 	+ Frame advantage
