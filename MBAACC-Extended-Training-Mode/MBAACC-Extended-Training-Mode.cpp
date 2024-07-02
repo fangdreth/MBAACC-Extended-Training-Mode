@@ -1263,7 +1263,7 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
                             nEnemyActionIndex = 2;
                         }
-                        else if (nReversalType == REVERSAL_SEQUENCE)
+                        /*else if (nReversalType == REVERSAL_SEQUENCE)
                         {
                             char pcTemp[9] = "SEQUENCE";
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionAString), &pcTemp, 9, 0);
@@ -1273,7 +1273,7 @@ int main(int argc, char* argv[])
                             nWriteBuffer = 2;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
                             nEnemyActionIndex = 2;
-                        }
+                        }*/
 
                         if (nReversalIndex1 == 0)
                         {
