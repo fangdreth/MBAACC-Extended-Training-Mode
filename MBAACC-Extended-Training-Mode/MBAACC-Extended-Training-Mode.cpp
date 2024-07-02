@@ -2717,6 +2717,7 @@ int main(int argc, char* argv[])
                                 }
                                 nWriteBuffer = vValidReversals[nTempReversalIndex];
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternSet), &nWriteBuffer, 4, 0);
+                                nTempReversalDelayFrames = nReversalDelayFrames;
                             }
                         }
                         else
