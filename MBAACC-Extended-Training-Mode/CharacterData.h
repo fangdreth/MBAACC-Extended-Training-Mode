@@ -221,5 +221,40 @@ static std::vector<std::string> GetEmptyPatternList()
 
 static bool IsAir(std::string sMove)
 {
-	return sMove.substr(0, 1) == "j" || sMove.find("DIVEKICK") != std::string::npos || sMove.find("AIR") != std::string::npos || sMove.find("DBL") != std::string::npos || sMove == "NEKO TECH" || sMove == "FASTFALL";
+	return sMove.substr(0, 1) == "j" || sMove.find("DIVEKICK") != std::string::npos || sMove.find("AIR") != std::string::npos || sMove.find("DBL") != std::string::npos || sMove == "FASTFALL";
+}
+
+static void PopulateAirAndGroundReversals(std::vector<int>* vAirReversals, std::vector<int>* vGroundReversals, int nP2CharacterID, std::vector<std::string>* vPatternNames, int nReversalIndex1, int nReversalIndex2, int nReversalIndex3, int nReversalIndex4)
+{
+	(*vAirReversals) = {};
+	(*vGroundReversals) = {};
+
+	if (GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex1]) != 0)
+	{
+		if (IsAir((*vPatternNames)[nReversalIndex1]))
+			(*vAirReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex1]));
+		else
+			(*vGroundReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex1]));
+	}
+	if (GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex2]) != 0)
+	{
+		if (IsAir((*vPatternNames)[nReversalIndex2]))
+			(*vAirReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex2]));
+		else
+			(*vGroundReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex2]));
+	}
+	if (GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex3]) != 0)
+	{
+		if (IsAir((*vPatternNames)[nReversalIndex3]))
+			(*vAirReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex3]));
+		else
+			(*vGroundReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex3]));
+	}
+	if (GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex4]) != 0)
+	{
+		if (IsAir((*vPatternNames)[nReversalIndex4]))
+			(*vAirReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex4]));
+		else
+			(*vGroundReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex4]));
+	}
 }

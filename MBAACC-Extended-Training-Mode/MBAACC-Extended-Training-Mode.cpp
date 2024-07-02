@@ -38,14 +38,14 @@ int main(int argc, char* argv[])
     int nTempReversalDelayFrames = 0;
     bool bDelayingReversal = false;
     bool bReversaled = false;
-    //bool bRandomReversal = false;
-    //bool bRepeatReversal = true;
     int nReversalType = REVERSAL_NORMAL;
     int nReversalIndex1 = 0;
     int nReversalIndex2 = 0;
     int nReversalIndex3 = 0;
     int nReversalIndex4 = 0;
     std::vector<std::string> vPatternNames = GetEmptyPatternList();
+    std::vector<int> vAirReversals;
+    std::vector<int> vGroundReversals;
     int nMot = 0;
     int nOldMot = 0;
     int nP2Y = 0;
@@ -867,6 +867,9 @@ int main(int argc, char* argv[])
                             nReversalDelayFrames = max(0, nReversalDelayFrames - 1);
                         else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
                             nReversalDelayFrames = min(nReversalDelayFrames + 1, MAX_REVERSAL_DELAY);
+
+                        // this could be anywhere, but I'm putting it here so it's easy to find
+                        PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames, nReversalIndex1, nReversalIndex2, nReversalIndex3, nReversalIndex4);
                     }
                     else if (nExtendedSettingsPage == STATS_PAGE)
                     {
@@ -2701,39 +2704,7 @@ int main(int argc, char* argv[])
                         bDelayingReversal = false;
                         bReversaled = true;
                         if (nReversalType != REVERSAL_RANDOM || rand() % 2 == 0)
-                        {
-                            std::vector<int> vAirReversals = {};
-                            std::vector<int> vGroundReversals = {};
-                            if (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]) != 0)
-                            {
-                                if (IsAir(vPatternNames[nReversalIndex1]))
-                                    vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]));
-                                else
-                                    vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]));
-                            }
-                            if (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]) != 0)
-                            {
-                                if (IsAir(vPatternNames[nReversalIndex2]))
-                                    vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]));
-                                else
-                                    vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]));
-                            }
-                            if (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]) != 0)
-                            {
-                                if (IsAir(vPatternNames[nReversalIndex3]))
-                                    vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]));
-                                else
-                                    vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]));
-                            }
-                            if (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) != 0)
-                            {
-                                if (IsAir(vPatternNames[nReversalIndex4]))
-                                    vAirReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]));
-                                else
-                                    vGroundReversals.push_back(GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]));
-                            }
-
-                            //int pnReversals[4] = { GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]), GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) };
+                        {                            
                             std::vector<int> vValidReversals = (nP2Y == 0 ? vGroundReversals : vAirReversals);
                             if (vValidReversals.size() != 0)
                             {
