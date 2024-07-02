@@ -2541,13 +2541,13 @@ int main(int argc, char* argv[])
                 // reset resources to the preset when training mode is reset
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwGuardSetting), &nReadResult, 4, 0);
                 nCustomGuard = nReadResult;
-                if (nFrameCounter == 1)
+                if (nFrameCounter == 1 && !bIsStateSaved)
                 {
                     SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
                     SetGuard(hMBAAHandle, dwBaseAddress, nCustomGuard, nP1Moon, nP2Moon);
                     SetGuard(hMBAAHandle, dwBaseAddress, 0, nP1Moon, nP2Moon);
 
-                    if (bPositionsLocked && !bIsStateSaved)
+                    if (bPositionsLocked)
                     {
                         nWriteBuffer = nP1X;
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X), &nWriteBuffer, 4, 0);
