@@ -188,6 +188,7 @@ const char pcOn_3[3] = "ON";
 const char pcNone_5[5] = "NONE";
 
 const char pcBlocking_9[9] = "BLOCKING";
+const char pcIdle_5[5] = "IDLE";
 const char pcRed_4[4] = "RED";
 const char pcGreen_6[6] = "GREEN";
 const char pcBlue_5[5] = "BLUE";
