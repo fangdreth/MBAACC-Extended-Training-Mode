@@ -1746,3 +1746,36 @@ static DWORD GetCommandListStringAddress(HANDLE hMBAAHandle, DWORD dwBaseAddress
 
     return dwTempAddress;
 }
+
+static DWORD GetP1RedAddress(HANDLE hMBAAHandle, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = dwP1Struct + 0x320;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x18;
+
+    return dwTempAddress;
+}
+
+static DWORD GetP1GreenAddress(HANDLE hMBAAHandle, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = dwP1Struct + 0x320;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x19;
+
+    return dwTempAddress;
+}
+
+static DWORD GetP1BlueAddress(HANDLE hMBAAHandle, DWORD dwBaseAddress)
+{
+    DWORD dwTempAddress = dwP1Struct + 0x320;
+    int nReadResult = 0;
+
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwTempAddress), &nReadResult, 4, 0);
+    dwTempAddress = nReadResult + 0x1A;
+
+    return dwTempAddress;
+}

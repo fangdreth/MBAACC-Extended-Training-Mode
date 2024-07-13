@@ -113,6 +113,9 @@ int main(int argc, char* argv[])
     //bool bSaveStates = false;
     bool bDisplayInputs = false;
 
+    std::set<DWORD> setBlockingAnimationPointers;
+    int nBlockingHighlightSetting = NO_HIGHLIGHT;
+
     Player P1{ 1, dwBaseAddress + adP1Base };
     Player P2{ 2, dwBaseAddress + adP2Base };
     Player P3{ 3, dwBaseAddress + adP3Base };
@@ -634,6 +637,15 @@ int main(int argc, char* argv[])
                         }
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
                     }
+                    else if (nExtendedSettingsPage == HIGHLIGHT_PAGE)
+                    {
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcBlocking_9, 9, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcBlank_1, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcBlank_1, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcBlank_1, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
+                    }
 
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
                     nCurrentSubMenu = nReadResult;
@@ -815,6 +827,23 @@ int main(int argc, char* argv[])
                                 nEnemySettingsCursor = 3;
                                 nOldEnemySettingsCursor = 3;
                             }
+                        }
+                    }
+                    else if (nExtendedSettingsPage == HIGHLIGHT_PAGE)
+                    {
+                        if (nOldEnemySettingsCursor == 0 && nEnemySettingsCursor == 2)
+                        {
+                            nWriteBuffer = 10;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                            nEnemySettingsCursor = 10;
+                            nOldEnemySettingsCursor = 10;
+                        }
+                        else if (nEnemySettingsCursor <= 8 && nEnemySettingsCursor >= 2)
+                        {
+                            nWriteBuffer = 0;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                            nEnemySettingsCursor = 0;
+                            nOldEnemySettingsCursor = 0;
                         }
                     }
 
@@ -1138,7 +1167,7 @@ int main(int argc, char* argv[])
                         {
                             DWORD dw0 = 0x0;
                             DWORD dw1 = 0x1;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID) (dwBaseAddress + adP1ControlledCharacter), &dw0, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &dw0, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1TagFlag), &dw0, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3TagFlag), &dw1, 1, 0);
                             nP1ControlledCharacter = 0;
@@ -1150,7 +1179,7 @@ int main(int argc, char* argv[])
                             DWORD dw0 = 0x0;
                             DWORD dw1 = 0x1;
                             DWORD dw2 = 0x2;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID) (dwBaseAddress + adP1ControlledCharacter), &dw2, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &dw2, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1TagFlag), &dw1, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3TagFlag), &dw0, 1, 0);
                             nP1ControlledCharacter = 2;
@@ -1182,6 +1211,19 @@ int main(int argc, char* argv[])
                             nP2ControlledCharacter = 3;
                             nP2TagFlag = 1;
                             nP4TagFlag = 0;
+                        }
+                        }
+                    else if (nExtendedSettingsPage == HIGHLIGHT_PAGE)
+                    {
+                        if (nOldEnemyActionIndex == -1)
+                            nOldEnemyActionIndex = nEnemyActionIndex;
+                        else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
+                        {
+                            nBlockingHighlightSetting = max(NO_HIGHLIGHT, nBlockingHighlightSetting - 1);
+                        }
+                        else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
+                        {
+                            nBlockingHighlightSetting = min(BLUE_HIGHLIGHT, nBlockingHighlightSetting + 1);
                         }
                     }
 
@@ -1963,6 +2005,8 @@ int main(int argc, char* argv[])
                     {
                         nWriteBuffer = ONSCREEN_LOCATION;
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
 
                         nWriteBuffer = OFFSCREEN_LOCATION;
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
@@ -2204,6 +2248,57 @@ int main(int argc, char* argv[])
                                     nDownRecoveryIndex = 5;
                                 }
                             }
+                        }
+                    }
+                    else if (nExtendedSettingsPage == HIGHLIGHT_PAGE)
+                    {
+                        nWriteBuffer = ONSCREEN_LOCATION;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
+
+                        nWriteBuffer = OFFSCREEN_LOCATION;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
+
+                        if (nBlockingHighlightSetting == NO_HIGHLIGHT)
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOffString), &pcOff_4, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionAString), &pcOff_4, 4, 0);
+
+                            nWriteBuffer = 0;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
+                            nEnemyActionIndex = 0;
+                        }
+                        else if (nBlockingHighlightSetting == BLUE_HIGHLIGHT)
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyRecoverCString), &pcBlue_5, 5, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyRecoverDString), &pcBlue_5, 5, 0);
+
+                            nWriteBuffer = 8;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
+                            nEnemyActionIndex = 8;
+                        }
+                        else if (nBlockingHighlightSetting == RED_HIGHLIGHT)
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionAString), &pcRed_4, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionBString), &pcRed_4, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionCString), &pcRed_4, 4, 0);
+
+                            nWriteBuffer = 2;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
+                            nEnemyActionIndex = 2;
+                        }
+                        else if (nBlockingHighlightSetting == GREEN_HIGHLIGHT)
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionAString), &pcGreen_6, 6, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionBString), &pcGreen_6, 6, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionCString), &pcGreen_6, 6, 0);
+
+                            nWriteBuffer = 2;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
+                            nEnemyActionIndex = 2;
                         }
                     }
 
@@ -2470,6 +2565,60 @@ int main(int argc, char* argv[])
                 nWriteBuffer = 0;
                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyAction), &nWriteBuffer, 4, 0);
 
+                // Populate the set for pointers to the blocking animation
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Blocking), &nReadResult, 1, 0);
+                if (nReadResult == 1)
+                {
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0x320), &nReadResult, 4, 0);
+                    setBlockingAnimationPointers.insert(nReadResult);
+                }
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Blocking + 0xAFC), &nReadResult, 1, 0);
+                if (nReadResult == 1)
+                {
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0xAFC + 0x320), &nReadResult, 4, 0);
+                    setBlockingAnimationPointers.insert(nReadResult);
+                }
+
+                if (nBlockingHighlightSetting == NO_HIGHLIGHT)
+                {
+                    for (auto f : setBlockingAnimationPointers) {
+                        nWriteBuffer = 255;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
+                    }
+                }
+                else if (nBlockingHighlightSetting == RED_HIGHLIGHT)
+                {
+                    for (auto f : setBlockingAnimationPointers) {
+                        nWriteBuffer = 255;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
+                        nWriteBuffer = 0;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
+                    }
+                }
+                else if (nBlockingHighlightSetting == GREEN_HIGHLIGHT)
+                {
+                    for (auto f : setBlockingAnimationPointers) {
+                        nWriteBuffer = 255;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
+                        nWriteBuffer = 0;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
+                    }
+                }
+                else if (nBlockingHighlightSetting == BLUE_HIGHLIGHT)
+                {
+                    for (auto f : setBlockingAnimationPointers) {
+                        nWriteBuffer = 255;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
+                        nWriteBuffer = 0;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
+                    }
+                }
+
                 // This locks all the code that follows to the framerate of the game
                 // put code that needs to run faster above this
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwRoundTime), &nReadResult, 4, 0);
@@ -2477,6 +2626,27 @@ int main(int argc, char* argv[])
                 if (nFrameCounter == nOldFrameCounter)
                     continue;
                 nOldFrameCounter = nFrameCounter;
+
+
+
+                /*DWORD dwP1RedAddress = GetP1RedAddress(hMBAAHandle, dwBaseAddress);
+                DWORD dwP1GreenAddress = GetP1GreenAddress(hMBAAHandle, dwBaseAddress);
+                DWORD dwP1BlueAddress = GetP1BlueAddress(hMBAAHandle, dwBaseAddress);
+                int nRedCurve = nFrameCounter % 255;
+                int nGreenCurve = (nFrameCounter + 255 / 3) % 255;
+                int nBlueCurve = (nFrameCounter + 255 / 6) % 255;
+                nWriteBuffer = nRedCurve;
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1RedAddress), &nWriteBuffer, 1, 0);
+                nWriteBuffer = nGreenCurve;
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1GreenAddress), &nWriteBuffer, 1, 0);
+                nWriteBuffer = nBlueCurve;
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1BlueAddress), &nWriteBuffer, 1, 0);*/
+
+                //nWriteBuffer = 255;
+                //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1RedAddress), &nWriteBuffer, 1, 0);
+                //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1GreenAddress), &nWriteBuffer, 1, 0);
+                //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1BlueAddress), &nWriteBuffer, 1, 0);
+
 
                 // populate the reversal patterns list and character data
                 // may be able to remove the timer condition, since CSS clears patternname list

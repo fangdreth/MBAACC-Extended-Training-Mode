@@ -13,14 +13,15 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, POSITIONS_PAGE = 3, FRAME_TOOL = 4, CHARACTER_SPECIFICS = 5 };
+enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, POSITIONS_PAGE = 3, FRAME_TOOL = 4, CHARACTER_SPECIFICS = 5, HIGHLIGHT_PAGE = 6 };
 enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
+enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
 const std::string GITHUB_README = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/README.md";
-const std::string VERSION = "v1.6b";
+const std::string VERSION = "v1.7b";
 
 const DWORD dwP2Offset = 0xAFC;
 const DWORD dwRoundTime = 0x162A40; //0-inf
@@ -75,6 +76,8 @@ const DWORD dwGameMode = 0x162A74; // 16:training
 const DWORD dwFPS = 0x374A70;
 const DWORD dwP1Color = 0x34D83C;
 const DWORD dwP2Color = 0x34D868;
+const DWORD dwP1Struct = 0x155130;
+const DWORD dwP1Blocking = 0x1552AB;
 
 //FrameDisplay Constants
 typedef DWORD ADDRESS; //I think doing this + adXxxxYyyy looks nice
@@ -114,7 +117,7 @@ const std::vector<int> vGuardLevelLookupTable =
 const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
-const int MAX_PAGES = 5;
+const int MAX_PAGES = 6;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
 const int MIN_X = -65536;
@@ -183,3 +186,8 @@ const char pcAdvanced_9[9] = "ADVANCED";
 const char pcOff_4[4] = "OFF";
 const char pcOn_3[3] = "ON";
 const char pcNone_5[5] = "NONE";
+
+const char pcBlocking_9[9] = "BLOCKING";
+const char pcRed_4[4] = "RED";
+const char pcGreen_6[6] = "GREEN";
+const char pcBlue_5[5] = "BLUE";
