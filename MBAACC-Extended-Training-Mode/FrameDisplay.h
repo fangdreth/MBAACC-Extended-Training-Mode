@@ -36,8 +36,9 @@ static bool bEnableFN1Save = false;
 static bool bEnableFN2Load = false;
 static bool bInExtendedSettings = false;
 
+static bool bSimpleFrameInfo = true;
 static bool bShowInfo1 = false; //Position, pattern + state, speed, acceleration, health, circuit
-bool bShowInfo2 = true; //Distance, advantage
+static bool bShowInfo2 = false; //Distance, advantage
 static bool bShowInfo3 = false; //EX flash, counter hit, guard gauge, scaling, partner, red health
 
 bool bShowBar1 = true; //General action info
@@ -50,6 +51,7 @@ static bool bIsStateSaved = false;
 static int nSaveSlot = 0;
 
 static int nPlayerAdvantage;
+int nSharedHitstop;
 
 struct Save {
 	bool bIsThisStateSaved = false;
@@ -157,6 +159,7 @@ struct Player
 	std::string sBarString5;
 
 	int nActiveCounter = 0;
+	int nInactiveMemory = 0;
 	int nAdvantageCounter = 0;
 	int nLastFrameCount = 0;
 	int nActiveProjectileCount = 0;
@@ -323,103 +326,6 @@ void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, Save &S)
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x155C3C), &S.dwSaveP2, 972, 0);
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x156738), &S.dwSaveP3, 972, 0);
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157234), &S.dwSaveP4, 972, 0);
-}
-
-void SaveStateToFile(Save& S)
-{
-	std::ofstream SaveOutFile;
-	SaveOutFile.open("MBAA.save");
-	for (int i = 0; i < 74576 / 4; i++)
-	{
-		SaveOutFile << S.dwSaveEffects[i] << std::endl;
-	}
-	for (int i = 0; i < 1632 / 4; i++)
-	{
-		SaveOutFile << S.dwSaveStopSituation[i] << std::endl;
-	}
-	SaveOutFile << S.cSaveGlobalEXFlash << std::endl;
-	for (int i = 0; i < 52 / 4; i++)
-	{
-		SaveOutFile << S.dwSaveAttackDisplayInfo[i] << std::endl;
-	}
-	for (int i = 0; i < 1004 / 4; i++)
-	{
-		SaveOutFile << S.dwSaveAttackDisplayInfo2[i] << std::endl;
-	}
-	SaveOutFile << S.dwSaveDestinationCamX << std::endl;
-	SaveOutFile << S.dwSaveCurrentCamX << std::endl;
-	SaveOutFile << S.dwSaveDestinationCamY << std::endl;
-	SaveOutFile << S.dwSaveCurrentCamY << std::endl;
-	SaveOutFile << S.dwSaveCurrentCamZoom << std::endl;
-	SaveOutFile << S.dwSaveDestinationCamZoom << std::endl;
-	SaveOutFile << S.dwSaveContlFlag << std::endl;
-	SaveOutFile << S.dwSaveContlFlag2 << std::endl;
-	for (int i = 0; i < 972 / 4; i++)
-	{
-		SaveOutFile << S.dwSaveP1[i] << std::endl;
-	}
-	for (int i = 0; i < 972 / 4; i++)
-	{
-		SaveOutFile << S.dwSaveP2[i] << std::endl;
-	}
-	for (int i = 0; i < 972 / 4; i++)
-	{
-		SaveOutFile << S.dwSaveP3[i] << std::endl;
-	}
-	for (int i = 0; i < 972 / 4; i++)
-	{
-		SaveOutFile << S.dwSaveP4[i] << std::endl;
-	}
-	SaveOutFile.close();
-}
-
-void LoadStateFromFile(Save& S)
-{
-	std::ifstream SaveInFile;
-	SaveInFile.open("MBAA.save");
-	for (int i = 0; i < 74576 / 4; i++)
-	{
-		SaveInFile >> S.dwSaveEffects[i];
-	}
-	for (int i = 0; i < 1632 / 4; i++)
-	{
-		SaveInFile >> S.dwSaveStopSituation[i];
-	}
-	SaveInFile >> S.cSaveGlobalEXFlash;
-	for (int i = 0; i < 52 / 4; i++)
-	{
-		SaveInFile >> S.dwSaveAttackDisplayInfo[i];
-	}
-	for (int i = 0; i < 1004 / 4; i++)
-	{
-		SaveInFile >> S.dwSaveAttackDisplayInfo2[i];
-	}
-	SaveInFile >> S.dwSaveDestinationCamX;
-	SaveInFile >> S.dwSaveCurrentCamX;
-	SaveInFile >> S.dwSaveDestinationCamY;
-	SaveInFile >> S.dwSaveCurrentCamY;
-	SaveInFile >> S.dwSaveCurrentCamZoom;
-	SaveInFile >> S.dwSaveDestinationCamZoom;
-	SaveInFile >> S.dwSaveContlFlag;
-	SaveInFile >> S.dwSaveContlFlag2;
-	for (int i = 0; i < 972 / 4; i++)
-	{
-		SaveInFile >> S.dwSaveP1[i];
-	}
-	for (int i = 0; i < 972 / 4; i++)
-	{
-		SaveInFile >> S.dwSaveP2[i];
-	}
-	for (int i = 0; i < 972 / 4; i++)
-	{
-		SaveInFile >> S.dwSaveP3[i];
-	}
-	for (int i = 0; i < 972 / 4; i++)
-	{
-		SaveInFile >> S.dwSaveP4[i];
-	}
-	S.bIsThisStateSaved = true;
-	SaveInFile.close();
 }
 
 void CalculateAdvantage(Player& P1, Player& P2)
@@ -745,6 +651,14 @@ void IncrementActive(Player& P)
 	}
 }
 
+void HandleInactive(Player& P)
+{
+	if (P.nInactionableFrames != 0)
+	{
+		P.nInactiveMemory = P.nInactionableFrames;
+	}
+}
+
 void BarHandling(Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
 {
 	CalculateAdvantage(P1, P2);
@@ -799,15 +713,22 @@ void BarHandling(Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
 
 	if (bUpdateBar)
 	{
-		bool bIsFreeze = (
-			cGlobalEXFlash != 0 ||
-			(P1.cHitstop > 1 && P2.cHitstop > 1)
-			);
+		if (P1.cHitstop != 0 && P2.cHitstop != 0) //Player hitstop values count down but we need it to count up
+		{
+			nSharedHitstop++;
+		}
+		else
+		{
+			nSharedHitstop = 0;
+		}
+		
 
-		if (!(bHideFreeze && bIsFreeze))
+		if (!(bHideFreeze && nSharedHitstop > 1))
 		{
 			IncrementActive(P1);
 			IncrementActive(P2);
+			HandleInactive(P1);
+			HandleInactive(P2);
 			UpdateBars(P1, P1Assist);
 			UpdateBars(P2, P2Assist);
 			if (P1Assist.cExists)
@@ -934,6 +855,12 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 	int nXPixelDistance = (int)abs(floor(P1.nXPosition / 128.0) - floor(P2.nXPosition / 128.0));
 	int nYPixelDistance = (int)abs(floor(P1.nYPosition / 128.0) - floor(P2.nYPosition / 128.0));
 
+	if (bSimpleFrameInfo)
+	{
+		printf("\x1b[0m" "Total %3i / Advantage %3i / Distance %3i" "\n",
+			P1.nInactiveMemory, nPlayerAdvantage, nXPixelDistance, nSaveSlot);
+	}
+
 	if (bShowInfo1)
 	{
 		printf("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
@@ -950,7 +877,7 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 	if (bShowInfo2)
 	{
 		printf("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "adv %3i" "\x1b[K\n",
-			nXDistance, nYDistance, nXPixelDistance, nYPixelDistance, (P1.nAdvantageCounter - P2.nAdvantageCounter) % 100);
+			nXDistance, nYDistance, nXPixelDistance, nYPixelDistance, nPlayerAdvantage);
 	}
 
 	if (bShowBar1 || bShowBar2 || bShowBar3)
@@ -986,10 +913,10 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 
 	if (bShowInfo3)
 	{
-		printf("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %4i [%.3f]" "\x1b[0m\x1b[K\n",
-			cP1EXFlash, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 10, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality);
-		printf("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %4i [%.3f]" "\x1b[0m\x1b[K\n",
-			cP2EXFlash, cP2CounterHit, P4.nPattern, P4.nState, nP2GravityHits, nP2Gravity % 10, P2.sUntechPenalty % 10, P2.nRedHealth, nP2GuardGauge, P2.fGuardQuality);
+		printf("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %4i [%.3f]" "\x1b[0m" "total %3i" "\x1b[0m\x1b[K\n",
+			cP1EXFlash, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 10, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality, P1.nInactiveMemory % 1000);
+		printf("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %4i [%.3f]" "\x1b[0m" "total %3i"  "\x1b[0m\x1b[K\n",
+			cP2EXFlash, cP2CounterHit, P4.nPattern, P4.nState, nP2GravityHits, nP2Gravity % 10, P2.sUntechPenalty % 10, P2.nRedHealth, nP2GuardGauge, P2.fGuardQuality, P2.nInactiveMemory % 1000);
 	}
 
 	if (bShowBar4 || bShowBar5)

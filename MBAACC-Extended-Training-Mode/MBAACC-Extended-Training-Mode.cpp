@@ -561,9 +561,14 @@ int main(int argc, char* argv[])
                         }
                         if (nExtendedSettingsPage == FRAME_TOOL)
                         {
-                            if (nEnemySettingsCursor == 3)
+                            if (nEnemySettingsCursor == 2)
                             {
-                                bIsStateSaved = false;
+                                //bIsStateSaved = false;
+                                Saves[nSaveSlot - 1].bIsThisStateSaved = false;
+                            }
+                            else if (nEnemySettingsCursor == 3)
+                            {
+                                SaveState(hMBAAHandle, dwBaseAddress, Saves[nSaveSlot - 1]);
                             }
                         }
                     }
@@ -609,11 +614,8 @@ int main(int argc, char* argv[])
                     else if (nExtendedSettingsPage == FRAME_TOOL)
                     {
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcFrameData_11, 11, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcSaveState_11, 11, 0);
-                        if (bIsStateSaved)
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcClearSaveStates_18, 18, 0);
-                        else
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcNoSaveStates_15, 15, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcSaveStateSlot_16, 16, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcSaveState_11, 11, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcFreezeFrames_14, 14, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcDisplayInputs_15, 15, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcScrollDisplay_15, 15, 0);
@@ -1037,14 +1039,18 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
                         {
                             nFrameData = FRAMEDISPLAY_NORMAL;
+                            bSimpleFrameInfo = true;
                             bShowInfo1 = false;
+                            bShowInfo2 = false;
                             bShowInfo3 = false;
                             system("cls");
                         }
                         else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
                         {
                             nFrameData = FRAMEDISPLAY_ADVANCED;
+                            bSimpleFrameInfo = false;
                             bShowInfo1 = true;
+                            bShowInfo2 = true;
                             bShowInfo3 = true;
                         }
 
@@ -1913,11 +1919,17 @@ int main(int argc, char* argv[])
                         }
                         else if (nSaveSlot < MAX_SAVES)
                         {
-                            char pcTemp[3];
-                            strcpy_s(pcTemp, std::to_string(nSaveSlot).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 8, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 8, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 8, 0);
+                            std::string sData = "NO DATA";
+                            if (Saves[nSaveSlot - 1].bIsThisStateSaved)
+                            {
+                                sData = "SAVED";
+                            }
+
+                            char pcTemp[18];
+                            strcpy_s(pcTemp, ("SLOT 0" + std::to_string(nSaveSlot) + " (" + sData + ")").c_str());
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 18, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 18, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 18, 0);
 
                             nWriteBuffer = 2;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
@@ -1925,10 +1937,15 @@ int main(int argc, char* argv[])
                         }
                         else
                         {
-                            char pcTemp[3];
-                            strcpy_s(pcTemp, std::to_string(nSaveSlot).c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseDodgeString), &pcTemp, 3, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcTemp, 3, 0);
+                            std::string sData = "NO DATA";
+                            if (Saves[nSaveSlot - 1].bIsThisStateSaved)
+                            {
+                                sData = "SAVED";
+                            }
+                            char pcTemp[18];
+                            strcpy_s(pcTemp, ("SLOT 0" + std::to_string(nSaveSlot) + " (" + sData + ")").c_str());
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseDodgeString), &pcTemp, 18, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcTemp, 18, 0);
 
                             nWriteBuffer = 5;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
