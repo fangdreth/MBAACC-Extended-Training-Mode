@@ -78,6 +78,8 @@ const DWORD dwP1Color = 0x34D83C;
 const DWORD dwP2Color = 0x34D868;
 const DWORD dwP1Struct = 0x155130;
 const DWORD dwP1Blocking = 0x1552AB;
+const DWORD dwP1RyougiKnife = 0x1552E8; //0=knife 1=no knife
+const DWORD dwP1FMaidsHearts = 0x1552FC; //0=full 5=empty
 
 //FrameDisplay Constants
 typedef DWORD ADDRESS; //I think doing this + adXxxxYyyy looks nice
@@ -120,6 +122,7 @@ const int MAX_METER = 30000;
 const int MAX_PAGES = 6;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
+const int MAX_HEARTS = 5; //6:normal 7:infinite
 const int MIN_X = -65536;
 const int MAX_X = 65536;
 const int P1_DEFAULT_X = -16384;
@@ -134,6 +137,8 @@ const int MAX_BURST = 99;
 const char pcSionBullets_13[13] = "SION BULLETS";
 const char pcRoaVisibleCharge_19[19] = "ROA VISIBLE CHARGE";
 const char pcRoaHiddenCharge_19[19] = "ROA HIDDEN CHARGE";
+const char pcFMaidsHearts_15[15] = "F-MAIDS HEARTS";
+const char pcRyougiKnife_13[13] = "RYOUGI KNIFE";
 const char pcP1ControlledChar_19[19] = "P1 CONTROLLED CHAR";
 const char pcP2ControlledChar_19[19] = "P2 CONTROLLED CHAR";
 const char pcHitsUntilBurst_17[17] = "HITS UNTIL BURST";

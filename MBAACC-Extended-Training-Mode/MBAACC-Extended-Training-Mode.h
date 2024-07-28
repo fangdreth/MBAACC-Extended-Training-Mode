@@ -154,6 +154,21 @@ void SetRoaHiddenCharge(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nHidden)
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RoaHiddenCharge + dwP2Offset), &nHidden, 4, 0);
 }
 
+void SetFMaidsHearts(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nHearts)
+{
+    if (nHearts == -1)
+        nHearts = 0;
+    else
+        nHearts = 5 - min(nHearts, MAX_HEARTS);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1FMaidsHearts), &nHearts, 4, 0);
+}
+
+void SetRyougiKnife(HANDLE hMBAAHandle, DWORD dwBaseAddress, bool bInfinite)
+{
+    int nTemp = bInfinite ? 0 : 1;
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RyougiKnife), &nTemp, 4, 0);
+}
+
 void SetP1X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 {
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X), &nValue, 4, 0);
