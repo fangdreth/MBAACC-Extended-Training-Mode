@@ -618,7 +618,7 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcFrameData_11, 11, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcSaveStateSlot_16, 16, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcSaveState_11, 11, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcFreezeFrames_14, 14, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcDisplayFreeze_16, 16, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcDisplayInputs_15, 15, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcScrollDisplay_15, 15, 0);
                     }
