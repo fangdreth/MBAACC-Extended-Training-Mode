@@ -115,8 +115,8 @@ int main(int argc, char* argv[])
     //bool bSaveStates = false;
     bool bDisplayInputs = false;
 
-    std::set<DWORD> setBlockingAnimationPointers;
-    std::set<DWORD> setIdleAnimationPointers;
+    std::unordered_set<DWORD> setBlockingAnimationPointers;
+    std::unordered_set<DWORD> setIdleAnimationPointers;
     int nBlockingHighlightSetting = NO_HIGHLIGHT;
     int nIdleHighlightSetting = NO_HIGHLIGHT;
 
