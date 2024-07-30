@@ -1178,16 +1178,28 @@ int main(int argc, char* argv[])
                         if (nOldEnemyActionIndex == -1)
                             nOldEnemyActionIndex = nEnemyActionIndex;
                         else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
+                        {
                             nIdleHighlightSetting = max(NO_HIGHLIGHT, nIdleHighlightSetting - 1);
+                            SetSharedMemory(nIdleHighlightSetting, nBlockingHighlightSetting);
+                        }
                         else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
+                        {
                             nIdleHighlightSetting = min(BLUE_HIGHLIGHT, nIdleHighlightSetting + 1);
+                            SetSharedMemory(nIdleHighlightSetting, nBlockingHighlightSetting);
+                        }
 
                         if (nOldEnemyDefenseIndex == -1)
                             nOldEnemyDefenseIndex = nEnemyDefenseIndex;
                         else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
+                        {
                             nBlockingHighlightSetting = max(NO_HIGHLIGHT, nBlockingHighlightSetting - 1);
+                            SetSharedMemory(nIdleHighlightSetting, nBlockingHighlightSetting);
+                        }
                         else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
+                        {
                             nBlockingHighlightSetting = min(BLUE_HIGHLIGHT, nBlockingHighlightSetting + 1);
+                            SetSharedMemory(nIdleHighlightSetting, nBlockingHighlightSetting);
+                        }
                     }
 
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
@@ -2572,123 +2584,6 @@ int main(int argc, char* argv[])
                 nWriteBuffer = 0;
                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyAction), &nWriteBuffer, 4, 0);
 
-#pragma region CACHE_HIGHLIGHTING
-                // Populate the set for pointers to the blocking animation
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Blocking), &nReadResult, 1, 0);
-                int nP1Blocking = nReadResult;
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Blocking + 0xAFC), &nReadResult, 1, 0);
-                int nP2Blocking = nReadResult;
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead - 0xAFC), &nReadResult, 1, 0);
-                int nP1Pattern = nReadResult;
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 1, 0);
-                int nP2Pattern = nReadResult;
-
-                if (nP1Blocking == 1)
-                {
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0x320), &nReadResult, 4, 0);
-                    setBlockingAnimationPointers.insert(nReadResult);
-                }
-                if (nP2Blocking == 1)
-                {
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0xAFC + 0x320), &nReadResult, 4, 0);
-                    setBlockingAnimationPointers.insert(nReadResult);
-                }
-
-                if (nP1Blocking != 1 &&
-                    (nP1Pattern == 0 || nP1Pattern == 10 || nP1Pattern == 11 || nP1Pattern == 12 || nP1Pattern == 13 || nP1Pattern == 14 || nP1Pattern == 35 || nP1Pattern == 36 || nP1Pattern == 37 || nP1Pattern == 17 || nP1Pattern == 18 || nP1Pattern == 19 || nP1Pattern == 38 || nP1Pattern == 39 || nP1Pattern == 40 || nP1Pattern == 360))
-                {
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0x320), &nReadResult, 4, 0);
-                    setIdleAnimationPointers.insert(nReadResult);
-                }
-                if (nP2Blocking != 1 &&
-                    (nP2Pattern == 0 || nP2Pattern == 10 || nP2Pattern == 11 || nP2Pattern == 12 || nP2Pattern == 13 || nP2Pattern == 14 || nP2Pattern == 35 || nP2Pattern == 36 || nP2Pattern == 37 || nP2Pattern == 17 || nP2Pattern == 18 || nP2Pattern == 19 || nP2Pattern == 38 || nP2Pattern == 39 || nP2Pattern == 40 || nP2Pattern == 360))
-                {
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0xAFC + 0x320), &nReadResult, 4, 0);
-                    setIdleAnimationPointers.insert(nReadResult);
-                }
-#pragma endregion
-
-#pragma region HIGHLIGHTING
-                if (nBlockingHighlightSetting == NO_HIGHLIGHT)
-                {
-                    for (auto f : setBlockingAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
-                }
-                else if (nBlockingHighlightSetting == RED_HIGHLIGHT)
-                {
-                    for (auto f : setBlockingAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
-                }
-                else if (nBlockingHighlightSetting == GREEN_HIGHLIGHT)
-                {
-                    for (auto f : setBlockingAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
-                }
-                else if (nBlockingHighlightSetting == BLUE_HIGHLIGHT)
-                {
-                    for (auto f : setBlockingAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                    }
-                }
-
-                if (nIdleHighlightSetting == NO_HIGHLIGHT)
-                {
-                    for (auto f : setIdleAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
-                }
-                else if (nIdleHighlightSetting == RED_HIGHLIGHT)
-                {
-                    for (auto f : setIdleAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
-                }
-                else if (nIdleHighlightSetting == GREEN_HIGHLIGHT)
-                {
-                    for (auto f : setIdleAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
-                }
-                else if (nIdleHighlightSetting == BLUE_HIGHLIGHT)
-                {
-                    for (auto f : setIdleAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                    }
-                }
-#pragma endregion
 
                 // This locks all the code that follows to the framerate of the game
                 // put code that needs to run faster above this
@@ -2811,7 +2706,7 @@ int main(int argc, char* argv[])
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 4, 0);
                 int nHitstunRemaining = nReadResult;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-                nP2Pattern = nReadResult;
+                int nP2Pattern = nReadResult;
                 //if (nReadResult == 0 || nReadResult == 13)
                 if (nHitstunRemaining == 0 && nP2Pattern != 350)
                 {

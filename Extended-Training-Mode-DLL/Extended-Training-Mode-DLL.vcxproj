@@ -87,7 +87,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command>if not %MELTYPATH%=="" (xcopy /y "$(TargetDir)$(TargetFileName)" %MELTYPATH%)</Command>
+      <Command>if not "%MELTYPATH%"=="" (xcopy /y "$(TargetDir)$(TargetFileName)" "%MELTYPATH%")</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

@@ -8,6 +8,10 @@
 #include <psapi.h>
 #include <time.h>
 #include <functional>
+#include <TlHelp32.h>
+#include <array>
+
+#pragma comment(lib, "ws2_32.lib") 
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -41,7 +45,15 @@ const ADDRESS  dwP2PatternRead = (dwBaseAddress + 0x155C3C);
 
 // helpers
 
-/*void log(const char* msg) {
+//int nIdleHighlightSetting = 0;
+//int nBlockingHighlightSetting = 0;
+
+std::array<u8, 3> arrIdleHighlightSetting({ 255, 255, 255 });
+std::array<u8, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
+
+enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT };
+
+void log(const char* msg) {
 
 	// i heavily would have prefered keeping the socket open. it did not like that
 
@@ -52,7 +64,7 @@ const ADDRESS  dwP2PatternRead = (dwBaseAddress + 0x155C3C);
 
 	char* message = new char[msgLen + 4];
 
-	strncpy(message, msg, msgLen);
+	strncpy_s(message, msgLen + 4, msg, msgLen);
 	message[msgLen + 0] = '\r';
 	message[msgLen + 1] = '\n';
 	message[msgLen + 2] = '\0';
@@ -73,9 +85,7 @@ const ADDRESS  dwP2PatternRead = (dwBaseAddress + 0x155C3C);
 	sockaddr_in destAddr;
 	destAddr.sin_family = AF_INET;
 	destAddr.sin_port = htons(port);
-
-	destAddr.sin_addr.s_addr = inet_addr(ipAddress);
-	if (destAddr.sin_addr.s_addr == INADDR_NONE) {
+	if (inet_pton(AF_INET, ipAddress, &destAddr.sin_addr) <= 0) {
 		closesocket(sendSocket);
 		WSACleanup();
 		return;
@@ -92,7 +102,71 @@ const ADDRESS  dwP2PatternRead = (dwBaseAddress + 0x155C3C);
 	WSACleanup();
 
 	delete message;
-}*/
+}
+
+void GetSharedMemory()
+{
+
+
+	static bool bSharedMemoryInit = false;
+	static HANDLE hMapFile = NULL;
+	static LPVOID pBuf = NULL;
+
+	if (!bSharedMemoryInit)
+	{
+		const auto sSharedName = L"MBAACCExtendedTrainingMode";
+		const int nSharedSize = 8;
+
+		hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, sSharedName);
+		if (hMapFile == NULL) {
+			return;
+		}
+
+		pBuf = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, nSharedSize);
+		if (pBuf == NULL)
+		{
+			CloseHandle(hMapFile);
+			return;
+		}
+		bSharedMemoryInit = true;
+	}
+
+	int nIdleHighlightSetting = ((int*)pBuf)[0];
+	int nBlockingHighlightSetting = ((int*)pBuf)[1];
+
+	switch (nIdleHighlightSetting) {
+	default:
+	case NO_HIGHLIGHT:
+		arrIdleHighlightSetting = { 255, 255, 255 };
+		break;
+	case RED_HIGHLIGHT:
+		arrIdleHighlightSetting = { 255, 0, 0 };
+		break;
+	case GREEN_HIGHLIGHT:
+		arrIdleHighlightSetting = { 0, 255, 0 };
+		break;
+	case BLUE_HIGHLIGHT:
+		arrIdleHighlightSetting = { 0, 0, 255 };
+		break;
+	}
+
+	switch (nBlockingHighlightSetting) {
+	default:
+	case NO_HIGHLIGHT:
+		arrBlockingHighlightSetting = { 255, 255, 255 };
+		break;
+	case RED_HIGHLIGHT:
+		arrBlockingHighlightSetting = { 255, 0, 0 };
+		break;
+	case GREEN_HIGHLIGHT:
+		arrBlockingHighlightSetting = { 0, 255, 0 };
+		break;
+	case BLUE_HIGHLIGHT:
+		arrBlockingHighlightSetting = { 0, 0, 255 };
+		break;
+	}
+}
+
 
 void debugLogBytes(u8* p) {
 
@@ -100,15 +174,14 @@ void debugLogBytes(u8* p) {
 
 	for (int i = 0; i < 16; i++) {
 		snprintf(buffer, 256, "%08X", *(u8*)p);
-		//log(buffer);
 		p++;
 	}
-	//log("-----");
 }
 
 // patch funcs
 
-void patchMemcpy(auto dst, auto src, size_t n) {
+void patchMemcpy(auto dst, auto src, size_t n) 
+{
 
 	static_assert(sizeof(dst) == 4, "Type must be 4 bytes");
 	static_assert(sizeof(src) == 4, "Type must be 4 bytes");
@@ -122,7 +195,8 @@ void patchMemcpy(auto dst, auto src, size_t n) {
 	VirtualProtect(dest, n, oldProtect, NULL);
 }
 
-void patchFunction(auto patchAddr_, auto newAddr_) {
+void patchFunction(auto patchAddr_, auto newAddr_)
+{
 
 	static_assert(sizeof(patchAddr_) == 4, "Type must be 4 bytes");
 	static_assert(sizeof(newAddr_) == 4, "Type must be 4 bytes");
@@ -136,7 +210,8 @@ void patchFunction(auto patchAddr_, auto newAddr_) {
 	patchMemcpy(patchAddr, jumpCode, sizeof(jumpCode));
 }
 
-void patchByte(auto addr, const u8 byte) {
+void patchByte(auto addr, const u8 byte) 
+{
 	static_assert(sizeof(addr) == 4, "Type must be 4 bytes");
 
 	u8 temp[] = { byte };
@@ -161,18 +236,12 @@ void animLog()
 		FrameTimer == 0)
 		return;
 
-	auto writeColor = [](unsigned animDataAddr, u8 r, u8 g, u8 b) -> void {
-		patchByte(animDataAddr + 0x18, r);
-		patchByte(animDataAddr + 0x19, g);
-		patchByte(animDataAddr + 0x1A, b);
-		};
-
-	auto updateAnimation = [writeColor](unsigned animDataAddr, unsigned blockState, unsigned patternState) -> void {
+	auto updateAnimation = [](unsigned animDataAddr, unsigned blockState, unsigned patternState) -> void {
 		//static char buffer[256];
 		//snprintf(buffer, 256, "%d", blockState);
 		//log(buffer);
 		if (blockState == 1) {
-			writeColor(animDataAddr, 255, 0, 0);
+			patchMemcpy(animDataAddr + 0x18, arrBlockingHighlightSetting.data(), 3);
 		}
 		else {
 			switch (patternState) {
@@ -192,7 +261,7 @@ void animLog()
 			case 39:
 			case 40:
 			case 360:
-				writeColor(animDataAddr, 0, 255, 0);
+				patchMemcpy(animDataAddr + 0x18, arrIdleHighlightSetting.data(), 3);
 				break;
 			default:
 				//writeColor(animDataAddr, 0, 0, 255);
@@ -220,33 +289,13 @@ void animLog()
 	}
 }
 
-void initAnimHook1() {
-
-	/*
-	this func may have been the one zeroing out the bytes? hook might not have been needed
-
-	instead of having to do more complex patching as was needed with hooking the second func, this func
-	has enough spare bytes at the end of it that directly inserting a call is more than enough
-
-	*/
-
-	for (unsigned p = 0x0041c867; p <= 0x0041c86e; p++) {
-		patchByte(p, 0x90); // NOP
-	}
-
-	patchFunction(0x0041c867, animLog);
-	patchByte(0x0041c86f, 0xc3); // RET
-
-	return;
-}
-
-u8 animHook2BytesOrig[10];
-u8 animHook2BytesMod[10];
-void animHook2Func() {
+u8 animHookBytesOrig[10];
+u8 animHookBytesMod[10];
+void animHookFunc() {
 	// does this func get called for both chars individually? 
 	void* funcAddress = (void*)0x0045f650;
 	// restore func to original state
-	patchMemcpy(funcAddress, animHook2BytesOrig, 10);
+	patchMemcpy(funcAddress, animHookBytesOrig, 10);
 	/*
 
 	x86 asm does not allow for direct calls to an intermediate addr, only relative
@@ -259,22 +308,22 @@ void animHook2Func() {
 		call eax;
 	};
 	// patch hook back into func
-	patchMemcpy(funcAddress, animHook2BytesMod, 10);
+	patchMemcpy(funcAddress, animHookBytesMod, 10);
 	// perform coloring code
 	animLog();
 	return;
 }
 
-void initAnimHook2() {
+void initAnimHook() {
 	void* funcAddress = (void*)0x0045f650;
 	// backup
-	patchMemcpy(animHook2BytesOrig, funcAddress, 10);
+	patchMemcpy(animHookBytesOrig, funcAddress, 10);
 	// new bytes
-	patchFunction(funcAddress, animHook2Func);
+	patchFunction(funcAddress, animHookFunc);
 	// ret
 	patchByte(((u8*)funcAddress) + 5, 0xC3);
 	// backup modded bytes 
-	patchMemcpy(animHook2BytesMod, funcAddress, 10);
+	patchMemcpy(animHookBytesMod, funcAddress, 10);
 }
 
 void threadFunc() {
@@ -283,12 +332,7 @@ void threadFunc() {
 
 	// todo, put something here to prevent mult injection
 
-
-	// this is only here as verification for me that something actually injected
-	//patchByte(INPUTDISPLAYTOGGLE, 1);
-
-	initAnimHook1();
-	initAnimHook2();
+	initAnimHook();
 
 	while (true) {
 		/*
@@ -296,7 +340,10 @@ void threadFunc() {
 		due to that, it would now be possible to do this without dll injection, and just modify the programs memory
 		but getting enough space to put what is needed in there, may not be worth the effort
 		*/
-		Sleep(10);
+
+		// ideally, this would be done with signals
+		GetSharedMemory();
+		Sleep(8);
 	}
 
 }
