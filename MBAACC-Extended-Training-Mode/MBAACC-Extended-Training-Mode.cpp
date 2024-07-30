@@ -1,5 +1,6 @@
 #include "MBAACC-Extended-Training-Mode.h"
 #include "Logger.h"
+#include "Injector.h"
 
 int main(int argc, char* argv[])
 {
@@ -234,6 +235,9 @@ int main(int argc, char* argv[])
             Sleep(100);
             dwBaseAddress = GetBaseAddressByName(hMBAAHandle, L"MBAA.exe");
             LogInfo("Got BaseAddressByName");
+
+            auto PID = GetProcessPID(L"MBAA.exe");
+            WH_Inject(PID, "C:\\Users\\willf\\WH\\Repos\\MBAACC-Extended-Training-Mode\\MBAACC-Extended-Training-Mode\\Debug\\Extended-Training-Mode-DLL.dll");
         }
 
         // check this to prevent attaching to netplay
