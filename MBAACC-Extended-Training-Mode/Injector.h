@@ -136,64 +136,55 @@ static bool inject(unsigned long procID, const char* dllPath) {
 	unsigned long pid = procID;
 	const char* path = dllPath;
 
+	std::ifstream f(dllPath);
+
+	if(!f.good())
+	{
+		printf("%sFailed to find DLL in melty path%s\n", RED, RESET);
+		printf("%s%s%s\n", RED, dllPath, RESET);
+		return false;
+	}
 
 	HANDLE injectorProcHandle = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_CREATE_THREAD, false, pid);
 	if (injectorProcHandle == NULL)
+	{
+		printf("%sOpenProcess failed for DLL injection%s\n", RED, RESET);
 		return false;
-
-	printf("%s[INJECTION] Got a handle to %lu\n%s", WHITE, pid, RESET);
+	}
 
 	PVOID dllNameAdr = VirtualAllocEx(injectorProcHandle, NULL, strlen(path) + 1, MEM_COMMIT, PAGE_READWRITE);
-	if (dllNameAdr == NULL)
+	if (dllNameAdr == NULL) 
+	{
+		printf("%sVirtualAllocEx failed for DLL injection%s\n", RED, RESET);
 		return false;
+	}
 
-
-	if (WriteProcessMemory(injectorProcHandle, dllNameAdr, path, strlen(path) + 1, NULL) == 0)
+	if (WriteProcessMemory(injectorProcHandle, dllNameAdr, path, strlen(path) + 1, NULL) == 0) 
+	{
+		printf("%sWriteProcessMemory failed for DLL injection%s\n", RED, RESET);
 		return false;
+	}
 
 	HANDLE tHandle = CreateRemoteThread(injectorProcHandle, 0, 0, (LPTHREAD_START_ROUTINE)(void*)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA"), dllNameAdr, 0, 0);
-	if (tHandle == NULL)
+	if (tHandle == NULL) 
+	{
+		printf("%sCreateRemoteThread failed for DLL injection%s\n", RED, RESET);
 		return false;
-
-	printf("%s[INJECTION] Started LoadLibraryA into %lu\n%s", WHITE, pid, RESET);
+	}
 
 	return true;
 }
 
 static int WH_Inject(unsigned long nPID, std::string sDLLPath) {
 
-	/*initConsole();
-
-	std::string programName = "MBAA.exe";
-
-	std::pair<int, std::string> result = getPID(programName);
-
-	int pid = result.first;
-	std::string fullPath = result.second;
-	std::string path = getPathOnly(fullPath);
-
-	char buffer[256];
-	GetModuleFileNameA(NULL, buffer, 256);
-	*(std::strrchr(buffer, '\\') + 1) = '\0';
-
-	std::string source = std::string(buffer) + "MBAACCMiscTests.dll";
-	std::string dest = path + "MBAACCMiscTests.dll";
-
-	if (!fileExists(dest)) {
-		exitWithCode(1, "unable to find MBAACCMiscTests.dll in melty path. copy it in");
-	}*/
-
 	bool result = inject(nPID, sDLLPath.c_str());
 
 	if (!result) {
-		printf("%ssomethings wrong with the injection, msg me%s\n", RED, RESET);
-		getchar();
+		std::cout << std::endl;
 		return 1;
 	}
 
 	printf("%sinjection ran successfully%s\n", GREEN, RESET);
-	std::cout << WHITE << "Press RControl and arrow keys to move display\n" << RESET;
-	std::cout << WHITE << "Press enter to exit\n" << RESET;
-	getchar();
+	std::cout << std::endl;
 	return 0;
 }

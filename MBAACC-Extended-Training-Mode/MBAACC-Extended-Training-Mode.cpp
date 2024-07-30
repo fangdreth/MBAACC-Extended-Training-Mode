@@ -230,14 +230,22 @@ int main(int argc, char* argv[])
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             std::cout << "                                              ";
 
-            
+
 
             Sleep(100);
             dwBaseAddress = GetBaseAddressByName(hMBAAHandle, L"MBAA.exe");
             LogInfo("Got BaseAddressByName");
 
             auto PID = GetProcessPID(L"MBAA.exe");
-            WH_Inject(PID, "C:\\Users\\willf\\WH\\Repos\\MBAACC-Extended-Training-Mode\\MBAACC-Extended-Training-Mode\\Debug\\Extended-Training-Mode-DLL.dll");
+            std::string sProcessPath = GetProcessPath(hMBAAHandle);
+            sProcessPath += "Extended-Training-Mode-DLL.dll";
+
+            bool bInjectStatus = WH_Inject(PID, sProcessPath);
+            if (bInjectStatus)
+            {
+                getchar();
+                break;
+            }
         }
 
         // check this to prevent attaching to netplay

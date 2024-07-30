@@ -107,6 +107,26 @@ DWORD GetProcessPID(const wchar_t* name)
     return 0;
 }
 
+std::string GetProcessPath(HANDLE hMBAAHandle)
+{
+    const int nPathSize = 256;
+    DWORD dwPathSize = nPathSize;
+    char path[nPathSize];
+   
+    if (QueryFullProcessImageNameA(hMBAAHandle, 0, path, &dwPathSize)) 
+        {
+        std::string sTempPathString = std::string(path);
+        size_t lastBackslash = sTempPathString.find_last_of("\\/");
+        if (lastBackslash != std::string::npos) 
+        {
+            return sTempPathString.substr(0, lastBackslash) + "\\";
+        }
+        return "";
+    }
+    
+    return "";
+}
+
 HANDLE GetProcessByName(const wchar_t* name)
 {
     DWORD pid = 0;
