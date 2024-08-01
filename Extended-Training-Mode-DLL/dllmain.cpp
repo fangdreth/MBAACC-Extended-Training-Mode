@@ -19,7 +19,6 @@
 
 static_assert(sizeof(int*) == 4, "COMPILE PROGRAM AS 32BIT");
 
-typedef unsigned char u8;
 typedef DWORD ADDRESS;
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
@@ -45,18 +44,13 @@ const ADDRESS  dwP2PatternRead = (dwBaseAddress + 0x155C3C);
 
 // helpers
 
-//int nIdleHighlightSetting = 0;
-//int nBlockingHighlightSetting = 0;
-
-std::array<u8, 3> arrIdleHighlightSetting({ 255, 255, 255 });
-std::array<u8, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
+std::array<BYTE, 3> arrIdleHighlightSetting({ 255, 255, 255 });
+std::array<BYTE, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
 
 enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT };
 
-void log(const char* msg) {
-
-	// i heavily would have prefered keeping the socket open. it did not like that
-
+void log(const char* msg) 
+{
 	const char* ipAddress = "127.0.0.1";
 	unsigned short port = 17474;
 
@@ -69,15 +63,16 @@ void log(const char* msg) {
 	message[msgLen + 1] = '\n';
 	message[msgLen + 2] = '\0';
 
-
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (result != 0) {
+	if (result != 0) 
+	{
 		return;
 	}
 
 	SOCKET sendSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sendSocket == INVALID_SOCKET) {
+	if (sendSocket == INVALID_SOCKET) 
+	{
 		WSACleanup();
 		return;
 	}
@@ -85,14 +80,16 @@ void log(const char* msg) {
 	sockaddr_in destAddr;
 	destAddr.sin_family = AF_INET;
 	destAddr.sin_port = htons(port);
-	if (inet_pton(AF_INET, ipAddress, &destAddr.sin_addr) <= 0) {
+	if (inet_pton(AF_INET, ipAddress, &destAddr.sin_addr) <= 0) 
+	{
 		closesocket(sendSocket);
 		WSACleanup();
 		return;
 	}
 
 	int sendResult = sendto(sendSocket, message, strlen(message), 0, (sockaddr*)&destAddr, sizeof(destAddr));
-	if (sendResult == SOCKET_ERROR) {
+	if (sendResult == SOCKET_ERROR) 
+	{
 		closesocket(sendSocket);
 		WSACleanup();
 		return;
@@ -101,13 +98,11 @@ void log(const char* msg) {
 	closesocket(sendSocket);
 	WSACleanup();
 
-	delete message;
+	delete[] message;
 }
 
 void GetSharedMemory()
 {
-
-
 	static bool bSharedMemoryInit = false;
 	static HANDLE hMapFile = NULL;
 	static LPVOID pBuf = NULL;
@@ -118,7 +113,8 @@ void GetSharedMemory()
 		const int nSharedSize = 8;
 
 		hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, sSharedName);
-		if (hMapFile == NULL) {
+		if (hMapFile == NULL) 
+		{
 			return;
 		}
 
@@ -134,7 +130,8 @@ void GetSharedMemory()
 	int nIdleHighlightSetting = ((int*)pBuf)[0];
 	int nBlockingHighlightSetting = ((int*)pBuf)[1];
 
-	switch (nIdleHighlightSetting) {
+	switch (nIdleHighlightSetting) 
+	{
 	default:
 	case NO_HIGHLIGHT:
 		arrIdleHighlightSetting = { 255, 255, 255 };
@@ -150,7 +147,8 @@ void GetSharedMemory()
 		break;
 	}
 
-	switch (nBlockingHighlightSetting) {
+	switch (nBlockingHighlightSetting) 
+	{
 	default:
 	case NO_HIGHLIGHT:
 		arrBlockingHighlightSetting = { 255, 255, 255 };
@@ -167,16 +165,35 @@ void GetSharedMemory()
 	}
 }
 
-
-void debugLogBytes(u8* p) {
+void debugLogBytes(BYTE* p)
+{
 
 	static char buffer[256];
 
-	for (int i = 0; i < 16; i++) {
-		snprintf(buffer, 256, "%08X", *(u8*)p);
+	for (int i = 0; i < 16; i++) 
+	{
+		snprintf(buffer, 256, "%08X", *(BYTE*)p);
 		p++;
 	}
 }
+
+bool safeWrite() {
+	const DWORD dwPauseFlag = 0x162A64; //1=paused
+	const DWORD dwGameState = 0x14EEE8; //1=training
+	const DWORD dwFrameTimer = 0x15D1CC;
+	BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPauseFlag);
+	BYTE GameState = *reinterpret_cast<BYTE*>(dwBaseAddress + dwGameState);
+	int FrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
+
+	if (PauseFlag == 1 ||
+		GameState != 1 ||
+		FrameTimer == 0)
+		return false;
+	
+	return true;
+}
+
+extern "C" int DrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
 
 // patch funcs
 
@@ -204,22 +221,55 @@ void patchFunction(auto patchAddr_, auto newAddr_)
 	DWORD patchAddr = (DWORD)(patchAddr_);
 	DWORD newAddr = (DWORD)(newAddr_);
 
-	u8 jumpCode[] = { 0xE8, 0x00, 0x00, 0x00, 0x00 };
+	BYTE callCode[] = { 0xE8, 0x00, 0x00, 0x00, 0x00 };
 	DWORD funcOffset = newAddr - (patchAddr + 5);
-	*(unsigned*)(&jumpCode[1]) = funcOffset;
-	patchMemcpy(patchAddr, jumpCode, sizeof(jumpCode));
+	*(unsigned*)(&callCode[1]) = funcOffset;
+	patchMemcpy(patchAddr, callCode, sizeof(callCode));
 }
 
-void patchByte(auto addr, const u8 byte) 
+void patchByte(auto addr, const BYTE byte)
 {
 	static_assert(sizeof(addr) == 4, "Type must be 4 bytes");
 
-	u8 temp[] = { byte };
+	BYTE temp[] = { byte };
 
 	patchMemcpy(addr, temp, 1);
 }
 
 // actual functions 
+
+extern "C" int DrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
+
+void testDraw() {
+
+	if (!safeWrite()) {
+		return;
+	}
+
+	
+
+	DrawRect(200, 200, 100, 100, 0x8000FFFF, 0x8000FFFF, 0x8000FFFF, 0x8000FFFF, 0x2cc);
+}
+
+void frameDoneCallback() {
+	
+	static int a = 0;
+	a++;
+	testDraw();
+
+
+}
+
+void initRenderCallback() {
+
+	// this might be getting called a frame late. unsure 
+
+	void* funcAddress = (void*)0x0041d815;
+	patchByte(((BYTE*)funcAddress) + 0, 0x50); // push eax?
+	patchFunction(((BYTE*)funcAddress) + 1, frameDoneCallback); // call
+	patchByte(((BYTE*)funcAddress) + 6, 0x58); // pop eax
+	patchByte(((BYTE*)funcAddress) + 7, 0xC3); // ret
+}
 
 void animLog()
 {
@@ -236,15 +286,17 @@ void animLog()
 		FrameTimer == 0)
 		return;
 
-	auto updateAnimation = [](unsigned animDataAddr, unsigned blockState, unsigned patternState) -> void {
-		//static char buffer[256];
-		//snprintf(buffer, 256, "%d", blockState);
-		//log(buffer);
-		if (blockState == 1) {
+
+	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState) -> void
+	{
+		if (blockState == 1) 
+		{
 			patchMemcpy(animDataAddr + 0x18, arrBlockingHighlightSetting.data(), 3);
 		}
-		else {
-			switch (patternState) {
+		else 
+		{
+			switch (patternState) 
+			{
 			case 0:
 			case 10:
 			case 11:
@@ -264,11 +316,10 @@ void animLog()
 				patchMemcpy(animDataAddr + 0x18, arrIdleHighlightSetting.data(), 3);
 				break;
 			default:
-				//writeColor(animDataAddr, 0, 0, 255);
 				break;
 			}
 		}
-		};
+	};
 
 	/*
 	the states that are used here, are they reading the previous frames info?
@@ -280,22 +331,25 @@ void animLog()
 	*/
 
 	// i strongly dislike my method of derefing here. a class could fix this
-	if (*(unsigned*)dwP1AnimPtr > dwBaseAddress) {
-		updateAnimation(*(unsigned*)dwP1AnimPtr, *(u8*)dwP1Blocking, *(unsigned*)dwP1PatternRead);
+	if (*(DWORD*)dwP1AnimPtr > dwBaseAddress)
+	{
+		updateAnimation(*(DWORD*)dwP1AnimPtr, *(BYTE*)dwP1Blocking, *(DWORD*)dwP1PatternRead);
 	}
 
-	if (*(unsigned*)dwP2AnimPtr > dwBaseAddress) {
-		updateAnimation(*(unsigned*)dwP2AnimPtr, *(u8*)dwP2Blocking, *(unsigned*)dwP2PatternRead);
+	if (*(DWORD*)dwP2AnimPtr > dwBaseAddress) 
+	{
+		updateAnimation(*(DWORD*)dwP2AnimPtr, *(BYTE*)dwP2Blocking, *(DWORD*)dwP2PatternRead);
 	}
 }
 
-u8 animHookBytesOrig[10];
-u8 animHookBytesMod[10];
-void animHookFunc() {
+BYTE arrAnimHookBytesOrig[10];
+BYTE arrAnimHookBytesMod[10];
+void animHookFunc() 
+{
 	// does this func get called for both chars individually? 
 	void* funcAddress = (void*)0x0045f650;
 	// restore func to original state
-	patchMemcpy(funcAddress, animHookBytesOrig, 10);
+	patchMemcpy(funcAddress, arrAnimHookBytesOrig, 10);
 	/*
 
 	x86 asm does not allow for direct calls to an intermediate addr, only relative
@@ -308,47 +362,53 @@ void animHookFunc() {
 		call eax;
 	};
 	// patch hook back into func
-	patchMemcpy(funcAddress, animHookBytesMod, 10);
+	patchMemcpy(funcAddress, arrAnimHookBytesMod, 10);
 	// perform coloring code
 	animLog();
 	return;
 }
 
-void initAnimHook() {
+void initAnimHook() 
+{
 	void* funcAddress = (void*)0x0045f650;
 	// backup
-	patchMemcpy(animHookBytesOrig, funcAddress, 10);
+	patchMemcpy(arrAnimHookBytesOrig, funcAddress, 10);
 	// new bytes
 	patchFunction(funcAddress, animHookFunc);
 	// ret
-	patchByte(((u8*)funcAddress) + 5, 0xC3);
+	patchByte(((BYTE*)funcAddress) + 5, 0xC3);
 	// backup modded bytes 
-	patchMemcpy(animHookBytesMod, funcAddress, 10);
+	patchMemcpy(arrAnimHookBytesMod, funcAddress, 10);
 }
 
-void threadFunc() {
+void threadFunc() 
+{
 	//log("DLL injection successful");
 	srand(time(NULL));
 
 	// todo, put something here to prevent mult injection
 
+	initRenderCallback();
 	initAnimHook();
 
-	while (true) {
+
+
+	while (true) 
+	{
 		/*
 		this loop is no longer needed
 		due to that, it would now be possible to do this without dll injection, and just modify the programs memory
 		but getting enough space to put what is needed in there, may not be worth the effort
 		*/
-
+		
 		// ideally, this would be done with signals
 		GetSharedMemory();
 		Sleep(8);
 	}
-
 }
 
-BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved) {
+BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved) 
+{
 	(void)hinstDLL;
 	(void)lpReserved;
 
