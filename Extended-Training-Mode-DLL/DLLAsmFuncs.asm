@@ -1,9 +1,9 @@
 .386
 .model flat
 
-PUBLIC _DrawRect
+PUBLIC _asmDrawRect
 .code
-_DrawRect PROC
+_asmDrawRect PROC
 	
 	push ebp
 	mov ebp,esp
@@ -35,6 +35,6 @@ _DrawRect PROC
 	leave 
 	ret 
 
-_DrawRect ENDP 
+_asmDrawRect ENDP 
 
 END

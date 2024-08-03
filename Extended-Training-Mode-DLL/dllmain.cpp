@@ -10,6 +10,8 @@
 #include <functional>
 #include <TlHelp32.h>
 #include <array>
+#include <stdint.h>
+#include <cmath>
 
 #pragma comment(lib, "ws2_32.lib") 
 
@@ -238,26 +240,237 @@ void patchByte(auto addr, const BYTE byte)
 
 // actual functions 
 
-extern "C" int DrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
+extern "C" int asmDrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
 
-void testDraw() {
+void drawRect(int x, int y, int w, int h, BYTE r, BYTE g, BYTE b, BYTE a, int layer = 0x2cc) {
+	int colVal = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+	asmDrawRect(x, y, w, h, colVal, colVal, colVal, colVal, layer);
+}
+
+void drawRect(int x, int y, int w, int h, DWORD colVal, int layer = 0x2cc) {
+	asmDrawRect(x, y, w, h, colVal, colVal, colVal, colVal, layer);
+}
+
+void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4) {
+	// there must be a better way of doing this than using 4 rects
+	// framestop draws less intrusive rects. figure out how
+	// the lines are much clearer. most likely not calling melty draw methods but dxd3 methods
+	// will 
+
+	constexpr int lineWidth = 1;
+
+	//drawRect(x, y, w, lineWidth, ARGB);
+	//drawRect(x, y + h - 1, w, lineWidth, ARGB);
+	//drawRect(x, y + 1, lineWidth, h - 2, ARGB);
+	//drawRect(x + w - 1, y + 1, lineWidth, h - 2, ARGB);
+
+	drawRect(x, y, w, lineWidth, ARGB);
+	drawRect(x, y, lineWidth, h, ARGB);
+
+	drawRect(x + w - 1, y, lineWidth, h, ARGB);
+	drawRect(x, y + h - 1, w, lineWidth, ARGB);
+}
+
+DWORD getObjFrameDataPointer(DWORD objAddr) {
+	
+	int objState = *(DWORD*)(objAddr + 0x14);
+	int objPattern = *(DWORD*)(objAddr + 0x10);
+
+	DWORD baseFrameDataPtr1 = *(DWORD*)(objAddr + 0x330);
+	if (baseFrameDataPtr1 == 0) { return 0; }
+
+	DWORD baseFrameDataPtr2 = *(DWORD*)(baseFrameDataPtr1);
+	if (baseFrameDataPtr2 == 0) { return 0; }
+
+	DWORD unknownPtr1 = *(DWORD*)(baseFrameDataPtr2 + 0x4);
+	if (unknownPtr1 == 0) { return 0; }
+
+	DWORD unknownPtr2 = *(DWORD*)(unknownPtr1 + 0x4);
+	if (unknownPtr2 == 0) { return 0; }
+
+	DWORD basePatternPtr = *(DWORD*)(unknownPtr2 + (objPattern * 0x4));
+	if (basePatternPtr == 0) { return 0; }
+
+	DWORD unknownPtr3 = *(DWORD*)(basePatternPtr + 0x34);
+	if (unknownPtr3 == 0) { return 0; }
+
+	DWORD unknownPtr4 = *(DWORD*)(unknownPtr3 + 0x4);
+	if (unknownPtr4 == 0) { return 0; }
+
+	DWORD baseStatePtr = unknownPtr4 + (objState * 0x54);
+
+	return baseStatePtr;
+}
+
+typedef long long longlong;
+typedef unsigned long long ulonglong;
+typedef uint32_t uint;
+
+//#define ROUND(x) (round(x))
+#define ROUND(x) (x)
+
+void drawObject(DWORD objAddr, bool isProjectile) {
+
+	char buffer[256];
+
+	int xPos = *(DWORD*)(objAddr + 0x108);
+	int yPos = *(DWORD*)(objAddr + 0x10C);
+	bool facingLeft = *(BYTE*)(objAddr + 0x314);
+	
+	DWORD objFramePtr = getObjFrameDataPointer(objAddr);
+	
+	if (objFramePtr == 0) {
+		return;
+	}
+
+	// -----
+
+	float isRight = 1;
+	if (facingLeft) {
+		isRight = -1;
+	}
+
+
+	float windowWidth = *(uint32_t*)0x0054d048;
+	float windowHeight = *(uint32_t*)0x0054d04c;
+
+	int cameraX = *(int*)(0x0055dec4); 
+	int cameraY = *(int*)(0x0055dec8);
+	float cameraZoom = *(float*)(0x0054eb70); 
+
+	float xCamTemp = ((((float)(xPos - cameraX) * cameraZoom) / 128.0) * (windowWidth / 640.0) + windowWidth / 2.0);
+	float yCamTemp = ((((float)(yPos - cameraY) * cameraZoom) / 128.0 - 49.0) * (windowHeight / 480.0) + windowHeight);
+	
+	float tempFloat;
+
+	float x1Cord, x2Cord, y1Cord, y2Cord;
+
+	uint32_t drawColor;
+
+	// -----
+
+	// non hitboxes
+	if (*(DWORD*)(objFramePtr + 0x4C) != 0) {
+		unsigned unknownLoopLimit = *(BYTE*)(objFramePtr + 0x42);
+		for (unsigned index = 0; index < unknownLoopLimit; index++) {
+
+			if (*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) == 0) {
+				continue;
+			}
+
+			switch (index) {
+				case 0x0:
+					drawColor = 0xFFD0D0D0;
+					break;
+				case 0x9:
+				case 0xA:
+					drawColor = 0xFFFF00FF;
+					break;
+				case 0xB:
+					drawColor = 0xFFFFFF00;
+					break;
+				default:
+					if (index < 0xC) {
+						drawColor = 0xFF00FF00;
+					} else {
+						drawColor = 0xFF0000FF;
+					}
+					break;
+			}
+
+			tempFloat = (float)isRight * (windowWidth / 640.0) * cameraZoom;
+			x1Cord = ((float)**(short**)(*(int*)(objFramePtr + 0x4c) + index * 4) * (tempFloat + tempFloat) + (float)xCamTemp);
+
+			tempFloat = (float)isRight * (windowWidth / 640.0) * cameraZoom;
+			x2Cord = ((float)*(short*)(*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) + 4) * (tempFloat + tempFloat) + (float)xCamTemp);
+
+			y1Cord = ((float)((int)*(short*)(*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) + 2) << 1) * (windowHeight / 480.0) * cameraZoom + (float)yCamTemp);
+
+			tempFloat = (windowHeight / 480.0) * cameraZoom;
+			y2Cord = ((float)*(short*)(*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) + 6) * (tempFloat + tempFloat) + (float)yCamTemp);
+
+			x1Cord = round((float)x1Cord * (640.0 / windowWidth));
+			x2Cord = round((float)x2Cord * (640.0 / windowWidth));
+			y1Cord = round((float)y1Cord * (480.0 / windowHeight));
+			y2Cord = round((float)y2Cord * (480.0 / windowHeight));
+			// how should rounding occur for these vars?
+
+			//snprintf(buffer, 256, "%8d %8d %8d %8d", (int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord));
+			//log(buffer);
+			drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
+		}
+	}
+
+	// hitboxes
+	if (*(DWORD*)(objFramePtr + 0x50) != 0) {
+		drawColor = 0xFFFF0000;
+		unsigned unknownLoopLimit = *(BYTE*)(objFramePtr + 0x43);
+		for (unsigned index = 0; index < unknownLoopLimit; index++) {
+			if (*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) == 0) {
+				continue;
+			}
+
+			tempFloat = (float)isRight * (windowWidth / 640.0) * cameraZoom;
+			x1Cord = ((float)**(short**)(*(int*)(objFramePtr + 0x50) + index * 4) * (tempFloat + tempFloat) + (float)xCamTemp);
+
+			x2Cord = ((float)(*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 4) * 2 + -1) * (float)isRight * (windowWidth / 640.0) * cameraZoom + (float)xCamTemp);
+
+			y1Cord = ((float)(*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 2) * 2 + 1) * (windowHeight / 480.0) * cameraZoom + (float)yCamTemp);
+
+			y2Cord = ((float)((int)*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 6) << 1) * (windowHeight / 480.0) * cameraZoom + (float)yCamTemp);
+
+			x1Cord = round((float)x1Cord * (640.0 / windowWidth));
+			x2Cord = round((float)x2Cord * (640.0 / windowWidth));
+			y1Cord = round((float)y1Cord * (480.0 / windowHeight));
+			y2Cord = round((float)y2Cord * (480.0 / windowHeight));
+			// how should rounding occur for these vars?
+
+			drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
+
+		}
+	}
+
+	// origin?
+	if (!isProjectile) {
+		x1Cord = ((float)xCamTemp - (windowWidth / 640.0) * cameraZoom * 5.0);
+		x2Cord = ((windowWidth / 640.0) * cameraZoom * 5.0 + (float)xCamTemp);
+		y1Cord = ((float)yCamTemp - (windowWidth / 640.0) * cameraZoom * 5.0);
+		y2Cord = yCamTemp;
+
+		x1Cord = round((float)x1Cord * (640.0 / windowWidth));
+		x2Cord = round((float)x2Cord * (640.0 / windowWidth));
+		y1Cord = round((float)y1Cord * (480.0 / windowHeight));
+		y2Cord = round((float)y2Cord * (480.0 / windowHeight));
+		// how should rounding occur for these vars?
+
+		drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), 0xFF42E5F4);
+	}
+
+}
+
+void drawFrameData() {
 
 	if (!safeWrite()) {
 		return;
 	}
 
-	
+	drawObject(0x00555130 + (0xAFC * 0), false); // P1
+	drawObject(0x00555130 + (0xAFC * 1), false); // P2
+	drawObject(0x00555130 + (0xAFC * 2), false); // P3
+	drawObject(0x00555130 + (0xAFC * 3), false); // P4
 
-	DrawRect(200, 200, 100, 100, 0x8000FFFF, 0x8000FFFF, 0x8000FFFF, 0x8000FFFF, 0x2cc);
+	// draw all effects
+
+	for(unsigned index = 0; index < 1000; index++) {
+		if (((*(int*)(index * 0x33c + 0x67bde8) != 0) && (*(char*)(index * 0x33c + 0x67be09) == '\0'))) {
+			drawObject(index * 0x33c + 0x67bde8, true);
+		}
+	}
+
 }
 
 void frameDoneCallback() {
-	
-	static int a = 0;
-	a++;
-	testDraw();
-
-
+	drawFrameData();
 }
 
 void initRenderCallback() {
