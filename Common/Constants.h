@@ -21,7 +21,7 @@ enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIG
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
 const std::string GITHUB_README = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/README.md";
-const std::string VERSION = "v1.7b";
+const std::string VERSION = "v2.0";
 
 const DWORD dwP2Offset = 0xAFC;
 const DWORD dwRoundTime = 0x162A40; //0-inf
@@ -48,7 +48,8 @@ const DWORD dwP2Y = 0x155248;
 const DWORD dwP1X = 0x155238;
 const DWORD dwP1Exists = 0x155130;
 const DWORD dwP2PatternSet = 0x155F38;
-const DWORD dwP2PatternRead = 0x155C3C;
+const DWORD dwP1PatternRead = 0x155140;
+const DWORD dwP2PatternRead = dwP1PatternRead + 0xAFC;
 const DWORD dwCSSFlag = 0x155130;
 const DWORD dwP2CharNumber = 0x34D91C;
 const DWORD dwP2CharMoon = 0x34D924;
@@ -77,9 +78,20 @@ const DWORD dwFPS = 0x374A70;
 const DWORD dwP1Color = 0x34D83C;
 const DWORD dwP2Color = 0x34D868;
 const DWORD dwP1Struct = 0x155130;
-const DWORD dwP1Blocking = 0x1552AB;
+const DWORD dwP2Struct = dwP1Struct + 0xAFC;
 const DWORD dwP1RyougiKnife = 0x1552E8; //0=knife 1=no knife
 const DWORD dwP1FMaidsHearts = 0x1552FC; //0=full 5=empty
+const DWORD dwP1Blocking = 0x1552AB;
+const DWORD dwP2Blocking = dwP1Blocking + 0xAFC;
+
+// DLL Constants
+const DWORD dwCameraX = 0x0055dec4;
+const DWORD dwCameraY = 0x0055dec8;
+const DWORD dwCameraZoom = 0x0054eb70;
+const DWORD dwWindowWidth = 0x0054d048;
+const DWORD dwWindowHeight = 0x0054d04c;
+const DWORD dwP1AnimationPtr = dwP1Struct + 0x320;
+const DWORD dwP2AnimationPtr = dwP2Struct + 0x320;
 
 //FrameDisplay Constants
 typedef DWORD ADDRESS; //I think doing this + adXxxxYyyy looks nice

@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
         
         SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
         std::cout << "===========================================================================\x1b[K" << std::endl;
-        std::cout << "|   Fang and gonp's Extended Training Mode Mod " << VERSION << "                      |\x1b[K" << std::endl;
+        std::cout << "|   Fang, gonp, and Inana's Extended Training Mode Mod " << VERSION << "               |\x1b[K" << std::endl;
         std::cout << "|                                                                         |\x1b[K" << std::endl;
         std::cout << "|   " << GITHUB_RELEASE << "   |\x1b[K" << std::endl;
         if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)

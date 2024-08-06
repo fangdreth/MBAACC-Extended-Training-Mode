@@ -38,15 +38,15 @@ const ADDRESS dwBaseAddress = (0x00400000);
 const ADDRESS INPUTDISPLAYTOGGLE = (dwBaseAddress + 0x001585f8);
 
 //const ADDRESS dwP1Struct = (dwBaseAddress + 0x00155130);
-const ADDRESS dwP2Struct = (dwP1Struct + 0xAFC);
+//const ADDRESS dwP2Struct = (dwP1Struct + 0xAFC);
 
-const ADDRESS dwP1AnimPtr = (dwP1Struct + 0x320);
-const ADDRESS dwP2AnimPtr = (dwP2Struct + 0x320);
+//const ADDRESS dwP1AnimPtr = (dwP1Struct + 0x320);
+//const ADDRESS dwP2AnimPtr = (dwP2Struct + 0x320);
 
 //const ADDRESS  dwP1Blocking = (dwBaseAddress + 0x1552AB);
-const ADDRESS  dwP2Blocking = (dwBaseAddress + 0x1552AB + 0xAFC);
+//const ADDRESS  dwP2Blocking = (dwBaseAddress + 0x1552AB + 0xAFC);
 
-const ADDRESS  dwP1PatternRead = (dwBaseAddress + 0x155C3C - 0xAFC);
+//const ADDRESS  dwP1PatternRead = (dwBaseAddress + 0x155C3C - 0xAFC);
 //const ADDRESS  dwP2PatternRead = (dwBaseAddress + 0x155C3C);
 
 // helpers
@@ -339,12 +339,19 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 		isRight = -1;
 	}
 
+	/*float windowWidth = *(uint32_t*)dwWindowWidth;
+	float windowHeight = *(uint32_t*)dwWindowHeight;
+
+	int cameraX = *(int*)(dwCameraX);
+	int cameraY = *(int*)(dwCameraY);
+	float cameraZoom = *(float*)(dwCameraZoom);*/
+
 	float windowWidth = *(uint32_t*)0x0054d048;
 	float windowHeight = *(uint32_t*)0x0054d04c;
 
-	int cameraX = *(int*)(0x0055dec4); 
+	int cameraX = *(int*)(0x0055dec4);
 	int cameraY = *(int*)(0x0055dec8);
-	float cameraZoom = *(float*)(0x0054eb70); 
+	float cameraZoom = *(float*)(0x0054eb70);
 
 	float xCamTemp = ((((float)(xPos - cameraX) * cameraZoom) / 128.0) * (windowWidth / 640.0) + windowWidth / 2.0);
 	float yCamTemp = ((((float)(yPos - cameraY) * cameraZoom) / 128.0 - 49.0) * (windowHeight / 480.0) + windowHeight);
@@ -598,14 +605,14 @@ void animLog()
 	*/
 
 	// i strongly dislike my method of derefing here. a class could fix this
-	if (*(DWORD*)dwP1AnimPtr > dwBaseAddress)
+	if (*(DWORD*)(dwBaseAddress + dwP1AnimationPtr) > dwBaseAddress)
 	{
-		updateAnimation(*(DWORD*)dwP1AnimPtr, *(BYTE*)dwP1Blocking, *(DWORD*)dwP1PatternRead);
+		updateAnimation(*(DWORD*)(dwBaseAddress + dwP1AnimationPtr), *(BYTE*)(dwBaseAddress + dwP1Blocking), *(DWORD*)(dwBaseAddress + dwP1PatternRead));
 	}
 
-	if (*(DWORD*)dwP2AnimPtr > dwBaseAddress) 
+	if (*(DWORD*)(dwBaseAddress + dwP2AnimationPtr) > dwBaseAddress) 
 	{
-		updateAnimation(*(DWORD*)dwP2AnimPtr, *(BYTE*)dwP2Blocking, *(DWORD*)dwP2PatternRead);
+		updateAnimation(*(DWORD*)(dwBaseAddress + dwP2AnimationPtr), *(BYTE*)(dwBaseAddress + dwP2Blocking), *(DWORD*)(dwBaseAddress + dwP2PatternRead));
 	}
 }
 
