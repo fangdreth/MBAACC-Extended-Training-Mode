@@ -490,6 +490,7 @@ void drawFrameData() {
 
 void pauseGame()
 {
+	// key presses can probably be handled somewhere else
 	if (GetKeyState('P') & 0x8000)
 	{
 		if (!bPPressed)
