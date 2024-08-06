@@ -240,6 +240,9 @@ int main(int argc, char* argv[])
             std::string sProcessPath = GetProcessPath(hMBAAHandle);
             sProcessPath += "Extended-Training-Mode-DLL.dll";
 
+            // this is just for my convenience
+            //sProcessPath = "C:\\Users\\willf\\WH\\Repos\\MBAACC-Extended-Training-Mode\\MBAACC-Extended-Training-Mode\\Debug\\Extended-Training-Mode-DLL.dll";
+
             bool bInjectStatus = WH_Inject(PID, sProcessPath);
             if (bInjectStatus)
             {
@@ -2564,6 +2567,7 @@ int main(int argc, char* argv[])
             }
             else // not paused
             {
+
                 // want to reset these for a clean setup next time the game is paused
                 bOnExtendedSettingsMenu = false;
                 bInExtendedSettings = false;
@@ -2592,27 +2596,6 @@ int main(int argc, char* argv[])
                 if (nFrameCounter == nOldFrameCounter)
                     continue;
                 nOldFrameCounter = nFrameCounter;
-
-
-
-                /*DWORD dwP1RedAddress = GetP1RedAddress(hMBAAHandle, dwBaseAddress);
-                DWORD dwP1GreenAddress = GetP1GreenAddress(hMBAAHandle, dwBaseAddress);
-                DWORD dwP1BlueAddress = GetP1BlueAddress(hMBAAHandle, dwBaseAddress);
-                int nRedCurve = nFrameCounter % 255;
-                int nGreenCurve = (nFrameCounter + 255 / 3) % 255;
-                int nBlueCurve = (nFrameCounter + 255 / 6) % 255;
-                nWriteBuffer = nRedCurve;
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1RedAddress), &nWriteBuffer, 1, 0);
-                nWriteBuffer = nGreenCurve;
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1GreenAddress), &nWriteBuffer, 1, 0);
-                nWriteBuffer = nBlueCurve;
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1BlueAddress), &nWriteBuffer, 1, 0);*/
-
-                //nWriteBuffer = 255;
-                //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1RedAddress), &nWriteBuffer, 1, 0);
-                //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1GreenAddress), &nWriteBuffer, 1, 0);
-                //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwP1BlueAddress), &nWriteBuffer, 1, 0);
-
 
                 // populate the reversal patterns list and character data
                 // may be able to remove the timer condition, since CSS clears patternname list

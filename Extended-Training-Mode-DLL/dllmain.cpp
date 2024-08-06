@@ -52,6 +52,10 @@ const ADDRESS  dwP2PatternRead = (dwBaseAddress + 0x155C3C);
 std::array<BYTE, 3> arrIdleHighlightSetting({ 255, 255, 255 });
 std::array<BYTE, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
 
+bool bPaused = false;
+bool bPPressed = false;
+bool bSpacePressed = false;
+
 enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT };
 
 void log(const char* msg) 
@@ -484,8 +488,40 @@ void drawFrameData() {
 
 }
 
+void pauseGame()
+{
+	if (GetKeyState('P') & 0x8000)
+	{
+		if (!bPPressed)
+		{
+			bPPressed = true;
+			bPaused = !bPaused;
+		}
+	}
+	else
+		bPPressed = false;
+
+	if (GetKeyState(VK_SPACE) & 0x8000)
+	{
+		if (!bSpacePressed)
+		{
+			bSpacePressed = true;
+			patchByte(dwBaseAddress + 0x162A48, 0);
+			return;
+		}
+	}
+	else
+		bSpacePressed = false;
+
+	if (bPaused)
+	{
+		patchByte(dwBaseAddress + 0x162A48, 2);
+	}
+}
+
 void frameDoneCallback() {
 	drawFrameData();
+	pauseGame();
 }
 
 void initRenderCallback() {
