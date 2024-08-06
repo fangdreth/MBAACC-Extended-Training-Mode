@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "Constants.h"
+#include "..\Common\Constants.h"
 
 char cGameState = 0; // 1:In-Game 2:Title 3:Logos 8:Loading 9:Arcade Cutscene 10:Next Stage 12:Options 20:CSS 25:Main Menu
 char cGlobalEXFlash = 0; //Used for EXFlashes where neither char moves

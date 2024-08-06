@@ -11,7 +11,7 @@
 
 #include "json.hpp"
 
-#include "Constants.h"
+#include "..\Common\Constants.h"
 #include "CharacterData.h"
 #include "PointerManager.h"
 #include "FrameDisplay.h"

@@ -1,5 +1,5 @@
 #pragma once
-#include "Constants.h"
+#include "..\Common\Constants.h"
 #include "RawData.h"
 
 // Character ID is created as a concatination of char number and moon.  Ex. Sats is 29 and C is 0, so CSats is 290

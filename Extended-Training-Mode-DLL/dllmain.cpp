@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include <cmath>
 
+#include "..\Common\Constants.h"
+
 #pragma comment(lib, "ws2_32.lib") 
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -35,17 +37,17 @@ const ADDRESS dwBaseAddress = (0x00400000);
 
 const ADDRESS INPUTDISPLAYTOGGLE = (dwBaseAddress + 0x001585f8);
 
-const ADDRESS dwP1Struct = (dwBaseAddress + 0x00155130);
+//const ADDRESS dwP1Struct = (dwBaseAddress + 0x00155130);
 const ADDRESS dwP2Struct = (dwP1Struct + 0xAFC);
 
 const ADDRESS dwP1AnimPtr = (dwP1Struct + 0x320);
 const ADDRESS dwP2AnimPtr = (dwP2Struct + 0x320);
 
-const ADDRESS  dwP1Blocking = (dwBaseAddress + 0x1552AB);
+//const ADDRESS  dwP1Blocking = (dwBaseAddress + 0x1552AB);
 const ADDRESS  dwP2Blocking = (dwBaseAddress + 0x1552AB + 0xAFC);
 
 const ADDRESS  dwP1PatternRead = (dwBaseAddress + 0x155C3C - 0xAFC);
-const ADDRESS  dwP2PatternRead = (dwBaseAddress + 0x155C3C);
+//const ADDRESS  dwP2PatternRead = (dwBaseAddress + 0x155C3C);
 
 // helpers
 
@@ -56,7 +58,7 @@ bool bPaused = false;
 bool bPPressed = false;
 bool bSpacePressed = false;
 
-enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT };
+//enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT };
 
 void log(const char* msg) 
 {
