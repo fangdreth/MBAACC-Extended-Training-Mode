@@ -241,7 +241,8 @@ int main(int argc, char* argv[])
             sProcessPath += "Extended-Training-Mode-DLL.dll";
 
             // this is just for my convenience
-            //sProcessPath = "C:\\Users\\willf\\WH\\Repos\\MBAACC-Extended-Training-Mode\\MBAACC-Extended-Training-Mode\\Debug\\Extended-Training-Mode-DLL.dll";
+            if (std::filesystem::exists("C:\\Users\\willf\\WH\\Repos\\MBAACC-Extended-Training-Mode\\MBAACC-Extended-Training-Mode\\Debug\\Extended-Training-Mode-DLL.dll"))
+                sProcessPath = "C:\\Users\\willf\\WH\\Repos\\MBAACC-Extended-Training-Mode\\MBAACC-Extended-Training-Mode\\Debug\\Extended-Training-Mode-DLL.dll";
 
             bool bInjectStatus = WH_Inject(PID, sProcessPath);
             if (bInjectStatus)

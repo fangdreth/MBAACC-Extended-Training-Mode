@@ -156,7 +156,7 @@
     <ClCompile Include="MBAACC-Extended-Training-Mode.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\Constants.h" />
+    <ClInclude Include="..\Common\Common.h" />
     <ClInclude Include="CharacterData.h" />
     <ClInclude Include="FrameDisplay.h" />
     <ClInclude Include="Logger.h" />

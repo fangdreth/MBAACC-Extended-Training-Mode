@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "..\Common\Constants.h"
+#include "..\Common\Common.h"
 
 char cGameState = 0; // 1:In-Game 2:Title 3:Logos 8:Loading 9:Arcade Cutscene 10:Next Stage 12:Options 20:CSS 25:Main Menu
 char cGlobalEXFlash = 0; //Used for EXFlashes where neither char moves
@@ -16,7 +16,7 @@ int nLastTrueFrameCount = 0;
 char cTrainingControlPlayer = 0;
 char cFN1Input = 0;
 char cFN2Input = 0;
-char cDummyState = 0; // Same as Constants.h "Enemy Status" except -1 for recording
+char cDummyState = 0; // Same as Common.h "Enemy Status" except -1 for recording
 
 int nBarCounter = 0;
 int nBarScrolling = 0;

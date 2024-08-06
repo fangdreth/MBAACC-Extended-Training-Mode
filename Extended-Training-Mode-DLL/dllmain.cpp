@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <cmath>
 
-#include "..\Common\Constants.h"
+#include "..\Common\Common.h"
 
 #pragma comment(lib, "ws2_32.lib") 
 
@@ -36,18 +36,6 @@ typedef uint32_t uint;
 const ADDRESS dwBaseAddress = (0x00400000);
 
 const ADDRESS INPUTDISPLAYTOGGLE = (dwBaseAddress + 0x001585f8);
-
-//const ADDRESS dwP1Struct = (dwBaseAddress + 0x00155130);
-//const ADDRESS dwP2Struct = (dwP1Struct + 0xAFC);
-
-//const ADDRESS dwP1AnimPtr = (dwP1Struct + 0x320);
-//const ADDRESS dwP2AnimPtr = (dwP2Struct + 0x320);
-
-//const ADDRESS  dwP1Blocking = (dwBaseAddress + 0x1552AB);
-//const ADDRESS  dwP2Blocking = (dwBaseAddress + 0x1552AB + 0xAFC);
-
-//const ADDRESS  dwP1PatternRead = (dwBaseAddress + 0x155C3C - 0xAFC);
-//const ADDRESS  dwP2PatternRead = (dwBaseAddress + 0x155C3C);
 
 // helpers
 
@@ -110,70 +98,6 @@ void log(const char* msg)
 	WSACleanup();
 
 	delete[] message;
-}
-
-void GetSharedMemory()
-{
-	static bool bSharedMemoryInit = false;
-	static HANDLE hMapFile = NULL;
-	static LPVOID pBuf = NULL;
-
-	if (!bSharedMemoryInit)
-	{
-		const auto sSharedName = L"MBAACCExtendedTrainingMode";
-		const int nSharedSize = 8;
-
-		hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, sSharedName);
-		if (hMapFile == NULL) 
-		{
-			return;
-		}
-
-		pBuf = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, nSharedSize);
-		if (pBuf == NULL)
-		{
-			CloseHandle(hMapFile);
-			return;
-		}
-		bSharedMemoryInit = true;
-	}
-
-	int nIdleHighlightSetting = ((int*)pBuf)[0];
-	int nBlockingHighlightSetting = ((int*)pBuf)[1];
-
-	switch (nIdleHighlightSetting) 
-	{
-	default:
-	case NO_HIGHLIGHT:
-		arrIdleHighlightSetting = { 255, 255, 255 };
-		break;
-	case RED_HIGHLIGHT:
-		arrIdleHighlightSetting = { 255, 0, 0 };
-		break;
-	case GREEN_HIGHLIGHT:
-		arrIdleHighlightSetting = { 0, 255, 0 };
-		break;
-	case BLUE_HIGHLIGHT:
-		arrIdleHighlightSetting = { 0, 0, 255 };
-		break;
-	}
-
-	switch (nBlockingHighlightSetting) 
-	{
-	default:
-	case NO_HIGHLIGHT:
-		arrBlockingHighlightSetting = { 255, 255, 255 };
-		break;
-	case RED_HIGHLIGHT:
-		arrBlockingHighlightSetting = { 255, 0, 0 };
-		break;
-	case GREEN_HIGHLIGHT:
-		arrBlockingHighlightSetting = { 0, 255, 0 };
-		break;
-	case BLUE_HIGHLIGHT:
-		arrBlockingHighlightSetting = { 0, 0, 255 };
-		break;
-	}
 }
 
 void debugLogBytes(BYTE* p)
@@ -571,22 +495,23 @@ void animLog()
 		{
 			switch (patternState) 
 			{
-			case 0:
-			case 10:
-			case 11:
-			case 12:
-			case 13:
-			case 14:
-			case 17:
-			case 18:
-			case 19:
-			case 35:
-			case 36:
-			case 37:
-			case 38:
-			case 39:
-			case 40:
-			case 360:
+			case 0:			// stand
+			//case 10:		// walk forward
+			//case 11:		// walk back
+			case 12:		// to crouch
+			case 13:		// crouch
+			case 14:		// from crouch
+			case 15:		// turn around
+			case 17:		// stand block
+			case 18:		// crouch block
+			case 19:		// jump block
+			case 35:		// j9
+			case 36:		// j8
+			case 37:		// j7
+			//case 38:		// dj9
+			//case 39:		// dj 8
+			//case 40:		// dj7
+			//case 360:		// sj8
 				patchMemcpy(animDataAddr + 0x18, arrIdleHighlightSetting.data(), 3);
 				break;
 			default:
@@ -676,7 +601,7 @@ void threadFunc()
 		*/
 		
 		// ideally, this would be done with signals
-		GetSharedMemory();
+		GetSharedMemory(&arrIdleHighlightSetting, &arrBlockingHighlightSetting);
 		Sleep(8);
 	}
 }

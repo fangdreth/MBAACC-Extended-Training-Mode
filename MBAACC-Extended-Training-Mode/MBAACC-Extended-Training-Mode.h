@@ -11,7 +11,7 @@
 
 #include "json.hpp"
 
-#include "..\Common\Constants.h"
+#include "..\Common\Common.h"
 #include "CharacterData.h"
 #include "PointerManager.h"
 #include "FrameDisplay.h"
@@ -243,50 +243,5 @@ void SetP3X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 void SetP4X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 {
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 3), &nValue, 4, 0);
-}
-
-void SetSharedMemory(int nIdleHighlightSetting, int nBlockingHighlightSetting)
-{
-
-    /*
-    
-    ideally this h file would be included by dllmain as well
-
-    current memory being shared is:
-
-    nIdleHighlightSetting
-    nBlockingHighlightSetting
-    
-    */
-
-    const auto sSharedName = L"MBAACCExtendedTrainingMode";
-    const int nSharedSize = 8;
-
-    static bool bSharedMemoryInit = false;
-    static HANDLE hMapFile = NULL;
-    static LPVOID pBuf = NULL;
-    
-    if (!bSharedMemoryInit) {
-        hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, nSharedSize, sSharedName);
-        if (hMapFile == NULL) {
-            std::cerr << "CreateFileMapping failed: " << GetLastError() << std::endl;
-            return;
-        }
-
-        pBuf = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, nSharedSize);
-        if (pBuf == NULL) {
-            std::cerr << "MapViewOfFile failed: " << GetLastError() << std::endl;
-            CloseHandle(hMapFile);
-            return;
-        }
-        bSharedMemoryInit = true;
-    }
-
-    BYTE arrSendBuffer[nSharedSize];
-
-    *(DWORD*)& (arrSendBuffer[0]) = nIdleHighlightSetting;
-    *(DWORD*)&(arrSendBuffer[4]) = nBlockingHighlightSetting;
-
-    CopyMemory(pBuf, &arrSendBuffer, nSharedSize);
 }
 

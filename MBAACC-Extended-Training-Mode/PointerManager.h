@@ -1,5 +1,5 @@
 #pragma once
-#include "..\Common\Constants.h"
+#include "..\Common\Common.h"
 
 static DWORD GetSubMenuEnumAddress(HANDLE hMBAAHandle, DWORD dwBaseAddress)
 {

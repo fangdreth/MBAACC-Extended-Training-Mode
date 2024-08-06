@@ -3,6 +3,7 @@
 #include <string>
 #include <Windows.h>
 #include <map>
+#include <iostream>
 
 enum eMenu { MAIN = 2, BATTLE_SETTINGS = 6, ENEMY_SETTINGS = 7, VIEW_SCREEN = 12, COMMAND_LIST = 13 };
 enum eEnemyStatus { STAND, JUMP, CROUCH, CPU, MANUAL, DUMMY };
@@ -83,6 +84,11 @@ const DWORD dwP1RyougiKnife = 0x1552E8; //0=knife 1=no knife
 const DWORD dwP1FMaidsHearts = 0x1552FC; //0=full 5=empty
 const DWORD dwP1Blocking = 0x1552AB;
 const DWORD dwP2Blocking = dwP1Blocking + 0xAFC;
+
+// SharedMemory
+enum eSharedOffsets { SHARE_IDLEHIGHLIGHT, SHARE_BLOCKINGHIGHLIGHT };
+const LPCWSTR sSharedName = L"MBAACCExtendedTrainingMode";
+const int nSharedSize = 8;
 
 // DLL Constants
 const DWORD dwCameraX = 0x0055dec4;
@@ -210,3 +216,108 @@ const char pcIdle_5[5] = "IDLE";
 const char pcRed_4[4] = "RED";
 const char pcGreen_6[6] = "GREEN";
 const char pcBlue_5[5] = "BLUE";
+
+void SetSharedMemory(int nIdleHighlightSetting, int nBlockingHighlightSetting)
+{
+
+    /*
+
+    ideally this h file would be included by dllmain as well
+
+    current memory being shared is:
+
+    nIdleHighlightSetting
+    nBlockingHighlightSetting
+
+    */
+
+    const int nSharedSize = 8;
+
+    static bool bSharedMemoryInit = false;
+    static HANDLE hMapFile = NULL;
+    static LPVOID pBuf = NULL;
+
+    if (!bSharedMemoryInit) {
+        hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, nSharedSize, sSharedName);
+        if (hMapFile == NULL) {
+            std::cerr << "CreateFileMapping failed: " << GetLastError() << std::endl;
+            return;
+        }
+
+        pBuf = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, nSharedSize);
+        if (pBuf == NULL) {
+            std::cerr << "MapViewOfFile failed: " << GetLastError() << std::endl;
+            CloseHandle(hMapFile);
+            return;
+        }
+        bSharedMemoryInit = true;
+    }
+
+    BYTE arrSendBuffer[nSharedSize];
+
+    *(DWORD*)&(arrSendBuffer[0]) = nIdleHighlightSetting;
+    *(DWORD*)&(arrSendBuffer[4]) = nBlockingHighlightSetting;
+
+    CopyMemory(pBuf, &arrSendBuffer, nSharedSize);
+}
+
+void GetSharedMemory(std::array<BYTE, 3>* parrIdleHighlightSetting, std::array<BYTE, 3>* parrBlockingHighlightSetting)
+{
+	static bool bSharedMemoryInit = false;
+	static HANDLE hMapFile = NULL;
+	static LPVOID pBuf = NULL;
+
+	if (!bSharedMemoryInit)
+	{
+		hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, sSharedName);
+		if (hMapFile == NULL)
+		{
+			return;
+		}
+
+		pBuf = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, nSharedSize);
+		if (pBuf == NULL)
+		{
+			CloseHandle(hMapFile);
+			return;
+		}
+		bSharedMemoryInit = true;
+	}
+
+	int nIdleHighlightSetting = ((int*)pBuf)[SHARE_IDLEHIGHLIGHT];
+	int nBlockingHighlightSetting = ((int*)pBuf)[SHARE_BLOCKINGHIGHLIGHT];
+
+	switch (nIdleHighlightSetting)
+	{
+	default:
+	case NO_HIGHLIGHT:
+		*parrIdleHighlightSetting = { 255, 255, 255 };
+		break;
+	case RED_HIGHLIGHT:
+		*parrIdleHighlightSetting = { 255, 90, 90 };
+		break;
+	case GREEN_HIGHLIGHT:
+		*parrIdleHighlightSetting = { 90, 255, 90 };
+		break;
+	case BLUE_HIGHLIGHT:
+		*parrIdleHighlightSetting = { 90, 90, 255 };
+		break;
+	}
+
+	switch (nBlockingHighlightSetting)
+	{
+	default:
+	case NO_HIGHLIGHT:
+		*parrBlockingHighlightSetting = { 255, 255, 255 };
+		break;
+	case RED_HIGHLIGHT:
+		*parrBlockingHighlightSetting = { 255, 90, 90 };
+		break;
+	case GREEN_HIGHLIGHT:
+		*parrBlockingHighlightSetting = { 90, 255, 90 };
+		break;
+	case BLUE_HIGHLIGHT:
+		*parrBlockingHighlightSetting = { 90, 90, 255 };
+		break;
+	}
+}

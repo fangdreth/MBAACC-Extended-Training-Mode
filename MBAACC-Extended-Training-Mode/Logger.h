@@ -7,7 +7,7 @@
 #include <format>
 #include <fstream>
 
-#include "..\Common\Constants.h"
+#include "..\Common\Common.h"
 
 static HANDLE m_hConsole;
 static std::string m_sLogFile;
