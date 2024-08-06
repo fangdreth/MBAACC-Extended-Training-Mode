@@ -601,7 +601,8 @@ void threadFunc()
 		*/
 		
 		// ideally, this would be done with signals
-		GetSharedMemory(&arrIdleHighlightSetting, &arrBlockingHighlightSetting);
+		GetSharedMemory(&arrIdleHighlightSetting,
+						&arrBlockingHighlightSetting);
 		Sleep(8);
 	}
 }

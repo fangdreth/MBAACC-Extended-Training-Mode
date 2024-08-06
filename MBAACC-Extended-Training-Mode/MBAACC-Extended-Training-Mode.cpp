@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
         
         SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
         std::cout << "===========================================================================\x1b[K" << std::endl;
-        std::cout << "|   Fang, gonp, and Inana's Extended Training Mode Mod " << VERSION << "               |\x1b[K" << std::endl;
+        std::cout << "|   Fang, gonp, and meepster99's Extended Training Mode Mod " << VERSION << "          |\x1b[K" << std::endl;
         std::cout << "|                                                                         |\x1b[K" << std::endl;
         std::cout << "|   " << GITHUB_RELEASE << "   |\x1b[K" << std::endl;
         if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
@@ -1184,12 +1184,14 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
                         {
                             nIdleHighlightSetting = max(NO_HIGHLIGHT, nIdleHighlightSetting - 1);
-                            SetSharedMemory(nIdleHighlightSetting, nBlockingHighlightSetting);
+                            SetSharedMemory(nIdleHighlightSetting,
+                                            nBlockingHighlightSetting);
                         }
                         else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
                         {
                             nIdleHighlightSetting = min(BLUE_HIGHLIGHT, nIdleHighlightSetting + 1);
-                            SetSharedMemory(nIdleHighlightSetting, nBlockingHighlightSetting);
+                            SetSharedMemory(nIdleHighlightSetting,
+                                            nBlockingHighlightSetting);
                         }
 
                         if (nOldEnemyDefenseIndex == -1)
@@ -1197,12 +1199,14 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                         {
                             nBlockingHighlightSetting = max(NO_HIGHLIGHT, nBlockingHighlightSetting - 1);
-                            SetSharedMemory(nIdleHighlightSetting, nBlockingHighlightSetting);
+                            SetSharedMemory(nIdleHighlightSetting,
+                                            nBlockingHighlightSetting);
                         }
                         else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                         {
                             nBlockingHighlightSetting = min(BLUE_HIGHLIGHT, nBlockingHighlightSetting + 1);
-                            SetSharedMemory(nIdleHighlightSetting, nBlockingHighlightSetting);
+                            SetSharedMemory(nIdleHighlightSetting,
+                                            nBlockingHighlightSetting);
                         }
                     }
 
