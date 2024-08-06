@@ -399,11 +399,62 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 	}
 }
 
+//In-game frame bar proof-of-concept
+DWORD frameBarP1[50];
+DWORD frameBarP2[50];
+
+void updateFrameBar(DWORD frameBar[50], DWORD playerStruct, DWORD inactionOffset)
+{
+	int currentFrame = *(int*)(dwBaseAddress + 0x15D1CC) % 50;
+	if (*(int*)(dwBaseAddress + 0x15D1CC) == 1) //Sense reset
+	{
+		for (int i = 0; i < 50; i++)
+		{
+			frameBar[i] = 0xFF101010;
+		}
+	}
+
+	if (*(char*)(dwBaseAddress + playerStruct + 0x172) != 0)
+	{
+		frameBar[currentFrame] = 0xFF008080;
+	}
+	else if (*(int*)(dwBaseAddress + playerStruct + 0x324) != 0)
+	{
+		frameBar[currentFrame] = 0xFFFF0000;
+	}
+	else if (*(int*)(dwBaseAddress + inactionOffset) != 0)
+	{
+		frameBar[currentFrame] = 0xFF00FF00;
+	}
+	else
+	{
+		frameBar[currentFrame] = 0xFF101010;
+	}
+	
+}
+
+void drawFrameBar() {
+	updateFrameBar(frameBarP1, dwP1Struct, 0x157FC0);
+	updateFrameBar(frameBarP2, dwP2Struct, 0x1581CC);
+
+	for (unsigned i = 0; i < 50; i++) //P1 Bar
+	{
+		drawRect(20 + 12 * i, 400, 10, 10, frameBarP1[i]);
+	}
+	for (unsigned i = 0; i < 50; i++) //P2 Bar
+	{
+		drawRect(20 + 12 * i, 412, 10, 10, frameBarP2[i]);
+	}
+	drawRect(18, 398, 604, 26, 0x80FFFFFF); //Background
+}
+
 void drawFrameData() {
 
 	if (!safeWrite()) {
 		return;
 	}
+
+	//drawFrameBar();
 
 	drawObject(0x00555130 + (0xAFC * 0), false); // P1
 	drawObject(0x00555130 + (0xAFC * 1), false); // P2

@@ -722,8 +722,12 @@ void BarHandling(Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
 			nSharedHitstop = 0;
 		}
 		
+		bool bIsFreeze = (
+			cGlobalEXFlash != 0 ||
+			nSharedHitstop > 1
+			);
 
-		if (!(bHideFreeze && nSharedHitstop > 1))
+		if (!(bHideFreeze && bIsFreeze))
 		{
 			IncrementActive(P1);
 			IncrementActive(P2);
