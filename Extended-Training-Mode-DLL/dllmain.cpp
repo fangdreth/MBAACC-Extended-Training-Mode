@@ -490,7 +490,7 @@ void pauseGame()
 		if (!bSpacePressed)
 		{
 			bSpacePressed = true;
-			patchByte(dwBaseAddress + 0x162A48, 0);
+			patchByte(dwBaseAddress + dwGlobalEXFlash, 0);
 			return;
 		}
 	}
@@ -499,7 +499,7 @@ void pauseGame()
 
 	if (bPaused)
 	{
-		patchByte(dwBaseAddress + 0x162A48, 2);
+		patchByte(dwBaseAddress + dwGlobalEXFlash, 2);
 	}
 }
 

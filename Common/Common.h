@@ -84,6 +84,7 @@ const DWORD dwP1RyougiKnife = 0x1552E8; //0=knife 1=no knife
 const DWORD dwP1FMaidsHearts = 0x1552FC; //0=full 5=empty
 const DWORD dwP1Blocking = 0x1552AB;
 const DWORD dwP2Blocking = dwP1Blocking + 0xAFC;
+const DWORD dwGlobalEXFlash = 0x162A48;
 
 // SharedMemory
 enum eSharedOffsets { SHARE_IDLEHIGHLIGHT, SHARE_BLOCKINGHIGHLIGHT };
