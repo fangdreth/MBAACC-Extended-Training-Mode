@@ -22,6 +22,9 @@
 static_assert(sizeof(int*) == 4, "COMPILE PROGRAM AS 32BIT");
 
 typedef DWORD ADDRESS;
+typedef long long longlong;
+typedef unsigned long long ulonglong;
+typedef uint32_t uint;
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
@@ -255,7 +258,7 @@ void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4) {
 	// there must be a better way of doing this than using 4 rects
 	// framestop draws less intrusive rects. figure out how
 	// the lines are much clearer. most likely not calling melty draw methods but dxd3 methods
-	// will 
+	// will need to look into more melty drawing methods
 
 	constexpr int lineWidth = 1;
 
@@ -269,6 +272,13 @@ void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4) {
 
 	drawRect(x + w - 1, y, lineWidth, h, ARGB);
 	drawRect(x, y + h - 1, w, lineWidth, ARGB);
+}
+
+void scaleCords(const float xOrig, const float yOrig, float& x1Cord, float& y1Cord, float& x2Cord, float& y2Cord) {
+	x1Cord = xOrig + (x1Cord - xOrig) * 0.5;
+	y1Cord = yOrig + (y1Cord - yOrig) * 0.5;
+	x2Cord = xOrig + (x2Cord - xOrig) * 0.5;
+	y2Cord = yOrig + (y2Cord - yOrig) * 0.5;
 }
 
 DWORD getObjFrameDataPointer(DWORD objAddr) {
@@ -302,13 +312,6 @@ DWORD getObjFrameDataPointer(DWORD objAddr) {
 	return baseStatePtr;
 }
 
-typedef long long longlong;
-typedef unsigned long long ulonglong;
-typedef uint32_t uint;
-
-//#define ROUND(x) (round(x))
-#define ROUND(x) (x)
-
 void drawObject(DWORD objAddr, bool isProjectile) {
 
 	char buffer[256];
@@ -330,7 +333,6 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 		isRight = -1;
 	}
 
-
 	float windowWidth = *(uint32_t*)0x0054d048;
 	float windowHeight = *(uint32_t*)0x0054d04c;
 
@@ -348,6 +350,33 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 	uint32_t drawColor;
 
 	// -----
+
+	// origin?
+
+	drawColor = 0xFF42E5F4;
+
+	x1Cord = ((float)xCamTemp - (windowWidth / 640.0) * cameraZoom * 5.0);
+	x2Cord = ((windowWidth / 640.0) * cameraZoom * 5.0 + (float)xCamTemp);
+	y1Cord = ((float)yCamTemp - (windowWidth / 640.0) * cameraZoom * 5.0);
+	y2Cord = yCamTemp;
+
+	x1Cord = floor((float)x1Cord * (640.0 / windowWidth));
+	x2Cord = floor((float)x2Cord * (640.0 / windowWidth));
+	y1Cord = floor((float)y1Cord * (480.0 / windowHeight));
+	y2Cord = floor((float)y2Cord * (480.0 / windowHeight));
+
+	if(!isProjectile) {
+		drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
+	}
+
+	// current vibes say that the origin is in the bottom center of the above rectangle, needs more non vibe based confirmation though
+	float xOrig = x1Cord + ((x2Cord - x1Cord) / 2);
+	float yOrig = y2Cord;
+
+	// lots of stuff here seems to interact with 0x330. this is off of 0x320, is this an issue?
+	// should have made a box/poit class
+	DWORD animDataPtr = *(DWORD*)(objAddr + 0x320);
+	bool isPat = *(BYTE*)(animDataPtr + 0x0);
 
 	// non hitboxes
 	if (*(DWORD*)(objFramePtr + 0x4C) != 0) {
@@ -389,14 +418,15 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 			tempFloat = (windowHeight / 480.0) * cameraZoom;
 			y2Cord = ((float)*(short*)(*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) + 6) * (tempFloat + tempFloat) + (float)yCamTemp);
 
-			x1Cord = round((float)x1Cord * (640.0 / windowWidth));
-			x2Cord = round((float)x2Cord * (640.0 / windowWidth));
-			y1Cord = round((float)y1Cord * (480.0 / windowHeight));
-			y2Cord = round((float)y2Cord * (480.0 / windowHeight));
-			// how should rounding occur for these vars?
+			x1Cord = floor((float)x1Cord * (640.0 / windowWidth));
+			x2Cord = floor((float)x2Cord * (640.0 / windowWidth));
+			y1Cord = floor((float)y1Cord * (480.0 / windowHeight));
+			y2Cord = floor((float)y2Cord * (480.0 / windowHeight));
 
-			//snprintf(buffer, 256, "%8d %8d %8d %8d", (int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord));
-			//log(buffer);
+			if (isPat) {
+				scaleCords(xOrig, yOrig, x1Cord, y1Cord, x2Cord, y2Cord);
+			}
+			
 			drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
 		}
 	}
@@ -419,33 +449,18 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 
 			y2Cord = ((float)((int)*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 6) << 1) * (windowHeight / 480.0) * cameraZoom + (float)yCamTemp);
 
-			x1Cord = round((float)x1Cord * (640.0 / windowWidth));
-			x2Cord = round((float)x2Cord * (640.0 / windowWidth));
-			y1Cord = round((float)y1Cord * (480.0 / windowHeight));
-			y2Cord = round((float)y2Cord * (480.0 / windowHeight));
-			// how should rounding occur for these vars?
+			x1Cord = floor((float)x1Cord * (640.0 / windowWidth));
+			x2Cord = floor((float)x2Cord * (640.0 / windowWidth));
+			y1Cord = floor((float)y1Cord * (480.0 / windowHeight));
+			y2Cord = floor((float)y2Cord * (480.0 / windowHeight));
+
+			if (isPat) {
+				scaleCords(xOrig, yOrig, x1Cord, y1Cord, x2Cord, y2Cord);
+			}
 
 			drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
-
 		}
 	}
-
-	// origin?
-	if (!isProjectile) {
-		x1Cord = ((float)xCamTemp - (windowWidth / 640.0) * cameraZoom * 5.0);
-		x2Cord = ((windowWidth / 640.0) * cameraZoom * 5.0 + (float)xCamTemp);
-		y1Cord = ((float)yCamTemp - (windowWidth / 640.0) * cameraZoom * 5.0);
-		y2Cord = yCamTemp;
-
-		x1Cord = round((float)x1Cord * (640.0 / windowWidth));
-		x2Cord = round((float)x2Cord * (640.0 / windowWidth));
-		y1Cord = round((float)y1Cord * (480.0 / windowHeight));
-		y2Cord = round((float)y2Cord * (480.0 / windowHeight));
-		// how should rounding occur for these vars?
-
-		drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), 0xFF42E5F4);
-	}
-
 }
 
 void drawFrameData() {
