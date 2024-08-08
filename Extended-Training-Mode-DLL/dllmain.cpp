@@ -55,6 +55,10 @@ public:
 		return hActiveWindow == hForegroundWindow;
 	}
 
+	bool keyHeld() {
+		return (GetAsyncKeyState(vKey) & 0x8000) ? true : false;
+	}
+
 	bool keyDown() {
 		bool tempState = (GetAsyncKeyState(vKey) & 0x8000) ? true : false;
 		bool res = false;
@@ -156,8 +160,6 @@ bool safeWrite() {
 	return true;
 }
 
-extern "C" int DrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
-
 // patch funcs
 
 void patchMemcpy(auto dst, auto src, size_t n) 
@@ -200,6 +202,22 @@ void patchByte(auto addr, const BYTE byte)
 }
 
 // actual functions 
+
+extern "C" int asmDrawText(int w, int h, int x, int y, const char* text, int alpha, int shade, int layer, void* addr, int spacing, int idek, char* out);
+
+void drawText(int x, int y, int w, int h, const char* text, int alpha, int shade, int layer = 0x2cc, void* font = (void*)adFont2) {
+	// text was initially just char*, i made it const, is that going to be ok?
+	asmDrawText(w, h, x, y, text, alpha, shade, layer, font, 0, 0, 0);
+}
+
+void drawText(int x, int y, const char* text, int textSize = 16) {
+
+	int len = strnlen_s(text, 1024);
+
+	float tempWidth = ((float)textSize / 5.0) * (float)len;
+
+	drawText(x, y, (int)tempWidth, textSize, text, 0xFF, 0xFF);
+}
 
 extern "C" int asmDrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
 
@@ -483,7 +501,7 @@ void drawFrameData() {
 		return;
 	}
 
-	//drawFrameBar();
+	drawFrameBar();
 
 	drawObject(0x00555130 + (0xAFC * 0), false); // P1
 	drawObject(0x00555130 + (0xAFC * 1), false); // P2
@@ -556,6 +574,11 @@ void initPauseCallback() {
 
 void frameDoneCallback() {
 	drawFrameData();
+
+	drawText(300, 420, "wow", 16);
+
+	//drawText(300, 440, "wowee", 32);
+
 }
 
 void initRenderCallback() {
@@ -690,9 +713,6 @@ void threadFunc()
 	initPauseCallback();
 	initRenderCallback();
 	initAnimHook();
-	
-
-
 
 	while (true) 
 	{

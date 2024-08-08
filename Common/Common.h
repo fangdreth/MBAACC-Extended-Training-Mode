@@ -126,6 +126,11 @@ const ADDRESS adP4TagFlag = 0x155130 + 0x178 + 3 * dwPlayerStructSize; //0x15739
 const DWORD dwProjectileStructSize = 0x33C;
 const ADDRESS adProjectileBase = 0x27BDE8;
 
+// addresses for fonts
+const ADDRESS adFont0 = 0x55D680;
+const ADDRESS adFont1 = 0x55D260;
+const ADDRESS adFont2 = 0x55DAA0;
+
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
 const std::vector<int> vGuardLevelLookupTable =
