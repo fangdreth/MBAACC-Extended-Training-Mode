@@ -16,6 +16,10 @@
 
 #pragma comment(lib, "ws2_32.lib") 
 
+#pragma push_macro("optimize")
+#pragma optimize("t", on) 
+
+
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define CLAMP(value, min_val, max_val) MAX(MIN((value), (max_val)), (min_val))
@@ -292,8 +296,6 @@ DWORD getObjFrameDataPointer(DWORD objAddr) {
 
 void drawObject(DWORD objAddr, bool isProjectile) {
 
-	char buffer[256];
-
 	int xPos = *(DWORD*)(objAddr + 0x108);
 	int yPos = *(DWORD*)(objAddr + 0x10C);
 	bool facingLeft = *(BYTE*)(objAddr + 0x314);
@@ -310,13 +312,6 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 	if (facingLeft) {
 		isRight = -1;
 	}
-
-	/*float windowWidth = *(uint32_t*)dwWindowWidth;
-	float windowHeight = *(uint32_t*)dwWindowHeight;
-
-	int cameraX = *(int*)(dwCameraX);
-	int cameraY = *(int*)(dwCameraY);
-	float cameraZoom = *(float*)(dwCameraZoom);*/
 
 	float windowWidth = *(uint32_t*)0x0054d048;
 	float windowHeight = *(uint32_t*)0x0054d04c;
@@ -362,7 +357,7 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 	// should have made a box/poit class
 	DWORD animDataPtr = *(DWORD*)(objAddr + 0x320);
 	bool isPat = *(BYTE*)(animDataPtr + 0x0);
-
+	
 	// non hitboxes
 	if (*(DWORD*)(objFramePtr + 0x4C) != 0) {
 		unsigned unknownLoopLimit = *(BYTE*)(objFramePtr + 0x42);
@@ -572,11 +567,21 @@ void initPauseCallback() {
 }
 
 void frameDoneCallback() {
-	drawFrameData();
 
-	drawText(300, 420 + (16 * 0), "wow", 16, adFont0);
-	drawText(300, 420 + (16 * 1), "wow", 16, adFont1);
-	drawText(300, 420 + (16 * 2), "wow", 16, adFont2);
+	static KeyState hKey('H');
+	static bool bShowHitboxes = false;
+
+	if (hKey.keyDown()) {
+		bShowHitboxes = !bShowHitboxes;
+	}
+
+	if (bShowHitboxes) {
+		drawFrameData();
+
+		drawText(300, 420 + (16 * 0), "wow", 16, adFont0);
+		drawText(300, 420 + (16 * 1), "wow", 16, adFont1);
+		drawText(300, 420 + (16 * 2), "wow", 16, adFont2);
+	}
 	
 
 }
@@ -717,7 +722,7 @@ void threadFunc()
 	while (true) 
 	{
 
-		// ideally, this would be done with signals
+		// ideally, this would be done with signals. also unknown if this is thread safe
 		GetSharedMemory(&arrIdleHighlightSetting,
 						&arrBlockingHighlightSetting);
 		Sleep(8);
@@ -736,3 +741,4 @@ BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 	return TRUE;
 }
 
+#pragma pop_macro("optimize")
