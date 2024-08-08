@@ -41,11 +41,40 @@ const ADDRESS INPUTDISPLAYTOGGLE = (dwBaseAddress + 0x001585f8);
 std::array<BYTE, 3> arrIdleHighlightSetting({ 255, 255, 255 });
 std::array<BYTE, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
 
-bool bPaused = false;
-bool bPPressed = false;
-bool bSpacePressed = false;
-
 //enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT };
+
+class KeyState {
+public:
+	// please tell me if my use of classes here is overkill
+
+	KeyState(int vKey_) : vKey(vKey_) {}
+
+	bool isFocused() {
+		HWND hActiveWindow = GetActiveWindow();
+		HWND hForegroundWindow = GetForegroundWindow();
+		return hActiveWindow == hForegroundWindow;
+	}
+
+	bool keyDown() {
+		bool tempState = (GetAsyncKeyState(vKey) & 0x8000) ? true : false;
+		bool res = false;
+		if (prevState != tempState && tempState)
+		{
+			res = true;
+		}
+		prevState = tempState;
+
+		if (!isFocused()) {
+			return false;
+		}
+
+		return res;
+	}
+
+private:
+	int vKey;
+	bool prevState = false;
+};
 
 void log(const char* msg) 
 {
@@ -468,44 +497,65 @@ void drawFrameData() {
 			drawObject(index * 0x33c + 0x67bde8, true);
 		}
 	}
-
 }
 
-void pauseGame()
+void __stdcall pauseCallback(DWORD dwMilliseconds)
 {
-	// key presses can probably be handled somewhere else
-	if (GetKeyState('P') & 0x8000)
-	{
-		if (!bPPressed)
-		{
-			bPPressed = true;
-			bPaused = !bPaused;
-		}
-	}
-	else
-		bPPressed = false;
+	// windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
+	
+	static KeyState pKey('P');
+	static KeyState nKey('N');
+	static bool bIsPaused = false;
 
-	if (GetKeyState(VK_SPACE) & 0x8000)
-	{
-		if (!bSpacePressed)
-		{
-			bSpacePressed = true;
-			patchByte(dwBaseAddress + dwGlobalEXFlash, 0);
-			return;
-		}
+	if (pKey.keyDown()) {
+		bIsPaused = !bIsPaused;
 	}
-	else
-		bSpacePressed = false;
 
-	if (bPaused)
-	{
-		patchByte(dwBaseAddress + dwGlobalEXFlash, 2);
+	if (!bIsPaused && nKey.keyDown()) {
+		bIsPaused = true;
 	}
+
+	MSG msg;
+
+	while (bIsPaused) {
+		Sleep(1);
+		
+		/*
+		prevent program from being marked as not responding
+		ideally, this would/could also be able to handle clicking the window(moving it to foreground)
+		it doesnt.
+		*/
+
+		PeekMessageA(&msg, (HWND)NULL, 0, 0, 0);
+
+		if (pKey.keyDown()) {
+			bIsPaused = !bIsPaused;
+		}
+
+		if (nKey.keyDown()) {
+			break;
+		}
+	} 
+	
+	Sleep(dwMilliseconds);
+}
+
+void initPauseCallback() {
+
+	/*
+	this func seems to, be responsible for slowing the game down to 60fps, i think?
+	*/
+	void* addr = (void*)0x0041fe05;
+
+	patchFunction(addr, pauseCallback);
+
+	// the call being patched is 6 bytes long, patch the extra byte with a nop
+	patchByte((BYTE*)addr + 5, 0x90);
+
 }
 
 void frameDoneCallback() {
 	drawFrameData();
-	pauseGame();
 }
 
 void initRenderCallback() {
@@ -637,19 +687,16 @@ void threadFunc()
 
 	// todo, put something here to prevent mult injection
 
+	initPauseCallback();
 	initRenderCallback();
 	initAnimHook();
+	
 
 
 
 	while (true) 
 	{
-		/*
-		this loop is no longer needed
-		due to that, it would now be possible to do this without dll injection, and just modify the programs memory
-		but getting enough space to put what is needed in there, may not be worth the effort
-		*/
-		
+
 		// ideally, this would be done with signals
 		GetSharedMemory(&arrIdleHighlightSetting,
 						&arrBlockingHighlightSetting);
