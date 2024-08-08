@@ -210,13 +210,15 @@ void drawText(int x, int y, int w, int h, const char* text, int alpha, int shade
 	asmDrawText(w, h, x, y, text, alpha, shade, layer, font, 0, 0, 0);
 }
 
-void drawText(int x, int y, const char* text, int textSize = 16) {
+void drawText(int x, int y, const char* text, int textSize = 16, auto font = adFont2) {
+
+	static_assert(sizeof(font) == 4, "Type must be 4 bytes");
 
 	int len = strnlen_s(text, 1024);
 
 	float tempWidth = ((float)textSize / 5.0) * (float)len;
 
-	drawText(x, y, (int)tempWidth, textSize, text, 0xFF, 0xFF);
+	drawText(x, y, (int)tempWidth, textSize, text, 0xFF, 0xFF, 0x02CC, (void*)font);
 }
 
 extern "C" int asmDrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
@@ -492,7 +494,7 @@ void drawFrameBar() {
 	{
 		drawRect(20 + 12 * i, 412, 10, 10, frameBarP2[i]);
 	}
-	drawRect(18, 398, 604, 26, 0x80FFFFFF); //Background
+	drawRect(18, 398, 602, 26, 0x80FFFFFF); //Background
 }
 
 void drawFrameData() {
@@ -537,14 +539,11 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 
 	while (bIsPaused) {
 		Sleep(1);
-		
-		/*
-		prevent program from being marked as not responding
-		ideally, this would/could also be able to handle clicking the window(moving it to foreground)
-		it doesnt.
-		*/
 
-		PeekMessageA(&msg, (HWND)NULL, 0, 0, 0);
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 
 		if (pKey.keyDown()) {
 			bIsPaused = !bIsPaused;
@@ -575,9 +574,10 @@ void initPauseCallback() {
 void frameDoneCallback() {
 	drawFrameData();
 
-	drawText(300, 420, "wow", 16);
-
-	//drawText(300, 440, "wowee", 32);
+	drawText(300, 420 + (16 * 0), "wow", 16, adFont0);
+	drawText(300, 420 + (16 * 1), "wow", 16, adFont1);
+	drawText(300, 420 + (16 * 2), "wow", 16, adFont2);
+	
 
 }
 
