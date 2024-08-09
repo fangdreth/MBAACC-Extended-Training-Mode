@@ -13,6 +13,7 @@
 #include <cmath>
 
 #include "..\Common\Common.h"
+#include "..\Common\CharacterData.h"
 
 #pragma comment(lib, "ws2_32.lib") 
 
@@ -149,10 +150,7 @@ void debugLogBytes(BYTE* p)
 }
 
 bool safeWrite() {
-	const DWORD dwPauseFlag = 0x162A64; //1=paused
-	const DWORD dwGameState = 0x14EEE8; //1=training
-	const DWORD dwFrameTimer = 0x15D1CC;
-	BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPauseFlag);
+	BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
 	BYTE GameState = *reinterpret_cast<BYTE*>(dwBaseAddress + dwGameState);
 	int FrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
 
@@ -566,6 +564,101 @@ void initPauseCallback() {
 
 }
 
+int nOldMot;
+int nMot = 0;
+bool bReversaled = false;
+bool bDelayingReversal = false;
+int nTempReversalDelayFrames = 0;
+int nReversalIndex1 = 0;
+int nReversalIndex2 = 0;
+int nReversalIndex3 = 0;
+int nReversalIndex4 = 0;
+int nReversalDelayFrames = 0;
+int nReversalType = REVERSAL_NORMAL;
+std::vector<std::string> vPatternNames = GetEmptyPatternList();
+std::vector<int> vAirReversals;
+std::vector<int> vGroundReversals;
+void enemyReversal()
+{
+	BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
+	if (PauseFlag == 1)
+		return;
+
+	nOldMot = nMot;
+	int nMot = *reinterpret_cast<int*>(dwBaseAddress + dwMot);
+	BYTE byteBurstCooldown = *reinterpret_cast<BYTE*>(dwBaseAddress + dwBurstCooldown);
+	BYTE byteHitstun = *reinterpret_cast<BYTE*>(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset);
+	int nP2Y = *reinterpret_cast<int*>(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset);
+	int nFrameCounter = *reinterpret_cast<int*>(dwBaseAddress + dwMot);
+	int nP2CharacterNumber = *reinterpret_cast<int*>(dwBaseAddress + dwP2CharNumber);
+	int nP2Moon = *reinterpret_cast<int*>(dwBaseAddress + dwP2CharMoon);
+	int nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
+	vPatternNames = GetPatternList(nP2CharacterID);
+	PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames, nReversalIndex1, nReversalIndex2, nReversalIndex3, nReversalIndex4);
+	drawText(300, 420 + (16 * 0), std::to_string(vAirReversals.size()).c_str(), 64, adFont0);
+
+	if (nFrameCounter == 0)
+		bReversaled = true;
+	if (nFrameCounter == 2)
+	{
+		bReversaled = false;
+		bDelayingReversal = false;
+	}
+
+	// if training was not just reset and if at least one move was selected
+	if (nFrameCounter != 0 && (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) != 0))
+	{
+		if (!bDelayingReversal && (nMot == 0 || byteHitstun != 0) && (nMot != nOldMot || nReversalType == REVERSAL_REPEAT))
+		{
+			if (!bReversaled)
+			{
+				bDelayingReversal = true;
+				nTempReversalDelayFrames = nReversalDelayFrames;
+			}
+			else
+				bReversaled = false;
+
+			if (nReversalType == REVERSAL_REPEAT)
+				bDelayingReversal = true;
+		}
+	}
+
+
+	if (nMot != 0)
+		bDelayingReversal = false;
+
+	if (bDelayingReversal)
+	{
+		if (nTempReversalDelayFrames == 0)
+		{
+
+			bDelayingReversal = false;
+			bReversaled = true;
+			if (nReversalType != REVERSAL_RANDOM || rand() % 2 == 0)
+			{
+				std::vector<int> vValidReversals = (nP2Y == 0 ? vGroundReversals : vAirReversals);
+				if (vValidReversals.size() != 0)
+				{
+					int nTempReversalIndex = 0;
+					while (1)
+					{
+						nTempReversalIndex = rand() % vValidReversals.size();
+						if (vValidReversals[nTempReversalIndex] != 0)
+							break;
+					}
+					int nWriteBuffer = vValidReversals[nTempReversalIndex];
+					patchMemcpy(dwBaseAddress + dwP2PatternSet, nWriteBuffer, 4);
+					nTempReversalDelayFrames = nReversalDelayFrames;
+				}
+			}
+			else
+				bReversaled = false;
+		}
+		else
+			nTempReversalDelayFrames--;
+	}
+}
+
 void frameDoneCallback() {
 
 	static KeyState hKey('H');
@@ -583,7 +676,7 @@ void frameDoneCallback() {
 		drawText(300, 420 + (16 * 2), "wow", 16, adFont2);
 	}
 	
-
+	enemyReversal();
 }
 
 void initRenderCallback() {
@@ -718,13 +811,16 @@ void threadFunc()
 	initPauseCallback();
 	initRenderCallback();
 	initAnimHook();
+	InitializeCharacterMaps();
 
 	while (true) 
 	{
 
 		// ideally, this would be done with signals. also unknown if this is thread safe
-		GetSharedMemory(&arrIdleHighlightSetting,
-						&arrBlockingHighlightSetting);
+		GetSharedMemory(&arrIdleHighlightSetting, &arrBlockingHighlightSetting, NULL, NULL, NULL, NULL,
+						&nReversalIndex1, &nReversalIndex2, &nReversalIndex3, &nReversalIndex4, 
+						&nReversalDelayFrames,
+						&nReversalType);
 		Sleep(8);
 	}
 }

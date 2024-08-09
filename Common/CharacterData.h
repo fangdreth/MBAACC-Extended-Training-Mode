@@ -1,6 +1,6 @@
 #pragma once
 #include "..\Common\Common.h"
-#include "RawData.h"
+#include "..\Common\RawData.h"
 
 // Character ID is created as a concatination of char number and moon.  Ex. Sats is 29 and C is 0, so CSats is 290
 enum eCharacterValues
@@ -193,6 +193,9 @@ static void InitializeCharacterMaps()
 	MBAACC_Map[eCharacterValues::CNECOMECH] = vCNECOMECH_Map;
 	MBAACC_Map[eCharacterValues::HNECOMECH] = vHNECOMECH_Map;
 	MBAACC_Map[eCharacterValues::FNECOMECH] = vFNECOMECH_Map;
+	MBAACC_Map[eCharacterValues::CNECO] = vCNECO_Map;
+	MBAACC_Map[eCharacterValues::HNECO] = vHNECO_Map;
+	MBAACC_Map[eCharacterValues::FNECO] = vFNECO_Map;
 }
 
 static int GetPattern(int nCharacterID, std::string sPatternName)
@@ -229,32 +232,35 @@ static void PopulateAirAndGroundReversals(std::vector<int>* vAirReversals, std::
 	(*vAirReversals) = {};
 	(*vGroundReversals) = {};
 
+	//if (vPatternNames->size() == 1)
+		//return;
+
 	if (GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex1]) != 0)
 	{
 		if (IsAir((*vPatternNames)[nReversalIndex1]))
-			(*vAirReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex1]));
+			vAirReversals->push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex1]));
 		else
-			(*vGroundReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex1]));
+			vGroundReversals->push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex1]));
 	}
 	if (GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex2]) != 0)
 	{
 		if (IsAir((*vPatternNames)[nReversalIndex2]))
-			(*vAirReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex2]));
+			vAirReversals->push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex2]));
 		else
-			(*vGroundReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex2]));
+			vGroundReversals->push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex2]));
 	}
 	if (GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex3]) != 0)
 	{
 		if (IsAir((*vPatternNames)[nReversalIndex3]))
-			(*vAirReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex3]));
+			vAirReversals->push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex3]));
 		else
-			(*vGroundReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex3]));
+			vGroundReversals->push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex3]));
 	}
 	if (GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex4]) != 0)
 	{
 		if (IsAir((*vPatternNames)[nReversalIndex4]))
-			(*vAirReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex4]));
+			vAirReversals->push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex4]));
 		else
-			(*vGroundReversals).push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex4]));
+			vGroundReversals->push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex4]));
 	}
 }

@@ -12,7 +12,7 @@
 #include "json.hpp"
 
 #include "..\Common\Common.h"
-#include "CharacterData.h"
+#include "..\Common\CharacterData.h"
 #include "PointerManager.h"
 #include "FrameDisplay.h"
 

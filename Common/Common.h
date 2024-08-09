@@ -85,11 +85,14 @@ const DWORD dwP1FMaidsHearts = 0x1552FC; //0=full 5=empty
 const DWORD dwP1Blocking = 0x1552AB;
 const DWORD dwP2Blocking = dwP1Blocking + 0xAFC;
 const DWORD dwGlobalEXFlash = 0x162A48;
+const DWORD dwFrameTimer = 0x15D1CC;
+const DWORD dwGameState = 0x14EEE8; //1=training
 
 // SharedMemory
-enum eSharedOffsets { SHARE_IDLEHIGHLIGHT, SHARE_BLOCKINGHIGHLIGHT };
+enum eSharedOffsets {	SHARE_IDLEHIGHLIGHT, SHARE_BLOCKINGHIGHLIGHT, SHARE_TEMP1HIGHLIGHT, SHARE_TEMP2HIGHLIGHT, SHARE_TEMP3HIGHLIGHT, SHARE_TEMP4HIGHLIGHT,
+						SHARE_REVERSALINDEX1, SHARE_REVERSALINDEX2, SHARE_REVERSALINDEX3, SHARE_REVERSALINDEX4, SHARE_REVERSALDELAYFRAMES };
 const LPCWSTR sSharedName = L"MBAACCExtendedTrainingMode";
-const int nSharedSize = 8;
+const int nSharedSize = 11 * sizeof(int);
 
 // DLL Constants
 const DWORD dwCameraX = 0x0055dec4;
@@ -223,25 +226,22 @@ const char pcRed_4[4] = "RED";
 const char pcGreen_6[6] = "GREEN";
 const char pcBlue_5[5] = "BLUE";
 
-void SetSharedMemory(int nIdleHighlightSetting, int nBlockingHighlightSetting)
+void SetSharedMemory(	int nIdleHighlightSetting,
+						int nBlockingHighlightSetting,
+						int nTemp1HighlightSetting,
+						int nTemp2HighlightSetting,
+						int nTemp3HighlightSetting,
+						int nTemp4HighlightSetting,
+						int nReversalIndex1,
+						int nReversalIndex2,
+						int nReversalIndex3,
+						int nReversalIndex4,
+						int nReversalDelayFrames,
+						int nReversalType)
 {
-
-    /*
-
-    ideally this h file would be included by dllmain as well
-
-    current memory being shared is:
-
-    nIdleHighlightSetting
-    nBlockingHighlightSetting
-
-    */
-
-    const int nSharedSize = 8;
-
-    static bool bSharedMemoryInit = false;
+	static bool bSharedMemoryInit = false;
     static HANDLE hMapFile = NULL;
-    static LPVOID pBuf = NULL;
+    static char* pBuf = NULL;
 
     if (!bSharedMemoryInit) {
         hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, nSharedSize, sSharedName);
@@ -250,7 +250,7 @@ void SetSharedMemory(int nIdleHighlightSetting, int nBlockingHighlightSetting)
             return;
         }
 
-        pBuf = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, nSharedSize);
+        pBuf = (char*)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, nSharedSize);
         if (pBuf == NULL) {
             std::cerr << "MapViewOfFile failed: " << GetLastError() << std::endl;
             CloseHandle(hMapFile);
@@ -259,15 +259,62 @@ void SetSharedMemory(int nIdleHighlightSetting, int nBlockingHighlightSetting)
         bSharedMemoryInit = true;
     }
 
-    BYTE arrSendBuffer[nSharedSize];
+    //BYTE arrSendBuffer[nSharedSize];
 
-    *(DWORD*)&(arrSendBuffer[0]) = nIdleHighlightSetting;
-    *(DWORD*)&(arrSendBuffer[4]) = nBlockingHighlightSetting;
+    //*(DWORD*)&(arrSendBuffer[0 * sizeof(int)]) = nIdleHighlightSetting;
+    //*(DWORD*)&(arrSendBuffer[1 * sizeof(int)]) = nBlockingHighlightSetting;
 
-    CopyMemory(pBuf, &arrSendBuffer, nSharedSize);
+    //CopyMemory(pBuf, &arrSendBuffer, nSharedSize);
+
+	if (nIdleHighlightSetting != NULL)
+		CopyMemory(pBuf + 0 * sizeof(int), &nIdleHighlightSetting, sizeof(int));
+
+	if (nBlockingHighlightSetting != NULL)
+		CopyMemory(pBuf + 1 * sizeof(int), &nBlockingHighlightSetting, sizeof(int));
+
+	if (nTemp1HighlightSetting != NULL)
+		CopyMemory(pBuf + 2 * sizeof(int), &nTemp1HighlightSetting, sizeof(int));
+
+	if (nTemp2HighlightSetting != NULL)
+		CopyMemory(pBuf + 3 * sizeof(int), &nTemp2HighlightSetting, sizeof(int));
+
+	if (nTemp3HighlightSetting != NULL)
+		CopyMemory(pBuf + 4 * sizeof(int), &nTemp3HighlightSetting, sizeof(int));
+
+	if (nTemp4HighlightSetting != NULL)
+		CopyMemory(pBuf + 5 * sizeof(int), &nTemp4HighlightSetting, sizeof(int));
+
+	if (nReversalIndex1 != NULL)
+		CopyMemory(pBuf + 6 * sizeof(int), &nReversalIndex1, sizeof(int));
+
+	if (nReversalIndex2 != NULL)
+		CopyMemory(pBuf + 7 * sizeof(int), &nReversalIndex2, sizeof(int));
+
+	if (nReversalIndex3 != NULL)
+		CopyMemory(pBuf + 8 * sizeof(int), &nReversalIndex3, sizeof(int));
+
+	if (nReversalIndex4 != NULL)
+		CopyMemory(pBuf + 9 * sizeof(int), &nReversalIndex4, sizeof(int));
+
+	if (nReversalDelayFrames != NULL)
+		CopyMemory(pBuf + 10 * sizeof(int), &nReversalDelayFrames, sizeof(int));
+
+	if (nReversalType != NULL)
+		CopyMemory(pBuf + 11 * sizeof(int), &nReversalType, sizeof(int));
 }
 
-void GetSharedMemory(std::array<BYTE, 3>* parrIdleHighlightSetting, std::array<BYTE, 3>* parrBlockingHighlightSetting)
+void GetSharedMemory(	std::array<BYTE, 3>* parrIdleHighlightSetting,
+						std::array<BYTE, 3>* parrBlockingHighlightSetting, 
+						std::array<BYTE, 3>* parrTemp1HighlightSetting, 
+						std::array<BYTE, 3>* parrTemp2HighlightSetting, 
+						std::array<BYTE, 3>* parrTemp3HighlightSetting, 
+						std::array<BYTE, 3>* parrTemp4HighlightSetting, 
+						int* pnReversalIndex1,
+						int* pnReversalIndex2,
+						int* pnReversalIndex3,
+						int* pnReversalIndex4,
+						int* pnReversalDelayFrames,
+						int* pnReversalType)
 {
 	static bool bSharedMemoryInit = false;
 	static HANDLE hMapFile = NULL;
@@ -290,40 +337,147 @@ void GetSharedMemory(std::array<BYTE, 3>* parrIdleHighlightSetting, std::array<B
 		bSharedMemoryInit = true;
 	}
 
-	int nIdleHighlightSetting = ((int*)pBuf)[SHARE_IDLEHIGHLIGHT];
-	int nBlockingHighlightSetting = ((int*)pBuf)[SHARE_BLOCKINGHIGHLIGHT];
-
-	switch (nIdleHighlightSetting)
+	if (parrIdleHighlightSetting)
 	{
-	default:
-	case NO_HIGHLIGHT:
-		*parrIdleHighlightSetting = { 255, 255, 255 };
-		break;
-	case RED_HIGHLIGHT:
-		*parrIdleHighlightSetting = { 255, 90, 90 };
-		break;
-	case GREEN_HIGHLIGHT:
-		*parrIdleHighlightSetting = { 90, 255, 90 };
-		break;
-	case BLUE_HIGHLIGHT:
-		*parrIdleHighlightSetting = { 90, 90, 255 };
-		break;
+		int nIdleHighlightSetting = ((int*)pBuf)[SHARE_IDLEHIGHLIGHT];
+		switch (nIdleHighlightSetting)
+		{
+		default:
+		case NO_HIGHLIGHT:
+			*parrIdleHighlightSetting = { 255, 255, 255 };
+			break;
+		case RED_HIGHLIGHT:
+			*parrIdleHighlightSetting = { 255, 90, 90 };
+			break;
+		case GREEN_HIGHLIGHT:
+			*parrIdleHighlightSetting = { 90, 255, 90 };
+			break;
+		case BLUE_HIGHLIGHT:
+			*parrIdleHighlightSetting = { 90, 90, 255 };
+			break;
+		}
 	}
 
-	switch (nBlockingHighlightSetting)
+	if (parrBlockingHighlightSetting)
 	{
-	default:
-	case NO_HIGHLIGHT:
-		*parrBlockingHighlightSetting = { 255, 255, 255 };
-		break;
-	case RED_HIGHLIGHT:
-		*parrBlockingHighlightSetting = { 255, 90, 90 };
-		break;
-	case GREEN_HIGHLIGHT:
-		*parrBlockingHighlightSetting = { 90, 255, 90 };
-		break;
-	case BLUE_HIGHLIGHT:
-		*parrBlockingHighlightSetting = { 90, 90, 255 };
-		break;
+		int nBlockingHighlightSetting = ((int*)pBuf)[SHARE_BLOCKINGHIGHLIGHT];
+		switch (nBlockingHighlightSetting)
+		{
+		default:
+		case NO_HIGHLIGHT:
+			*parrBlockingHighlightSetting = { 255, 255, 255 };
+			break;
+		case RED_HIGHLIGHT:
+			*parrBlockingHighlightSetting = { 255, 90, 90 };
+			break;
+		case GREEN_HIGHLIGHT:
+			*parrBlockingHighlightSetting = { 90, 255, 90 };
+			break;
+		case BLUE_HIGHLIGHT:
+			*parrBlockingHighlightSetting = { 90, 90, 255 };
+			break;
+		}
 	}
+
+	if (parrTemp1HighlightSetting)
+	{
+		int nTemp1HighlightSetting = ((int*)pBuf)[SHARE_TEMP1HIGHLIGHT];
+		switch (nTemp1HighlightSetting)
+		{
+		default:
+		case NO_HIGHLIGHT:
+			*parrTemp1HighlightSetting = { 255, 255, 255 };
+			break;
+		case RED_HIGHLIGHT:
+			*parrTemp1HighlightSetting = { 255, 90, 90 };
+			break;
+		case GREEN_HIGHLIGHT:
+			*parrTemp1HighlightSetting = { 90, 255, 90 };
+			break;
+		case BLUE_HIGHLIGHT:
+			*parrTemp1HighlightSetting = { 90, 90, 255 };
+			break;
+		}
+	}
+
+	if (parrTemp2HighlightSetting)
+	{
+		int nTemp2HighlightSetting = ((int*)pBuf)[SHARE_TEMP2HIGHLIGHT];
+		switch (nTemp2HighlightSetting)
+		{
+		default:
+		case NO_HIGHLIGHT:
+			*parrTemp2HighlightSetting = { 255, 255, 255 };
+			break;
+		case RED_HIGHLIGHT:
+			*parrTemp2HighlightSetting = { 255, 90, 90 };
+			break;
+		case GREEN_HIGHLIGHT:
+			*parrTemp2HighlightSetting = { 90, 255, 90 };
+			break;
+		case BLUE_HIGHLIGHT:
+			*parrTemp2HighlightSetting = { 90, 90, 255 };
+			break;
+		}
+	}
+
+	if (parrTemp3HighlightSetting)
+	{
+		int nTemp3HighlightSetting = ((int*)pBuf)[SHARE_TEMP3HIGHLIGHT];
+		switch (nTemp3HighlightSetting)
+		{
+		default:
+		case NO_HIGHLIGHT:
+			*parrTemp3HighlightSetting = { 255, 255, 255 };
+			break;
+		case RED_HIGHLIGHT:
+			*parrTemp3HighlightSetting = { 255, 90, 90 };
+			break;
+		case GREEN_HIGHLIGHT:
+			*parrTemp3HighlightSetting = { 90, 255, 90 };
+			break;
+		case BLUE_HIGHLIGHT:
+			*parrTemp3HighlightSetting = { 90, 90, 255 };
+			break;
+		}
+	}
+
+	if (parrTemp4HighlightSetting)
+	{
+		int nTemp4HighlightSetting = ((int*)pBuf)[SHARE_TEMP4HIGHLIGHT];
+		switch (nTemp4HighlightSetting)
+		{
+		default:
+		case NO_HIGHLIGHT:
+			*parrTemp4HighlightSetting = { 255, 255, 255 };
+			break;
+		case RED_HIGHLIGHT:
+			*parrTemp4HighlightSetting = { 255, 90, 90 };
+			break;
+		case GREEN_HIGHLIGHT:
+			*parrTemp4HighlightSetting = { 90, 255, 90 };
+			break;
+		case BLUE_HIGHLIGHT:
+			*parrTemp4HighlightSetting = { 90, 90, 255 };
+			break;
+		}
+	}
+
+	if (pnReversalIndex1)
+		*pnReversalIndex1 = ((int*)pBuf)[SHARE_REVERSALINDEX1];
+
+	if (pnReversalIndex2)
+		*pnReversalIndex2 = ((int*)pBuf)[SHARE_REVERSALINDEX2];
+
+	if (pnReversalIndex3)
+		*pnReversalIndex3 = ((int*)pBuf)[SHARE_REVERSALINDEX3];
+
+	if (pnReversalIndex4)
+		*pnReversalIndex4 = ((int*)pBuf)[SHARE_REVERSALINDEX4];
+
+	if (pnReversalDelayFrames)
+		*pnReversalDelayFrames = ((int*)pBuf)[SHARE_REVERSALDELAYFRAMES];
+
+	if (pnReversalType)
+		*pnReversalType = ((int*)pBuf)[SHARE_REVERSALDELAYFRAMES];
 }
