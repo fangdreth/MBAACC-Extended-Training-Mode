@@ -214,13 +214,128 @@ void drawText(int x, int y, int w, int h, const char* text, int alpha, int shade
 	asmDrawText(w, h, x, y, text, alpha, shade, layer, font, 0, 0, 0);
 }
 
-void drawText(int x, int y, const char* text, int textSize = 16, auto font = adFont2) {
+void drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = adFont1) {
 
 	static_assert(sizeof(font) == 4, "Type must be 4 bytes");
 
 	int len = strnlen_s(text, 1024);
 
-	float tempWidth = ((float)textSize / 5.0) * (float)len;
+	// 0x80 - 0x20 - 1, max (non extended) ascii val - 0x20(space). -1 is for the delete. this is almost definitely stored elsewhere in melty, i just dont know where
+	// actually its at 0041d5b0, but still, not worth
+	// https://gist.github.com/aminnj/5ca372aa2def72fb017b531c894afdca as a starter
+	constexpr float charWidths[0x80 - 0x20 - 1] = {
+		4.4453125,   // ' '
+		4.4453125,   // '!'
+		5.6796875,   // '"'
+		8.8984375,   // '#'
+		8.8984375,   // '$'
+		14.2265625,  // '%'
+		10.671875,   // '&'
+		3.0546875,   // '''
+		5.328125,    // '('
+		5.328125,    // ')'
+		6.2265625,   // '*'
+		9.34375,     // '+'
+		4.4453125,   // ','
+		5.328125,    // '-'
+		4.4453125,   // '.'
+		4.4453125,   // '/'
+		8.8984375,   // '0'
+		7.7228125,   // '1'
+		8.8984375,   // '2'
+		8.8984375,   // '3'
+		8.8984375,   // '4'
+		8.8984375,   // '5'
+		8.8984375,   // '6'
+		8.8984375,   // '7'
+		8.8984375,   // '8'
+		8.8984375,   // '9'
+		4.4453125,   // ':'
+		4.4453125,   // ';'
+		9.34375,     // '<'
+		9.34375,     // '='
+		9.34375,     // '>'
+		8.8984375,   // '?'
+		16.2421875,  // '@'
+		10.671875,   // 'A'
+		10.671875,   // 'B'
+		11.5546875,  // 'C'
+		11.5546875,  // 'D'
+		10.671875,   // 'E'
+		9.7734375,   // 'F'
+		12.4453125,  // 'G'
+		11.5546875,  // 'H'
+		4.4453125,   // 'I'
+		8,           // 'J'
+		10.671875,   // 'K'
+		8.8984375,   // 'L'
+		13.328125,   // 'M'
+		11.5546875,  // 'N'
+		12.4453125,  // 'O'
+		10.671875,   // 'P'
+		12.4453125,  // 'Q'
+		11.5546875,  // 'R'
+		10.671875,   // 'S'
+		9.7734375,   // 'T'
+		11.5546875,  // 'U'
+		10.671875,   // 'V'
+		15.1015625,  // 'W'
+		10.671875,   // 'X'
+		10.671875,   // 'Y'
+		9.7734375,   // 'Z'
+		4.4453125,   // '['
+		4.4453125,   // '\'
+		4.4453125,   // ']'
+		7.5078125,   // '^'
+		8.8984375,   // '_'
+		5.328125,    // '`'
+		8.8984375,   // 'a'
+		8.8984375,   // 'b'
+		8,           // 'c'
+		8.8984375,   // 'd'
+		8.8984375,   // 'e'
+		4.15921875,  // 'f'
+		8.8984375,   // 'g'
+		8.8984375,   // 'h'
+		3.5546875,   // 'i'
+		3.5546875,   // 'j'
+		8,           // 'k'
+		3.5546875,   // 'l'
+		13.328125,   // 'm'
+		8.8984375,   // 'n'
+		8.8984375,   // 'o'
+		8.8984375,   // 'p'
+		8.8984375,   // 'q'
+		5.328125,    // 'r'
+		8,           // 's'
+		4.4453125,   // 't'
+		8.8984375,   // 'u'
+		8,           // 'v'
+		11.5546875,  // 'w'
+		8,           // 'x'
+		8,           // 'y'
+		8,           // 'z'
+		5.34375,     // '{'
+		4.15625,     // '|'
+		5.34375,     // '}'
+		9.34375,     // '~'
+	};
+	
+	float tempWidth = 0;
+	const char* c = text;
+
+	while (*c) {
+		if (*c < ' ' || *c > '~') {
+			c++;
+			continue;
+		}
+		tempWidth += charWidths[*c - 0x20];
+		c++;
+	}
+
+	tempWidth *= textSize * 0.0625;
+
+	//tempWidth = ((float)textSize / 5.0) * (float)len;
 
 	drawText(x, y, (int)tempWidth, textSize, text, 0xFF, 0xFF, 0x02CC, (void*)font);
 }
@@ -600,7 +715,10 @@ void enemyReversal()
 	int nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
 	vPatternNames = GetPatternList(nP2CharacterID);
 	PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames, nReversalIndex1, nReversalIndex2, nReversalIndex3, nReversalIndex4);
-	drawText(300, 420 + (16 * 0), std::to_string(nHitstun).c_str(), 64, adFont0);
+
+	char arrTextBuffer[256];
+	snprintf(arrTextBuffer, 256, "%3d", nHitstun);
+	drawText(230, 420 + (16 * 0), arrTextBuffer, 64);
 
 	if (nFrameCounter == 0)
 		bReversaled = true;
@@ -659,10 +777,6 @@ void frameDoneCallback()
 
 	if (bShowHitboxes) {
 		drawFrameData();
-
-		drawText(300, 420 + (16 * 0), "wow", 16, adFont0);
-		drawText(300, 420 + (16 * 1), "wow", 16, adFont1);
-		drawText(300, 420 + (16 * 2), "wow", 16, adFont2);
 	}
 
 	enemyReversal();
