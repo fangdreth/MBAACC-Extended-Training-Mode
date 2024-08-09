@@ -32,6 +32,8 @@ typedef long long longlong;
 typedef unsigned long long ulonglong;
 typedef uint32_t uint;
 
+void enemyReversal();
+
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
 // or,, making address a class which allowed for CONST ONLY derefing 
@@ -515,16 +517,18 @@ void drawFrameData() {
 void __stdcall pauseCallback(DWORD dwMilliseconds)
 {
 	// windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
-	
 	static KeyState pKey('P');
 	static KeyState nKey('N');
 	static bool bIsPaused = false;
 
-	if (pKey.keyDown()) {
-		bIsPaused = !bIsPaused;
+	if (pKey.keyDown())
+	{
+		bIsPaused = !bIsPaused;		
 	}
 
-	if (!bIsPaused && nKey.keyDown()) {
+	if (!bIsPaused && nKey.keyDown())
+	{
+		
 		bIsPaused = true;
 	}
 
@@ -533,12 +537,14 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	while (bIsPaused) {
 		Sleep(1);
 
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 
-		if (pKey.keyDown()) {
+		if (pKey.keyDown())
+		{
 			bIsPaused = !bIsPaused;
 		}
 
@@ -586,10 +592,9 @@ void enemyReversal()
 
 	nOldMot = nMot;
 	int nMot = *reinterpret_cast<int*>(dwBaseAddress + dwMot);
-	BYTE byteBurstCooldown = *reinterpret_cast<BYTE*>(dwBaseAddress + dwBurstCooldown);
-	BYTE byteHitstun = *reinterpret_cast<BYTE*>(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset);
-	int nP2Y = *reinterpret_cast<int*>(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset);
-	int nFrameCounter = *reinterpret_cast<int*>(dwBaseAddress + dwMot);
+	int nHitstun = *reinterpret_cast<int*>(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset);
+	int nP2Y = *reinterpret_cast<int*>(dwBaseAddress + dwP2Y);
+	int nFrameCounter = *reinterpret_cast<int*>(dwBaseAddress + dwRoundTime);
 	int nP2CharacterNumber = *reinterpret_cast<int*>(dwBaseAddress + dwP2CharNumber);
 	int nP2Moon = *reinterpret_cast<int*>(dwBaseAddress + dwP2CharMoon);
 	int nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
@@ -603,59 +608,40 @@ void enemyReversal()
 	{
 		bReversaled = false;
 		bDelayingReversal = false;
+		//int x = 2;
+		//patchMemcpy(dwBaseAddress + dwP2PatternSet, &x, 4);
 	}
 
 	// if training was not just reset and if at least one move was selected
 	if (nFrameCounter != 0 && (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) != 0))
 	{
-		if (!bDelayingReversal && (nMot == 0 || byteHitstun != 0) && (nMot != nOldMot || nReversalType == REVERSAL_REPEAT))
+		if ((nHitstun != 0) && (nMot != nOldMot))
 		{
-			if (!bReversaled)
-			{
-				bDelayingReversal = true;
-				nTempReversalDelayFrames = nReversalDelayFrames;
-			}
-			else
+			if (bReversaled)
 				bReversaled = false;
-
-			if (nReversalType == REVERSAL_REPEAT)
-				bDelayingReversal = true;
-		}
-	}
-
-
-	if (nMot != 0)
-		bDelayingReversal = false;
-
-	if (bDelayingReversal)
-	{
-		if (nTempReversalDelayFrames == 0)
-		{
-
-			bDelayingReversal = false;
-			bReversaled = true;
-			if (nReversalType != REVERSAL_RANDOM || rand() % 2 == 0)
+			else
 			{
-				std::vector<int> vValidReversals = (nP2Y == 0 ? vGroundReversals : vAirReversals);
-				if (vValidReversals.size() != 0)
+				bReversaled = true;
+				if (nReversalType != REVERSAL_RANDOM || rand() % 2 == 0)
 				{
-					int nTempReversalIndex = 0;
-					while (1)
+					std::vector<int> vValidReversals = (nP2Y == 0 ? vGroundReversals : vAirReversals);
+					if (vValidReversals.size() != 0)
 					{
-						nTempReversalIndex = rand() % vValidReversals.size();
-						if (vValidReversals[nTempReversalIndex] != 0)
-							break;
+						int nTempReversalIndex = 0;
+						while (1)
+						{
+							nTempReversalIndex = rand() % vValidReversals.size();
+							if (vValidReversals[nTempReversalIndex] != 0)
+								break;
+						}
+						int nWriteBuffer = vValidReversals[nTempReversalIndex];
+						nWriteBuffer = 1;
+						patchMemcpy(dwBaseAddress + dwP2PatternSet, &nWriteBuffer, 4);
+						nTempReversalDelayFrames = nReversalDelayFrames;
 					}
-					int nWriteBuffer = vValidReversals[nTempReversalIndex];
-					patchMemcpy(dwBaseAddress + dwP2PatternSet, nWriteBuffer, 4);
-					nTempReversalDelayFrames = nReversalDelayFrames;
 				}
 			}
-			else
-				bReversaled = false;
 		}
-		else
-			nTempReversalDelayFrames--;
 	}
 }
 
@@ -675,7 +661,7 @@ void frameDoneCallback() {
 		drawText(300, 420 + (16 * 1), "wow", 16, adFont1);
 		drawText(300, 420 + (16 * 2), "wow", 16, adFont2);
 	}
-	
+
 	enemyReversal();
 }
 
