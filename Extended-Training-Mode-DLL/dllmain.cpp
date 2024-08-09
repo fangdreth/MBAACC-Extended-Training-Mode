@@ -600,52 +600,55 @@ void enemyReversal()
 	int nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
 	vPatternNames = GetPatternList(nP2CharacterID);
 	PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames, nReversalIndex1, nReversalIndex2, nReversalIndex3, nReversalIndex4);
-	drawText(300, 420 + (16 * 0), std::to_string(vAirReversals.size()).c_str(), 64, adFont0);
+	drawText(300, 420 + (16 * 0), std::to_string(nHitstun).c_str(), 64, adFont0);
 
 	if (nFrameCounter == 0)
 		bReversaled = true;
 	if (nFrameCounter == 2)
-	{
 		bReversaled = false;
-		bDelayingReversal = false;
-		//int x = 2;
+
+	if (nHitstun != 0)
+	{
+		//int x = 3;
 		//patchMemcpy(dwBaseAddress + dwP2PatternSet, &x, 4);
 	}
-
+	return;
+	
 	// if training was not just reset and if at least one move was selected
-	if (nFrameCounter != 0 && (GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex2]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex3]) != 0 || GetPattern(nP2CharacterID, vPatternNames[nReversalIndex4]) != 0))
+	if (nFrameCounter != 0 && GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]) != 0)
 	{
 		if ((nHitstun != 0) && (nMot != nOldMot))
 		{
 			if (bReversaled)
 				bReversaled = false;
-			else
+		}
+		else if (!bReversaled)
+		{
+			bReversaled = true;
+			if (nReversalType != REVERSAL_RANDOM || rand() % 2 == 0)
 			{
-				bReversaled = true;
-				if (nReversalType != REVERSAL_RANDOM || rand() % 2 == 0)
+				std::vector<int> vValidReversals = (nP2Y == 0 ? vGroundReversals : vAirReversals);
+				if (vValidReversals.size() != 0)
 				{
-					std::vector<int> vValidReversals = (nP2Y == 0 ? vGroundReversals : vAirReversals);
-					if (vValidReversals.size() != 0)
+					int nTempReversalIndex = 0;
+					while (1)
 					{
-						int nTempReversalIndex = 0;
-						while (1)
-						{
-							nTempReversalIndex = rand() % vValidReversals.size();
-							if (vValidReversals[nTempReversalIndex] != 0)
-								break;
-						}
-						int nWriteBuffer = vValidReversals[nTempReversalIndex];
-						nWriteBuffer = 1;
-						patchMemcpy(dwBaseAddress + dwP2PatternSet, &nWriteBuffer, 4);
-						nTempReversalDelayFrames = nReversalDelayFrames;
+						nTempReversalIndex = rand() % vValidReversals.size();
+						if (vValidReversals[nTempReversalIndex] != 0)
+							break;
 					}
+					int nWriteBuffer = vValidReversals[nTempReversalIndex];
+					nWriteBuffer = 1;
+					patchMemcpy(dwBaseAddress + dwP2PatternSet, &nWriteBuffer, 4);
+					nTempReversalDelayFrames = nReversalDelayFrames;
 				}
 			}
 		}
 	}
 }
 
-void frameDoneCallback() {
+void frameDoneCallback()
+{
 
 	static KeyState hKey('H');
 	static bool bShowHitboxes = false;

@@ -226,18 +226,18 @@ const char pcRed_4[4] = "RED";
 const char pcGreen_6[6] = "GREEN";
 const char pcBlue_5[5] = "BLUE";
 
-void SetSharedMemory(	int nIdleHighlightSetting,
-						int nBlockingHighlightSetting,
-						int nTemp1HighlightSetting,
-						int nTemp2HighlightSetting,
-						int nTemp3HighlightSetting,
-						int nTemp4HighlightSetting,
-						int nReversalIndex1,
-						int nReversalIndex2,
-						int nReversalIndex3,
-						int nReversalIndex4,
-						int nReversalDelayFrames,
-						int nReversalType)
+void SetSharedMemory(	int* nIdleHighlightSetting,
+						int* nBlockingHighlightSetting,
+						int* nTemp1HighlightSetting,
+						int* nTemp2HighlightSetting,
+						int* nTemp3HighlightSetting,
+						int* nTemp4HighlightSetting,
+						int* nReversalIndex1,
+						int* nReversalIndex2,
+						int* nReversalIndex3,
+						int* nReversalIndex4,
+						int* nReversalDelayFrames,
+						int* nReversalType)
 {
 	static bool bSharedMemoryInit = false;
     static HANDLE hMapFile = NULL;
@@ -266,41 +266,41 @@ void SetSharedMemory(	int nIdleHighlightSetting,
 
     //CopyMemory(pBuf, &arrSendBuffer, nSharedSize);
 
-	if (nIdleHighlightSetting != NULL)
-		CopyMemory(pBuf + 0 * sizeof(int), &nIdleHighlightSetting, sizeof(int));
+	if (nIdleHighlightSetting)
+		CopyMemory(pBuf + 0 * sizeof(int), nIdleHighlightSetting, sizeof(int));
 
-	if (nBlockingHighlightSetting != NULL)
-		CopyMemory(pBuf + 1 * sizeof(int), &nBlockingHighlightSetting, sizeof(int));
+	if (nBlockingHighlightSetting)
+		CopyMemory(pBuf + 1 * sizeof(int), nBlockingHighlightSetting, sizeof(int));
 
-	if (nTemp1HighlightSetting != NULL)
-		CopyMemory(pBuf + 2 * sizeof(int), &nTemp1HighlightSetting, sizeof(int));
+	if (nTemp1HighlightSetting)
+		CopyMemory(pBuf + 2 * sizeof(int), nTemp1HighlightSetting, sizeof(int));
 
-	if (nTemp2HighlightSetting != NULL)
-		CopyMemory(pBuf + 3 * sizeof(int), &nTemp2HighlightSetting, sizeof(int));
+	if (nTemp2HighlightSetting)
+		CopyMemory(pBuf + 3 * sizeof(int), nTemp2HighlightSetting, sizeof(int));
 
-	if (nTemp3HighlightSetting != NULL)
-		CopyMemory(pBuf + 4 * sizeof(int), &nTemp3HighlightSetting, sizeof(int));
+	if (nTemp3HighlightSetting)
+		CopyMemory(pBuf + 4 * sizeof(int), nTemp3HighlightSetting, sizeof(int));
 
-	if (nTemp4HighlightSetting != NULL)
-		CopyMemory(pBuf + 5 * sizeof(int), &nTemp4HighlightSetting, sizeof(int));
+	if (nTemp4HighlightSetting)
+		CopyMemory(pBuf + 5 * sizeof(int), nTemp4HighlightSetting, sizeof(int));
 
-	if (nReversalIndex1 != NULL)
-		CopyMemory(pBuf + 6 * sizeof(int), &nReversalIndex1, sizeof(int));
+	if (nReversalIndex1)
+		CopyMemory(pBuf + 6 * sizeof(int), nReversalIndex1, sizeof(int));
 
-	if (nReversalIndex2 != NULL)
-		CopyMemory(pBuf + 7 * sizeof(int), &nReversalIndex2, sizeof(int));
+	if (nReversalIndex2)
+		CopyMemory(pBuf + 7 * sizeof(int), nReversalIndex2, sizeof(int));
 
-	if (nReversalIndex3 != NULL)
-		CopyMemory(pBuf + 8 * sizeof(int), &nReversalIndex3, sizeof(int));
+	if (nReversalIndex3)
+		CopyMemory(pBuf + 8 * sizeof(int), nReversalIndex3, sizeof(int));
 
-	if (nReversalIndex4 != NULL)
-		CopyMemory(pBuf + 9 * sizeof(int), &nReversalIndex4, sizeof(int));
+	if (nReversalIndex4)
+		CopyMemory(pBuf + 9 * sizeof(int), nReversalIndex4, sizeof(int));
 
-	if (nReversalDelayFrames != NULL)
-		CopyMemory(pBuf + 10 * sizeof(int), &nReversalDelayFrames, sizeof(int));
+	if (nReversalDelayFrames)
+		CopyMemory(pBuf + 10 * sizeof(int), nReversalDelayFrames, sizeof(int));
 
-	if (nReversalType != NULL)
-		CopyMemory(pBuf + 11 * sizeof(int), &nReversalType, sizeof(int));
+	if (nReversalType)
+		CopyMemory(pBuf + 11 * sizeof(int), nReversalType, sizeof(int));
 }
 
 void GetSharedMemory(	std::array<BYTE, 3>* parrIdleHighlightSetting,

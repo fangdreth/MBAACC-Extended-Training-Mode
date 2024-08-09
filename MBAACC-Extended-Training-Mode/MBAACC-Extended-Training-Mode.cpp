@@ -821,13 +821,13 @@ int main(int argc, char* argv[])
                         {
                             nReversalType = max(REVERSAL_NORMAL, nReversalType - 1);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                NULL, NULL, NULL, NULL, NULL, nReversalType);
+                                NULL, NULL, NULL, NULL, NULL, &nReversalType);
                         }
                         else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
                         {
                             nReversalType = min(nReversalType + 1, REVERSAL_REPEAT);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                NULL, NULL, NULL, NULL, NULL, nReversalType);
+                                NULL, NULL, NULL, NULL, NULL, &nReversalType);
                         }
 
                         if (nOldEnemyDefenseIndex == -1)
@@ -836,13 +836,13 @@ int main(int argc, char* argv[])
                         {
                             nReversalIndex1 = max(0, nReversalIndex1 - 1);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                nReversalIndex1, NULL, NULL, NULL, NULL, NULL);
+                                &nReversalIndex1, NULL, NULL, NULL, NULL, NULL);
                         }
                         else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                         {
                             nReversalIndex1 = min(nReversalIndex1 + 1, vPatternNames.size() - 1);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                nReversalIndex1, NULL, NULL, NULL, NULL, NULL);
+                                &nReversalIndex1, NULL, NULL, NULL, NULL, NULL);
                         }
 
                         if (nOldEnemyDefenseTypeIndex == -1)
@@ -851,13 +851,13 @@ int main(int argc, char* argv[])
                         {
                             nReversalIndex2 = max(0, nReversalIndex2 - 1);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                NULL, nReversalIndex2, NULL, NULL, NULL, NULL);
+                                NULL, &nReversalIndex2, NULL, NULL, NULL, NULL);
                         }
                         else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
                         {
                             nReversalIndex2 = min(nReversalIndex2 + 1, vPatternNames.size() - 1);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                NULL, nReversalIndex2, NULL, NULL, NULL, NULL);
+                                NULL, &nReversalIndex2, NULL, NULL, NULL, NULL);
                         }
 
                         if (nOldAirRecoveryIndex == -1)
@@ -866,13 +866,13 @@ int main(int argc, char* argv[])
                         {
                             nReversalIndex3 = max(0, nReversalIndex3 - 1);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                NULL, NULL, nReversalIndex3, NULL, NULL, NULL);
+                                NULL, NULL, &nReversalIndex3, NULL, NULL, NULL);
                         }
                         else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
                         {
                             nReversalIndex3 = min(nReversalIndex3 + 1, vPatternNames.size() - 1);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                NULL, NULL, nReversalIndex3, NULL, NULL, NULL);
+                                NULL, NULL, &nReversalIndex3, NULL, NULL, NULL);
                         }
 
                         if (nOldDownRecoveryIndex == -1)
@@ -881,13 +881,13 @@ int main(int argc, char* argv[])
                         {
                             nReversalIndex4 = max(0, nReversalIndex4 - 1);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                NULL, NULL, NULL, nReversalIndex4, NULL, NULL);
+                                NULL, NULL, NULL, &nReversalIndex4, NULL, NULL);
                         }
                         else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                         {
                             nReversalIndex4 = min(nReversalIndex4 + 1, vPatternNames.size() - 1);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                NULL, NULL, NULL, nReversalIndex4, NULL, NULL);
+                                NULL, NULL, NULL, &nReversalIndex4, NULL, NULL);
                         }
 
                         if (nOldThrowRecoveryIndex == -1)
@@ -896,13 +896,13 @@ int main(int argc, char* argv[])
                         {
                             nReversalDelayFrames = max(0, nReversalDelayFrames - 1);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                NULL, NULL, NULL, NULL, nReversalDelayFrames, NULL);
+                                NULL, NULL, NULL, NULL, &nReversalDelayFrames, NULL);
                         }
                         else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
                         {
                             nReversalDelayFrames = min(nReversalDelayFrames + 1, MAX_REVERSAL_DELAY);
                             SetSharedMemory(NULL, NULL, NULL, NULL, NULL, NULL,
-                                NULL, NULL, NULL, NULL, nReversalDelayFrames, NULL);
+                                NULL, NULL, NULL, NULL, &nReversalDelayFrames, NULL);
                         }
 
                         // this could be anywhere, but I'm putting it here so it's easy to find
@@ -1232,13 +1232,13 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
                         {
                             nIdleHighlightSetting = max(NO_HIGHLIGHT, nIdleHighlightSetting - 1);
-                            SetSharedMemory(nIdleHighlightSetting,
+                            SetSharedMemory(&nIdleHighlightSetting,
                                 NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
                         }
                         else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
                         {
                             nIdleHighlightSetting = min(BLUE_HIGHLIGHT, nIdleHighlightSetting + 1);
-                            SetSharedMemory(nIdleHighlightSetting,
+                            SetSharedMemory(&nIdleHighlightSetting,
                                 NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
                         }
 
@@ -1247,13 +1247,13 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                         {
                             nBlockingHighlightSetting = max(NO_HIGHLIGHT, nBlockingHighlightSetting - 1);
-                            SetSharedMemory(NULL, nBlockingHighlightSetting,
+                            SetSharedMemory(NULL, &nBlockingHighlightSetting,
                                 NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
                         }
                         else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                         {
                             nBlockingHighlightSetting = min(BLUE_HIGHLIGHT, nBlockingHighlightSetting + 1);
-                            SetSharedMemory(NULL, nBlockingHighlightSetting,
+                            SetSharedMemory(NULL, &nBlockingHighlightSetting,
                                 NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
                         }
                     }
