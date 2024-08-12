@@ -930,6 +930,15 @@ void frameDoneCallback()
 	ill look into hooking it from somewhere else
 	*/
 	//enemyReversal();
+	
+}
+
+__declspec(naked) void nakedFrameDoneCallback() {
+	__asm {
+		add esp, 4Ch;
+		call frameDoneCallback;
+		ret;
+	};
 }
 
 int nTempP1MeterGain = 0;
@@ -1094,15 +1103,23 @@ void battleResetCallback() {
 
 // init funcs
 
-void initRenderCallback() {
+void initFrameDoneCallback() {
 
+	/*
 	// this might be getting called a frame late. unsure 
-
+	// this callback, is very bad. caster uses it.
 	void* funcAddress = (void*)0x0041d815;
 	patchByte(((BYTE*)funcAddress) + 0, 0x50); // push eax?
 	patchFunction(((BYTE*)funcAddress) + 1, frameDoneCallback); // call
 	patchByte(((BYTE*)funcAddress) + 6, 0x58); // pop eax
 	patchByte(((BYTE*)funcAddress) + 7, 0xC3); // ret
+	*/
+
+
+	// caster hooks the start of this func. ill have to hook the end of it 
+	void* patchAddr = (void*)0x00432e2b;
+	patchJump(patchAddr, nakedFrameDoneCallback);
+
 }
 
 void initAnimHook() 
@@ -1216,7 +1233,7 @@ void threadFunc()
 	}
 
 	initPauseCallback();
-	initRenderCallback();
+	initFrameDoneCallback();
 	initAnimHook();
 	InitializeCharacterMaps();
 	// when running with caster, the prints to this area are disabled
