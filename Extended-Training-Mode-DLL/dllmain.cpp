@@ -41,7 +41,41 @@ void enemyReversal();
 
 const ADDRESS dwBaseAddress = (0x00400000);
 
+bool bCasterInit = false;
+ADDRESS dwCasterBaseAddress = 0;
+
 const ADDRESS INPUTDISPLAYTOGGLE = (dwBaseAddress + 0x001585f8);
+
+DWORD tempRegister1;
+DWORD tempRegister2;
+DWORD tempRegister3;
+DWORD tempRegister4;
+
+#define PUSH_CALLEE __asm \
+{                         \
+   __asm push ebx   \
+   __asm push esi   \
+   __asm push edi   \
+}
+
+#define POP_CALLEE __asm \
+{                        \
+   __asm pop edi   \
+   __asm pop esi   \
+   __asm pop ebx   \
+}
+
+#define PUSH_FRAME __asm \
+{                        \
+   __asm push ebp        \
+   __asm mov ebp, esp    \
+}
+
+#define POP_FRAME __asm \
+{                       \
+   __asm pop ebp        \
+}
+
 
 // helpers
 
@@ -87,7 +121,7 @@ private:
 	bool prevState = false;
 };
 
-void log(const char* msg) 
+void __stdcall log(const char* msg)
 {
 	const char* ipAddress = "127.0.0.1";
 	unsigned short port = 17474;
@@ -139,7 +173,7 @@ void log(const char* msg)
 	delete[] message;
 }
 
-void debugLogBytes(BYTE* p)
+void __stdcall debugLogBytes(BYTE* p)
 {
 
 	static char buffer[256];
@@ -151,7 +185,7 @@ void debugLogBytes(BYTE* p)
 	}
 }
 
-bool safeWrite() {
+bool __stdcall safeWrite() {
 	BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
 	BYTE GameState = *reinterpret_cast<BYTE*>(dwBaseAddress + dwGameState);
 	int FrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
@@ -166,7 +200,7 @@ bool safeWrite() {
 
 // patch funcs
 
-void patchMemcpy(auto dst, auto src, size_t n) 
+void __stdcall patchMemcpy(auto dst, auto src, size_t n)
 {
 
 	static_assert(sizeof(dst) == 4, "Type must be 4 bytes");
@@ -181,7 +215,15 @@ void patchMemcpy(auto dst, auto src, size_t n)
 	VirtualProtect(dest, n, oldProtect, NULL);
 }
 
-void patchFunction(auto patchAddr_, auto newAddr_)
+// the patch func being templated causes problems when calling from asm
+void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n) {
+	DWORD oldProtect;
+	VirtualProtect(dest, n, PAGE_EXECUTE_READWRITE, &oldProtect);
+	memcpy(dest, source, n);
+	VirtualProtect(dest, n, oldProtect, NULL);
+}
+
+void __stdcall patchFunction(auto patchAddr_, auto newAddr_)
 {
 
 	static_assert(sizeof(patchAddr_) == 4, "Type must be 4 bytes");
@@ -196,7 +238,22 @@ void patchFunction(auto patchAddr_, auto newAddr_)
 	patchMemcpy(patchAddr, callCode, sizeof(callCode));
 }
 
-void patchByte(auto addr, const BYTE byte)
+void __stdcall patchJump(auto patchAddr_, auto newAddr_)
+{
+
+	static_assert(sizeof(patchAddr_) == 4, "Type must be 4 bytes");
+	static_assert(sizeof(newAddr_) == 4, "Type must be 4 bytes");
+
+	DWORD patchAddr = (DWORD)(patchAddr_);
+	DWORD newAddr = (DWORD)(newAddr_);
+
+	BYTE callCode[] = { 0xE9, 0x00, 0x00, 0x00, 0x00 }; 
+	DWORD funcOffset = newAddr - (patchAddr + 5);
+	*(unsigned*)(&callCode[1]) = funcOffset;
+	patchMemcpy(patchAddr, callCode, sizeof(callCode));
+}
+
+void __stdcall patchByte(auto addr, const BYTE byte)
 {
 	static_assert(sizeof(addr) == 4, "Type must be 4 bytes");
 
@@ -340,6 +397,17 @@ void drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = 
 	drawText(x, y, (int)tempWidth, textSize, text, 0xFF, 0xFF, 0x02CC, (void*)font);
 }
 
+void drawTextWithBorder(int x, int y, int w, int h, const char* text) {
+
+	drawText(x, y, w, h, text, 0xFF, 0xFF);
+	
+	drawText(x - 1, y, w, h, text, 0xFF, 0x00);
+	drawText(x + 1, y, w, h, text, 0xFF, 0x00);
+	drawText(x, y - 1, w, h, text, 0xFF, 0x00);
+	drawText(x, y + 1, w, h, text, 0xFF, 0x00);
+
+}
+
 extern "C" int asmDrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
 
 void drawRect(int x, int y, int w, int h, BYTE r, BYTE g, BYTE b, BYTE a, int layer = 0x2cc) {
@@ -370,6 +438,8 @@ void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4) {
 	drawRect(x + w - 1, y, lineWidth, h, ARGB);
 	drawRect(x, y + h - 1, w, lineWidth, ARGB);
 }
+
+// -----
 
 void scaleCords(const float xOrig, const float yOrig, float& x1Cord, float& y1Cord, float& x2Cord, float& y2Cord) {
 	x1Cord = xOrig + (x1Cord - xOrig) * 0.5;
@@ -613,6 +683,18 @@ void drawFrameData() {
 		return;
 	}
 
+	/*
+	// for unknown reasons, this func sometimes gets double called?
+	// this fixes this, but then causes flickering. more needs to be looked into on this
+	static int prevFrameCalled = -1;
+	int currentFrame = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
+
+	if (prevFrameCalled == currentFrame) {
+		return;
+	}
+	prevFrameCalled = currentFrame;
+	*/
+
 	drawFrameBar();
 
 	drawObject(0x00555130 + (0xAFC * 0), false); // P1
@@ -626,6 +708,69 @@ void drawFrameData() {
 		if (((*(int*)(index * 0x33c + 0x67bde8) != 0) && (*(char*)(index * 0x33c + 0x67be09) == '\0'))) {
 			drawObject(index * 0x33c + 0x67bde8, true);
 		}
+	}
+}
+
+void highlightStates()
+{
+
+	if (!safeWrite()) {
+		return;
+	}
+
+	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState) -> void
+		{
+			if (blockState == 1)
+			{
+				patchMemcpy(animDataAddr + 0x18, arrBlockingHighlightSetting.data(), 3);
+			}
+			else
+			{
+				switch (patternState)
+				{
+				case 0:			// stand
+					//case 10:		// walk forward
+					//case 11:		// walk back
+				case 12:		// to crouch
+				case 13:		// crouch
+				case 14:		// from crouch
+				case 15:		// turn around
+				case 17:		// stand block
+				case 18:		// crouch block
+				case 19:		// jump block
+				case 35:		// j9
+				case 36:		// j8
+				case 37:		// j7
+					//case 38:		// dj9
+					//case 39:		// dj 8
+					//case 40:		// dj7
+					//case 360:		// sj8
+					patchMemcpy(animDataAddr + 0x18, arrIdleHighlightSetting.data(), 3);
+					break;
+				default:
+					break;
+				}
+			}
+		};
+
+	/*
+	the states that are used here, are they reading the previous frames info?
+
+	when blocking is turned on, this program displays the idle as red, fangs doesnt, why
+	is it my thing, or one of theirs?
+	either they are modifying blocking, or this is the a frame late
+
+	*/
+
+	// i strongly dislike my method of derefing here. a class could fix this
+	if (*(DWORD*)(dwBaseAddress + dwP1AnimationPtr) > dwBaseAddress)
+	{
+		updateAnimation(*(DWORD*)(dwBaseAddress + dwP1AnimationPtr), *(BYTE*)(dwBaseAddress + dwP1Blocking), *(DWORD*)(dwBaseAddress + dwP1PatternRead));
+	}
+
+	if (*(DWORD*)(dwBaseAddress + dwP2AnimationPtr) > dwBaseAddress)
+	{
+		updateAnimation(*(DWORD*)(dwBaseAddress + dwP2AnimationPtr), *(BYTE*)(dwBaseAddress + dwP2Blocking), *(DWORD*)(dwBaseAddress + dwP2PatternRead));
 	}
 }
 
@@ -643,12 +788,10 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 
 	if (!bIsPaused && nKey.keyDown())
 	{
-		
 		bIsPaused = true;
 	}
 
 	MSG msg;
-
 	while (bIsPaused) {
 		Sleep(1);
 
@@ -684,7 +827,7 @@ void initPauseCallback() {
 	patchByte((BYTE*)addr + 5, 0x90);
 
 }
-
+ 
 int nOldMot;
 int nMot = 0;
 bool bReversaled = false;
@@ -779,91 +922,50 @@ void frameDoneCallback()
 		drawFrameData();
 	}
 
-	enemyReversal();
-}
 
-void initRenderCallback() {
-
-	// this might be getting called a frame late. unsure 
-
-	void* funcAddress = (void*)0x0041d815;
-	patchByte(((BYTE*)funcAddress) + 0, 0x50); // push eax?
-	patchFunction(((BYTE*)funcAddress) + 1, frameDoneCallback); // call
-	patchByte(((BYTE*)funcAddress) + 6, 0x58); // pop eax
-	patchByte(((BYTE*)funcAddress) + 7, 0xC3); // ret
-}
-
-void animLog()
-{
-	const DWORD dwPauseFlag = 0x162A64; //1=paused
-	const DWORD dwGameState = 0x14EEE8; //1=training
-	const DWORD dwFrameTimer = 0x15D1CC;
-	BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPauseFlag);
-	BYTE GameState = *reinterpret_cast<BYTE*>(dwBaseAddress + dwGameState);
-	int FrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
-
-	if (
-		PauseFlag == 1 || 
-		GameState != 1 || 
-		FrameTimer == 0)
-		return;
-
-
-	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState) -> void
-	{
-		if (blockState == 1) 
-		{
-			patchMemcpy(animDataAddr + 0x18, arrBlockingHighlightSetting.data(), 3);
-		}
-		else 
-		{
-			switch (patternState) 
-			{
-			case 0:			// stand
-			//case 10:		// walk forward
-			//case 11:		// walk back
-			case 12:		// to crouch
-			case 13:		// crouch
-			case 14:		// from crouch
-			case 15:		// turn around
-			case 17:		// stand block
-			case 18:		// crouch block
-			case 19:		// jump block
-			case 35:		// j9
-			case 36:		// j8
-			case 37:		// j7
-			//case 38:		// dj9
-			//case 39:		// dj 8
-			//case 40:		// dj7
-			//case 360:		// sj8
-				patchMemcpy(animDataAddr + 0x18, arrIdleHighlightSetting.data(), 3);
-				break;
-			default:
-				break;
-			}
-		}
-	};
 
 	/*
-	the states that are used here, are they reading the previous frames info?
-
-	when blocking is turned on, this program displays the idle as red, fangs doesnt, why
-	is it my thing, or one of theirs?
-	either they are modifying blocking, or this is the a frame late
-
+	i am sorry for commenting this out
+	for unknown reasons, when the input display and attack combo display things are on, this causes lag? 
+	ill look into hooking it from somewhere else
 	*/
-
-	// i strongly dislike my method of derefing here. a class could fix this
-	if (*(DWORD*)(dwBaseAddress + dwP1AnimationPtr) > dwBaseAddress)
-	{
-		updateAnimation(*(DWORD*)(dwBaseAddress + dwP1AnimationPtr), *(BYTE*)(dwBaseAddress + dwP1Blocking), *(DWORD*)(dwBaseAddress + dwP1PatternRead));
-	}
-
-	if (*(DWORD*)(dwBaseAddress + dwP2AnimationPtr) > dwBaseAddress) 
-	{
-		updateAnimation(*(DWORD*)(dwBaseAddress + dwP2AnimationPtr), *(BYTE*)(dwBaseAddress + dwP2Blocking), *(DWORD*)(dwBaseAddress + dwP2PatternRead));
-	}
+	//enemyReversal();
 }
+
+int nTempP1MeterGain = 0;
+int nTempP2MeterGain = 0;
+int nP1MeterGain = 0;
+int nP2MeterGain = 0;
+DWORD prevComboPtr = 0;
+void attackMeterDisplayCallback() {
+
+	int iVar2 = (*(BYTE*)0x0055df0f) * 0x20c;
+	int iVar1 = *(int*)(0x00557e20 + iVar2);
+
+	DWORD comboPtr = (0x00557e28 + iVar1 * 0x18 + iVar2);
+
+	if (prevComboPtr != comboPtr) {
+		nP1MeterGain = 0;
+		nP2MeterGain = 0;
+		prevComboPtr = comboPtr;
+	}
+
+	nP1MeterGain += nTempP1MeterGain;
+	nP2MeterGain += nTempP2MeterGain;
+
+	nTempP1MeterGain = 0;
+	nTempP2MeterGain = 0;
+
+	static char buffer[256];
+
+	snprintf(buffer, 256, "P1 METER GAIN %12d.%02d%%", nP1MeterGain / 100, nP1MeterGain % 100);
+	drawTextWithBorder(420, 186, 10, 14, buffer);
+
+	snprintf(buffer, 256, "P2 METER GAIN %12d.%02d%%", nP2MeterGain/ 100, nP2MeterGain % 100);
+	drawTextWithBorder(420, 186 + 14, 10, 14, buffer);
+}
+
+// hook funcs
 
 BYTE arrAnimHookBytesOrig[10];
 BYTE arrAnimHookBytesMod[10];
@@ -887,8 +989,120 @@ void animHookFunc()
 	// patch hook back into func
 	patchMemcpy(funcAddress, arrAnimHookBytesMod, 10);
 	// perform coloring code
-	animLog();
-	return;
+	highlightStates();
+}
+
+BYTE arrMeterGainHookOrig[10];
+BYTE arrMeterGainHookMod[10];
+__declspec(naked) void meterGainHook() {
+	
+	/*
+	the hooked func func(0x00476ce0) takes params.
+	the hooked func,,, does not clean its stack. its cdecl 
+
+	this is a massive issue because the compiler is,,, doing compile things, making a new stack frame, pushing and popping, etc
+	that will not work here. sorry about this code  
+	additionally, c++17 decided to remove the register keyword! 
+	therefore, out of paranoia, i will be doing this all in asm
+
+	https://en.wikipedia.org/wiki/X86_calling_conventions
+	we are under cdecl currently
+	return val EAX by callee
+	Registers EAX, ECX, and EDX are caller-saved
+	the rest( EBX, ESI, EDI, EBP(?), ESP(?) 
+
+	EIP doesnt count 
+
+	https://stackoverflow.com/questions/25129743/confusing-brackets-in-masm32
+
+	*/
+
+	// call this when the pattern is written
+
+	__asm {
+		pop tempRegister1; // HOOKED CALL ADDR
+		pop tempRegister2;  // CALLER ADDR
+	};
+
+	__asm {
+		// at this point, i now have direct access to the 4 func params, and a lack of worry over messing things up
+		mov ecx, [esp + 0h]; // CharacterSubObj
+		mov edx, [esp + 4h]; // METER AMOUNT;
+
+		cmp ecx, 00555134h; // P1 ADDR
+		JE _P1;
+		cmp ecx, 00555C30h; // P2 ADDR
+		JE _P2;
+		cmp ecx, 0055672Ch; // P3 ADDR
+		JE _P1;
+		cmp ecx, 00557228h; // P4 ADDR
+		JE _P2;
+		// this means a projectile hit.
+		mov ecx, [ecx + 02F0h]; // owner offset
+		test ecx, 1;
+		JE _P1;
+
+	_P2 : // add to P2 meter gain
+		mov nTempP2MeterGain, edx;
+		JMP _END;
+	_P1: // add to P1 meter gain
+		mov nTempP1MeterGain, edx;
+	_END:
+	};
+
+	PUSH_CALLEE;
+	PUSH_FRAME;
+
+	// these calls could(SHOULD) be made in asm, but the assembler really doesnt like it when i do 
+	// although, it is more readable
+	// if any of these happen to put a temp var on the stack, or dont use stdcall format, this whole thing will break.
+
+	asmPatchMemcpy((void*)0x00476ce0, (void*)arrMeterGainHookOrig, 10);
+
+	POP_FRAME;
+	POP_CALLEE;
+
+	// perform the actual function call
+	__asm {
+		mov eax, 00476CE0h;
+		call eax;
+	};
+
+	PUSH_CALLEE;
+	PUSH_FRAME;
+
+	asmPatchMemcpy((void*)0x00476ce0, (void*)arrMeterGainHookMod, 10);
+
+	POP_FRAME;
+	POP_CALLEE;
+
+	// restore the proper stack state and ret
+	__asm {
+		push tempRegister2;
+		push tempRegister1;
+		ret;
+	};
+}
+
+void battleResetCallback() {
+	nTempP1MeterGain = 0;
+	nTempP2MeterGain = 0;
+	nP1MeterGain = 0;
+	nP2MeterGain = 0;
+	prevComboPtr = 0;
+}
+
+// init funcs
+
+void initRenderCallback() {
+
+	// this might be getting called a frame late. unsure 
+
+	void* funcAddress = (void*)0x0041d815;
+	patchByte(((BYTE*)funcAddress) + 0, 0x50); // push eax?
+	patchFunction(((BYTE*)funcAddress) + 1, frameDoneCallback); // call
+	patchByte(((BYTE*)funcAddress) + 6, 0x58); // pop eax
+	patchByte(((BYTE*)funcAddress) + 7, 0xC3); // ret
 }
 
 void initAnimHook() 
@@ -904,17 +1118,112 @@ void initAnimHook()
 	patchMemcpy(arrAnimHookBytesMod, funcAddress, 10);
 }
 
+void initCasterMods() {
+
+	// if caster ever updates, these offsets will most likely(basically definitely) need to be changed!
+
+	// 0x665f17d5 is total meter gain 
+	patchByte(dwCasterBaseAddress + 0x665f17d5, '\0');
+
+	// 0x665f17c1 is meter gain 
+	patchByte(dwCasterBaseAddress + 0x665f17c1, '\0');
+
+	// 0x665f17cd is the actual string passed to printf
+	patchByte(dwCasterBaseAddress + 0x665f17cd, '\0');
+
+	// it would be better to just patch this func out
+}
+
+void initAttackMeterDisplay() {
+
+	// this func rets early, this jump prevents that 
+	void* patchAddr = (void*)0x00478fe2;
+	patchJump(patchAddr, 0x00478ffd);
+	
+	void* funcAddr = (void*)0x00479005;
+	patchFunction(funcAddr, attackMeterDisplayCallback);
+	patchByte(((BYTE*)funcAddr) + 5, 0xC3);
+
+	// remove max combo and max damage lines
+	patchJump(0x00478ee0, 0x00478fcf);
+
+	// remove vs damage line
+	patchByte(0x00537f58, '\0');
+	BYTE tempCode[5] = {0x90, 0x90, 0x90, 0x90, 0x90};
+	patchMemcpy(0x00478dba, tempCode, 5);
+
+	// adjust line y positions
+
+	constexpr DWORD pushAddresses[] = {
+		0x00478c61, 0x00478cbe, // combo
+		0x00478ce6, 0x00478d37, // damage
+		0x00478dd7, 0x00478e39, // correction val
+		0x00478e61, 0x00478ec9, // reverse penalty
+	};
+
+	BYTE yVal = 118;
+
+	// 14 dist for close, 18 for far
+	for (int i = 0; i < sizeof(pushAddresses) / sizeof(pushAddresses[0]); i += 2) {
+		if (i % 4 == 0) {
+			yVal += 4; // extra 4 to go to 18
+		}
+		patchByte(pushAddresses[i] + 1, yVal);
+		patchByte(pushAddresses[i + 1] + 1, yVal);
+		yVal += 14;
+	}
+}
+
+void initMeterGainHook() {
+	void* funcAddress = (void*)0x00476ce0;
+	// backup
+	patchMemcpy(arrMeterGainHookOrig, funcAddress, 10);
+	// new bytes
+	patchFunction(funcAddress, meterGainHook);
+	// ret
+	patchByte(((BYTE*)funcAddress) + 5, 0xC3);
+	// backup modded bytes 
+	patchMemcpy(arrMeterGainHookMod, funcAddress, 10);
+}
+
+void initBattleResetCallback() {
+	// this func rets early, this jump prevents that 
+	void* patchAddr = (void*)0x004234b9;
+	patchJump(patchAddr, 0x004234e1);
+
+	void* funcAddr = (void*)0x004234e4;
+	patchFunction(funcAddr, battleResetCallback);
+
+	// this patch is a bit funky, since we need to have ret dec the stack pointer
+	BYTE tempCode[3] = {0xc2, 0x04, 0x00};
+	patchMemcpy(((BYTE*)funcAddr) + 5, tempCode, 3);
+}
+
 void threadFunc() 
 {
-	//log("DLL injection successful");
 	srand(time(NULL));
 
 	// todo, put something here to prevent mult injection
+
+	// check if we are running with caster
+	HMODULE hModule = GetModuleHandleA("hook.dll");
+
+	if (hModule != NULL) { // we are running with caster
+		bCasterInit = true;
+		// 0x66380000 is the base address when looking through caster in decomp
+		dwCasterBaseAddress = ((DWORD)hModule) - 0x66380000;
+		initCasterMods();
+	}
 
 	initPauseCallback();
 	initRenderCallback();
 	initAnimHook();
 	InitializeCharacterMaps();
+	// when running with caster, the prints to this area are disabled
+	// when not running with caster, they arent even there, so this is fine to run regardless of caster 
+	initAttackMeterDisplay();
+	initMeterGainHook();
+	initBattleResetCallback();
 
 	while (true) 
 	{

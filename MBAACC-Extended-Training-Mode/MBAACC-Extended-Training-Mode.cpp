@@ -271,8 +271,8 @@ int main(int argc, char* argv[])
 
         FrameDisplay(hMBAAHandle, dwBaseAddress, P1, P2, P3, P4);
 
-        nWriteBuffer = nPlayerAdvantage;
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwFPS), &nWriteBuffer, 4, 0);
+        //nWriteBuffer = nPlayerAdvantage;
+        //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwFPS), &nWriteBuffer, 4, 0);
 
         // overwrite p1 and p2 color numbers with the current pattern number
         //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead - dwP2Offset), &nReadResult, 4, 0);
