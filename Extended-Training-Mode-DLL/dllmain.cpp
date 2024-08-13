@@ -663,6 +663,11 @@ void updateFrameBar(DWORD frameBar[50], DWORD playerStruct, DWORD inactionOffset
 }
 
 void drawFrameBar() {
+	
+	if (!safeWrite()) {
+		return;
+	}
+
 	updateFrameBar(frameBarP1, dwP1Struct, 0x157FC0);
 	updateFrameBar(frameBarP2, dwP2Struct, 0x1581CC);
 
@@ -694,8 +699,6 @@ void drawFrameData() {
 	}
 	prevFrameCalled = currentFrame;
 	*/
-
-	drawFrameBar();
 
 	drawObject(0x00555130 + (0xAFC * 0), false); // P1
 	drawObject(0x00555130 + (0xAFC * 1), false); // P2
@@ -791,12 +794,25 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 		bIsPaused = true;
 	}
 
+	bool ok = true;
 	MSG msg;
 	while (bIsPaused) {
 		Sleep(1);
 
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		while (ok = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
+			if (!ok) {
+				PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+				return;
+			}
+
+			switch (msg.message) {
+			case WM_QUIT:
+			case WM_DESTROY:
+				PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+				return;
+			}
+
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
@@ -914,15 +930,24 @@ void frameDoneCallback()
 	static KeyState hKey('H');
 	static bool bShowHitboxes = false;
 
+	static KeyState bKey('B');
+	static bool bDrawFramebar = false;
+
 	if (hKey.keyDown()) {
 		bShowHitboxes = !bShowHitboxes;
+	}
+
+	if (bKey.keyDown()) {
+		bDrawFramebar = !bDrawFramebar;
 	}
 
 	if (bShowHitboxes) {
 		drawFrameData();
 	}
 
-
+	if (bDrawFramebar) {
+		drawFrameBar();
+	}
 
 	/*
 	i am sorry for commenting this out
@@ -1075,6 +1100,8 @@ __declspec(naked) void meterGainHook() {
 	__asm {
 		mov eax, 00476CE0h;
 		call eax;
+		// do i need to clean the stack here?
+		// NO. the original caller will.
 	};
 
 	PUSH_CALLEE;
@@ -1219,6 +1246,9 @@ void initBattleResetCallback() {
 void threadFunc() 
 {
 	srand(time(NULL));
+
+	// make sure that caster has time to hook at the start
+	Sleep(32);
 
 	// todo, put something here to prevent mult injection
 
