@@ -14,6 +14,7 @@
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
+#include "FrameBar.h"
 
 #pragma comment(lib, "ws2_32.lib") 
 
@@ -629,56 +630,44 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 }
 
 //In-game frame bar proof-of-concept
-DWORD frameBarP1[50];
-DWORD frameBarP2[50];
-
-void updateFrameBar(DWORD frameBar[50], DWORD playerStruct, DWORD inactionOffset)
-{
-	int currentFrame = *(int*)(dwBaseAddress + 0x15D1CC) % 50;
-	if (*(int*)(dwBaseAddress + 0x15D1CC) == 1) //Sense reset
-	{
-		for (int i = 0; i < 50; i++)
-		{
-			frameBar[i] = 0xFF101010;
-		}
-	}
-
-	if (*(char*)(dwBaseAddress + playerStruct + 0x172) != 0)
-	{
-		frameBar[currentFrame] = 0xFF008080;
-	}
-	else if (*(int*)(dwBaseAddress + playerStruct + 0x324) != 0)
-	{
-		frameBar[currentFrame] = 0xFFFF0000;
-	}
-	else if (*(int*)(dwBaseAddress + inactionOffset) != 0)
-	{
-		frameBar[currentFrame] = 0xFF00FF00;
-	}
-	else
-	{
-		frameBar[currentFrame] = 0xFF101010;
-	}
-	
-}
-
 void drawFrameBar() {
-	
+
 	if (!safeWrite()) {
 		return;
 	}
 
-	updateFrameBar(frameBarP1, dwP1Struct, 0x157FC0);
-	updateFrameBar(frameBarP2, dwP2Struct, 0x1581CC);
+	FrameBar(P1, P2, P3, P4);
 
-	for (unsigned i = 0; i < 50; i++) //P1 Bar
+	int nBarDrawCounter = 0;
+
+	int tempFor1 = (nBarCounter % BAR_MEMORY_SIZE) - 50 - nBarScrolling;
+	int tempFor2 = (nBarCounter % BAR_MEMORY_SIZE) - nBarScrolling;
+	if (nBarCounter <= 50)
 	{
-		drawRect(20 + 12 * i, 400, 10, 10, frameBarP1[i]);
+		tempFor1 = 0;
+		tempFor2 = 50;
 	}
-	for (unsigned i = 0; i < 50; i++) //P2 Bar
+
+	for (int i = tempFor1; i < tempFor2; i++)
 	{
-		drawRect(20 + 12 * i, 412, 10, 10, frameBarP2[i]);
+		if (i < 0)
+		{
+			drawRect(20 + 12 * nBarDrawCounter, 400, 5, 10, (*Player1).dwColorBar1[i + BAR_MEMORY_SIZE][0]);
+			drawRect(20 + 12 * nBarDrawCounter + 5, 400, 5, 10, (*Player1).dwColorBar1[i + BAR_MEMORY_SIZE][1]);
+			drawRect(20 + 12 * nBarDrawCounter, 412, 5, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][0]);
+			drawRect(20 + 12 * nBarDrawCounter + 5, 412, 5, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][1]);
+		}
+		else
+		{
+			drawRect(20 + 12 * nBarDrawCounter, 400, 5, 10, (*Player1).dwColorBar1[i][0]);
+			drawRect(20 + 12 * nBarDrawCounter + 5, 400, 5, 10, (*Player1).dwColorBar1[i][1]);
+			drawRect(20 + 12 * nBarDrawCounter, 412, 5, 10, (*Player2).dwColorBar1[i][0]);
+			drawRect(20 + 12 * nBarDrawCounter + 5, 412, 5, 10, (*Player2).dwColorBar1[i][1]);
+		}
+
+		nBarDrawCounter++;
 	}
+
 	drawRect(18, 398, 602, 26, 0x80FFFFFF); //Background
 }
 
