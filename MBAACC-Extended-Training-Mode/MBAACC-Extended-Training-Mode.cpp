@@ -260,7 +260,7 @@ int main(int argc, char* argv[])
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             std::cout << "Cannot attach to versus mode....\x1b[K";
             //LogInfo("MBAA is in versus mode");
-            continue;
+            //continue;
         }
         else
         {

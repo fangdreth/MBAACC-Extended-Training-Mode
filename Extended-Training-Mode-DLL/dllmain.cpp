@@ -11,11 +11,17 @@
 #include <array>
 #include <stdint.h>
 #include <cmath>
+#include <initializer_list>
+#include <stdarg.h>
+#include <d3d9.h>
+#include <d3dx9.h> // https://www.microsoft.com/en-us/download/details.aspx?id=6812
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
 
 #pragma comment(lib, "ws2_32.lib") 
+//#pragma comment(lib, "d3d9.lib") 
+//#pragma comment(lib, "d3dx9.lib") 
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
@@ -33,6 +39,7 @@ typedef unsigned long long ulonglong;
 typedef uint32_t uint;
 
 void enemyReversal();
+void initDrawTextureHook();
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
@@ -41,8 +48,14 @@ void enemyReversal();
 
 const ADDRESS dwBaseAddress = (0x00400000);
 
+DWORD addrEndScene = 0x663fb900;
+DWORD addrEndScenePatch = 0x663fb996;
+
 bool bCasterInit = false;
 ADDRESS dwCasterBaseAddress = 0;
+ADDRESS dwCasterFullBaseAddress = 0;
+DWORD dwDevice = 0; // MASM is horrid when it comes to writing pointers vs value of pointer bc it has type checking. thats why this cant be a pointer
+IDirect3DDevice9* device = NULL;
 
 const ADDRESS INPUTDISPLAYTOGGLE = (dwBaseAddress + 0x001585f8);
 
@@ -76,6 +89,32 @@ DWORD tempRegister4;
    __asm pop ebp        \
 }
 
+#define PUSH_ALL __asm \
+{                      \
+__asm push esp		   \
+__asm push ebp		   \
+__asm push edi		   \
+__asm push esi		   \
+__asm push edx		   \
+__asm push ecx		   \
+__asm push ebx  	   \
+__asm push eax		   \
+__asm push ebp         \
+__asm mov ebp, esp     \
+}
+
+#define POP_ALL __asm  \
+{                      \
+__asm pop ebp          \
+__asm pop eax		   \
+__asm pop ebx  	       \
+__asm pop ecx		   \
+__asm pop edx		   \
+__asm pop esi		   \
+__asm pop edi		   \
+__asm pop ebp		   \
+__asm pop esp		   \
+}
 
 // helpers
 
@@ -119,9 +158,16 @@ public:
 private:
 	int vKey;
 	bool prevState = false;
+
 };
 
-void __stdcall log(const char* msg)
+KeyState upKey(VK_UP);
+KeyState downKey(VK_DOWN);
+KeyState leftKey(VK_LEFT);
+KeyState rightKey(VK_RIGHT);
+KeyState rControl(VK_RCONTROL);
+
+void __stdcall __log(const char* msg)
 {
 	const char* ipAddress = "127.0.0.1";
 	unsigned short port = 17474;
@@ -171,6 +217,15 @@ void __stdcall log(const char* msg)
 	WSACleanup();
 
 	delete[] message;
+}
+
+void __stdcall log(const char* format,...) {
+	static char buffer[256]; // no more random char buffers everywhere.
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, 256, format, args);
+	__log(buffer);
+	va_end(args);
 }
 
 void __stdcall debugLogBytes(BYTE* p)
@@ -441,6 +496,104 @@ void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4) {
 
 // -----
 
+template<size_t size>
+class AdjustableVar {
+public:
+	// here so i can more easily make adjustments to things at runtime
+
+	AdjustableVar(std::function<const DWORD()> addrFunc_, const BYTE(&bytes_)[size]) {
+		
+		if (size == 0) {
+			throw std::invalid_argument("Invalid size.");
+		}
+
+		if (addrFunc_ == NULL) {
+			throw std::invalid_argument("Invalid addr func.");
+		}
+
+		addrFunc = addrFunc_; // lambda func to return the addr
+		memcpy(bytes, bytes_, size);
+	}
+
+	void update() {
+		DWORD addr = addrFunc();
+	
+		int incAmount = rControl.keyHeld() ? 0x10 : 0x1;
+
+		if (leftKey.keyDown()) {
+			index = (index == 0) ? size - 1 : (index - 1) % size;
+		}
+
+		if (rightKey.keyDown()) {
+			index = (index + 1) % size;
+		}
+
+		if (upKey.keyDown()) {
+			bytes[index] = (bytes[index] + incAmount) & 0xFF;
+		}
+
+		if (downKey.keyDown()) {
+			bytes[index] = (bytes[index] - incAmount) & 0xFF;
+		}
+
+		static char buffer[256];
+
+		snprintf(buffer, 256, "%08X:", addr);
+		drawText(50, 100, 10, 14, buffer, 0xFF, 0xFF);
+
+		if (addr != 0) {
+			patchMemcpy(addr, &bytes, size);
+		}
+
+		int x = 140;
+		for (size_t i = 0; i < size; i++) {
+			snprintf(buffer, 256, "%02X", bytes[i]);
+			BYTE shade = (i == index) ? 0xFF : 0xAA;
+			drawText(x, 100, 10, 14, buffer, 0xFF, shade);
+			x += 20;
+		}
+	}
+
+private:
+	BYTE bytes[size];
+	size_t index = 0;
+	std::function<const DWORD()> addrFunc = NULL;
+};
+
+// -----
+
+void dumpAddr(auto addr) {
+	// display a hexdump to the screen
+	static_assert(sizeof(addr) == 4, "Type must be 4 bytes");
+
+	if (addr < dwBaseAddress) {
+		return;
+	}
+	
+	static char buffer[256];
+
+	int x = 50;
+	int y = 100;
+
+	for (unsigned offset = 0; offset < 0x10; offset++) {
+		snprintf(buffer, 256, "%08X", (DWORD)(addr)+(offset * 0x10));
+		drawText(x, y, 10, 14, buffer, 0xFF, 0xFF);
+		x += 80;
+
+		snprintf(buffer, 256, "%02X", offset * 0x10);
+		drawText(x, y, 10, 14, buffer, 0xFF, 0xFF);
+		x += 30;
+
+		for (unsigned subOffset = 0; subOffset < 0x10; subOffset += 0x4) {
+			snprintf(buffer, 256, "%08X", *(DWORD*)(addr + (offset * 0x10) + subOffset));
+			drawText(x, y, 10, 14, buffer, 0xFF, 0xFF);
+			x += 80;
+		}
+		x = 50;
+		y += 14;
+	}
+}
+
 void scaleCords(const float xOrig, const float yOrig, float& x1Cord, float& y1Cord, float& x2Cord, float& y2Cord) {
 	x1Cord = xOrig + (x1Cord - xOrig) * 0.5;
 	y1Cord = yOrig + (y1Cord - yOrig) * 0.5;
@@ -453,19 +606,19 @@ DWORD getObjFrameDataPointer(DWORD objAddr) {
 	int objState = *(DWORD*)(objAddr + 0x14);
 	int objPattern = *(DWORD*)(objAddr + 0x10);
 
-	DWORD baseFrameDataPtr1 = *(DWORD*)(objAddr + 0x330);
+	DWORD baseFrameDataPtr1 = *(DWORD*)(objAddr + 0x330); // HA6 data pointer
 	if (baseFrameDataPtr1 == 0) { return 0; }
 
-	DWORD baseFrameDataPtr2 = *(DWORD*)(baseFrameDataPtr1);
+	DWORD baseFrameDataPtr2 = *(DWORD*)(baseFrameDataPtr1); // HA6 data
 	if (baseFrameDataPtr2 == 0) { return 0; }
 
-	DWORD unknownPtr1 = *(DWORD*)(baseFrameDataPtr2 + 0x4);
+	DWORD unknownPtr1 = *(DWORD*)(baseFrameDataPtr2 + 0x4); // HA6 patterns
 	if (unknownPtr1 == 0) { return 0; }
 
-	DWORD unknownPtr2 = *(DWORD*)(unknownPtr1 + 0x4);
+	DWORD unknownPtr2 = *(DWORD*)(unknownPtr1 + 0x4); // I do not know
 	if (unknownPtr2 == 0) { return 0; }
 
-	DWORD basePatternPtr = *(DWORD*)(unknownPtr2 + (objPattern * 0x4));
+	DWORD basePatternPtr = *(DWORD*)(unknownPtr2 + (objPattern * 0x4)); // actual index to the pattern?
 	if (basePatternPtr == 0) { return 0; }
 
 	DWORD unknownPtr3 = *(DWORD*)(basePatternPtr + 0x34);
@@ -490,6 +643,11 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 	if (objFramePtr == 0) {
 		return;
 	}
+
+	/*
+	objFramePtr + 
+	
+	*/
 
 	// -----
 
@@ -628,6 +786,24 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 	}
 }
 
+void miscTests() {
+	static AdjustableVar<5> currentTexture([]() -> DWORD {
+		if (!((*(int*)(0x67bde8) != 0) && (*(char*)(0x67be09) == '\0'))) {
+			return 0;
+		}
+		DWORD res = getObjFrameDataPointer(0x67bde8);
+		if (res == 0) {
+			return 0;
+		}
+		return res + 0x18;
+		}, { 0x00, 0x00, 0xFF, 0x00, 0xFF });
+
+	currentTexture.update();
+
+	//ID3DXFont* pFont = nullptr;
+
+}
+
 //In-game frame bar proof-of-concept
 DWORD frameBarP1[50];
 DWORD frameBarP2[50];
@@ -706,18 +882,29 @@ void drawFrameData() {
 	drawObject(0x00555130 + (0xAFC * 3), false); // P4
 
 	// draw all effects
-
 	for(unsigned index = 0; index < 1000; index++) {
 		if (((*(int*)(index * 0x33c + 0x67bde8) != 0) && (*(char*)(index * 0x33c + 0x67be09) == '\0'))) {
 			drawObject(index * 0x33c + 0x67bde8, true);
 		}
 	}
+
+	miscTests();
 }
 
 void highlightStates()
 {
 
 	if (!safeWrite()) {
+		return;
+	}
+
+	static bool settingWasChanged = false;
+
+	if (!settingWasChanged && (
+		(arrIdleHighlightSetting != std::array<BYTE, 3>({ 255, 255, 255 })) ||
+		(arrBlockingHighlightSetting != std::array<BYTE, 3>({255, 255, 255})))) {
+		settingWasChanged = true;
+	} else {
 		return;
 	}
 
@@ -783,16 +970,26 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	static KeyState pKey('P');
 	static KeyState nKey('N');
 	static bool bIsPaused = false;
-
+	static KeyState rKey('R');
+	static bool trigDelay = false;
+	static int delay = 0;
+	
 	if (pKey.keyDown())
 	{
 		bIsPaused = !bIsPaused;		
+	}
+
+	if (rKey.keyDown()) {
+		trigDelay = true;
+		delay = 16*5;
+		bIsPaused = true;
 	}
 
 	if (!bIsPaused && nKey.keyDown())
 	{
 		bIsPaused = true;
 	}
+
 
 	bool ok = true;
 	MSG msg;
@@ -815,6 +1012,17 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+		}
+
+		if (trigDelay) {
+			if (delay > 0) {
+				delay--;
+			}
+			else {
+				trigDelay = false;
+				bIsPaused = false;
+				break;
+			}
 		}
 
 		if (pKey.keyDown())
@@ -926,7 +1134,6 @@ void enemyReversal()
 
 void frameDoneCallback()
 {
-
 	static KeyState hKey('H');
 	static bool bShowHitboxes = false;
 
@@ -949,12 +1156,43 @@ void frameDoneCallback()
 		drawFrameBar();
 	}
 
+	static bool deviceInit = false;
+	if (!deviceInit && dwDevice != NULL) {
+		deviceInit = true;
+
+		device = (IDirect3DDevice9*)dwDevice;
+
+		log("dwDevice: %08X", dwDevice);
+
+		// repatch original bytes and remove my code 
+		BYTE bytes[4] = { 0x5B, 0xC2, 0x04, 0x00 };
+		patchMemcpy(dwCasterBaseAddress + addrEndScenePatch, &bytes, 4);
+
+
+		unsigned idk = device->GetAvailableTextureMem();
+
+		log(",,,,please %08X", idk);
+
+	}
+
+	
+
+	//dumpAddr(getObjFrameDataPointer(0x00555130));
+
 	/*
 	i am sorry for commenting this out
 	for unknown reasons, when the input display and attack combo display things are on, this causes lag? 
 	ill look into hooking it from somewhere else
 	*/
 	//enemyReversal();
+
+	//
+	//static bool drawTextureInited = false;
+	//if (!drawTextureInited) {
+	//	initDrawTextureHook();
+	//	drawTextureInited = true;
+	//}
+	
 	
 }
 
@@ -1120,12 +1358,116 @@ __declspec(naked) void meterGainHook() {
 	};
 }
 
+DWORD tempDrawTextureRegister1;
+DWORD tempDrawTextureRegister2;
+DWORD tempTextureAddr1;
+DWORD tempTextureAddr2;
+
+void what(DWORD addr) {
+
+	//log("what addr %08X", (DWORD)addr);
+	log("what addr %10d %10d", (DWORD)addr & 0xFFFF, ((DWORD)addr) >> 16);
+
+
+	if (addr == 0) {
+		return;
+	}
+
+	
+	return;
+
+	// what actually is this variable??
+	// IDirect3DTexture9 is size 4, most likely a pointer 
+	// but if its a stacked pointer? i dont know
+	// 004164c0 indexes it to a max of 0x74,,, so its a size of 0x78?
+
+
+	IDirect3DTexture9* pTexture = (IDirect3DTexture9*)(*(DWORD*)addr);
+	//IDirect3DTexture9* pTexture = (IDirect3DTexture9*)addr;
+
+	log("trying something");
+	DWORD idk = pTexture->GetLevelCount();
+	log("got level count %08X", idk);
+	
+	return;
+
+
+	log("trying lock");
+	D3DLOCKED_RECT lockedRect;
+	int res = pTexture->LockRect(0, &lockedRect, NULL, D3DLOCK_DISCARD);
+
+	if (res == D3D_OK) {
+		log("locked it?");
+		pTexture->UnlockRect(0);
+		log("unlocked it?");
+	}
+	else {
+		log("not locked?");
+	}
+	
+}
+
+void __stdcall drawTextureLog() {
+	//static char buffer[256];
+	//snprintf(buffer, 256, "%08X %08X", tempTextureAddr1, tempTextureAddr2);
+	//log(buffer);
+
+	//what(tempTextureAddr1);
+	what(tempTextureAddr2);
+	
+}
+
+__declspec(naked) void drawTextureHook() {
+
+	__asm {
+		pop tempDrawTextureRegister1;
+	};
+
+	__asm {
+		mov tempTextureAddr1, EDI;
+		mov tempDrawTextureRegister2, edx;
+		mov edx, [EBP + 0Ch];
+		//mov edx, [EBP + 08h];
+		//mov edx, [EBP + 10h];
+		mov tempTextureAddr2, edx;
+		mov edx, tempDrawTextureRegister2;
+		//call drawTextureLog;
+	};
+
+	PUSH_ALL;
+	__asm {
+		call drawTextureLog;
+	};
+	POP_ALL;
+
+	__asm {
+		// this func RELIES ON EAX?
+		mov tempDrawTextureRegister2, edx;
+		mov edx, 004164c0h;
+		call edx;
+		mov edx, tempDrawTextureRegister2;
+	};
+
+	__asm {
+		push tempDrawTextureRegister1;
+		ret;
+	};
+}
+
 void battleResetCallback() {
 	nTempP1MeterGain = 0;
 	nTempP2MeterGain = 0;
 	nP1MeterGain = 0;
 	nP2MeterGain = 0;
 	prevComboPtr = 0;
+}
+
+__declspec(naked) void directXHook() {
+	__asm {
+		mov dwDevice, ebx;
+		pop ebx;
+		ret 4;
+	}
 }
 
 // init funcs
@@ -1243,12 +1585,69 @@ void initBattleResetCallback() {
 	patchMemcpy(((BYTE*)funcAddr) + 5, tempCode, 3);
 }
 
+void initDrawTextureHook() {
+	//void* funcAddress = (void*)0x00415580;
+	//// backup
+	//patchMemcpy(arrDrawTextureHookOrig, funcAddress, 10);
+	//// new bytes
+	//patchFunction(funcAddress, drawTextureHook);
+	//// ret
+	//patchByte(((BYTE*)funcAddress) + 5, 0xC3);
+	//// backup modded bytes 
+	//patchMemcpy(arrDrawTextureHookMod, funcAddress, 10);
+	
+	void* funcAddress = (void*)0x0041564d;
+	patchFunction(funcAddress, drawTextureHook);
+}
+
+void initDirectX() {
+
+	/*
+	caster hooks dx
+	ideally, i would,,,, hook those hooks if those hooks were hooked, or i would make my own hooks if not
+	im just going to hook casters hooks, and not hook this if caster isnt running
+	DX9_Endscene
+
+	goal of this is to find the texture pointer, lock it, modify it, unlock it, and then continue
+	arbitrary drawing as well
+
+	todo, actually learn directx backend
+	does it(im assuming it does) move all textures to vram, and the sprite index is what indexes them? meaning that all
+	sprite moving and loading would be done either on boot(unlikely) after char select when loading into a game(likely)?
+
+	*/
+
+	if (!bCasterInit) {
+		return;
+	}
+
+	HMODULE hD3dll = GetModuleHandle(L"d3d9.dll");
+	DWORD d3dBase = (DWORD)hD3dll;
+	if (hD3dll == NULL) {
+		return;
+	}
+
+	// todo, move this blocking to its own thread 
+	DWORD* device = (DWORD*)0x0076e7d4;
+	while (*device == NULL) {
+		Sleep(16 * 10);
+	}
+
+	// this is not a good idea
+	Sleep(3 * 1000);
+
+	log("endScene at %08X", dwCasterBaseAddress + addrEndScene);
+	log("endScene patch at %08X", dwCasterBaseAddress + addrEndScenePatch);
+
+	patchJump(dwCasterBaseAddress + addrEndScenePatch, directXHook);
+}
+
 void threadFunc() 
 {
 	srand(time(NULL));
 
 	// make sure that caster has time to hook at the start
-	Sleep(32);
+	Sleep(16 * 5);
 
 	// todo, put something here to prevent mult injection
 
@@ -1259,6 +1658,7 @@ void threadFunc()
 		bCasterInit = true;
 		// 0x66380000 is the base address when looking through caster in decomp
 		dwCasterBaseAddress = ((DWORD)hModule) - 0x66380000;
+		dwCasterFullBaseAddress = (DWORD)hModule;
 		initCasterMods();
 	}
 
@@ -1271,6 +1671,10 @@ void threadFunc()
 	initAttackMeterDisplay();
 	initMeterGainHook();
 	initBattleResetCallback();
+
+	initDrawTextureHook();
+
+	initDirectX();
 
 	while (true) 
 	{
