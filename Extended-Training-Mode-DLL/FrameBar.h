@@ -105,10 +105,10 @@ void ResetBars(Player& P)
 	nBarIntervalMax = nBarDisplayRange;
 	for (int i = 0; i < BAR_MEMORY_SIZE; i++)
 	{
-		P.dwColorBar1[i][0] = 0xFF000000;
-		P.dwColorBar1[i][1] = 0xFF000000;
-		P.dwColorBar2[i][0] = 0xFF000000;
-		P.dwColorBar2[i][1] = 0xFF000000;
+		P.dwColorBar1[i][0] = 0x00000000;
+		P.dwColorBar1[i][1] = 0x00000000;
+		P.dwColorBar2[i][0] = 0x00000000;
+		P.dwColorBar2[i][1] = 0x00000000;
 	}
 }
 
@@ -116,7 +116,7 @@ void UpdateBars(Player& P, Player& Assist)
 {
 	// Foreground color -> \x1b[38;2;R;G;Bm
 	// Background color -> \x1b[48;2;R;G;Bm
-	DWORD dwColor = 0xFF000000;
+	DWORD dwColor = 0x00000000;
 	DWORD dwColor2 = 0x00000000;
 	bool bIsButtonPressed = *(char*)(P.dwBaseAddress + 0x2ED) != 0 || *(char*)(P.dwBaseAddress + 0x2EE) != 0;
 
@@ -158,7 +158,7 @@ void UpdateBars(Player& P, Player& Assist)
 	}
 	else //Fully actionable
 	{
-		dwColor = 0xFF000000;
+		dwColor = 0xFF202020;
 		//sBarValue = std::format("{:2}", P.nPattern % 100);
 
 		if (bDoAdvantage) //Has advantage
@@ -214,7 +214,7 @@ void UpdateBars(Player& P, Player& Assist)
 		P.dwColorBar1[nBarCounter % BAR_MEMORY_SIZE][1] = dwColor;
 	}
 
-	dwColor = 0xFF000000;
+	dwColor = 0x00000000;
 	dwColor2 = 0x00000000;
 
 }

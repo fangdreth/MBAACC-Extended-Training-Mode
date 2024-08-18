@@ -640,35 +640,45 @@ void drawFrameBar() {
 
 	int nBarDrawCounter = 0;
 
-	int tempFor1 = (nBarCounter % BAR_MEMORY_SIZE) - 50 - nBarScrolling;
+
+
+	int tempFor1 = (nBarCounter % BAR_MEMORY_SIZE) - 75 - nBarScrolling;
 	int tempFor2 = (nBarCounter % BAR_MEMORY_SIZE) - nBarScrolling;
-	if (nBarCounter <= 50)
+	if (nBarCounter <= 75)
 	{
 		tempFor1 = 0;
-		tempFor2 = 50;
+		tempFor2 = 75;
 	}
 
 	for (int i = tempFor1; i < tempFor2; i++)
 	{
 		if (i < 0)
 		{
-			drawRect(20 + 12 * nBarDrawCounter, 400, 5, 10, (*Player1).dwColorBar1[i + BAR_MEMORY_SIZE][0]);
-			drawRect(20 + 12 * nBarDrawCounter + 5, 400, 5, 10, (*Player1).dwColorBar1[i + BAR_MEMORY_SIZE][1]);
-			drawRect(20 + 12 * nBarDrawCounter, 412, 5, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][0]);
-			drawRect(20 + 12 * nBarDrawCounter + 5, 412, 5, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][1]);
+			drawRect(20 + 8 * nBarDrawCounter, 400, 4, 10, (*Player1).dwColorBar1[i + BAR_MEMORY_SIZE][0]);
+			drawRect(20 + 8 * nBarDrawCounter + 4, 400, 3, 10, (*Player1).dwColorBar1[i + BAR_MEMORY_SIZE][1]);
+			drawRect(20 + 8 * nBarDrawCounter, 412, 4, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][0]);
+			drawRect(20 + 8 * nBarDrawCounter + 4, 412, 3, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][1]);
 		}
 		else
 		{
-			drawRect(20 + 12 * nBarDrawCounter, 400, 5, 10, (*Player1).dwColorBar1[i][0]);
-			drawRect(20 + 12 * nBarDrawCounter + 5, 400, 5, 10, (*Player1).dwColorBar1[i][1]);
-			drawRect(20 + 12 * nBarDrawCounter, 412, 5, 10, (*Player2).dwColorBar1[i][0]);
-			drawRect(20 + 12 * nBarDrawCounter + 5, 412, 5, 10, (*Player2).dwColorBar1[i][1]);
+			drawRect(20 + 8 * nBarDrawCounter, 400, 4, 10, (*Player1).dwColorBar1[i][0]);
+			drawRect(20 + 8 * nBarDrawCounter + 4, 400, 3, 10, (*Player1).dwColorBar1[i][1]);
+			drawRect(20 + 8 * nBarDrawCounter, 412, 4, 10, (*Player2).dwColorBar1[i][0]);
+			drawRect(20 + 8 * nBarDrawCounter + 4, 412, 3, 10, (*Player2).dwColorBar1[i][1]);
+
+			//This here just so i remember what text position and size works best when i actually implement this fully
+			//char arrTextBuffer[256];
+			//snprintf(arrTextBuffer, 256, "%1d", 1);
+			//drawText(20, 399, arrTextBuffer, 12);
+
+			//snprintf(arrTextBuffer, 256, "%1d", 2);
+			//drawText(28, 399, arrTextBuffer, 12);
 		}
 
 		nBarDrawCounter++;
 	}
 
-	drawRect(18, 398, 602, 26, 0x80FFFFFF); //Background
+	drawRect(18, 398, 602, 26, 0xFF000000); //Background
 }
 
 void drawFrameData() {
