@@ -24,7 +24,7 @@
 //#pragma comment(lib, "d3dx9.lib") 
 
 #pragma push_macro("optimize")
-#pragma optimize("t", on) 
+//#pragma optimize("t", on) 
 
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -1132,6 +1132,50 @@ void enemyReversal()
 	}
 }
 
+// Vertex structure
+struct CUSTOMVERTEX {
+	D3DVECTOR position;
+	D3DCOLOR color;
+};
+
+// Vertex format
+#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE)
+
+void DrawTriangle(IDirect3DDevice9* d3ddev) {
+	if (!d3ddev) return;
+
+	// todo, redo drawing and text with this
+	// make sure it works fullscreen and not, and scaled fullscreen and not.
+
+	constexpr float whatIsThis = 0.0f;
+
+	// Define the vertices of the triangle
+	constexpr CUSTOMVERTEX vertices[] = {
+		{ D3DVECTOR(0.0f, 0.5f, whatIsThis), D3DCOLOR_XRGB(255, 0, 0) },
+		{ D3DVECTOR(0.5f, -0.5f, whatIsThis), D3DCOLOR_XRGB(0, 255, 0) },
+		{ D3DVECTOR(-0.5f, -0.5f, whatIsThis), D3DCOLOR_XRGB(0, 0, 255) }
+	};
+
+	// Set up the vertex buffer and draw
+	LPDIRECT3DVERTEXBUFFER9 v_buffer;
+	if (SUCCEEDED(d3ddev->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX), 0, D3DFVF_CUSTOMVERTEX,
+		D3DPOOL_MANAGED, &v_buffer, NULL))) {
+		VOID* pVoid;
+		v_buffer->Lock(0, 0, (void**)&pVoid, 0);
+		memcpy(pVoid, vertices, sizeof(vertices));
+		v_buffer->Unlock();
+
+		//d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+		//d3ddev->BeginScene();
+		d3ddev->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+		d3ddev->SetFVF(D3DFVF_CUSTOMVERTEX);
+		d3ddev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
+		//d3ddev->EndScene();
+		//d3ddev->Present(NULL, NULL, NULL, NULL);
+		v_buffer->Release();
+	}
+}
+
 void frameDoneCallback()
 {
 	static KeyState hKey('H');
@@ -1169,9 +1213,12 @@ void frameDoneCallback()
 		patchMemcpy(dwCasterBaseAddress + addrEndScenePatch, &bytes, 4);
 
 
+
 		unsigned idk = device->GetAvailableTextureMem();
 
 		log(",,,,please %08X", idk);
+
+
 
 	}
 
@@ -1358,6 +1405,14 @@ __declspec(naked) void meterGainHook() {
 	};
 }
 
+void battleResetCallback() {
+	nTempP1MeterGain = 0;
+	nTempP2MeterGain = 0;
+	nP1MeterGain = 0;
+	nP2MeterGain = 0;
+	prevComboPtr = 0;
+}
+
 DWORD tempDrawTextureRegister1;
 DWORD tempDrawTextureRegister2;
 DWORD tempTextureAddr1;
@@ -1365,46 +1420,101 @@ DWORD tempTextureAddr2;
 
 void what(DWORD addr) {
 
-	//log("what addr %08X", (DWORD)addr);
-	log("what addr %10d %10d", (DWORD)addr & 0xFFFF, ((DWORD)addr) >> 16);
+	
+	//addr = 0x00555110; // grabbed from the draw in the moon thing
 
+	//	log("hi from what func %08X", addr);
 
-	if (addr == 0) {
+	//DrawTriangle(device);
+	//log("bs returned");
+
+	/*
+	IDirect3DResource9* pResource = (IDirect3DTexture9*)addr;
+
+	DWORD type = pResource->GetType();
+
+	IDirect3DBaseTexture9* pBaseTex = (IDirect3DBaseTexture9*)pResource;
+
+	DWORD levelCount = pBaseTex->GetLevelCount();
+
+	LPDIRECT3DTEXTURE9* pTex = (LPDIRECT3DTEXTURE9*)pBaseTex;
+	*/
+
+	HRESULT hr;
+
+	IDirect3DTexture9* pTex = (IDirect3DTexture9*)addr;
+	DWORD levelCount = pTex->GetLevelCount();
+	DWORD type = pTex->GetType();
+
+	D3DSURFACE_DESC desc;
+
+	hr = pTex->GetLevelDesc(0, &desc);
+
+	if (FAILED(hr)) {
+		log("getlvldesc failed??");
 		return;
 	}
 
-	
-	return;
+	D3DPOOL pool = desc.Pool;
+	D3DFORMAT format = desc.Format;
+	DWORD usage = desc.Usage;
 
-	// what actually is this variable??
-	// IDirect3DTexture9 is size 4, most likely a pointer 
-	// but if its a stacked pointer? i dont know
-	// 004164c0 indexes it to a max of 0x74,,, so its a size of 0x78?
+	// format seems const on D3DFMT_A8R8G8B8
 
-
-	IDirect3DTexture9* pTexture = (IDirect3DTexture9*)(*(DWORD*)addr);
-	//IDirect3DTexture9* pTexture = (IDirect3DTexture9*)addr;
-
-	log("trying something");
-	DWORD idk = pTexture->GetLevelCount();
-	log("got level count %08X", idk);
-	
-	return;
-
-
-	log("trying lock");
 	D3DLOCKED_RECT lockedRect;
-	int res = pTexture->LockRect(0, &lockedRect, NULL, D3DLOCK_DISCARD);
-
-	if (res == D3D_OK) {
-		log("locked it?");
-		pTexture->UnlockRect(0);
-		log("unlocked it?");
+	//hr = pTex->LockRect(0, &lockedRect, NULL, D3DLOCK_DISCARD);
+	hr = pTex->LockRect(0, &lockedRect, NULL, D3DLOCK_NOOVERWRITE);
+	if (FAILED(hr)) {
+		log("lock failed!!!");
+		return;
 	}
-	else {
-		log("not locked?");
+
+
+	DWORD* pImage = (DWORD*)lockedRect.pBits;
+	int width = lockedRect.Pitch / 4;  
+	int height = lockedRect.Pitch / width;
+
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x)	{
+			pImage[x] = D3DCOLOR_ARGB(0xFF, 0xFF, 0xFF, 0xFF);
+		}
+		pImage += width;
 	}
 	
+	
+	pTex->UnlockRect(0);
+
+	log("type: %3d level: %3d pool: %3d format: %3d usage: %08X", type, levelCount, pool, format, usage);
+
+	return;
+	/*
+	D3DSURFACE_DESC* pDesc = NULL;
+	int level = 0; // is this the right level?
+	HRESULT hr = pTex->GetLevelDesc(level, pDesc);
+	
+	log("hresult was %3d", hr);
+
+
+	return;
+
+	if (FAILED(hr)) {
+		log("getlvldesc failed??");
+		log("-----");
+		return;
+	}
+
+	if (pDesc == NULL) {
+		log("pDesc was null?");
+		log("-----");
+		return;
+	}
+
+	log("type was %3d Pool was %3d", res, pDesc->Pool);
+
+
+	log("-----");
+	return;	
+	*/
 }
 
 void __stdcall drawTextureLog() {
@@ -1412,26 +1522,22 @@ void __stdcall drawTextureLog() {
 	//snprintf(buffer, 256, "%08X %08X", tempTextureAddr1, tempTextureAddr2);
 	//log(buffer);
 
-	//what(tempTextureAddr1);
-	what(tempTextureAddr2);
-	
+	what(tempTextureAddr1);
+	//what(tempTextureAddr2);
+
 }
 
 __declspec(naked) void drawTextureHook() {
 
 	__asm {
-		pop tempDrawTextureRegister1;
-	};
-
-	__asm {
-		mov tempTextureAddr1, EDI;
-		mov tempDrawTextureRegister2, edx;
-		mov edx, [EBP + 0Ch];
-		//mov edx, [EBP + 08h];
-		//mov edx, [EBP + 10h];
+		mov tempTextureAddr1, edx;
+		
+		mov edx, [ebp + 0Ch];
 		mov tempTextureAddr2, edx;
-		mov edx, tempDrawTextureRegister2;
-		//call drawTextureLog;
+		
+		mov edx, tempTextureAddr1;
+
+		mov tempTextureAddr1, edi;
 	};
 
 	PUSH_ALL;
@@ -1441,25 +1547,41 @@ __declspec(naked) void drawTextureHook() {
 	POP_ALL;
 
 	__asm {
-		// this func RELIES ON EAX?
-		mov tempDrawTextureRegister2, edx;
-		mov edx, 004164c0h;
-		call edx;
-		mov edx, tempDrawTextureRegister2;
-	};
-
-	__asm {
-		push tempDrawTextureRegister1;
 		ret;
 	};
 }
 
-void battleResetCallback() {
-	nTempP1MeterGain = 0;
-	nTempP2MeterGain = 0;
-	nP1MeterGain = 0;
-	nP2MeterGain = 0;
-	prevComboPtr = 0;
+__declspec(naked) void drawTextureCleanup() {
+	__asm {
+		pop edi;
+		mov eax, 1;
+		pop esi;
+		mov esp, ebp;
+		pop ebp;
+		ret;
+	}
+}
+
+__declspec(naked) void drawTextureHook2() {
+
+	__asm {
+		mov tempTextureAddr1, eax;
+	};
+
+	PUSH_ALL;
+	__asm {
+		call drawTextureLog;
+	};
+	POP_ALL;
+
+	__asm {
+		pop edi;
+		pop esi;
+		pop ebp;
+		pop ebx;
+		add esp, 8h;
+		ret;
+	};
 }
 
 __declspec(naked) void directXHook() {
@@ -1467,7 +1589,7 @@ __declspec(naked) void directXHook() {
 		mov dwDevice, ebx;
 		pop ebx;
 		ret 4;
-	}
+	};
 }
 
 // init funcs
@@ -1596,8 +1718,28 @@ void initDrawTextureHook() {
 	//// backup modded bytes 
 	//patchMemcpy(arrDrawTextureHookMod, funcAddress, 10);
 	
-	void* funcAddress = (void*)0x0041564d;
-	patchFunction(funcAddress, drawTextureHook);
+	// ok,,
+	// 0041564d will have our call
+	// 00415652 will have real call (modified relcall, now 0xe69 instead of 0xe6e
+	// 00415657 will JUMP to cleanup code and ret
+
+	//void* funcAddress = (void*)0x0041564d;
+	//patchFunction(funcAddress, drawTextureHook);
+
+
+	/*
+	patchFunction(0x0041564d, drawTextureHook);
+
+	BYTE code[5] = { 0xE8, 0x69, 0x0E, 0x00, 0x00 };
+	patchMemcpy(0x00415652, &code, 5);
+
+	patchJump(0x00415657, drawTextureCleanup);
+	*/
+
+
+	void* funcAddr = (void*)0x004bf11f;
+	patchJump(funcAddr, drawTextureHook2);
+
 }
 
 void initDirectX() {
