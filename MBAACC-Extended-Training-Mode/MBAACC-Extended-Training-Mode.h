@@ -253,7 +253,7 @@ int KeyJustPressed()
     //http://www.kbdedit.com/manual/low_level_vk_list.html
 
     // there're some weird collisions between keys
-    // like numpad / and the arrow keys,
+    // like numpad-/ and the arrow keys,
     // but all of the normal keys work as expected.
     // I'm fine with it, personally.
     // also
