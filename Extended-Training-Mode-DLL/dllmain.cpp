@@ -1418,33 +1418,32 @@ DWORD tempDrawTextureRegister2;
 DWORD tempTextureAddr1;
 DWORD tempTextureAddr2;
 
-void what(DWORD addr) {
-
-	
-	//addr = 0x00555110; // grabbed from the draw in the moon thing
-
-	//	log("hi from what func %08X", addr);
-
-	//DrawTriangle(device);
-	//log("bs returned");
-
-	/*
-	IDirect3DResource9* pResource = (IDirect3DTexture9*)addr;
-
-	DWORD type = pResource->GetType();
-
-	IDirect3DBaseTexture9* pBaseTex = (IDirect3DBaseTexture9*)pResource;
-
-	DWORD levelCount = pBaseTex->GetLevelCount();
-
-	LPDIRECT3DTEXTURE9* pTex = (LPDIRECT3DTEXTURE9*)pBaseTex;
-	*/
+void what() {
 
 	HRESULT hr;
 
+	DWORD addr;
+	
+	addr = tempTextureAddr1;
+
+	//log("init addr is %08X", addr);
+
+	if (addr == 0) {
+		return;
+	}
+
+	addr = *(DWORD*)tempTextureAddr1;
+
+	//log("deref addr is %08X", addr);
+
+	if (addr == 0) {
+		return;
+	}
+
 	IDirect3DTexture9* pTex = (IDirect3DTexture9*)addr;
-	DWORD levelCount = pTex->GetLevelCount();
 	DWORD type = pTex->GetType();
+	DWORD levelCount = pTex->GetLevelCount();
+	
 
 	D3DSURFACE_DESC desc;
 
@@ -1459,32 +1458,80 @@ void what(DWORD addr) {
 	D3DFORMAT format = desc.Format;
 	DWORD usage = desc.Usage;
 
-	// format seems const on D3DFMT_A8R8G8B8
+	log("type: %3d level: %3d pool: %3d format: %3d usage: %08X", type, levelCount, pool, format, usage);
+	
+	DWORD dwCol;
+	WORD wCol;
+
+	//D3DCOLOR col = D3DCOLOR_ARGB(0xFF, 0x00, 0x00, 0x00);
+	// whats the most efficient way of doing these copies such that i dont overwrite the buffer? probs just a overall
+	size_t colSize = -1;
+
+	switch (format) {
+	case D3DFMT_A8R8G8B8:
+		dwCol = 0xFFFF00FF;
+		colSize = 4;
+		break;
+	case D3DFMT_X8R8G8B8:
+		dwCol = 0xFF00FFFF;
+		colSize = 4;
+		break;
+	case D3DFMT_A1R5G5B5:
+		wCol = 0b1000001111100000;
+		colSize = 2;
+		break;
+	default:
+		log("wtf is that format, bye");
+		return;
+		break;
+	}
 
 	D3DLOCKED_RECT lockedRect;
 	//hr = pTex->LockRect(0, &lockedRect, NULL, D3DLOCK_DISCARD);
-	hr = pTex->LockRect(0, &lockedRect, NULL, D3DLOCK_NOOVERWRITE);
+	//hr = pTex->LockRect(0, &lockedRect, NULL, D3DLOCK_NOOVERWRITE);
+	hr = pTex->LockRect(0, &lockedRect, NULL, 0);
 	if (FAILED(hr)) {
 		log("lock failed!!!");
 		return;
 	}
 
+	//int width = lockedRect.Pitch / 4;
+	int width = desc.Width;
+	int height = desc.Height;	
 
-	DWORD* pImage = (DWORD*)lockedRect.pBits;
-	int width = lockedRect.Pitch / 4;  
-	int height = lockedRect.Pitch / width;
+	
+	// there has to be a better way to do this
+	if (colSize == 4) {
+		DWORD* pImage = (DWORD*)lockedRect.pBits;
 
-	for (int y = 0; y < height; ++y) {
-		for (int x = 0; x < width; ++x)	{
-			pImage[x] = D3DCOLOR_ARGB(0xFF, 0xFF, 0xFF, 0xFF);
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; x += 2) {
+				pImage[x] = dwCol;
+			}
+			pImage += width;
 		}
-		pImage += width;
 	}
+	else if (colSize == 2) {
+		WORD* pImage = (WORD*)lockedRect.pBits;
+
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; x += 2) {
+				pImage[x] = wCol;
+			}
+			pImage += width;
+		}
+
+	}
+
+
+
+
+	
 	
 	
 	pTex->UnlockRect(0);
 
-	log("type: %3d level: %3d pool: %3d format: %3d usage: %08X", type, levelCount, pool, format, usage);
+	
 
 	return;
 	/*
@@ -1515,16 +1562,6 @@ void what(DWORD addr) {
 	log("-----");
 	return;	
 	*/
-}
-
-void __stdcall drawTextureLog() {
-	//static char buffer[256];
-	//snprintf(buffer, 256, "%08X %08X", tempTextureAddr1, tempTextureAddr2);
-	//log(buffer);
-
-	what(tempTextureAddr1);
-	//what(tempTextureAddr2);
-
 }
 
 __declspec(naked) void drawTextureHook() {
@@ -1582,6 +1619,62 @@ __declspec(naked) void drawTextureHook2() {
 		add esp, 8h;
 		ret;
 	};
+}
+
+DWORD drawTextureHookRegisterSave1;
+DWORD drawTextureHookRegisterSave2;
+__declspec(naked) void drawTextureHook3() {
+
+
+	__asm {
+		pop drawTextureHookRegisterSave1;
+	};
+
+	// modify the vars in the stack.
+	__asm {
+		//mov[esp + 1Ch], 1;
+		//mov[esp + 10h], 1; // miplevels
+		//or [esp + 14h], D3DUSAGE_DYNAMIC;
+		//mov [esp + 14h], D3DUSAGE_DYNAMIC;
+	};
+
+	__asm { // saves the out addr. im not sure if directx funcs are stdcall or not? i think they are tbh
+		// no return addr on stack at this moment!
+		mov drawTextureHookRegisterSave2, eax;
+
+		mov eax, [esp + 1Ch];
+		//mov eax, [eax];
+		mov tempTextureAddr1, eax;
+
+		mov eax, drawTextureHookRegisterSave2;
+	};
+
+
+	// look. any other form of jump simply did not cooperate.
+	// i hate and despise this
+	// why does windows not allow me to just jmp [0x1234] or jmp 0x1234??? why even when i declare it as a variable does it somehow create inoperable asm?
+	// how many bugs have been caused by this
+	__asm {
+		_emit 0xFF;
+		//_emit 0x25; // JMP 
+		_emit 0x15; // CALL
+
+		_emit 0xF4;
+		_emit 0xB3;
+		_emit 0x51;
+		_emit 0x00;
+	};
+
+	//PUSH_ALL;
+	//__asm {
+	//	call what;
+	//};
+	//POP_ALL;
+
+	__asm {
+		push drawTextureHookRegisterSave1;
+		ret;
+	}
 }
 
 __declspec(naked) void directXHook() {
@@ -1737,8 +1830,15 @@ void initDrawTextureHook() {
 	*/
 
 
-	void* funcAddr = (void*)0x004bf11f;
-	patchJump(funcAddr, drawTextureHook2);
+	//void* funcAddr = (void*)0x004bf11f;
+	//patchJump(0x004bf11f, drawTextureHook2);
+
+	//DWORD addr = (DWORD)drawTextureHook3;
+	//patchMemcpy(0x004de5ae + 2, addr, 4);
+	
+	patchJump(0x004de5ae, drawTextureHook3);
+	
+	// todo, hook D3DXCreateTextureFromFileInMemoryEx
 
 }
 
