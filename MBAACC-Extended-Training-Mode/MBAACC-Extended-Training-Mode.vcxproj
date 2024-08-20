@@ -159,6 +159,7 @@
     <ClInclude Include="..\Common\CharacterData.h" />
     <ClInclude Include="..\Common\Common.h" />
     <ClInclude Include="..\Common\RawData.h" />
+    <ClInclude Include="..\Common\SharedMemoryHelper.h" />
     <ClInclude Include="FrameDisplay.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MBAACC-Extended-Training-Mode.h" />

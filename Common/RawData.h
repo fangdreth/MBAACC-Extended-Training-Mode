@@ -2,14 +2,14 @@
 #include <map>
 #include <string>
 
-const std::map<std::string, int> vUniversalPatterns_Map =
+const std::map<std::string, int> UniversalPatterns_Map =
 {
 	{ "5A", 1 }, { "5B", 2 }, { "5C", 3 }, { "2A", 4 }, { "2B", 5 }, { "2C", 6 },
 	{"j.A", 7}, {"j.B", 8}, {"j.C", 9},
 	{ "JUMP", 36 }, {"DBL JUMP", 39}, { "FORWARD JUMP", 35 }, {"FORWARD DBL JUMP", 38}, {"BACKWARD JUMP", 37}, {"BACKWARD DBL JUMP", 40}, {"SUPER JUMP", 360}, {"SUPER DBL JUMP", 38}
 };
 
-const std::map<std::string, int> vCVAKIHA_Map =
+const std::map<std::string, int> CVAKIHA_Map =
 {
 
 	{ "4C", 80 },
@@ -47,7 +47,7 @@ const std::map<std::string, int> vCVAKIHA_Map =
 	{ "ARC DRIVE", 540 }
 };
 
-const std::map<std::string, int> vCAOKO_Map =
+const std::map<std::string, int> CAOKO_Map =
 {
 
 	{ "6A", 180 },
@@ -101,7 +101,7 @@ const std::map<std::string, int> vCAOKO_Map =
 	{ "ARC DRIVE", 115 }
 };
 
-const std::map<std::string, int> vCARC_Map =
+const std::map<std::string, int> CARC_Map =
 {
 
 	{ "4C", 104 },
@@ -146,7 +146,7 @@ const std::map<std::string, int> vCARC_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vCCIEL_Map =
+const std::map<std::string, int> CCIEL_Map =
 {
 
 	{ "4B", 90 },
@@ -193,7 +193,7 @@ const std::map<std::string, int> vCCIEL_Map =
 	{ "ARC DRIVE", 197 }
 };
 
-const std::map<std::string, int> vCHIME_Map =
+const std::map<std::string, int> CHIME_Map =
 {
 
 	{ "6C", 124 },
@@ -235,7 +235,7 @@ const std::map<std::string, int> vCHIME_Map =
 	{ "ARC DRIVE", 299 }
 };
 
-const std::map<std::string, int> vCHISUI_Map =
+const std::map<std::string, int> CHISUI_Map =
 {
 
 	{ "4B", 73 },
@@ -275,7 +275,7 @@ const std::map<std::string, int> vCHISUI_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vCKOHAKU_Map =
+const std::map<std::string, int> CKOHAKU_Map =
 {
 
 	{ "4B", 381 },
@@ -311,7 +311,7 @@ const std::map<std::string, int> vCKOHAKU_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vCKOHAMECH_Map =
+const std::map<std::string, int> CKOHAMECH_Map =
 {
 
 	{ "BUNKER", 235 },
@@ -348,7 +348,7 @@ const std::map<std::string, int> vCKOHAMECH_Map =
 	{ "ARC DRIVE", 172 }
 };
 
-const std::map<std::string, int> vCKOUMA_Map =
+const std::map<std::string, int> CKOUMA_Map =
 {
 
 	{ "6C", 206 },
@@ -390,7 +390,7 @@ const std::map<std::string, int> vCKOUMA_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vCLEN_Map =
+const std::map<std::string, int> CLEN_Map =
 {
 
 	{ "4B", 210 },
@@ -429,11 +429,11 @@ const std::map<std::string, int> vCLEN_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vCMAIDS_Map = 
+const std::map<std::string, int> CMAIDS_Map = 
 {
 };
 
-const std::map<std::string, int> vCMECH_Map =
+const std::map<std::string, int> CMECH_Map =
 {
 
 	{ "4B", 172 },
@@ -479,7 +479,7 @@ const std::map<std::string, int> vCMECH_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vCMIYAKO_Map =
+const std::map<std::string, int> CMIYAKO_Map =
 {
 
 	{ "6B", 62 },
@@ -519,7 +519,7 @@ const std::map<std::string, int> vCMIYAKO_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vCNAC_Map =
+const std::map<std::string, int> CNAC_Map =
 {
 
 	{ "6C", 79 },
@@ -563,7 +563,7 @@ const std::map<std::string, int> vCNAC_Map =
 	{ "ARC DRIVE", 227 }
 };
 
-const std::map<std::string, int> vCNANAYA_Map =
+const std::map<std::string, int> CNANAYA_Map =
 {
 
 	{ "BUNKER", 96 },
@@ -596,7 +596,7 @@ const std::map<std::string, int> vCNANAYA_Map =
 	{ "ARC DRIVE", 198 }
 };
 
-const std::map<std::string, int> vCNECO_Map =
+const std::map<std::string, int> CNECO_Map =
 {
 
 	{ "6A", 191 },
@@ -641,7 +641,7 @@ const std::map<std::string, int> vCNECO_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vCNECOMECH_Map =
+const std::map<std::string, int> CNECOMECH_Map =
 {
 
 	{ "6C", 71 },
@@ -674,7 +674,7 @@ const std::map<std::string, int> vCNECOMECH_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vCNERO_Map =
+const std::map<std::string, int> CNERO_Map =
 {
 
 	{ "4C", 60 },
@@ -709,7 +709,7 @@ const std::map<std::string, int> vCNERO_Map =
 	{ "ARC DRIVE", 160 }
 };
 
-const std::map<std::string, int> vCPCIEL_Map =
+const std::map<std::string, int> CPCIEL_Map =
 {
 
 	{ "6B", 151 },
@@ -748,7 +748,7 @@ const std::map<std::string, int> vCPCIEL_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vCRIES_Map =
+const std::map<std::string, int> CRIES_Map =
 {
 
 	{ "6B", 374 },
@@ -783,7 +783,7 @@ const std::map<std::string, int> vCRIES_Map =
 	{ "ARC DRIVE", 399 }
 };
 
-const std::map<std::string, int> vCROA_Map =
+const std::map<std::string, int> CROA_Map =
 {
 
 	{ "6C", 386 },
@@ -822,7 +822,7 @@ const std::map<std::string, int> vCROA_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vCRYOUGI_Map =
+const std::map<std::string, int> CRYOUGI_Map =
 {
 
 	{ "6C", 430 },
@@ -865,7 +865,7 @@ const std::map<std::string, int> vCRYOUGI_Map =
 	{ "ARC DRIVE", 645 }
 };
 
-const std::map<std::string, int> vCSATSUKI_Map =
+const std::map<std::string, int> CSATSUKI_Map =
 {
 
 	{ "3C", 490 },
@@ -903,7 +903,7 @@ const std::map<std::string, int> vCSATSUKI_Map =
 	{ "ARC DRIVE", 150 }
 };
 
-const std::map<std::string, int> vCSEIFUKU_Map =
+const std::map<std::string, int> CSEIFUKU_Map =
 {
 
 	{ "6B", 245 },
@@ -947,7 +947,7 @@ const std::map<std::string, int> vCSEIFUKU_Map =
 	{ "ARC DRIVE", 370 }
 };
 
-const std::map<std::string, int> vCSION_Map =
+const std::map<std::string, int> CSION_Map =
 {
 
 	{ "6B", 58 },
@@ -989,7 +989,7 @@ const std::map<std::string, int> vCSION_Map =
 	{ "ARC DRIVE", 145 }
 };
 
-const std::map<std::string, int> vCTOHNO_Map =
+const std::map<std::string, int> CTOHNO_Map =
 {
 
 	{ "6B", 130 },
@@ -1029,7 +1029,7 @@ const std::map<std::string, int> vCTOHNO_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vCAKIHA_Map =
+const std::map<std::string, int> CAKIHA_Map =
 {
 
 	{ "4C", 80 },
@@ -1073,7 +1073,7 @@ const std::map<std::string, int> vCAKIHA_Map =
 	{ "ARC DRIVE", 219 }
 };
 
-const std::map<std::string, int> vCVSION_Map =
+const std::map<std::string, int> CVSION_Map =
 {
 
 	{ "4B", 525 },
@@ -1110,7 +1110,7 @@ const std::map<std::string, int> vCVSION_Map =
 	{ "ARC DRIVE", 204 }
 };
 
-const std::map<std::string, int> vCWARA_Map =
+const std::map<std::string, int> CWARA_Map =
 {
 
 	{ "6C", 72 },
@@ -1160,7 +1160,7 @@ const std::map<std::string, int> vCWARA_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vCWARC_Map =
+const std::map<std::string, int> CWARC_Map =
 {
 
 	{ "6C", 500 },
@@ -1202,7 +1202,7 @@ const std::map<std::string, int> vCWARC_Map =
 	{ "ARC DRIVE", 223 }
 };
 
-const std::map<std::string, int> vCWLEN_Map =
+const std::map<std::string, int> CWLEN_Map =
 {
 
 	{ "4B", 47 },
@@ -1250,7 +1250,7 @@ const std::map<std::string, int> vCWLEN_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vFAKIHA_Map =
+const std::map<std::string, int> FAKIHA_Map =
 {
 
 	{ "4C", 80 },
@@ -1290,7 +1290,7 @@ const std::map<std::string, int> vFAKIHA_Map =
 	{ "ARC DRIVE", 219 }
 };
 
-const std::map<std::string, int> vFAOKO_Map =
+const std::map<std::string, int> FAOKO_Map =
 {
 
 	{ "4C", 46 },
@@ -1336,7 +1336,7 @@ const std::map<std::string, int> vFAOKO_Map =
 
 
 
-const std::map<std::string, int> vFARC_Map =
+const std::map<std::string, int> FARC_Map =
 {
 
 	{ "6C", 459 },
@@ -1376,7 +1376,7 @@ const std::map<std::string, int> vFARC_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vFCIEL_Map =
+const std::map<std::string, int> FCIEL_Map =
 {
 
 	{ "4B", 90 },
@@ -1423,7 +1423,7 @@ const std::map<std::string, int> vFCIEL_Map =
 	{ "ARC DRIVE", 197 }
 };
 
-const std::map<std::string, int> vFHIME_Map =
+const std::map<std::string, int> FHIME_Map =
 {
 
 	{ "6C", 124 },
@@ -1460,7 +1460,7 @@ const std::map<std::string, int> vFHIME_Map =
 	{ "ARC DRIVE", 299 }
 };
 
-const std::map<std::string, int> vFHISUI_Map =
+const std::map<std::string, int> FHISUI_Map =
 {
 
 	{ "4B", 73 },
@@ -1498,7 +1498,7 @@ const std::map<std::string, int> vFHISUI_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vFKOHAKU_Map =
+const std::map<std::string, int> FKOHAKU_Map =
 {
 
 	{ "4B", 465 },
@@ -1533,7 +1533,7 @@ const std::map<std::string, int> vFKOHAKU_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vFKOHAMECH_Map =
+const std::map<std::string, int> FKOHAMECH_Map =
 {
 
 	{ "4B", 465 },
@@ -1570,7 +1570,7 @@ const std::map<std::string, int> vFKOHAMECH_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vFKOUMA_Map =
+const std::map<std::string, int> FKOUMA_Map =
 {
 
 	{ "6C", 76 },
@@ -1607,7 +1607,7 @@ const std::map<std::string, int> vFKOUMA_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vFLEN_Map =
+const std::map<std::string, int> FLEN_Map =
 {
 
 	{ "4B", 210 },
@@ -1640,12 +1640,12 @@ const std::map<std::string, int> vFLEN_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vFMAIDS_Map =
+const std::map<std::string, int> FMAIDS_Map =
 {
 
 };
 
-const std::map<std::string, int> vFMECH_Map =
+const std::map<std::string, int> FMECH_Map =
 {
 
 	{ "6C", 71 },
@@ -1677,7 +1677,7 @@ const std::map<std::string, int> vFMECH_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vFMIYAKO_Map =
+const std::map<std::string, int> FMIYAKO_Map =
 {
 
 	{ "6C", 405 },
@@ -1717,7 +1717,7 @@ const std::map<std::string, int> vFMIYAKO_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vFNAC_Map =
+const std::map<std::string, int> FNAC_Map =
 {
 
 	{ "6C", 79 },
@@ -1756,7 +1756,7 @@ const std::map<std::string, int> vFNAC_Map =
 	{ "ARC DRIVE", 227 }
 };
 
-const std::map<std::string, int> vFNANAYA_Map =
+const std::map<std::string, int> FNANAYA_Map =
 {
 
 	{ "A DIVEKICK", 434 },
@@ -1790,7 +1790,7 @@ const std::map<std::string, int> vFNANAYA_Map =
 	{ "ARC DRIVE", 198 }
 };
 
-const std::map<std::string, int> vFNECO_Map =
+const std::map<std::string, int> FNECO_Map =
 {
 
 	{ "6A", 191 },
@@ -1830,7 +1830,7 @@ const std::map<std::string, int> vFNECO_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vFNECOMECH_Map =
+const std::map<std::string, int> FNECOMECH_Map =
 {
 
 	{ "6C", 71 },
@@ -1861,7 +1861,7 @@ const std::map<std::string, int> vFNECOMECH_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vFNERO_Map =
+const std::map<std::string, int> FNERO_Map =
 {
 
 	{ "4C", 60 },
@@ -1892,7 +1892,7 @@ const std::map<std::string, int> vFNERO_Map =
 	{ "ARC DRIVE", 160 }
 };
 
-const std::map<std::string, int> vFPCIEL_Map =
+const std::map<std::string, int> FPCIEL_Map =
 {
 
 	{ "6B", 154 },
@@ -1932,7 +1932,7 @@ const std::map<std::string, int> vFPCIEL_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vFRIES_Map =
+const std::map<std::string, int> FRIES_Map =
 {
 
 	{ "6B", 374 },
@@ -1962,7 +1962,7 @@ const std::map<std::string, int> vFRIES_Map =
 	{ "ARC DRIVE", 399 }
 };
 
-const std::map<std::string, int> vFROA_Map =
+const std::map<std::string, int> FROA_Map =
 {
 
 	{ "6C", 386 },
@@ -1993,7 +1993,7 @@ const std::map<std::string, int> vFROA_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vFRYOUGI_Map =
+const std::map<std::string, int> FRYOUGI_Map =
 {
 
 	{ "4C", 194 },
@@ -2034,7 +2034,7 @@ const std::map<std::string, int> vFRYOUGI_Map =
 	{ "ARC DRIVE", 645 }
 };
 
-const std::map<std::string, int> vFSATSUKI_Map =
+const std::map<std::string, int> FSATSUKI_Map =
 {
 
 	{ "3C", 490 },
@@ -2069,7 +2069,7 @@ const std::map<std::string, int> vFSATSUKI_Map =
 	{ "ARC DRIVE", 150 }
 };
 
-const std::map<std::string, int> vFSEIFUKU_Map =
+const std::map<std::string, int> FSEIFUKU_Map =
 {
 
 	{ "3C", 152 },
@@ -2104,7 +2104,7 @@ const std::map<std::string, int> vFSEIFUKU_Map =
 	{ "ARC DRIVE", 370 }
 };
 
-const std::map<std::string, int> vFSION_Map =
+const std::map<std::string, int> FSION_Map =
 {
 
 	{ "6B", 58 },
@@ -2141,7 +2141,7 @@ const std::map<std::string, int> vFSION_Map =
 	{ "ARC DRIVE", 145 }
 };
 
-const std::map<std::string, int> vFTOHNO_Map =
+const std::map<std::string, int> FTOHNO_Map =
 {
 
 	{ "6B", 191 },
@@ -2173,7 +2173,7 @@ const std::map<std::string, int> vFTOHNO_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vFVAKIHA_Map =
+const std::map<std::string, int> FVAKIHA_Map =
 {
 
 	{ "4C", 80 },
@@ -2215,7 +2215,7 @@ const std::map<std::string, int> vFVAKIHA_Map =
 	{ "ARC DRIVE", 540 }
 };
 
-const std::map<std::string, int> vFVSION_Map =
+const std::map<std::string, int> FVSION_Map =
 {
 
 	{ "6B", 470 },
@@ -2251,7 +2251,7 @@ const std::map<std::string, int> vFVSION_Map =
 	{ "ARC DRIVE", 204 }
 };
 
-const std::map<std::string, int> vFWARA_Map =
+const std::map<std::string, int> FWARA_Map =
 {
 
 	{ "6C", 72 },
@@ -2292,7 +2292,7 @@ const std::map<std::string, int> vFWARA_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vFWARC_Map =
+const std::map<std::string, int> FWARC_Map =
 {
 
 	{ "3C", 49 },
@@ -2329,7 +2329,7 @@ const std::map<std::string, int> vFWARC_Map =
 	{ "ARC DRIVE", 223 }
 };
 
-const std::map<std::string, int> vFWLEN_Map =
+const std::map<std::string, int> FWLEN_Map =
 {
 
 	{ "4B", 47 },
@@ -2368,7 +2368,7 @@ const std::map<std::string, int> vFWLEN_Map =
 };
 
 
-const std::map<std::string, int> vHAKIHA_Map =
+const std::map<std::string, int> HAKIHA_Map =
 {
 
 	{ "4C", 80 },
@@ -2408,7 +2408,7 @@ const std::map<std::string, int> vHAKIHA_Map =
 	{ "ARC DRIVE", 219 }
 };
 
-const std::map<std::string, int> vHAOKO_Map =
+const std::map<std::string, int> HAOKO_Map =
 {
 
 	{ "4C", 46 },
@@ -2459,7 +2459,7 @@ const std::map<std::string, int> vHAOKO_Map =
 	{ "ARC DRIVE", 115 }
 };
 
-const std::map<std::string, int> vHARC_Map =
+const std::map<std::string, int> HARC_Map =
 {
 
 	{ "4C", 104 },
@@ -2503,7 +2503,7 @@ const std::map<std::string, int> vHARC_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vHCIEL_Map =
+const std::map<std::string, int> HCIEL_Map =
 {
 
 	{ "4B", 90 },
@@ -2550,7 +2550,7 @@ const std::map<std::string, int> vHCIEL_Map =
 	{ "ARC DRIVE", 197 }
 };
 
-const std::map<std::string, int> vHHIME_Map =
+const std::map<std::string, int> HHIME_Map =
 {
 
 	{ "6C", 124 },
@@ -2592,7 +2592,7 @@ const std::map<std::string, int> vHHIME_Map =
 	{ "ARC DRIVE", 299 }
 };
 
-const std::map<std::string, int> vHHISUI_Map =
+const std::map<std::string, int> HHISUI_Map =
 {
 
 	{ "4B", 73 },
@@ -2631,7 +2631,7 @@ const std::map<std::string, int> vHHISUI_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vHKOHAKU_Map =
+const std::map<std::string, int> HKOHAKU_Map =
 {
 
 	{ "BUNKER", 235 },
@@ -2669,7 +2669,7 @@ const std::map<std::string, int> vHKOHAKU_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vHKOHAMECH_Map =
+const std::map<std::string, int> HKOHAMECH_Map =
 {
 
 	{ "BUNKER", 235 },
@@ -2705,7 +2705,7 @@ const std::map<std::string, int> vHKOHAMECH_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vHKOUMA_Map =
+const std::map<std::string, int> HKOUMA_Map =
 {
 
 	{ "6C", 76 },
@@ -2743,7 +2743,7 @@ const std::map<std::string, int> vHKOUMA_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vHLEN_Map =
+const std::map<std::string, int> HLEN_Map =
 {
 
 	{ "4B", 210 },
@@ -2780,11 +2780,11 @@ const std::map<std::string, int> vHLEN_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vHMAIDS_Map =
+const std::map<std::string, int> HMAIDS_Map =
 {
 };
 
-const std::map<std::string, int> vHMECH_Map =
+const std::map<std::string, int> HMECH_Map =
 {
 
 	{ "4B", 172 },
@@ -2824,7 +2824,7 @@ const std::map<std::string, int> vHMECH_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vHMIYAKO_Map =
+const std::map<std::string, int> HMIYAKO_Map =
 {
 
 	{ "6C", 60 },
@@ -2862,7 +2862,7 @@ const std::map<std::string, int> vHMIYAKO_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vHNAC_Map =
+const std::map<std::string, int> HNAC_Map =
 {
 
 	{ "6C", 79 },
@@ -2903,7 +2903,7 @@ const std::map<std::string, int> vHNAC_Map =
 	{ "ARC DRIVE", 227 }
 };
 
-const std::map<std::string, int> vHNANAYA_Map =
+const std::map<std::string, int> HNANAYA_Map =
 {
 
 	{ "BUNKER", 96 },
@@ -2938,7 +2938,7 @@ const std::map<std::string, int> vHNANAYA_Map =
 	{ "ARC DRIVE", 198 }
 };
 
-const std::map<std::string, int> vHNECO_Map =
+const std::map<std::string, int> HNECO_Map =
 {
 
 	{ "j.2C", 68 },
@@ -2978,7 +2978,7 @@ const std::map<std::string, int> vHNECO_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vHNECOMECH_Map =
+const std::map<std::string, int> HNECOMECH_Map =
 {
 
 	{ "6C", 71 },
@@ -3010,7 +3010,7 @@ const std::map<std::string, int> vHNECOMECH_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vHNERO_Map =
+const std::map<std::string, int> HNERO_Map =
 {
 
 	{ "4C", 60 },
@@ -3044,7 +3044,7 @@ const std::map<std::string, int> vHNERO_Map =
 	{ "ARC DRIVE", 160 }
 };
 
-const std::map<std::string, int> vHPCIEL_Map =
+const std::map<std::string, int> HPCIEL_Map =
 {
 
 	{ "6B", 154 },
@@ -3081,7 +3081,7 @@ const std::map<std::string, int> vHPCIEL_Map =
 	{ "ARC DRIVE", 200 }
 };
 
-const std::map<std::string, int> vHRIES_Map =
+const std::map<std::string, int> HRIES_Map =
 {
 
 	{ "6B", 374 },
@@ -3115,7 +3115,7 @@ const std::map<std::string, int> vHRIES_Map =
 	{ "ARC DRIVE", 400 }
 };
 
-const std::map<std::string, int> vHROA_Map =
+const std::map<std::string, int> HROA_Map =
 {
 
 	{ "6C", 481 },
@@ -3147,7 +3147,7 @@ const std::map<std::string, int> vHROA_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vHRYOUGI_Map =
+const std::map<std::string, int> HRYOUGI_Map =
 {
 
 	{ "4C", 194 },
@@ -3193,7 +3193,7 @@ const std::map<std::string, int> vHRYOUGI_Map =
 	{ "ARC DRIVE", 645 }
 };
 
-const std::map<std::string, int> vHSATSUKI_Map =
+const std::map<std::string, int> HSATSUKI_Map =
 {
 
 	{ "3C", 490 },
@@ -3226,7 +3226,7 @@ const std::map<std::string, int> vHSATSUKI_Map =
 	{ "ARC DRIVE", 150 }
 };
 
-const std::map<std::string, int> vHSEIFUKU_Map =
+const std::map<std::string, int> HSEIFUKU_Map =
 {
 
 	{ "6B", 240 },
@@ -3263,7 +3263,7 @@ const std::map<std::string, int> vHSEIFUKU_Map =
 	{ "ARC DRIVE", 370 }
 };
 
-const std::map<std::string, int> vHSION_Map =
+const std::map<std::string, int> HSION_Map =
 {
 
 	{ "6B", 58 },
@@ -3300,7 +3300,7 @@ const std::map<std::string, int> vHSION_Map =
 	{ "ARC DRIVE", 145 }
 };
 
-const std::map<std::string, int> vHTOHNO_Map =
+const std::map<std::string, int> HTOHNO_Map =
 {
 
 	{ "6C", 475 },
@@ -3333,7 +3333,7 @@ const std::map<std::string, int> vHTOHNO_Map =
 	{ "ARC DRIVE", 199 }
 };
 
-const std::map<std::string, int> vHVAKIHA_Map =
+const std::map<std::string, int> HVAKIHA_Map =
 {
 
 	{ "4C", 80 },
@@ -3372,7 +3372,7 @@ const std::map<std::string, int> vHVAKIHA_Map =
 	{ "ARC DRIVE", 540 }
 };
 
-const std::map<std::string, int> vHVSION_Map =
+const std::map<std::string, int> HVSION_Map =
 {
 
 	{ "6B", 470 },
@@ -3408,7 +3408,7 @@ const std::map<std::string, int> vHVSION_Map =
 	{ "ARC DRIVE", 204 }
 };
 
-const std::map<std::string, int> vHWARA_Map =
+const std::map<std::string, int> HWARA_Map =
 {
 
 	{ "6C", 72 },
@@ -3451,7 +3451,7 @@ const std::map<std::string, int> vHWARA_Map =
 	{ "ARC DRIVE", 149 }
 };
 
-const std::map<std::string, int> vHWARC_Map =
+const std::map<std::string, int> HWARC_Map =
 {
 
 	{ "3C", 49 },
@@ -3494,7 +3494,7 @@ const std::map<std::string, int> vHWARC_Map =
 	{ "ARC DRIVE", 223 }
 };
 
-const std::map<std::string, int> vHWLEN_Map =
+const std::map<std::string, int> HWLEN_Map =
 {
 
 	{ "4B", 47 },

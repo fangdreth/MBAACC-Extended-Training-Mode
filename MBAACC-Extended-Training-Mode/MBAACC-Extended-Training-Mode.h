@@ -8,11 +8,14 @@
 #include <chrono>
 #include <set>
 #include <unordered_set>
+#include <conio.h>
+#include <WinUser.h>
 
 #include "json.hpp"
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
+#include "..\Common\SharedMemoryHelper.h"
 #include "PointerManager.h"
 #include "FrameDisplay.h"
 
@@ -245,3 +248,25 @@ void SetP4X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 3), &nValue, 4, 0);
 }
 
+int KeyJustPressed()
+{
+    //http://www.kbdedit.com/manual/low_level_vk_list.html
+
+    // there're some weird collisions between keys
+    // like numpad / and the arrow keys,
+    // but all of the normal keys work as expected.
+    // I'm fine with it, personally.
+    // also
+    // If anyone has a better way to get what keys are pressed,
+    // please let me know.  GetKeyboardState can give you a byte
+    // where each bit is whether a key is pressed, but I couldn't
+    // think of a way to use that that wouldn't also require
+    // comparing it a million times to handle simultanious key presses.
+    for (int i = 0x00; i <= 0xFF; i++)
+    {
+        if (GetAsyncKeyState(i) & 0x8001)
+            return i;
+    }
+
+    return 0;
+}

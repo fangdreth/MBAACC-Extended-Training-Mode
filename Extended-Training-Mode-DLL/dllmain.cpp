@@ -14,6 +14,7 @@
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
+#include "..\Common\SharedMemoryHelper.h"
 #include "FrameBar.h"
 
 #pragma comment(lib, "ws2_32.lib") 
@@ -52,6 +53,12 @@ DWORD tempRegister2;
 DWORD tempRegister3;
 DWORD tempRegister4;
 
+int nFreezeKey;
+int nFrameStepKey;
+int nHitboxesDisplayKey;
+int nFrameDataDisplayKey;
+int nHighlightsOnKey;
+
 #define PUSH_CALLEE __asm \
 {                         \
    __asm push ebx   \
@@ -89,7 +96,21 @@ class KeyState {
 public:
 	// please tell me if my use of classes here is overkill
 
-	KeyState(int vKey_) : vKey(vKey_) {}
+	KeyState()
+	{
+		vKey = 0x00;
+	}
+
+	void setKey(int vKey_)
+	{
+		if (vKey != vKey_)
+		{
+			// reset the key state here to prevent it from firing
+			// when it gets changed
+			prevState = true;
+			vKey = vKey_;
+		}
+	}
 
 	bool isFocused() {
 		HWND hActiveWindow = GetActiveWindow();
@@ -779,16 +800,18 @@ void highlightStates()
 void __stdcall pauseCallback(DWORD dwMilliseconds)
 {
 	// windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
-	static KeyState pKey('P');
-	static KeyState nKey('N');
+	static KeyState oFreezeKey;
+	oFreezeKey.setKey(nFreezeKey);
+	static KeyState oFrameStepKey;
+	oFrameStepKey.setKey(nFrameStepKey);
 	static bool bIsPaused = false;
 
-	if (pKey.keyDown())
+	if (oFreezeKey.keyDown())
 	{
 		bIsPaused = !bIsPaused;		
 	}
 
-	if (!bIsPaused && nKey.keyDown())
+	if (!bIsPaused && oFrameStepKey.keyDown())
 	{
 		bIsPaused = true;
 	}
@@ -816,12 +839,12 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 			DispatchMessage(&msg);
 		}
 
-		if (pKey.keyDown())
+		if (oFreezeKey.keyDown())
 		{
 			bIsPaused = !bIsPaused;
 		}
 
-		if (nKey.keyDown()) {
+		if (oFrameStepKey.keyDown()) {
 			break;
 		}
 	} 
@@ -926,17 +949,19 @@ void enemyReversal()
 void frameDoneCallback()
 {
 
-	static KeyState hKey('H');
+	static KeyState oHitboxesDisplayKey;
+	oHitboxesDisplayKey.setKey(nHitboxesDisplayKey);
 	static bool bShowHitboxes = false;
 
-	static KeyState bKey('B');
+	static KeyState oFrameDataDisplayKey;
+	oFrameDataDisplayKey.setKey(nFrameDataDisplayKey);
 	static bool bDrawFramebar = false;
 
-	if (hKey.keyDown()) {
+	if (oHitboxesDisplayKey.keyDown()) {
 		bShowHitboxes = !bShowHitboxes;
 	}
 
-	if (bKey.keyDown()) {
+	if (oFrameDataDisplayKey.keyDown()) {
 		bDrawFramebar = !bDrawFramebar;
 	}
 
@@ -954,7 +979,6 @@ void frameDoneCallback()
 	ill look into hooking it from somewhere else
 	*/
 	//enemyReversal();
-	
 }
 
 __declspec(naked) void nakedFrameDoneCallback() {
@@ -1277,8 +1301,8 @@ void threadFunc()
 		// ideally, this would be done with signals. also unknown if this is thread safe
 		GetSharedMemory(&arrIdleHighlightSetting, &arrBlockingHighlightSetting, NULL, NULL, NULL, NULL,
 						&nReversalIndex1, &nReversalIndex2, &nReversalIndex3, &nReversalIndex4, 
-						&nReversalDelayFrames,
-						&nReversalType);
+						&nReversalDelayFrames, &nReversalType,
+						&nFreezeKey, &nFrameStepKey, &nHitboxesDisplayKey, &nFrameDataDisplayKey, &nHighlightsOnKey);
 		Sleep(8);
 	}
 }

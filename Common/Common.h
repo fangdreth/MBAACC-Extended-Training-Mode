@@ -3,6 +3,7 @@
 #include <string>
 #include <Windows.h>
 #include <map>
+#include <unordered_map>
 #include <iostream>
 
 enum eMenu { MAIN = 2, BATTLE_SETTINGS = 6, ENEMY_SETTINGS = 7, VIEW_SCREEN = 12, COMMAND_LIST = 13 };
@@ -14,7 +15,7 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, POSITIONS_PAGE = 3, FRAME_TOOL = 4, CHARACTER_SPECIFICS = 5, HIGHLIGHT_PAGE = 6 };
+enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, POSITIONS_PAGE = 3, FRAME_TOOL = 4, CHARACTER_SPECIFICS = 5, HIGHLIGHT_PAGE = 6, HOTKEYS_PAGE = 7 };
 enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
 enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT };
@@ -88,12 +89,6 @@ const DWORD dwGlobalEXFlash = 0x162A48;
 const DWORD dwFrameTimer = 0x15D1CC;
 const DWORD dwGameState = 0x14EEE8; //1=training
 
-// SharedMemory
-enum eSharedOffsets {	SHARE_IDLEHIGHLIGHT, SHARE_BLOCKINGHIGHLIGHT, SHARE_TEMP1HIGHLIGHT, SHARE_TEMP2HIGHLIGHT, SHARE_TEMP3HIGHLIGHT, SHARE_TEMP4HIGHLIGHT,
-						SHARE_REVERSALINDEX1, SHARE_REVERSALINDEX2, SHARE_REVERSALINDEX3, SHARE_REVERSALINDEX4, SHARE_REVERSALDELAYFRAMES };
-const LPCWSTR sSharedName = L"MBAACCExtendedTrainingMode";
-const int nSharedSize = 11 * sizeof(int);
-
 // DLL Constants
 const DWORD dwCameraX = 0x0055dec4;
 const DWORD dwCameraY = 0x0055dec8;
@@ -146,7 +141,7 @@ const std::vector<int> vGuardLevelLookupTable =
 const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
-const int MAX_PAGES = 6;
+const int MAX_PAGES = 7;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
 const int MAX_HEARTS = 5; //6:normal 7:infinite
@@ -170,6 +165,8 @@ const char pcP1ControlledChar_19[19] = "P1 CONTROLLED CHAR";
 const char pcP2ControlledChar_19[19] = "P2 CONTROLLED CHAR";
 const char pcHitsUntilBurst_17[17] = "HITS UNTIL BURST";
 const char pcNormal_7[7] = "NORMAL";
+const char pcRepeat_7[7] = "REPEAT";
+const char pcRandom_7[7] = "RANDOM";
 const char pcInfinite_10[10] = "INFINITE";
 const char pcOne_2[2] = "1";
 const char pcMain_5[5] = "MAIN";
@@ -226,258 +223,46 @@ const char pcRed_4[4] = "RED";
 const char pcGreen_6[6] = "GREEN";
 const char pcBlue_5[5] = "BLUE";
 
-void SetSharedMemory(	int* nIdleHighlightSetting,
-						int* nBlockingHighlightSetting,
-						int* nTemp1HighlightSetting,
-						int* nTemp2HighlightSetting,
-						int* nTemp3HighlightSetting,
-						int* nTemp4HighlightSetting,
-						int* nReversalIndex1,
-						int* nReversalIndex2,
-						int* nReversalIndex3,
-						int* nReversalIndex4,
-						int* nReversalDelayFrames,
-						int* nReversalType)
-{
-	static bool bSharedMemoryInit = false;
-    static HANDLE hMapFile = NULL;
-    static char* pBuf = NULL;
+const char pcFreeze_7[7] = "FREEZE";
+const char pcNextStep_10[10] = "NEXT STEP";
+const char pcHitboxes_9[9] = "HITBOXES";
+const char pcFrameDisplay_14[14] = "FRAME DISPLAY";
+const char pcHighlights_11[11] = "HIGHLIGHTS";
 
-    if (!bSharedMemoryInit) {
-        hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, nSharedSize, sSharedName);
-        if (hMapFile == NULL) {
-            std::cerr << "CreateFileMapping failed: " << GetLastError() << std::endl;
-            return;
-        }
+#define VK_KEY_0 0x30
+#define VK_KEY_1 0x31
+#define VK_KEY_2 0x32
+#define VK_KEY_3 0x33
+#define VK_KEY_4 0x34
+#define VK_KEY_5 0x35
+#define VK_KEY_6 0x36
+#define VK_KEY_7 0x37
+#define VK_KEY_8 0x38
+#define VK_KEY_9 0x39
 
-        pBuf = (char*)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, nSharedSize);
-        if (pBuf == NULL) {
-            std::cerr << "MapViewOfFile failed: " << GetLastError() << std::endl;
-            CloseHandle(hMapFile);
-            return;
-        }
-        bSharedMemoryInit = true;
-    }
-
-    //BYTE arrSendBuffer[nSharedSize];
-
-    //*(DWORD*)&(arrSendBuffer[0 * sizeof(int)]) = nIdleHighlightSetting;
-    //*(DWORD*)&(arrSendBuffer[1 * sizeof(int)]) = nBlockingHighlightSetting;
-
-    //CopyMemory(pBuf, &arrSendBuffer, nSharedSize);
-
-	if (nIdleHighlightSetting)
-		CopyMemory(pBuf + 0 * sizeof(int), nIdleHighlightSetting, sizeof(int));
-
-	if (nBlockingHighlightSetting)
-		CopyMemory(pBuf + 1 * sizeof(int), nBlockingHighlightSetting, sizeof(int));
-
-	if (nTemp1HighlightSetting)
-		CopyMemory(pBuf + 2 * sizeof(int), nTemp1HighlightSetting, sizeof(int));
-
-	if (nTemp2HighlightSetting)
-		CopyMemory(pBuf + 3 * sizeof(int), nTemp2HighlightSetting, sizeof(int));
-
-	if (nTemp3HighlightSetting)
-		CopyMemory(pBuf + 4 * sizeof(int), nTemp3HighlightSetting, sizeof(int));
-
-	if (nTemp4HighlightSetting)
-		CopyMemory(pBuf + 5 * sizeof(int), nTemp4HighlightSetting, sizeof(int));
-
-	if (nReversalIndex1)
-		CopyMemory(pBuf + 6 * sizeof(int), nReversalIndex1, sizeof(int));
-
-	if (nReversalIndex2)
-		CopyMemory(pBuf + 7 * sizeof(int), nReversalIndex2, sizeof(int));
-
-	if (nReversalIndex3)
-		CopyMemory(pBuf + 8 * sizeof(int), nReversalIndex3, sizeof(int));
-
-	if (nReversalIndex4)
-		CopyMemory(pBuf + 9 * sizeof(int), nReversalIndex4, sizeof(int));
-
-	if (nReversalDelayFrames)
-		CopyMemory(pBuf + 10 * sizeof(int), nReversalDelayFrames, sizeof(int));
-
-	if (nReversalType)
-		CopyMemory(pBuf + 11 * sizeof(int), nReversalType, sizeof(int));
-}
-
-void GetSharedMemory(	std::array<BYTE, 3>* parrIdleHighlightSetting,
-						std::array<BYTE, 3>* parrBlockingHighlightSetting, 
-						std::array<BYTE, 3>* parrTemp1HighlightSetting, 
-						std::array<BYTE, 3>* parrTemp2HighlightSetting, 
-						std::array<BYTE, 3>* parrTemp3HighlightSetting, 
-						std::array<BYTE, 3>* parrTemp4HighlightSetting, 
-						int* pnReversalIndex1,
-						int* pnReversalIndex2,
-						int* pnReversalIndex3,
-						int* pnReversalIndex4,
-						int* pnReversalDelayFrames,
-						int* pnReversalType)
-{
-	static bool bSharedMemoryInit = false;
-	static HANDLE hMapFile = NULL;
-	static LPVOID pBuf = NULL;
-
-	if (!bSharedMemoryInit)
-	{
-		hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, sSharedName);
-		if (hMapFile == NULL)
-		{
-			return;
-		}
-
-		pBuf = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, nSharedSize);
-		if (pBuf == NULL)
-		{
-			CloseHandle(hMapFile);
-			return;
-		}
-		bSharedMemoryInit = true;
-	}
-
-	if (parrIdleHighlightSetting)
-	{
-		int nIdleHighlightSetting = ((int*)pBuf)[SHARE_IDLEHIGHLIGHT];
-		switch (nIdleHighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrIdleHighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrIdleHighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrIdleHighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrIdleHighlightSetting = { 90, 90, 255 };
-			break;
-		}
-	}
-
-	if (parrBlockingHighlightSetting)
-	{
-		int nBlockingHighlightSetting = ((int*)pBuf)[SHARE_BLOCKINGHIGHLIGHT];
-		switch (nBlockingHighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrBlockingHighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrBlockingHighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrBlockingHighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrBlockingHighlightSetting = { 90, 90, 255 };
-			break;
-		}
-	}
-
-	if (parrTemp1HighlightSetting)
-	{
-		int nTemp1HighlightSetting = ((int*)pBuf)[SHARE_TEMP1HIGHLIGHT];
-		switch (nTemp1HighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrTemp1HighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrTemp1HighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrTemp1HighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrTemp1HighlightSetting = { 90, 90, 255 };
-			break;
-		}
-	}
-
-	if (parrTemp2HighlightSetting)
-	{
-		int nTemp2HighlightSetting = ((int*)pBuf)[SHARE_TEMP2HIGHLIGHT];
-		switch (nTemp2HighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrTemp2HighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrTemp2HighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrTemp2HighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrTemp2HighlightSetting = { 90, 90, 255 };
-			break;
-		}
-	}
-
-	if (parrTemp3HighlightSetting)
-	{
-		int nTemp3HighlightSetting = ((int*)pBuf)[SHARE_TEMP3HIGHLIGHT];
-		switch (nTemp3HighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrTemp3HighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrTemp3HighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrTemp3HighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrTemp3HighlightSetting = { 90, 90, 255 };
-			break;
-		}
-	}
-
-	if (parrTemp4HighlightSetting)
-	{
-		int nTemp4HighlightSetting = ((int*)pBuf)[SHARE_TEMP4HIGHLIGHT];
-		switch (nTemp4HighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrTemp4HighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrTemp4HighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrTemp4HighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrTemp4HighlightSetting = { 90, 90, 255 };
-			break;
-		}
-	}
-
-	if (pnReversalIndex1)
-		*pnReversalIndex1 = ((int*)pBuf)[SHARE_REVERSALINDEX1];
-
-	if (pnReversalIndex2)
-		*pnReversalIndex2 = ((int*)pBuf)[SHARE_REVERSALINDEX2];
-
-	if (pnReversalIndex3)
-		*pnReversalIndex3 = ((int*)pBuf)[SHARE_REVERSALINDEX3];
-
-	if (pnReversalIndex4)
-		*pnReversalIndex4 = ((int*)pBuf)[SHARE_REVERSALINDEX4];
-
-	if (pnReversalDelayFrames)
-		*pnReversalDelayFrames = ((int*)pBuf)[SHARE_REVERSALDELAYFRAMES];
-
-	if (pnReversalType)
-		*pnReversalType = ((int*)pBuf)[SHARE_REVERSALDELAYFRAMES];
-}
+#define VK_KEY_A 0x41
+#define VK_KEY_B 0x42
+#define VK_KEY_C 0x43
+#define VK_KEY_D 0x44
+#define VK_KEY_E 0x45
+#define VK_KEY_F 0x46
+#define VK_KEY_G 0x47
+#define VK_KEY_H 0x48
+#define VK_KEY_I 0x49
+#define VK_KEY_J 0x4A
+#define VK_KEY_K 0x4B
+#define VK_KEY_L 0x4C
+#define VK_KEY_M 0x4D
+#define VK_KEY_N 0x4E
+#define VK_KEY_O 0x4F
+#define VK_KEY_P 0x50
+#define VK_KEY_Q 0x51
+#define VK_KEY_R 0x52
+#define VK_KEY_S 0x53
+#define VK_KEY_T 0x54
+#define VK_KEY_U 0x55
+#define VK_KEY_V 0x56
+#define VK_KEY_W 0x57
+#define VK_KEY_X 0x58
+#define VK_KEY_Y 0x59
+#define VK_KEY_Z 0x5A
