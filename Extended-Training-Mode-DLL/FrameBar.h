@@ -22,7 +22,7 @@ int nBarCounter = 0;
 int nBarScrolling = 0;
 int nBarIntervalCounter = 0;
 int nBarIntervalMax = 0;
-int nBarDisplayRange = 0;
+int nBarDisplayRange = 75;
 bool bIsBarReset = false;
 bool bDoBarReset = false;
 bool bUpdateBar = false;
@@ -37,6 +37,8 @@ int nSharedHitstop;
 
 struct Player
 {
+	char Port = 0;
+
 	DWORD dwBaseAddress = 0x0;
 	DWORD dwInactionOffset = 0x0;
 
@@ -59,10 +61,10 @@ void UpdatePlayer(Player& P) {
 	P.bLastOnRight = *(int*)(P.dwBaseAddress + 0x315);
 }
 
-Player P1{ 0x555130, 0x557FC0 };
-Player P2{ 0x555C2C, 0x5581CC };
-Player P3{ 0x556728, 0x557FC0 };
-Player P4{ 0x557224, 0x5581CC };
+Player P1{ 0, 0x555130, 0x557FC0 };
+Player P2{ 1, 0x555C2C, 0x5581CC };
+Player P3{ 2, 0x556728, 0x557FC0 };
+Player P4{ 3, 0x557224, 0x5581CC };
 
 Player* Player1 = &P1;
 Player* Player2 = &P2;
@@ -204,6 +206,46 @@ void UpdateBars(Player& P, Player& Assist)
 		dwColor = 0xFF3C5080;
 	}
 
+	if (*(char*)(*(DWORD*)(*(DWORD*)(P.dwBaseAddress + 0x320) + 0x38) + 0xC) == 1) //Airborne
+	{
+		P.dwColorBar2[nBarCounter % BAR_MEMORY_SIZE][0] = 0xFFF1E084;
+	}
+
+	for (int i = 0; i < 1000; i++)
+	{
+		bool validProj = true;
+		if (*(char*)(0x67BDE8 + 0x33C * i) != 0 && *(DWORD*)(0x67BDE8 + 0x324 + 0x33C * i) != 0 && *(char*)(0x67BDE8 + 0x8 + 0x33C * i) >= 0 && *(char*)(0x67BDE8 + 0x2F4 + 0x33C * i) == P.Port && *(int*)(0x67BDE8 + 0x10 + 0x33C * i) >= 60)
+		{
+			int nCharacterID = 0;
+			if (P.Port % 2 == 0)
+			{
+				nCharacterID = *(char*)(0x400000 + dwP1CharNumber) * 10 + *(char*)(0x400000 + dwP1CharMoon);
+			}
+			else
+			{
+				nCharacterID = *(char*)(0x400000 + dwP2CharNumber) * 10 + *(char*)(0x400000 + dwP2CharMoon);
+			}
+			std::map<std::string, int> CharacterMap = MBAACC_Map[nCharacterID];
+			for (auto const& [key, val] : CharacterMap)
+			{
+				if (*(int*)(0x67BDE8 + 0x10 + 0x33C * i) == val)
+				{
+					validProj = false;
+					break;
+				}
+			}
+			if (validProj)
+			{
+				P.dwColorBar2[nBarCounter % BAR_MEMORY_SIZE][1] = 0xFFFF0000;
+			}
+		}
+	}
+
+	if (*(DWORD*)(Assist.dwBaseAddress + 0x324) != 0)
+	{
+		P.dwColorBar2[nBarCounter % BAR_MEMORY_SIZE][1] = 0xFFFF8000;
+	}
+
 	P.dwColorBar1[nBarCounter % BAR_MEMORY_SIZE][0] = dwColor;
 	if (dwColor2 != 0x0)
 	{
@@ -213,9 +255,6 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		P.dwColorBar1[nBarCounter % BAR_MEMORY_SIZE][1] = dwColor;
 	}
-
-	dwColor = 0x00000000;
-	dwColor2 = 0x00000000;
 
 }
 

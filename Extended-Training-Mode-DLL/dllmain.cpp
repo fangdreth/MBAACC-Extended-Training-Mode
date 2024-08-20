@@ -680,17 +680,29 @@ void drawFrameBar() {
 	{
 		if (i < 0)
 		{
+			drawRect(20 + 8 * nBarDrawCounter, 399, 7, 2, (*Player1).dwColorBar2[i + BAR_MEMORY_SIZE][0]);
+			drawRect(20 + 8 * nBarDrawCounter, 409, 7, 2, (*Player1).dwColorBar2[i + BAR_MEMORY_SIZE][1]);
+
+			drawRect(20 + 8 * nBarDrawCounter, 412, 7, 2, (*Player2).dwColorBar2[i + BAR_MEMORY_SIZE][0]);
+			drawRect(20 + 8 * nBarDrawCounter, 422, 7, 2, (*Player2).dwColorBar2[i + BAR_MEMORY_SIZE][1]);
+
 			drawRect(20 + 8 * nBarDrawCounter, 400, 4, 10, (*Player1).dwColorBar1[i + BAR_MEMORY_SIZE][0]);
 			drawRect(20 + 8 * nBarDrawCounter + 4, 400, 3, 10, (*Player1).dwColorBar1[i + BAR_MEMORY_SIZE][1]);
-			drawRect(20 + 8 * nBarDrawCounter, 412, 4, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][0]);
-			drawRect(20 + 8 * nBarDrawCounter + 4, 412, 3, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][1]);
+			drawRect(20 + 8 * nBarDrawCounter, 413, 4, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][0]);
+			drawRect(20 + 8 * nBarDrawCounter + 4, 413, 3, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][1]);
 		}
 		else
 		{
+			drawRect(20 + 8 * nBarDrawCounter, 399, 7, 2, (*Player1).dwColorBar2[i][0]);
+			drawRect(20 + 8 * nBarDrawCounter, 409, 7, 2, (*Player1).dwColorBar2[i][1]);
+
+			drawRect(20 + 8 * nBarDrawCounter, 412, 7, 2, (*Player2).dwColorBar2[i][0]);
+			drawRect(20 + 8 * nBarDrawCounter, 422, 7, 2, (*Player2).dwColorBar2[i][1]);
+
 			drawRect(20 + 8 * nBarDrawCounter, 400, 4, 10, (*Player1).dwColorBar1[i][0]);
 			drawRect(20 + 8 * nBarDrawCounter + 4, 400, 3, 10, (*Player1).dwColorBar1[i][1]);
-			drawRect(20 + 8 * nBarDrawCounter, 412, 4, 10, (*Player2).dwColorBar1[i][0]);
-			drawRect(20 + 8 * nBarDrawCounter + 4, 412, 3, 10, (*Player2).dwColorBar1[i][1]);
+			drawRect(20 + 8 * nBarDrawCounter, 413, 4, 10, (*Player2).dwColorBar1[i][0]);
+			drawRect(20 + 8 * nBarDrawCounter + 4, 413, 3, 10, (*Player2).dwColorBar1[i][1]);
 
 			//This here just so i remember what text position and size works best when i actually implement this fully
 			//char arrTextBuffer[256];
@@ -704,7 +716,7 @@ void drawFrameBar() {
 		nBarDrawCounter++;
 	}
 
-	drawRect(18, 398, 602, 26, 0xFF000000); //Background
+	drawRect(18, 398, 602, 27, 0xFF000000); //Background
 }
 
 void drawFrameData() {
