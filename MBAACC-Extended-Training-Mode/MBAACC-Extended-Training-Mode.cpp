@@ -2991,7 +2991,7 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
 
-                        nWriteBuffer = ONSCREEN_LOCATION;
+                        nWriteBuffer = OFFSCREEN_LOCATION;
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
 
                         // FREEZE
