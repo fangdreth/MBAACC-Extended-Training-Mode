@@ -59,6 +59,11 @@ int nHitboxesDisplayKey;
 int nFrameDataDisplayKey;
 int nHighlightsOnKey;
 
+bool bFreeze = false;
+bool bFrameDataDisplay = false;
+bool bHitboxesDisplay = false;
+bool bHighlightsOn = true;
+
 #define PUSH_CALLEE __asm \
 {                         \
    __asm push ebx   \
@@ -736,9 +741,20 @@ void drawFrameData() {
 
 void highlightStates()
 {
+	static KeyState oHighlightsOnKey;
+	oHighlightsOnKey.setKey(nHighlightsOnKey);
+
+	if (oHighlightsOnKey.keyDown())
+		bHighlightsOn = !bHighlightsOn;
 
 	if (!safeWrite()) {
 		return;
+	}
+
+	if (!bHighlightsOn)
+	{
+		arrIdleHighlightSetting = { 255, 255, 255 };
+		arrBlockingHighlightSetting = { 255, 255, 255 };
 	}
 
 	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState) -> void
@@ -801,24 +817,19 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 {
 	// windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
 	static KeyState oFreezeKey;
-	oFreezeKey.setKey(nFreezeKey);
 	static KeyState oFrameStepKey;
+	oFreezeKey.setKey(nFreezeKey);
 	oFrameStepKey.setKey(nFrameStepKey);
-	static bool bIsPaused = false;
 
 	if (oFreezeKey.keyDown())
-	{
-		bIsPaused = !bIsPaused;		
-	}
+		bFreeze = !bFreeze;		
 
-	if (!bIsPaused && oFrameStepKey.keyDown())
-	{
-		bIsPaused = true;
-	}
+	if (!bFreeze && oFrameStepKey.keyDown())
+		bFreeze = true;
 
 	bool ok = true;
 	MSG msg;
-	while (bIsPaused) {
+	while (bFreeze) {
 		Sleep(1);
 
 		while (ok = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -841,7 +852,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 
 		if (oFreezeKey.keyDown())
 		{
-			bIsPaused = !bIsPaused;
+			bFreeze = !bFreeze;
 		}
 
 		if (oFrameStepKey.keyDown()) {
@@ -948,28 +959,24 @@ void enemyReversal()
 
 void frameDoneCallback()
 {
-
 	static KeyState oHitboxesDisplayKey;
-	oHitboxesDisplayKey.setKey(nHitboxesDisplayKey);
-	static bool bShowHitboxes = false;
-
 	static KeyState oFrameDataDisplayKey;
+	oHitboxesDisplayKey.setKey(nHitboxesDisplayKey);
 	oFrameDataDisplayKey.setKey(nFrameDataDisplayKey);
-	static bool bDrawFramebar = false;
 
 	if (oHitboxesDisplayKey.keyDown()) {
-		bShowHitboxes = !bShowHitboxes;
+		bHitboxesDisplay = !bHitboxesDisplay;
 	}
 
 	if (oFrameDataDisplayKey.keyDown()) {
-		bDrawFramebar = !bDrawFramebar;
+		bFrameDataDisplay = !bFrameDataDisplay;
 	}
 
-	if (bShowHitboxes) {
+	if (bHitboxesDisplay) {
 		drawFrameData();
 	}
 
-	if (bDrawFramebar) {
+	if (bFrameDataDisplay) {
 		drawFrameBar();
 	}
 
