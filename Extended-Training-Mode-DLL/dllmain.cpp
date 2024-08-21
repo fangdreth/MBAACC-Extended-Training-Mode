@@ -40,6 +40,8 @@ typedef uint32_t uint;
 
 void enemyReversal();
 void initDrawTextureHook();
+void messUpTexture();
+void miscDirectX();
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
@@ -1033,23 +1035,9 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 		if (nKey.keyDown()) {
 			break;
 		}
-	} 
-	
+	}
+
 	Sleep(dwMilliseconds);
-}
-
-void initPauseCallback() {
-
-	/*
-	this func seems to, be responsible for slowing the game down to 60fps, i think?
-	*/
-	void* addr = (void*)0x0041fe05;
-
-	patchFunction(addr, pauseCallback);
-
-	// the call being patched is 6 bytes long, patch the extra byte with a nop
-	patchByte((BYTE*)addr + 5, 0x90);
-
 }
  
 int nOldMot;
@@ -1176,6 +1164,7 @@ void DrawTriangle(IDirect3DDevice9* d3ddev) {
 	}
 }
 
+std::vector<DWORD> textureAddrs;
 void frameDoneCallback()
 {
 	static KeyState hKey('H');
@@ -1217,10 +1206,15 @@ void frameDoneCallback()
 		unsigned idk = device->GetAvailableTextureMem();
 
 		log(",,,,please %08X", idk);
-
-
-
 	}
+
+	//miscDirectX();
+
+	if (safeWrite()) {
+		messUpTexture();
+	}
+
+	textureAddrs.clear();
 
 	
 
@@ -1282,6 +1276,238 @@ void attackMeterDisplayCallback() {
 
 	snprintf(buffer, 256, "P2 METER GAIN %12d.%02d%%", nP2MeterGain/ 100, nP2MeterGain % 100);
 	drawTextWithBorder(420, 186 + 14, 10, 14, buffer);
+}
+
+DWORD drawTextureHookRegisterSave1 = 0;
+DWORD drawTextureHookRegisterSave2 = 0;
+DWORD tempTextureAddr1 = 0;
+DWORD tempTextureAddr2 = 0;
+void messUpTextureActual(DWORD addr) {
+
+	HRESULT hr;
+	//DWORD addr;
+
+	//addr = tempTextureAddr2;
+
+	//log("whatttf %08X", addr);
+
+	if (addr == 0) {
+		//log("init addr is %08X, returning", addr);
+		return;
+	}
+
+	/*
+	addr = *(DWORD*)tempTextureAddr1;
+
+	if (addr == 0) {
+		log("deref addr is %08X, returning", addr);
+		return;
+	}
+	*/
+
+	//IDirect3DResource9* pResource = (IDirect3DResource9*)addr;
+	//DWORD wtfType = pResource->GetType();
+	
+	// 698D229C bad
+
+	log("wtf %08X", *(DWORD*)addr);
+
+	IDirect3DTexture9* pTex = (IDirect3DTexture9*)addr;
+	DWORD type = pTex->GetType();
+	DWORD levelCount = pTex->GetLevelCount();
+
+	D3DSURFACE_DESC desc;
+
+	tempTextureAddr2 = 0;
+
+	hr = pTex->GetLevelDesc(0, &desc);
+
+	if (FAILED(hr)) {
+		log("getlvldesc failed??");
+		pTex->Release();
+		log("ret");
+		return;
+	}
+
+	D3DPOOL pool = desc.Pool;
+	D3DFORMAT format = desc.Format;
+	DWORD usage = desc.Usage;
+
+	DWORD dwCol;
+	WORD wCol;
+
+	//D3DCOLOR col = D3DCOLOR_ARGB(0xFF, 0x00, 0x00, 0x00);
+	// whats the most efficient way of doing these copies such that i dont overwrite the buffer? probs just a overall
+	size_t colSize = -1;
+
+	switch (format) {
+	case D3DFMT_A8R8G8B8:
+		dwCol = 0xFFFF00FF;
+		colSize = 4;
+		break;
+	case D3DFMT_X8R8G8B8:
+		dwCol = 0xFF00FFFF;
+		colSize = 4;
+		break;
+	case D3DFMT_A1R5G5B5:
+		wCol = 0b1000001111100000;
+		colSize = 2;
+		break;
+	default:
+		log("wtf is that format, bye");
+		pTex->Release();
+		log("ret");
+		return;
+		break;
+	}
+
+	if (format != D3DFMT_A1R5G5B5) {
+		log("dont like the format");
+		pTex->Release();
+		log("ret");
+		return;
+	}
+
+	log("addr: %08X val: %08X type: %3d level: %3d pool: %3d format: %3d usage: %08X", addr, *(DWORD*)addr, type, levelCount, pool, format, usage);
+
+	D3DLOCKED_RECT lockedRect;
+	//hr = pTex->LockRect(0, &lockedRect, NULL, D3DLOCK_DISCARD);
+	//hr = pTex->LockRect(0, &lockedRect, NULL, D3DLOCK_NOOVERWRITE);
+	hr = pTex->LockRect(0, &lockedRect, NULL, 0);
+	if (FAILED(hr)) {
+		log("lock failed!!!");
+		pTex->Release();
+		log("ret");
+		return;
+	}
+
+	//int width = lockedRect.Pitch / 4;
+	int width = desc.Width;
+	int height = desc.Height;
+
+	// there has to be a better way to do this
+	if (colSize == 4) {
+		DWORD* pImage = (DWORD*)lockedRect.pBits;
+
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; x += 2) {
+				pImage[x] = dwCol;
+			}
+			pImage += width;
+		}
+	}
+	else if (colSize == 2) {
+		WORD* pImage = (WORD*)lockedRect.pBits;
+
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; x += 2) {
+				pImage[x] = wCol;
+			}
+			pImage += width;
+		}
+
+	}
+
+	pTex->UnlockRect(0);
+
+	pTex->Release();
+}
+
+void messUpTexture() {
+	for (int i = 0; i < textureAddrs.size(); i++) {
+		messUpTextureActual(textureAddrs[i]);
+	}
+
+}
+
+void MASMSucks() {
+
+	if (tempTextureAddr1 == 0) {
+		return;
+	}
+
+	tempTextureAddr2 = *(DWORD*)tempTextureAddr1;
+
+	textureAddrs.push_back(tempTextureAddr2);
+}
+
+void drawCharacterTextureCallback() {
+	//DWORD backup = tempTextureAddr1;
+	//tempTextureAddr1 = tempTextureAddr2;
+	//messUpTexture();
+	//tempTextureAddr1 = backup;
+}
+
+DWORD _nakedDrawCharacterTextureRegister;
+__declspec(naked) void nakedDrawCharacterTextureCallback() {
+
+	/*
+	__asm {
+		mov _nakedDrawCharacterTextureRegister, edx;
+
+		mov edx, dword ptr[EDI + 038h];
+		mov edx, dword ptr[edx + 04h];
+
+		mov tempTextureAddr2, edx;
+
+		mov edx, _nakedDrawCharacterTextureRegister;
+	};
+	*/
+
+	PUSH_ALL;
+	__asm {
+		call drawCharacterTextureCallback;
+	}
+	POP_ALL;
+	
+
+	__asm {
+		pop esi;
+		pop ebp;
+		pop ebx;
+		add esp, 0B8h;
+		ret;
+	};
+}
+
+void miscDirectX() {
+
+	if (device == NULL) {
+		return;
+	}
+
+	return;
+
+	IDirect3DSurface9* pRenderTarget = nullptr;
+
+	for (DWORD i = 0; i < 4; ++i) {
+		if (SUCCEEDED(device->GetRenderTarget(i, &pRenderTarget))) {
+			if (pRenderTarget) {
+				// Do something with the render target, like getting its description
+				D3DSURFACE_DESC desc;
+				pRenderTarget->GetDesc(&desc);
+
+				// Output render target information
+				log("Render Target %d: Width = %d, Height = %d, Format = %d\n",
+					i, desc.Width, desc.Height, desc.Format);
+
+				// Release the surface when done
+				pRenderTarget->Release();
+				pRenderTarget = nullptr;
+			}
+			else {
+				// No render target set for this index
+				log("Render Target %d is not set.\n", i);
+			}
+		}
+		else {
+			// Error in getting render target
+			log("Failed to get Render Target %d\n", i);
+		}
+	}
+
+	
+	log("-----");
 }
 
 // hook funcs
@@ -1413,218 +1639,7 @@ void battleResetCallback() {
 	prevComboPtr = 0;
 }
 
-DWORD tempDrawTextureRegister1;
-DWORD tempDrawTextureRegister2;
-DWORD tempTextureAddr1;
-DWORD tempTextureAddr2;
-
-void what() {
-
-	HRESULT hr;
-
-	DWORD addr;
-	
-	addr = tempTextureAddr1;
-
-	//log("init addr is %08X", addr);
-
-	if (addr == 0) {
-		return;
-	}
-
-	addr = *(DWORD*)tempTextureAddr1;
-
-	//log("deref addr is %08X", addr);
-
-	if (addr == 0) {
-		return;
-	}
-
-	IDirect3DTexture9* pTex = (IDirect3DTexture9*)addr;
-	DWORD type = pTex->GetType();
-	DWORD levelCount = pTex->GetLevelCount();
-	
-
-	D3DSURFACE_DESC desc;
-
-	hr = pTex->GetLevelDesc(0, &desc);
-
-	if (FAILED(hr)) {
-		log("getlvldesc failed??");
-		return;
-	}
-
-	D3DPOOL pool = desc.Pool;
-	D3DFORMAT format = desc.Format;
-	DWORD usage = desc.Usage;
-
-	log("type: %3d level: %3d pool: %3d format: %3d usage: %08X", type, levelCount, pool, format, usage);
-	
-	DWORD dwCol;
-	WORD wCol;
-
-	//D3DCOLOR col = D3DCOLOR_ARGB(0xFF, 0x00, 0x00, 0x00);
-	// whats the most efficient way of doing these copies such that i dont overwrite the buffer? probs just a overall
-	size_t colSize = -1;
-
-	switch (format) {
-	case D3DFMT_A8R8G8B8:
-		dwCol = 0xFFFF00FF;
-		colSize = 4;
-		break;
-	case D3DFMT_X8R8G8B8:
-		dwCol = 0xFF00FFFF;
-		colSize = 4;
-		break;
-	case D3DFMT_A1R5G5B5:
-		wCol = 0b1000001111100000;
-		colSize = 2;
-		break;
-	default:
-		log("wtf is that format, bye");
-		return;
-		break;
-	}
-
-	D3DLOCKED_RECT lockedRect;
-	//hr = pTex->LockRect(0, &lockedRect, NULL, D3DLOCK_DISCARD);
-	//hr = pTex->LockRect(0, &lockedRect, NULL, D3DLOCK_NOOVERWRITE);
-	hr = pTex->LockRect(0, &lockedRect, NULL, 0);
-	if (FAILED(hr)) {
-		log("lock failed!!!");
-		return;
-	}
-
-	//int width = lockedRect.Pitch / 4;
-	int width = desc.Width;
-	int height = desc.Height;	
-
-	
-	// there has to be a better way to do this
-	if (colSize == 4) {
-		DWORD* pImage = (DWORD*)lockedRect.pBits;
-
-		for (int y = 0; y < height; ++y) {
-			for (int x = 0; x < width; x += 2) {
-				pImage[x] = dwCol;
-			}
-			pImage += width;
-		}
-	}
-	else if (colSize == 2) {
-		WORD* pImage = (WORD*)lockedRect.pBits;
-
-		for (int y = 0; y < height; ++y) {
-			for (int x = 0; x < width; x += 2) {
-				pImage[x] = wCol;
-			}
-			pImage += width;
-		}
-
-	}
-
-
-
-
-	
-	
-	
-	pTex->UnlockRect(0);
-
-	
-
-	return;
-	/*
-	D3DSURFACE_DESC* pDesc = NULL;
-	int level = 0; // is this the right level?
-	HRESULT hr = pTex->GetLevelDesc(level, pDesc);
-	
-	log("hresult was %3d", hr);
-
-
-	return;
-
-	if (FAILED(hr)) {
-		log("getlvldesc failed??");
-		log("-----");
-		return;
-	}
-
-	if (pDesc == NULL) {
-		log("pDesc was null?");
-		log("-----");
-		return;
-	}
-
-	log("type was %3d Pool was %3d", res, pDesc->Pool);
-
-
-	log("-----");
-	return;	
-	*/
-}
-
-__declspec(naked) void drawTextureHook() {
-
-	__asm {
-		mov tempTextureAddr1, edx;
-		
-		mov edx, [ebp + 0Ch];
-		mov tempTextureAddr2, edx;
-		
-		mov edx, tempTextureAddr1;
-
-		mov tempTextureAddr1, edi;
-	};
-
-	PUSH_ALL;
-	__asm {
-		call drawTextureLog;
-	};
-	POP_ALL;
-
-	__asm {
-		ret;
-	};
-}
-
-__declspec(naked) void drawTextureCleanup() {
-	__asm {
-		pop edi;
-		mov eax, 1;
-		pop esi;
-		mov esp, ebp;
-		pop ebp;
-		ret;
-	}
-}
-
-__declspec(naked) void drawTextureHook2() {
-
-	__asm {
-		mov tempTextureAddr1, eax;
-	};
-
-	PUSH_ALL;
-	__asm {
-		call drawTextureLog;
-	};
-	POP_ALL;
-
-	__asm {
-		pop edi;
-		pop esi;
-		pop ebp;
-		pop ebx;
-		add esp, 8h;
-		ret;
-	};
-}
-
-DWORD drawTextureHookRegisterSave1;
-DWORD drawTextureHookRegisterSave2;
 __declspec(naked) void drawTextureHook3() {
-
 
 	__asm {
 		pop drawTextureHookRegisterSave1;
@@ -1665,11 +1680,12 @@ __declspec(naked) void drawTextureHook3() {
 		_emit 0x00;
 	};
 
-	//PUSH_ALL;
-	//__asm {
-	//	call what;
-	//};
-	//POP_ALL;
+	PUSH_ALL;
+	__asm {
+		call MASMSucks;
+		//call messUpTexture;
+	};
+	POP_ALL;
 
 	__asm {
 		push drawTextureHookRegisterSave1;
@@ -1678,6 +1694,8 @@ __declspec(naked) void drawTextureHook3() {
 }
 
 __declspec(naked) void directXHook() {
+	// should this even be used?
+
 	__asm {
 		mov dwDevice, ebx;
 		pop ebx;
@@ -1800,45 +1818,35 @@ void initBattleResetCallback() {
 	patchMemcpy(((BYTE*)funcAddr) + 5, tempCode, 3);
 }
 
-void initDrawTextureHook() {
-	//void* funcAddress = (void*)0x00415580;
-	//// backup
-	//patchMemcpy(arrDrawTextureHookOrig, funcAddress, 10);
-	//// new bytes
-	//patchFunction(funcAddress, drawTextureHook);
-	//// ret
-	//patchByte(((BYTE*)funcAddress) + 5, 0xC3);
-	//// backup modded bytes 
-	//patchMemcpy(arrDrawTextureHookMod, funcAddress, 10);
-	
-	// ok,,
-	// 0041564d will have our call
-	// 00415652 will have real call (modified relcall, now 0xe69 instead of 0xe6e
-	// 00415657 will JUMP to cleanup code and ret
-
-	//void* funcAddress = (void*)0x0041564d;
-	//patchFunction(funcAddress, drawTextureHook);
-
+void initPauseCallback() {
 
 	/*
-	patchFunction(0x0041564d, drawTextureHook);
-
-	BYTE code[5] = { 0xE8, 0x69, 0x0E, 0x00, 0x00 };
-	patchMemcpy(0x00415652, &code, 5);
-
-	patchJump(0x00415657, drawTextureCleanup);
+	this func seems to, be responsible for slowing the game down to 60fps, i think?
 	*/
+	void* addr = (void*)0x0041fe05;
 
+	patchFunction(addr, pauseCallback);
 
-	//void* funcAddr = (void*)0x004bf11f;
-	//patchJump(0x004bf11f, drawTextureHook2);
+	// the call being patched is 6 bytes long, patch the extra byte with a nop
+	patchByte((BYTE*)addr + 5, 0x90);
 
-	//DWORD addr = (DWORD)drawTextureHook3;
-	//patchMemcpy(0x004de5ae + 2, addr, 4);
+}
+
+void initDrawTextureHook() {
 	
 	patchJump(0x004de5ae, drawTextureHook3);
 	
 	// todo, hook D3DXCreateTextureFromFileInMemoryEx
+
+}
+
+void initDrawCharacterTextureCallback() {
+
+	// skip early ret
+	patchJump(0x00407761, 0x00407806);
+
+	// actual callback
+	patchJump(0x00407806, nakedDrawCharacterTextureCallback);
 
 }
 
@@ -1890,6 +1898,7 @@ void threadFunc()
 
 	// make sure that caster has time to hook at the start
 	Sleep(16 * 5);
+	//Sleep(3000);
 
 	// todo, put something here to prevent mult injection
 
@@ -1914,7 +1923,11 @@ void threadFunc()
 	initMeterGainHook();
 	initBattleResetCallback();
 
+
+	//Sleep(5000);
+
 	initDrawTextureHook();
+	initDrawCharacterTextureCallback();
 
 	initDirectX();
 
