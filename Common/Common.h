@@ -43,6 +43,8 @@ const DWORD dwExGuard = 0x1551E0; //10:ExGuard
 const DWORD dwP1Meter = 0x155210;   // abc.xy truncated Ex. 12345 = 123.4%
 const DWORD dwP1Health = 0x1551EC;
 const DWORD dwP1RedHealth = 0x1551F0;
+const DWORD dwP2Health = 0x1551EC + 0xAFC;
+const DWORD dwP2RedHealth = 0x1551F0 + 0xAFC;
 const DWORD dwP1SionBullets = 0x1552F6; // counts shots used i.e. 0=13 in mag, 4=9 in mag, etc
 const DWORD dwP1RoaVisibleCharge = 0x155302;    // 0-9
 const DWORD dwP1RoaHiddenCharge = 0x155300; // 0-9

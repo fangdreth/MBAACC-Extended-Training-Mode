@@ -725,15 +725,40 @@ void drawFrameBar()
 void drawHealthValues()
 {
 	static char buffer[256];
+	
+	// 535 -> 366 + 40 = move range
+	// map health range of [8900, 11400 - 8900 = 2500]
+	// 535 - (currHealth / (8900-2500) / (535 - 366 + 40))
+	// original was 535 btw
 
-	snprintf(buffer, 256, "%5d", *(int*)0x5551F0);
-	drawTextWithBorder(60, 40, 10, 10, buffer);
-	snprintf(buffer, 256, "%5d", *(int*)0x5551EC);
+	int nP1RedHealth = *(int*)0x5551F0;
+	int nP1RedHealthX = 60;
+	if (nP1RedHealth >= 9200)
+		nP1RedHealthX = 60;
+	else if (nP1RedHealth <= 2200)
+		nP1RedHealthX = 190;
+	else
+		nP1RedHealthX = 20.0f + (1.0f - (float)nP1RedHealth / 11400.0f) * (230.0f - 20.0f);
+	snprintf(buffer, 256, "%5d", nP1RedHealth);
+	drawTextWithBorder(nP1RedHealthX, 40, 10, 10, buffer);
+
+	int nP1Health = *(int*)0x5551EC;
+	snprintf(buffer, 256, "%5d", nP1Health);
 	drawTextWithBorder(230, 40, 10, 10, buffer);
 
-	snprintf(buffer, 256, "%5d", *(int*)0x555CEC);
-	drawTextWithBorder(535, 40, 10, 10, buffer);
-	snprintf(buffer, 256, "%5d", *(int*)0x555CE8);
+	int nP2RedHealth = *(int*)0x555CEC;
+	int nP2RedHealthX = 535;
+	if (nP2RedHealth >= 9200)
+		nP2RedHealthX = 535;
+	else if (nP2RedHealth <= 2200)
+		nP2RedHealthX = 406;
+	else
+		nP2RedHealthX = 575.0f - (1.0f - (float)nP2RedHealth / 11400.0f) * (575.0f - 366.0f);
+	snprintf(buffer, 256, "%5d", nP2RedHealth);
+	drawTextWithBorder(nP2RedHealthX, 40, 10, 10, buffer);
+
+	int nP2Health = *(int*)0x555CE8;
+	snprintf(buffer, 256, "%5d", nP2Health);
 	drawTextWithBorder(366, 40, 10, 10, buffer);
 }
 

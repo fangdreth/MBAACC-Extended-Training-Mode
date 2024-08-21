@@ -1000,6 +1000,64 @@ int main(int argc, char* argv[])
                         PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames, nReversalIndex1, nReversalIndex2, nReversalIndex3, nReversalIndex4);
                         break;
                     }
+                    case STATS_PAGE:
+                    {
+                        if (nOldEnemyDefenseIndex == -1)
+                            nOldEnemyDefenseIndex = nEnemyDefenseIndex;
+                        else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
+                            nExGuardSetting = max(0, nExGuardSetting - 1);
+                        else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
+                            nExGuardSetting = min(nExGuardSetting + 1, eEnemyOffOnRandom::RANDOM);
+
+                        if (nOldEnemyDefenseTypeIndex == -1)
+                            nOldEnemyDefenseTypeIndex = nEnemyDefenseTypeIndex;
+                        else if (nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex)// left
+                            bInfGuard = true;
+                        else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
+                            bInfGuard = false;
+
+                        if (nOldAirRecoveryIndex == -1)
+                            nOldAirRecoveryIndex = nAirRecoveryIndex;
+                        else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
+                        {
+                            nCustomMeter = max(0, nCustomMeter - (bAPressed ? 10 : 1000));
+                            SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
+                        }
+                        else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
+                        {
+                            nCustomMeter = min(nCustomMeter + (bAPressed ? 10 : 1000), MAX_METER);
+                            SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
+                        }
+
+                        if (nOldDownRecoveryIndex == -1)
+                            nOldDownRecoveryIndex = nDownRecoveryIndex;
+                        else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
+                        {
+                            nCustomHealth = max(0, nCustomHealth - (bAPressed ? 1 : 100));
+                            SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth);
+                        }
+                        else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
+                        {
+                            nCustomHealth = min(nCustomHealth + (bAPressed ? 1 : 100), MAX_HEALTH);
+                            SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth);
+                        }
+
+                        if (nOldThrowRecoveryIndex == -1)
+                            nOldThrowRecoveryIndex = nThrowRecoveryIndex;
+                        else if (nOldThrowRecoveryIndex > nThrowRecoveryIndex)// left
+                        {
+                            nHitsTillBurst = max(0, nHitsTillBurst - 1);
+                            if (nHitsTillBurst == 0)
+                                nHitsTillBurst = TOO_HIGH_TO_BURST;
+                        }
+                        else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
+                        {
+                            if (nHitsTillBurst == TOO_HIGH_TO_BURST)
+                                nHitsTillBurst = 1;
+                            else
+                                nHitsTillBurst = min(MAX_BURST, nHitsTillBurst + 1);
+                        }
+                    }
                     case POSITIONS_PAGE:
                     {
                         if (nOldEnemyActionIndex == -1)
