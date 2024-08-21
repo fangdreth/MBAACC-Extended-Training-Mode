@@ -665,7 +665,7 @@ void drawObject(DWORD objAddr, bool isProjectile)
 	}
 }
 
-//In-game frame bar proof-of-concept
+//In-game frame bar
 void drawFrameBar()
 {
 
@@ -713,20 +713,43 @@ void drawFrameBar()
 			drawRect(20 + 8 * nBarDrawCounter + 4, 400, 3, 10, (*Player1).dwColorBar1[i][1]);
 			drawRect(20 + 8 * nBarDrawCounter, 413, 4, 10, (*Player2).dwColorBar1[i][0]);
 			drawRect(20 + 8 * nBarDrawCounter + 4, 413, 3, 10, (*Player2).dwColorBar1[i][1]);
-
-			//This here just so i remember what text position and size works best when i actually implement this fully
-			//char arrTextBuffer[256];
-			//snprintf(arrTextBuffer, 256, "%1d", 1);
-			//drawText(20, 399, arrTextBuffer, 12);
-
-			//snprintf(arrTextBuffer, 256, "%1d", 2);
-			//drawText(28, 399, arrTextBuffer, 12);
 		}
 
 		nBarDrawCounter++;
 	}
 
 	drawRect(18, 398, 602, 27, 0xFF000000); //Background
+
+}
+
+void drawHealthValues()
+{
+	static char buffer[256];
+
+	snprintf(buffer, 256, "%5d", *(int*)0x5551F0);
+	drawTextWithBorder(60, 40, 10, 10, buffer);
+	snprintf(buffer, 256, "%5d", *(int*)0x5551EC);
+	drawTextWithBorder(230, 40, 10, 10, buffer);
+
+	snprintf(buffer, 256, "%5d", *(int*)0x555CEC);
+	drawTextWithBorder(535, 40, 10, 10, buffer);
+	snprintf(buffer, 256, "%5d", *(int*)0x555CE8);
+	drawTextWithBorder(366, 40, 10, 10, buffer);
+}
+
+void drawGuardValues()
+{
+	static char buffer[256];
+
+	snprintf(buffer, 256, "%5.0f", *(float*)0x5551F4);
+	drawTextWithBorder(234, 58, 8, 9, buffer);
+	snprintf(buffer, 256, "%1.3f", *(float*)0x555208);
+	drawTextWithBorder(244, 67, 6, 9, buffer);
+
+	snprintf(buffer, 256, "%5.0f", *(float*)0x555CF0);
+	drawTextWithBorder(368, 58, 8, 9, buffer);
+	snprintf(buffer, 256, "%1.3f", *(float*)0x555D04);
+	drawTextWithBorder(369, 67, 6, 9, buffer);
 }
 
 void drawFrameData()
@@ -1053,6 +1076,10 @@ void frameDoneCallback()
 	if (bFrameDataDisplay) {
 		drawFrameBar();
 	}
+
+	drawHealthValues();
+
+	drawGuardValues();
 
 	/*
 	i am sorry for commenting this out

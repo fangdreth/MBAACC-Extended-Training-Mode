@@ -5,18 +5,8 @@
 #include <string>
 #include "..\Common\Common.h"
 
-char cGameState = 0; // 1:In-Game 2:Title 3:Logos 8:Loading 9:Arcade Cutscene 10:Next Stage 12:Options 20:CSS 25:Main Menu
-char cGlobalEXFlash = 0; //Used for EXFlashes where neither char moves
-char cP1EXFlash = 0; //Used for EXFlashes where initiator still moves (ex. Satsuki 214C winds up during flash)
-char cP2EXFlash = 0;
-int nFrameCount = 0; //Counts slower during slowdown
-int nLastFrameCount = 0;
-int nTrueFrameCount = 0; //Counts all frames during slowdown
-int nLastTrueFrameCount = 0;
-char cTrainingControlPlayer = 0;
-char cFN1Input = 0;
-char cFN2Input = 0;
-char cDummyState = 0; // Same as Common.h "Enemy Status" except -1 for recording
+int nLastFrameCount = 0; //Counts slower during slowdown
+int nLastTrueFrameCount = 0; //Counts all frames during slowdown
 
 int nBarCounter = 0;
 int nBarScrolling = 0;
@@ -84,7 +74,7 @@ void CalculateAdvantage(Player& P1, Player& P2)
 		P2.nAdvantageCounter = 0;
 	}
 
-	if (bDoAdvantage && nFrameCount != nLastFrameCount && cGlobalEXFlash == 0)
+	if (bDoAdvantage && *(int*)0x55D1CC != nLastFrameCount && *(char*)0x562A48 == 0)
 	{
 		if (*(int*)(P1.dwInactionOffset) == 0 && *(int*)(P2.dwInactionOffset) != 0)
 		{
@@ -211,21 +201,21 @@ void UpdateBars(Player& P, Player& Assist)
 		P.dwColorBar2[nBarCounter % BAR_MEMORY_SIZE][0] = 0xFFF1E084;
 	}
 
+	int nCharacterID = 0;
+	if (P.Port % 2 == 0)
+	{
+		nCharacterID = *(char*)(0x400000 + dwP1CharNumber) * 10 + *(char*)(0x400000 + dwP1CharMoon);
+	}
+	else
+	{
+		nCharacterID = *(char*)(0x400000 + dwP2CharNumber) * 10 + *(char*)(0x400000 + dwP2CharMoon);
+	}
+	std::map<std::string, int> CharacterMap = MBAACC_Map[nCharacterID];
 	for (int i = 0; i < 1000; i++)
 	{
 		bool validProj = true;
 		if (*(char*)(0x67BDE8 + 0x33C * i) != 0 && *(DWORD*)(0x67BDE8 + 0x324 + 0x33C * i) != 0 && *(char*)(0x67BDE8 + 0x8 + 0x33C * i) >= 0 && *(char*)(0x67BDE8 + 0x2F4 + 0x33C * i) == P.Port && *(int*)(0x67BDE8 + 0x10 + 0x33C * i) >= 60)
 		{
-			int nCharacterID = 0;
-			if (P.Port % 2 == 0)
-			{
-				nCharacterID = *(char*)(0x400000 + dwP1CharNumber) * 10 + *(char*)(0x400000 + dwP1CharMoon);
-			}
-			else
-			{
-				nCharacterID = *(char*)(0x400000 + dwP2CharNumber) * 10 + *(char*)(0x400000 + dwP2CharMoon);
-			}
-			std::map<std::string, int> CharacterMap = MBAACC_Map[nCharacterID];
 			for (auto const& [key, val] : CharacterMap)
 			{
 				if (*(int*)(0x67BDE8 + 0x10 + 0x33C * i) == val)
@@ -386,7 +376,10 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 		Player4 = &P2;
 	}
 
-	BarHandling(*Player1, *Player2, *Player3, *Player4);
+	if (*(int*)0x562A40 != nLastTrueFrameCount)
+	{
+		BarHandling(*Player1, *Player2, *Player3, *Player4);
+	}
 
 	if (*(int*)0x562A40 == 1)
 	{
@@ -402,4 +395,7 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 	UpdatePlayer(P2);
 	UpdatePlayer(P3);
 	UpdatePlayer(P4);
+
+	nLastFrameCount = *(int*)0x55D1CC;
+	nLastTrueFrameCount = *(int*)0x562A40;
 }
