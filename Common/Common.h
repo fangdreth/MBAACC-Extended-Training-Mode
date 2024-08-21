@@ -135,6 +135,45 @@ const ADDRESS adP4TagFlag = 0x155130 + 0x178 + 3 * dwPlayerStructSize; //0x15739
 const DWORD dwProjectileStructSize = 0x33C;
 const ADDRESS adProjectileBase = 0x27BDE8;
 
+//FrameBar Constants
+const ADDRESS adMBAABase = 0x400000;
+
+const ADDRESS adPattern = 0x10;
+const ADDRESS adPlayerFrameCount = 0xF0;
+const ADDRESS adHitstop = 0x172;
+const ADDRESS adBlockstunFlag = 0x17B;
+const ADDRESS adThrowFlag = 0x176;
+const ADDRESS adTagFlag = 0x178;
+const ADDRESS adStrikeInvuln = 0x185;
+const ADDRESS adUntechTotal = 0x18E;
+const ADDRESS adUntechElapsed = 0x190;
+const ADDRESS adHitstunRemaining = 0x1AC;
+const ADDRESS adRawInput = 0x2EB;
+const ADDRESS adButtonInput = 0x2ED;
+const ADDRESS adMacroInput = 0x2EE;
+const ADDRESS adOnRightFlag = 0x315;
+const ADDRESS adAnimationDataPointer = 0x320;
+const ADDRESS adAnimStateDataPointer = 0x38;
+const ADDRESS adStateStance = 0xC;
+const ADDRESS adStateInvuln = 0xD;
+const ADDRESS adStateFlagset2 = 0x18;
+const ADDRESS adAnimBoxIndex = 0x42;
+const ADDRESS adAttackDataPointer = 0x324;
+
+const ADDRESS adP1Inaction = 0x157FC0;
+const ADDRESS adP2Inaction = 0x1581CC;
+
+const ADDRESS adP1Freeze = 0x158908;
+const ADDRESS adP2Freeze = 0x158C14;
+
+const ADDRESS adFrameCount = 0x15D1CC;
+const ADDRESS adTrueFrameCount = 0x162A40;
+
+const ADDRESS adGlobalFreeze = 0x162A48;
+
+const ADDRESS adProjSource = 0x8;
+const ADDRESS adProjOwner = 0x2F4;
+
 // addresses for fonts
 const ADDRESS adFont0 = 0x55D680;
 const ADDRESS adFont1 = 0x55D260;
