@@ -96,7 +96,8 @@ std::array<BYTE, 3> arrHitHighlightSetting({ 255, 255, 255 });
 std::array<BYTE, 3> arrArmorHighlightSetting({ 255, 255, 255 });
 std::array<BYTE, 3> arrThrowProtectionHighlightSetting({ 255, 255, 255 });
 
-class KeyState {
+class KeyState
+{
 public:
 	// please tell me if my use of classes here is overkill
 
@@ -211,7 +212,8 @@ void __stdcall debugLogBytes(BYTE* p)
 	}
 }
 
-bool __stdcall safeWrite() {
+bool __stdcall safeWrite()
+{
 	//BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
 	BYTE GameState = *reinterpret_cast<BYTE*>(dwBaseAddress + dwGameState);
 	int FrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
@@ -241,7 +243,8 @@ void __stdcall patchMemcpy(auto dst, auto src, size_t n)
 }
 
 // the patch func being templated causes problems when calling from asm
-void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n) {
+void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n)
+{
 	DWORD oldProtect;
 	VirtualProtect(dest, n, PAGE_EXECUTE_READWRITE, &oldProtect);
 	memcpy(dest, source, n);
@@ -291,12 +294,14 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 
 extern "C" int asmDrawText(int w, int h, int x, int y, const char* text, int alpha, int shade, int layer, void* addr, int spacing, int idek, char* out);
 
-void drawText(int x, int y, int w, int h, const char* text, int alpha, int shade, int layer = 0x2cc, void* font = (void*)adFont2) {
+void drawText(int x, int y, int w, int h, const char* text, int alpha, int shade, int layer = 0x2cc, void* font = (void*)adFont2)
+{
 	// text was initially just char*, i made it const, is that going to be ok?
 	asmDrawText(w, h, x, y, text, alpha, shade, layer, font, 0, 0, 0);
 }
 
-void drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = adFont1) {
+void drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = adFont1)
+{
 
 	static_assert(sizeof(font) == 4, "Type must be 4 bytes");
 
@@ -422,7 +427,8 @@ void drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = 
 	drawText(x, y, (int)tempWidth, textSize, text, 0xFF, 0xFF, 0x02CC, (void*)font);
 }
 
-void drawTextWithBorder(int x, int y, int w, int h, const char* text) {
+void drawTextWithBorder(int x, int y, int w, int h, const char* text)
+{
 
 	drawText(x, y, w, h, text, 0xFF, 0xFF);
 	
@@ -435,16 +441,19 @@ void drawTextWithBorder(int x, int y, int w, int h, const char* text) {
 
 extern "C" int asmDrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
 
-void drawRect(int x, int y, int w, int h, BYTE r, BYTE g, BYTE b, BYTE a, int layer = 0x2cc) {
+void drawRect(int x, int y, int w, int h, BYTE r, BYTE g, BYTE b, BYTE a, int layer = 0x2cc)
+{
 	int colVal = (a << 24) | (r << 16) | (g << 8) | (b << 0);
 	asmDrawRect(x, y, w, h, colVal, colVal, colVal, colVal, layer);
 }
 
-void drawRect(int x, int y, int w, int h, DWORD colVal, int layer = 0x2cc) {
+void drawRect(int x, int y, int w, int h, DWORD colVal, int layer = 0x2cc)
+{
 	asmDrawRect(x, y, w, h, colVal, colVal, colVal, colVal, layer);
 }
 
-void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4) {
+void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4)
+{
 	// there must be a better way of doing this than using 4 rects
 	// framestop draws less intrusive rects. figure out how
 	// the lines are much clearer. most likely not calling melty draw methods but dxd3 methods
@@ -466,14 +475,16 @@ void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4) {
 
 // -----
 
-void scaleCords(const float xOrig, const float yOrig, float& x1Cord, float& y1Cord, float& x2Cord, float& y2Cord) {
+void scaleCords(const float xOrig, const float yOrig, float& x1Cord, float& y1Cord, float& x2Cord, float& y2Cord)
+{
 	x1Cord = xOrig + (x1Cord - xOrig) * 0.5;
 	y1Cord = yOrig + (y1Cord - yOrig) * 0.5;
 	x2Cord = xOrig + (x2Cord - xOrig) * 0.5;
 	y2Cord = yOrig + (y2Cord - yOrig) * 0.5;
 }
 
-DWORD getObjFrameDataPointer(DWORD objAddr) {
+DWORD getObjFrameDataPointer(DWORD objAddr)
+{
 	
 	int objState = *(DWORD*)(objAddr + 0x14);
 	int objPattern = *(DWORD*)(objAddr + 0x10);
@@ -504,7 +515,8 @@ DWORD getObjFrameDataPointer(DWORD objAddr) {
 	return baseStatePtr;
 }
 
-void drawObject(DWORD objAddr, bool isProjectile) {
+void drawObject(DWORD objAddr, bool isProjectile)
+{
 
 	int xPos = *(DWORD*)(objAddr + 0x108);
 	int yPos = *(DWORD*)(objAddr + 0x10C);
@@ -654,11 +666,11 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 }
 
 //In-game frame bar proof-of-concept
-void drawFrameBar() {
+void drawFrameBar()
+{
 
-	if (!safeWrite()) {
+	if (!safeWrite())
 		return;
-	}
 
 	FrameBar(P1, P2, P3, P4);
 
@@ -717,11 +729,11 @@ void drawFrameBar() {
 	drawRect(18, 398, 602, 27, 0xFF000000); //Background
 }
 
-void drawFrameData() {
+void drawFrameData()
+{
 
-	if (!safeWrite()) {
+	if (!safeWrite())
 		return;
-	}
 
 	/*
 	// for unknown reasons, this func sometimes gets double called?
@@ -764,7 +776,7 @@ void highlightStates()
 	}
 
 	static int nOldFrameTimer = 0;
-	int nFrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
+	int nFrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);	// frametimer is prob not needed
 	int nGlobalExFlash = *reinterpret_cast<int*>(dwBaseAddress + dwGlobalEXFlash);
 	if (nFrameTimer != nOldFrameTimer && nGlobalExFlash == 0)
 	{
@@ -922,7 +934,8 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	Sleep(dwMilliseconds);
 }
 
-void initPauseCallback() {
+void initPauseCallback()
+{
 
 	/*
 	this func seems to, be responsible for slowing the game down to 60fps, i think?
@@ -1047,7 +1060,8 @@ void frameDoneCallback()
 	//enemyReversal();
 }
 
-__declspec(naked) void nakedFrameDoneCallback() {
+__declspec(naked) void nakedFrameDoneCallback()
+{
 	__asm {
 		add esp, 4Ch;
 		call frameDoneCallback;
@@ -1060,7 +1074,8 @@ int nTempP2MeterGain = 0;
 int nP1MeterGain = 0;
 int nP2MeterGain = 0;
 DWORD prevComboPtr = 0;
-void attackMeterDisplayCallback() {
+void attackMeterDisplayCallback()
+{
 
 	int iVar2 = (*(BYTE*)0x0055df0f) * 0x20c;
 	int iVar1 = *(int*)(0x00557e20 + iVar2);
@@ -1117,7 +1132,8 @@ void animHookFunc()
 
 BYTE arrMeterGainHookOrig[10];
 BYTE arrMeterGainHookMod[10];
-__declspec(naked) void meterGainHook() {
+__declspec(naked) void meterGainHook()
+{
 	
 	/*
 	the hooked func func(0x00476ce0) takes params.
@@ -1209,7 +1225,8 @@ __declspec(naked) void meterGainHook() {
 	};
 }
 
-void battleResetCallback() {
+void battleResetCallback()
+{
 	nTempP1MeterGain = 0;
 	nTempP2MeterGain = 0;
 	nP1MeterGain = 0;
@@ -1219,7 +1236,8 @@ void battleResetCallback() {
 
 // init funcs
 
-void initFrameDoneCallback() {
+void initFrameDoneCallback()
+{
 
 	/*
 	// this might be getting called a frame late. unsure 
@@ -1251,7 +1269,8 @@ void initAnimHook()
 	patchMemcpy(arrAnimHookBytesMod, funcAddress, 10);
 }
 
-void initCasterMods() {
+void initCasterMods()
+{
 
 	// if caster ever updates, these offsets will most likely(basically definitely) need to be changed!
 
@@ -1267,7 +1286,8 @@ void initCasterMods() {
 	// it would be better to just patch this func out
 }
 
-void initAttackMeterDisplay() {
+void initAttackMeterDisplay()
+{
 
 	// this func rets early, this jump prevents that 
 	void* patchAddr = (void*)0x00478fe2;
@@ -1307,7 +1327,8 @@ void initAttackMeterDisplay() {
 	}
 }
 
-void initMeterGainHook() {
+void initMeterGainHook()
+{
 	void* funcAddress = (void*)0x00476ce0;
 	// backup
 	patchMemcpy(arrMeterGainHookOrig, funcAddress, 10);
@@ -1319,7 +1340,8 @@ void initMeterGainHook() {
 	patchMemcpy(arrMeterGainHookMod, funcAddress, 10);
 }
 
-void initBattleResetCallback() {
+void initBattleResetCallback()
+{
 	// this func rets early, this jump prevents that 
 	void* patchAddr = (void*)0x004234b9;
 	patchJump(patchAddr, 0x004234e1);
