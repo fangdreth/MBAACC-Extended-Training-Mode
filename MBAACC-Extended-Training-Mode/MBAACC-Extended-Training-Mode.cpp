@@ -1340,7 +1340,9 @@ int main(int argc, char* argv[])
                         nOldReduceDamageIndex = nReduceDamageIndex;
                     else if (nOldReduceDamageIndex > nReduceDamageIndex || (bF1Pressed && !bOldF1Pressed))// left
                     {
-                        nExtendedSettingsPage = max(1, nExtendedSettingsPage - 1);
+                        nExtendedSettingsPage = max(0, nExtendedSettingsPage - 1);
+                        if (nExtendedSettingsPage == 0)
+                            nExtendedSettingsPage = MAX_PAGES;
 
                         nOldEnemyActionIndex = -1;
                         nOldEnemyDefenseIndex = -1;
@@ -1352,7 +1354,9 @@ int main(int argc, char* argv[])
                     }
                     else if (nOldReduceDamageIndex < nReduceDamageIndex || (bF2Pressed && !bOldF2Pressed))// right
                     {
-                        nExtendedSettingsPage = min(nExtendedSettingsPage + 1, MAX_PAGES);
+                        nExtendedSettingsPage = min(nExtendedSettingsPage + 1, MAX_PAGES + 1);
+                        if (nExtendedSettingsPage == MAX_PAGES + 1)
+                            nExtendedSettingsPage = 1;
 
                         nOldEnemyActionIndex = -1;
                         nOldEnemyDefenseIndex = -1;

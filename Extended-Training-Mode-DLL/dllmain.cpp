@@ -777,8 +777,10 @@ void highlightStates()
 
 	static int nOldFrameTimer = 0;
 	int nFrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);	// frametimer is prob not needed
-	int nGlobalExFlash = *reinterpret_cast<int*>(dwBaseAddress + dwGlobalEXFlash);
-	if (nFrameTimer != nOldFrameTimer && nGlobalExFlash == 0)
+	int nGlobalExFlash = *reinterpret_cast<int*>(dwBaseAddress + dwGlobalExFlash);
+	int nP1ExFlash = *reinterpret_cast<int*>(dwBaseAddress + dwP1ExFlash);
+	int nP2ExFlash = *reinterpret_cast<int*>(dwBaseAddress + dwP2ExFlash);
+	if (nFrameTimer != nOldFrameTimer && nGlobalExFlash == 0 && nP1ExFlash == 0 && nP2ExFlash == 0)
 	{
 		nP1ThrowProtectionTimer = max(0, nP1ThrowProtectionTimer - 1);
 		nP2ThrowProtectionTimer = max(0, nP2ThrowProtectionTimer - 1);

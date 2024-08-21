@@ -89,7 +89,9 @@ const DWORD dwP1RyougiKnife = 0x1552E8; //0=knife 1=no knife
 const DWORD dwP1FMaidsHearts = 0x1552FC; //0=full 5=empty
 const DWORD dwP1Blocking = 0x1552AB;
 const DWORD dwP2Blocking = dwP1Blocking + 0xAFC;
-const DWORD dwGlobalEXFlash = 0x162A48;
+const DWORD dwGlobalExFlash = 0x162A48;
+const DWORD dwP1ExFlash = 0x158908;
+const DWORD dwP2ExFlash = 0x158C14;
 const DWORD dwFrameTimer = 0x15D1CC;
 const DWORD dwGameState = 0x14EEE8; //1=training
 
