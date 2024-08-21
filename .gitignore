@@ -280,3 +280,4 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+enc_temp_folder/cbe04f828acb229d6c506c9b4fbe8/dllmain.cpp
