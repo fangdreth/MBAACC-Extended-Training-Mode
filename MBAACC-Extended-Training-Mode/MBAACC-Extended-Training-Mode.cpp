@@ -608,6 +608,7 @@ int main(int argc, char* argv[])
                             else if (nEnemySettingsCursor == 3)
                             {
                                 SaveState(hMBAAHandle, dwBaseAddress, Saves[nSaveSlot - 1]);
+                                bIsStateSaved = true;
                             }
                             break;
                         case HOTKEYS_PAGE:
