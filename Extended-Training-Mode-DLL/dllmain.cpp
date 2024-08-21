@@ -1189,6 +1189,13 @@ void frameDoneCallback()
 		drawFrameBar();
 	}
 
+	if (safeWrite()) {
+		messUpTexture();
+	}
+	textureAddrs.clear();
+
+
+	/*
 	static bool deviceInit = false;
 	if (!deviceInit && dwDevice != NULL) {
 		deviceInit = true;
@@ -1207,17 +1214,11 @@ void frameDoneCallback()
 
 		log(",,,,please %08X", idk);
 	}
+	*/
 
 	//miscDirectX();
 
-	if (safeWrite()) {
-		messUpTexture();
-	}
-
-	textureAddrs.clear();
-
 	
-
 	//dumpAddr(getObjFrameDataPointer(0x00555130));
 
 	/*
@@ -1304,7 +1305,7 @@ void messUpTextureActual(DWORD addr) {
 		return;
 	}
 	*/
-
+	
 	//IDirect3DResource9* pResource = (IDirect3DResource9*)addr;
 	//DWORD wtfType = pResource->GetType();
 	
@@ -1399,10 +1400,33 @@ void messUpTextureActual(DWORD addr) {
 	else if (colSize == 2) {
 		WORD* pImage = (WORD*)lockedRect.pBits;
 
+		BYTE r = 0;
+		BYTE g = 0;
+		BYTE b = 0;
+
+		WORD col = 0;
+
+		int startX = 0;
+
 		for (int y = 0; y < height; ++y) {
-			for (int x = 0; x < width; x += 2) {
-				pImage[x] = wCol;
+			for (int x = startX; x < width; x += 2) {
+				if (pImage[x] & 0x80) {
+					//pImage[x] = wCol;
+					//pImage[x] = (pImage[x] & ~0x80);
+				
+					r = 0x1F - (x % 0x1F);
+					g = 0;
+					b = 0x1F - (y % 0x1F);
+
+					//col = (0x0) | ((r & 0x1F) << 10) | ((g & 0x1F) << 5) | ((b & 0x1F) << 0);
+
+					col = addr & 0x7F;
+
+					pImage[x] = col;
+					//pImage[x] = 0b1111110000011111;
+				}
 			}
+			startX = 1 - startX;
 			pImage += width;
 		}
 
@@ -1475,6 +1499,7 @@ void miscDirectX() {
 	if (device == NULL) {
 		return;
 	}
+
 
 	return;
 
@@ -1698,6 +1723,15 @@ __declspec(naked) void directXHook() {
 
 	__asm {
 		mov dwDevice, ebx;
+	};
+
+	//PUSH_ALL;
+	//__asm {
+	//	call miscDirectX;
+	//};
+	//POP_ALL;
+
+	__asm {
 		pop ebx;
 		ret 4;
 	};
