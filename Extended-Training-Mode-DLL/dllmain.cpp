@@ -762,8 +762,8 @@ void drawHealthValues()
 	// 535 - (currHealth / (8900-2500) / (535 - 366 + 40))
 	// original was 535 btw
 
-	int nP1RedHealth = *(int*)0x5551F0;
-	int nP1RedHealthX = 60;
+	int nP1RedHealth = *(int*)(dwBaseAddress + dwP1RedHealth);
+	int nP1RedHealthX;
 	if (nP1RedHealth >= 9200)
 		nP1RedHealthX = 60;
 	else if (nP1RedHealth <= 2200)
@@ -773,12 +773,12 @@ void drawHealthValues()
 	snprintf(buffer, 256, "%5d", nP1RedHealth);
 	drawTextWithBorder(nP1RedHealthX, 40, 10, 10, buffer);
 
-	int nP1Health = *(int*)0x5551EC;
+	int nP1Health = *(int*)(dwBaseAddress + dwP1Health);
 	snprintf(buffer, 256, "%5d", nP1Health);
 	drawTextWithBorder(230, 40, 10, 10, buffer);
 
-	int nP2RedHealth = *(int*)0x555CEC;
-	int nP2RedHealthX = 535;
+	int nP2RedHealth = *(int*)(dwBaseAddress + dwP2RedHealth);
+	int nP2RedHealthX;
 	if (nP2RedHealth >= 9200)
 		nP2RedHealthX = 535;
 	else if (nP2RedHealth <= 2200)
@@ -788,7 +788,7 @@ void drawHealthValues()
 	snprintf(buffer, 256, "%5d", nP2RedHealth);
 	drawTextWithBorder(nP2RedHealthX, 40, 10, 10, buffer);
 
-	int nP2Health = *(int*)0x555CE8;
+	int nP2Health = *(int*)(dwBaseAddress + dwP2Health);
 	snprintf(buffer, 256, "%5d", nP2Health);
 	drawTextWithBorder(366, 40, 10, 10, buffer);
 }
