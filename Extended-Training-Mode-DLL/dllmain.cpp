@@ -766,9 +766,7 @@ void drawHealthValues()
 	int nFrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
 	int nResetOffset = 0;
 	if (nFrameTimer < 20)
-	{
 		nResetOffset = 300.0f * (1.0f - nFrameTimer / 19.0f);
-	}
 
 	static char buffer[256];
 	
