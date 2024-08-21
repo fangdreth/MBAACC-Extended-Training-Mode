@@ -226,6 +226,11 @@ bool __stdcall safeWrite()
 	return true;
 }
 
+bool __stdcall isPaused()
+{
+	return *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
+}
+
 // patch funcs
 void __stdcall patchMemcpy(auto dst, auto src, size_t n)
 {
@@ -755,13 +760,18 @@ void drawFrameBar()
 
 void drawHealthValues()
 {
+	if (!safeWrite() || isPaused())
+		return;
+
+	int nFrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
+	int nResetOffset = 0;
+	if (nFrameTimer < 20)
+	{
+		nResetOffset = 300.0f * (1.0f - nFrameTimer / 19.0f);
+	}
+
 	static char buffer[256];
 	
-	// 535 -> 366 + 40 = move range
-	// map health range of [8900, 11400 - 8900 = 2500]
-	// 535 - (currHealth / (8900-2500) / (535 - 366 + 40))
-	// original was 535 btw
-
 	int nP1RedHealth = *(int*)(dwBaseAddress + dwP1RedHealth);
 	int nP1RedHealthX;
 	if (nP1RedHealth >= 9200)
@@ -771,11 +781,10 @@ void drawHealthValues()
 	else
 		nP1RedHealthX = 20.0f + (1.0f - (float)nP1RedHealth / 11400.0f) * (230.0f - 20.0f);
 	snprintf(buffer, 256, "%5d", nP1RedHealth);
-	drawTextWithBorder(nP1RedHealthX, 40, 10, 10, buffer);
+	drawTextWithBorder(nP1RedHealthX - nResetOffset, 40, 10, 10, buffer);
 
-	int nP1Health = *(int*)(dwBaseAddress + dwP1Health);
-	snprintf(buffer, 256, "%5d", nP1Health);
-	drawTextWithBorder(230, 40, 10, 10, buffer);
+	snprintf(buffer, 256, "%5d", *(int*)(dwBaseAddress + dwP1Health));
+	drawTextWithBorder(230 - nResetOffset, 40, 10, 10, buffer);
 
 	int nP2RedHealth = *(int*)(dwBaseAddress + dwP2RedHealth);
 	int nP2RedHealthX;
@@ -786,15 +795,29 @@ void drawHealthValues()
 	else
 		nP2RedHealthX = 575.0f - (1.0f - (float)nP2RedHealth / 11400.0f) * (575.0f - 366.0f);
 	snprintf(buffer, 256, "%5d", nP2RedHealth);
-	drawTextWithBorder(nP2RedHealthX, 40, 10, 10, buffer);
+	drawTextWithBorder(nP2RedHealthX + nResetOffset, 40, 10, 10, buffer);
 
-	int nP2Health = *(int*)(dwBaseAddress + dwP2Health);
-	snprintf(buffer, 256, "%5d", nP2Health);
-	drawTextWithBorder(366, 40, 10, 10, buffer);
+	snprintf(buffer, 256, "%5d", *(int*)(dwBaseAddress + dwP2Health));
+	drawTextWithBorder(366 + nResetOffset, 40, 10, 10, buffer);
+
+
+	snprintf(buffer, 256, "%5.0f", *(float*)(dwBaseAddress + dwP1GuardAmount));
+	drawTextWithBorder(234 - nResetOffset, 58, 8, 9, buffer);
+	snprintf(buffer, 256, "%1.3f", *(float*)(dwBaseAddress + dwP1GuardQuality));
+	drawTextWithBorder(244 - nResetOffset, 67, 6, 9, buffer);
+
+	snprintf(buffer, 256, "%5.0f", *(float*)(dwBaseAddress + dwP2GuardAmount));
+	drawTextWithBorder(368 + nResetOffset, 58, 8, 9, buffer);
+	snprintf(buffer, 256, "%1.3f", *(float*)(dwBaseAddress + dwP2GuardQuality));
+	drawTextWithBorder(369 + nResetOffset, 67, 6, 9, buffer);
 }
 
+#ifdef MOVED_TO_drawHealthValues
 void drawGuardValues()
 {
+	if (!safeWrite() || isPaused())
+		return;
+
 	static char buffer[256];
 
 	snprintf(buffer, 256, "%5.0f", *(float*)0x5551F4);
@@ -807,6 +830,7 @@ void drawGuardValues()
 	snprintf(buffer, 256, "%1.3f", *(float*)0x555D04);
 	drawTextWithBorder(369, 67, 6, 9, buffer);
 }
+#endif
 
 void drawFrameData()
 {
@@ -1135,7 +1159,7 @@ void frameDoneCallback()
 
 	drawHealthValues();
 
-	drawGuardValues();
+	//drawGuardValues();
 
 	/*
 	i am sorry for commenting this out
