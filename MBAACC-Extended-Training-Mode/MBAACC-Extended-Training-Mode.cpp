@@ -3147,7 +3147,7 @@ int main(int argc, char* argv[])
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 1, 0);
                 int nHitstun = nReadResult;
 
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Y + dwP2Offset), &nReadResult, 4, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Y), &nReadResult, 4, 0);
                 nP2Y = nReadResult;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMot), &nReadResult, 4, 0);
                 nOldMot = nMot;
