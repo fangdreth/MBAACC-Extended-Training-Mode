@@ -5,11 +5,33 @@ char* pBuffer = nullptr;
 const LPCWSTR sSharedName = L"MBAACCExtendedTrainingMode";
 bool bInitialized = false;
 enum eSharedOffsets {
-	SHARE_IDLEHIGHLIGHT, SHARE_BLOCKINGHIGHLIGHT, SHARE_TEMP1HIGHLIGHT, SHARE_TEMP2HIGHLIGHT, SHARE_TEMP3HIGHLIGHT, SHARE_TEMP4HIGHLIGHT,
+	SHARE_IDLEHIGHLIGHT, SHARE_BLOCKINGHIGHLIGHT, SHARE_HITHIGHLIGHT, SHARE_ARMORHIGHLIGHT, SHARE_THROWPROTECTIONHIGHLIGHT, SHARE_TEMP4HIGHLIGHT,
 	SHARE_REVERSALINDEX1, SHARE_REVERSALINDEX2, SHARE_REVERSALINDEX3, SHARE_REVERSALINDEX4, SHARE_REVERSALDELAYFRAMES, SHARE_REVERSALTYPE,
 	SHARE_FREEZEKEY, SHARE_FRAMESTEPKEY, SHARE_HITBOXESDISPLAYKEY, SHARE_FRAMEDATADISPLAYKEY, SHARE_HIGHLIGHTSONKEY
 };
 const int nSharedSize = 17 * sizeof(int);
+
+std::array<BYTE, 3> CreateColorArray(int nHighlightID)
+{
+	switch (nHighlightID)
+	{
+	default:
+	case NO_HIGHLIGHT:
+		return { 255, 255, 255 };
+	case RED_HIGHLIGHT:
+		return { 255, 90, 90 };
+	case YELLOW_HIGHLIGHT:
+		return { 255, 255, 90 };
+	case GREEN_HIGHLIGHT:
+		return { 90, 255, 90 };
+	case BLUE_HIGHLIGHT:
+		return { 90, 90, 255 };
+	case PURPLE_HIGHLIGHT:
+		return { 255, 90, 255 };
+	case BLACK_HIGHLIGHT:
+		return { 90, 90, 90 };
+	}
+}
 
 void InitializeSharedMemoryHelper()
 {
@@ -72,9 +94,9 @@ void SaveHighlightsOnKey(int* pnHighlightsOnKey)
 // Putting it in its own class might be better too.
 void SetSharedMemory(int* pnIdleHighlightSetting = nullptr,
 	int* pnBlockingHighlightSetting = nullptr,
-	int* pnTemp1HighlightSetting = nullptr,
-	int* pnTemp2HighlightSetting = nullptr,
-	int* pnTemp3HighlightSetting = nullptr,
+	int* pnHitHighlightSetting = nullptr,
+	int* pnArmorHighlightSetting = nullptr,
+	int* pnThrowProtectionHighlightSetting = nullptr,
 	int* pnTemp4HighlightSetting = nullptr,
 	int* pnReversalIndex1 = nullptr,
 	int* pnReversalIndex2 = nullptr,
@@ -120,16 +142,16 @@ void SetSharedMemory(int* pnIdleHighlightSetting = nullptr,
 		CopyMemory(pBuf + nRunningOffset, pnBlockingHighlightSetting, sizeof(int));
 	nRunningOffset += sizeof(int);
 
-	if (pnTemp1HighlightSetting)
-		CopyMemory(pBuf + nRunningOffset, pnTemp1HighlightSetting, sizeof(int));
+	if (pnHitHighlightSetting)
+		CopyMemory(pBuf + nRunningOffset, pnHitHighlightSetting, sizeof(int));
 	nRunningOffset += sizeof(int);
 
-	if (pnTemp2HighlightSetting)
-		CopyMemory(pBuf + nRunningOffset, pnTemp2HighlightSetting, sizeof(int));
+	if (pnArmorHighlightSetting)
+		CopyMemory(pBuf + nRunningOffset, pnArmorHighlightSetting, sizeof(int));
 	nRunningOffset += sizeof(int);
 
-	if (pnTemp3HighlightSetting)
-		CopyMemory(pBuf + nRunningOffset, pnTemp3HighlightSetting, sizeof(int));
+	if (pnThrowProtectionHighlightSetting)
+		CopyMemory(pBuf + nRunningOffset, pnThrowProtectionHighlightSetting, sizeof(int));
 	nRunningOffset += sizeof(int);
 
 	if (pnTemp4HighlightSetting)
@@ -163,9 +185,9 @@ void SetSharedMemory(int* pnIdleHighlightSetting = nullptr,
 
 void GetSharedMemory(std::array<BYTE, 3>* parrIdleHighlightSetting,
 	std::array<BYTE, 3>* parrBlockingHighlightSetting,
-	std::array<BYTE, 3>* parrTemp1HighlightSetting,
-	std::array<BYTE, 3>* parrTemp2HighlightSetting,
-	std::array<BYTE, 3>* parrTemp3HighlightSetting,
+	std::array<BYTE, 3>* parrHitHighlightSetting,
+	std::array<BYTE, 3>* parrArmorHighlightSetting,
+	std::array<BYTE, 3>* parrThrowProtectionHighlightSetting,
 	std::array<BYTE, 3>* parrTemp4HighlightSetting,
 	int* pnReversalIndex1,
 	int* pnReversalIndex2,
@@ -206,127 +228,37 @@ void GetSharedMemory(std::array<BYTE, 3>* parrIdleHighlightSetting,
 	if (parrIdleHighlightSetting)
 	{
 		int nIdleHighlightSetting = ((int*)pBuffer)[SHARE_IDLEHIGHLIGHT];
-		switch (nIdleHighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrIdleHighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrIdleHighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrIdleHighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrIdleHighlightSetting = { 90, 90, 255 };
-			break;
-		}
+		*parrIdleHighlightSetting = CreateColorArray(nIdleHighlightSetting);
 	}
 
 	if (parrBlockingHighlightSetting)
 	{
 		int nBlockingHighlightSetting = ((int*)pBuffer)[SHARE_BLOCKINGHIGHLIGHT];
-		switch (nBlockingHighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrBlockingHighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrBlockingHighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrBlockingHighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrBlockingHighlightSetting = { 90, 90, 255 };
-			break;
-		}
+		*parrBlockingHighlightSetting = CreateColorArray(nBlockingHighlightSetting);
 	}
 
-	if (parrTemp1HighlightSetting)
+	if (parrHitHighlightSetting)
 	{
-		int nTemp1HighlightSetting = ((int*)pBuffer)[SHARE_TEMP1HIGHLIGHT];
-		switch (nTemp1HighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrTemp1HighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrTemp1HighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrTemp1HighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrTemp1HighlightSetting = { 90, 90, 255 };
-			break;
-		}
+		int nHitHighlightSetting = ((int*)pBuffer)[SHARE_HITHIGHLIGHT];
+		*parrHitHighlightSetting = CreateColorArray(nHitHighlightSetting);
 	}
 
-	if (parrTemp2HighlightSetting)
+	if (parrArmorHighlightSetting)
 	{
-		int nTemp2HighlightSetting = ((int*)pBuffer)[SHARE_TEMP2HIGHLIGHT];
-		switch (nTemp2HighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrTemp2HighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrTemp2HighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrTemp2HighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrTemp2HighlightSetting = { 90, 90, 255 };
-			break;
-		}
+		int nArmorHighlightSetting = ((int*)pBuffer)[SHARE_ARMORHIGHLIGHT];
+		*parrArmorHighlightSetting = CreateColorArray(nArmorHighlightSetting);
 	}
 
-	if (parrTemp3HighlightSetting)
+	if (parrThrowProtectionHighlightSetting)
 	{
-		int nTemp3HighlightSetting = ((int*)pBuffer)[SHARE_TEMP3HIGHLIGHT];
-		switch (nTemp3HighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrTemp3HighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrTemp3HighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrTemp3HighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrTemp3HighlightSetting = { 90, 90, 255 };
-			break;
-		}
+		int nThrowProtectionHighlightSetting = ((int*)pBuffer)[SHARE_THROWPROTECTIONHIGHLIGHT];
+		*parrThrowProtectionHighlightSetting = CreateColorArray(nThrowProtectionHighlightSetting);
 	}
 
 	if (parrTemp4HighlightSetting)
 	{
 		int nTemp4HighlightSetting = ((int*)pBuffer)[SHARE_TEMP4HIGHLIGHT];
-		switch (nTemp4HighlightSetting)
-		{
-		default:
-		case NO_HIGHLIGHT:
-			*parrTemp4HighlightSetting = { 255, 255, 255 };
-			break;
-		case RED_HIGHLIGHT:
-			*parrTemp4HighlightSetting = { 255, 90, 90 };
-			break;
-		case GREEN_HIGHLIGHT:
-			*parrTemp4HighlightSetting = { 90, 255, 90 };
-			break;
-		case BLUE_HIGHLIGHT:
-			*parrTemp4HighlightSetting = { 90, 90, 255 };
-			break;
-		}
+		*parrTemp4HighlightSetting = CreateColorArray(nTemp4HighlightSetting);
 	}
 
 	if (pnReversalIndex1)

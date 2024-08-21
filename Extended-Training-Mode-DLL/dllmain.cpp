@@ -89,13 +89,12 @@ bool bHighlightsOn = true;
    __asm pop ebp        \
 }
 
-
-// helpers
-
+std::array<BYTE, 3> arrDefaultHighlightSetting({ 255, 255, 255 });
 std::array<BYTE, 3> arrIdleHighlightSetting({ 255, 255, 255 });
 std::array<BYTE, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
-
-//enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT };
+std::array<BYTE, 3> arrHitHighlightSetting({ 255, 255, 255 });
+std::array<BYTE, 3> arrArmorHighlightSetting({ 255, 255, 255 });
+std::array<BYTE, 3> arrThrowProtectionHighlightSetting({ 255, 255, 255 });
 
 class KeyState {
 public:
@@ -213,11 +212,11 @@ void __stdcall debugLogBytes(BYTE* p)
 }
 
 bool __stdcall safeWrite() {
-	BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
+	//BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
 	BYTE GameState = *reinterpret_cast<BYTE*>(dwBaseAddress + dwGameState);
 	int FrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
 
-	if (PauseFlag == 1 ||
+	if (//PauseFlag == 1 ||
 		GameState != 1 ||
 		FrameTimer == 0)
 		return false;
@@ -226,7 +225,6 @@ bool __stdcall safeWrite() {
 }
 
 // patch funcs
-
 void __stdcall patchMemcpy(auto dst, auto src, size_t n)
 {
 
@@ -753,6 +751,8 @@ void drawFrameData() {
 
 void highlightStates()
 {
+	static int nP1ThrowProtectionTimer = 0;
+	static int nP2ThrowProtectionTimer = 0;
 	static KeyState oHighlightsOnKey;
 	oHighlightsOnKey.setKey(nHighlightsOnKey);
 
@@ -763,19 +763,52 @@ void highlightStates()
 		return;
 	}
 
+	static int nOldFrameTimer = 0;
+	int nFrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
+	int nGlobalExFlash = *reinterpret_cast<int*>(dwBaseAddress + dwGlobalEXFlash);
+	if (nFrameTimer != nOldFrameTimer && nGlobalExFlash == 0)
+	{
+		nP1ThrowProtectionTimer = max(0, nP1ThrowProtectionTimer - 1);
+		nP2ThrowProtectionTimer = max(0, nP2ThrowProtectionTimer - 1);
+	}
+	nOldFrameTimer = nFrameTimer;
+
 	if (!bHighlightsOn)
 	{
 		arrIdleHighlightSetting = { 255, 255, 255 };
 		arrBlockingHighlightSetting = { 255, 255, 255 };
+		arrHitHighlightSetting = { 255, 255, 255 };
+		arrArmorHighlightSetting = { 255, 255, 255 };
+		arrThrowProtectionHighlightSetting = { 255, 255, 255 };
 	}
 
-	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState) -> void
+	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState, DWORD notInCombo, BYTE armorTimer, int* pnThrowProtectionTimer, DWORD yCoord) -> void
 		{
-			if (blockState == 1)
+			// reset the color in case it falls through
+			patchMemcpy(animDataAddr + 0x18, arrDefaultHighlightSetting.data(), 3);
+
+			// the order of this if block denotes the priority for each highlight
+			if (blockState == 1)	// BLOCKING
 			{
 				patchMemcpy(animDataAddr + 0x18, arrBlockingHighlightSetting.data(), 3);
+				if (yCoord == 0)
+					*pnThrowProtectionTimer = 8;
 			}
-			else
+			else if (armorTimer != 0)
+			{
+				patchMemcpy(animDataAddr + 0x18, arrArmorHighlightSetting.data(), 3);
+			}
+			else if (notInCombo == 0)
+			{
+				patchMemcpy(animDataAddr + 0x18, arrHitHighlightSetting.data(), 3);
+				if (yCoord == 0)
+					*pnThrowProtectionTimer = 8;
+			}
+			else if (*pnThrowProtectionTimer != 0)
+			{
+				patchMemcpy(animDataAddr + 0x18, arrThrowProtectionHighlightSetting.data(), 3);
+			}
+			else // last check is IDLE
 			{
 				switch (patternState)
 				{
@@ -802,6 +835,8 @@ void highlightStates()
 					break;
 				}
 			}
+
+			
 		};
 
 	/*
@@ -816,12 +851,24 @@ void highlightStates()
 	// i strongly dislike my method of derefing here. a class could fix this
 	if (*(DWORD*)(dwBaseAddress + dwP1AnimationPtr) > dwBaseAddress)
 	{
-		updateAnimation(*(DWORD*)(dwBaseAddress + dwP1AnimationPtr), *(BYTE*)(dwBaseAddress + dwP1Blocking), *(DWORD*)(dwBaseAddress + dwP1PatternRead));
+		updateAnimation(*(DWORD*)(dwBaseAddress + dwP1AnimationPtr),
+						*(BYTE*)(dwBaseAddress + dwP1Blocking),
+						*(DWORD*)(dwBaseAddress + dwP1PatternRead),
+						*(DWORD*)(dwBaseAddress + dwP1NotInCombo),
+						*(BYTE*)(dwBaseAddress + dwP1ArmorTimer),
+						&nP1ThrowProtectionTimer,
+						*(DWORD*)(dwBaseAddress + dwP1Y));
 	}
 
 	if (*(DWORD*)(dwBaseAddress + dwP2AnimationPtr) > dwBaseAddress)
 	{
-		updateAnimation(*(DWORD*)(dwBaseAddress + dwP2AnimationPtr), *(BYTE*)(dwBaseAddress + dwP2Blocking), *(DWORD*)(dwBaseAddress + dwP2PatternRead));
+		updateAnimation(*(DWORD*)(dwBaseAddress + dwP2AnimationPtr),
+						*(BYTE*)(dwBaseAddress + dwP2Blocking),
+						*(DWORD*)(dwBaseAddress + dwP2PatternRead),
+						*(DWORD*)(dwBaseAddress + dwP2NotInCombo),
+						*(BYTE*)(dwBaseAddress + dwP2ArmorTimer),
+						&nP2ThrowProtectionTimer,
+						*(DWORD*)(dwBaseAddress + dwP2Y));
 	}
 }
 
@@ -1318,7 +1365,7 @@ void threadFunc()
 	{
 
 		// ideally, this would be done with signals. also unknown if this is thread safe
-		GetSharedMemory(&arrIdleHighlightSetting, &arrBlockingHighlightSetting, NULL, NULL, NULL, NULL,
+		GetSharedMemory(&arrIdleHighlightSetting, &arrBlockingHighlightSetting, &arrHitHighlightSetting, &arrArmorHighlightSetting, &arrThrowProtectionHighlightSetting, NULL,
 						&nReversalIndex1, &nReversalIndex2, &nReversalIndex3, &nReversalIndex4, 
 						&nReversalDelayFrames, &nReversalType,
 						&nFreezeKey, &nFrameStepKey, &nHitboxesDisplayKey, &nFrameDataDisplayKey, &nHighlightsOnKey);

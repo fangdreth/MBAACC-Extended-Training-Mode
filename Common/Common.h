@@ -18,7 +18,7 @@ enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE,
 enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, POSITIONS_PAGE = 3, FRAME_TOOL = 4, CHARACTER_SPECIFICS = 5, HIGHLIGHT_PAGE = 6, HOTKEYS_PAGE = 7 };
 enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
-enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT };
+enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, YELLOW_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT, PURPLE_HIGHLIGHT, BLACK_HIGHLIGHT };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
@@ -46,7 +46,8 @@ const DWORD dwP1RedHealth = 0x1551F0;
 const DWORD dwP1SionBullets = 0x1552F6; // counts shots used i.e. 0=13 in mag, 4=9 in mag, etc
 const DWORD dwP1RoaVisibleCharge = 0x155302;    // 0-9
 const DWORD dwP1RoaHiddenCharge = 0x155300; // 0-9
-const DWORD dwP2Y = 0x155248;
+const DWORD dwP1Y = 0x155248;
+const DWORD dwP2Y = 0x155248 + 0xAFC;
 const DWORD dwP1X = 0x155238;
 const DWORD dwP1Exists = 0x155130;
 const DWORD dwP2PatternSet = 0x155F38;
@@ -68,12 +69,15 @@ const DWORD dwEnemyAction = 0x37C1EC;
 const DWORD dwLifeRecover = 0x37C1F8;
 const DWORD dwP1HitstunRemaining = 0x1552DC;
 const DWORD dwP1NotInCombo = 0x155194; //1:InCombo 0:NotInCombo
+const DWORD dwP2NotInCombo = 0x155194 + 0xAFC; //1:InCombo 0:NotInCombo
 const DWORD dwP1HitstopRemaining = 0x1552D4; //0:not in hitstop
 const DWORD dwComboCount = 0x157E00; // there's another address that tracks this
 const DWORD dwP2E = 0x3713C9;
 const DWORD dwMagicCircuitSetting = 0x37C1FC;
 const DWORD dwBasePointer = 0x34D7FC;
 const DWORD dwBurstCooldown = 0x155DBE;
+const DWORD dwP1ArmorTimer = 0x1552C8; // 0:no armor >0:armor
+const DWORD dwP2ArmorTimer = 0x1552C8 + 0xAFC;
 const DWORD dwP2RecievedHitstop = 0x155DD0;
 const DWORD dwGameMode = 0x162A74; // 16:training
 const DWORD dwFPS = 0x374A70;
@@ -193,6 +197,14 @@ const char pcHealth_19[19] = "HEALTH [A]->SLOWER";
 const char pcGuardBar_10[10] = "GUARD BAR";
 const char pcBlank_1[1] = "";
 
+std::vector<const char*> vHighlightNames = {    "OFF",
+                                                "RED",
+                                                "YELLOW",
+                                                "GREEN",
+                                                "BLUE",
+                                                "PURPLE",
+                                                "BLACK"};
+
 const char pcEnemyReversal_15[15] = "ENEMY REVERSAL";
 
 const char pcRecover_8[8] = "RECOVER";
@@ -217,8 +229,11 @@ const char pcOff_4[4] = "OFF";
 const char pcOn_3[3] = "ON";
 const char pcNone_5[5] = "NONE";
 
-const char pcBlocking_9[9] = "BLOCKING";
 const char pcIdle_5[5] = "IDLE";
+const char pcBlock_6[6] = "BLOCK";
+const char pcHit_4[4] = "HIT";
+const char pcArmor_6[6] = "ARMOR";
+const char pcThrowProtection_17[17] = "THROW PROTECTION";
 const char pcRed_4[4] = "RED";
 const char pcGreen_6[6] = "GREEN";
 const char pcBlue_5[5] = "BLUE";
