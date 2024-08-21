@@ -34,8 +34,10 @@ struct Player
 
 	int nLastInactionableFrames = 0;
 
-	DWORD dwColorBar1[400][2];
-	DWORD dwColorBar2[400][2];
+	DWORD dwColorBar1[BAR_MEMORY_SIZE][2];
+	DWORD dwColorBar2[BAR_MEMORY_SIZE][2];
+
+	int nNumBar[BAR_MEMORY_SIZE][2];
 
 	int nActiveCounter = 0;
 	int nInactiveMemory = 0;
@@ -43,12 +45,14 @@ struct Player
 	int nLastFrameCount = 0;
 	int nActiveProjectileCount = 0;
 	bool bLastOnRight = false;
+	DWORD dwLastActivePointer = 0x0;
 };
 
 void UpdatePlayer(Player& P) {
 	P.nLastInactionableFrames = *(int*)(P.dwInactionOffset);
 	P.nLastFrameCount = *(int*)(P.dwBaseAddress + 0xF0);
 	P.bLastOnRight = *(int*)(P.dwBaseAddress + 0x315);
+	P.dwLastActivePointer = *(DWORD*)(P.dwBaseAddress + 0x324);
 }
 
 Player P1{ 0, 0x555130, 0x557FC0 };
@@ -101,15 +105,19 @@ void ResetBars(Player& P)
 		P.dwColorBar1[i][1] = 0x00000000;
 		P.dwColorBar2[i][0] = 0x00000000;
 		P.dwColorBar2[i][1] = 0x00000000;
+
+		P.nNumBar[i][0] = -1;
+		P.nNumBar[i][1] = 0;
 	}
 }
 
 void UpdateBars(Player& P, Player& Assist)
 {
-	// Foreground color -> \x1b[38;2;R;G;Bm
-	// Background color -> \x1b[48;2;R;G;Bm
 	DWORD dwColor = 0x00000000;
 	DWORD dwColor2 = 0x00000000;
+	int nNumber = -1;
+	int nNumFlag = 0;
+	bool bClearNumFlag = true;
 	bool bIsButtonPressed = *(char*)(P.dwBaseAddress + 0x2ED) != 0 || *(char*)(P.dwBaseAddress + 0x2EE) != 0;
 
 	//Bar 1 - General action information
@@ -117,6 +125,7 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		dwColor = 0xFF41C800;
 		//sBarValue = std::format("{:2}", P.nInactionableFrames % 100);
+		nNumber = *(int*)P.dwInactionOffset;
 		if (*(int*)(P.dwBaseAddress + 0x10) >= 35 && *(int*)(P.dwBaseAddress + 0x10) <= 37) //Jump Startup
 		{
 			dwColor = 0xFFF1E084;
@@ -146,6 +155,10 @@ void UpdateBars(Player& P, Player& Assist)
 		else if (*(DWORD*)(P.dwBaseAddress + 0x324) != 0) //Attacking
 		{
 			dwColor = 0xFFFF0000;
+			if (P.dwLastActivePointer == 0x0) //First active only
+			{
+				nNumFlag = 1;
+			}
 		}
 	}
 	else //Fully actionable
@@ -156,6 +169,11 @@ void UpdateBars(Player& P, Player& Assist)
 		if (bDoAdvantage) //Has advantage
 		{
 			//sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
+			nNumber = P.nAdvantageCounter;
+			if (P.nAdvantageCounter == 1)
+			{
+				bClearNumFlag = false;
+			}
 			if (P.nAdvantageCounter != 0)
 			{
 				dwColor = 0xFF101010;
@@ -244,6 +262,13 @@ void UpdateBars(Player& P, Player& Assist)
 	else
 	{
 		P.dwColorBar1[nBarCounter % BAR_MEMORY_SIZE][1] = dwColor;
+	}
+
+	P.nNumBar[nBarCounter % BAR_MEMORY_SIZE][0] = nNumber;
+	P.nNumBar[nBarCounter % BAR_MEMORY_SIZE][1] = nNumFlag;
+	if (nNumber >= 0 && bClearNumFlag && P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][1] == 0)
+	{
+		P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][0] = -1;
 	}
 
 }
