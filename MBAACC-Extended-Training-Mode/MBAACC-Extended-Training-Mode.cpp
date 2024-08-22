@@ -237,7 +237,7 @@ int main(int argc, char* argv[])
         std::cout << "\x1b[K";
 
         GetExitCodeProcess(hMBAAHandle, &dwExitCode);
-        if (hMBAAHandle == 0x0 || dwExitCode != 259)
+        if (hMBAAHandle == 0x0 || dwExitCode != 259)    //259 is the not-closed return code
         {
             // I'm not sure why, but when MBAA closes, for a really short
             // window, GetProcessByName will return a different handle
