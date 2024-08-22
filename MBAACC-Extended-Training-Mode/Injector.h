@@ -10,6 +10,7 @@
 #include <iostream>
 #include <cstdio>
 
+#include "Logger.h"
 
 #define RED "\x1b[31;1m"
 #define GREEN "\x1b[32;1m"
@@ -18,7 +19,7 @@
 
 #define RESET "\x1b[0m"
 
-static bool inject(unsigned long procID, char* dllPath) 
+static int inject(unsigned long procID, char* dllPath) 
 {
 
 	unsigned long pid = procID;
@@ -28,53 +29,46 @@ static bool inject(unsigned long procID, char* dllPath)
 
 	if(!f.good())
 	{
-		printf("%sFailed to find DLL in melty path%s\n", RED, RESET);
-		printf("%s%s%s\n", RED, dllPath, RESET);
-		return false;
+		LogInfo("Failed to find DLL in melty path");
 	}
 
 	HANDLE injectorProcHandle = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_CREATE_THREAD, false, pid);
 	if (injectorProcHandle == NULL)
 	{
-		printf("%sOpenProcess failed for DLL injection%s\n", RED, RESET);
-		return false;
-	}
-
-	PVOID dllNameAdr = VirtualAllocEx(injectorProcHandle, NULL, strlen(path) + 1, MEM_COMMIT, PAGE_READWRITE);
-	if (dllNameAdr == NULL) 
-	{
-		printf("%sVirtualAllocEx failed for DLL injection%s\n", RED, RESET);
-		return false;
-	}
-
-	if (WriteProcessMemory(injectorProcHandle, dllNameAdr, path, strlen(path) + 1, NULL) == 0) 
-	{
-		printf("%sWriteProcessMemory failed for DLL injection%s\n", RED, RESET);
-		return false;
-	}
-
-	HANDLE tHandle = CreateRemoteThread(injectorProcHandle, 0, 0, (LPTHREAD_START_ROUTINE)(void*)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA"), dllNameAdr, 0, 0);
-	if (tHandle == NULL) 
-	{
-		printf("%sCreateRemoteThread failed for DLL injection%s\n", RED, RESET);
-		return false;
-	}
-
-	return true;
-}
-
-static int InjectIntoMBAA(unsigned long nPID, std::string sDLLPath) 
-{
-
-	bool result = inject(nPID, sDLLPath.data());
-
-	if (!result) 
-	{
-		std::cout << std::endl;
+		LogInfo("OpenProcess failed for DLL injection");
 		return 1;
 	}
 
-	printf("%sinjection ran successfully%s\n", GREEN, RESET);
-	std::cout << std::endl;
-	return 0;
+	PVOID dllNameAdr = VirtualAllocEx(injectorProcHandle, NULL, strlen(path) + 1, MEM_COMMIT, PAGE_READWRITE);
+	if (dllNameAdr == NULL)
+	{
+		LogInfo("VirtualAllocEx failed for DLL injection");
+		return 1;
+	}
+
+	if (WriteProcessMemory(injectorProcHandle, dllNameAdr, path, strlen(path) + 1, NULL) == 0)
+	{
+		LogInfo("WriteProcessMemory failed for DLL injection");
+		return 1;
+	}
+
+	HANDLE tHandle = CreateRemoteThread(injectorProcHandle, 0, 0, (LPTHREAD_START_ROUTINE)(void*)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA"), dllNameAdr, 0, 0);
+	if (tHandle == NULL)
+	{
+		LogInfo("CreateRemoteThread failed for DLL injection");
+		return 1;
+	}
+}
+
+static void InjectIntoMBAA(unsigned long nPID, std::string sDLLPath) 
+{
+	try
+	{
+		if (inject(nPID, sDLLPath.data()))
+			LogInfo("Failure during injection");
+	}
+	catch (...)
+	{
+		LogInfo("Failure during injection");
+	}
 }

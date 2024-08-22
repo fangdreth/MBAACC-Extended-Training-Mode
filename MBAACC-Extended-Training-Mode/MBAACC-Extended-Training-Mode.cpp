@@ -1,6 +1,4 @@
 #include "MBAACC-Extended-Training-Mode.h"
-#include "Logger.h"
-#include "Injector.h"
 
 int main(int argc, char* argv[])
 {
@@ -235,16 +233,17 @@ int main(int argc, char* argv[])
             std::cout << "|                                                                         |\x1b[K" << std::endl;
         std::cout << "===========================================================================\x1b[K" << std::endl;
 
-        GetExitCodeProcess(hMBAAHandle, &dwExitCode);
-
         SetConsoleCursorPosition(hConsoleHandle, { 0, 6 });
         std::cout << "\x1b[K";
 
+        GetExitCodeProcess(hMBAAHandle, &dwExitCode);
         if (hMBAAHandle == 0x0 || dwExitCode != 259)
         {
-            // Print the variable values when MBAA closes, possibly from a crash
-            //if (hMBAAHandle != 0x0)
-                //CloseLog(bPaused, bAPressed, bOnCSS, bOnExtendedSettingsMenu, nP1CharacterID, nP2CharacterID, nP1Moon, nP2Moon, nP1CharacterNumber, nP2CharacterNumber, bSwitchToCrouch, nExGuardSetting, nCustomGuard, nReversalPattern, nReversalDelayFrames, nTempReversalDelayFrames, bDelayingReversal, bReversaled, nReversalType, nReversalIndex1, nReversalIndex2, nReversalIndex3, nReversalIndex4, vPatternNames, nMot, nOldMot, nP2Y, nBurstCooldown ,nOldEnemyActionIndex, nOldPresetIndex, nOldEnemyDefenseIndex, nOldEnemyDefenseTypeIndex, nOldAirRecoveryIndex, nOldDownRecoveryIndex, nOldThrowRecoveryIndex, nOldReduceDamageIndex, nOldLifeIndex, nCurrentSubMenu, nOldCurrentSubMenu, nFrameCounter, nOldFrameCounter, nStoredEnemyAction, nStoredEnemyDefense, nStoredEnemyDefenseType, nStoredAirRecovery, nStoredDownRecovery, nStoredThrowRecovery, nStoredReduceDamage, nGameCursorIndex, nOldGameCursorIndex, nEnemySettingsCursor, nOldEnemySettingsCursor, nCustomMeter, nCustomHealth, nHealthRefillTimer, nCharSpecificsRefillTimer, bLifeRecover, nSionBullets, nRoaVisibleCharge, nRoaHiddenCharge, nSionBulletsRefillTimer, nRoaHiddenChargeRefillTimer, nRoaVisibleChargeRefillTimer, nExtendedSettingsPage, bPositionsLocked, nP1X, nP2X, nP3X, nP4X, bP3Exists, bP4Exists, nHitsTillBurst, bInfGuard, nGameMode);
+            // I'm not sure why, but when MBAA closes, for a really short
+            // window, GetProcessByName will return a different handle
+            // to something else.  This small wait helps with that,
+            // though it's for sure a kludge.
+            Sleep(100);
 
             hMBAAHandle = 0x0;
 
@@ -260,10 +259,8 @@ int main(int argc, char* argv[])
 
             // don't do anything until we re-attach to mbaa
             if (hMBAAHandle == 0x0)
-            {
-                Sleep(100);
                 continue;
-            }
+
             LogInfo("Attached to MBAA");
 
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
@@ -274,7 +271,9 @@ int main(int argc, char* argv[])
             LogInfo("Got BaseAddressByName");
 
             DWORD dwPID = GetProcessPID(L"MBAA.exe");
-            bool bInjectStatus = InjectIntoMBAA(dwPID, sDLLPath);
+            InjectIntoMBAA(dwPID, sDLLPath);
+            // it is ok if it fails.  write it to the log and move on.
+            // it will be obvious in-game if it didn't inject correctly.
         }
 
         // check this to prevent attaching to netplay

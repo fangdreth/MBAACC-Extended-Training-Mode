@@ -246,7 +246,7 @@ const char pcHealth_19[19] = "HEALTH [A]->SLOWER";
 const char pcGuardBar_10[10] = "GUARD BAR";
 const char pcBlank_1[1] = "";
 
-std::vector<const char*> vHighlightNames = {    "OFF",
+const std::vector<const char*> vHighlightNames = {    "OFF",
                                                 "RED",
                                                 "YELLOW",
                                                 "GREEN",

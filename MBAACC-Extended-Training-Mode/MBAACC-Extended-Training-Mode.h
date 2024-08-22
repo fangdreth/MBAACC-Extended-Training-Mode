@@ -20,6 +20,8 @@
 #include "..\Common\SharedMemoryHelper.h"
 #include "PointerManager.h"
 #include "FrameDisplay.h"
+#include "Injector.h"
+#include "Logger.h"
 
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;
