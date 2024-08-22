@@ -203,6 +203,10 @@ int main(int argc, char* argv[])
     ReadFromRegistry(L"HitboxesDisplayKey", &nHitboxDisplayKey);
     ReadFromRegistry(L"FrameDataDisplayKey", &nFrameDataDisplayKey);
     ReadFromRegistry(L"HighlightsOnKey", &nHighlightsOnKey);
+    ReadFromRegistry(L"SaveSlot", &nSaveSlot);
+    ReadFromRegistry(L"FrameDisplay", &nFrameData);
+    ReadFromRegistry(L"HideFreeze", &bHideFreeze);
+    ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
 
     while (1)
     {
@@ -628,30 +632,35 @@ int main(int argc, char* argv[])
                                 ResetKeysHeld();
                                 bFreezeKeySet = false;
                                 nFreezeKey = 0;
+                                SetRegistryValue(L"FreezeKey", nFreezeKey);
                             }
                             else if (nEnemySettingsCursor == 2)
                             {
                                 ResetKeysHeld();
                                 bFrameStepKeySet = false;
                                 nFrameStepKey = 0;
+                                SetRegistryValue(L"FrameStepKey", nFrameStepKey);
                             }
                             else if (nEnemySettingsCursor == 3)
                             {
                                 ResetKeysHeld();
                                 bHitboxDisplayKeySet = false;
                                 nHitboxDisplayKey = 0;
+                                SetRegistryValue(L"HitboxesDisplayKey", nHitboxDisplayKey);
                             }
                             else if (nEnemySettingsCursor == 5)
                             {
                                 ResetKeysHeld();
                                 bFrameDataDisplayKeySet = false;
                                 nFrameDataDisplayKey = 0;
+                                SetRegistryValue(L"FrameDataDisplayKey", nFrameDataDisplayKey);
                             }
                             else if (nEnemySettingsCursor == 6)
                             {
                                 ResetKeysHeld();
                                 bHighlightsOnKeySet = false;
                                 nHighlightsOnKey = 0;
+                                SetRegistryValue(L"HighlightsOnKey", nHighlightsOnKey);
                             }
                             break;
                         default:
@@ -1145,6 +1154,7 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
                         {
                             nFrameData = FRAMEDISPLAY_NORMAL;
+                            SetRegistryValue(L"FrameDisplay", nFrameData);
                             bSimpleFrameInfo = true;
                             bShowInfo1 = false;
                             bShowInfo2 = false;
@@ -1154,6 +1164,7 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
                         {
                             nFrameData = FRAMEDISPLAY_ADVANCED;
+                            SetRegistryValue(L"FrameDisplay", nFrameData);
                             bSimpleFrameInfo = false;
                             bShowInfo1 = true;
                             bShowInfo2 = true;
@@ -1164,50 +1175,42 @@ int main(int argc, char* argv[])
                             nOldEnemyDefenseIndex = nEnemyDefenseIndex;
                         else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                         {
-                            nSaveSlot--;
-                            //bSaveStates = false;
-                            //bEnableFN1Save = false;
-                            //bEnableFN2Load = false;
+                            SetRegistryValue(L"SaveSlot", --nSaveSlot);
                         }
                         else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                         {
-                            nSaveSlot++;
-                            //bSaveStates = true;
-                            //bEnableFN1Save = true;
-                            //bEnableFN2Load = true;
+                            SetRegistryValue(L"SaveSlot", ++nSaveSlot);
                         }
                         if (nSaveSlot > 0)
                         {
-                            //bSaveStates = true;
                             bEnableFN1Save = true;
                             bEnableFN2Load = true;
                         }
                         else
                         {
-                            //bSaveStates = false;
                             bEnableFN1Save = false;
                             bEnableFN2Load = false;
                         }
 
-                        /*if (nOldEnemyDefenseTypeIndex == -1)
-                            nOldEnemyDefenseTypeIndex = nEnemyDefenseTypeIndex;
-                        else if (nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex)// left
-
-                        else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right*/
-
-
                         if (nOldAirRecoveryIndex == -1)
                             nOldAirRecoveryIndex = nAirRecoveryIndex;
                         else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
+                        {
                             bHideFreeze = true;
+                            SetRegistryValue(L"HideFreeze", bHideFreeze);
+                        }
                         else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
+                        {
                             bHideFreeze = false;
+                            SetRegistryValue(L"HideFreeze", bHideFreeze);
+                        }
 
                         if (nOldDownRecoveryIndex == -1)
                             nOldDownRecoveryIndex = nDownRecoveryIndex;
                         else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
                         {
                             bDisplayInputs = false;
+                            SetRegistryValue(L"DisplayInputs", bDisplayInputs);
                             bShowBar4 = false;
                             bShowBar5 = false;
                             system("cls");
@@ -1215,6 +1218,7 @@ int main(int argc, char* argv[])
                         else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                         {
                             bDisplayInputs = true;
+                            SetRegistryValue(L"DisplayInputs", bDisplayInputs);
                             bShowBar4 = true;
                             bShowBar5 = true;
                         }
@@ -2995,11 +2999,8 @@ int main(int argc, char* argv[])
                 if (bJustUnpaused)
                 {
                     bJustUnpaused = false;
-                    SetRegistryValue(L"FreezeKey", nFreezeKey);
-                    SetRegistryValue(L"FrameStepKey", nFrameStepKey);
-                    SetRegistryValue(L"HitboxesDisplayKey", nHitboxDisplayKey);
-                    SetRegistryValue(L"FrameDataDisplayKey", nFrameDataDisplayKey);
-                    SetRegistryValue(L"HighlightsOnKey", nHighlightsOnKey);
+
+                    // put stuff here
                 }
 
                 // want to reset these for a clean setup next time the game is paused

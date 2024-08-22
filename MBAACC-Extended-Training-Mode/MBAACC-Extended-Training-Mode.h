@@ -190,8 +190,10 @@ void CreateRegistryKey()
     }
 }
 
-void ReadFromRegistry(std::wstring sKey, int* nValue)
+LONG ReadFromRegistry(std::wstring sKey, int* nValue)
 {
+    LONG openResult = -1;
+
     try
     {
         DWORD dwValue = NULL;
@@ -200,8 +202,9 @@ void ReadFromRegistry(std::wstring sKey, int* nValue)
         DWORD dwType = REG_DWORD;
         DWORD dwSize = sizeof(nValue);
 
-        LONG openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
-        openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
+        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+        if (openResult == 0)
+            openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
         if (openResult == 0)
             *nValue = (int)dwValue;
 
@@ -210,23 +213,43 @@ void ReadFromRegistry(std::wstring sKey, int* nValue)
     catch (...)
     {
     }
+
+    return openResult;
 }
 
-void SetRegistryValue(std::wstring sKey, int nValue)
+LONG SetRegistryValue(std::wstring sKey, int nValue)
 {
+    LONG openResult = -1;
+
     try
     {
         HKEY hKey;
         LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
 
-        LONG openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
-        openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_DWORD, (unsigned char*)&nValue, sizeof(nValue));
-        
+        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
+        if (openResult == 0)
+            openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_DWORD, (unsigned char*)&nValue, sizeof(nValue));
+
         RegCloseKey(hKey);
     }
     catch (...)
     {
     }
+    return openResult;
+}
+
+LONG SetRegistryValue(std::wstring sKey, bool bValue)
+{
+    return SetRegistryValue(sKey, bValue ? 1 : 0);
+}
+
+LONG ReadFromRegistry(std::wstring sKey, bool* bValue)
+{
+    int nValue = 0;
+    LONG openResult = ReadFromRegistry(sKey, &nValue);
+    if (openResult == 0)
+        *bValue = nValue > 0 ? true : false;
+    return openResult;
 }
 
 void SetHealth(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
