@@ -204,11 +204,17 @@ int main(int argc, char* argv[])
     ReadFromRegistry(L"HitboxesDisplayKey", &nHitboxDisplayKey);
     ReadFromRegistry(L"FrameDataDisplayKey", &nFrameDataDisplayKey);
     ReadFromRegistry(L"HighlightsOnKey", &nHighlightsOnKey);
-    ReadFromRegistry(L"SaveSlot", &nSaveSlot);
     ReadFromRegistry(L"FrameDisplay", &nFrameData);
     ReadFromRegistry(L"HideFreeze", &bHideFreeze);
     ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
     //ReadFromRegistry(L"MBAAExePath", &sMBAAExePath);
+    
+    ReadFromRegistry(L"SaveSlot", &nSaveSlot);
+    if (nSaveSlot > 0)
+    {
+        bEnableFN1Save = true;
+        bEnableFN2Load = true;
+    }
 
     char pcModPath[MAX_PATH];
     GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
@@ -265,14 +271,11 @@ int main(int argc, char* argv[])
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             std::cout << "                                              ";
 
-
-
             Sleep(100);
             dwBaseAddress = GetBaseAddressByName(hMBAAHandle, L"MBAA.exe");
             LogInfo("Got BaseAddressByName");
 
             DWORD dwPID = GetProcessPID(L"MBAA.exe");
-
             bool bInjectStatus = WH_Inject(dwPID, sDLLPath);
             if (bInjectStatus)
             {
