@@ -139,6 +139,7 @@ const ADDRESS adProjectileBase = 0x27BDE8;
 const ADDRESS adMBAABase = 0x400000;
 
 const ADDRESS adPattern = 0x10;
+const ADDRESS adNotInCombo = 0x64;
 const ADDRESS adPlayerFrameCount = 0xF0;
 const ADDRESS adHitstop = 0x172;
 const ADDRESS adBlockstunFlag = 0x17B;

@@ -44,6 +44,7 @@ struct Player
 	int nActiveProjectileCount = 0;
 	bool bLastOnRight = false;
 	DWORD dwLastActivePointer = 0x0;
+	char cLastHitstop = 0;
 };
 
 void UpdatePlayer(Player& P) {
@@ -51,6 +52,7 @@ void UpdatePlayer(Player& P) {
 	P.nLastFrameCount = *(int*)(P.adPlayerBase + adPlayerFrameCount);
 	P.bLastOnRight = *(int*)(P.adPlayerBase + adOnRightFlag);
 	P.dwLastActivePointer = *(DWORD*)(P.adPlayerBase + adAttackDataPointer);
+	P.cLastHitstop = *(char*)(P.adPlayerBase + adHitstop);
 }
 
 Player P1{ 0, adMBAABase + adP1Base, adMBAABase + adP1Inaction };
@@ -136,13 +138,15 @@ void UpdateBars(Player& P, Player& Assist)
 				if (*(short*)(P.adPlayerBase + adUntechElapsed) < *(short*)(P.adPlayerBase + adUntechTotal)) //Still has untech remaining
 				{
 					//sBarValue = std::format("{:2}", (P.sUntechTotal - P.sUntechCounter) % 100);
+					nNumber = *(short*)(P.adPlayerBase + adUntechTotal) - *(short*)(P.adPlayerBase + adUntechElapsed);
 				}
 			}
 			else //Grounded
 			{
-				if (*(int*)(P.adPlayerBase + adHitstunRemaining) > 1) //Still has hitstun remaining
+				if (*(int*)(P.adPlayerBase + adHitstunRemaining) > 2) //Still has hitstun remaining
 				{
 					//sBarValue = std::format("{:2}", P.nHitstunRemaining - 1 % 100);
+					nNumber = *(short*)(P.adPlayerBase + adHitstunRemaining) - 1;
 				}
 			}
 		}
@@ -214,6 +218,10 @@ void UpdateBars(Player& P, Player& Assist)
 	else if (*(char*)(P.adPlayerBase + adHitstop) != 0) //in hitstop
 	{
 		dwColor = 0xFF3C5080;
+		if (*(char*)(P.adPlayerBase + adNotInCombo) == 0 && P.cLastHitstop == 0)
+		{
+			nNumFlag = 1;
+		}
 	}
 
 	if (*(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimStateDataPointer) + adStateStance) == 1) //Airborne
@@ -384,13 +392,11 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 			{
 				IncrementActive(P1Assist);
 				UpdateBars(P1Assist, P1);
-
 			}
 			if (*(char*)(P2Assist.adPlayerBase))
 			{
 				IncrementActive(P2Assist);
 				UpdateBars(P2Assist, P2);
-
 			}
 			nBarCounter++;
 		}
