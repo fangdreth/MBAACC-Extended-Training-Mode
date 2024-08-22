@@ -968,6 +968,7 @@ void initPauseCallback()
 
 }
  
+
 int nOldMot;
 int nMot = 0;
 bool bReversaled = false;
@@ -982,6 +983,7 @@ int nReversalType = REVERSAL_NORMAL;
 std::vector<std::string> vPatternNames = GetEmptyPatternList();
 std::vector<int> vAirReversals;
 std::vector<int> vGroundReversals;
+#ifdef not_working
 void enemyReversal()
 {
 	BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
@@ -1047,6 +1049,7 @@ void enemyReversal()
 		}
 	}
 }
+#endif
 
 void frameDoneCallback()
 {
