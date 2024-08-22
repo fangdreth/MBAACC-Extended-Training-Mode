@@ -99,6 +99,8 @@ const DWORD dwP1ExFlash = 0x158908;
 const DWORD dwP2ExFlash = 0x158C14;
 const DWORD dwFrameTimer = 0x15D1CC;
 const DWORD dwGameState = 0x14EEE8; //1=training
+const DWORD dwP1ThrowInvuln = 0x1552B6; //0=no >0=invuln
+const DWORD dwP2ThrowInvuln = 0x1552B6 + 0xAFC; //0=no >0=invuln
 
 // DLL Constants
 const DWORD dwCameraX = 0x0055dec4;

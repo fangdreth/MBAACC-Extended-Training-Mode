@@ -826,7 +826,7 @@ void highlightStates()
 		arrThrowProtectionHighlightSetting = { 255, 255, 255 };
 	}
 
-	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState, DWORD notInCombo, BYTE armorTimer, int* pnThrowProtectionTimer, DWORD yCoord) -> void
+	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState, DWORD notInCombo, BYTE armorTimer, int* pnThrowProtectionTimer, DWORD yCoord, DWORD throwInvuln) -> void
 		{
 			// reset the color in case it falls through
 			patchMemcpy(animDataAddr + 0x18, arrDefaultHighlightSetting.data(), 3);
@@ -848,7 +848,7 @@ void highlightStates()
 				if (yCoord == 0)
 					*pnThrowProtectionTimer = 8;
 			}
-			else if (*pnThrowProtectionTimer != 0)
+			else if (/*pnThrowProtectionTimer != 0*/throwInvuln != 0)
 			{
 				patchMemcpy(animDataAddr + 0x18, arrThrowProtectionHighlightSetting.data(), 3);
 			}
@@ -901,7 +901,8 @@ void highlightStates()
 						*(DWORD*)(dwBaseAddress + dwP1NotInCombo),
 						*(BYTE*)(dwBaseAddress + dwP1ArmorTimer),
 						&nP1ThrowProtectionTimer,
-						*(DWORD*)(dwBaseAddress + dwP1Y));
+						*(DWORD*)(dwBaseAddress + dwP1Y),
+						*(BYTE*)(dwBaseAddress + dwP2ThrowInvuln));
 	}
 
 	if (*(DWORD*)(dwBaseAddress + dwP2AnimationPtr) > dwBaseAddress)
@@ -912,7 +913,8 @@ void highlightStates()
 						*(DWORD*)(dwBaseAddress + dwP2NotInCombo),
 						*(BYTE*)(dwBaseAddress + dwP2ArmorTimer),
 						&nP2ThrowProtectionTimer,
-						*(DWORD*)(dwBaseAddress + dwP2Y));
+						*(DWORD*)(dwBaseAddress + dwP2Y),
+						*(BYTE*)(dwBaseAddress + dwP2ThrowInvuln));
 	}
 }
 
