@@ -11,6 +11,7 @@
 #include <conio.h>
 #include <WinUser.h>
 #include <strsafe.h>
+#include <algorithm>
 
 #include "json.hpp"
 
@@ -311,6 +312,12 @@ void SetP4X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 3), &nValue, 4, 0);
 }
 
+BYTE arrKeysHeld[256] = { 0 };
+void ResetKeysHeld()
+{
+    std::fill(std::begin(arrKeysHeld), std::end(arrKeysHeld), 1);
+}
+
 int KeyJustPressed()
 {
     //http://www.kbdedit.com/manual/low_level_vk_list.html
@@ -319,16 +326,15 @@ int KeyJustPressed()
     // like numpad-/ and the arrow keys,
     // but all of the normal keys work as expected.
     // I'm fine with it, personally.
-    // also
-    // If anyone has a better way to get what keys are pressed,
-    // please let me know.  GetKeyboardState can give you a byte
-    // where each bit is whether a key is pressed, but I couldn't
-    // think of a way to use that that wouldn't also require
-    // comparing it a million times to handle simultanious key presses.
     for (int i = 0x00; i <= 0xFF; i++)
     {
-        if (GetAsyncKeyState(i) & 0x8001)
-            return i;
+        if (GetAsyncKeyState(i) & 0x8000)
+        {
+            if (arrKeysHeld[i] == 0)
+                return i;
+        }
+        else
+            arrKeysHeld[i] = 0;
     }
 
     return 0;

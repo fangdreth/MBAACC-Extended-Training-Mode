@@ -625,26 +625,31 @@ int main(int argc, char* argv[])
                         case HOTKEYS_PAGE:
                             if (nEnemySettingsCursor == 0)
                             {
+                                ResetKeysHeld();
                                 bFreezeKeySet = false;
                                 nFreezeKey = 0;
                             }
                             else if (nEnemySettingsCursor == 2)
                             {
+                                ResetKeysHeld();
                                 bFrameStepKeySet = false;
                                 nFrameStepKey = 0;
                             }
                             else if (nEnemySettingsCursor == 3)
                             {
+                                ResetKeysHeld();
                                 bHitboxDisplayKeySet = false;
                                 nHitboxDisplayKey = 0;
                             }
                             else if (nEnemySettingsCursor == 5)
                             {
+                                ResetKeysHeld();
                                 bFrameDataDisplayKeySet = false;
                                 nFrameDataDisplayKey = 0;
                             }
                             else if (nEnemySettingsCursor == 6)
                             {
+                                ResetKeysHeld();
                                 bHighlightsOnKeySet = false;
                                 nHighlightsOnKey = 0;
                             }
@@ -2767,39 +2772,15 @@ int main(int argc, char* argv[])
                         continue;
 
                     // Replace PAGE text
-                    if (nExtendedSettingsPage == 1)
-                    {
-                        char pcTemp[7] = "PAGE 1";
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageNormalString), &pcTemp, 7, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageAllString), &pcTemp, 7, 0);
+                    char pcTemp[7];
+                    strcpy_s(pcTemp, ("PAGE " + std::to_string(nExtendedSettingsPage)).c_str());
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageNormalString), &pcTemp, 7, 0);
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageAllString), &pcTemp, 7, 0);
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageRandomString), &pcTemp, 7, 0);
 
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageIndex), &nWriteBuffer, 4, 0);
-                        nReduceDamageIndex = 0;
-                    }
-                    else if (nExtendedSettingsPage == MAX_PAGES)
-                    {
-                        char pcTemp[7];
-                        strcpy_s(pcTemp, ("PAGE " + std::to_string(MAX_PAGES)).c_str());
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageAllString), &pcTemp, 7, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageRandomString), &pcTemp, 7, 0);
-
-                        nWriteBuffer = 2;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageIndex), &nWriteBuffer, 4, 0);
-                        nReduceDamageIndex = 2;
-                    }
-                    else
-                    {
-                        char pcTemp[7];
-                        strcpy_s(pcTemp, ("PAGE " + std::to_string(nExtendedSettingsPage)).c_str());
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageNormalString), &pcTemp, 7, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageAllString), &pcTemp, 7, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageRandomString), &pcTemp, 7, 0);
-
-                        nWriteBuffer = 1;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageIndex), &nWriteBuffer, 4, 0);
-                        nReduceDamageIndex = 1;
-                    }
+                    nWriteBuffer = 1;
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageIndex), &nWriteBuffer, 4, 0);
+                    nReduceDamageIndex = 1;
 
                     nOldEnemyActionIndex = nEnemyActionIndex;
                     nOldEnemyDefenseIndex = nEnemyDefenseIndex;
