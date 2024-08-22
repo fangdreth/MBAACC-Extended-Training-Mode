@@ -49,6 +49,7 @@ static bool bShowBar5 = false; //C, D, directional inputs
 
 static bool bIsStateSaved = false;
 static int nSaveSlot = 0;
+static int nSaveStateKey = VK_KEY_6;
 
 static int nPlayerAdvantage;
 int nSharedHitstop;
@@ -968,7 +969,9 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screenBufferInfo);
 	nBarDisplayRange = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left) / 2;
 
-	if (cFN1Input > 0 && bEnableFN1Save && !bInExtendedSettings)
+	static KeyState oSaveStateKey;
+	oSaveStateKey.setKey(nSaveStateKey);
+	if ((cFN1Input > 0 || oSaveStateKey.keyDown()) && bEnableFN1Save && !bInExtendedSettings)
 	{
 		if (!bLockInput)
 		{

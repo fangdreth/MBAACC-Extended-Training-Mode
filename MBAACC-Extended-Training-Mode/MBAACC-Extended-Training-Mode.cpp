@@ -105,7 +105,6 @@ int main(int argc, char* argv[])
     int nHitboxDisplayKey = VK_KEY_3;
     int nFrameDataDisplayKey = VK_KEY_4;
     int nHighlightsOnKey = VK_KEY_5;
-    int nSaveStateKey = VK_KEY_6;
 
     bool bFreezeKeySet = true;
     bool bFrameStepKeySet = true;
@@ -199,7 +198,6 @@ int main(int argc, char* argv[])
         LogError("Cannot fetch latest version");
     }
 
-    int sMBAAExePath;
     CreateRegistryKey();
     ReadFromRegistry(L"FreezeKey", &nFreezeKey);
     ReadFromRegistry(L"FrameStepKey", &nFrameStepKey);
@@ -210,10 +208,7 @@ int main(int argc, char* argv[])
     ReadFromRegistry(L"FrameDisplay", &nFrameData);
     ReadFromRegistry(L"HideFreeze", &bHideFreeze);
     ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
-    //ReadFromRegistry(L"MBAAExePath", &sMBAAExePath);
-    
-    ReadFromRegistry(L"SaveSlot", &nSaveSlot);
-    if (nSaveSlot > 0)
+    if (ReadFromRegistry(L"SaveSlot", &nSaveSlot) == 0 && nSaveSlot > 0)
     {
         bEnableFN1Save = true;
         bEnableFN2Load = true;
