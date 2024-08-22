@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <conio.h>
 #include <WinUser.h>
+#include <strsafe.h>
 
 #include "json.hpp"
 
@@ -163,6 +164,68 @@ HANDLE GetProcessByName(const wchar_t* name)
     }
 
     return nullptr;
+}
+
+void CreateRegistryKey()
+{
+    try
+    {
+        SECURITY_DESCRIPTOR SD;
+        SECURITY_ATTRIBUTES SA;
+        InitializeSecurityDescriptor(&SD, SECURITY_DESCRIPTOR_REVISION);
+        //SetSecurityDescriptorDacl(&SD, true, 0, false);
+        SA.nLength = sizeof(SA);
+        SA.lpSecurityDescriptor = &SD;
+        SA.bInheritHandle = false;
+
+        DWORD dwFunc;
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+        LONG openResult = RegCreateKeyExW(HKEY_CURRENT_USER, sk, 0, (LPTSTR)NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, &SA, &hKey, &dwFunc);
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
+}
+
+void ReadFromRegistry(std::wstring sKey, int* nValue)
+{
+    try
+    {
+        DWORD dwValue = NULL;
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+        DWORD dwType = REG_DWORD;
+        DWORD dwSize = sizeof(nValue);
+
+        LONG openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+        openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
+        if (openResult == 0)
+            *nValue = (int)dwValue;
+
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
+}
+
+void SetRegistryValue(std::wstring sKey, int nValue)
+{
+    try
+    {
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
+
+        LONG openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
+        openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_DWORD, (unsigned char*)&nValue, sizeof(nValue));
+        
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
 }
 
 void SetHealth(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)

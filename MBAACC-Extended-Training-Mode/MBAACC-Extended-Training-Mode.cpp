@@ -124,6 +124,8 @@ int main(int argc, char* argv[])
     bool bP3Exists = false;
     bool bP4Exists = false;
 
+    bool bJustUnpaused = false;
+
     int nFrameData = FRAMEDISPLAY_NORMAL;
     //bool bSaveStates = false;
     bool bDisplayInputs = false;
@@ -195,10 +197,16 @@ int main(int argc, char* argv[])
         LogError("Cannot fetch latest version");
     }
 
+    CreateRegistryKey();
+    ReadFromRegistry(L"FreezeKey", &nFreezeKey);
+    ReadFromRegistry(L"FrameStepKey", &nFrameStepKey);
+    ReadFromRegistry(L"HitboxesDisplayKey", &nHitboxDisplayKey);
+    ReadFromRegistry(L"FrameDataDisplayKey", &nFrameDataDisplayKey);
+    ReadFromRegistry(L"HighlightsOnKey", &nHighlightsOnKey);
+
     while (1)
     {
         nCurrentTime = std::time(nullptr);
-        
         
         SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
         std::cout << "===========================================================================\x1b[K" << std::endl;
@@ -353,6 +361,9 @@ int main(int argc, char* argv[])
             // This is the big if-else
             if (bPaused)
             {
+                // this is used way later to trigger unpausing events
+                bJustUnpaused = true;
+
                 DWORD dwTrainingMenuString = GetTrainingMenuStringAddress(hMBAAHandle, dwBaseAddress);
                 DWORD dwCommandListStringAddress = GetCommandListStringAddress(hMBAAHandle, dwBaseAddress);
                 DWORD dwSubMenuAddress = GetSubMenuEnumAddress(hMBAAHandle, dwBaseAddress);
@@ -1057,6 +1068,7 @@ int main(int argc, char* argv[])
                             else
                                 nHitsTillBurst = min(MAX_BURST, nHitsTillBurst + 1);
                         }
+                        break;
                     }
                     case POSITIONS_PAGE:
                     {
@@ -2579,6 +2591,7 @@ int main(int argc, char* argv[])
                             {
                                 bFreezeKeySet = true;
                                 nFreezeKey = nKeyJustPressed;
+                                SetRegistryValue(L"FreezeKey", nFreezeKey);
                             }
                         }
                         if (bFreezeKeySet)
@@ -2613,6 +2626,7 @@ int main(int argc, char* argv[])
                             {
                                 bFrameStepKeySet = true;
                                 nFrameStepKey = nKeyJustPressed;
+                                SetRegistryValue(L"FrameStepKey", nFrameStepKey);
                             }
                         }
                         if (bFrameStepKeySet)
@@ -2647,6 +2661,7 @@ int main(int argc, char* argv[])
                             {
                                 bHitboxDisplayKeySet = true;
                                 nHitboxDisplayKey = nKeyJustPressed;
+                                SetRegistryValue(L"HitboxesDisplayKey", nHitboxDisplayKey);
                             }
                         }
                         if (bHitboxDisplayKeySet)
@@ -2681,6 +2696,7 @@ int main(int argc, char* argv[])
                             {
                                 bFrameDataDisplayKeySet = true;
                                 nFrameDataDisplayKey = nKeyJustPressed;
+                                SetRegistryValue(L"FrameDataDisplayKey", nFrameDataDisplayKey);
                             }
                         }
                         if (bFrameDataDisplayKeySet)
@@ -2715,6 +2731,7 @@ int main(int argc, char* argv[])
                             {
                                 bHighlightsOnKeySet = true;
                                 nHighlightsOnKey = nKeyJustPressed;
+                                SetRegistryValue(L"HighlightsOnKey", nHighlightsOnKey);
                             }
                         }
                         if (bHighlightsOnKeySet)
@@ -2993,6 +3010,15 @@ int main(int argc, char* argv[])
             }
             else // not paused
             {
+                if (bJustUnpaused)
+                {
+                    bJustUnpaused = false;
+                    SetRegistryValue(L"FreezeKey", nFreezeKey);
+                    SetRegistryValue(L"FrameStepKey", nFrameStepKey);
+                    SetRegistryValue(L"HitboxesDisplayKey", nHitboxDisplayKey);
+                    SetRegistryValue(L"FrameDataDisplayKey", nFrameDataDisplayKey);
+                    SetRegistryValue(L"HighlightsOnKey", nHighlightsOnKey);
+                }
 
                 // want to reset these for a clean setup next time the game is paused
                 bOnExtendedSettingsMenu = false;

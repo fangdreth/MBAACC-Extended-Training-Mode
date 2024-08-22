@@ -758,7 +758,7 @@ void drawFrameBar()
 
 }
 
-void drawHealthValues()
+void drawStats()
 {
 	if (!safeWrite() || isPaused())
 		return;
@@ -809,26 +809,6 @@ void drawHealthValues()
 	snprintf(buffer, 256, "%1.3f", *(float*)(dwBaseAddress + dwP2GuardQuality));
 	drawTextWithBorder(369 + nResetOffset, 67, 6, 9, buffer);
 }
-
-#ifdef MOVED_TO_drawHealthValues
-void drawGuardValues()
-{
-	if (!safeWrite() || isPaused())
-		return;
-
-	static char buffer[256];
-
-	snprintf(buffer, 256, "%5.0f", *(float*)0x5551F4);
-	drawTextWithBorder(234, 58, 8, 9, buffer);
-	snprintf(buffer, 256, "%1.3f", *(float*)0x555208);
-	drawTextWithBorder(244, 67, 6, 9, buffer);
-
-	snprintf(buffer, 256, "%5.0f", *(float*)0x555CF0);
-	drawTextWithBorder(368, 58, 8, 9, buffer);
-	snprintf(buffer, 256, "%1.3f", *(float*)0x555D04);
-	drawTextWithBorder(369, 67, 6, 9, buffer);
-}
-#endif
 
 void drawFrameData()
 {
@@ -1003,7 +983,8 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 
 	bool ok = true;
 	MSG msg;
-	while (bFreeze) {
+	while (bFreeze)
+	{
 		Sleep(1);
 
 		while (ok = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -1155,9 +1136,7 @@ void frameDoneCallback()
 		drawFrameBar();
 	}
 
-	drawHealthValues();
-
-	//drawGuardValues();
+	drawStats();
 
 	/*
 	i am sorry for commenting this out
