@@ -210,9 +210,9 @@ int main(int argc, char* argv[])
     ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
     //ReadFromRegistry(L"MBAAExePath", &sMBAAExePath);
 
-    char wsModPath[MAX_PATH];
-    GetModuleFileNameA(NULL, wsModPath, sizeof(wsModPath));
-    std::string wsDLLPath = std::string(wsModPath).substr(0, std::string(wsModPath).length() - 33) + "Extended-Training-Mode-DLL.dll";
+    char pcModPath[MAX_PATH];
+    GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
+    std::string sDLLPath = std::string(pcModPath).substr(0, std::string(pcModPath).length() - 33) + "Extended-Training-Mode-DLL.dll";
 
     //std::wstring wsMBAAExePath = GetFilePath();
 
@@ -273,7 +273,7 @@ int main(int argc, char* argv[])
 
             DWORD dwPID = GetProcessPID(L"MBAA.exe");
 
-            bool bInjectStatus = WH_Inject(dwPID, wsDLLPath);
+            bool bInjectStatus = WH_Inject(dwPID, sDLLPath);
             if (bInjectStatus)
             {
                 getchar();
