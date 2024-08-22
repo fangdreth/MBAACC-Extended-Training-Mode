@@ -712,14 +712,14 @@ void drawFrameBar()
 			{
 				int nLength = floor(log10((*Player1).nNumBar[i + BAR_MEMORY_SIZE][0]));
 				snprintf(buffer, 256, "%i", (*Player1).nNumBar[i + BAR_MEMORY_SIZE][0]);
-				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 2, 7, 10, buffer);
+				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 3, 7, 10, buffer);
 			}
 
 			if ((*Player2).nNumBar[i + BAR_MEMORY_SIZE][0] >= 0)
 			{
 				int nLength = floor(log10((*Player2).nNumBar[i + BAR_MEMORY_SIZE][0]));
 				snprintf(buffer, 256, "%i", (*Player2).nNumBar[i + BAR_MEMORY_SIZE][0]);
-				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 15, 7, 10, buffer);
+				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 16, 7, 10, buffer);
 			}
 		}
 		else
@@ -741,14 +741,14 @@ void drawFrameBar()
 			{
 				int nLength = floor(log10((*Player1).nNumBar[i][0]));
 				snprintf(buffer, 256, "%i", (*Player1).nNumBar[i][0]);
-				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 2, 7, 10, buffer);
+				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 3, 7, 10, buffer);
 			}
 
 			if ((*Player2).nNumBar[i][0] >= 0)
 			{
 				int nLength = floor(log10((*Player2).nNumBar[i][0]));
 				snprintf(buffer, 256, "%i", (*Player2).nNumBar[i][0]);
-				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 15, 7, 10, buffer);
+				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 16, 7, 10, buffer);
 			}
 		}
 		nBarDrawCounter++;
