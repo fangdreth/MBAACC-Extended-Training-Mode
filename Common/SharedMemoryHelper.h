@@ -7,9 +7,9 @@ bool bInitialized = false;
 enum eSharedOffsets {
 	SHARE_IDLEHIGHLIGHT, SHARE_BLOCKINGHIGHLIGHT, SHARE_HITHIGHLIGHT, SHARE_ARMORHIGHLIGHT, SHARE_THROWPROTECTIONHIGHLIGHT, SHARE_TEMP4HIGHLIGHT,
 	SHARE_REVERSALINDEX1, SHARE_REVERSALINDEX2, SHARE_REVERSALINDEX3, SHARE_REVERSALINDEX4, SHARE_REVERSALDELAYFRAMES, SHARE_REVERSALTYPE,
-	SHARE_FREEZEKEY, SHARE_FRAMESTEPKEY, SHARE_HITBOXESDISPLAYKEY, SHARE_FRAMEDATADISPLAYKEY, SHARE_HIGHLIGHTSONKEY
+	SHARE_FREEZEKEY, SHARE_FRAMESTEPKEY, SHARE_HITBOXESDISPLAYKEY, SHARE_FRAMEDATADISPLAYKEY, SHARE_HIGHLIGHTSONKEY, SHARE_SAVESTATEKEY
 };
-const int nSharedSize = 17 * sizeof(int);
+const int nSharedSize = 18 * sizeof(int);
 
 std::array<BYTE, 3> CreateColorArray(int nHighlightID)
 {
@@ -88,6 +88,14 @@ void SaveHighlightsOnKey(int* pnHighlightsOnKey)
 		InitializeSharedMemoryHelper();
 
 	CopyMemory(pBuffer + SHARE_HIGHLIGHTSONKEY * sizeof(int), pnHighlightsOnKey, sizeof(int));
+}
+
+void SaveSaveStateKey(int* pnSaveStateKey)
+{
+	if (!bInitialized)
+		InitializeSharedMemoryHelper();
+
+	CopyMemory(pBuffer + SHARE_SAVESTATEKEY * sizeof(int), pnSaveStateKey, sizeof(int));
 }
 
 // I don't love this implementation.  probably going to make separate methods for each instead.
@@ -199,7 +207,8 @@ void GetSharedMemory(std::array<BYTE, 3>* parrIdleHighlightSetting,
 	int* pnFrameStepKey,
 	int* pnHitboxesDisplayKey,
 	int* pnFrameDataDisplayKey,
-	int* pnHighlightsOnKey)
+	int* pnHighlightsOnKey,
+	int* pnSaveStateKey)
 {
 	if (!bInitialized)
 		InitializeSharedMemoryHelper();
@@ -293,4 +302,7 @@ void GetSharedMemory(std::array<BYTE, 3>* parrIdleHighlightSetting,
 
 	if (pnHighlightsOnKey)
 		*pnHighlightsOnKey = ((int*)pBuffer)[SHARE_HIGHLIGHTSONKEY];
+
+	if (pnSaveStateKey)
+		*pnHighlightsOnKey = ((int*)pBuffer)[SHARE_SAVESTATEKEY];
 }

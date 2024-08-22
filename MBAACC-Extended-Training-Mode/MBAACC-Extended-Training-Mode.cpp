@@ -105,12 +105,14 @@ int main(int argc, char* argv[])
     int nHitboxDisplayKey = VK_KEY_3;
     int nFrameDataDisplayKey = VK_KEY_4;
     int nHighlightsOnKey = VK_KEY_5;
+    int nSaveStateKey = VK_KEY_6;
 
     bool bFreezeKeySet = true;
     bool bFrameStepKeySet = true;
     bool bHitboxDisplayKeySet = true;
     bool bFrameDataDisplayKeySet = true;
     bool bHighlightsOnKeySet = true;
+    bool bSaveStateKeySet = true;
 
     int nExtendedSettingsPage = 1;
 
@@ -204,6 +206,7 @@ int main(int argc, char* argv[])
     ReadFromRegistry(L"HitboxesDisplayKey", &nHitboxDisplayKey);
     ReadFromRegistry(L"FrameDataDisplayKey", &nFrameDataDisplayKey);
     ReadFromRegistry(L"HighlightsOnKey", &nHighlightsOnKey);
+    ReadFromRegistry(L"SaveStateKey", &nSaveStateKey);
     ReadFromRegistry(L"FrameDisplay", &nFrameData);
     ReadFromRegistry(L"HideFreeze", &bHideFreeze);
     ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
@@ -320,6 +323,7 @@ int main(int argc, char* argv[])
         SaveHitboxesDisplayKey(&nHitboxDisplayKey);
         SaveFrameDataDisplayKey(&nFrameDataDisplayKey);
         SaveHighlightsOnKey(&nHighlightsOnKey);
+        SaveSaveStateKey(&nSaveStateKey);
 
         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
         if (nReadResult == 0)
@@ -607,6 +611,7 @@ int main(int argc, char* argv[])
                         switch (nExtendedSettingsPage)
                         {
                         case POSITIONS_PAGE:
+                        {
                             if (nEnemySettingsCursor == 8)
                             {
                                 nP1X *= -1;
@@ -619,7 +624,9 @@ int main(int argc, char* argv[])
                                 SetP4X(hMBAAHandle, dwBaseAddress, nP4X);
                             }
                             break;
+                        }
                         case FRAME_TOOL:
+                        {
                             if (nEnemySettingsCursor == 2)
                             {
                                 //bIsStateSaved = false;
@@ -631,7 +638,9 @@ int main(int argc, char* argv[])
                                 bIsStateSaved = true;
                             }
                             break;
+                        }
                         case HOTKEYS_PAGE:
+                        {
                             if (nEnemySettingsCursor == 0)
                             {
                                 ResetKeysHeld();
@@ -667,7 +676,15 @@ int main(int argc, char* argv[])
                                 nHighlightsOnKey = 0;
                                 SetRegistryValue(L"HighlightsOnKey", nHighlightsOnKey);
                             }
+                            else if (nEnemySettingsCursor == 8)
+                            {
+                                ResetKeysHeld();
+                                bSaveStateKeySet = false;
+                                nSaveStateKey = 0;
+                                SetRegistryValue(L"SaveStateKey", nSaveStateKey);
+                            }
                             break;
+                        }
                         default:
                             break;
                         }
@@ -760,7 +777,7 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcHitboxes_9, 9, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcFrameDisplay_14, 14, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcHighlights_11, 11, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcSaveState_11, 11, 0);
                         break;
                     }
                     default:
@@ -906,23 +923,7 @@ int main(int argc, char* argv[])
                         break;
                     }
                     case HOTKEYS_PAGE:
-                    {
-                        if (nOldEnemySettingsCursor == 6 && nEnemySettingsCursor == 8)
-                        {
-                            nWriteBuffer = 10;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                            nEnemySettingsCursor = 10;
-                            nOldEnemySettingsCursor = 10;
-                        }
-                        else if (nEnemySettingsCursor == 8)
-                        {
-                            nWriteBuffer = 6;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                            nEnemySettingsCursor = 6;
-                            nOldEnemySettingsCursor = 6;
-                        }
                         break;
-                    }
                     default:
                         break;
                     }
@@ -2588,8 +2589,6 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
-
-                        nWriteBuffer = OFFSCREEN_LOCATION;
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
 
                         // FREEZE
@@ -2767,6 +2766,41 @@ int main(int argc, char* argv[])
                         nWriteBuffer = 2;
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
                         nDownRecoveryIndex = 2;
+
+                        // SAVE STATE
+                        if (!bSaveStateKeySet)
+                        {
+                            int nKeyJustPressed = 0;
+                            if (nEnemySettingsCursor == 8)
+                                nKeyJustPressed = KeyJustPressed();
+
+                            if (nKeyJustPressed == 0)
+                                strcpy_s(pcTemp, "PRESS ANY KEY");
+                            else
+                            {
+                                bSaveStateKeySet = true;
+                                nSaveStateKey = nKeyJustPressed;
+                                SetRegistryValue(L"SaveStateKey", nSaveStateKey);
+                            }
+                        }
+                        if (bSaveStateKeySet)
+                        {
+                            WCHAR wcName[19];
+                            UINT scanCode = MapVirtualKeyW(nSaveStateKey, MAPVK_VK_TO_VSC);
+                            LONG lParamValue = (scanCode << 16);
+                            int result = GetKeyNameTextW(lParamValue, wcName, 19);
+                            std::wstring wsKeyName = wcName;
+                            std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
+                            strcpy_s(pcTemp, sKeyName.c_str());
+                        }
+
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcTemp, 19, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllLateString), &pcTemp, 19, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllRandomString), &pcTemp, 19, 0);
+
+                        nWriteBuffer = 2;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                        nThrowRecoveryIndex = 2;
 
                         break;
                     }

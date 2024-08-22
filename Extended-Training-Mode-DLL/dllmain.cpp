@@ -58,6 +58,7 @@ int nFrameStepKey;
 int nHitboxesDisplayKey;
 int nFrameDataDisplayKey;
 int nHighlightsOnKey;
+int nSaveStateKey;
 
 bool bFreeze = false;
 bool bFrameDataDisplay = false;
@@ -95,58 +96,6 @@ std::array<BYTE, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
 std::array<BYTE, 3> arrHitHighlightSetting({ 255, 255, 255 });
 std::array<BYTE, 3> arrArmorHighlightSetting({ 255, 255, 255 });
 std::array<BYTE, 3> arrThrowProtectionHighlightSetting({ 255, 255, 255 });
-
-class KeyState
-{
-public:
-	// please tell me if my use of classes here is overkill
-
-	KeyState()
-	{
-		vKey = 0x00;
-	}
-
-	void setKey(int vKey_)
-	{
-		if (vKey != vKey_)
-		{
-			// reset the key state here to prevent it from firing
-			// when it gets changed
-			prevState = true;
-			vKey = vKey_;
-		}
-	}
-
-	bool isFocused() {
-		HWND hActiveWindow = GetActiveWindow();
-		HWND hForegroundWindow = GetForegroundWindow();
-		return hActiveWindow == hForegroundWindow;
-	}
-
-	bool keyHeld() {
-		return (GetAsyncKeyState(vKey) & 0x8000) ? true : false;
-	}
-
-	bool keyDown() {
-		bool tempState = (GetAsyncKeyState(vKey) & 0x8000) ? true : false;
-		bool res = false;
-		if (prevState != tempState && tempState)
-		{
-			res = true;
-		}
-		prevState = tempState;
-
-		if (!isFocused()) {
-			return false;
-		}
-
-		return res;
-	}
-
-private:
-	int vKey;
-	bool prevState = false;
-};
 
 void __stdcall log(const char* msg)
 {
@@ -1476,7 +1425,7 @@ void threadFunc()
 		GetSharedMemory(&arrIdleHighlightSetting, &arrBlockingHighlightSetting, &arrHitHighlightSetting, &arrArmorHighlightSetting, &arrThrowProtectionHighlightSetting, NULL,
 						&nReversalIndex1, &nReversalIndex2, &nReversalIndex3, &nReversalIndex4, 
 						&nReversalDelayFrames, &nReversalType,
-						&nFreezeKey, &nFrameStepKey, &nHitboxesDisplayKey, &nFrameDataDisplayKey, &nHighlightsOnKey);
+						&nFreezeKey, &nFrameStepKey, &nHitboxesDisplayKey, &nFrameDataDisplayKey, &nHighlightsOnKey, &nSaveStateKey);
 		Sleep(8);
 	}
 }
