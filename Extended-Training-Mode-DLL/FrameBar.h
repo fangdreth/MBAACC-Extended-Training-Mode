@@ -115,6 +115,8 @@ void UpdateBars(Player& P, Player& Assist)
 {
 	DWORD dwColor = 0x00000000;
 	DWORD dwColor2 = 0x00000000;
+	DWORD dwBar2Color0 = 0x00000000;
+	DWORD dwBar2Color1 = 0x00000000;
 	int nNumber = -1;
 	int nNumFlag = 0;
 	bool bClearNumFlag = true;
@@ -226,7 +228,7 @@ void UpdateBars(Player& P, Player& Assist)
 
 	if (*(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimStateDataPointer) + adStateStance) == 1) //Airborne
 	{
-		P.dwColorBar2[nBarCounter % BAR_MEMORY_SIZE][0] = 0xFFF1E084;
+		dwBar2Color0 = 0xFFF1E084;
 	}
 
 	int nCharacterID = 0;
@@ -258,14 +260,14 @@ void UpdateBars(Player& P, Player& Assist)
 			}
 			if (validProj)
 			{
-				P.dwColorBar2[nBarCounter % BAR_MEMORY_SIZE][1] = 0xFFFF0000;
+				dwBar2Color1 = 0xFFFF0000;
 			}
 		}
 	}
 
 	if (*(DWORD*)(Assist.adPlayerBase + adAttackDataPointer) != 0) //Check Assist for active
 	{
-		P.dwColorBar2[nBarCounter % BAR_MEMORY_SIZE][1] = 0xFFFF8000;
+		dwBar2Color1 = 0xFFFF8000;
 	}
 
 	P.dwColorBar1[nBarCounter % BAR_MEMORY_SIZE][0] = dwColor;
@@ -277,6 +279,9 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		P.dwColorBar1[nBarCounter % BAR_MEMORY_SIZE][1] = dwColor;
 	}
+
+	P.dwColorBar2[nBarCounter % BAR_MEMORY_SIZE][0] = dwBar2Color0;
+	P.dwColorBar2[nBarCounter % BAR_MEMORY_SIZE][1] = dwBar2Color1;
 
 	P.nNumBar[nBarCounter % BAR_MEMORY_SIZE][0] = nNumber;
 	P.nNumBar[nBarCounter % BAR_MEMORY_SIZE][1] = nNumFlag;
