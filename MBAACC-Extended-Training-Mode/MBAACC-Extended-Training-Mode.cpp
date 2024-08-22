@@ -274,12 +274,7 @@ int main(int argc, char* argv[])
             LogInfo("Got BaseAddressByName");
 
             DWORD dwPID = GetProcessPID(L"MBAA.exe");
-            bool bInjectStatus = WH_Inject(dwPID, sDLLPath);
-            if (bInjectStatus)
-            {
-                getchar();
-                break;
-            }
+            bool bInjectStatus = InjectIntoMBAA(dwPID, sDLLPath);
         }
 
         // check this to prevent attaching to netplay

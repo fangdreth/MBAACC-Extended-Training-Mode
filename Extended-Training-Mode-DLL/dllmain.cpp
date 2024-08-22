@@ -826,32 +826,20 @@ void highlightStates()
 		arrThrowProtectionHighlightSetting = { 255, 255, 255 };
 	}
 
-	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState, DWORD notInCombo, BYTE armorTimer, int* pnThrowProtectionTimer, DWORD yCoord, DWORD throwInvuln) -> void
+	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState, DWORD notInCombo, BYTE armorTimer, DWORD throwInvuln) -> void
 		{
 			// reset the color in case it falls through
 			patchMemcpy(animDataAddr + 0x18, arrDefaultHighlightSetting.data(), 3);
 
 			// the order of this if block denotes the priority for each highlight
 			if (blockState == 1)	// BLOCKING
-			{
 				patchMemcpy(animDataAddr + 0x18, arrBlockingHighlightSetting.data(), 3);
-				if (yCoord == 0)
-					*pnThrowProtectionTimer = 8;
-			}
 			else if (armorTimer != 0)
-			{
 				patchMemcpy(animDataAddr + 0x18, arrArmorHighlightSetting.data(), 3);
-			}
 			else if (notInCombo == 0)
-			{
 				patchMemcpy(animDataAddr + 0x18, arrHitHighlightSetting.data(), 3);
-				if (yCoord == 0)
-					*pnThrowProtectionTimer = 8;
-			}
-			else if (/*pnThrowProtectionTimer != 0*/throwInvuln != 0)
-			{
+			else if (throwInvuln != 0)
 				patchMemcpy(animDataAddr + 0x18, arrThrowProtectionHighlightSetting.data(), 3);
-			}
 			else // last check is IDLE
 			{
 				switch (patternState)
@@ -900,9 +888,7 @@ void highlightStates()
 						*(DWORD*)(dwBaseAddress + dwP1PatternRead),
 						*(DWORD*)(dwBaseAddress + dwP1NotInCombo),
 						*(BYTE*)(dwBaseAddress + dwP1ArmorTimer),
-						&nP1ThrowProtectionTimer,
-						*(DWORD*)(dwBaseAddress + dwP1Y),
-						*(BYTE*)(dwBaseAddress + dwP2ThrowInvuln));
+						*(BYTE*)(dwBaseAddress + dwP1ThrowInvuln));
 	}
 
 	if (*(DWORD*)(dwBaseAddress + dwP2AnimationPtr) > dwBaseAddress)
@@ -912,8 +898,6 @@ void highlightStates()
 						*(DWORD*)(dwBaseAddress + dwP2PatternRead),
 						*(DWORD*)(dwBaseAddress + dwP2NotInCombo),
 						*(BYTE*)(dwBaseAddress + dwP2ArmorTimer),
-						&nP2ThrowProtectionTimer,
-						*(DWORD*)(dwBaseAddress + dwP2Y),
 						*(BYTE*)(dwBaseAddress + dwP2ThrowInvuln));
 	}
 }

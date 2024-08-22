@@ -63,7 +63,7 @@ static bool inject(unsigned long procID, char* dllPath)
 	return true;
 }
 
-static int WH_Inject(unsigned long nPID, std::string sDLLPath) 
+static int InjectIntoMBAA(unsigned long nPID, std::string sDLLPath) 
 {
 
 	bool result = inject(nPID, sDLLPath.data());
