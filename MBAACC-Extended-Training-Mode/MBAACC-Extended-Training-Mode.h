@@ -252,6 +252,27 @@ LONG ReadFromRegistry(std::wstring sKey, bool* bValue)
     return openResult;
 }
 
+std::wstring GetFilePath()
+{
+    char pcFileName[MAX_PATH];
+
+    OPENFILENAME ofn;
+    ZeroMemory(pcFileName, sizeof(pcFileName));
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = NULL;
+    ofn.lpstrFilter = (LPWSTR)L"MBAA.exe\0MBAA.exe\0";
+    ofn.lpstrFile = (LPWSTR)pcFileName;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrTitle = (LPWSTR)L"Select MBAA.exe";
+    ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
+
+    GetOpenFileNameW(&ofn);
+
+    return std::wstring(ofn.lpstrFile);
+}
+
+
 void SetHealth(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 {
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Health), &nValue, 4, 0);

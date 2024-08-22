@@ -197,6 +197,7 @@ int main(int argc, char* argv[])
         LogError("Cannot fetch latest version");
     }
 
+    int sMBAAExePath;
     CreateRegistryKey();
     ReadFromRegistry(L"FreezeKey", &nFreezeKey);
     ReadFromRegistry(L"FrameStepKey", &nFrameStepKey);
@@ -207,6 +208,13 @@ int main(int argc, char* argv[])
     ReadFromRegistry(L"FrameDisplay", &nFrameData);
     ReadFromRegistry(L"HideFreeze", &bHideFreeze);
     ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
+    //ReadFromRegistry(L"MBAAExePath", &sMBAAExePath);
+
+    char wsModPath[MAX_PATH];
+    GetModuleFileNameA(NULL, wsModPath, sizeof(wsModPath));
+    std::string wsDLLPath = std::string(wsModPath).substr(0, std::string(wsModPath).length() - 33) + "Extended-Training-Mode-DLL.dll";
+
+    //std::wstring wsMBAAExePath = GetFilePath();
 
     while (1)
     {
@@ -263,15 +271,9 @@ int main(int argc, char* argv[])
             dwBaseAddress = GetBaseAddressByName(hMBAAHandle, L"MBAA.exe");
             LogInfo("Got BaseAddressByName");
 
-            auto PID = GetProcessPID(L"MBAA.exe");
-            std::string sProcessPath = GetProcessPath(hMBAAHandle);
-            sProcessPath += "Extended-Training-Mode-DLL.dll";
+            DWORD dwPID = GetProcessPID(L"MBAA.exe");
 
-            // this is just for my convenience
-            if (std::filesystem::exists("C:\\Users\\willf\\WH\\Repos\\MBAACC-Extended-Training-Mode\\MBAACC-Extended-Training-Mode\\Debug\\Extended-Training-Mode-DLL.dll"))
-                sProcessPath = "C:\\Users\\willf\\WH\\Repos\\MBAACC-Extended-Training-Mode\\MBAACC-Extended-Training-Mode\\Debug\\Extended-Training-Mode-DLL.dll";
-
-            bool bInjectStatus = WH_Inject(PID, sProcessPath);
+            bool bInjectStatus = WH_Inject(dwPID, wsDLLPath);
             if (bInjectStatus)
             {
                 getchar();

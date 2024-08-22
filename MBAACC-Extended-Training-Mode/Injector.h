@@ -18,7 +18,7 @@
 
 #define RESET "\x1b[0m"
 
-static bool inject(unsigned long procID, const char* dllPath) 
+static bool inject(unsigned long procID, char* dllPath) 
 {
 
 	unsigned long pid = procID;
@@ -66,7 +66,7 @@ static bool inject(unsigned long procID, const char* dllPath)
 static int WH_Inject(unsigned long nPID, std::string sDLLPath) 
 {
 
-	bool result = inject(nPID, sDLLPath.c_str());
+	bool result = inject(nPID, sDLLPath.data());
 
 	if (!result) 
 	{
