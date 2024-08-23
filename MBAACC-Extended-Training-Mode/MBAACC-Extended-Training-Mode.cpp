@@ -204,6 +204,20 @@ int main(int argc, char* argv[])
     ReadFromRegistry(L"HighlightsOnKey", &nHighlightsOnKey);
     ReadFromRegistry(L"SaveStateKey", &nSaveStateKey);
     ReadFromRegistry(L"FrameDisplay", &nFrameData);
+    if (nFrameData == FRAMEDISPLAY_NORMAL)
+    {
+        bSimpleFrameInfo = true;
+        bShowInfo1 = false;
+        bShowInfo2 = false;
+        bShowInfo3 = false;
+    }
+    else if (nFrameData == FRAMEDISPLAY_ADVANCED)
+    {
+        bSimpleFrameInfo = false;
+        bShowInfo1 = true;
+        bShowInfo2 = true;
+        bShowInfo3 = true;
+    }
     ReadFromRegistry(L"HideFreeze", &bHideFreeze);
     ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
     if (ReadFromRegistry(L"SaveSlot", &nSaveSlot) == 0 && nSaveSlot > 0)
