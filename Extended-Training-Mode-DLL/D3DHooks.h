@@ -510,7 +510,21 @@ __declspec(naked) void _IDirect3DDevice9_SetTexture_func() {
 	log("IDirect3DDevice9_SetTexture called!");
 	POP_ALL;
 	__asm {
+		//pop dontTemp;
 		jmp[_IDirect3DDevice9_SetTexture_addr];
+
+		//int 3;
+		//call[_IDirect3DDevice9_SetTexture_addr];
+		//int 3;
+
+		//add esp, 0Ch;
+		//mov eax, 0;
+		//mov edx, 0;
+		
+		//push dontTemp;
+		//ret;
+		//add esp, 0Ch;
+		//mov eax, 0; // OK
 	}
 }
 DWORD _IDirect3DDevice9_GetTextureStageState_addr = 0;
@@ -663,7 +677,19 @@ __declspec(naked) void _IDirect3DDevice9_DrawIndexedPrimitiveUP_func() {
 	log("IDirect3DDevice9_DrawIndexedPrimitiveUP called!");
 	POP_ALL;
 	__asm {
+		//pop tempDont;
 		jmp[_IDirect3DDevice9_DrawIndexedPrimitiveUP_addr];
+		
+		//int 3;
+		//call[_IDirect3DDevice9_DrawIndexedPrimitiveUP_addr];
+		//int 3;
+		
+		//add esp, 024h;
+		//mov eax, 0;
+		//mov edx, 0;
+
+		//push tempDont
+		//ret;
 	}
 }
 DWORD _IDirect3DDevice9_ProcessVertices_addr = 0;
@@ -735,7 +761,10 @@ __declspec(naked) void _IDirect3DDevice9_SetVertexShader_func() {
 	log("IDirect3DDevice9_SetVertexShader called!");
 	POP_ALL;
 	__asm {
-		jmp[_IDirect3DDevice9_SetVertexShader_addr];
+		//jmp[_IDirect3DDevice9_SetVertexShader_addr];
+		mov eax, 0;
+		mov edx, 0;
+		ret 08h;
 	}
 }
 DWORD _IDirect3DDevice9_GetVertexShader_addr = 0;
@@ -870,7 +899,10 @@ __declspec(naked) void _IDirect3DDevice9_SetPixelShader_func() {
 	log("IDirect3DDevice9_SetPixelShader called!");
 	POP_ALL;
 	__asm {
-		jmp[_IDirect3DDevice9_SetPixelShader_addr];
+		//jmp[_IDirect3DDevice9_SetPixelShader_addr];
+		mov eax, 0;
+		mov edx, 0;
+		ret 08h;
 	}
 }
 DWORD _IDirect3DDevice9_GetPixelShader_addr = 0;
