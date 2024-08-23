@@ -20,8 +20,8 @@
 #include "..\Common\CharacterData.h"
 
 #pragma comment(lib, "ws2_32.lib") 
-//#pragma comment(lib, "d3d9.lib") 
-//#pragma comment(lib, "d3dx9.lib") 
+#pragma comment(lib, "d3d9.lib") 
+#pragma comment(lib, "d3dx9.lib") 
 
 #pragma push_macro("optimize")
 //#pragma optimize("t", on) 
@@ -254,6 +254,8 @@ bool __stdcall safeWrite() {
 	
 	return true;
 }
+
+#include "D3DHooks.h"
 
 // patch funcs
 
@@ -1120,6 +1122,20 @@ void enemyReversal()
 	}
 }
 
+
+DWORD tempD3DHook = 0;
+__declspec(naked) void tempD3DFunc() {
+
+	PUSH_ALL;
+	log("endsceneCalled");
+	POP_ALL;
+
+	__asm {
+		jmp [tempD3DHook];
+	};
+}
+
+
 // Vertex structure
 struct CUSTOMVERTEX {
 	D3DVECTOR position;
@@ -1189,13 +1205,11 @@ void frameDoneCallback()
 		drawFrameBar();
 	}
 
-	if (safeWrite()) {
-		messUpTexture();
-	}
-	textureAddrs.clear();
+	//if (safeWrite()) {
+	messUpTexture();
+	//}
+	textureAddrs.clear();	
 
-
-	/*
 	static bool deviceInit = false;
 	if (!deviceInit && dwDevice != NULL) {
 		deviceInit = true;
@@ -1208,13 +1222,95 @@ void frameDoneCallback()
 		BYTE bytes[4] = { 0x5B, 0xC2, 0x04, 0x00 };
 		patchMemcpy(dwCasterBaseAddress + addrEndScenePatch, &bytes, 4);
 
+		__asm {
+			nop;
+			nop;
+			nop;
+			nop;
+			nop;
+		};
+
+		unsigned avalTexMem = device->GetAvailableTextureMem();
+
+		__asm {
+			nop;
+			nop;
+			nop;
+			nop;
+			nop;
+		};
+
+		log("avail tex mem is %08X", avalTexMem);
+
+		
+
+		PUSH_ALL;
+		__asm { // oh boy i love MASM where we have types in asm which is a thing that makes 100% sense and isnt stupid
+			nop;
+			nop;
+			nop;
+
+			// this hooks.
+			// things
+			// check d3d9.h for what offsets to use.
+			// if i use this,,,,,, and actually understand how directx works, this is doable.
+			// by hooking off this bs, i can hijack ref counting, or just be a sane person and hiack things as they are written to the screen.
+			// issue is, i still dont understand how the fuck directx works
+
+			mov eax, [device];
+			mov ecx, [eax];
+			mov edx, [ecx + 0A8h];
+
+			mov tempD3DHook, edx;
+
+			mov edx, tempD3DFunc;
+			mov[ecx + 0A8h], edx;
+
+			nop;
+			nop;
+			nop;
+		};
+		POP_ALL;
+		__asm {
+			nop;
+			nop;
+			nop;
+			nop;
+		};
+
+		device->ShowCursor(true);
+
+		__asm {
+			nop;
+			nop;
+			nop;
+			nop;
+		};
 
 
-		unsigned idk = device->GetAvailableTextureMem();
+		/*
+		DWORD* pDevice = (DWORD*)device;
 
-		log(",,,,please %08X", idk);
+		DWORD* testDevice1 = (DWORD*)0x0076e7d4;
+		DWORD* testDevice2 = (DWORD*)testDevice1;
+
+		if (testDevice2 == NULL) {
+			log("wtf testDevice2 wasnull");
+		}
+
+		DWORD addrBackup = testDevice2[0x94 / 0x4];
+		tempD3DHook = (DWORD*)addrBackup;
+
+		DWORD* patchAddr = &testDevice2[0x94 / 0x4];
+
+		patchMemcpy(patchAddr, tempD3DFunc, 4);
+
+		log("done patch at %08X", patchAddr);
+		*/
+		
+		//textureAddrs.clear();
 	}
-	*/
+	
 
 	//miscDirectX();
 
@@ -1222,7 +1318,7 @@ void frameDoneCallback()
 	//dumpAddr(getObjFrameDataPointer(0x00555130));
 
 	/*
-	i am sorry for commenting this out
+	i am sorry for commenting thi	s out
 	for unknown reasons, when the input display and attack combo display things are on, this causes lag? 
 	ill look into hooking it from somewhere else
 	*/
@@ -1279,11 +1375,80 @@ void attackMeterDisplayCallback() {
 	drawTextWithBorder(420, 186 + 14, 10, 14, buffer);
 }
 
+const char* shaderCode =
+"sampler2D textureSampler : register(s0);\n"
+"float4 PS_Main(float2 texCoord : TEXCOORD0) : COLOR\n"
+"{\n"
+"    float4 color = tex2D(textureSampler, texCoord);\n"
+"    // Swap red and blue\n"
+"    float temp = color.r;\n"
+"    color.r = color.b;\n"
+"    color.b = temp;\n"
+"    return color;\n"
+"}\n"
+"technique SimpleTechnique\n"
+"{\n"
+"    pass P0\n"
+"    {\n"
+"        PixelShader = compile ps_2_0 PS_Main();\n"
+"    }\n"
+"}\n";
+
+
+LPD3DXBUFFER pCode;
+LPD3DXBUFFER pErrors;
+IDirect3DPixelShader9* pPixelShader = nullptr;
+
+void initShader() {
+	
+
+	HRESULT hr = D3DXCompileShader(
+		shaderCode,                       // Shader code string
+		strlen(shaderCode),               // Length of the shader code
+		nullptr, nullptr,                 // No defines or includes
+		"PS_Main", "ps_2_0",              // Entry point and shader model
+		0, &pCode, &pErrors, nullptr);    // Compile options, output buffers
+
+	if (FAILED(hr))
+	{
+		if (pErrors)
+		{
+			// Output any errors to the debug console
+			log((char*)pErrors->GetBufferPointer());
+			pErrors->Release();
+		}
+	}
+	else
+	{
+		// Create the pixel shader from the compiled code
+		hr = device->CreatePixelShader((DWORD*)pCode->GetBufferPointer(), &pPixelShader);
+		if (FAILED(hr))
+		{
+			// Handle shader creation failure
+			log("somethings mega fucked");
+		}
+		pCode->Release();
+	}
+}
+
 DWORD drawTextureHookRegisterSave1 = 0;
 DWORD drawTextureHookRegisterSave2 = 0;
 DWORD tempTextureAddr1 = 0;
 DWORD tempTextureAddr2 = 0;
 void messUpTextureActual(DWORD addr) {
+
+	if (device == NULL) {
+		//log("device null, returning");
+		return;
+	}
+
+	static bool initShaderCalled = false;
+	if (!initShaderCalled) {
+		log("calling init");
+		initShader();
+		log("called init");
+		initShaderCalled = true;
+	}
 
 	HRESULT hr;
 	//DWORD addr;
@@ -1313,19 +1478,49 @@ void messUpTextureActual(DWORD addr) {
 
 	log("wtf %08X", *(DWORD*)addr);
 
+	if (*(DWORD*)addr == 0) {
+		return;
+	}
+
+
+	IDirect3DResource9* pResource = (IDirect3DResource9*)addr;
+
+	DWORD resourceType = pResource->GetType();
+	log("resource type was %d", resourceType);
+
+	IDirect3DDevice9* ugh = NULL;
+	pResource->GetDevice(&ugh);
+	if (ugh == NULL) {
+		log("got device NULL");
+	}
+	else {
+		log("got device %08X", *ugh);
+	}
+	
+
+	pResource->Release(); // do i have to fucking do this
+	
 	IDirect3DTexture9* pTex = (IDirect3DTexture9*)addr;
+	
+	log("getting type");
 	DWORD type = pTex->GetType();
+	log("type was %3d", type);
+
+	log("getting lvl count");
 	DWORD levelCount = pTex->GetLevelCount();
+	log("lvl count was %d", levelCount);
 
 	D3DSURFACE_DESC desc;
 
 	tempTextureAddr2 = 0;
 
+	log("getting level desc");
 	hr = pTex->GetLevelDesc(0, &desc);
+	log("got lvl desc");
 
 	if (FAILED(hr)) {
 		log("getlvldesc failed??");
-		pTex->Release();
+		//pTex->Release();
 		log("ret");
 		return;
 	}
@@ -1356,20 +1551,39 @@ void messUpTextureActual(DWORD addr) {
 		break;
 	default:
 		log("wtf is that format, bye");
-		pTex->Release();
+		//pTex->Release();
 		log("ret");
 		return;
 		break;
 	}
 
-	if (format != D3DFMT_A1R5G5B5) {
+	
+	//if (format != D3DFMT_A1R5G5B5) {
+	/*
+	if (format == D3DFMT_X8R8G8B8) {
 		log("dont like the format");
 		pTex->Release();
 		log("ret");
 		return;
 	}
+	*/
 
 	log("addr: %08X val: %08X type: %3d level: %3d pool: %3d format: %3d usage: %08X", addr, *(DWORD*)addr, type, levelCount, pool, format, usage);
+	
+	//IDirect3DPixelShader9* pixelShaderBackup;
+	//device->GetPixelShader(&pixelShaderBackup);
+
+	//device->SetPixelShader(pPixelShader);
+	//device->SetTexture(0, pTex);
+  
+	//device->SetPixelShader(pixelShaderBackup);
+
+
+	log("attempting to release");
+	//pTex->Release();
+
+	log("DONE, RETURNING");
+	return;
 
 	D3DLOCKED_RECT lockedRect;
 	//hr = pTex->LockRect(0, &lockedRect, NULL, D3DLOCK_DISCARD);
@@ -1388,14 +1602,15 @@ void messUpTextureActual(DWORD addr) {
 
 	// there has to be a better way to do this
 	if (colSize == 4) {
-		DWORD* pImage = (DWORD*)lockedRect.pBits;
+		/*DWORD* pImage = (DWORD*)lockedRect.pBits;
 
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; x += 2) {
 				pImage[x] = dwCol;
 			}
 			pImage += width;
-		}
+		}*/
+
 	}
 	else if (colSize == 2) {
 		WORD* pImage = (WORD*)lockedRect.pBits;
@@ -1434,14 +1649,91 @@ void messUpTextureActual(DWORD addr) {
 
 	pTex->UnlockRect(0);
 
+	if (colSize == 4) {
+
+		IDirect3DPixelShader9* pixelShaderBackup;
+		device->GetPixelShader(&pixelShaderBackup);
+
+		device->SetPixelShader(pPixelShader);
+		device->SetTexture(0, pTex);
+
+		device->SetPixelShader(pixelShaderBackup);
+
+	}
+
 	pTex->Release();
 }
 
 void messUpTexture() {
-	for (int i = 0; i < textureAddrs.size(); i++) {
-		messUpTextureActual(textureAddrs[i]);
+	//for (int i = 0; i < textureAddrs.size(); i++) {
+	//	messUpTextureActual(textureAddrs[i]);
+	//}
+
+	return;
+
+	if (device == NULL) {
+		return;
 	}
 
+
+
+	std::vector<IDirect3DSurface9*> renderTargets;
+
+	for (DWORD i = 0; i < 4; ++i) {
+		IDirect3DSurface9* surface = nullptr;
+		if (SUCCEEDED(device->GetRenderTarget(i, &surface)))
+		{
+			renderTargets.push_back(surface);
+			log("index: %d surface: %08X", i, surface);
+
+			
+			D3DLOCKED_RECT lockedRect;
+			HRESULT hr = surface->LockRect(&lockedRect, NULL, 0);
+			if (FAILED(hr)) {
+				log("failed to lock rect");
+				continue;
+			}
+
+
+			D3DSURFACE_DESC desc;
+			hr = surface->GetDesc(&desc);
+
+			int width = desc.Width;
+			int height = desc.Height;
+
+			BYTE* pBits = static_cast<BYTE*>(lockedRect.pBits);
+
+			// Example: fill the surface with a solid color (e.g., blue with full alpha)
+			for (int y = 0; y < height; ++y) {
+				DWORD* pPixel = (DWORD*)(pBits + y * lockedRect.Pitch);
+				for (int x = 0; x < width; ++x) {
+					*pPixel++ = 0xFF0000FF; // ARGB format: Alpha=FF, Red=00, Green=00, Blue=FF
+				}
+			}
+
+			// 3. Unlock the surface
+			hr = surface->UnlockRect();
+			if (FAILED(hr)) {
+				log("failed to unlock rect");
+				continue;
+			}
+
+			log("success");
+		}
+		else
+		{
+			break;  // No more render targets available
+		}
+	}
+
+
+
+
+	for (DWORD i = 0; i < renderTargets.size(); i++) {
+		renderTargets[i]->Release();
+	}
+
+	log("-----");
 }
 
 void MASMSucks() {

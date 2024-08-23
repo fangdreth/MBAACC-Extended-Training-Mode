@@ -163,6 +163,7 @@
     <ClInclude Include="..\Common\CharacterData.h" />
     <ClInclude Include="..\Common\Common.h" />
     <ClInclude Include="..\Common\RawData.h" />
+    <ClInclude Include="D3DHooks.h" />
     <ClInclude Include="framework.h" />
   </ItemGroup>
   <ItemGroup>
