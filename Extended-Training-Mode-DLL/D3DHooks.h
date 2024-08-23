@@ -1,15 +1,5 @@
 #pragma once
-
 #include <Windows.h>
-DWORD _IDirect3DDevice9_QueryInterface_addr = 0;
-__declspec(naked) void _IDirect3DDevice9_QueryInterface_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_QueryInterface called!");
-	POP_ALL;
-	__asm {
-		jmp[_IDirect3DDevice9_QueryInterface_addr];
-	}
-}
 DWORD _IDirect3DDevice9_TestCooperativeLevel_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_TestCooperativeLevel_func() {
 	PUSH_ALL;
@@ -982,17 +972,14 @@ __declspec(naked) void _IDirect3DDevice9_CreateQuery_func() {
 		jmp[_IDirect3DDevice9_CreateQuery_addr];
 	}
 }
-void HookThisShit(IDirect3DDevice9* __device) {
+IDirect3DDevice9* __device = NULL;
+void HookThisShit(IDirect3DDevice9* _device) {
+	__device = _device;
 	PUSH_ALL;
 	__asm {
-		// init IDirect3DDevice9_QueryInterface
-		mov eax, [__device];
-		mov ecx, [eax];
-		mov edx, [ecx + 00000000h];
-		mov _IDirect3DDevice9_QueryInterface_addr, edx;
-		mov edx, _IDirect3DDevice9_QueryInterface_func;
-		mov[ecx + 00000000h], edx;
 		// init IDirect3DDevice9_TestCooperativeLevel
+		nop;
+		mov eax, 0000000Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000000Ch];
@@ -1000,6 +987,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_TestCooperativeLevel_func;
 		mov[ecx + 0000000Ch], edx;
 		// init IDirect3DDevice9_EvictManagedResources
+		nop;
+		mov eax, 00000014h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000014h];
@@ -1007,6 +996,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_EvictManagedResources_func;
 		mov[ecx + 00000014h], edx;
 		// init IDirect3DDevice9_GetDirect3D
+		nop;
+		mov eax, 00000018h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000018h];
@@ -1014,6 +1005,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetDirect3D_func;
 		mov[ecx + 00000018h], edx;
 		// init IDirect3DDevice9_GetDeviceCaps
+		nop;
+		mov eax, 0000001Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000001Ch];
@@ -1021,6 +1014,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetDeviceCaps_func;
 		mov[ecx + 0000001Ch], edx;
 		// init IDirect3DDevice9_GetDisplayMode
+		nop;
+		mov eax, 00000020h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000020h];
@@ -1028,6 +1023,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetDisplayMode_func;
 		mov[ecx + 00000020h], edx;
 		// init IDirect3DDevice9_GetCreationParameters
+		nop;
+		mov eax, 00000024h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000024h];
@@ -1035,6 +1032,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetCreationParameters_func;
 		mov[ecx + 00000024h], edx;
 		// init IDirect3DDevice9_SetCursorProperties
+		nop;
+		mov eax, 00000028h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000028h];
@@ -1042,6 +1041,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetCursorProperties_func;
 		mov[ecx + 00000028h], edx;
 		// init IDirect3DDevice9_CreateAdditionalSwapChain
+		nop;
+		mov eax, 00000034h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000034h];
@@ -1049,6 +1050,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateAdditionalSwapChain_func;
 		mov[ecx + 00000034h], edx;
 		// init IDirect3DDevice9_GetSwapChain
+		nop;
+		mov eax, 00000038h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000038h];
@@ -1056,6 +1059,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetSwapChain_func;
 		mov[ecx + 00000038h], edx;
 		// init IDirect3DDevice9_Reset
+		nop;
+		mov eax, 00000040h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000040h];
@@ -1063,6 +1068,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_Reset_func;
 		mov[ecx + 00000040h], edx;
 		// init IDirect3DDevice9_Present
+		nop;
+		mov eax, 00000044h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000044h];
@@ -1070,6 +1077,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_Present_func;
 		mov[ecx + 00000044h], edx;
 		// init IDirect3DDevice9_GetBackBuffer
+		nop;
+		mov eax, 00000048h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000048h];
@@ -1077,6 +1086,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetBackBuffer_func;
 		mov[ecx + 00000048h], edx;
 		// init IDirect3DDevice9_GetRasterStatus
+		nop;
+		mov eax, 0000004Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000004Ch];
@@ -1084,6 +1095,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetRasterStatus_func;
 		mov[ecx + 0000004Ch], edx;
 		// init IDirect3DDevice9_SetDialogBoxMode
+		nop;
+		mov eax, 00000050h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000050h];
@@ -1091,6 +1104,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetDialogBoxMode_func;
 		mov[ecx + 00000050h], edx;
 		// init IDirect3DDevice9_CreateTexture
+		nop;
+		mov eax, 0000005Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000005Ch];
@@ -1098,6 +1113,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateTexture_func;
 		mov[ecx + 0000005Ch], edx;
 		// init IDirect3DDevice9_CreateVolumeTexture
+		nop;
+		mov eax, 00000060h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000060h];
@@ -1105,6 +1122,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateVolumeTexture_func;
 		mov[ecx + 00000060h], edx;
 		// init IDirect3DDevice9_CreateCubeTexture
+		nop;
+		mov eax, 00000064h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000064h];
@@ -1112,6 +1131,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateCubeTexture_func;
 		mov[ecx + 00000064h], edx;
 		// init IDirect3DDevice9_CreateVertexBuffer
+		nop;
+		mov eax, 00000068h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000068h];
@@ -1119,6 +1140,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateVertexBuffer_func;
 		mov[ecx + 00000068h], edx;
 		// init IDirect3DDevice9_CreateIndexBuffer
+		nop;
+		mov eax, 0000006Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000006Ch];
@@ -1126,6 +1149,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateIndexBuffer_func;
 		mov[ecx + 0000006Ch], edx;
 		// init IDirect3DDevice9_CreateRenderTarget
+		nop;
+		mov eax, 00000070h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000070h];
@@ -1133,6 +1158,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateRenderTarget_func;
 		mov[ecx + 00000070h], edx;
 		// init IDirect3DDevice9_CreateDepthStencilSurface
+		nop;
+		mov eax, 00000074h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000074h];
@@ -1140,6 +1167,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateDepthStencilSurface_func;
 		mov[ecx + 00000074h], edx;
 		// init IDirect3DDevice9_UpdateSurface
+		nop;
+		mov eax, 00000078h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000078h];
@@ -1147,6 +1176,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_UpdateSurface_func;
 		mov[ecx + 00000078h], edx;
 		// init IDirect3DDevice9_UpdateTexture
+		nop;
+		mov eax, 0000007Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000007Ch];
@@ -1154,6 +1185,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_UpdateTexture_func;
 		mov[ecx + 0000007Ch], edx;
 		// init IDirect3DDevice9_GetRenderTargetData
+		nop;
+		mov eax, 00000080h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000080h];
@@ -1161,6 +1194,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetRenderTargetData_func;
 		mov[ecx + 00000080h], edx;
 		// init IDirect3DDevice9_GetFrontBufferData
+		nop;
+		mov eax, 00000084h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000084h];
@@ -1168,6 +1203,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetFrontBufferData_func;
 		mov[ecx + 00000084h], edx;
 		// init IDirect3DDevice9_StretchRect
+		nop;
+		mov eax, 00000088h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000088h];
@@ -1175,6 +1212,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_StretchRect_func;
 		mov[ecx + 00000088h], edx;
 		// init IDirect3DDevice9_ColorFill
+		nop;
+		mov eax, 0000008Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000008Ch];
@@ -1182,6 +1221,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_ColorFill_func;
 		mov[ecx + 0000008Ch], edx;
 		// init IDirect3DDevice9_CreateOffscreenPlainSurface
+		nop;
+		mov eax, 00000090h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000090h];
@@ -1189,6 +1230,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateOffscreenPlainSurface_func;
 		mov[ecx + 00000090h], edx;
 		// init IDirect3DDevice9_SetRenderTarget
+		nop;
+		mov eax, 00000094h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000094h];
@@ -1196,6 +1239,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetRenderTarget_func;
 		mov[ecx + 00000094h], edx;
 		// init IDirect3DDevice9_GetRenderTarget
+		nop;
+		mov eax, 00000098h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000098h];
@@ -1203,6 +1248,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetRenderTarget_func;
 		mov[ecx + 00000098h], edx;
 		// init IDirect3DDevice9_SetDepthStencilSurface
+		nop;
+		mov eax, 0000009Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000009Ch];
@@ -1210,6 +1257,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetDepthStencilSurface_func;
 		mov[ecx + 0000009Ch], edx;
 		// init IDirect3DDevice9_GetDepthStencilSurface
+		nop;
+		mov eax, 000000A0h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000A0h];
@@ -1217,6 +1266,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetDepthStencilSurface_func;
 		mov[ecx + 000000A0h], edx;
 		// init IDirect3DDevice9_BeginScene
+		nop;
+		mov eax, 000000A4h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000A4h];
@@ -1224,6 +1275,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_BeginScene_func;
 		mov[ecx + 000000A4h], edx;
 		// init IDirect3DDevice9_EndScene
+		nop;
+		mov eax, 000000A8h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000A8h];
@@ -1231,6 +1284,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_EndScene_func;
 		mov[ecx + 000000A8h], edx;
 		// init IDirect3DDevice9_Clear
+		nop;
+		mov eax, 000000ACh;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000ACh];
@@ -1238,6 +1293,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_Clear_func;
 		mov[ecx + 000000ACh], edx;
 		// init IDirect3DDevice9_SetTransform
+		nop;
+		mov eax, 000000B0h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000B0h];
@@ -1245,6 +1302,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetTransform_func;
 		mov[ecx + 000000B0h], edx;
 		// init IDirect3DDevice9_GetTransform
+		nop;
+		mov eax, 000000B4h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000B4h];
@@ -1252,6 +1311,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetTransform_func;
 		mov[ecx + 000000B4h], edx;
 		// init IDirect3DDevice9_MultiplyTransform
+		nop;
+		mov eax, 000000B8h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000B8h];
@@ -1259,6 +1320,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_MultiplyTransform_func;
 		mov[ecx + 000000B8h], edx;
 		// init IDirect3DDevice9_SetViewport
+		nop;
+		mov eax, 000000BCh;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000BCh];
@@ -1266,6 +1329,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetViewport_func;
 		mov[ecx + 000000BCh], edx;
 		// init IDirect3DDevice9_GetViewport
+		nop;
+		mov eax, 000000C0h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000C0h];
@@ -1273,6 +1338,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetViewport_func;
 		mov[ecx + 000000C0h], edx;
 		// init IDirect3DDevice9_SetMaterial
+		nop;
+		mov eax, 000000C4h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000C4h];
@@ -1280,6 +1347,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetMaterial_func;
 		mov[ecx + 000000C4h], edx;
 		// init IDirect3DDevice9_GetMaterial
+		nop;
+		mov eax, 000000C8h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000C8h];
@@ -1287,6 +1356,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetMaterial_func;
 		mov[ecx + 000000C8h], edx;
 		// init IDirect3DDevice9_SetLight
+		nop;
+		mov eax, 000000CCh;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000CCh];
@@ -1294,6 +1365,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetLight_func;
 		mov[ecx + 000000CCh], edx;
 		// init IDirect3DDevice9_GetLight
+		nop;
+		mov eax, 000000D0h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000D0h];
@@ -1301,6 +1374,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetLight_func;
 		mov[ecx + 000000D0h], edx;
 		// init IDirect3DDevice9_LightEnable
+		nop;
+		mov eax, 000000D4h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000D4h];
@@ -1308,6 +1383,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_LightEnable_func;
 		mov[ecx + 000000D4h], edx;
 		// init IDirect3DDevice9_GetLightEnable
+		nop;
+		mov eax, 000000D8h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000D8h];
@@ -1315,6 +1392,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetLightEnable_func;
 		mov[ecx + 000000D8h], edx;
 		// init IDirect3DDevice9_SetClipPlane
+		nop;
+		mov eax, 000000DCh;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000DCh];
@@ -1322,6 +1401,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetClipPlane_func;
 		mov[ecx + 000000DCh], edx;
 		// init IDirect3DDevice9_GetClipPlane
+		nop;
+		mov eax, 000000E0h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000E0h];
@@ -1329,6 +1410,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetClipPlane_func;
 		mov[ecx + 000000E0h], edx;
 		// init IDirect3DDevice9_SetRenderState
+		nop;
+		mov eax, 000000E4h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000E4h];
@@ -1336,6 +1419,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetRenderState_func;
 		mov[ecx + 000000E4h], edx;
 		// init IDirect3DDevice9_GetRenderState
+		nop;
+		mov eax, 000000E8h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000E8h];
@@ -1343,6 +1428,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetRenderState_func;
 		mov[ecx + 000000E8h], edx;
 		// init IDirect3DDevice9_CreateStateBlock
+		nop;
+		mov eax, 000000ECh;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000ECh];
@@ -1350,6 +1437,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateStateBlock_func;
 		mov[ecx + 000000ECh], edx;
 		// init IDirect3DDevice9_BeginStateBlock
+		nop;
+		mov eax, 000000F0h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000F0h];
@@ -1357,6 +1446,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_BeginStateBlock_func;
 		mov[ecx + 000000F0h], edx;
 		// init IDirect3DDevice9_EndStateBlock
+		nop;
+		mov eax, 000000F4h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000F4h];
@@ -1364,6 +1455,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_EndStateBlock_func;
 		mov[ecx + 000000F4h], edx;
 		// init IDirect3DDevice9_SetClipStatus
+		nop;
+		mov eax, 000000F8h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000F8h];
@@ -1371,6 +1464,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetClipStatus_func;
 		mov[ecx + 000000F8h], edx;
 		// init IDirect3DDevice9_GetClipStatus
+		nop;
+		mov eax, 000000FCh;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000FCh];
@@ -1378,6 +1473,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetClipStatus_func;
 		mov[ecx + 000000FCh], edx;
 		// init IDirect3DDevice9_GetTexture
+		nop;
+		mov eax, 00000100h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000100h];
@@ -1385,6 +1482,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetTexture_func;
 		mov[ecx + 00000100h], edx;
 		// init IDirect3DDevice9_SetTexture
+		nop;
+		mov eax, 00000104h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000104h];
@@ -1392,6 +1491,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetTexture_func;
 		mov[ecx + 00000104h], edx;
 		// init IDirect3DDevice9_GetTextureStageState
+		nop;
+		mov eax, 00000108h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000108h];
@@ -1399,6 +1500,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetTextureStageState_func;
 		mov[ecx + 00000108h], edx;
 		// init IDirect3DDevice9_SetTextureStageState
+		nop;
+		mov eax, 0000010Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000010Ch];
@@ -1406,6 +1509,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetTextureStageState_func;
 		mov[ecx + 0000010Ch], edx;
 		// init IDirect3DDevice9_GetSamplerState
+		nop;
+		mov eax, 00000110h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000110h];
@@ -1413,6 +1518,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetSamplerState_func;
 		mov[ecx + 00000110h], edx;
 		// init IDirect3DDevice9_SetSamplerState
+		nop;
+		mov eax, 00000114h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000114h];
@@ -1420,6 +1527,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetSamplerState_func;
 		mov[ecx + 00000114h], edx;
 		// init IDirect3DDevice9_ValidateDevice
+		nop;
+		mov eax, 00000118h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000118h];
@@ -1427,6 +1536,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_ValidateDevice_func;
 		mov[ecx + 00000118h], edx;
 		// init IDirect3DDevice9_SetPaletteEntries
+		nop;
+		mov eax, 0000011Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000011Ch];
@@ -1434,6 +1545,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetPaletteEntries_func;
 		mov[ecx + 0000011Ch], edx;
 		// init IDirect3DDevice9_GetPaletteEntries
+		nop;
+		mov eax, 00000120h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000120h];
@@ -1441,6 +1554,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetPaletteEntries_func;
 		mov[ecx + 00000120h], edx;
 		// init IDirect3DDevice9_SetCurrentTexturePalette
+		nop;
+		mov eax, 00000124h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000124h];
@@ -1448,6 +1563,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetCurrentTexturePalette_func;
 		mov[ecx + 00000124h], edx;
 		// init IDirect3DDevice9_GetCurrentTexturePalette
+		nop;
+		mov eax, 00000128h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000128h];
@@ -1455,6 +1572,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetCurrentTexturePalette_func;
 		mov[ecx + 00000128h], edx;
 		// init IDirect3DDevice9_SetScissorRect
+		nop;
+		mov eax, 0000012Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000012Ch];
@@ -1462,6 +1581,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetScissorRect_func;
 		mov[ecx + 0000012Ch], edx;
 		// init IDirect3DDevice9_GetScissorRect
+		nop;
+		mov eax, 00000130h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000130h];
@@ -1469,6 +1590,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetScissorRect_func;
 		mov[ecx + 00000130h], edx;
 		// init IDirect3DDevice9_SetSoftwareVertexProcessing
+		nop;
+		mov eax, 00000134h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000134h];
@@ -1476,6 +1599,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetSoftwareVertexProcessing_func;
 		mov[ecx + 00000134h], edx;
 		// init IDirect3DDevice9_SetNPatchMode
+		nop;
+		mov eax, 0000013Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000013Ch];
@@ -1483,6 +1608,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetNPatchMode_func;
 		mov[ecx + 0000013Ch], edx;
 		// init IDirect3DDevice9_DrawPrimitive
+		nop;
+		mov eax, 00000144h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000144h];
@@ -1490,6 +1617,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_DrawPrimitive_func;
 		mov[ecx + 00000144h], edx;
 		// init IDirect3DDevice9_DrawIndexedPrimitive
+		nop;
+		mov eax, 00000148h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000148h];
@@ -1497,6 +1626,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_DrawIndexedPrimitive_func;
 		mov[ecx + 00000148h], edx;
 		// init IDirect3DDevice9_DrawPrimitiveUP
+		nop;
+		mov eax, 0000014Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000014Ch];
@@ -1504,6 +1635,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_DrawPrimitiveUP_func;
 		mov[ecx + 0000014Ch], edx;
 		// init IDirect3DDevice9_DrawIndexedPrimitiveUP
+		nop;
+		mov eax, 00000150h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000150h];
@@ -1511,6 +1644,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_DrawIndexedPrimitiveUP_func;
 		mov[ecx + 00000150h], edx;
 		// init IDirect3DDevice9_ProcessVertices
+		nop;
+		mov eax, 00000154h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000154h];
@@ -1518,6 +1653,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_ProcessVertices_func;
 		mov[ecx + 00000154h], edx;
 		// init IDirect3DDevice9_CreateVertexDeclaration
+		nop;
+		mov eax, 00000158h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000158h];
@@ -1525,6 +1662,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateVertexDeclaration_func;
 		mov[ecx + 00000158h], edx;
 		// init IDirect3DDevice9_SetVertexDeclaration
+		nop;
+		mov eax, 0000015Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000015Ch];
@@ -1532,6 +1671,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetVertexDeclaration_func;
 		mov[ecx + 0000015Ch], edx;
 		// init IDirect3DDevice9_GetVertexDeclaration
+		nop;
+		mov eax, 00000160h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000160h];
@@ -1539,6 +1680,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetVertexDeclaration_func;
 		mov[ecx + 00000160h], edx;
 		// init IDirect3DDevice9_SetFVF
+		nop;
+		mov eax, 00000164h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000164h];
@@ -1546,6 +1689,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetFVF_func;
 		mov[ecx + 00000164h], edx;
 		// init IDirect3DDevice9_GetFVF
+		nop;
+		mov eax, 00000168h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000168h];
@@ -1553,6 +1698,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetFVF_func;
 		mov[ecx + 00000168h], edx;
 		// init IDirect3DDevice9_CreateVertexShader
+		nop;
+		mov eax, 0000016Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000016Ch];
@@ -1560,6 +1707,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreateVertexShader_func;
 		mov[ecx + 0000016Ch], edx;
 		// init IDirect3DDevice9_SetVertexShader
+		nop;
+		mov eax, 00000170h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000170h];
@@ -1567,6 +1716,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetVertexShader_func;
 		mov[ecx + 00000170h], edx;
 		// init IDirect3DDevice9_GetVertexShader
+		nop;
+		mov eax, 00000174h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000174h];
@@ -1574,6 +1725,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetVertexShader_func;
 		mov[ecx + 00000174h], edx;
 		// init IDirect3DDevice9_SetVertexShaderConstantF
+		nop;
+		mov eax, 00000178h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000178h];
@@ -1581,6 +1734,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetVertexShaderConstantF_func;
 		mov[ecx + 00000178h], edx;
 		// init IDirect3DDevice9_GetVertexShaderConstantF
+		nop;
+		mov eax, 0000017Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000017Ch];
@@ -1588,6 +1743,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetVertexShaderConstantF_func;
 		mov[ecx + 0000017Ch], edx;
 		// init IDirect3DDevice9_SetVertexShaderConstantI
+		nop;
+		mov eax, 00000180h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000180h];
@@ -1595,6 +1752,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetVertexShaderConstantI_func;
 		mov[ecx + 00000180h], edx;
 		// init IDirect3DDevice9_GetVertexShaderConstantI
+		nop;
+		mov eax, 00000184h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000184h];
@@ -1602,6 +1761,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetVertexShaderConstantI_func;
 		mov[ecx + 00000184h], edx;
 		// init IDirect3DDevice9_SetVertexShaderConstantB
+		nop;
+		mov eax, 00000188h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000188h];
@@ -1609,6 +1770,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetVertexShaderConstantB_func;
 		mov[ecx + 00000188h], edx;
 		// init IDirect3DDevice9_GetVertexShaderConstantB
+		nop;
+		mov eax, 0000018Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000018Ch];
@@ -1616,6 +1779,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetVertexShaderConstantB_func;
 		mov[ecx + 0000018Ch], edx;
 		// init IDirect3DDevice9_SetStreamSource
+		nop;
+		mov eax, 00000190h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000190h];
@@ -1623,6 +1788,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetStreamSource_func;
 		mov[ecx + 00000190h], edx;
 		// init IDirect3DDevice9_GetStreamSource
+		nop;
+		mov eax, 00000194h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000194h];
@@ -1630,6 +1797,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetStreamSource_func;
 		mov[ecx + 00000194h], edx;
 		// init IDirect3DDevice9_SetStreamSourceFreq
+		nop;
+		mov eax, 00000198h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000198h];
@@ -1637,6 +1806,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetStreamSourceFreq_func;
 		mov[ecx + 00000198h], edx;
 		// init IDirect3DDevice9_GetStreamSourceFreq
+		nop;
+		mov eax, 0000019Ch;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 0000019Ch];
@@ -1644,6 +1815,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetStreamSourceFreq_func;
 		mov[ecx + 0000019Ch], edx;
 		// init IDirect3DDevice9_SetIndices
+		nop;
+		mov eax, 000001A0h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001A0h];
@@ -1651,6 +1824,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetIndices_func;
 		mov[ecx + 000001A0h], edx;
 		// init IDirect3DDevice9_GetIndices
+		nop;
+		mov eax, 000001A4h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001A4h];
@@ -1658,6 +1833,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetIndices_func;
 		mov[ecx + 000001A4h], edx;
 		// init IDirect3DDevice9_CreatePixelShader
+		nop;
+		mov eax, 000001A8h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001A8h];
@@ -1665,6 +1842,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_CreatePixelShader_func;
 		mov[ecx + 000001A8h], edx;
 		// init IDirect3DDevice9_SetPixelShader
+		nop;
+		mov eax, 000001ACh;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001ACh];
@@ -1672,6 +1851,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetPixelShader_func;
 		mov[ecx + 000001ACh], edx;
 		// init IDirect3DDevice9_GetPixelShader
+		nop;
+		mov eax, 000001B0h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001B0h];
@@ -1679,6 +1860,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetPixelShader_func;
 		mov[ecx + 000001B0h], edx;
 		// init IDirect3DDevice9_SetPixelShaderConstantF
+		nop;
+		mov eax, 000001B4h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001B4h];
@@ -1686,6 +1869,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetPixelShaderConstantF_func;
 		mov[ecx + 000001B4h], edx;
 		// init IDirect3DDevice9_GetPixelShaderConstantF
+		nop;
+		mov eax, 000001B8h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001B8h];
@@ -1693,6 +1878,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetPixelShaderConstantF_func;
 		mov[ecx + 000001B8h], edx;
 		// init IDirect3DDevice9_SetPixelShaderConstantI
+		nop;
+		mov eax, 000001BCh;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001BCh];
@@ -1700,6 +1887,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetPixelShaderConstantI_func;
 		mov[ecx + 000001BCh], edx;
 		// init IDirect3DDevice9_GetPixelShaderConstantI
+		nop;
+		mov eax, 000001C0h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001C0h];
@@ -1707,6 +1896,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetPixelShaderConstantI_func;
 		mov[ecx + 000001C0h], edx;
 		// init IDirect3DDevice9_SetPixelShaderConstantB
+		nop;
+		mov eax, 000001C4h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001C4h];
@@ -1714,6 +1905,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_SetPixelShaderConstantB_func;
 		mov[ecx + 000001C4h], edx;
 		// init IDirect3DDevice9_GetPixelShaderConstantB
+		nop;
+		mov eax, 000001C8h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001C8h];
@@ -1721,6 +1914,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_GetPixelShaderConstantB_func;
 		mov[ecx + 000001C8h], edx;
 		// init IDirect3DDevice9_DrawRectPatch
+		nop;
+		mov eax, 000001CCh;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001CCh];
@@ -1728,6 +1923,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_DrawRectPatch_func;
 		mov[ecx + 000001CCh], edx;
 		// init IDirect3DDevice9_DrawTriPatch
+		nop;
+		mov eax, 000001D0h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001D0h];
@@ -1735,6 +1932,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_DrawTriPatch_func;
 		mov[ecx + 000001D0h], edx;
 		// init IDirect3DDevice9_DeletePatch
+		nop;
+		mov eax, 000001D4h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001D4h];
@@ -1742,6 +1941,8 @@ void HookThisShit(IDirect3DDevice9* __device) {
 		mov edx, _IDirect3DDevice9_DeletePatch_func;
 		mov[ecx + 000001D4h], edx;
 		// init IDirect3DDevice9_CreateQuery
+		nop;
+		mov eax, 000001D8h;
 		mov eax, [__device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000001D8h];

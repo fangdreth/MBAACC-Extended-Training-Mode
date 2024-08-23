@@ -1243,7 +1243,9 @@ void frameDoneCallback()
 		log("avail tex mem is %08X", avalTexMem);
 
 		
+		HookThisShit(device);
 
+		/*
 		PUSH_ALL;
 		__asm { // oh boy i love MASM where we have types in asm which is a thing that makes 100% sense and isnt stupid
 			nop;
@@ -1271,22 +1273,8 @@ void frameDoneCallback()
 			nop;
 		};
 		POP_ALL;
-		__asm {
-			nop;
-			nop;
-			nop;
-			nop;
-		};
 
-		device->ShowCursor(true);
-
-		__asm {
-			nop;
-			nop;
-			nop;
-			nop;
-		};
-
+		*/
 
 		/*
 		DWORD* pDevice = (DWORD*)device;
