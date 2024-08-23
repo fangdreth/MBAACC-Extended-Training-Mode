@@ -255,6 +255,7 @@ bool __stdcall safeWrite() {
 	return true;
 }
 
+DWORD needHookReset = false;
 #include "D3DHooks.h"
 
 // patch funcs
@@ -1297,6 +1298,13 @@ void frameDoneCallback()
 		*/
 		
 		//textureAddrs.clear();
+	}
+
+	if (needHookReset) {
+		needHookReset = false;
+		if (device != NULL) {
+			HookThisShit(device);
+		}
 	}
 	
 

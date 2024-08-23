@@ -1,9 +1,14 @@
 #pragma once
 #include <Windows.h>
+
+void __stdcall _log(const char* s) {
+	//log(s);
+}
+
 DWORD _IDirect3DDevice9_TestCooperativeLevel_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_TestCooperativeLevel_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_TestCooperativeLevel called!");
+	_log("IDirect3DDevice9_TestCooperativeLevel called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_TestCooperativeLevel_addr];
@@ -12,7 +17,7 @@ __declspec(naked) void _IDirect3DDevice9_TestCooperativeLevel_func() {
 DWORD _IDirect3DDevice9_EvictManagedResources_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_EvictManagedResources_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_EvictManagedResources called!");
+	_log("IDirect3DDevice9_EvictManagedResources called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_EvictManagedResources_addr];
@@ -21,7 +26,7 @@ __declspec(naked) void _IDirect3DDevice9_EvictManagedResources_func() {
 DWORD _IDirect3DDevice9_GetDirect3D_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetDirect3D_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetDirect3D called!");
+	_log("IDirect3DDevice9_GetDirect3D called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetDirect3D_addr];
@@ -30,7 +35,7 @@ __declspec(naked) void _IDirect3DDevice9_GetDirect3D_func() {
 DWORD _IDirect3DDevice9_GetDeviceCaps_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetDeviceCaps_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetDeviceCaps called!");
+	_log("IDirect3DDevice9_GetDeviceCaps called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetDeviceCaps_addr];
@@ -39,7 +44,7 @@ __declspec(naked) void _IDirect3DDevice9_GetDeviceCaps_func() {
 DWORD _IDirect3DDevice9_GetDisplayMode_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetDisplayMode_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetDisplayMode called!");
+	_log("IDirect3DDevice9_GetDisplayMode called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetDisplayMode_addr];
@@ -48,7 +53,7 @@ __declspec(naked) void _IDirect3DDevice9_GetDisplayMode_func() {
 DWORD _IDirect3DDevice9_GetCreationParameters_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetCreationParameters_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetCreationParameters called!");
+	_log("IDirect3DDevice9_GetCreationParameters called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetCreationParameters_addr];
@@ -57,7 +62,7 @@ __declspec(naked) void _IDirect3DDevice9_GetCreationParameters_func() {
 DWORD _IDirect3DDevice9_SetCursorProperties_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetCursorProperties_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetCursorProperties called!");
+	_log("IDirect3DDevice9_SetCursorProperties called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetCursorProperties_addr];
@@ -66,7 +71,7 @@ __declspec(naked) void _IDirect3DDevice9_SetCursorProperties_func() {
 DWORD _IDirect3DDevice9_CreateAdditionalSwapChain_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateAdditionalSwapChain_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateAdditionalSwapChain called!");
+	_log("IDirect3DDevice9_CreateAdditionalSwapChain called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateAdditionalSwapChain_addr];
@@ -75,7 +80,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateAdditionalSwapChain_func() {
 DWORD _IDirect3DDevice9_GetSwapChain_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetSwapChain_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetSwapChain called!");
+	_log("IDirect3DDevice9_GetSwapChain called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetSwapChain_addr];
@@ -84,7 +89,7 @@ __declspec(naked) void _IDirect3DDevice9_GetSwapChain_func() {
 DWORD _IDirect3DDevice9_Reset_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_Reset_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_Reset called!");
+	_log("IDirect3DDevice9_Reset called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_Reset_addr];
@@ -93,7 +98,7 @@ __declspec(naked) void _IDirect3DDevice9_Reset_func() {
 DWORD _IDirect3DDevice9_Present_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_Present_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_Present called!");
+	_log("IDirect3DDevice9_Present called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_Present_addr];
@@ -102,7 +107,7 @@ __declspec(naked) void _IDirect3DDevice9_Present_func() {
 DWORD _IDirect3DDevice9_GetBackBuffer_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetBackBuffer_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetBackBuffer called!");
+	_log("IDirect3DDevice9_GetBackBuffer called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetBackBuffer_addr];
@@ -111,7 +116,7 @@ __declspec(naked) void _IDirect3DDevice9_GetBackBuffer_func() {
 DWORD _IDirect3DDevice9_GetRasterStatus_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetRasterStatus_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetRasterStatus called!");
+	_log("IDirect3DDevice9_GetRasterStatus called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetRasterStatus_addr];
@@ -120,25 +125,39 @@ __declspec(naked) void _IDirect3DDevice9_GetRasterStatus_func() {
 DWORD _IDirect3DDevice9_SetDialogBoxMode_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetDialogBoxMode_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetDialogBoxMode called!");
+	_log("IDirect3DDevice9_SetDialogBoxMode called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetDialogBoxMode_addr];
 	}
 }
+DWORD _IDirect3DDevice9_CreateTexture_addr_ret;
 DWORD _IDirect3DDevice9_CreateTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateTexture called!");
+	_log("IDirect3DDevice9_CreateTexture called!");
 	POP_ALL;
 	__asm {
+		//pop _IDirect3DDevice9_CreateTexture_addr_ret;
+
+		//call[_IDirect3DDevice9_CreateTexture_addr];
 		jmp[_IDirect3DDevice9_CreateTexture_addr];
 	}
+	/*
+	PUSH_ALL;
+	log("IDirect3DDevice9_CreateTexture ret was %08X", _IDirect3DDevice9_CreateTexture_addr_ret);
+	POP_ALL;
+
+	__asm {
+		push _IDirect3DDevice9_CreateTexture_addr_ret;
+		ret;
+	}
+	*/
 }
 DWORD _IDirect3DDevice9_CreateVolumeTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateVolumeTexture_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateVolumeTexture called!");
+	_log("IDirect3DDevice9_CreateVolumeTexture called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateVolumeTexture_addr];
@@ -147,7 +166,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateVolumeTexture_func() {
 DWORD _IDirect3DDevice9_CreateCubeTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateCubeTexture_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateCubeTexture called!");
+	_log("IDirect3DDevice9_CreateCubeTexture called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateCubeTexture_addr];
@@ -156,7 +175,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateCubeTexture_func() {
 DWORD _IDirect3DDevice9_CreateVertexBuffer_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateVertexBuffer_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateVertexBuffer called!");
+	_log("IDirect3DDevice9_CreateVertexBuffer called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateVertexBuffer_addr];
@@ -165,7 +184,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateVertexBuffer_func() {
 DWORD _IDirect3DDevice9_CreateIndexBuffer_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateIndexBuffer_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateIndexBuffer called!");
+	_log("IDirect3DDevice9_CreateIndexBuffer called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateIndexBuffer_addr];
@@ -174,7 +193,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateIndexBuffer_func() {
 DWORD _IDirect3DDevice9_CreateRenderTarget_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateRenderTarget_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateRenderTarget called!");
+	_log("IDirect3DDevice9_CreateRenderTarget called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateRenderTarget_addr];
@@ -183,7 +202,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateRenderTarget_func() {
 DWORD _IDirect3DDevice9_CreateDepthStencilSurface_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateDepthStencilSurface_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateDepthStencilSurface called!");
+	_log("IDirect3DDevice9_CreateDepthStencilSurface called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateDepthStencilSurface_addr];
@@ -192,7 +211,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateDepthStencilSurface_func() {
 DWORD _IDirect3DDevice9_UpdateSurface_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_UpdateSurface_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_UpdateSurface called!");
+	_log("IDirect3DDevice9_UpdateSurface called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_UpdateSurface_addr];
@@ -201,7 +220,7 @@ __declspec(naked) void _IDirect3DDevice9_UpdateSurface_func() {
 DWORD _IDirect3DDevice9_UpdateTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_UpdateTexture_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_UpdateTexture called!");
+	_log("IDirect3DDevice9_UpdateTexture called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_UpdateTexture_addr];
@@ -210,7 +229,7 @@ __declspec(naked) void _IDirect3DDevice9_UpdateTexture_func() {
 DWORD _IDirect3DDevice9_GetRenderTargetData_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetRenderTargetData_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetRenderTargetData called!");
+	_log("IDirect3DDevice9_GetRenderTargetData called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetRenderTargetData_addr];
@@ -219,7 +238,7 @@ __declspec(naked) void _IDirect3DDevice9_GetRenderTargetData_func() {
 DWORD _IDirect3DDevice9_GetFrontBufferData_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetFrontBufferData_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetFrontBufferData called!");
+	_log("IDirect3DDevice9_GetFrontBufferData called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetFrontBufferData_addr];
@@ -228,7 +247,7 @@ __declspec(naked) void _IDirect3DDevice9_GetFrontBufferData_func() {
 DWORD _IDirect3DDevice9_StretchRect_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_StretchRect_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_StretchRect called!");
+	_log("IDirect3DDevice9_StretchRect called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_StretchRect_addr];
@@ -237,7 +256,7 @@ __declspec(naked) void _IDirect3DDevice9_StretchRect_func() {
 DWORD _IDirect3DDevice9_ColorFill_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_ColorFill_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_ColorFill called!");
+	_log("IDirect3DDevice9_ColorFill called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_ColorFill_addr];
@@ -246,7 +265,7 @@ __declspec(naked) void _IDirect3DDevice9_ColorFill_func() {
 DWORD _IDirect3DDevice9_CreateOffscreenPlainSurface_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateOffscreenPlainSurface_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateOffscreenPlainSurface called!");
+	_log("IDirect3DDevice9_CreateOffscreenPlainSurface called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateOffscreenPlainSurface_addr];
@@ -255,7 +274,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateOffscreenPlainSurface_func() {
 DWORD _IDirect3DDevice9_SetRenderTarget_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetRenderTarget_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetRenderTarget called!");
+	_log("IDirect3DDevice9_SetRenderTarget called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetRenderTarget_addr];
@@ -264,7 +283,7 @@ __declspec(naked) void _IDirect3DDevice9_SetRenderTarget_func() {
 DWORD _IDirect3DDevice9_GetRenderTarget_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetRenderTarget_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetRenderTarget called!");
+	_log("IDirect3DDevice9_GetRenderTarget called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetRenderTarget_addr];
@@ -273,7 +292,7 @@ __declspec(naked) void _IDirect3DDevice9_GetRenderTarget_func() {
 DWORD _IDirect3DDevice9_SetDepthStencilSurface_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetDepthStencilSurface_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetDepthStencilSurface called!");
+	_log("IDirect3DDevice9_SetDepthStencilSurface called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetDepthStencilSurface_addr];
@@ -282,7 +301,7 @@ __declspec(naked) void _IDirect3DDevice9_SetDepthStencilSurface_func() {
 DWORD _IDirect3DDevice9_GetDepthStencilSurface_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetDepthStencilSurface_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetDepthStencilSurface called!");
+	_log("IDirect3DDevice9_GetDepthStencilSurface called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetDepthStencilSurface_addr];
@@ -291,7 +310,7 @@ __declspec(naked) void _IDirect3DDevice9_GetDepthStencilSurface_func() {
 DWORD _IDirect3DDevice9_BeginScene_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_BeginScene_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_BeginScene called!");
+	_log("IDirect3DDevice9_BeginScene called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_BeginScene_addr];
@@ -300,7 +319,7 @@ __declspec(naked) void _IDirect3DDevice9_BeginScene_func() {
 DWORD _IDirect3DDevice9_EndScene_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_EndScene_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_EndScene called!");
+	_log("IDirect3DDevice9_EndScene called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_EndScene_addr];
@@ -309,7 +328,7 @@ __declspec(naked) void _IDirect3DDevice9_EndScene_func() {
 DWORD _IDirect3DDevice9_Clear_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_Clear_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_Clear called!");
+	_log("IDirect3DDevice9_Clear called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_Clear_addr];
@@ -318,7 +337,7 @@ __declspec(naked) void _IDirect3DDevice9_Clear_func() {
 DWORD _IDirect3DDevice9_SetTransform_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetTransform_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetTransform called!");
+	_log("IDirect3DDevice9_SetTransform called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetTransform_addr];
@@ -327,7 +346,7 @@ __declspec(naked) void _IDirect3DDevice9_SetTransform_func() {
 DWORD _IDirect3DDevice9_GetTransform_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetTransform_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetTransform called!");
+	_log("IDirect3DDevice9_GetTransform called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetTransform_addr];
@@ -336,7 +355,7 @@ __declspec(naked) void _IDirect3DDevice9_GetTransform_func() {
 DWORD _IDirect3DDevice9_MultiplyTransform_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_MultiplyTransform_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_MultiplyTransform called!");
+	_log("IDirect3DDevice9_MultiplyTransform called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_MultiplyTransform_addr];
@@ -345,7 +364,7 @@ __declspec(naked) void _IDirect3DDevice9_MultiplyTransform_func() {
 DWORD _IDirect3DDevice9_SetViewport_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetViewport_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetViewport called!");
+	_log("IDirect3DDevice9_SetViewport called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetViewport_addr];
@@ -354,7 +373,7 @@ __declspec(naked) void _IDirect3DDevice9_SetViewport_func() {
 DWORD _IDirect3DDevice9_GetViewport_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetViewport_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetViewport called!");
+	_log("IDirect3DDevice9_GetViewport called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetViewport_addr];
@@ -363,7 +382,7 @@ __declspec(naked) void _IDirect3DDevice9_GetViewport_func() {
 DWORD _IDirect3DDevice9_SetMaterial_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetMaterial_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetMaterial called!");
+	_log("IDirect3DDevice9_SetMaterial called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetMaterial_addr];
@@ -372,7 +391,7 @@ __declspec(naked) void _IDirect3DDevice9_SetMaterial_func() {
 DWORD _IDirect3DDevice9_GetMaterial_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetMaterial_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetMaterial called!");
+	_log("IDirect3DDevice9_GetMaterial called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetMaterial_addr];
@@ -381,7 +400,7 @@ __declspec(naked) void _IDirect3DDevice9_GetMaterial_func() {
 DWORD _IDirect3DDevice9_SetLight_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetLight_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetLight called!");
+	_log("IDirect3DDevice9_SetLight called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetLight_addr];
@@ -390,7 +409,7 @@ __declspec(naked) void _IDirect3DDevice9_SetLight_func() {
 DWORD _IDirect3DDevice9_GetLight_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetLight_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetLight called!");
+	_log("IDirect3DDevice9_GetLight called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetLight_addr];
@@ -399,7 +418,7 @@ __declspec(naked) void _IDirect3DDevice9_GetLight_func() {
 DWORD _IDirect3DDevice9_LightEnable_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_LightEnable_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_LightEnable called!");
+	_log("IDirect3DDevice9_LightEnable called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_LightEnable_addr];
@@ -408,7 +427,7 @@ __declspec(naked) void _IDirect3DDevice9_LightEnable_func() {
 DWORD _IDirect3DDevice9_GetLightEnable_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetLightEnable_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetLightEnable called!");
+	_log("IDirect3DDevice9_GetLightEnable called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetLightEnable_addr];
@@ -417,7 +436,7 @@ __declspec(naked) void _IDirect3DDevice9_GetLightEnable_func() {
 DWORD _IDirect3DDevice9_SetClipPlane_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetClipPlane_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetClipPlane called!");
+	_log("IDirect3DDevice9_SetClipPlane called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetClipPlane_addr];
@@ -426,7 +445,7 @@ __declspec(naked) void _IDirect3DDevice9_SetClipPlane_func() {
 DWORD _IDirect3DDevice9_GetClipPlane_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetClipPlane_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetClipPlane called!");
+	_log("IDirect3DDevice9_GetClipPlane called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetClipPlane_addr];
@@ -435,7 +454,7 @@ __declspec(naked) void _IDirect3DDevice9_GetClipPlane_func() {
 DWORD _IDirect3DDevice9_SetRenderState_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetRenderState_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetRenderState called!");
+	_log("IDirect3DDevice9_SetRenderState called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetRenderState_addr];
@@ -444,7 +463,7 @@ __declspec(naked) void _IDirect3DDevice9_SetRenderState_func() {
 DWORD _IDirect3DDevice9_GetRenderState_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetRenderState_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetRenderState called!");
+	_log("IDirect3DDevice9_GetRenderState called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetRenderState_addr];
@@ -453,7 +472,7 @@ __declspec(naked) void _IDirect3DDevice9_GetRenderState_func() {
 DWORD _IDirect3DDevice9_CreateStateBlock_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateStateBlock_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateStateBlock called!");
+	_log("IDirect3DDevice9_CreateStateBlock called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateStateBlock_addr];
@@ -462,16 +481,17 @@ __declspec(naked) void _IDirect3DDevice9_CreateStateBlock_func() {
 DWORD _IDirect3DDevice9_BeginStateBlock_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_BeginStateBlock_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_BeginStateBlock called!");
+	_log("IDirect3DDevice9_BeginStateBlock called!");
 	POP_ALL;
 	__asm {
+		mov needHookReset, 1;
 		jmp[_IDirect3DDevice9_BeginStateBlock_addr];
 	}
 }
 DWORD _IDirect3DDevice9_EndStateBlock_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_EndStateBlock_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_EndStateBlock called!");
+	_log("IDirect3DDevice9_EndStateBlock called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_EndStateBlock_addr];
@@ -480,7 +500,7 @@ __declspec(naked) void _IDirect3DDevice9_EndStateBlock_func() {
 DWORD _IDirect3DDevice9_SetClipStatus_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetClipStatus_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetClipStatus called!");
+	_log("IDirect3DDevice9_SetClipStatus called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetClipStatus_addr];
@@ -489,7 +509,7 @@ __declspec(naked) void _IDirect3DDevice9_SetClipStatus_func() {
 DWORD _IDirect3DDevice9_GetClipStatus_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetClipStatus_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetClipStatus called!");
+	_log("IDirect3DDevice9_GetClipStatus called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetClipStatus_addr];
@@ -498,39 +518,37 @@ __declspec(naked) void _IDirect3DDevice9_GetClipStatus_func() {
 DWORD _IDirect3DDevice9_GetTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetTexture_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetTexture called!");
+	_log("IDirect3DDevice9_GetTexture called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetTexture_addr];
 	}
 }
+DWORD _IDirect3DDevice9_SetTexture_retAddr = 0;
 DWORD _IDirect3DDevice9_SetTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetTexture_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetTexture called!");
+	_log("IDirect3DDevice9_SetTexture called!");
 	POP_ALL;
 	__asm {
-		//pop dontTemp;
-		jmp[_IDirect3DDevice9_SetTexture_addr];
+		pop _IDirect3DDevice9_SetTexture_retAddr;
 
-		//int 3;
-		//call[_IDirect3DDevice9_SetTexture_addr];
-		//int 3;
+		call[_IDirect3DDevice9_SetTexture_addr];
+	}
 
-		//add esp, 0Ch;
-		//mov eax, 0;
-		//mov edx, 0;
-		
-		//push dontTemp;
-		//ret;
-		//add esp, 0Ch;
-		//mov eax, 0; // OK
+	PUSH_ALL;
+	//log("IDirect3DDevice9_SetTexture ret was %08X", _IDirect3DDevice9_SetTexture_retAddr);
+	POP_ALL;
+
+	__asm {
+		push _IDirect3DDevice9_SetTexture_retAddr;
+		ret;
 	}
 }
 DWORD _IDirect3DDevice9_GetTextureStageState_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetTextureStageState_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetTextureStageState called!");
+	_log("IDirect3DDevice9_GetTextureStageState called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetTextureStageState_addr];
@@ -539,7 +557,7 @@ __declspec(naked) void _IDirect3DDevice9_GetTextureStageState_func() {
 DWORD _IDirect3DDevice9_SetTextureStageState_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetTextureStageState_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetTextureStageState called!");
+	_log("IDirect3DDevice9_SetTextureStageState called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetTextureStageState_addr];
@@ -548,7 +566,7 @@ __declspec(naked) void _IDirect3DDevice9_SetTextureStageState_func() {
 DWORD _IDirect3DDevice9_GetSamplerState_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetSamplerState_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetSamplerState called!");
+	_log("IDirect3DDevice9_GetSamplerState called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetSamplerState_addr];
@@ -557,16 +575,19 @@ __declspec(naked) void _IDirect3DDevice9_GetSamplerState_func() {
 DWORD _IDirect3DDevice9_SetSamplerState_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetSamplerState_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetSamplerState called!");
+	_log("IDirect3DDevice9_SetSamplerState called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetSamplerState_addr];
+		//mov eax, 0;
+		//mov edx, 0;
+		//ret 10h;
 	}
 }
 DWORD _IDirect3DDevice9_ValidateDevice_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_ValidateDevice_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_ValidateDevice called!");
+	_log("IDirect3DDevice9_ValidateDevice called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_ValidateDevice_addr];
@@ -575,7 +596,7 @@ __declspec(naked) void _IDirect3DDevice9_ValidateDevice_func() {
 DWORD _IDirect3DDevice9_SetPaletteEntries_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetPaletteEntries_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetPaletteEntries called!");
+	_log("IDirect3DDevice9_SetPaletteEntries called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetPaletteEntries_addr];
@@ -584,7 +605,7 @@ __declspec(naked) void _IDirect3DDevice9_SetPaletteEntries_func() {
 DWORD _IDirect3DDevice9_GetPaletteEntries_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetPaletteEntries_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetPaletteEntries called!");
+	_log("IDirect3DDevice9_GetPaletteEntries called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetPaletteEntries_addr];
@@ -593,7 +614,7 @@ __declspec(naked) void _IDirect3DDevice9_GetPaletteEntries_func() {
 DWORD _IDirect3DDevice9_SetCurrentTexturePalette_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetCurrentTexturePalette_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetCurrentTexturePalette called!");
+	_log("IDirect3DDevice9_SetCurrentTexturePalette called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetCurrentTexturePalette_addr];
@@ -602,7 +623,7 @@ __declspec(naked) void _IDirect3DDevice9_SetCurrentTexturePalette_func() {
 DWORD _IDirect3DDevice9_GetCurrentTexturePalette_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetCurrentTexturePalette_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetCurrentTexturePalette called!");
+	_log("IDirect3DDevice9_GetCurrentTexturePalette called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetCurrentTexturePalette_addr];
@@ -611,7 +632,7 @@ __declspec(naked) void _IDirect3DDevice9_GetCurrentTexturePalette_func() {
 DWORD _IDirect3DDevice9_SetScissorRect_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetScissorRect_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetScissorRect called!");
+	_log("IDirect3DDevice9_SetScissorRect called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetScissorRect_addr];
@@ -620,7 +641,7 @@ __declspec(naked) void _IDirect3DDevice9_SetScissorRect_func() {
 DWORD _IDirect3DDevice9_GetScissorRect_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetScissorRect_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetScissorRect called!");
+	_log("IDirect3DDevice9_GetScissorRect called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetScissorRect_addr];
@@ -629,7 +650,7 @@ __declspec(naked) void _IDirect3DDevice9_GetScissorRect_func() {
 DWORD _IDirect3DDevice9_SetSoftwareVertexProcessing_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetSoftwareVertexProcessing_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetSoftwareVertexProcessing called!");
+	_log("IDirect3DDevice9_SetSoftwareVertexProcessing called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetSoftwareVertexProcessing_addr];
@@ -638,7 +659,7 @@ __declspec(naked) void _IDirect3DDevice9_SetSoftwareVertexProcessing_func() {
 DWORD _IDirect3DDevice9_SetNPatchMode_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetNPatchMode_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetNPatchMode called!");
+	_log("IDirect3DDevice9_SetNPatchMode called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetNPatchMode_addr];
@@ -647,7 +668,7 @@ __declspec(naked) void _IDirect3DDevice9_SetNPatchMode_func() {
 DWORD _IDirect3DDevice9_DrawPrimitive_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_DrawPrimitive_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_DrawPrimitive called!");
+	_log("IDirect3DDevice9_DrawPrimitive called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_DrawPrimitive_addr];
@@ -656,7 +677,7 @@ __declspec(naked) void _IDirect3DDevice9_DrawPrimitive_func() {
 DWORD _IDirect3DDevice9_DrawIndexedPrimitive_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_DrawIndexedPrimitive_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_DrawIndexedPrimitive called!");
+	_log("IDirect3DDevice9_DrawIndexedPrimitive called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_DrawIndexedPrimitive_addr];
@@ -665,37 +686,98 @@ __declspec(naked) void _IDirect3DDevice9_DrawIndexedPrimitive_func() {
 DWORD _IDirect3DDevice9_DrawPrimitiveUP_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_DrawPrimitiveUP_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_DrawPrimitiveUP called!");
+	_log("IDirect3DDevice9_DrawPrimitiveUP called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_DrawPrimitiveUP_addr];
 	}
 }
+DWORD _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[8];
+DWORD _IDirect3DDevice9_DrawIndexedPrimitiveUP_ret;
+DWORD _IDirect3DDevice9_DrawIndexedPrimitiveUP_reg;
 DWORD _IDirect3DDevice9_DrawIndexedPrimitiveUP_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_DrawIndexedPrimitiveUP_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_DrawIndexedPrimitiveUP called!");
+	_log("IDirect3DDevice9_DrawIndexedPrimitiveUP called!");
 	POP_ALL;
 	__asm {
-		//pop tempDont;
-		jmp[_IDirect3DDevice9_DrawIndexedPrimitiveUP_addr];
+		pop _IDirect3DDevice9_DrawIndexedPrimitiveUP_ret;
+	};
+
+	__asm {
+		mov _IDirect3DDevice9_DrawIndexedPrimitiveUP_reg, eax;
+
+
+		mov eax, [esp + 16];
+		shr eax, 1;
+		cmp eax, 0;
+
+		JNE _OK;
+		mov eax, 1;
+
+	_OK:
+
+		mov [esp + 16], eax;
+
+		mov eax, [esp + 4];
+		mov _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[4 * 0], eax;
+
+		mov eax, [esp + 8];
+		mov _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[4 * 1], eax;
+
+		mov eax, [esp + 12];
+		mov _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[4 * 2], eax;
+
+		mov eax, [esp + 16];
+		mov _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[4 * 3], eax;
+
+		mov eax, [esp + 20];
+		mov _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[4 * 4], eax;
+
+		mov eax, [esp + 24];
+		mov _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[4 * 5], eax;
+
+		mov eax, [esp + 28];
+		mov _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[4 * 6], eax;
+
+		mov eax, [esp + 32];
+		mov _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[4 * 7], eax;
+
+		mov eax, _IDirect3DDevice9_DrawIndexedPrimitiveUP_reg;
+	};
+
+	PUSH_ALL;
+	//log("         PrimitiveType: %d", _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[0]);
+	//log("        MinVertexIndex: %d", _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[1]);
+	//log("           NumVertices: %d", _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[2]);
+	//log("        PrimitiveCount: %d", _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[3]);
+	//log("           *pIndexData: %08X", _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[4]);
+	//log("       IndexDataFormat: %d", _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[5]);
+	//log("*pVertexStreamZeroData: %08X", _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[6]);
+	//log("VertexStreamZeroStride: %d", _IDirect3DDevice9_DrawIndexedPrimitiveUP_params[7]);
+	//log("-----");
+	POP_ALL;
+
+	__asm {
+		
+		//jmp[_IDirect3DDevice9_DrawIndexedPrimitiveUP_addr];
 		
 		//int 3;
-		//call[_IDirect3DDevice9_DrawIndexedPrimitiveUP_addr];
+		call[_IDirect3DDevice9_DrawIndexedPrimitiveUP_addr];
 		//int 3;
 		
 		//add esp, 024h;
 		//mov eax, 0;
 		//mov edx, 0;
 
-		//push tempDont
-		//ret;
+		push _IDirect3DDevice9_DrawIndexedPrimitiveUP_ret
+		ret;
 	}
 }
 DWORD _IDirect3DDevice9_ProcessVertices_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_ProcessVertices_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_ProcessVertices called!");
+	_log("IDirect3DDevice9_ProcessVertices called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_ProcessVertices_addr];
@@ -704,7 +786,7 @@ __declspec(naked) void _IDirect3DDevice9_ProcessVertices_func() {
 DWORD _IDirect3DDevice9_CreateVertexDeclaration_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateVertexDeclaration_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateVertexDeclaration called!");
+	_log("IDirect3DDevice9_CreateVertexDeclaration called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateVertexDeclaration_addr];
@@ -713,7 +795,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateVertexDeclaration_func() {
 DWORD _IDirect3DDevice9_SetVertexDeclaration_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetVertexDeclaration_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetVertexDeclaration called!");
+	_log("IDirect3DDevice9_SetVertexDeclaration called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetVertexDeclaration_addr];
@@ -722,7 +804,7 @@ __declspec(naked) void _IDirect3DDevice9_SetVertexDeclaration_func() {
 DWORD _IDirect3DDevice9_GetVertexDeclaration_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetVertexDeclaration_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetVertexDeclaration called!");
+	_log("IDirect3DDevice9_GetVertexDeclaration called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetVertexDeclaration_addr];
@@ -731,7 +813,7 @@ __declspec(naked) void _IDirect3DDevice9_GetVertexDeclaration_func() {
 DWORD _IDirect3DDevice9_SetFVF_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetFVF_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetFVF called!");
+	_log("IDirect3DDevice9_SetFVF called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetFVF_addr];
@@ -740,7 +822,7 @@ __declspec(naked) void _IDirect3DDevice9_SetFVF_func() {
 DWORD _IDirect3DDevice9_GetFVF_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetFVF_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetFVF called!");
+	_log("IDirect3DDevice9_GetFVF called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetFVF_addr];
@@ -749,7 +831,7 @@ __declspec(naked) void _IDirect3DDevice9_GetFVF_func() {
 DWORD _IDirect3DDevice9_CreateVertexShader_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateVertexShader_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateVertexShader called!");
+	_log("IDirect3DDevice9_CreateVertexShader called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateVertexShader_addr];
@@ -758,19 +840,19 @@ __declspec(naked) void _IDirect3DDevice9_CreateVertexShader_func() {
 DWORD _IDirect3DDevice9_SetVertexShader_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetVertexShader_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetVertexShader called!");
+	_log("IDirect3DDevice9_SetVertexShader called!");
 	POP_ALL;
 	__asm {
-		//jmp[_IDirect3DDevice9_SetVertexShader_addr];
-		mov eax, 0;
-		mov edx, 0;
-		ret 08h;
+		jmp[_IDirect3DDevice9_SetVertexShader_addr];
+		//mov eax, 0;
+		//mov edx, 0;
+		//ret 08h;
 	}
 }
 DWORD _IDirect3DDevice9_GetVertexShader_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetVertexShader_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetVertexShader called!");
+	_log("IDirect3DDevice9_GetVertexShader called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetVertexShader_addr];
@@ -779,7 +861,7 @@ __declspec(naked) void _IDirect3DDevice9_GetVertexShader_func() {
 DWORD _IDirect3DDevice9_SetVertexShaderConstantF_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetVertexShaderConstantF_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetVertexShaderConstantF called!");
+	_log("IDirect3DDevice9_SetVertexShaderConstantF called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetVertexShaderConstantF_addr];
@@ -788,7 +870,7 @@ __declspec(naked) void _IDirect3DDevice9_SetVertexShaderConstantF_func() {
 DWORD _IDirect3DDevice9_GetVertexShaderConstantF_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetVertexShaderConstantF_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetVertexShaderConstantF called!");
+	_log("IDirect3DDevice9_GetVertexShaderConstantF called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetVertexShaderConstantF_addr];
@@ -797,7 +879,7 @@ __declspec(naked) void _IDirect3DDevice9_GetVertexShaderConstantF_func() {
 DWORD _IDirect3DDevice9_SetVertexShaderConstantI_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetVertexShaderConstantI_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetVertexShaderConstantI called!");
+	_log("IDirect3DDevice9_SetVertexShaderConstantI called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetVertexShaderConstantI_addr];
@@ -806,7 +888,7 @@ __declspec(naked) void _IDirect3DDevice9_SetVertexShaderConstantI_func() {
 DWORD _IDirect3DDevice9_GetVertexShaderConstantI_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetVertexShaderConstantI_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetVertexShaderConstantI called!");
+	_log("IDirect3DDevice9_GetVertexShaderConstantI called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetVertexShaderConstantI_addr];
@@ -815,7 +897,7 @@ __declspec(naked) void _IDirect3DDevice9_GetVertexShaderConstantI_func() {
 DWORD _IDirect3DDevice9_SetVertexShaderConstantB_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetVertexShaderConstantB_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetVertexShaderConstantB called!");
+	_log("IDirect3DDevice9_SetVertexShaderConstantB called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetVertexShaderConstantB_addr];
@@ -824,7 +906,7 @@ __declspec(naked) void _IDirect3DDevice9_SetVertexShaderConstantB_func() {
 DWORD _IDirect3DDevice9_GetVertexShaderConstantB_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetVertexShaderConstantB_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetVertexShaderConstantB called!");
+	_log("IDirect3DDevice9_GetVertexShaderConstantB called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetVertexShaderConstantB_addr];
@@ -833,7 +915,7 @@ __declspec(naked) void _IDirect3DDevice9_GetVertexShaderConstantB_func() {
 DWORD _IDirect3DDevice9_SetStreamSource_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetStreamSource_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetStreamSource called!");
+	_log("IDirect3DDevice9_SetStreamSource called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetStreamSource_addr];
@@ -842,7 +924,7 @@ __declspec(naked) void _IDirect3DDevice9_SetStreamSource_func() {
 DWORD _IDirect3DDevice9_GetStreamSource_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetStreamSource_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetStreamSource called!");
+	_log("IDirect3DDevice9_GetStreamSource called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetStreamSource_addr];
@@ -851,7 +933,7 @@ __declspec(naked) void _IDirect3DDevice9_GetStreamSource_func() {
 DWORD _IDirect3DDevice9_SetStreamSourceFreq_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetStreamSourceFreq_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetStreamSourceFreq called!");
+	_log("IDirect3DDevice9_SetStreamSourceFreq called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetStreamSourceFreq_addr];
@@ -860,7 +942,7 @@ __declspec(naked) void _IDirect3DDevice9_SetStreamSourceFreq_func() {
 DWORD _IDirect3DDevice9_GetStreamSourceFreq_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetStreamSourceFreq_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetStreamSourceFreq called!");
+	_log("IDirect3DDevice9_GetStreamSourceFreq called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetStreamSourceFreq_addr];
@@ -869,7 +951,7 @@ __declspec(naked) void _IDirect3DDevice9_GetStreamSourceFreq_func() {
 DWORD _IDirect3DDevice9_SetIndices_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetIndices_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetIndices called!");
+	_log("IDirect3DDevice9_SetIndices called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetIndices_addr];
@@ -878,7 +960,7 @@ __declspec(naked) void _IDirect3DDevice9_SetIndices_func() {
 DWORD _IDirect3DDevice9_GetIndices_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetIndices_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetIndices called!");
+	_log("IDirect3DDevice9_GetIndices called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetIndices_addr];
@@ -887,7 +969,7 @@ __declspec(naked) void _IDirect3DDevice9_GetIndices_func() {
 DWORD _IDirect3DDevice9_CreatePixelShader_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreatePixelShader_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreatePixelShader called!");
+	_log("IDirect3DDevice9_CreatePixelShader called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreatePixelShader_addr];
@@ -896,19 +978,19 @@ __declspec(naked) void _IDirect3DDevice9_CreatePixelShader_func() {
 DWORD _IDirect3DDevice9_SetPixelShader_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetPixelShader_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetPixelShader called!");
+	_log("IDirect3DDevice9_SetPixelShader called!");
 	POP_ALL;
 	__asm {
-		//jmp[_IDirect3DDevice9_SetPixelShader_addr];
-		mov eax, 0;
-		mov edx, 0;
-		ret 08h;
+		jmp[_IDirect3DDevice9_SetPixelShader_addr];
+		//mov eax, 0;
+		//mov edx, 0;
+		//ret 08h;
 	}
 }
 DWORD _IDirect3DDevice9_GetPixelShader_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetPixelShader_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetPixelShader called!");
+	_log("IDirect3DDevice9_GetPixelShader called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetPixelShader_addr];
@@ -917,16 +999,19 @@ __declspec(naked) void _IDirect3DDevice9_GetPixelShader_func() {
 DWORD _IDirect3DDevice9_SetPixelShaderConstantF_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetPixelShaderConstantF_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetPixelShaderConstantF called!");
+	_log("IDirect3DDevice9_SetPixelShaderConstantF called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetPixelShaderConstantF_addr];
+		//mov eax, 0;
+		//mov edx, 0;
+		//ret 10h;
 	}
 }
 DWORD _IDirect3DDevice9_GetPixelShaderConstantF_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetPixelShaderConstantF_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetPixelShaderConstantF called!");
+	_log("IDirect3DDevice9_GetPixelShaderConstantF called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetPixelShaderConstantF_addr];
@@ -935,7 +1020,7 @@ __declspec(naked) void _IDirect3DDevice9_GetPixelShaderConstantF_func() {
 DWORD _IDirect3DDevice9_SetPixelShaderConstantI_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetPixelShaderConstantI_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetPixelShaderConstantI called!");
+	_log("IDirect3DDevice9_SetPixelShaderConstantI called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetPixelShaderConstantI_addr];
@@ -944,7 +1029,7 @@ __declspec(naked) void _IDirect3DDevice9_SetPixelShaderConstantI_func() {
 DWORD _IDirect3DDevice9_GetPixelShaderConstantI_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetPixelShaderConstantI_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetPixelShaderConstantI called!");
+	_log("IDirect3DDevice9_GetPixelShaderConstantI called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetPixelShaderConstantI_addr];
@@ -953,7 +1038,7 @@ __declspec(naked) void _IDirect3DDevice9_GetPixelShaderConstantI_func() {
 DWORD _IDirect3DDevice9_SetPixelShaderConstantB_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetPixelShaderConstantB_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetPixelShaderConstantB called!");
+	_log("IDirect3DDevice9_SetPixelShaderConstantB called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetPixelShaderConstantB_addr];
@@ -962,7 +1047,7 @@ __declspec(naked) void _IDirect3DDevice9_SetPixelShaderConstantB_func() {
 DWORD _IDirect3DDevice9_GetPixelShaderConstantB_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetPixelShaderConstantB_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_GetPixelShaderConstantB called!");
+	_log("IDirect3DDevice9_GetPixelShaderConstantB called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetPixelShaderConstantB_addr];
@@ -971,7 +1056,7 @@ __declspec(naked) void _IDirect3DDevice9_GetPixelShaderConstantB_func() {
 DWORD _IDirect3DDevice9_DrawRectPatch_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_DrawRectPatch_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_DrawRectPatch called!");
+	_log("IDirect3DDevice9_DrawRectPatch called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_DrawRectPatch_addr];
@@ -980,7 +1065,7 @@ __declspec(naked) void _IDirect3DDevice9_DrawRectPatch_func() {
 DWORD _IDirect3DDevice9_DrawTriPatch_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_DrawTriPatch_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_DrawTriPatch called!");
+	_log("IDirect3DDevice9_DrawTriPatch called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_DrawTriPatch_addr];
@@ -989,7 +1074,7 @@ __declspec(naked) void _IDirect3DDevice9_DrawTriPatch_func() {
 DWORD _IDirect3DDevice9_DeletePatch_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_DeletePatch_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_DeletePatch called!");
+	_log("IDirect3DDevice9_DeletePatch called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_DeletePatch_addr];
@@ -998,7 +1083,7 @@ __declspec(naked) void _IDirect3DDevice9_DeletePatch_func() {
 DWORD _IDirect3DDevice9_CreateQuery_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateQuery_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateQuery called!");
+	_log("IDirect3DDevice9_CreateQuery called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateQuery_addr];
