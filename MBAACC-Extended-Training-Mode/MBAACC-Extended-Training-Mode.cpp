@@ -241,6 +241,20 @@ int main(int argc, char* argv[])
     char pcModPath[MAX_PATH];
     GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
     std::string sDLLPath = std::string(pcModPath).substr(0, std::string(pcModPath).length() - 33) + "Extended-Training-Mode-DLL.dll";
+    while (!std::ifstream(sDLLPath).good())
+    {
+        std::wstring wsErrorString(sDLLPath.begin(), sDLLPath.end());
+        wsErrorString = L"UNABLE TO FIND " + wsErrorString;
+        int nReturnVal = MessageBoxW(NULL, wsErrorString.c_str(), L"", MB_ICONERROR | MB_RETRYCANCEL);
+        switch (nReturnVal)
+        {
+        case IDRETRY:
+            continue;
+        default:
+            return 0;
+            break;
+        }
+    }
 
     //std::wstring wsMBAAExePath = GetFilePath();
 
