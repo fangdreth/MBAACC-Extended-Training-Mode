@@ -971,7 +971,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 
 	static KeyState oSaveStateKey;
 	oSaveStateKey.setKey(nSaveStateKey);
-	if ((cFN1Input > 0 || oSaveStateKey.keyDown()) && bEnableFN1Save && !bInExtendedSettings)
+	if (oSaveStateKey.keyDown() && nSaveSlot > 0)
 	{
 		if (!bLockInput)
 		{
