@@ -13,7 +13,6 @@ static HANDLE m_hConsole;
 static std::string m_sLogFile;
 static std::ofstream m_fLogFile;
 static bool bLogOpen = false;
-static bool bLoggerInitialized = false;
 
 static void LogInfo(std::string sInfo);
 
@@ -24,7 +23,7 @@ static std::string Time()
 
 static void InitializeLogger(HANDLE hConsole)
 {
-	if (bLoggerInitialized)
+	if (bLogOpen)
 		return;
 
 	m_hConsole = hConsole;
@@ -39,8 +38,6 @@ static void InitializeLogger(HANDLE hConsole)
 	LogInfo(VERSION);
 
 	bLogOpen = true;
-
-	bLoggerInitialized = true;
 }
 
 static void CloseLogger()
