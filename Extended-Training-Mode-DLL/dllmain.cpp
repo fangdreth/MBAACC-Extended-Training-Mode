@@ -163,11 +163,21 @@ private:
 
 };
 
+unsigned TESTVAR1 = 0;
+unsigned TESTVAR2 = 0;
+
 KeyState upKey(VK_UP);
 KeyState downKey(VK_DOWN);
 KeyState leftKey(VK_LEFT);
 KeyState rightKey(VK_RIGHT);
 KeyState rControl(VK_RCONTROL);
+
+KeyState lBracketKey(VK_OEM_4);
+KeyState rBracketKey(VK_OEM_6);
+
+KeyState semicolonKey(VK_OEM_1);
+KeyState quoteKey(VK_OEM_7);
+
 
 void __stdcall __log(const char* msg)
 {
@@ -807,7 +817,7 @@ void miscTests() {
 		return res + 0x18;
 		}, { 0x00, 0x00, 0xFF, 0x00, 0xFF });
 
-	currentTexture.update();
+	//currentTexture.update();
 
 	//ID3DXFont* pFont = nullptr;
 
@@ -1188,6 +1198,24 @@ void DrawTriangle(IDirect3DDevice9* d3ddev) {
 std::vector<DWORD> textureAddrs;
 void frameDoneCallback()
 {
+
+	if (lBracketKey.keyDown()) {
+		TESTVAR1--;
+	}
+
+	if (rBracketKey.keyDown()) {
+		TESTVAR1++;
+	}
+
+	if (semicolonKey.keyDown()) {
+		TESTVAR2--;
+	}
+
+	if (quoteKey.keyDown()) {
+		TESTVAR2++;
+	}
+
+
 	static KeyState hKey('H');
 	static bool bShowHitboxes = false;
 

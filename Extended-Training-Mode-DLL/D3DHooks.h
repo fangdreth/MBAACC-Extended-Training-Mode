@@ -3,6 +3,8 @@
 
 IDirect3DDevice9* __device = NULL;
 
+DWORD setTextureCount = 0;
+
 void HookThisShit(IDirect3DDevice9* _device);
 void UnhookThisShit();
 
@@ -328,20 +330,10 @@ void __stdcall setTextureFuckaround() {
 
 	static unsigned what = 0;
 
+
 	if (format == D3DFMT_A1R5G5B5) {
 
-		if (what == 0) {
-			__device->SetPixelShader(NULL);
-		}
-		
-		
-		what++;
-
-		if (what == 4) {
-			__device->SetPixelShader(pPixelShader);
-		}
-
-		what = what % 4;
+		//__device->SetPixelShader(pPixelShader);
 
 		// ok. THIS(with == D3DFMT_A1R5G5B5). changes menu shit. and chars. AND PROJECTILES. 
 		// as far as i can think/tell/know, end/beginscene reset the shader states.
@@ -351,7 +343,21 @@ void __stdcall setTextureFuckaround() {
 		// or,,, actually i have no clue, sion summon did some shit
 	}
 
-	
+	// test on classic home invade warc v sion
+	// draw order seems to draw the top ui first 
+
+
+
+	if (setTextureCount >= TESTVAR1 && setTextureCount <= TESTVAR2) {
+	//if (setTextureCount >= 7) {
+		__device->SetPixelShader(pPixelShader);
+	}
+	else {
+		__device->SetPixelShader(NULL);
+	}
+
+	log("setTextureCount was %d and TESTVAR1 was %d TESTVAR2 was %d", setTextureCount, TESTVAR1, TESTVAR2);
+	setTextureCount++;
 
 }
 
@@ -440,6 +446,7 @@ DWORD _IDirect3DDevice9_Reset_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_Reset_func() {
 	PUSH_ALL;
 	_log("IDirect3DDevice9_Reset called!");
+	//__device->SetPixelShader(NULL);
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_Reset_addr];
@@ -449,6 +456,7 @@ DWORD _IDirect3DDevice9_Present_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_Present_func() {
 	PUSH_ALL;
 	_log("IDirect3DDevice9_Present called!");
+	setTextureCount = 0;
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_Present_addr];
@@ -719,6 +727,7 @@ DWORD _IDirect3DDevice9_EndScene_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_EndScene_func() {
 	PUSH_ALL;
 	_log("IDirect3DDevice9_EndScene called!");
+	//__device->SetPixelShader(NULL);
 	/*if (pPixelShader != NULL) {
 		__device->SetPixelShader(pPixelShader);
 	}*/
@@ -1083,7 +1092,7 @@ __declspec(naked) void _IDirect3DDevice9_SetSamplerState_func() {
 		"                             Sampler: %d\n"
 		"                 D3DSAMPLERSTATETYPE: %d\n"
 		"                               Value: %d\n"
-		"                                 Ret: %d\n",
+		"                                 Ret: %08X\n",
 		_IDirect3DDevice9_SetSamplerState_params[0], _IDirect3DDevice9_SetSamplerState_params[1], _IDirect3DDevice9_SetSamplerState_params[2], _IDirect3DDevice9_SetSamplerState_ret);
 	POP_ALL;
 
