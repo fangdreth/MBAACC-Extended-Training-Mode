@@ -198,11 +198,23 @@ int main(int argc, char* argv[])
 
     CreateRegistryKey();
     ReadFromRegistry(L"FreezeKey", &nFreezeKey);
+    if (MapVirtualKeyW(nFreezeKey, MAPVK_VK_TO_VSC) == 0)
+        nFreezeKey = nDefaultFreezeKey;
     ReadFromRegistry(L"FrameStepKey", &nFrameStepKey);
+    if (MapVirtualKeyW(nFrameStepKey, MAPVK_VK_TO_VSC) == 0)
+        nFrameStepKey = nDefaultFrameDataDisplayKey;
     ReadFromRegistry(L"HitboxesDisplayKey", &nHitboxDisplayKey);
+    if (MapVirtualKeyW(nHitboxDisplayKey, MAPVK_VK_TO_VSC) == 0)
+        nHitboxDisplayKey = nDefaultHitboxDisplayKey;
     ReadFromRegistry(L"FrameDataDisplayKey", &nFrameDataDisplayKey);
+    if (MapVirtualKeyW(nFrameDataDisplayKey, MAPVK_VK_TO_VSC) == 0)
+        nFrameDataDisplayKey = nDefaultFrameDataDisplayKey;
     ReadFromRegistry(L"HighlightsOnKey", &nHighlightsOnKey);
+    if (MapVirtualKeyW(nHighlightsOnKey, MAPVK_VK_TO_VSC) == 0)
+        nHighlightsOnKey = nDefaultHighlightsOnKey;
     ReadFromRegistry(L"SaveStateKey", &nSaveStateKey);
+    if (MapVirtualKeyW(nSaveStateKey, MAPVK_VK_TO_VSC) == 0)
+        nSaveStateKey = nDefaultSaveStateKey;
     ReadFromRegistry(L"FrameDisplay", &nFrameData);
     if (nFrameData == FRAMEDISPLAY_NORMAL)
     {

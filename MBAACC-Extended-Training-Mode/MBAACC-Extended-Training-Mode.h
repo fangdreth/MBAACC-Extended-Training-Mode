@@ -296,7 +296,6 @@ std::wstring GetFilePath()
     }*/
 }
 
-
 void SetHealth(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 {
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Health), &nValue, 4, 0);

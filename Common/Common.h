@@ -329,6 +329,13 @@ const char pcHighlights_11[11] = "HIGHLIGHTS";
 #define VK_KEY_Y 0x59
 #define VK_KEY_Z 0x5A
 
+const int nDefaultFreezeKey = VK_KEY_1;
+const int nDefaultFrameStepKey = VK_KEY_2;
+const int nDefaultHitboxDisplayKey = VK_KEY_3;
+const int nDefaultFrameDataDisplayKey = VK_KEY_4;
+const int nDefaultHighlightsOnKey = VK_KEY_5;
+const int nDefaultSaveStateKey = VK_KEY_6;
+
 class KeyState
 {
 public:
