@@ -176,12 +176,16 @@ void __stdcall __log(const char* msg)
 
 	int msgLen = strlen(msg);
 
+	/*
 	char* message = new char[msgLen + 4];
 
 	strncpy_s(message, msgLen + 4, msg, msgLen);
 	message[msgLen + 0] = '\r';
 	message[msgLen + 1] = '\n';
 	message[msgLen + 2] = '\0';
+	*/
+
+	const char* message = msg;
 
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -218,14 +222,14 @@ void __stdcall __log(const char* msg)
 	closesocket(sendSocket);
 	WSACleanup();
 
-	delete[] message;
+	//delete[] message;
 }
 
 void __stdcall log(const char* format,...) {
-	static char buffer[256]; // no more random char buffers everywhere.
+	static char buffer[1024]; // no more random char buffers everywhere.
 	va_list args;
 	va_start(args, format);
-	vsnprintf(buffer, 256, format, args);
+	vsnprintf(buffer, 1024, format, args);
 	__log(buffer);
 	va_end(args);
 }
@@ -893,7 +897,7 @@ void drawFrameData() {
 		}
 	}
 
-	miscTests();
+	//miscTests();
 }
 
 void highlightStates()
@@ -1300,12 +1304,14 @@ void frameDoneCallback()
 		//textureAddrs.clear();
 	}
 
+	
 	if (needHookReset) {
 		needHookReset = false;
 		if (device != NULL) {
 			HookThisShit(device);
 		}
 	}
+	
 	
 
 	//miscDirectX();
@@ -1371,62 +1377,6 @@ void attackMeterDisplayCallback() {
 	drawTextWithBorder(420, 186 + 14, 10, 14, buffer);
 }
 
-const char* shaderCode =
-"sampler2D textureSampler : register(s0);\n"
-"float4 PS_Main(float2 texCoord : TEXCOORD0) : COLOR\n"
-"{\n"
-"    float4 color = tex2D(textureSampler, texCoord);\n"
-"    // Swap red and blue\n"
-"    float temp = color.r;\n"
-"    color.r = color.b;\n"
-"    color.b = temp;\n"
-"    return color;\n"
-"}\n"
-"technique SimpleTechnique\n"
-"{\n"
-"    pass P0\n"
-"    {\n"
-"        PixelShader = compile ps_2_0 PS_Main();\n"
-"    }\n"
-"}\n";
-
-
-LPD3DXBUFFER pCode;
-LPD3DXBUFFER pErrors;
-IDirect3DPixelShader9* pPixelShader = nullptr;
-
-void initShader() {
-	
-
-	HRESULT hr = D3DXCompileShader(
-		shaderCode,                       // Shader code string
-		strlen(shaderCode),               // Length of the shader code
-		nullptr, nullptr,                 // No defines or includes
-		"PS_Main", "ps_2_0",              // Entry point and shader model
-		0, &pCode, &pErrors, nullptr);    // Compile options, output buffers
-
-	if (FAILED(hr))
-	{
-		if (pErrors)
-		{
-			// Output any errors to the debug console
-			log((char*)pErrors->GetBufferPointer());
-			pErrors->Release();
-		}
-	}
-	else
-	{
-		// Create the pixel shader from the compiled code
-		hr = device->CreatePixelShader((DWORD*)pCode->GetBufferPointer(), &pPixelShader);
-		if (FAILED(hr))
-		{
-			// Handle shader creation failure
-			log("somethings mega fucked");
-		}
-		pCode->Release();
-	}
-}
-
 DWORD drawTextureHookRegisterSave1 = 0;
 DWORD drawTextureHookRegisterSave2 = 0;
 DWORD tempTextureAddr1 = 0;
@@ -1436,14 +1386,6 @@ void messUpTextureActual(DWORD addr) {
 	if (device == NULL) {
 		//log("device null, returning");
 		return;
-	}
-
-	static bool initShaderCalled = false;
-	if (!initShaderCalled) {
-		log("calling init");
-		initShader();
-		log("called init");
-		initShaderCalled = true;
 	}
 
 	HRESULT hr;
@@ -1645,17 +1587,6 @@ void messUpTextureActual(DWORD addr) {
 
 	pTex->UnlockRect(0);
 
-	if (colSize == 4) {
-
-		IDirect3DPixelShader9* pixelShaderBackup;
-		device->GetPixelShader(&pixelShaderBackup);
-
-		device->SetPixelShader(pPixelShader);
-		device->SetTexture(0, pTex);
-
-		device->SetPixelShader(pixelShaderBackup);
-
-	}
 
 	pTex->Release();
 }
@@ -2156,7 +2087,7 @@ void initPauseCallback() {
 
 void initDrawTextureHook() {
 	
-	patchJump(0x004de5ae, drawTextureHook3);
+	//patchJump(0x004de5ae, drawTextureHook3);
 	
 	// todo, hook D3DXCreateTextureFromFileInMemoryEx
 
