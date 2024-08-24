@@ -414,7 +414,6 @@ int main(int argc, char* argv[])
                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwCommandListStringAddress), &pcExtendedSettings_18, 18, 0);
                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwTrainingMenuString), &pcTrainingMenu, 19, 0);
 
-                //DWORD dwSubMenuAddress = GetSubMenuEnumAddress(hMBAAHandle, dwBaseAddress);
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
                 nOldCurrentSubMenu = nCurrentSubMenu;
                 nCurrentSubMenu = nReadResult;

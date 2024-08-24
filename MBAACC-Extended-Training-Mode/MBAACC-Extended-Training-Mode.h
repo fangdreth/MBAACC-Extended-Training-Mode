@@ -395,7 +395,8 @@ int KeyJustPressed()
     // I'm fine with it, personally.
     for (int i = 0x00; i <= 0xFF; i++)
     {
-        if (GetAsyncKeyState(i) & 0x8000)
+        // key pressed AND key isn't garbage
+        if (GetAsyncKeyState(i) & 0x8000 && MapVirtualKeyW(i, MAPVK_VK_TO_VSC) != 0)
         {
             if (arrKeysHeld[i] == 0)
                 return i;
