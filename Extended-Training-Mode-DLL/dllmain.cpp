@@ -471,7 +471,6 @@ DWORD getObjFrameDataPointer(DWORD objAddr)
 
 void drawObject(DWORD objAddr, bool isProjectile)
 {
-
 	int xPos = *(DWORD*)(objAddr + 0x108);
 	int yPos = *(DWORD*)(objAddr + 0x10C);
 	bool facingLeft = *(BYTE*)(objAddr + 0x314);
@@ -709,9 +708,6 @@ void drawFrameBar()
 
 void drawStats()
 {
-	if (!safeWrite() || isPaused())
-		return;
-
 	int nFrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
 	int nResetOffset = 0;
 	if (nFrameTimer < 20)
@@ -1065,6 +1061,13 @@ void frameDoneCallback()
 	if (oFrameDataDisplayKey.keyDown()) {
 		bFrameDataDisplay = !bFrameDataDisplay;
 	}
+
+	// don't draw on the pause menu, but do on VIEW SCREEN
+	DWORD nSubMenuPointer = *reinterpret_cast<DWORD*>(dwBaseAddress + dwBasePointer) + 0x84;
+	int nSubMenu;
+	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
+	if (!safeWrite() || isPaused() && nSubMenu != 12)
+		return;
 
 	if (bHitboxesDisplay) {
 		drawFrameData();

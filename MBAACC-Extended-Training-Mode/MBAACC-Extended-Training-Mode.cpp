@@ -256,8 +256,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    //std::wstring wsMBAAExePath = GetFilePath();
-
     while (1)
     {
         nCurrentTime = std::time(nullptr);
@@ -801,12 +799,12 @@ int main(int argc, char* argv[])
                     }
                     case HOTKEYS_PAGE:
                     {
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcFreeze_7, 7, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcNextStep_10, 10, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcHitboxes_9, 9, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcFrameDisplay_14, 14, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcHighlights_11, 11, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcSaveState_11, 11, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcFreeze_11, 11, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcNextStep_14, 14, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcHitboxes_13, 13, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcFrameDisplay_18, 18, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcHighlights_15, 15, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcSaveState_15, 15, 0);
                         break;
                     }
                     default:
@@ -3350,10 +3348,13 @@ int main(int argc, char* argv[])
                         nTempReversalDelayFrames--;
                 }
 //#endif
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwPlayerState + dwP2Offset), &nReadResult, 4, 0);
+                bSwitchToCrouch = true;
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
                 if (bSwitchToCrouch && nReadResult == eEnemyStance::STANDGUARDING)
                 {
-                    // TODO: Fuzzy Overhead
+                    nWriteBuffer = 2;
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyStatus), &nWriteBuffer, 4, 0);
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyStatusCopy), &nWriteBuffer, 4, 0);
                 }
             }
         }

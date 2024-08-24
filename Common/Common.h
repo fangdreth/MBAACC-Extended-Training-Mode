@@ -25,11 +25,13 @@ const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended
 const std::string GITHUB_README = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/README.md";
 const std::string VERSION = "v2.0";
 
+const DWORD dwP1WillBlock = 0x1552AC;
+const DWORD dwP2WillBlock = 0x1552AC + 0xAFC;
 const DWORD dwP2Offset = 0xAFC;
 const DWORD dwRoundTime = 0x162A40; //0-inf
 const DWORD dwMot = 0x1581CC;   // this one is mysterious.  I think it's an animation counter
-const DWORD dwPlayerState = 0x155140;  //0:STAND 13:CROUCH 17:STANDGUARDING 12:STAND->CROUCH ETC
 const DWORD dwEnemyStatus = 0x37C1E8; //0:STAND 1:JUMP 2:CROUCH 3:CPU 4:MANUAL 5:DUMMY
+const DWORD dwEnemyStatusCopy = 0x34D7F8;
 const DWORD dwEnemyDefense = 0x37C1F0; //0:OFF 1:ALLGUARD 2:STATUSGUARD 3:ALLSHIELD 4:STATUSSHIELD 5:DODGE
 const DWORD dwEnemyDefenseCorrected = 0x155DA8; // set this after setting dwEnemyDefense
 const DWORD dwEnemyDefenseType = 0x37C1F4; //0:OFF 1:COMBO 2:RANDOM
@@ -285,11 +287,12 @@ const char pcRed_4[4] = "RED";
 const char pcGreen_6[6] = "GREEN";
 const char pcBlue_5[5] = "BLUE";
 
-const char pcFreeze_7[7] = "FREEZE";
-const char pcNextStep_10[10] = "NEXT STEP";
-const char pcHitboxes_9[9] = "HITBOXES";
-const char pcFrameDisplay_14[14] = "FRAME DISPLAY";
-const char pcHighlights_11[11] = "HIGHLIGHTS";
+const char pcFreeze_11[11] = "FREEZE [A]";
+const char pcNextStep_14[14] = "NEXT STEP [A]";
+const char pcHitboxes_13[13] = "HITBOXES [A]";
+const char pcFrameDisplay_18[18] = "FRAME DISPLAY [A]";
+const char pcHighlights_15[15] = "HIGHLIGHTS [A]";
+const char pcSaveState_15[15] = "SAVE STATE [A]";
 
 #define VK_KEY_0 0x30
 #define VK_KEY_1 0x31
