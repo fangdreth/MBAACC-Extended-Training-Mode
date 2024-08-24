@@ -909,8 +909,9 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	if (oFreezeKey.keyDown())
 		bFreeze = !bFreeze;		
 
-	if (!bFreeze && oFrameStepKey.keyDown())
-		bFreeze = true;
+	// commenting this because I don't like pausing with this key
+	//if (!bFreeze && oFrameStepKey.keyDown())
+		//bFreeze = true;
 
 	bool ok = true;
 	MSG msg;
