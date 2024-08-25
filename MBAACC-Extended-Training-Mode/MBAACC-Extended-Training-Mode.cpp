@@ -3347,7 +3347,7 @@ int main(int argc, char* argv[])
                         nTempReversalDelayFrames--;
                 }
 //#endif
-                bSwitchToCrouch = true;
+                bSwitchToCrouch = false;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
                 if (bSwitchToCrouch && nReadResult == eEnemyStance::STANDGUARDING)
                 {
