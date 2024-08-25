@@ -8,28 +8,34 @@ DWORD setTextureCount = 0;
 void HookThisShit(IDirect3DDevice9* _device);
 void UnhookThisShit();
 
-void __stdcall _log(const char* s) {
-	log(s);
+void __stdcall _log(const char* format, ...) {
+	return;
+	static char buffer[1024]; // no more random char buffers everywhere.
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, 1024, format, args);
+	___log(buffer);
+	va_end(args);
 }
 
 const char* pixelShaderCode1 = R"(
-    sampler2D textureSampler : register(s0);
+	sampler2D textureSampler : register(s0);
 
-    struct PS_INPUT
-    {
-        float2 TexCoord : TEXCOORD0;
-    };
+	struct PS_INPUT
+	{
+		float2 TexCoord : TEXCOORD0;
+	};
 
-    float4 main(PS_INPUT input) : COLOR
-    {
-        float4 color = tex2D(textureSampler, input.TexCoord);
-        
+	float4 main(PS_INPUT input) : COLOR
+	{
+		float4 color = tex2D(textureSampler, input.TexCoord);
+		
 		//return float4(color.b, color.g, color.r, color.a);
 
 		float idk = (color.r + color.g + color.b) / 3;
 
 		return float4(idk, idk, idk, color.a);
-    }
+	}
 )";
 
 const char* pixelShaderCode2 = R"(
@@ -39,35 +45,37 @@ sampler2D texSampler : register(s0);
 
 struct PSInput
 {
-    float2 texCoord : TEXCOORD0;
+	float2 texCoord : TEXCOORD0;
 };
 
 float4 main(PSInput input) : COLOR
 {
-    // Sample the texture
-    float4 color = tex2D(texSampler, input.texCoord);
-    
-    // Modify the color (for example, invert the colors)
-    //color.rgb = 1.0 - color.rgb;
+	// Sample the texture
+	float4 color = tex2D(texSampler, input.texCoord);
+	
+	// Modify the color (for example, invert the colors)
+	//color.rgb = 1.0 - color.rgb;
 
 	color.r = 1 - color.r;
 	color.g = 1 - color.g;
 	color.b = 1 - color.b;
-    
-    // Return the modified color
-    return color;
+
+
+	
+	// Return the modified color
+	return color;
 }
 
 technique SimpleTechnique
 {
-    pass P0
-    {
-        PixelShader = compile ps_2_0 main();
-    }
+	pass P0
+	{
+		PixelShader = compile ps_2_0 main();
+	}
 }
 
 
-)";
+)"; 
 
 IDirect3DPixelShader9* pPixelShader = nullptr;
 ID3DXBuffer* pShaderBuffer = nullptr;
@@ -98,6 +106,7 @@ void initShader() {
 		{
 			// Print the error message if compilation fails
 			log((char*)pErrorBuffer->GetBufferPointer());
+			while (true) {}
 			pErrorBuffer->Release();
 		}
 		// Handle the error appropriately
@@ -298,15 +307,68 @@ void __stdcall alterRenderState() {
 
 }
 
+DWORD _ebxBackup;
+void __stdcall pureConfusion() {
+
+	if (__device == NULL) {
+		return;
+	}
+
+	for (int i = 0; i < 0x58/4; i++) {
+		log("     EBX %04X: %08X", i*4, *(DWORD*)(_ebxBackup + (i*4)));
+	}
+
+
+	log("---------------- leaving pureConfusion");
+}
+
+IDirect3DPixelShader9* shaderResetAddr = NULL;
+__declspec(naked) void omfgResetShader() {
+	__asm {
+		mov _ebxBackup, ebx;
+	}
+	PUSH_ALL;
+	pureConfusion();
+	if (__device != NULL) {
+		__device->SetPixelShader(shaderResetAddr);
+	}
+	POP_ALL;
+
+	__asm {
+		ret;
+	};
+}
+
+DWORD _IDirect3DDevice9_SetTexture_eax;
+DWORD _IDirect3DDevice9_SetTexture_ebx;
+DWORD _IDirect3DDevice9_SetTexture_ecx;
+DWORD _IDirect3DDevice9_SetTexture_edx;
+
+DWORD _IDirect3DDevice9_SetTexture_esi;
+DWORD _IDirect3DDevice9_SetTexture_edi;
+
+DWORD _IDirect3DDevice9_SetTexture_ebp;
+DWORD _IDirect3DDevice9_SetTexture_esp;
+
+DWORD _IDirect3DDevice9_SetTexture_stack[32];
+DWORD _IDirect3DDevice9_SetTexture_retAddr;
 DWORD _IDirect3DDevice9_SetTexture_texAddr;
 DWORD _IDirect3DDevice9_SetTexture_texStage;
+bool breakCondition = false;
+bool trigBreakCondition = false;
+DWORD testOverride = 0;
 void __stdcall setTextureFuckaround() {
+
+
 
 	HRESULT hr;
 
 	if (_IDirect3DDevice9_SetTexture_texAddr == 0) {
 		return;
 	}
+
+
+	log("\n\n\nsetTextureCount was %d and TESTVAR1 was %d TESTVAR2 was %d", setTextureCount, TESTVAR1, TESTVAR2);
 
 	IDirect3DTexture9* pTex = (IDirect3DTexture9*)_IDirect3DDevice9_SetTexture_texAddr;
 	
@@ -347,17 +409,42 @@ void __stdcall setTextureFuckaround() {
 	// draw order seems to draw the top ui first 
 
 
+	breakCondition = ((int)setTextureCount >= TESTVAR1) && ((int)setTextureCount <= TESTVAR2);
 
-	if (setTextureCount >= TESTVAR1 && setTextureCount <= TESTVAR2) {
-	//if (setTextureCount >= 7) {
+	log("testOverride was %08X breakCondition was %d", testOverride, breakCondition);
+	if (breakCondition ) {
+		__device->GetPixelShader(&shaderResetAddr);
 		__device->SetPixelShader(pPixelShader);
 	}
 	else {
-		__device->SetPixelShader(NULL);
+		//__device->SetPixelShader(NULL);
 	}
 
-	log("setTextureCount was %d and TESTVAR1 was %d TESTVAR2 was %d", setTextureCount, TESTVAR1, TESTVAR2);
+
+	log("  tex stage was %08X", _IDirect3DDevice9_SetTexture_texStage);
+	log("   tex addr was %08X", _IDirect3DDevice9_SetTexture_texAddr);
+	log("        ret was %08X", _IDirect3DDevice9_SetTexture_retAddr);
+
+	log("_IDirect3DDevice9_SetTexture_eax: %08X", _IDirect3DDevice9_SetTexture_eax);
+	log("_IDirect3DDevice9_SetTexture_ebx: %08X", _IDirect3DDevice9_SetTexture_ebx);
+	log("_IDirect3DDevice9_SetTexture_ecx: %08X", _IDirect3DDevice9_SetTexture_ecx);
+	log("_IDirect3DDevice9_SetTexture_edx: %08X", _IDirect3DDevice9_SetTexture_edx);
+	log("_IDirect3DDevice9_SetTexture_esi: %08X", _IDirect3DDevice9_SetTexture_esi);
+	log("_IDirect3DDevice9_SetTexture_edi: %08X", _IDirect3DDevice9_SetTexture_edi);
+	log("_IDirect3DDevice9_SetTexture_ebp: %08X", _IDirect3DDevice9_SetTexture_ebp);
+
+
+	for (int i = 0; i < 32; i++) {
+		log("            %02X: %08X", i*4, _IDirect3DDevice9_SetTexture_stack[i]);
+	}
+
+	if (trigBreak != 0 && breakCondition) {
+		trigBreakCondition = true;
+	}
+
 	setTextureCount++;
+
+	log("      leaving setTextureFuckaround");
 
 }
 
@@ -527,7 +614,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
 		mov createTextureAddr, eax;
 	}
 	doSomething();
-	log("   tex addr: %08X\n"
+	_log("   tex addr: %08X\n"
 	   "        ret: %08X", createTextureAddr, _IDirect3DDevice9_CreateTexture_addr_ret);
 	POP_ALL;
 
@@ -677,7 +764,7 @@ __declspec(naked) void _IDirect3DDevice9_SetRenderTarget_func() {
 	}
 
 	PUSH_ALL;
-	log("RenderTargetIndex: %d\n"
+	_log("RenderTargetIndex: %d\n"
 		"    pRenderTarget: %08X\n"
 		"              ret: %08X", _IDirect3DDevice9_SetRenderTarget_Index, _IDirect3DDevice9_SetRenderTarget_Target, _IDirect3DDevice9_SetRenderTarget_ret);
 	POP_ALL;
@@ -723,6 +810,7 @@ __declspec(naked) void _IDirect3DDevice9_BeginScene_func() {
 		jmp[_IDirect3DDevice9_BeginScene_addr];
 	}
 }
+DWORD _IDirect3DDevice9_EndScene_ret = 0;
 DWORD _IDirect3DDevice9_EndScene_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_EndScene_func() {
 	PUSH_ALL;
@@ -733,7 +821,16 @@ __declspec(naked) void _IDirect3DDevice9_EndScene_func() {
 	}*/
 	POP_ALL;
 	__asm {
-		jmp[_IDirect3DDevice9_EndScene_addr];
+		pop _IDirect3DDevice9_EndScene_ret;
+		call[_IDirect3DDevice9_EndScene_addr];
+	};
+
+	PUSH_ALL;
+	//__device->SetPixelShader(NULL);
+	POP_ALL;
+	__asm {
+		push _IDirect3DDevice9_EndScene_ret;
+		ret;
 	}
 }
 DWORD _IDirect3DDevice9_Clear_addr = 0;
@@ -903,7 +1000,7 @@ __declspec(naked) void _IDirect3DDevice9_SetRenderState_func() {
 	};
 
 	PUSH_ALL;
-	log(
+	_log(
 		"    State: %d\n"
 		"    Value: %d\n"
 		"      ret: %08X", _IDirect3DDevice9_SetRenderState_state, _IDirect3DDevice9_SetRenderState_value, _IDirect3DDevice9_SetRenderState_ret
@@ -994,9 +1091,9 @@ __declspec(naked) void _IDirect3DDevice9_GetTexture_func() {
 		jmp[_IDirect3DDevice9_GetTexture_addr];
 	}
 }
-
-DWORD _IDirect3DDevice9_SetTexture_retAddr;
 DWORD _IDirect3DDevice9_SetTexture_reg;
+DWORD _IDirect3DDevice9_SetTexture_reg2;
+DWORD _IDirect3DDevice9_SetTexture_reg3;
 DWORD _IDirect3DDevice9_SetTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetTexture_func() {
 	PUSH_ALL;
@@ -1006,6 +1103,43 @@ __declspec(naked) void _IDirect3DDevice9_SetTexture_func() {
 
 	//__device->SetPixelShader(pPixelShader);
 	POP_ALL;
+
+	__asm {
+
+		mov _IDirect3DDevice9_SetTexture_eax, eax;
+		mov _IDirect3DDevice9_SetTexture_ebx, ebx;
+		mov _IDirect3DDevice9_SetTexture_ecx, ecx;
+		mov _IDirect3DDevice9_SetTexture_edx, edx;
+
+		mov _IDirect3DDevice9_SetTexture_esi, esi;
+		mov _IDirect3DDevice9_SetTexture_edi, edi;
+
+		mov _IDirect3DDevice9_SetTexture_ebp, ebp;
+		mov _IDirect3DDevice9_SetTexture_esp, esp;
+
+		// check the return addr 
+		mov _IDirect3DDevice9_SetTexture_reg, eax;
+		mov _IDirect3DDevice9_SetTexture_reg2, ebx;
+		mov _IDirect3DDevice9_SetTexture_reg3, ecx;
+
+		mov eax, 0;
+		mov ebx, 0;
+		mov ecx, 0;
+	_L:
+		mov ecx, [esp + (ebx * 4)];
+		mov _IDirect3DDevice9_SetTexture_stack[(ebx * 4)], ecx;
+
+		add ebx, 1;
+
+		cmp ebx, 31;
+		JNE _L;
+
+		mov eax, _IDirect3DDevice9_SetTexture_reg;
+		mov ebx, _IDirect3DDevice9_SetTexture_reg2;
+		mov ecx, _IDirect3DDevice9_SetTexture_reg3;
+	};
+
+
 	__asm {
 
 		pop _IDirect3DDevice9_SetTexture_retAddr;
@@ -1021,10 +1155,9 @@ __declspec(naked) void _IDirect3DDevice9_SetTexture_func() {
 		call[_IDirect3DDevice9_SetTexture_addr];
 	}
 
+	
+
 	PUSH_ALL;
-	log("  tex stage was %08X", _IDirect3DDevice9_SetTexture_texStage);
-	log("   tex addr was %08X", _IDirect3DDevice9_SetTexture_texAddr);
-	log("        ret was %08X", _IDirect3DDevice9_SetTexture_retAddr);
 
 	// subrender!
 	//__device->GetRenderTarget(0, &pScreenSurface);
@@ -1036,6 +1169,18 @@ __declspec(naked) void _IDirect3DDevice9_SetTexture_func() {
 
 	__asm {
 		push _IDirect3DDevice9_SetTexture_retAddr;
+
+		cmp trigBreakCondition, 0;
+		JE _DONTBREAK;
+
+		mov trigBreakCondition, 0;
+
+		nop;
+		int 3;
+		nop;
+
+		_DONTBREAK:
+
 		ret;
 	}
 }
@@ -1087,7 +1232,7 @@ __declspec(naked) void _IDirect3DDevice9_SetSamplerState_func() {
 	};
 
 	PUSH_ALL;
-	log(
+	_log(
 		"IDirect3DDevice9_SetSamplerState called!\n"
 		"                             Sampler: %d\n"
 		"                 D3DSAMPLERSTATETYPE: %d\n"
@@ -1542,7 +1687,7 @@ __declspec(naked) void _IDirect3DDevice9_SetPixelShader_func() {
 	};
 
 	PUSH_ALL;
-	log("      ret %08X", _IDirect3DDevice9_SetPixelShader_ret);
+	_log("      ret %08X", _IDirect3DDevice9_SetPixelShader_ret);
 	POP_ALL;
 
 	__asm {
@@ -1568,8 +1713,8 @@ DWORD _IDirect3DDevice9_SetPixelShaderConstantF_reg = 0;
 DWORD _IDirect3DDevice9_SetPixelShaderConstantF_addr = 0;
 
 void __stdcall omfg() {
-	log("     startReg: %d", _startReg);
-	log("   _vec4Count: %d", _vec4Count);
+	_log("     startReg: %d", _startReg);
+	_log("   _vec4Count: %d", _vec4Count);
 	float temp;
 	for (int i = 0; i < _vec4Count; i++) {
 
@@ -1582,13 +1727,13 @@ void __stdcall omfg() {
 		//((float*)_floatData)[i * 4 + 2] = 10.0;
 		//((float*)_floatData)[i * 4 + 3] = 10.0;
 
-		log("              (%5.2f, %5.2f, %5.2f, %5.2f)", ((float*)_floatData)[i * 4 + 0], ((float*)_floatData)[i * 4 + 1], ((float*)_floatData)[i * 4 + 2], ((float*)_floatData)[i * 4 + 3]);
+		_log("              (%5.2f, %5.2f, %5.2f, %5.2f)", ((float*)_floatData)[i * 4 + 0], ((float*)_floatData)[i * 4 + 1], ((float*)_floatData)[i * 4 + 2], ((float*)_floatData)[i * 4 + 3]);
 
 		
 
 
 	}
-	log("          ret: %08X", _IDirect3DDevice9_SetPixelShaderConstantF_ret);
+	_log("          ret: %08X", _IDirect3DDevice9_SetPixelShaderConstantF_ret);
 }
 
 __declspec(naked) void _IDirect3DDevice9_SetPixelShaderConstantF_func() {

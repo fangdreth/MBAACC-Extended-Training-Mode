@@ -42,6 +42,7 @@ void enemyReversal();
 void initDrawTextureHook();
 void messUpTexture();
 void miscDirectX();
+void initIdk();
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
@@ -163,8 +164,9 @@ private:
 
 };
 
-unsigned TESTVAR1 = 0;
-unsigned TESTVAR2 = 0;
+int TESTVAR1 = 0;
+int TESTVAR2 = 0;
+int trigBreak = 0;
 
 KeyState upKey(VK_UP);
 KeyState downKey(VK_DOWN);
@@ -178,8 +180,9 @@ KeyState rBracketKey(VK_OEM_6);
 KeyState semicolonKey(VK_OEM_1);
 KeyState quoteKey(VK_OEM_7);
 
+KeyState backslashKey(VK_OEM_5);
 
-void __stdcall __log(const char* msg)
+void __stdcall ___log(const char* msg)
 {
 	const char* ipAddress = "127.0.0.1";
 	unsigned short port = 17474;
@@ -235,12 +238,12 @@ void __stdcall __log(const char* msg)
 	//delete[] message;
 }
 
-void __stdcall log(const char* format,...) {
+void __stdcall log(const char* format, ...) {
 	static char buffer[1024]; // no more random char buffers everywhere.
 	va_list args;
 	va_start(args, format);
 	vsnprintf(buffer, 1024, format, args);
-	__log(buffer);
+	___log(buffer);
 	va_end(args);
 }
 
@@ -983,6 +986,7 @@ void highlightStates()
 	}
 }
 
+unsigned callBackFrameCount = 0;
 void __stdcall pauseCallback(DWORD dwMilliseconds)
 {
 	// windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
@@ -1052,6 +1056,16 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 		if (nKey.keyDown()) {
 			break;
 		}
+	}
+
+	
+	log("frame %d", callBackFrameCount);
+	callBackFrameCount++;
+
+	static bool initIdkIsGood = false;
+	if (!initIdkIsGood) {
+		initIdkIsGood = true;
+		initIdk();
 	}
 
 	Sleep(dwMilliseconds);
@@ -1201,6 +1215,7 @@ void frameDoneCallback()
 
 	if (lBracketKey.keyDown()) {
 		TESTVAR1--;
+		TESTVAR1 = MAX(TESTVAR1, -1);
 	}
 
 	if (rBracketKey.keyDown()) {
@@ -1209,10 +1224,19 @@ void frameDoneCallback()
 
 	if (semicolonKey.keyDown()) {
 		TESTVAR2--;
+		TESTVAR2 = MAX(TESTVAR2, -1);
 	}
 
 	if (quoteKey.keyDown()) {
 		TESTVAR2++;
+	}
+
+	if (trigBreak) {
+		trigBreak = 0;
+	}
+
+	if (backslashKey.keyDown()) {
+		trigBreak = 1;
 	}
 
 
@@ -1239,7 +1263,7 @@ void frameDoneCallback()
 	}
 
 	//if (safeWrite()) {
-	messUpTexture();
+	//messUpTexture();
 	//}
 	textureAddrs.clear();	
 
@@ -1276,7 +1300,7 @@ void frameDoneCallback()
 		log("avail tex mem is %08X", avalTexMem);
 
 		
-		HookThisShit(device);
+		//HookThisShit(device);
 
 		/*
 		PUSH_ALL;
@@ -1336,10 +1360,9 @@ void frameDoneCallback()
 	if (needHookReset) {
 		needHookReset = false;
 		if (device != NULL) {
-			HookThisShit(device);
+			//HookThisShit(device);
 		}
 	}
-	
 	
 
 	//miscDirectX();
@@ -1360,6 +1383,8 @@ void frameDoneCallback()
 	//	initDrawTextureHook();
 	//	drawTextureInited = true;
 	//}
+
+	
 	
 	
 }
@@ -1984,6 +2009,103 @@ __declspec(naked) void directXHook() {
 	};
 }
 
+DWORD actualFunc = 0x004be290;
+DWORD primHookRet;
+
+DWORD primHookESI;
+void unknownPrimHookTests() {
+	
+	//log("\t\tPRIMDRAW actually called with ESI: %08X", primHookESI);
+}
+
+DWORD callsLeadToDrawPrim_esi;
+std::vector<DWORD> linkedListPointers;
+void unknownPrimHookTests2() {
+
+	//log("callWhichLeadsToPrimDraw1 called!!!");
+
+	BYTE unknownSwitch;
+
+	unsigned validCount = 0;
+	
+	linkedListPointers.clear();
+
+	while (true) {
+
+		if (callsLeadToDrawPrim_esi == 0) {
+			//log("\tESI 0");
+			break;
+		}
+
+		unknownSwitch = *(BYTE*)(callsLeadToDrawPrim_esi + 4);
+
+		//log("\tESI: %08X SWITCH: %02X", callsLeadToDrawPrim_esi, unknownSwitch);
+
+		if (unknownSwitch) {
+			linkedListPointers.push_back(callsLeadToDrawPrim_esi);
+		}
+		
+		callsLeadToDrawPrim_esi = *(DWORD*)callsLeadToDrawPrim_esi;
+
+	}
+
+	// the linked list seems not preserve these modifications. is it regenerated on every frame? seems so
+
+	//if (linkedListPointers.size() > 6) {
+	if(TESTVAR2 > TESTVAR1 && (TESTVAR1 < linkedListPointers.size()) && TESTVAR2 < linkedListPointers.size()) {
+		*(DWORD*)linkedListPointers[TESTVAR1] = linkedListPointers[TESTVAR2];
+		log("trigging a weird swap");
+	}
+
+	log("state: %d %d %d", TESTVAR1, TESTVAR2, linkedListPointers.size());
+
+
+
+	//log("call done");
+}
+
+DWORD callsLeadToDrawPrim_ret;
+DWORD callsLeadToDrawPrim_actual = 0x004be0e0;
+__declspec(naked) void callsLeadToDrawPrim() {
+	__asm {
+		pop callsLeadToDrawPrim_ret;
+		mov callsLeadToDrawPrim_esi, esi;
+	}
+
+	PUSH_ALL;
+	unknownPrimHookTests2();
+	POP_ALL;
+
+	__asm {
+		call[callsLeadToDrawPrim_actual];
+	}
+
+	__asm {
+		push callsLeadToDrawPrim_ret;
+		ret;
+	}
+}
+
+__declspec(naked) void callsDrawIndexedPrimHook() {
+	__asm {
+		pop primHookRet;
+		mov primHookESI, esi;
+	};
+
+	PUSH_ALL;
+	unknownPrimHookTests();
+	POP_ALL;
+
+	__asm {
+		call[actualFunc];
+	}
+
+	__asm {
+		push primHookRet;
+		ret;
+	};
+}
+
 // init funcs
 
 void initFrameDoneCallback() {
@@ -2173,6 +2295,13 @@ void initDirectX() {
 	patchJump(dwCasterBaseAddress + addrEndScenePatch, directXHook);
 }
 
+void initIdk() {
+	//patchJump(0x004be524, omfgResetShader);
+	patchFunction(0x004c03df, callsDrawIndexedPrimHook);
+
+	patchFunction(0x004c03b0, callsLeadToDrawPrim);
+}
+
 void threadFunc() 
 {
 	srand(time(NULL));
@@ -2211,6 +2340,8 @@ void threadFunc()
 	initDrawCharacterTextureCallback();
 
 	initDirectX();
+
+	//initIdk(); 
 
 	while (true) 
 	{
