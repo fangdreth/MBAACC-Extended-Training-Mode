@@ -44,13 +44,14 @@ technique SimpleTechnique
 
 )";
 
+bool pixelShaderNeedsReset = false;
+IDirect3DPixelShader9* pPixelShader_backup = nullptr;
+
 IDirect3DPixelShader9* pPixelShader = nullptr;
 ID3DXBuffer* pShaderBuffer = nullptr;
 ID3DXBuffer* pErrorBuffer = nullptr;
 
 void initShader() {
-
-	IDirect3DDevice9* device = __device;
 
 	const char* pixelShaderCode = pixelShaderCode2;
 
@@ -110,7 +111,7 @@ DWORD leadToDrawPrimHook_ret = 0;
 
 // actual funcs
 
-DWORD drawPrimHook_texAddr;
+DWORD drawPrimHook_texAddr = 0;
 void drawPrimHook() {
 
 	static unsigned index = 0;
@@ -121,21 +122,42 @@ void drawPrimHook() {
 		return;
 	}
 
+	//bool cond = (index >= 5 && index <= 8);
 	if (textureAddrs.contains(drawPrimHook_texAddr)) {
+		device->GetPixelShader(&pPixelShader_backup);
+		pixelShaderNeedsReset = true;
 		device->SetPixelShader(pPixelShader);
 	}
 
-
-
 	log("%3d primHook tex addr %08X ret: %08X", index, drawPrimHook_texAddr, leadToDrawPrimHook_ret);
+
+	if (drawPrimHook_texAddr != 0) {
+		//log("attempting to see if tex is valid");
+		IDirect3DBaseTexture9* pTex = (IDirect3DBaseTexture9*)(drawPrimHook_texAddr);
+		//IDirect3DBaseTexture9* pTex = (IDirect3DBaseTexture9*)(*(DWORD*)drawPrimHook_texAddr);
+		//
+		//int type = pTex->GetType();
+		//
+		//log("ok %d", type);
+	}
+
+	
 
 	index++;
 }
 
 void drawPrimCallback() {
-
+	if (pixelShaderNeedsReset) {
+		pixelShaderNeedsReset = false;
+		device->SetPixelShader(pPixelShader_backup);
+	}
 }
  
+DWORD listAppendHook_texAddr = 0;
+void listAppendHook() {
+	log("listAppendHook: %08X", listAppendHook_texAddr);
+}
+
 // naked funcs
 
 DWORD _naked_drawPrimHook_reg;
@@ -199,10 +221,44 @@ __declspec(naked) void _naked_leadToDrawPrimHook() {
 	__asm _emit 0x76;
 	__asm _emit 0x00;
 
-
 	__asm {
 		jmp[_naked_leadToDrawPrimHook_jmp];
 	}
+
+}
+
+__declspec(naked) void _naked_listAppendHook() {
+
+	// i do not trust the assembler :)
+	// bytes taken from 004c026b
+
+	// mov ecx, dword ptr [eax]
+	__asm _emit 0x8B;
+	__asm _emit 0x08;
+
+	// mov edx, dword ptr [ecx + 4]
+	__asm _emit 0x8B;
+	__asm _emit 0x51;
+	__asm _emit 0x04;
+
+	// push eax 
+	__asm _emit 0x50;
+
+	__asm {
+		mov listAppendHook_texAddr, eax;
+	};
+
+	PUSH_ALL;
+	listAppendHook();
+	POP_ALL;
+
+	__asm {
+		push 004c0273h;
+	};
+
+	// jmp edx
+	__asm _emit 0xFF;
+	__asm _emit 0xE2;
 
 }
 
@@ -220,6 +276,12 @@ void initLeadToDrawPrimHook() {
 	patchJump(0x004c0380, _naked_leadToDrawPrimHook);
 }
 
+void initListAppendHook() {
+
+	patchJump(0x004c026b, _naked_listAppendHook);
+
+}
+
 bool initTextureModifications() {
 
 	if (device == NULL) {
@@ -228,7 +290,7 @@ bool initTextureModifications() {
 
 	static bool init = false;
 	if (init) { // im paranoid
-		return;
+		return true;
 	}
 
 	initShader();
@@ -236,6 +298,7 @@ bool initTextureModifications() {
 	initDrawPrimHook();
 	initDrawPrimCallback();
 	initLeadToDrawPrimHook();
+	initListAppendHook();
 
 
 

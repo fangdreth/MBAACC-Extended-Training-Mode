@@ -165,6 +165,7 @@
     <ClInclude Include="..\Common\RawData.h" />
     <ClInclude Include="D3DHooks.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="textureModification.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
