@@ -2024,6 +2024,8 @@ void unknownPrimHookTests2() {
 
 	//log("callWhichLeadsToPrimDraw1 called!!!");
 
+	//return;
+
 	BYTE unknownSwitch;
 
 	unsigned validCount = 0;
@@ -2053,8 +2055,9 @@ void unknownPrimHookTests2() {
 
 	//if (linkedListPointers.size() > 6) {
 	if(TESTVAR2 > TESTVAR1 && (TESTVAR1 < linkedListPointers.size()) && TESTVAR2 < linkedListPointers.size()) {
+
 		*(DWORD*)linkedListPointers[TESTVAR1] = linkedListPointers[TESTVAR2];
-		log("trigging a weird swap");
+		log("trigging a weird swap %08X", linkedListPointers[TESTVAR1]);
 	}
 
 	log("state: %d %d %d", TESTVAR1, TESTVAR2, linkedListPointers.size());
@@ -2104,6 +2107,88 @@ __declspec(naked) void callsDrawIndexedPrimHook() {
 		push primHookRet;
 		ret;
 	};
+}
+
+DWORD linkedListAppend_EDI;
+void linkedListAppendCallback() {
+
+	unsigned length = 0;
+
+	while (true) {
+
+		//log("EDI: %08X", linkedListAppend_EDI);
+
+		if (linkedListAppend_EDI == 0) {
+			break;
+		}
+
+		linkedListAppend_EDI = *(DWORD*)linkedListAppend_EDI;
+		length++;
+	}
+
+	// this length is 1600, aka 0x640, which is a number i have seen before! i cannot remember where tho
+	log("appendLength is %d", length);
+}
+
+__declspec(naked) void _naked_linkedListAppendCallback() {
+	__asm {
+		mov linkedListAppend_EDI, edi;
+	};
+	PUSH_ALL;
+	linkedListAppendCallback();
+	POP_ALL;
+	__asm {
+		ret;
+	}
+}
+
+DWORD _tempRand;
+DWORD _renderEDI;
+void unknownRenderCallback() {
+	unsigned length = 0;
+
+	_tempRand = rand();
+
+	while (true) {
+
+		if (_renderEDI == 0) {
+			break;
+		}
+
+		_renderEDI = *(DWORD*)_renderEDI;
+		length++;
+	}
+	log("rendercallback length is %d", length);
+}
+
+
+__declspec(naked) void _naked_renderCallback() {
+
+	/// this func ALMOST DEFINITELY is the one that we would need to modify! this appends to the linked list!!
+	__asm {
+
+		test _tempRand, 1;
+		JNE _IDEK;
+
+		mov eax, dword ptr[edi];
+		mov dword ptr[esi], eax;
+
+		mov dword ptr[edi], esi;
+
+	_IDEK:
+
+		//mov _renderEDI, edi;
+		mov _renderEDI, 005550a8h;
+
+		mov eax, 1;
+		pop edi;
+	};
+	PUSH_ALL;
+	unknownRenderCallback();
+	POP_ALL;
+	__asm {
+		ret;
+	}
 }
 
 // init funcs
@@ -2300,6 +2385,11 @@ void initIdk() {
 	patchFunction(0x004c03df, callsDrawIndexedPrimHook);
 
 	patchFunction(0x004c03b0, callsLeadToDrawPrim);
+
+	//patchJump(0x00414e57, _naked_linkedListAppendCallback);
+	//patchJump(0x004c0279, _naked_renderCallback);
+	patchJump(0x004c0273, _naked_renderCallback);
+
 }
 
 void threadFunc() 
