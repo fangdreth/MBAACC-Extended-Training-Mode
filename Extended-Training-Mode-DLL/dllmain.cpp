@@ -273,7 +273,7 @@ bool __stdcall safeWrite() {
 }
 
 DWORD needHookReset = false;
-#include "D3DHooks.h"
+//#include "D3DHooks.h"
 
 // patch funcs
 
@@ -338,6 +338,8 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 
 	patchMemcpy(addr, temp, 1);
 }
+
+#include "textureModification.h"
 
 // actual functions 
 
@@ -1059,13 +1061,12 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	}
 
 	
-	log("frame %d", callBackFrameCount);
+	//log("frame %d", callBackFrameCount);
 	callBackFrameCount++;
 
 	static bool initIdkIsGood = false;
 	if (!initIdkIsGood) {
-		initIdkIsGood = true;
-		initIdk();
+		initIdkIsGood = initTextureModifications();
 	}
 
 	Sleep(dwMilliseconds);
@@ -1209,7 +1210,7 @@ void DrawTriangle(IDirect3DDevice9* d3ddev) {
 	}
 }
 
-std::vector<DWORD> textureAddrs;
+//std::vector<DWORD> textureAddrs;
 void frameDoneCallback()
 {
 
@@ -1265,7 +1266,7 @@ void frameDoneCallback()
 	//if (safeWrite()) {
 	//messUpTexture();
 	//}
-	textureAddrs.clear();	
+	//textureAddrs.clear();	
 
 	static bool deviceInit = false;
 	if (!deviceInit && dwDevice != NULL) {
@@ -1724,7 +1725,7 @@ void MASMSucks() {
 
 	tempTextureAddr2 = *(DWORD*)tempTextureAddr1;
 
-	textureAddrs.push_back(tempTextureAddr2);
+	//textureAddrs.push_back(tempTextureAddr2);
 }
 
 void drawCharacterTextureCallback() {
@@ -2158,7 +2159,7 @@ void unknownRenderCallback() {
 		_renderEDI = *(DWORD*)_renderEDI;
 		length++;
 	}
-	log("rendercallback length is %d", length);
+	//log("rendercallback length is %d", length);
 }
 
 
@@ -2423,13 +2424,16 @@ void threadFunc()
 	initMeterGainHook();
 	initBattleResetCallback();
 
+	initDirectX();
+
+	//initTextureModifications();
 
 	//Sleep(5000);
 
-	initDrawTextureHook();
-	initDrawCharacterTextureCallback();
+	//initDrawTextureHook();
+	//initDrawCharacterTextureCallback();
 
-	initDirectX();
+	//initDirectX();
 
 	//initIdk(); 
 
