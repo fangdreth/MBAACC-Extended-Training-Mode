@@ -50,6 +50,7 @@ static bool bShowBar5 = false; //C, D, directional inputs
 static bool bIsStateSaved = false;
 static int nSaveSlot = 0;
 static int nSaveStateKey = VK_KEY_6;
+int nResetStartFrame = 0;
 
 static int nPlayerAdvantage;
 int nSharedHitstop;
@@ -969,6 +970,8 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screenBufferInfo);
 	nBarDisplayRange = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left) / 2;
 
+	UpdateGlobals(hMBAAHandle, dwBaseAddress);
+
 	static KeyState oSaveStateKey;
 	oSaveStateKey.setKey(nSaveStateKey);
 	if (oSaveStateKey.keyDown() && nSaveSlot > 0)
@@ -977,10 +980,23 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 		{
 			bLockInput = true;
 			SaveState(hMBAAHandle, dwBaseAddress, Saves[nSaveSlot - 1]);
+			nResetStartFrame = nTrueFrameCount;
+			char cSaveSlot = nSaveSlot;
+			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x380000), &cSaveSlot, 1, 0);
+			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x380004), &TEXT_TIMER, 1, 0);
 			bIsStateSaved = true;
 		}
 		char c5 = 5;
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x162A48), &c5, 1, 0);
+	}
+	else if (oSaveStateKey.keyHeld() && nSaveSlot > 0)
+	{
+		if (nTrueFrameCount >= nResetStartFrame + SAVE_RESET_TIME && nResetStartFrame != 0)
+		{
+			Saves[nSaveSlot - 1].bIsThisStateSaved = false;
+			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x380008), &TEXT_TIMER, 1, 0);
+			nResetStartFrame = 0;
+		}
 	}
 	else if (cFN2Input > 0 && bEnableFN2Load && !bInExtendedSettings)
 	{
@@ -999,7 +1015,6 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 		bLockInput = false;
 	}
 
-	UpdateGlobals(hMBAAHandle, dwBaseAddress);
 	Player* Player1 = &P1;
 	Player* Player2 = &P2;
 	Player* Player3 = &P3;

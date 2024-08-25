@@ -119,6 +119,8 @@ typedef DWORD ADDRESS; //I think doing this + adXxxxYyyy looks nice
 const int BAR_MEMORY_SIZE = 400; //Number of frames stored before overriding (FIFO). Only used in determining how far back you can scroll.
 const int BAR_INTERVAL = 20; //Number of frames of only blanks before the bar stops and resets on the next non-blank frame
 const int MAX_SAVES = 3;
+const int SAVE_RESET_TIME = 120;
+const char TEXT_TIMER = 60;
 
 const char REVERSE_INPUT_MAP[10] = { 0, 3, 2, 1, 6, 0, 4, 9, 8, 7 };
 const char CH_MAP[3] = { ' ', 'H', 'L' };
