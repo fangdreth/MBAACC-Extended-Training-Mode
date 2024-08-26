@@ -982,8 +982,8 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 			SaveState(hMBAAHandle, dwBaseAddress, Saves[nSaveSlot - 1]);
 			nResetStartFrame = nTrueFrameCount;
 			char cSaveSlot = nSaveSlot;
-			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x380000), &cSaveSlot, 1, 0);
-			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x380004), &TEXT_TIMER, 1, 0);
+			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &cSaveSlot, 1, 0);
+			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveTextTimer), &TEXT_TIMER, 1, 0);
 			bIsStateSaved = true;
 		}
 		char c5 = 5;
@@ -994,7 +994,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 		if (nTrueFrameCount >= nResetStartFrame + SAVE_RESET_TIME && nResetStartFrame != 0)
 		{
 			Saves[nSaveSlot - 1].bIsThisStateSaved = false;
-			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x380008), &TEXT_TIMER, 1, 0);
+			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedClearTextTimer), &TEXT_TIMER, 1, 0);
 			nResetStartFrame = 0;
 		}
 	}

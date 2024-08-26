@@ -1078,20 +1078,20 @@ void frameDoneCallback()
 		drawFrameBar();
 	}
 
-	if (*(char*)(dwBaseAddress + 0x380004)) {
+	if (*(char*)(dwBaseAddress + adSharedSaveTextTimer) != 0) {
 		static char buffer[256];
 
-		snprintf(buffer, 256, "Saved State %i", *(char*)(dwBaseAddress + 0x380000));
+		snprintf(buffer, 256, "Saved State %i", *(char*)(dwBaseAddress + adSharedSaveSlot));
 		drawTextWithBorder(270, 470, 10, 10, buffer);
-		*(char*)(dwBaseAddress + 0x380004) = *(char*)(dwBaseAddress + 0x380004) - 1;
+		*(char*)(dwBaseAddress + adSharedSaveTextTimer) = *(char*)(dwBaseAddress + adSharedSaveTextTimer) - 1;
 	}
 
-	if (*(char*)(dwBaseAddress + 0x380008)) {
+	if (*(char*)(dwBaseAddress + adSharedClearTextTimer)!= 0) {
 		static char buffer[256];
 
-		snprintf(buffer, 256, "Cleared State %i", *(char*)(dwBaseAddress + 0x380000));
+		snprintf(buffer, 256, "Cleared State %i", *(char*)(dwBaseAddress + adSharedSaveSlot));
 		drawTextWithBorder(270, 470, 10, 10, buffer);
-		*(char*)(dwBaseAddress + 0x380008) = *(char*)(dwBaseAddress + 0x380008) - 1;
+		*(char*)(dwBaseAddress + adSharedClearTextTimer) = *(char*)(dwBaseAddress + adSharedClearTextTimer) - 1;
 	}
 
 	drawStats();

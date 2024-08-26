@@ -186,6 +186,11 @@ const ADDRESS adFont0 = 0x55D680;
 const ADDRESS adFont1 = 0x55D260;
 const ADDRESS adFont2 = 0x55DAA0;
 
+// addresses for memory sharing
+const ADDRESS adSharedSaveSlot = 0x381000;
+const ADDRESS adSharedSaveTextTimer = 0x381001;
+const ADDRESS adSharedClearTextTimer = 0x381002;
+
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
 const std::vector<int> vGuardLevelLookupTable =
