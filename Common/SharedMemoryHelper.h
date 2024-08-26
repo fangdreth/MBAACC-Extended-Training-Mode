@@ -1,6 +1,7 @@
 #pragma once
 #include "..\Common\Common.h"
 
+#ifdef Obsolete
 char* pBuffer = nullptr;
 const LPCWSTR sSharedName = L"MBAACCExtendedTrainingMode";
 bool bInitialized = false;
@@ -228,3 +229,5 @@ void GetSharedMemory(std::array<BYTE, 3>* parrIdleHighlightSetting,
 		*parrTemp4HighlightSetting = CreateColorArray(nTemp4HighlightSetting);
 	}
 }
+
+#endif

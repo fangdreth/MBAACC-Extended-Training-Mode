@@ -1429,8 +1429,6 @@ void threadFunc()
 
 	while (true) 
 	{
-
-		// ideally, this would be done with signals. also unknown if this is thread safe
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrIdleHighlightSetting, 3, 0);
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrBlockingHighlightSetting, 3, 0);
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrHitHighlightSetting, 3, 0);
