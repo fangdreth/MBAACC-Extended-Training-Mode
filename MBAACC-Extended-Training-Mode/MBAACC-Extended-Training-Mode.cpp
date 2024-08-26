@@ -127,7 +127,6 @@ int main(int argc, char* argv[])
 
     uint8_t nFrameData = FRAMEDISPLAY_NORMAL;
     //bool bSaveStates = false;
-    bool bDisplayInputs = false;
 
     std::unordered_set<DWORD> setBlockingAnimationPointers;
     std::unordered_set<DWORD> setIdleAnimationPointers;
@@ -219,22 +218,15 @@ int main(int argc, char* argv[])
     if (nFrameData == FRAMEDISPLAY_NORMAL)
     {
         bSimpleFrameInfo = true;
-        bShowInfo1 = false;
-        bShowInfo2 = false;
-        bShowInfo3 = false;
     }
     else if (nFrameData == FRAMEDISPLAY_ADVANCED)
     {
         bSimpleFrameInfo = false;
-        bShowInfo1 = true;
-        bShowInfo2 = true;
-        bShowInfo3 = true;
     }
-    ReadFromRegistry(L"HideFreeze", &bHideFreeze);
+    ReadFromRegistry(L"DisplayFreeze", &bDisplayFreeze);
     ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
     if (ReadFromRegistry(L"SaveSlot", &nSaveSlot) == 0 && nSaveSlot > 0)
     {
-        bEnableFN1Save = true;
         bEnableFN2Load = true;
     }
 
@@ -1195,9 +1187,6 @@ int main(int argc, char* argv[])
                             nFrameData = FRAMEDISPLAY_NORMAL;
                             SetRegistryValue(L"FrameDisplay", nFrameData);
                             bSimpleFrameInfo = true;
-                            bShowInfo1 = false;
-                            bShowInfo2 = false;
-                            bShowInfo3 = false;
                             system("cls");
                         }
                         else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
@@ -1205,9 +1194,6 @@ int main(int argc, char* argv[])
                             nFrameData = FRAMEDISPLAY_ADVANCED;
                             SetRegistryValue(L"FrameDisplay", nFrameData);
                             bSimpleFrameInfo = false;
-                            bShowInfo1 = true;
-                            bShowInfo2 = true;
-                            bShowInfo3 = true;
                         }
 
                         if (nOldEnemyDefenseIndex == -1)
@@ -1222,12 +1208,10 @@ int main(int argc, char* argv[])
                         }
                         if (nSaveSlot > 0)
                         {
-                            bEnableFN1Save = true;
                             bEnableFN2Load = true;
                         }
                         else
                         {
-                            bEnableFN1Save = false;
                             bEnableFN2Load = false;
                         }
 
@@ -1235,13 +1219,16 @@ int main(int argc, char* argv[])
                             nOldAirRecoveryIndex = nAirRecoveryIndex;
                         else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
                         {
-                            bHideFreeze = true;
-                            SetRegistryValue(L"HideFreeze", bHideFreeze);
+                            bDisplayFreeze = false;
+                            SetRegistryValue(L"DisplayFreeze", bDisplayFreeze);
+                            bDisplayInputs = false;
+                            SetRegistryValue(L"DisplayInputs", bDisplayInputs);
+                            system("cls");
                         }
                         else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
                         {
-                            bHideFreeze = false;
-                            SetRegistryValue(L"HideFreeze", bHideFreeze);
+                            bDisplayFreeze = true;
+                            SetRegistryValue(L"DisplayFreeze", bDisplayFreeze);
                         }
 
                         if (nOldDownRecoveryIndex == -1)
@@ -1250,16 +1237,14 @@ int main(int argc, char* argv[])
                         {
                             bDisplayInputs = false;
                             SetRegistryValue(L"DisplayInputs", bDisplayInputs);
-                            bShowBar4 = false;
-                            bShowBar5 = false;
                             system("cls");
                         }
                         else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                         {
                             bDisplayInputs = true;
                             SetRegistryValue(L"DisplayInputs", bDisplayInputs);
-                            bShowBar4 = true;
-                            bShowBar5 = true;
+                            bDisplayFreeze = true;
+                            SetRegistryValue(L"DisplayFreeze", bDisplayFreeze);
                         }
 
                         if (nOldThrowRecoveryIndex == -1)
@@ -2159,7 +2144,7 @@ int main(int argc, char* argv[])
                             nEnemyDefenseIndex = 5;
                         }
 
-                        if (bHideFreeze)
+                        if (!bDisplayFreeze)
                         {
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOffString), &pcOff_4, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcOff_4, 4, 0);

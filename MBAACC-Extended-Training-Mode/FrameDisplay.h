@@ -30,22 +30,12 @@ bool bDoAdvantage = false;
 
 bool bLockInput = false;
 
-static bool bHideFreeze = true; //Whether to hide global ex flashes and frames where both chars are in hitstop
-
-static bool bEnableFN1Save = false;
 static bool bEnableFN2Load = false;
 static bool bInExtendedSettings = false;
 
 static bool bSimpleFrameInfo = true;
-static bool bShowInfo1 = false; //Position, pattern + state, speed, acceleration, health, circuit
-static bool bShowInfo2 = false; //Distance, advantage
-static bool bShowInfo3 = false; //EX flash, counter hit, guard gauge, scaling, partner, red health
-
-bool bShowBar1 = true; //General action info
-bool bShowBar2 = true; //Active Frames
-bool bShowBar3 = true; //Projectile and assist active frames
-static bool bShowBar4 = false; //A, B, E inputs
-static bool bShowBar5 = false; //C, D, directional inputs
+static bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
+static bool bDisplayInputs = false;
 
 static bool bIsStateSaved = false;
 static uint8_t nSaveSlot = 0;
@@ -386,171 +376,164 @@ void UpdateBars(Player& P, Player& Assist)
 	std::string sRightValue = " ";
 	bool bIsButtonPressed = P.cButtonInput != 0 || P.cMacroInput != 0;
 
-	if (bShowBar1)
+	//Bar 1 - General action information
+	if (P.nInactionableFrames != 0) //Doing something with limited actionability
 	{
-		//Bar 1 - General action information
+		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;65;200;0m";
+		sBarValue = std::format("{:2}", P.nInactionableFrames % 100);
+		if (P.nPattern >= 35 && P.nPattern <= 37) //Jump Startup
+		{
+			sFont = "\x1b[38;2;177;177;255m\x1b[48;2;241;224;132m";
+		}
+		else if (P.nHitstunRemaining != 0 && P.bBlockstunFlag == 0) //Hitstun
+		{
+			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;140;140;140m";
+			if (P.cStance == 1) //Airborne
+			{
+				if (P.sUntechCounter < P.sUntechTotal) //Still has untech remaining
+				{
+					sBarValue = std::format("{:2}", (P.sUntechTotal - P.sUntechCounter) % 100);
+				}
+			}
+			else //Grounded
+			{
+				if (P.nHitstunRemaining > 1) //Still has hitstun remaining
+					sBarValue = std::format("{:2}", P.nHitstunRemaining - 1 % 100);
+			}
+		}
+		else if (P.bBlockstunFlag) //Blockstun
+		{
+			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;180;180;180m";
+		}
+	}
+	else //Fully actionable
+	{
+		sFont = "\x1b[38;2;92;92;92m\x1b[48;2;0;0;0m";
+		sBarValue = std::format("{:2}", P.nPattern % 100);
+
+		if (bDoAdvantage) //Has advantage
+		{
+			sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
+			if (P.nAdvantageCounter != 0)
+			{
+				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;0;0;0m";
+			}
+		}
+			
+		if (P.nLastInactionableFrames != 0) //Neutral frame
+		{
+			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;32;90;0m";
+		}
+	}
+
+	if (P.bThrowFlag != 0) //Being thrown
+	{
+		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;110;110;110m";
+		sBarValue = " t";
+	}
+	else if (P.cBoxIndex == 12) //Clash
+	{
+		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;225;184;0m";
+	}
+	else if (P.cBoxIndex == 10) //Shield
+	{
+		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;145;194;255m";
+	}
+	else if (P.cBoxIndex <= 1 || P.sGrantedStrikeInvuln != 0 || P.cStateInvuln == 3) //Various forms of invuln
+	{
 		if (P.nInactionableFrames != 0) //Doing something with limited actionability
 		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;65;200;0m";
-			sBarValue = std::format("{:2}", P.nInactionableFrames % 100);
-			if (P.nPattern >= 35 && P.nPattern <= 37) //Jump Startup
-			{
-				sFont = "\x1b[38;2;177;177;255m\x1b[48;2;241;224;132m";
-			}
-			else if (P.nHitstunRemaining != 0 && P.bBlockstunFlag == 0) //Hitstun
-			{
-				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;140;140;140m";
-				if (P.cStance == 1) //Airborne
-				{
-					if (P.sUntechCounter < P.sUntechTotal) //Still has untech remaining
-					{
-						sBarValue = std::format("{:2}", (P.sUntechTotal - P.sUntechCounter) % 100);
-					}
-				}
-				else //Grounded
-				{
-					if (P.nHitstunRemaining > 1) //Still has hitstun remaining
-						sBarValue = std::format("{:2}", P.nHitstunRemaining - 1 % 100);
-				}
-			}
-			else if (P.bBlockstunFlag) //Blockstun
-			{
-				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;180;180;180m";
-			}
+			sFont = "\x1b[38;2;160;160;160m\x1b[48;2;255;255;255m";
 		}
 		else //Fully actionable
 		{
-			sFont = "\x1b[38;2;92;92;92m\x1b[48;2;0;0;0m";
-			sBarValue = std::format("{:2}", P.nPattern % 100);
-
-			if (bDoAdvantage) //Has advantage
-			{
-				sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
-				if (P.nAdvantageCounter != 0)
-				{
-					sFont = "\x1b[38;2;255;255;255m\x1b[48;2;0;0;0m";
-				}
-			}
-			
-			if (P.nLastInactionableFrames != 0) //Neutral frame
-			{
-				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;32;90;0m";
-			}
+			sFont = "\x1b[38;2;100;100;100m\x1b[48;2;255;255;255m";
 		}
 
-		if (P.bThrowFlag != 0) //Being thrown
-		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;110;110;110m";
-			sBarValue = " t";
-		}
-		else if (P.cBoxIndex == 12) //Clash
-		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;225;184;0m";
-		}
-		else if (P.cBoxIndex == 10) //Shield
-		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;145;194;255m";
-		}
-		else if (P.cBoxIndex <= 1 || P.sGrantedStrikeInvuln != 0 || P.cStateInvuln == 3) //Various forms of invuln
-		{
-			if (P.nInactionableFrames != 0) //Doing something with limited actionability
-			{
-				sFont = "\x1b[38;2;160;160;160m\x1b[48;2;255;255;255m";
-			}
-			else //Fully actionable
-			{
-				sFont = "\x1b[38;2;100;100;100m\x1b[48;2;255;255;255m";
-			}
+	}
 
-		}
+	if (cGlobalEXFlash != 0 || cP1EXFlash != 0 || cP2EXFlash != 0) //Screen is frozen
+	{
+		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
+	}
+	else if (P.cHitstop != 0) //in hitstop
+	{
+		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;80;128m";
+	}
 
-		if (cGlobalEXFlash != 0 || cP1EXFlash != 0 || cP2EXFlash != 0) //Screen is frozen
+	P.sBar1[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
+
+	sFont = "\x1b[0m";
+	sBarValue = "  ";
+
+	//Bar 2 - Active frames
+	if (P.cStance == 1)
+	{
+		sBarValue = " ^";
+	}
+
+	if (P.dwAttackDataPointer != 0)
+	{
+		sBarValue = std::format("{:2}", P.nActiveCounter % 100);
+		if (cGlobalEXFlash != 0 || cP1EXFlash != 0 || cP2EXFlash != 0)
 		{
 			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
 		}
-		else if (P.cHitstop != 0) //in hitstop
+		else if (P.cHitstop != 0)
 		{
 			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;80;128m";
 		}
-
-		P.sBar1[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
-
-		sFont = "\x1b[0m";
-		sBarValue = "  ";
-
-	}
-	if (bShowBar2)
-	{
-		//Bar 2 - Active frames
-		if (P.cStance == 1)
-		{
-			sBarValue = " ^";
-		}
-
-		if (P.dwAttackDataPointer != 0)
-		{
-			sBarValue = std::format("{:2}", P.nActiveCounter % 100);
-			if (cGlobalEXFlash != 0 || cP1EXFlash != 0 || cP2EXFlash != 0)
-			{
-				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
-			}
-			else if (P.cHitstop != 0)
-			{
-				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;80;128m";
-			}
-			else
-			{
-				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;255;0;0m";
-			}
-
-			if (P.cStance == 1)
-			{
-				sFont += "\x1b[4m";
-			}
-		}
-
-		P.sBar2[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
-
-		sFont = "";
-		sBarValue = "  ";
-	}
-	if (bShowBar3)
-	{
-		//Bar 3 - Projectile and assist active frames
-		if (P.nActiveProjectileCount != 0 || Assist.nActiveProjectileCount != 0)
+		else
 		{
 			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;255;0;0m";
-			sBarValue = std::format("{:2}", (P.nActiveProjectileCount + Assist.nActiveProjectileCount) % 100);
 		}
 
-		if (Assist.dwAttackDataPointer != 0)
+		if (P.cStance == 1)
 		{
-			sBarValue = std::format("{:2}", Assist.nActiveCounter  % 100);
-			if (cGlobalEXFlash != 0 || cP1EXFlash != 0 || cP2EXFlash != 0)
-			{
-				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
-			}
-			else if (Assist.cHitstop != 0)
-			{
-				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;80;128m";
-			}
-			else
-			{
-				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;255;128;0m";
-			}
+			sFont += "\x1b[4m";
+		}
+	}
 
-			if (Assist.cStance == 1)
-			{
-				sFont += "\x1b[4m";
-			}
+	P.sBar2[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
+
+	sFont = "";
+	sBarValue = "  ";
+
+	//Bar 3 - Projectile and assist active frames
+	if (P.nActiveProjectileCount != 0 || Assist.nActiveProjectileCount != 0)
+	{
+		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;255;0;0m";
+		sBarValue = std::format("{:2}", (P.nActiveProjectileCount + Assist.nActiveProjectileCount) % 100);
+	}
+
+	if (Assist.dwAttackDataPointer != 0)
+	{
+		sBarValue = std::format("{:2}", Assist.nActiveCounter  % 100);
+		if (cGlobalEXFlash != 0 || cP1EXFlash != 0 || cP2EXFlash != 0)
+		{
+			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
+		}
+		else if (Assist.cHitstop != 0)
+		{
+			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;80;128m";
+		}
+		else
+		{
+			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;255;128;0m";
 		}
 
-		P.sBar3[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
-
-		sFont = "";
-		sBarValue = "  ";
+		if (Assist.cStance == 1)
+		{
+			sFont += "\x1b[4m";
+		}
 	}
-	if (bShowBar4)
+
+	P.sBar3[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
+
+	sFont = "";
+	sBarValue = "  ";
+
+	if (bDisplayInputs)
 	{
 		//Bar 4
 		if (P.cMacroInput != 0)
@@ -592,9 +575,7 @@ void UpdateBars(Player& P, Player& Assist)
 		sRightFont = "\x1b[0m";
 		sLeftValue = " ";
 		sRightValue = " ";
-	}
-	if (bShowBar5)
-	{
+
 		//Bar 5
 		if (P.cRawDirectionalInput == 0)
 		{
@@ -729,7 +710,7 @@ void BarHandling(Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
 			nSharedHitstop > 1
 			);
 
-		if (!(bHideFreeze && bIsFreeze))
+		if (bDisplayFreeze || !bIsFreeze)
 		{
 			IncrementActive(P1);
 			IncrementActive(P2);
@@ -864,10 +845,10 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 	if (bSimpleFrameInfo)
 	{
 		printf("\x1b[0m" "Total %3i / Advantage %3i / Distance %3i" "\n",
-			P1.nInactiveMemory, nPlayerAdvantage, nXPixelDistance, nSaveSlot);
+			P1.nInactiveMemory, nPlayerAdvantage, nXPixelDistance);
 	}
 
-	if (bShowInfo1)
+	if (!bSimpleFrameInfo)
 	{
 		printf("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
 			"x-spd %5i" "\x1b[0m" "x-acc %5i" "\x1b[7m" "y-spd %5i" "\x1b[0m" "y-acc %5i" "\x1b[7m" "hp %5i" "\x1b[0m" "mc %5i" "\x1b[0m\x1b[K\n",
@@ -880,44 +861,24 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 			P2.nXSpeed, P2.sXAcceleration, P2.nYSpeed, P2.sYAcceleration, P2.nHealth, P2.nMagicCircuit);
 	}
 	
-	if (bShowInfo2)
+	if (!bSimpleFrameInfo)
 	{
 		printf("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "adv %3i" "\x1b[K\n",
 			nXDistance, nYDistance, nXPixelDistance, nYPixelDistance, nPlayerAdvantage);
 	}
 
-	if (bShowBar1 || bShowBar2 || bShowBar3)
-	{
-		std::cout << sColumnHeader;
-	}
+	std::cout << sColumnHeader;
 
-	if (bShowBar1)
-	{
-		std::cout << P1.sBarString1;
-	}
-	if (bShowBar2)
-	{
-		std::cout << P1.sBarString2;
-	}
-	if (bShowBar3)
-	{
-		std::cout << P1.sBarString3;
-	}
 
-	if (bShowBar1)
-	{
-		std::cout << P2.sBarString1;
-	}
-	if (bShowBar2)
-	{
-		std::cout << P2.sBarString2;
-	}
-	if (bShowBar3)
-	{
-		std::cout << P2.sBarString3;
-	}
+	std::cout << P1.sBarString1;
+	std::cout << P1.sBarString2;
+	std::cout << P1.sBarString3;
 
-	if (bShowInfo3)
+	std::cout << P2.sBarString1;
+	std::cout << P2.sBarString2;
+	std::cout << P2.sBarString3;
+
+	if (!bSimpleFrameInfo)
 	{
 		printf("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %4i [%.3f]" "\x1b[0m" "total %3i" "\x1b[0m\x1b[K\n",
 			cP1EXFlash, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 10, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality, P1.nInactiveMemory % 1000);
@@ -925,26 +886,20 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 			cP2EXFlash, cP2CounterHit, P4.nPattern, P4.nState, nP2GravityHits, nP2Gravity % 10, P2.sUntechPenalty % 10, P2.nRedHealth, nP2GuardGauge, P2.fGuardQuality, P2.nInactiveMemory % 1000);
 	}
 
-	if (bShowBar4 || bShowBar5)
+	if (bDisplayInputs)
 	{
 		std::cout << sColumnHeader;
 	}
 
-	if (bShowBar4)
+	if (bDisplayInputs)
 	{
 		std::cout << P1.sBarString4;
-	}
-	if (bShowBar5)
-	{
 		std::cout << P1.sBarString5;
 	}
 
-	if (bShowBar4)
+	if (bDisplayInputs)
 	{
 		std::cout << P2.sBarString4;
-	}
-	if (bShowBar5)
-	{
 		std::cout << P2.sBarString5;
 	}
 
@@ -1039,7 +994,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 		
 		BarHandling(*Player1, *Player2, *Player3, *Player4);
 
-		if (nTrueFrameCount == 1 && bIsStateSaved  && Saves[nSaveSlot - 1].bIsThisStateSaved && bEnableFN2Load)
+		if (nTrueFrameCount == 1 && bIsStateSaved && Saves[nSaveSlot - 1].bIsThisStateSaved && bEnableFN2Load)
 		{
 			ResetBars(P1);
 			ResetBars(P2);
