@@ -1847,8 +1847,8 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
                             nThrowRecoveryIndex = 0;
 
-                            nWriteBuffer = eEnemyStatus::STAND;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
+                            //nWriteBuffer = eEnemyStatus::STAND;
+                            //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
                         }
                         else if (nHitsTillBurst == MAX_BURST)
                         {
@@ -3337,14 +3337,14 @@ int main(int argc, char* argv[])
                         nTempReversalDelayFrames--;
                 }
 //#endif
-                bSwitchToCrouch = false;
+                /*bSwitchToCrouch = false;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
                 if (bSwitchToCrouch && nReadResult == eEnemyStance::STANDGUARDING)
                 {
                     nWriteBuffer = 2;
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyStatus), &nWriteBuffer, 4, 0);
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyStatusCopy), &nWriteBuffer, 4, 0);
-                }
+                }*/
             }
         }
     }
