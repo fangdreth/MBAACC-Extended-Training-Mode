@@ -90,12 +90,12 @@ bool bHighlightsOn = true;
    __asm pop ebp        \
 }
 
-std::array<BYTE, 3> arrDefaultHighlightSetting({ 255, 255, 255 });
-std::array<BYTE, 3> arrIdleHighlightSetting({ 255, 255, 255 });
-std::array<BYTE, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
-std::array<BYTE, 3> arrHitHighlightSetting({ 255, 255, 255 });
-std::array<BYTE, 3> arrArmorHighlightSetting({ 255, 255, 255 });
-std::array<BYTE, 3> arrThrowProtectionHighlightSetting({ 255, 255, 255 });
+std::array<uint8_t, 3> arrDefaultHighlightSetting({ 255, 255, 255 });
+std::array<uint8_t, 3> arrIdleHighlightSetting({ 255, 255, 255 });
+std::array<uint8_t, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
+std::array<uint8_t, 3> arrHitHighlightSetting({ 255, 255, 255 });
+std::array<uint8_t, 3> arrArmorHighlightSetting({ 255, 255, 255 });
+std::array<uint8_t, 3> arrThrowProtectionHighlightSetting({ 255, 255, 255 });
 
 void __stdcall log(const char* msg)
 {
@@ -1431,7 +1431,11 @@ void threadFunc()
 	{
 
 		// ideally, this would be done with signals. also unknown if this is thread safe
-		GetSharedMemory(&arrIdleHighlightSetting, &arrBlockingHighlightSetting, &arrHitHighlightSetting, &arrArmorHighlightSetting, &arrThrowProtectionHighlightSetting, NULL);
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrIdleHighlightSetting, 3, 0);
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrBlockingHighlightSetting, 3, 0);
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrHitHighlightSetting, 3, 0);
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrArmorHighlightSetting, 3, 0);
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrThrowProtectionHighlightSetting, 3, 0);
 		Sleep(8);
 	}
 }

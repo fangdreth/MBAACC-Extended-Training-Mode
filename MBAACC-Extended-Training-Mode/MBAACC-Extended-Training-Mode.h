@@ -393,7 +393,8 @@ uint8_t KeyJustPressed()
     // like numpad-/ and the arrow keys,
     // but all of the normal keys work as expected.
     // I'm fine with it, personally.
-    for (uint8_t i = 0x00; i <= 0xFF; i++)
+    uint8_t i = 0;
+    do
     {
         // key pressed AND key isn't garbage
         if (GetAsyncKeyState(i) & 0x8000 && MapVirtualKeyW(i, MAPVK_VK_TO_VSC) != 0)
@@ -403,7 +404,30 @@ uint8_t KeyJustPressed()
         }
         else
             arrKeysHeld[i] = 0;
-    }
+        i++;
+    } while (i);
 
     return 0;
+}
+
+std::array<uint8_t, 3> CreateColorArray2(int nHighlightID)
+{
+    switch (nHighlightID)
+    {
+    default:
+    case NO_HIGHLIGHT:
+        return { 255, 255, 255 };
+    case RED_HIGHLIGHT:
+        return { 255, 90, 90 };
+    case YELLOW_HIGHLIGHT:
+        return { 255, 255, 90 };
+    case GREEN_HIGHLIGHT:
+        return { 90, 255, 90 };
+    case BLUE_HIGHLIGHT:
+        return { 90, 90, 255 };
+    case PURPLE_HIGHLIGHT:
+        return { 255, 90, 255 };
+    case BLACK_HIGHLIGHT:
+        return { 90, 90, 90 };
+    }
 }

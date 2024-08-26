@@ -304,6 +304,21 @@ int main(int argc, char* argv[])
             InjectIntoMBAA(dwPID, sDLLPath);
             // it is ok if it fails.  write it to the log and move on.
             // it will be obvious in-game if it didn't inject correctly.
+
+            // Set some initial stuff
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeKey), &nFreezeKey, 1, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameStepKey), &nFrameStepKey, 1, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxesDisplayKey), &nHitboxDisplayKey, 1, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplayKey), &nFrameDataDisplayKey, 1, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlightsOnKey), &nHighlightsOnKey, 1, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveStateKey), &nSaveStateKey, 1, 0);
+
+            std::array<uint8_t, 3> arrTemp = CreateColorArray2(NO_HIGHLIGHT);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 3, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTemp, 3, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 3, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 3, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 3, 0);
         }
 
         // check this to prevent attaching to netplay
@@ -327,29 +342,6 @@ int main(int argc, char* argv[])
 
         //nWriteBuffer = nPlayerAdvantage;
         //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwFPS), &nWriteBuffer, 4, 0);
-
-        // overwrite p1 and p2 color numbers with the current pattern number
-        //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead - dwP2Offset), &nReadResult, 4, 0);
-        //nWriteBuffer = nReadResult - 1;
-        //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Color), &nWriteBuffer, 4, 0);
-
-        //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-        //nWriteBuffer = nReadResult - 1;
-        //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Color), &nWriteBuffer, 4, 0);
-
-        /*SaveFreezeKey(&nFreezeKey);
-        SaveFrameStepKey(&nFrameStepKey);
-        SaveHitboxesDisplayKey(&nHitboxDisplayKey);
-        SaveFrameDataDisplayKey(&nFrameDataDisplayKey);
-        SaveHighlightsOnKey(&nHighlightsOnKey);
-        SaveSaveStateKey(&nSaveStateKey);*/
-
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeKey), &nFreezeKey, 1, 0);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameStepKey), &nFrameStepKey, 1, 0);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxesDisplayKey), &nHitboxDisplayKey, 1, 0);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplayKey), &nFrameDataDisplayKey, 1, 0);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlightsOnKey), &nHighlightsOnKey, 1, 0);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveStateKey), &nSaveStateKey, 1, 0);
 
         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
         if (nReadResult == 0)
@@ -669,7 +661,7 @@ int main(int argc, char* argv[])
                                 ResetKeysHeld();
                                 bFreezeKeySet = false;
                                 nFreezeKey = 0;
-                                SetRegistryValue(L"FreezeKey", nFreezeKey);
+                                //SetRegistryValue(L"FreezeKey", nFreezeKey);
                             }
                             else if (nEnemySettingsCursor == 2)
                             {
@@ -1364,12 +1356,14 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
                         {
                             nIdleHighlightSetting = max(NO_HIGHLIGHT, nIdleHighlightSetting - 1);
-                            SetSharedMemory(&nIdleHighlightSetting);
+                            std::array<uint8_t, 3> arrTemp = CreateColorArray2(nIdleHighlightSetting);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 3, 0);
                         }
                         else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
                         {
                             nIdleHighlightSetting = min(BLACK_HIGHLIGHT, nIdleHighlightSetting + 1);
-                            SetSharedMemory(&nIdleHighlightSetting);
+                            std::array<uint8_t, 3> arrTemp = CreateColorArray2(nIdleHighlightSetting);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 3, 0);
                         }
 
                         if (nOldEnemyDefenseIndex == -1)
@@ -1377,12 +1371,14 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                         {
                             nBlockingHighlightSetting = max(NO_HIGHLIGHT, nBlockingHighlightSetting - 1);
-                            SetSharedMemory(nullptr, &nBlockingHighlightSetting);
+                            std::array<uint8_t, 3> arrTemp = CreateColorArray2(nBlockingHighlightSetting);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTemp, 3, 0);
                         }
                         else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                         {
                             nBlockingHighlightSetting = min(BLACK_HIGHLIGHT, nBlockingHighlightSetting + 1);
-                            SetSharedMemory(nullptr, &nBlockingHighlightSetting);
+                            std::array<uint8_t, 3> arrTemp = CreateColorArray2(nBlockingHighlightSetting);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTemp, 3, 0);
                         }
 
                         if (nOldEnemyDefenseTypeIndex == -1)
@@ -1390,12 +1386,14 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex)// left
                         {
                             nHitHighlightSetting = max(NO_HIGHLIGHT, nHitHighlightSetting - 1);
-                            SetSharedMemory(nullptr, nullptr, &nHitHighlightSetting);
+                            std::array<uint8_t, 3> arrTemp = CreateColorArray2(nHitHighlightSetting);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 3, 0);
                         }
                         else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
                         {
                             nHitHighlightSetting = min(BLACK_HIGHLIGHT, nHitHighlightSetting + 1);
-                            SetSharedMemory(nullptr, nullptr, &nHitHighlightSetting);
+                            std::array<uint8_t, 3> arrTemp = CreateColorArray2(nHitHighlightSetting);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 3, 0);
                         }
 
                         if (nOldAirRecoveryIndex == -1)
@@ -1403,12 +1401,14 @@ int main(int argc, char* argv[])
                         else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
                         {
                             nArmorHighlightSetting = max(NO_HIGHLIGHT, nArmorHighlightSetting - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, &nArmorHighlightSetting);
+                            std::array<uint8_t, 3> arrTemp = CreateColorArray2(nArmorHighlightSetting);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 3, 0);
                         }
                         else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
                         {
                             nArmorHighlightSetting = min(BLACK_HIGHLIGHT, nArmorHighlightSetting + 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, &nArmorHighlightSetting);
+                            std::array<uint8_t, 3> arrTemp = CreateColorArray2(nArmorHighlightSetting);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 3, 0);
                         }
 
                         if (nOldDownRecoveryIndex == -1)
@@ -1416,12 +1416,14 @@ int main(int argc, char* argv[])
                         else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
                         {
                             nThrowProtectionHighlightSetting = max(NO_HIGHLIGHT, nThrowProtectionHighlightSetting - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, &nThrowProtectionHighlightSetting);
+                            std::array<uint8_t, 3> arrTemp = CreateColorArray2(nThrowProtectionHighlightSetting);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 3, 0);
                         }
                         else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                         {
                             nThrowProtectionHighlightSetting = min(BLACK_HIGHLIGHT, nThrowProtectionHighlightSetting + 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, &nThrowProtectionHighlightSetting);
+                            std::array<uint8_t, 3> arrTemp = CreateColorArray2(nThrowProtectionHighlightSetting);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 3, 0);
                         }
                         break;
                     }
@@ -2611,7 +2613,7 @@ int main(int argc, char* argv[])
                         char pcTemp[19];
                         if (!bFreezeKeySet)
                         {
-                            int nKeyJustPressed = 0;
+                            uint8_t nKeyJustPressed = 0;
                             if (nEnemySettingsCursor == 0)
                                 nKeyJustPressed = KeyJustPressed();
 
@@ -2622,6 +2624,7 @@ int main(int argc, char* argv[])
                                 bFreezeKeySet = true;
                                 nFreezeKey = nKeyJustPressed;
                                 SetRegistryValue(L"FreezeKey", nFreezeKey);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeKey), &nFreezeKey, 1, 0);
                             }
                         }
                         if (bFreezeKeySet)
@@ -2646,7 +2649,7 @@ int main(int argc, char* argv[])
                         // FRAME STEP
                         if (!bFrameStepKeySet)
                         {
-                            int nKeyJustPressed = 0;
+                            uint8_t nKeyJustPressed = 0;
                             if (nEnemySettingsCursor == 2)
                                 nKeyJustPressed = KeyJustPressed();
 
@@ -2657,6 +2660,7 @@ int main(int argc, char* argv[])
                                 bFrameStepKeySet = true;
                                 nFrameStepKey = nKeyJustPressed;
                                 SetRegistryValue(L"FrameStepKey", nFrameStepKey);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameStepKey), &nFrameStepKey, 1, 0);
                             }
                         }
                         if (bFrameStepKeySet)
@@ -2681,7 +2685,7 @@ int main(int argc, char* argv[])
                         // HITBOX
                         if (!bHitboxDisplayKeySet)
                         {
-                            int nKeyJustPressed = 0;
+                            uint8_t nKeyJustPressed = 0;
                             if (nEnemySettingsCursor == 3)
                                 nKeyJustPressed = KeyJustPressed();
 
@@ -2692,6 +2696,7 @@ int main(int argc, char* argv[])
                                 bHitboxDisplayKeySet = true;
                                 nHitboxDisplayKey = nKeyJustPressed;
                                 SetRegistryValue(L"HitboxesDisplayKey", nHitboxDisplayKey);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxesDisplayKey), &nHitboxDisplayKey, 1, 0);
                             }
                         }
                         if (bHitboxDisplayKeySet)
@@ -2716,7 +2721,7 @@ int main(int argc, char* argv[])
                         // FRAME BAR
                         if (!bFrameDataDisplayKeySet)
                         {
-                            int nKeyJustPressed = 0;
+                            uint8_t nKeyJustPressed = 0;
                             if (nEnemySettingsCursor == 5)
                                 nKeyJustPressed = KeyJustPressed();
 
@@ -2727,6 +2732,7 @@ int main(int argc, char* argv[])
                                 bFrameDataDisplayKeySet = true;
                                 nFrameDataDisplayKey = nKeyJustPressed;
                                 SetRegistryValue(L"FrameDataDisplayKey", nFrameDataDisplayKey);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplayKey), &nFrameDataDisplayKey, 1, 0);
                             }
                         }
                         if (bFrameDataDisplayKeySet)
@@ -2751,7 +2757,7 @@ int main(int argc, char* argv[])
                         // HIGHLIGHT
                         if (!bHighlightsOnKeySet)
                         {
-                            int nKeyJustPressed = 0;
+                            uint8_t nKeyJustPressed = 0;
                             if (nEnemySettingsCursor == 6)
                                 nKeyJustPressed = KeyJustPressed();
 
@@ -2762,6 +2768,7 @@ int main(int argc, char* argv[])
                                 bHighlightsOnKeySet = true;
                                 nHighlightsOnKey = nKeyJustPressed;
                                 SetRegistryValue(L"HighlightsOnKey", nHighlightsOnKey);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlightsOnKey), &nHighlightsOnKey, 1, 0);
                             }
                         }
                         if (bHighlightsOnKeySet)
@@ -2786,7 +2793,7 @@ int main(int argc, char* argv[])
                         // SAVE STATE
                         if (!bSaveStateKeySet)
                         {
-                            int nKeyJustPressed = 0;
+                            uint8_t nKeyJustPressed = 0;
                             if (nEnemySettingsCursor == 8)
                                 nKeyJustPressed = KeyJustPressed();
 
@@ -2797,6 +2804,7 @@ int main(int argc, char* argv[])
                                 bSaveStateKeySet = true;
                                 nSaveStateKey = nKeyJustPressed;
                                 SetRegistryValue(L"SaveStateKey", nSaveStateKey);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveStateKey), &nSaveStateKey, 1, 0);
                             }
                         }
                         if (bSaveStateKeySet)
