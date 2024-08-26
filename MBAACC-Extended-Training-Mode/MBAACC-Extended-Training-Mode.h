@@ -300,8 +300,8 @@ void SetHealth(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 {
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Health), &nValue, 4, 0);
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RedHealth), &nValue, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Health + dwP2Offset), &nValue, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RedHealth + dwP2Offset), &nValue, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Health), &nValue, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RedHealth), &nValue, 4, 0);
 }
 
 void SetMeter(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue, int nP1Moon, int nP2Moon)
@@ -310,7 +310,7 @@ void SetMeter(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue, int nP1Moon, 
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Meter), &nWriteBuffer, 4, 0);
 
     nWriteBuffer = nP2Moon == 2 ? min(nValue, 20000) : nValue;
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Meter + dwP2Offset), &nWriteBuffer, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Meter), &nWriteBuffer, 4, 0);
 }
 
 void SetGuard(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nLevel, int nP1Moon, int nP2Moon)
@@ -319,21 +319,21 @@ void SetGuard(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nLevel, int nP1Moon, 
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1GuardAmount), &nWriteBuffer, 4, 0);
     
     nWriteBuffer = vGuardLevelLookupTable[nP2Moon * 5 + nLevel];
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1GuardAmount + dwP2Offset), &nWriteBuffer, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2GuardAmount), &nWriteBuffer, 4, 0);
 }
 
 void SetSionBullets(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 {
     int nWriteBuffer = 13 - min(nValue, MAX_BULLETS);
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1SionBullets), &nWriteBuffer, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1SionBullets + dwP2Offset), &nWriteBuffer, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2SionBullets), &nWriteBuffer, 4, 0);
 }
 
 void SetRoaVisibleCharge(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nVisible)
 {
     nVisible = nVisible == -2 ? 9 : max(nVisible, 0);
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RoaVisibleCharge), &nVisible, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RoaVisibleCharge + dwP2Offset), &nVisible, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RoaVisibleCharge), &nVisible, 4, 0);
 }
 
 void SetRoaHiddenCharge(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nHidden)
@@ -341,7 +341,7 @@ void SetRoaHiddenCharge(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nHidden)
     // for some reason it matters the order that hidden is first
     nHidden = nHidden == -2 ? 9 : max(nHidden, 0);
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RoaHiddenCharge), &nHidden, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RoaHiddenCharge + dwP2Offset), &nHidden, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RoaHiddenCharge), &nHidden, 4, 0);
 }
 
 void SetFMaidsHearts(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nHearts)
@@ -366,17 +366,17 @@ void SetP1X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 
 void SetP2X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 {
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset), &nValue, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2X), &nValue, 4, 0);
 }
 
 void SetP3X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 {
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 2), &nValue, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP3X), &nValue, 4, 0);
 }
 
 void SetP4X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 {
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 3), &nValue, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP4X), &nValue, 4, 0);
 }
 
 BYTE arrKeysHeld[256] = { 0 };

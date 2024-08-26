@@ -377,9 +377,9 @@ int main(int argc, char* argv[])
             bF2Pressed = (nReadResult == 1 ? true : false);
 
             // these flags are used to determine if assist chars exist
-            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Exists + dwP2Offset * 2), &nReadResult, 4, 0);
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP3Exists), &nReadResult, 4, 0);
             bP3Exists = (nReadResult == 1 ? true : false);
-            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Exists + dwP2Offset * 3), &nReadResult, 4, 0);
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP4Exists), &nReadResult, 4, 0);
             bP4Exists = (nReadResult == 1 ? true : false);
 
             // update the location variables if not locked
@@ -387,11 +387,11 @@ int main(int argc, char* argv[])
             {
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X), &nReadResult, 4, 0);
                 nP1X = nReadResult;
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset), &nReadResult, 4, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2X), &nReadResult, 4, 0);
                 nP2X = nReadResult;
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 2), &nReadResult, 4, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP3X), &nReadResult, 4, 0);
                 nP3X = nReadResult;
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 3), &nReadResult, 4, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP4X), &nReadResult, 4, 0);
                 nP4X = nReadResult;
             }
 
@@ -3131,15 +3131,15 @@ int main(int argc, char* argv[])
                 {
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwComboCount), &nReadResult, 4, 0);
                     int nComboCount = nReadResult;
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstopRemaining + dwP2Offset), &nReadResult, 1, 0);
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstopRemaining), &nReadResult, 1, 0);
                     int nHitstopRemaining = nReadResult;
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 4, 0);
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstunRemaining), &nReadResult, 4, 0);
                     int nHitstunRemaining = nReadResult;
                     if (nComboCount >= nHitsTillBurst && nHitstopRemaining == 0 && nHitstunRemaining != 0)
                     {
                         while (true)
                         {
-                            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 4, 0);
+                            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstunRemaining), &nReadResult, 4, 0);
                             nHitstunRemaining = nReadResult;
                             if (nHitstunRemaining == 0)
                             {
@@ -3171,11 +3171,11 @@ int main(int argc, char* argv[])
                         nWriteBuffer = nP1X;
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X), &nWriteBuffer, 4, 0);
                         nWriteBuffer = nP2X;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2X), &nWriteBuffer, 4, 0);
                         nWriteBuffer = nP3X;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 2), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP3X), &nWriteBuffer, 4, 0);
                         nWriteBuffer = nP4X;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X + dwP2Offset * 3), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP4X), &nWriteBuffer, 4, 0);
                     }
                 }
 
@@ -3186,7 +3186,7 @@ int main(int argc, char* argv[])
                 // increase the counter every frame p2 is standing idle to delay regenerating health and char specifics
                 // taking an extra step to cap these at 20 to avoid any unexpected behavior if tmode is left running forever
                 //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 4, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstunRemaining), &nReadResult, 4, 0);
                 int nHitstunRemaining = nReadResult;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
                 int nP2Pattern = nReadResult;
@@ -3276,7 +3276,7 @@ int main(int argc, char* argv[])
                 nBurstCooldown = nReadResult;
 
                 nReadResult = 0;
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 1, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstunRemaining), &nReadResult, 1, 0);
                 int nHitstun = nReadResult;
 
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Y), &nReadResult, 4, 0);

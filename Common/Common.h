@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <iostream>
 
+typedef DWORD ADDRESS;
+
 enum eMenu { MAIN = 2, BATTLE_SETTINGS = 6, ENEMY_SETTINGS = 7, VIEW_SCREEN = 12, COMMAND_LIST = 13 };
 enum eEnemyStatus { STAND, JUMP, CROUCH, CPU, MANUAL, DUMMY };
 enum eMagicCircuit { UNLIMITED = 3 };
@@ -27,7 +29,6 @@ const std::string VERSION = "v2.0";
 
 const DWORD dwP1WillBlock = 0x1552AC;
 const DWORD dwP2WillBlock = 0x1552AC + 0xAFC;
-const DWORD dwP2Offset = 0xAFC;
 const DWORD dwRoundTime = 0x162A40; //0-inf
 const DWORD dwMot = 0x1581CC;   // this one is mysterious.  I think it's an animation counter
 const DWORD dwEnemyStatus = 0x37C1E8; //0:STAND 1:JUMP 2:CROUCH 3:CPU 4:MANUAL 5:DUMMY
@@ -48,15 +49,25 @@ const DWORD dwExGuard = 0x1551E0; //10:ExGuard
 const DWORD dwP1Meter = 0x155210;   // abc.xy truncated Ex. 12345 = 123.4%
 const DWORD dwP1Health = 0x1551EC;
 const DWORD dwP1RedHealth = 0x1551F0;
+const DWORD dwP2Meter = 0x155210 + 0xAFC;
 const DWORD dwP2Health = 0x1551EC + 0xAFC;
 const DWORD dwP2RedHealth = 0x1551F0 + 0xAFC;
 const DWORD dwP1SionBullets = 0x1552F6; // counts shots used i.e. 0=13 in mag, 4=9 in mag, etc
+const DWORD dwP2SionBullets = 0x1552F6 + 0xAFC; // counts shots used i.e. 0=13 in mag, 4=9 in mag, etc
 const DWORD dwP1RoaVisibleCharge = 0x155302;    // 0-9
+const DWORD dwP2RoaVisibleCharge = 0x155302 + 0xAFC;    // 0-9
 const DWORD dwP1RoaHiddenCharge = 0x155300; // 0-9
+const DWORD dwP2RoaHiddenCharge = 0x155300 + 0xAFC; // 0-9
 const DWORD dwP1Y = 0x155248;
 const DWORD dwP2Y = 0x155248 + 0xAFC;
 const DWORD dwP1X = 0x155238;
+const DWORD dwP2X = 0x155238 + 0xAFC;
+const DWORD dwP3X = 0x155238 + 0xAFC * 2;
+const DWORD dwP4X = 0x155238 + 0xAFC * 3;
 const DWORD dwP1Exists = 0x155130;
+const DWORD dwP2Exists = 0x155130 + 0xAFC;
+const DWORD dwP3Exists = 0x155130 + 0xAFC * 2;
+const DWORD dwP4Exists = 0x155130 + 0xAFC * 3;
 const DWORD dwP2PatternSet = 0x155F38;
 const DWORD dwP1PatternRead = 0x155140;
 const DWORD dwP2PatternRead = dwP1PatternRead + 0xAFC;
@@ -75,9 +86,11 @@ const DWORD dwPausedFlag = 0x162A64;
 const DWORD dwEnemyAction = 0x37C1EC;
 const DWORD dwLifeRecover = 0x37C1F8;
 const DWORD dwP1HitstunRemaining = 0x1552DC;
+const DWORD dwP2HitstunRemaining = 0x1552DC + 0xAFC;
 const DWORD dwP1NotInCombo = 0x155194; //1:InCombo 0:NotInCombo
 const DWORD dwP2NotInCombo = 0x155194 + 0xAFC; //1:InCombo 0:NotInCombo
 const DWORD dwP1HitstopRemaining = 0x1552D4; //0:not in hitstop
+const DWORD dwP2HitstopRemaining = 0x1552D4 + 0xAFC; //0:not in hitstop
 const DWORD dwComboCount = 0x157E00; // there's another address that tracks this
 const DWORD dwP2E = 0x3713C9;
 const DWORD dwMagicCircuitSetting = 0x37C1FC;
@@ -114,7 +127,6 @@ const DWORD dwP1AnimationPtr = dwP1Struct + 0x320;
 const DWORD dwP2AnimationPtr = dwP2Struct + 0x320;
 
 //FrameDisplay Constants
-typedef DWORD ADDRESS; //I think doing this + adXxxxYyyy looks nice
 
 const int BAR_MEMORY_SIZE = 400; //Number of frames stored before overriding (FIFO). Only used in determining how far back you can scroll.
 const int BAR_INTERVAL = 20; //Number of frames of only blanks before the bar stops and resets on the next non-blank frame
