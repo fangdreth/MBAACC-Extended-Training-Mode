@@ -98,11 +98,11 @@ int main(int argc, char* argv[])
     int nP3TagFlag = 1;
     int nP4TagFlag = 1;
 
-    int nFreezeKey = VK_KEY_1;
-    int nFrameStepKey = VK_KEY_2;
-    int nHitboxDisplayKey = VK_KEY_3;
-    int nFrameDataDisplayKey = VK_KEY_4;
-    int nHighlightsOnKey = VK_KEY_5;
+    uint8_t nFreezeKey = VK_KEY_1;
+    uint8_t nFrameStepKey = VK_KEY_2;
+    uint8_t nHitboxDisplayKey = VK_KEY_3;
+    uint8_t nFrameDataDisplayKey = VK_KEY_4;
+    uint8_t nHighlightsOnKey = VK_KEY_5;
 
     bool bFreezeKeySet = true;
     bool bFrameStepKeySet = true;
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
 
     bool bJustUnpaused = false;
 
-    int nFrameData = FRAMEDISPLAY_NORMAL;
+    uint8_t nFrameData = FRAMEDISPLAY_NORMAL;
     //bool bSaveStates = false;
     bool bDisplayInputs = false;
 
@@ -345,12 +345,19 @@ int main(int argc, char* argv[])
         //nWriteBuffer = nReadResult - 1;
         //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Color), &nWriteBuffer, 4, 0);
 
-        SaveFreezeKey(&nFreezeKey);
+        /*SaveFreezeKey(&nFreezeKey);
         SaveFrameStepKey(&nFrameStepKey);
         SaveHitboxesDisplayKey(&nHitboxDisplayKey);
         SaveFrameDataDisplayKey(&nFrameDataDisplayKey);
         SaveHighlightsOnKey(&nHighlightsOnKey);
-        SaveSaveStateKey(&nSaveStateKey);
+        SaveSaveStateKey(&nSaveStateKey);*/
+
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeKey), &nFreezeKey, 1, 0);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameStepKey), &nFrameStepKey, 1, 0);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxesDisplayKey), &nHitboxDisplayKey, 1, 0);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplayKey), &nFrameDataDisplayKey, 1, 0);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlightsOnKey), &nHighlightsOnKey, 1, 0);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveStateKey), &nSaveStateKey, 1, 0);
 
         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
         if (nReadResult == 0)
@@ -970,14 +977,14 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyActionIndex > nEnemyActionIndex)// left
                         {
                             nReversalType = max(REVERSAL_NORMAL, nReversalType - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                nullptr, nullptr, nullptr, nullptr, nullptr, &nReversalType);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, nullptr, nullptr, &nReversalType);*/
                         }
                         else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
                         {
                             nReversalType = min(nReversalType + 1, REVERSAL_REPEAT);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                nullptr, nullptr, nullptr, nullptr, nullptr, &nReversalType);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, nullptr, nullptr, &nReversalType);*/
                         }
 
                         if (nOldEnemyDefenseIndex == -1)
@@ -985,14 +992,14 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                         {
                             nReversalIndex1 = max(0, nReversalIndex1 - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                &nReversalIndex1);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                &nReversalIndex1);*/
                         }
                         else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                         {
                             nReversalIndex1 = min(nReversalIndex1 + 1, vPatternNames.size() - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                &nReversalIndex1);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                &nReversalIndex1);*/
                         }
 
                         if (nOldEnemyDefenseTypeIndex == -1)
@@ -1000,14 +1007,14 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex)// left
                         {
                             nReversalIndex2 = max(0, nReversalIndex2 - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                nullptr, &nReversalIndex2);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                nullptr, &nReversalIndex2);*/
                         }
                         else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
                         {
                             nReversalIndex2 = min(nReversalIndex2 + 1, vPatternNames.size() - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                nullptr, &nReversalIndex2);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                nullptr, &nReversalIndex2);*/
                         }
 
                         if (nOldAirRecoveryIndex == -1)
@@ -1015,14 +1022,14 @@ int main(int argc, char* argv[])
                         else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
                         {
                             nReversalIndex3 = max(0, nReversalIndex3 - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                nullptr, nullptr, &nReversalIndex3);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                nullptr, nullptr, &nReversalIndex3);*/
                         }
                         else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
                         {
                             nReversalIndex3 = min(nReversalIndex3 + 1, vPatternNames.size() - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                nullptr, nullptr, &nReversalIndex3);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                nullptr, nullptr, &nReversalIndex3);*/
                         }
 
                         if (nOldDownRecoveryIndex == -1)
@@ -1030,14 +1037,14 @@ int main(int argc, char* argv[])
                         else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
                         {
                             nReversalIndex4 = max(0, nReversalIndex4 - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                nullptr, nullptr, nullptr, &nReversalIndex4);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, &nReversalIndex4);*/
                         }
                         else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                         {
                             nReversalIndex4 = min(nReversalIndex4 + 1, vPatternNames.size() - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                nullptr, nullptr, nullptr, &nReversalIndex4);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, &nReversalIndex4);*/
                         }
 
                         if (nOldThrowRecoveryIndex == -1)
@@ -1045,14 +1052,14 @@ int main(int argc, char* argv[])
                         else if (nOldThrowRecoveryIndex > nThrowRecoveryIndex)// left
                         {
                             nReversalDelayFrames = max(0, nReversalDelayFrames - 1);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                nullptr, nullptr, nullptr, nullptr, &nReversalDelayFrames);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, nullptr, &nReversalDelayFrames);*/
                         }
                         else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
                         {
                             nReversalDelayFrames = min(nReversalDelayFrames + 1, MAX_REVERSAL_DELAY);
-                            SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                nullptr, nullptr, nullptr, nullptr, &nReversalDelayFrames);
+                            /*SetSharedMemory(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, nullptr, &nReversalDelayFrames);*/
                         }
 
                         PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames, nReversalIndex1, nReversalIndex2, nReversalIndex3, nReversalIndex4);
@@ -3078,7 +3085,7 @@ int main(int argc, char* argv[])
                 nWriteBuffer = 1;
                 if (nExGuardSetting == eEnemyOffOnRandom::ON || (rand() % 2 == 0 && nExGuardSetting == eEnemyOffOnRandom::RANDOM))
                     nWriteBuffer = 10;
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwExGuard + dwP2Offset), &nWriteBuffer, 4, 0);
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2ExGuard), &nWriteBuffer, 4, 0);
 
                 // Disable built-in health recovery
                 nWriteBuffer = 4;

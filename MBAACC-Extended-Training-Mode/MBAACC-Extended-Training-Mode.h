@@ -192,7 +192,7 @@ void CreateRegistryKey()
     }
 }
 
-LONG ReadFromRegistry(std::wstring sKey, int* nValue)
+LONG ReadFromRegistry(std::wstring sKey, uint8_t* nValue)
 {
     LONG openResult = -1;
 
@@ -247,7 +247,7 @@ LONG SetRegistryValue(std::wstring sKey, bool bValue)
 
 LONG ReadFromRegistry(std::wstring sKey, bool* bValue)
 {
-    int nValue = 0;
+    uint8_t nValue = 0;
     LONG openResult = ReadFromRegistry(sKey, &nValue);
     if (openResult == 0)
         *bValue = nValue > 0 ? true : false;
@@ -379,13 +379,13 @@ void SetP4X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP4X), &nValue, 4, 0);
 }
 
-BYTE arrKeysHeld[256] = { 0 };
+uint8_t arrKeysHeld[256] = { 0 };
 void ResetKeysHeld()
 {
     std::fill(std::begin(arrKeysHeld), std::end(arrKeysHeld), 1);
 }
 
-int KeyJustPressed()
+uint8_t KeyJustPressed()
 {
     //http://www.kbdedit.com/manual/low_level_vk_list.html
 
@@ -393,7 +393,7 @@ int KeyJustPressed()
     // like numpad-/ and the arrow keys,
     // but all of the normal keys work as expected.
     // I'm fine with it, personally.
-    for (int i = 0x00; i <= 0xFF; i++)
+    for (uint8_t i = 0x00; i <= 0xFF; i++)
     {
         // key pressed AND key isn't garbage
         if (GetAsyncKeyState(i) & 0x8000 && MapVirtualKeyW(i, MAPVK_VK_TO_VSC) != 0)

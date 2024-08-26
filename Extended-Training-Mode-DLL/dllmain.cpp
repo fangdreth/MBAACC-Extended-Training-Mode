@@ -792,7 +792,7 @@ void highlightStates()
 	static int nP1ThrowProtectionTimer = 0;
 	static int nP2ThrowProtectionTimer = 0;
 	static KeyState oHighlightsOnKey;
-	oHighlightsOnKey.setKey(nHighlightsOnKey);
+	oHighlightsOnKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHighlightsOnKey));
 
 	if (oHighlightsOnKey.keyDown())
 		bHighlightsOn = !bHighlightsOn;
@@ -903,8 +903,8 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	// windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
 	static KeyState oFreezeKey;
 	static KeyState oFrameStepKey;
-	oFreezeKey.setKey(nFreezeKey);
-	oFrameStepKey.setKey(nFrameStepKey);
+	oFreezeKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFreezeKey));
+	oFrameStepKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey));
 
 	if (oFreezeKey.keyDown())
 		bFreeze = !bFreeze;		
@@ -1052,8 +1052,8 @@ void frameDoneCallback()
 {
 	static KeyState oHitboxesDisplayKey;
 	static KeyState oFrameDataDisplayKey;
-	oHitboxesDisplayKey.setKey(nHitboxesDisplayKey);
-	oFrameDataDisplayKey.setKey(nFrameDataDisplayKey);
+	oHitboxesDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHitboxesDisplayKey));
+	oFrameDataDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameDataDisplayKey));
 
 	if (oHitboxesDisplayKey.keyDown()) {
 		bHitboxesDisplay = !bHitboxesDisplay;
@@ -1431,10 +1431,7 @@ void threadFunc()
 	{
 
 		// ideally, this would be done with signals. also unknown if this is thread safe
-		GetSharedMemory(&arrIdleHighlightSetting, &arrBlockingHighlightSetting, &arrHitHighlightSetting, &arrArmorHighlightSetting, &arrThrowProtectionHighlightSetting, NULL,
-						&nReversalIndex1, &nReversalIndex2, &nReversalIndex3, &nReversalIndex4, 
-						&nReversalDelayFrames, &nReversalType,
-						&nFreezeKey, &nFrameStepKey, &nHitboxesDisplayKey, &nFrameDataDisplayKey, &nHighlightsOnKey, &nSaveStateKey);
+		GetSharedMemory(&arrIdleHighlightSetting, &arrBlockingHighlightSetting, &arrHitHighlightSetting, &arrArmorHighlightSetting, &arrThrowProtectionHighlightSetting, NULL);
 		Sleep(8);
 	}
 }

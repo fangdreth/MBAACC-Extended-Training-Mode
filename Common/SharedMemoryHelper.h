@@ -50,7 +50,7 @@ void InitializeSharedMemoryHelper()
 	bInitialized = true;
 }
 
-void SaveFreezeKey(int* pnFreezeKey)
+/*void SaveFreezeKey(int* pnFreezeKey)
 {
 	if (!bInitialized)
 		InitializeSharedMemoryHelper();
@@ -96,7 +96,7 @@ void SaveSaveStateKey(int* pnSaveStateKey)
 		InitializeSharedMemoryHelper();
 
 	CopyMemory(pBuffer + SHARE_SAVESTATEKEY * sizeof(int), pnSaveStateKey, sizeof(int));
-}
+}*/
 
 // I don't love this implementation.  probably going to make separate methods for each instead.
 // Putting it in its own class might be better too.
@@ -105,13 +105,7 @@ void SetSharedMemory(int* pnIdleHighlightSetting = nullptr,
 	int* pnHitHighlightSetting = nullptr,
 	int* pnArmorHighlightSetting = nullptr,
 	int* pnThrowProtectionHighlightSetting = nullptr,
-	int* pnTemp4HighlightSetting = nullptr,
-	int* pnReversalIndex1 = nullptr,
-	int* pnReversalIndex2 = nullptr,
-	int* pnReversalIndex3 = nullptr,
-	int* pnReversalIndex4 = nullptr,
-	int* pnReversalDelayFrames = nullptr,
-	int* pnReversalType = nullptr)
+	int* pnTemp4HighlightSetting = nullptr)
 {
 	static bool bSharedMemoryInit = false;
 	static HANDLE hMapFile = NULL;
@@ -165,30 +159,6 @@ void SetSharedMemory(int* pnIdleHighlightSetting = nullptr,
 	if (pnTemp4HighlightSetting)
 		CopyMemory(pBuf + nRunningOffset, pnTemp4HighlightSetting, sizeof(int));
 	nRunningOffset += sizeof(int);
-
-	if (pnReversalIndex1)
-		CopyMemory(pBuf + nRunningOffset, pnReversalIndex1, sizeof(int));
-	nRunningOffset += sizeof(int);
-
-	if (pnReversalIndex2)
-		CopyMemory(pBuf + nRunningOffset, pnReversalIndex2, sizeof(int));
-	nRunningOffset += sizeof(int);
-
-	if (pnReversalIndex3)
-		CopyMemory(pBuf + nRunningOffset, pnReversalIndex3, sizeof(int));
-	nRunningOffset += sizeof(int);
-
-	if (pnReversalIndex4)
-		CopyMemory(pBuf + nRunningOffset, pnReversalIndex4, sizeof(int));
-	nRunningOffset += sizeof(int);
-
-	if (pnReversalDelayFrames)
-		CopyMemory(pBuf + nRunningOffset, pnReversalDelayFrames, sizeof(int));
-	nRunningOffset += sizeof(int);
-
-	if (pnReversalType)
-		CopyMemory(pBuf + nRunningOffset, pnReversalType, sizeof(int));
-	nRunningOffset += sizeof(int);
 }
 
 void GetSharedMemory(std::array<BYTE, 3>* parrIdleHighlightSetting,
@@ -196,19 +166,7 @@ void GetSharedMemory(std::array<BYTE, 3>* parrIdleHighlightSetting,
 	std::array<BYTE, 3>* parrHitHighlightSetting,
 	std::array<BYTE, 3>* parrArmorHighlightSetting,
 	std::array<BYTE, 3>* parrThrowProtectionHighlightSetting,
-	std::array<BYTE, 3>* parrTemp4HighlightSetting,
-	int* pnReversalIndex1,
-	int* pnReversalIndex2,
-	int* pnReversalIndex3,
-	int* pnReversalIndex4,
-	int* pnReversalDelayFrames,
-	int* pnReversalType,
-	int* pnFreezeKey,
-	int* pnFrameStepKey,
-	int* pnHitboxesDisplayKey,
-	int* pnFrameDataDisplayKey,
-	int* pnHighlightsOnKey,
-	int* pnSaveStateKey)
+	std::array<BYTE, 3>* parrTemp4HighlightSetting)
 {
 	if (!bInitialized)
 		InitializeSharedMemoryHelper();
@@ -269,40 +227,4 @@ void GetSharedMemory(std::array<BYTE, 3>* parrIdleHighlightSetting,
 		int nTemp4HighlightSetting = ((int*)pBuffer)[SHARE_TEMP4HIGHLIGHT];
 		*parrTemp4HighlightSetting = CreateColorArray(nTemp4HighlightSetting);
 	}
-
-	if (pnReversalIndex1)
-		*pnReversalIndex1 = ((int*)pBuffer)[SHARE_REVERSALINDEX1];
-
-	if (pnReversalIndex2)
-		*pnReversalIndex2 = ((int*)pBuffer)[SHARE_REVERSALINDEX2];
-
-	if (pnReversalIndex3)
-		*pnReversalIndex3 = ((int*)pBuffer)[SHARE_REVERSALINDEX3];
-
-	if (pnReversalIndex4)
-		*pnReversalIndex4 = ((int*)pBuffer)[SHARE_REVERSALINDEX4];
-
-	if (pnReversalDelayFrames)
-		*pnReversalDelayFrames = ((int*)pBuffer)[SHARE_REVERSALDELAYFRAMES];
-
-	if (pnReversalType)
-		*pnReversalType = ((int*)pBuffer)[SHARE_REVERSALTYPE];
-
-	if (pnFreezeKey)
-		*pnFreezeKey = ((int*)pBuffer)[SHARE_FREEZEKEY];
-
-	if (pnFrameStepKey)
-		*pnFrameStepKey = ((int*)pBuffer)[SHARE_FRAMESTEPKEY];
-
-	if (pnHitboxesDisplayKey)
-		*pnHitboxesDisplayKey = ((int*)pBuffer)[SHARE_HITBOXESDISPLAYKEY];
-
-	if (pnFrameDataDisplayKey)
-		*pnFrameDataDisplayKey = ((int*)pBuffer)[SHARE_FRAMEDATADISPLAYKEY];
-
-	if (pnHighlightsOnKey)
-		*pnHighlightsOnKey = ((int*)pBuffer)[SHARE_HIGHLIGHTSONKEY];
-
-	if (pnSaveStateKey)
-		*pnHighlightsOnKey = ((int*)pBuffer)[SHARE_SAVESTATEKEY];
 }

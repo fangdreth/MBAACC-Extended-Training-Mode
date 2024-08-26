@@ -45,7 +45,8 @@ const DWORD dwAirRecovery = 0x37C208;
 const DWORD dwDownRecovery = 0x37C20C;
 const DWORD dwThrowRecovery = 0x37C214;
 const DWORD dwReduceRecovery = 0x37C218;
-const DWORD dwExGuard = 0x1551E0; //10:ExGuard
+const DWORD dwP1ExGuard = 0x1551E0; //10:ExGuard
+const DWORD dwP2ExGuard = 0x1551E0 + 0xAFC; //10:ExGuard
 const DWORD dwP1Meter = 0x155210;   // abc.xy truncated Ex. 12345 = 123.4%
 const DWORD dwP1Health = 0x1551EC;
 const DWORD dwP1RedHealth = 0x1551F0;
@@ -199,9 +200,19 @@ const ADDRESS adFont1 = 0x55D260;
 const ADDRESS adFont2 = 0x55DAA0;
 
 // addresses for memory sharing
-const ADDRESS adSharedSaveSlot = 0x381000;
-const ADDRESS adSharedSaveTextTimer = 0x381001;
-const ADDRESS adSharedClearTextTimer = 0x381002;
+// let's include comments here so we know how big everything is
+// to make it easier to add more.
+const ADDRESS adShareBase = 0x381000;
+const ADDRESS adSharedSaveSlot =				adShareBase + 0x0;	// 1 byte
+const ADDRESS adSharedSaveTextTimer =			adShareBase + 0x1;	// 1 byte
+const ADDRESS adSharedClearTextTimer =			adShareBase + 0x2;	// 1 byte
+
+const ADDRESS adSharedFreezeKey =				adShareBase + 0x10;	// 1 byte
+const ADDRESS adSharedFrameStepKey =			adShareBase + 0x11;	// 1 byte
+const ADDRESS adSharedHitboxesDisplayKey =		adShareBase + 0x12;	// 1 byte
+const ADDRESS adSharedFrameDataDisplayKey =		adShareBase + 0x13;	// 1 byte
+const ADDRESS adSharedHighlightsOnKey =			adShareBase + 0x14;	// 1 byte
+const ADDRESS adSharedSaveStateKey =			adShareBase + 0x15;	// 1 byte
 
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough

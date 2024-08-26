@@ -48,8 +48,8 @@ static bool bShowBar4 = false; //A, B, E inputs
 static bool bShowBar5 = false; //C, D, directional inputs
 
 static bool bIsStateSaved = false;
-static int nSaveSlot = 0;
-static int nSaveStateKey = VK_KEY_6;
+static uint8_t nSaveSlot = 0;
+static uint8_t nSaveStateKey = VK_KEY_6;
 int nResetStartFrame = 0;
 
 static int nPlayerAdvantage;
