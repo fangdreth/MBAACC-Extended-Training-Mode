@@ -2,51 +2,29 @@
 
 #include <set>
 
+unsigned textureFrameCount = 0;
+
 extern IDirect3DDevice9* device;
 
 // the shader
 const char* pixelShaderCode2 = R"(
-
-
-sampler2D texSampler : register(s0);
-
-struct PSInput
-{
-	float2 texCoord : TEXCOORD0;
-};
-
-float4 main(PSInput input) : COLOR
-{
-	// Sample the texture
-	float4 color = tex2D(texSampler, input.texCoord);
 	
-	// Modify the color (for example, invert the colors)
-	//color.rgb = 1.0 - color.rgb;
+sampler2D textureSampler : register(s0); // is using this low of a reg ok?
+float4 dynamicColor : register(c223); // using register 223 bc i dont want to mess something up
 
-	//color.r = 1 - color.r;
-	//color.g = 1 - color.g;
-	//color.b = 1 - color.b;
+float4 main(float2 texCoord : TEXCOORD0) : COLOR {
+	float4 texColor = tex2D(textureSampler, texCoord);
 
-	color.g = 1 - color.r;
-	color.r = 1 - color.b;
-	color.b = 1 - color.b;
+	texColor.r = dynamicColor.r;
+	texColor.g = dynamicColor.g;
+	texColor.b = dynamicColor.b;
 
-
-	
-	// Return the modified color
-	return color;
+	return texColor;
 }
-
-technique SimpleTechnique
-{
-	pass P0
-	{
-		PixelShader = compile ps_2_0 main();
-	}
-}
-
 
 )";
+
+D3DXVECTOR4 dynamicColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 bool pixelShaderNeedsReset = false;
 IDirect3DPixelShader9* pPixelShader_backup = nullptr;
@@ -65,7 +43,7 @@ void initShader() {
 		NULL,                          // Optional defines
 		NULL,                          // Optional include interface
 		"main",                 // Entry point function name
-		"ps_2_0",                      // Target profile (pixel shader 2.0)
+		"ps_3_0",                      // Target profile (pixel shader 2.0)
 		0,                             // Shader compile flags
 		&pShaderBuffer,                // Compiled shader code
 		&pErrorBuffer,                 // Error messages
@@ -100,6 +78,52 @@ void initShader() {
 	log("shader compile worked!");
 }
 
+float hue2rgb(float p, float q, float t) {
+	if (t < 0)
+		t += 1;
+	if (t > 1)
+		t -= 1;
+	if (t < 1. / 6)
+		return p + (q - p) * 6 * t;
+	if (t < 1. / 2)
+		return q;
+	if (t < 2. / 3)
+		return p + (q - p) * (2. / 3 - t) * 6;
+
+	return p;
+}
+
+D3DXVECTOR3 hsl2rgb(float h, float s, float l) {
+
+	D3DXVECTOR3 res;
+
+	if (0 == s) {
+		res.x = res.y = res.z = l;
+	}
+	else {
+		float q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+		float p = 2 * l - q;
+		res.x = hue2rgb(p, q, h + 1. / 3);
+		res.y = hue2rgb(p, q, h);
+		res.z = hue2rgb(p, q, h - 1. / 3);
+	}
+
+	return res;
+}
+
+void frameCountCallback() {
+	// textureFrameCount
+
+	float fr = ((float)(((int)(((float)textureFrameCount) * 2.0)) % 360)) / 360.0;
+
+	D3DXVECTOR3 temp = hsl2rgb(fr, 0.89, 0.61);
+
+	dynamicColor.x = temp.x;
+	dynamicColor.y = temp.y;
+	dynamicColor.z = temp.z;
+
+	device->SetPixelShaderConstantF(223, (float*)&dynamicColor, 1);
+}
 
 
 // this is a set intentionally, not unordered, as i believe that the size of this set will be reasonably small < 256 DWORDS
@@ -141,11 +165,14 @@ void drawPrimHook() {
 	//bool cond = (index >= 5 && index <= 8);
 	if (textureAddrs.contains(drawPrimHook_texAddr)) {
 		device->GetPixelShader(&pPixelShader_backup);
+		if (pPixelShader_backup != NULL) {
+			log("non null shader??");
+		}
 		pixelShaderNeedsReset = true;
 		device->SetPixelShader(pPixelShader);
 	}
 
-	log("%3d primHook tex addr %08X ret: %08X", index, drawPrimHook_texAddr, leadToDrawPrimHook_ret);
+	//log("%3d primHook tex addr %08X ret: %08X", index, drawPrimHook_texAddr, leadToDrawPrimHook_ret);
 
 	if (drawPrimHook_texAddr != 0) {
 		//log("attempting to see if tex is valid");
@@ -156,8 +183,6 @@ void drawPrimHook() {
 		//
 		//log("ok %d", type);
 	}
-
-	
 
 	index++;
 }
@@ -170,12 +195,29 @@ void drawPrimCallback() {
 	device->SetPixelShader(pPixelShader_backup);
 }
  
+DWORD listAppendHook_effectRetAddr = 0;
+DWORD listAppendHook_objAddr = 0;
 DWORD listAppendHook_texAddr = 0;
 void listAppendHook() {
-	log("listAppendHook: %08X", listAppendHook_texAddr);
+	//log("listAppendHook: %08X  objAddr: %08X retAddr: %08X", listAppendHook_texAddr, listAppendHook_objAddr, listAppendHook_effectRetAddr);
 
-	if (rand() & 1) {
-		textureAddrs.insert(listAppendHook_texAddr);
+	if (listAppendHook_effectRetAddr == 0x0045410F) {
+
+		if (listAppendHook_objAddr >= 0x0067BDE8) { // effect
+			// source is how its listed in the cheat engine file, im not actually sure what it is
+			char source = *(char*)(listAppendHook_objAddr - 8);
+
+			//log("listAppendHook_objAddr: %08X", listAppendHook_objAddr);
+			//log("source is %d %02X", source, source);
+
+			if (source >= 0) {
+				//log("obj: %08X", listAppendHook_objAddr);
+				textureAddrs.insert(listAppendHook_texAddr);
+			}
+
+		} else { // char? possibly or the hit effects
+
+		}	
 	}
 }
 
@@ -250,6 +292,24 @@ __declspec(naked) void _naked_leadToDrawPrimHook() {
 
 __declspec(naked) void _naked_listAppendHook() {
 
+	__asm {
+		mov listAppendHook_texAddr, eax;
+
+		
+		// stack checking NEEDS to be more consistent here!
+		// i could copy, a bunch of it, but would it be worth?
+
+		mov eax, [esp + 350h];
+		mov listAppendHook_objAddr, eax;
+
+		mov eax, [esp + 3E0h];
+		mov listAppendHook_effectRetAddr, eax;
+
+		mov eax, listAppendHook_texAddr;
+	};
+	
+	// down here so it doesnt mess with my above stuff
+	
 	// i do not trust the assembler :)
 	// bytes taken from 004c026b
 
@@ -265,10 +325,6 @@ __declspec(naked) void _naked_listAppendHook() {
 	// push eax 
 	__asm _emit 0x50;
 
-	__asm {
-		mov listAppendHook_texAddr, eax;
-	};
-
 	PUSH_ALL;
 	listAppendHook();
 	POP_ALL;
@@ -281,6 +337,16 @@ __declspec(naked) void _naked_listAppendHook() {
 	__asm _emit 0xFF;
 	__asm _emit 0xE2;
 
+}
+
+__declspec(naked) void _naked_frameCountCallback() {
+	PUSH_ALL;
+	frameCountCallback();
+	POP_ALL;
+	__asm {
+		add textureFrameCount, 1;
+		ret 4;
+	}
 }
 
 // init 
@@ -298,9 +364,11 @@ void initLeadToDrawPrimHook() {
 }
 
 void initListAppendHook() {
-
 	patchJump(0x004c026b, _naked_listAppendHook);
+}
 
+void initFrameCountCallback() {
+	patchJump(0x004238f5, _naked_frameCountCallback);
 }
 
 bool initTextureModifications() {
@@ -320,7 +388,7 @@ bool initTextureModifications() {
 	initDrawPrimCallback();
 	initLeadToDrawPrimHook();
 	initListAppendHook();
-
+	initFrameCountCallback();
 
 
 
