@@ -23,8 +23,12 @@ float4 main(PSInput input) : COLOR
 	// Modify the color (for example, invert the colors)
 	//color.rgb = 1.0 - color.rgb;
 
-	color.r = 1 - color.r;
-	color.g = 1 - color.g;
+	//color.r = 1 - color.r;
+	//color.g = 1 - color.g;
+	//color.b = 1 - color.b;
+
+	color.g = 1 - color.r;
+	color.r = 1 - color.b;
 	color.b = 1 - color.b;
 
 
@@ -114,6 +118,18 @@ DWORD leadToDrawPrimHook_ret = 0;
 DWORD drawPrimHook_texAddr = 0;
 void drawPrimHook() {
 
+	/*
+	
+	TODO:
+	the random thing currently in works. 
+	however:
+
+	top UI elems were constantly inverted, why
+
+	actual todo, investigate the stack, and figure out how to capture what is actually being drawn, and use that 
+	
+	*/
+
 	static unsigned index = 0;
 
 	if (leadToDrawPrimHook_ret != 0x004331D9) {
@@ -133,7 +149,7 @@ void drawPrimHook() {
 
 	if (drawPrimHook_texAddr != 0) {
 		//log("attempting to see if tex is valid");
-		IDirect3DBaseTexture9* pTex = (IDirect3DBaseTexture9*)(drawPrimHook_texAddr);
+		//IDirect3DBaseTexture9* pTex = (IDirect3DBaseTexture9*)(drawPrimHook_texAddr);
 		//IDirect3DBaseTexture9* pTex = (IDirect3DBaseTexture9*)(*(DWORD*)drawPrimHook_texAddr);
 		//
 		//int type = pTex->GetType();
@@ -151,11 +167,16 @@ void drawPrimCallback() {
 		pixelShaderNeedsReset = false;
 		device->SetPixelShader(pPixelShader_backup);
 	}
+	device->SetPixelShader(pPixelShader_backup);
 }
  
 DWORD listAppendHook_texAddr = 0;
 void listAppendHook() {
 	log("listAppendHook: %08X", listAppendHook_texAddr);
+
+	if (rand() & 1) {
+		textureAddrs.insert(listAppendHook_texAddr);
+	}
 }
 
 // naked funcs
