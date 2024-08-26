@@ -37,7 +37,6 @@ static bool bSimpleFrameInfo = true;
 static bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
 static bool bDisplayInputs = false;
 
-static bool bIsStateSaved = false;
 static uint8_t nSaveSlot = 0;
 static uint8_t nSaveStateKey = VK_KEY_6;
 int nResetStartFrame = 0;
@@ -46,7 +45,7 @@ static int nPlayerAdvantage;
 int nSharedHitstop;
 
 struct Save {
-	bool bIsThisStateSaved = false;
+	bool bSaved = false;
 
 	DWORD dwSaveEffects[74576 / 4] = {}; //Effect and projectile data
 	DWORD dwSaveStopSituation[1632 / 4] = {};
@@ -274,50 +273,83 @@ void UpdatePlayer(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P) {
 	CheckProjectiles(hMBAAHandle, dwBaseAddress, P);
 }
 
-void SaveState(HANDLE hMBAAHandle, DWORD dwBaseAddress, Save &S)
+void SaveState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 {
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x27BD70), &S.dwSaveEffects, 74576, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x158600), &S.dwSaveStopSituation, 1632, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x162A48), &S.cSaveGlobalEXFlash, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DD8), &S.dwSaveAttackDisplayInfo, 52, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157E10), &S.dwSaveAttackDisplayInfo2, 1004, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x164B14), &S.dwSaveDestinationCamX, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x164B18), &S.dwSaveCurrentCamX, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x15DEC4), &S.dwSaveDestinationCamY, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x15DEC8), &S.dwSaveCurrentCamY, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x14EB70), &S.dwSaveCurrentCamZoom, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x14EB74), &S.dwSaveDestinationCamZoom, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DB8), &S.dwSaveContlFlag, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DBC), &S.dwSaveContlFlag2, 4, 0);
+	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	{
+		Save &S = Saves[nSaveSlot - 1];
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x27BD70), &S.dwSaveEffects, 74576, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x158600), &S.dwSaveStopSituation, 1632, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x162A48), &S.cSaveGlobalEXFlash, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DD8), &S.dwSaveAttackDisplayInfo, 52, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157E10), &S.dwSaveAttackDisplayInfo2, 1004, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x164B14), &S.dwSaveDestinationCamX, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x164B18), &S.dwSaveCurrentCamX, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x15DEC4), &S.dwSaveDestinationCamY, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x15DEC8), &S.dwSaveCurrentCamY, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x14EB70), &S.dwSaveCurrentCamZoom, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x14EB74), &S.dwSaveDestinationCamZoom, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DB8), &S.dwSaveContlFlag, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DBC), &S.dwSaveContlFlag2, 4, 0);
 
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x155140), &S.dwSaveP1, 972, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x155C3C), &S.dwSaveP2, 972, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x156738), &S.dwSaveP3, 972, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157234), &S.dwSaveP4, 972, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x155140), &S.dwSaveP1, 972, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x155C3C), &S.dwSaveP2, 972, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x156738), &S.dwSaveP3, 972, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157234), &S.dwSaveP4, 972, 0);
 
-	S.bIsThisStateSaved = true;
+		S.bSaved = true;
+	}
 }
 
-void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, Save &S)
+void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 {
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x27BD70), &S.dwSaveEffects, 74576, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x158600), &S.dwSaveStopSituation, 1632, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x162A48), &S.cSaveGlobalEXFlash, 1, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DD8), &S.dwSaveAttackDisplayInfo, 52, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157E10), &S.dwSaveAttackDisplayInfo2, 1004, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x164B14), &S.dwSaveDestinationCamX, 4, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x164B18), &S.dwSaveCurrentCamX, 4, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x15DEC4), &S.dwSaveDestinationCamY, 4, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x15DEC8), &S.dwSaveCurrentCamY, 4, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x14EB70), &S.dwSaveCurrentCamZoom, 4, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x14EB74), &S.dwSaveDestinationCamZoom, 4, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DB8), &S.dwSaveContlFlag, 4, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DBC), &S.dwSaveContlFlag2, 4, 0);
+	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	{
+		Save &S = Saves[nSaveSlot - 1];
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x27BD70), &S.dwSaveEffects, 74576, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x158600), &S.dwSaveStopSituation, 1632, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x162A48), &S.cSaveGlobalEXFlash, 1, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DD8), &S.dwSaveAttackDisplayInfo, 52, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157E10), &S.dwSaveAttackDisplayInfo2, 1004, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x164B14), &S.dwSaveDestinationCamX, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x164B18), &S.dwSaveCurrentCamX, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x15DEC4), &S.dwSaveDestinationCamY, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x15DEC8), &S.dwSaveCurrentCamY, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x14EB70), &S.dwSaveCurrentCamZoom, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x14EB74), &S.dwSaveDestinationCamZoom, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DB8), &S.dwSaveContlFlag, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157DBC), &S.dwSaveContlFlag2, 4, 0);
 
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x155140), &S.dwSaveP1, 972, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x155C3C), &S.dwSaveP2, 972, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x156738), &S.dwSaveP3, 972, 0);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157234), &S.dwSaveP4, 972, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x155140), &S.dwSaveP1, 972, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x155C3C), &S.dwSaveP2, 972, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x156738), &S.dwSaveP3, 972, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x157234), &S.dwSaveP4, 972, 0);
+	}
+}
+
+bool CheckSave(int nSaveSlot)
+{
+	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	{
+		return Saves[nSaveSlot - 1].bSaved;
+	}
+	return false;
+}
+
+void ClearSave(int nSaveSlot)
+{
+	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	{
+		Saves[nSaveSlot - 1].bSaved = false;
+	}
+}
+
+void ClearAllSaves()
+{
+	for (int i = 0; i < MAX_SAVES; i++)
+	{
+		Saves[i].bSaved = false;
+	}
 }
 
 void CalculateAdvantage(Player& P1, Player& P2)
@@ -912,11 +944,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 
 	if (cGameState != 1) //If not in game (any gamemode)
 	{
-		bIsStateSaved = false;
-		for (int i = 0; i < MAX_SAVES; i++)
-		{
-			Saves[i].bIsThisStateSaved = false;
-		}
+		ClearAllSaves();
 		std::cout << "\x1b[J";
 		return;
 	}
@@ -934,12 +962,11 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 		if (!bLockInput)
 		{
 			bLockInput = true;
-			SaveState(hMBAAHandle, dwBaseAddress, Saves[nSaveSlot - 1]);
+			SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
 			nResetStartFrame = nTrueFrameCount;
 			char cSaveSlot = nSaveSlot;
 			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &cSaveSlot, 1, 0);
 			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveTextTimer), &TEXT_TIMER, 1, 0);
-			bIsStateSaved = true;
 		}
 		char c5 = 5;
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x162A48), &c5, 1, 0);
@@ -948,7 +975,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 	{
 		if (nTrueFrameCount >= nResetStartFrame + SAVE_RESET_TIME && nResetStartFrame != 0)
 		{
-			Saves[nSaveSlot - 1].bIsThisStateSaved = false;
+			ClearSave(nSaveSlot);
 			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedClearTextTimer), &TEXT_TIMER, 1, 0);
 			nResetStartFrame = 0;
 		}
@@ -994,13 +1021,13 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 		
 		BarHandling(*Player1, *Player2, *Player3, *Player4);
 
-		if (nTrueFrameCount == 1 && bIsStateSaved && Saves[nSaveSlot - 1].bIsThisStateSaved && bEnableFN2Load)
+		if (nTrueFrameCount == 1 && CheckSave(nSaveSlot) && bEnableFN2Load)
 		{
 			ResetBars(P1);
 			ResetBars(P2);
 			ResetBars(P3);
 			ResetBars(P4);
-			LoadState(hMBAAHandle, dwBaseAddress, Saves[nSaveSlot - 1]);
+			LoadState(hMBAAHandle, dwBaseAddress, nSaveSlot);
 		}
 	}
 

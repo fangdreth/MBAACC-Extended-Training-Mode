@@ -654,13 +654,11 @@ int main(int argc, char* argv[])
                         {
                             if (nEnemySettingsCursor == 2)
                             {
-                                //bIsStateSaved = false;
-                                Saves[nSaveSlot - 1].bIsThisStateSaved = false;
+                                ClearSave(nSaveSlot);
                             }
                             else if (nEnemySettingsCursor == 3)
                             {
-                                SaveState(hMBAAHandle, dwBaseAddress, Saves[nSaveSlot - 1]);
-                                bIsStateSaved = true;
+                                SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
                             }
                             break;
                         }
@@ -2112,7 +2110,7 @@ int main(int argc, char* argv[])
                         else if (nSaveSlot < MAX_SAVES)
                         {
                             std::string sData = "NO DATA";
-                            if (Saves[nSaveSlot - 1].bIsThisStateSaved)
+                            if (CheckSave(nSaveSlot))
                             {
                                 sData = "SAVED";
                             }
@@ -2130,7 +2128,7 @@ int main(int argc, char* argv[])
                         else
                         {
                             std::string sData = "NO DATA";
-                            if (Saves[nSaveSlot - 1].bIsThisStateSaved)
+                            if (CheckSave(nSaveSlot))
                             {
                                 sData = "SAVED";
                             }
@@ -3152,7 +3150,7 @@ int main(int argc, char* argv[])
                 // reset resources to the preset when training mode is reset
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwGuardSetting), &nReadResult, 4, 0);
                 nCustomGuard = nReadResult;
-                if (nFrameCounter == 1 && !bIsStateSaved)
+                if (nFrameCounter == 1 && !CheckSave(nSaveSlot))
                 {
                     SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
                     SetGuard(hMBAAHandle, dwBaseAddress, nCustomGuard, nP1Moon, nP2Moon);
@@ -3210,14 +3208,14 @@ int main(int argc, char* argv[])
                 
 
                 // refill health if training mode is reset or long enough time has passed
-                if ((nFrameCounter == 1 && !bIsStateSaved) || (nHealthRefillTimer == 1 && bLifeRecover))
+                if ((nFrameCounter == 1 && !CheckSave(nSaveSlot)) || (nHealthRefillTimer == 1 && bLifeRecover))
                 {
                     SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth);
                     nHealthRefillTimer = 0;
                 }
 
                 // refill character specifics
-                if (!bIsStateSaved)
+                if (!CheckSave(nSaveSlot))
                 {
                     if ((nFrameCounter == 1 || nSionBulletsRefillTimer == 1 || nSionBullets == 15) && nSionBullets != 14)
                     {
