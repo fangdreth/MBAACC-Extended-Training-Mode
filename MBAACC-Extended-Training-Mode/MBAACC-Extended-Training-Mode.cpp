@@ -2431,6 +2431,53 @@ int main(int argc, char* argv[])
                                 }
                             }
                         }
+
+                        if (nFMaidsHearts == MAX_HEARTS)
+                        {
+                            char pcFive_2[2] = "5";
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOffString), &pcFive_2, 2, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcFive_2, 2, 0);
+                            nWriteBuffer = 0;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                            nDownRecoveryIndex = 0;
+                        }
+                        else if (nFMaidsHearts == -1)
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom1String), &pcInfinite_10, 10, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom2String), &pcInfinite_10, 10, 0);
+                            nWriteBuffer = 5;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                            nDownRecoveryIndex = 5;
+                        }
+                        else
+                        {
+                            char pcTemp[8];
+                            strcpy_s(pcTemp, std::to_string(nFMaidsHearts).c_str());
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryBackString), &pcTemp, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryForwardString), &pcTemp, 8, 0);
+                            nWriteBuffer = 2;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                            nDownRecoveryIndex = 2;
+                        }
+
+                        if (bRyougiInfiniteKnife)
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomLateString), &pcInfinite_10, 10, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomRandomString), &pcInfinite_10, 10, 0);
+                            nWriteBuffer = 6;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                            nThrowRecoveryIndex = 6;
+                        }
+                        else
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryNormalString), &pcNormal_7, 7, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcNormal_7, 7, 0);
+                            nWriteBuffer = 0;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                            nThrowRecoveryIndex = 0;
+                        }
+
                         break;
                     }
                     case HIGHLIGHT_PAGE:
