@@ -12,26 +12,82 @@ const char* pixelShaderCode2 = R"(
 	
 sampler2D textureSampler : register(s0); // is using this low of a reg ok?
 float4 dynamicColor : register(c223); // using register 223 bc i dont want to mess something up
+DWORD blendMode : register(c222);
+
+float4 Hue : register(c221);
+
+const float EPSILON = 1e-10;
+
+float3 HUEtoRGB(float hue)
+{
+    // Hue [0..1] to RGB [0..1]
+    // See http://www.chilliant.com/rgb2hsv.html
+    float3 rgb = abs(hue * 6. - float3(3, 2, 4)) * float3(1, -1, -1) + float3(-1, 2, 2);
+    return clamp(rgb, 0., 1.);
+}
+
+float3 RGBtoHCV(float3 rgb)
+{
+    // RGB [0..1] to Hue-Chroma-Value [0..1]
+    // Based on work by Sam Hocevar and Emil Persson
+    float4 p = (rgb.g < rgb.b) ? float4(rgb.bg, -1., 2. / 3.) : float4(rgb.gb, 0., -1. / 3.);
+    float4 q = (rgb.r < p.x) ? float4(p.xyw, rgb.r) : float4(rgb.r, p.yzx);
+    float c = q.x - min(q.w, q.y);
+    float h = abs((q.w - q.y) / (6. * c + EPSILON) + q.z);
+    return float3(h, c, q.x);
+}
+
+float3 RGBtoHSV(float3 rgb)
+{
+    // RGB [0..1] to Hue-Saturation-Value [0..1]
+    float3 hcv = RGBtoHCV(rgb);
+    float s = hcv.y / (hcv.z + EPSILON);
+    return float3(hcv.x, s, hcv.z);
+}
+
+float3 HSVtoRGB(float3 hsv)
+{
+    // Hue-Saturation-Value [0..1] to RGB [0..1]
+    float3 rgb = HUEtoRGB(hsv.x);
+    return ((rgb - 1.) * hsv.y + 1.) * hsv.z;
+}
+
 
 float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 	float4 texColor = tex2D(textureSampler, texCoord);
-
-	texColor.r = dynamicColor.r;
-	texColor.g = dynamicColor.g;
-	texColor.b = dynamicColor.b;
-
-
-	//texColor.r *= dynamicColor.r;
-	//texColor.g *= dynamicColor.g;
-	//texColor.b *= dynamicColor.b;
 	
+	
+	/*
+	if(blendMode.r == 0.0 || blendMode.r == 1.0) {
+		texColor.r = dynamicColor.r;
+		texColor.g = dynamicColor.g;
+		texColor.b = dynamicColor.b;
+	} else {
+
+	}
+	*/
+
+	
+
+	float3 hcyVal = RGBtoHSV(texColor.rgb);
+
+	hcyVal.r = Hue.r;
+
+	float3 rgbVal = HSVtoRGB(hcyVal.rgb);
+
+	texColor.rgb = rgbVal;
 
 	return texColor;
 }
 
 )";
 
+// shader vars
 D3DXVECTOR4 dynamicColor(0.0f, 0.0f, 0.0f, 1.0f);
+D3DXVECTOR4 blendMode(0.0f, 0.0f, 0.0f, 1.0f);
+
+D3DXVECTOR4 Hue(0.0f, 0.0f, 0.0f, 1.0f);
+
 
 bool pixelShaderNeedsReset = false;
 IDirect3DPixelShader9* pPixelShader_backup = nullptr;
@@ -128,25 +184,42 @@ void frameCountCallback() {
 	//float fr = ((float)(((int)(((float)textureFrameCount) * 2.0)) % 360)) / 360.0;
 	//D3DXVECTOR3 temp = hsl2rgb(fr, 0.89, 0.61);
 
-	D3DXVECTOR3 temp = gradientArray[((int)(((float)textureFrameCount) * 4.0)) % 360];
+	DWORD offset = ((int)(((float)textureFrameCount) * 4.0)) % 360;
+
+	D3DXVECTOR3 temp = gradientArray[offset];
 
 	dynamicColor.x = temp.x;
 	dynamicColor.y = temp.y;
 	dynamicColor.z = temp.z;
 
 	device->SetPixelShaderConstantF(223, (float*)&dynamicColor, 1);
+
+	Hue.x = ((float)offset) / 360.0f;
+
+	device->SetPixelShaderConstantF(221, (float*)&Hue, 1);
+
 }
 
 class TextureModification {
 public:
+	TextureModification() {
+		blend = 0;
+	}
+
+	TextureModification(DWORD blend_) {
+		blend = blend_;
+	}
+	
+
+	DWORD blend;
 
 
 private:
 };
 
 // this is a set/map intentionally, not unordered, as i believe that the size of this set will be reasonably small < 256 DWORDS
-//std::map<DWORD, TextureModification> textureAddrs; 
-std::set<DWORD> textureAddrs; 
+std::map<DWORD, TextureModification> textureAddrs; 
+//std::set<DWORD> textureAddrs; 
 // key is the unknown address im using to match between the setup and render funcs (most likely just a linked list ptr?), it may have really helpful data tho?
 
 /*
@@ -191,27 +264,10 @@ void drawPrimHook() {
 		pixelShaderNeedsReset = true;
 		device->SetPixelShader(pPixelShader);
 
+		blendMode.x = (float)textureAddrs[drawPrimHook_texAddr].blend;
+		device->SetPixelShaderConstantF(222, (float*)&blendMode, 1);
 
-		DWORD srcblend;
-		DWORD dstblend;
-
-		DWORD sepAlphaEnable;
-		DWORD srcAlpha;
-		DWORD dstAlpha;
-		DWORD blendAlpha;
-		DWORD otherBlendAlpha;
-
-
-		device->GetRenderState(D3DRS_SRCBLEND, &srcblend);
-		device->GetRenderState(D3DRS_DESTBLEND, &dstblend);
-
-		device->GetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, &sepAlphaEnable);
-		device->GetRenderState(D3DRS_SRCBLENDALPHA, &srcAlpha);
-		device->GetRenderState(D3DRS_DESTBLENDALPHA, &dstAlpha);
-		device->GetRenderState(D3DRS_BLENDOPALPHA, &blendAlpha);
-		device->GetRenderState(D3DRS_BLENDOP, &otherBlendAlpha);
-
-		//log("D3DRS_SRCBLEND: %2d D3DRS_DESTBLEND: %2d D3DRS_SEPARATEALPHABLENDENABLE: %2d D3DRS_SRCBLENDALPHA: %2d D3DRS_DESTBLENDALPHA: %2d D3DRS_BLENDOPALPHA: %2d D3DRS_BLENDOP: %2d", srcblend, dstblend, sepAlphaEnable, srcAlpha, dstAlpha, blendAlpha, otherBlendAlpha);
+		
 
 		// make all things use normal color blending
 		//device->SetRenderState(D3DRS_BLENDOP, 0);
@@ -238,6 +294,122 @@ void drawPrimHook() {
 
 void drawPrimCallback() {
 	
+
+	if (renderStateNeedsReset) {
+		DWORD srcblend;
+		DWORD dstblend;
+
+		DWORD sepAlphaEnable;
+		DWORD srcAlpha;
+		DWORD dstAlpha;
+		DWORD blendAlpha;
+		DWORD otherBlendAlpha;
+
+
+		// D3DRS_DESTBLEND fluctuates between 2 and 6
+		// D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1
+		 
+		
+		// D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1
+
+		/*
+		
+		pattern: 165 state: 21
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 21
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 21
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 22
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 22
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 22
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 23
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 23
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 23
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 24
+		pattern: 168 state: 0
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 24
+		pattern: 168 state: 1
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 24
+		pattern: 168 state: 1
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 25
+		pattern: 168 state: 2
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+		pattern: 165 state: 25
+		pattern: 168 state: 2
+		D3DRS_BLENDOP:  1 D3DRS_ALPHABLENDENABLE:  1 D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2
+
+		cvaki air 22a 
+
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  1 D3DSAMP_MINFILTER:  1
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  1 D3DSAMP_MINFILTER:  1
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  2 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		
+		warc 236A 
+		(REMEMBER THAT GROUND 214 A HAS THE TRAIL WITH THE NON0 BLEND
+
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+		D3DRS_SRCBLEND:  5 D3DRS_DESTBLEND:  6 D3DRS_SEPARATEALPHABLENDENABLE:  1 D3DRS_SRCBLENDALPHA:  5 D3DRS_DESTBLENDALPHA:  2 D3DRS_BLENDOPALPHA:  1 D3DRS_BLENDOP:  1 D3DSAMP_MAGFILTER:  2 D3DSAMP_MINFILTER:  2
+
+		cvaki 22a 
+		pattern: 168 state: 0
+		pattern: 165 state: 24
+
+		*/
+
+		device->GetRenderState(D3DRS_SRCBLEND, &srcblend);
+		device->GetRenderState(D3DRS_DESTBLEND, &dstblend);
+
+		device->GetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, &sepAlphaEnable);
+		device->GetRenderState(D3DRS_SRCBLENDALPHA, &srcAlpha);
+		device->GetRenderState(D3DRS_DESTBLENDALPHA, &dstAlpha);
+		device->GetRenderState(D3DRS_BLENDOPALPHA, &blendAlpha);
+		device->GetRenderState(D3DRS_BLENDOP, &otherBlendAlpha);
+
+		DWORD magFilter;
+		DWORD minFilter;
+
+		device->GetSamplerState(0, D3DSAMP_MAGFILTER, &magFilter);
+		device->GetSamplerState(0, D3DSAMP_MINFILTER, &minFilter);
+
+		//log("D3DRS_SRCBLEND: %2d D3DRS_DESTBLEND: %2d D3DRS_SEPARATEALPHABLENDENABLE: %2d D3DRS_SRCBLENDALPHA: %2d D3DRS_DESTBLENDALPHA: %2d D3DRS_BLENDOPALPHA: %2d D3DRS_BLENDOP: %2d D3DSAMP_MAGFILTER: %2d D3DSAMP_MINFILTER: %2d", srcblend, dstblend, sepAlphaEnable, srcAlpha, dstAlpha, blendAlpha, otherBlendAlpha, magFilter, minFilter);
+	}
+
 	if (pixelShaderNeedsReset) {
 		pixelShaderNeedsReset = false;
 		device->SetPixelShader(pPixelShader_backup);
@@ -266,10 +438,15 @@ void listAppendHook() {
 			char source = *(char*)(listAppendHook_objAddr - 8);
 
 
+			log("source : %d", source);
+
 			//log("listAppendHook_objAddr: %08X", listAppendHook_objAddr);
 			//log("source is %d %02X", source, source);
 
 			// todo, switch to a WHITELIST, notblacklist, of valid things to color
+
+			DWORD pattern = *(DWORD*)(listAppendHook_objAddr + 0x0);
+			DWORD state   = *(DWORD*)(listAppendHook_objAddr + 0x4);
 
 			if (source >= 0) {
 				
@@ -283,20 +460,52 @@ void listAppendHook() {
 					blendMode = *(BYTE*)(_animDataPtr + 0x1B);
 				}
 				
+				log("pattern: %d state: %d", pattern, state);
+
 				//log("obj: %08X", listAppendHook_objAddr);
-				if (blendMode == 0) { // for now, disable these. where is blend mode passed into a func to be used? 
+				//if (blendMode == 0) { // for now, disable these. where is blend mode passed into a func to be used? 
 					// changing it by this point is to late i believe, but it HAS to be put somewhere during this func!!
 					// or somewhere else farther down the pipeline, or i find what actually is causing it
 					// worst case scenario, and alternate shader could be written
 					// actually, what should happen is piping that variable INTO the shader.
-					textureAddrs.insert(listAppendHook_texAddr);
-				}
+					textureAddrs.insert({ listAppendHook_texAddr, TextureModification(blendMode)});
+				//}
 			}
 
 		} else { // char? possibly or the hit effects
 
 		}	
 	}
+}
+
+DWORD BLENDOP_Val;
+DWORD ALPHABLENDENABLE_Val;
+DWORD SRCBLEND_Val;
+DWORD DESTBLEND_Val;
+DWORD SEPARATEALPHABLENDENABLE_Val;
+DWORD SRCBLENDALPHA_Val;
+DWORD DESTBLENDALPHA_Val;
+void setRenderStatesHook() {
+
+	if (renderStateNeedsReset) {
+		log("D3DRS_BLENDOP: %2d D3DRS_ALPHABLENDENABLE: %2d D3DRS_SRCBLEND: %2d D3DRS_DESTBLEND: %2d D3DRS_SEPARATEALPHABLENDENABLE: %2d D3DRS_SRCBLENDALPHA: %2d D3DRS_DESTBLENDALPHA: %2d", BLENDOP_Val, ALPHABLENDENABLE_Val, SRCBLEND_Val, DESTBLEND_Val, SEPARATEALPHABLENDENABLE_Val, SRCBLENDALPHA_Val, DESTBLENDALPHA_Val);
+	
+		if (D3DRS_DESTBLEND != 6) {
+			//DESTBLEND_Val = 6;
+			//log("changing DESTBLEND_Val to 6");
+		}
+	}
+	
+	
+
+	device->SetRenderState(D3DRS_BLENDOP, BLENDOP_Val);
+	device->SetRenderState(D3DRS_ALPHABLENDENABLE, ALPHABLENDENABLE_Val);
+	device->SetRenderState(D3DRS_SRCBLEND, SRCBLEND_Val);
+	device->SetRenderState(D3DRS_DESTBLEND, DESTBLEND_Val);
+	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, SEPARATEALPHABLENDENABLE_Val);
+	device->SetRenderState(D3DRS_SRCBLENDALPHA, SRCBLENDALPHA_Val);
+	device->SetRenderState(D3DRS_DESTBLENDALPHA, DESTBLENDALPHA_Val);
+
 }
 
 // naked funcs
@@ -376,6 +585,13 @@ __declspec(naked) void _naked_listAppendHook() {
 		
 		// stack checking NEEDS to be more consistent here!
 		// i could copy, a bunch of it, but would it be worth?
+		// .pat stuff has a different stack/code path. fix it
+		// pceil 214 is also .pat
+		// 3c/2c on flen shouldnt color
+		// cwlen dash forward, hold back, etc
+		// fhime fly???
+		//cmech 236a is .pat
+		// cmech j214a crossbow changes color when dropped??
 
 		mov eax, [esp + 350h];
 		mov listAppendHook_objAddr, eax;
@@ -427,6 +643,78 @@ __declspec(naked) void _naked_frameCountCallback() {
 	}
 }
 
+__declspec(naked) void _naked_setRenderStatesHook() {
+	__asm {
+		test ecx, ecx;
+		push edi;
+		mov edi, eax;
+		JBE _justLeave;
+		cmp ecx, 7h;
+		JA _justLeave;
+
+		// iVar1 setup (MAKE SURE TO CHECK ASM) 004c06a4
+		mov eax, dword ptr[edi + 4h];
+		push esi;
+		lea esi, [ecx * 8 + 0];
+		sub esi, ecx;
+		mov ecx, dword ptr[eax];
+		add esi, esi;
+		mov edx, dword ptr[esi + esi * 1 + 0054cc50h];
+		add esi, esi; 
+		// what is happening to esi here
+		
+		mov BLENDOP_Val, edx;
+		
+		mov edx, dword ptr[esi + 0054cc54h];
+		mov ALPHABLENDENABLE_Val, edx;
+
+		mov edx, dword ptr[esi + 0054cc58h];
+		mov SRCBLEND_Val, edx;
+
+		mov edx, dword ptr[esi + 0054cc5ch];
+		mov DESTBLEND_Val, edx;
+
+		mov edx, dword ptr[esi + 0054cc60h];
+		mov SEPARATEALPHABLENDENABLE_Val, edx;
+
+		mov edx, dword ptr[esi + 0054cc64h];
+		mov SRCBLENDALPHA_Val, edx;
+
+		mov edx, dword ptr[esi + 0054cc68h];
+		mov DESTBLENDALPHA_Val, edx;
+
+		// i cannot call my pushall/popall, doing it manually :(
+		push esp;
+		push ebp;
+		push edi;
+		push esi;
+		push edx;
+		push ecx;
+		push ebx;
+		push eax;
+		push ebp;
+		mov ebp, esp;
+
+		call setRenderStatesHook;
+
+		// pop all
+		pop ebp;
+		pop eax;
+		pop ebx;
+		pop ecx;
+		pop edx;
+		pop esi;
+		pop edi;
+		pop ebp;
+		pop esp;
+
+		pop esi;
+	_justLeave:
+		pop edi;
+		ret;
+	};
+}
+
 // init 
 
 void initDrawPrimHook() {
@@ -449,6 +737,10 @@ void initFrameCountCallback() {
 	patchJump(0x004238f5, _naked_frameCountCallback);
 }
 
+void initSetRenderStatesHook() {
+	patchFunction(0x004be2d2, _naked_setRenderStatesHook);
+}
+
 bool initTextureModifications() {
 
 	if (device == NULL) {
@@ -467,6 +759,7 @@ bool initTextureModifications() {
 	initLeadToDrawPrimHook();
 	initListAppendHook();
 	initFrameCountCallback();
+	initSetRenderStatesHook();
 
 
 
