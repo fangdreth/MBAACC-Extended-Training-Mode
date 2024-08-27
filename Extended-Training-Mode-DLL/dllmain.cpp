@@ -841,8 +841,8 @@ void highlightStates()
 				switch (patternState)
 				{
 				case 0:			// stand
-					//case 10:		// walk forward
-					//case 11:		// walk back
+				case 10:		// walk forward
+				case 11:		// walk back
 				case 12:		// to crouch
 				case 13:		// crouch
 				case 14:		// from crouch
@@ -853,10 +853,10 @@ void highlightStates()
 				case 35:		// j9
 				case 36:		// j8
 				case 37:		// j7
-					//case 38:		// dj9
-					//case 39:		// dj 8
-					//case 40:		// dj7
-					//case 360:		// sj8
+				case 38:		// dj9
+				case 39:		// dj 8
+				case 40:		// dj7
+				case 360:		// sj8
 					patchMemcpy(animDataAddr + 0x18, arrIdleHighlightSetting.data(), 3);
 					break;
 				default:

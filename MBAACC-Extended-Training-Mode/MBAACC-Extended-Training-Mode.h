@@ -420,14 +420,14 @@ std::array<uint8_t, 3> CreateColorArray2(int nHighlightID)
     case RED_HIGHLIGHT:
         return { 255, 90, 90 };
     case YELLOW_HIGHLIGHT:
-        return { 255, 255, 90 };
+        return { 255, 255, 0 };
     case GREEN_HIGHLIGHT:
-        return { 90, 255, 90 };
+        return { 60, 255, 60 };
     case BLUE_HIGHLIGHT:
         return { 90, 90, 255 };
     case PURPLE_HIGHLIGHT:
         return { 255, 90, 255 };
     case BLACK_HIGHLIGHT:
-        return { 90, 90, 90 };
+        return { 60, 60, 60 };
     }
 }
