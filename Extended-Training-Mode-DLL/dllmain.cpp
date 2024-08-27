@@ -90,36 +90,58 @@ bool bHighlightsOn = true;
    __asm pop ebp        \
 }
 
-std::array<uint8_t, 3> arrDefaultHighlightSetting({ 255, 255, 255 });
-std::array<uint8_t, 3> arrIdleHighlightSetting({ 255, 255, 255 });
-std::array<uint8_t, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
-std::array<uint8_t, 3> arrHitHighlightSetting({ 255, 255, 255 });
-std::array<uint8_t, 3> arrArmorHighlightSetting({ 255, 255, 255 });
-std::array<uint8_t, 3> arrThrowProtectionHighlightSetting({ 255, 255, 255 });
+#define PUSH_ALL __asm \
+{                      \
+__asm push esp		   \
+__asm push ebp		   \
+__asm push edi		   \
+__asm push esi		   \
+__asm push edx		   \
+__asm push ecx		   \
+__asm push ebx  	   \
+__asm push eax		   \
+__asm push ebp         \
+__asm mov ebp, esp     \
+}
 
-void __stdcall log(const char* msg)
+#define POP_ALL __asm  \
+{                      \
+__asm pop ebp          \
+__asm pop eax		   \
+__asm pop ebx  	       \
+__asm pop ecx		   \
+__asm pop edx		   \
+__asm pop esi		   \
+__asm pop edi		   \
+__asm pop ebp		   \
+__asm pop esp		   \
+}
+
+std::array<BYTE, 3> arrDefaultHighlightSetting({ 255, 255, 255 });
+std::array<BYTE, 3> arrIdleHighlightSetting({ 255, 255, 255 });
+std::array<BYTE, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
+std::array<BYTE, 3> arrHitHighlightSetting({ 255, 255, 255 });
+std::array<BYTE, 3> arrArmorHighlightSetting({ 255, 255, 255 });
+std::array<BYTE, 3> arrThrowProtectionHighlightSetting({ 255, 255, 255 });
+
+void __stdcall ___log(const char* msg)
 {
 	const char* ipAddress = "127.0.0.1";
 	unsigned short port = 17474;
 
 	int msgLen = strlen(msg);
 
-	char* message = new char[msgLen + 4];
-
-	strncpy_s(message, msgLen + 4, msg, msgLen);
-	message[msgLen + 0] = '\r';
-	message[msgLen + 1] = '\n';
-	message[msgLen + 2] = '\0';
+	const char* message = msg;
 
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (result != 0) 
+	if (result != 0)
 	{
 		return;
 	}
 
 	SOCKET sendSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sendSocket == INVALID_SOCKET) 
+	if (sendSocket == INVALID_SOCKET)
 	{
 		WSACleanup();
 		return;
@@ -128,7 +150,7 @@ void __stdcall log(const char* msg)
 	sockaddr_in destAddr;
 	destAddr.sin_family = AF_INET;
 	destAddr.sin_port = htons(port);
-	if (inet_pton(AF_INET, ipAddress, &destAddr.sin_addr) <= 0) 
+	if (inet_pton(AF_INET, ipAddress, &destAddr.sin_addr) <= 0)
 	{
 		closesocket(sendSocket);
 		WSACleanup();
@@ -136,7 +158,7 @@ void __stdcall log(const char* msg)
 	}
 
 	int sendResult = sendto(sendSocket, message, strlen(message), 0, (sockaddr*)&destAddr, sizeof(destAddr));
-	if (sendResult == SOCKET_ERROR) 
+	if (sendResult == SOCKET_ERROR)
 	{
 		closesocket(sendSocket);
 		WSACleanup();
@@ -145,8 +167,15 @@ void __stdcall log(const char* msg)
 
 	closesocket(sendSocket);
 	WSACleanup();
+}
 
-	delete[] message;
+void __stdcall log(const char* format, ...) {
+	static char buffer[1024]; // no more random char buffers everywhere.
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, 1024, format, args);
+	___log(buffer);
+	va_end(args);
 }
 
 void __stdcall debugLogBytes(BYTE* p)
@@ -1178,99 +1207,114 @@ void animHookFunc()
 	highlightStates();
 }
 
-BYTE arrMeterGainHookOrig[10];
-BYTE arrMeterGainHookMod[10];
-__declspec(naked) void meterGainHook()
+
+DWORD _meterGainHook_CharacterAddr;
+DWORD _meterGainHook_MeterAmount;
+DWORD _meterGainHook_ObjectOwner;
+void meterGainHook() {
+
+	unsigned playerIndex = -1;
+	bool hasExGuardPenalty = false;
+	BYTE moon = 0;
+
+	// i am assuming that if either of the chars on a teams' EX guard penalties are set, that it will be 0.1
+	// this is an assumption, might be wrong
+
+	switch (_meterGainHook_CharacterAddr) {
+	case 0x00555134: // P1 offset
+	case 0x0055672C: // P3 offset
+		playerIndex = 0;
+		break;
+	case 0x00555C30: // P2 offset
+	case 0x00557228: // P4 offset
+		playerIndex = 1;
+		break;
+	default: // projectile is what hit
+		playerIndex = _meterGainHook_ObjectOwner & 0x1;
+		break;
+	}
+
+	// a class to read these vars would be very nice tbh
+	if (playerIndex == 0) {
+		hasExGuardPenalty = !!((*(BYTE*)(0x55520c)) | (*(BYTE*)(0x556804)));
+		moon = *(BYTE*)0x55513C;
+	}
+	else {
+		hasExGuardPenalty = !!((*(BYTE*)(0x555d08)) | (*(BYTE*)(0x557300)));
+		moon = *(BYTE*)0x555C38;
+	}
+
+	switch (moon) {
+		// unsure if the rounding here is ok 
+	default:
+	case 0: // CMOON, do nothing
+		break;
+	case 1: // FMOON, 0.9
+		_meterGainHook_MeterAmount = (DWORD)(0.9f * ((float)_meterGainHook_MeterAmount));
+		break;
+	case 2: // HMOON, 0.7
+		_meterGainHook_MeterAmount = (DWORD)(0.7f * ((float)_meterGainHook_MeterAmount));
+		break;
+	}
+
+	if (hasExGuardPenalty) {
+		_meterGainHook_MeterAmount = (DWORD)(0.1f * ((float)_meterGainHook_MeterAmount));
+	}
+	if (playerIndex == 0) {
+		nTempP1MeterGain = _meterGainHook_MeterAmount;
+	}
+	else {
+		nTempP2MeterGain = _meterGainHook_MeterAmount;
+	}
+}
+
+DWORD _naked_meterGainHook_reg;
+__declspec(naked) void _naked_meterGainHook()
 {
-	
-	/*
-	the hooked func func(0x00476ce0) takes params.
-	the hooked func,,, does not clean its stack. its cdecl 
-
-	this is a massive issue because the compiler is,,, doing compile things, making a new stack frame, pushing and popping, etc
-	that will not work here. sorry about this code  
-	additionally, c++17 decided to remove the register keyword! 
-	therefore, out of paranoia, i will be doing this all in asm
-
-	https://en.wikipedia.org/wiki/X86_calling_conventions
-	we are under cdecl currently
-	return val EAX by callee
-	Registers EAX, ECX, and EDX are caller-saved
-	the rest( EBX, ESI, EDI, EBP(?), ESP(?) 
-
-	EIP doesnt count 
-
-	https://stackoverflow.com/questions/25129743/confusing-brackets-in-masm32
-
-	*/
-
-	// call this when the pattern is written
-
+	// our code
 	__asm {
-		pop tempRegister1; // HOOKED CALL ADDR
-		pop tempRegister2;  // CALLER ADDR
+		mov _naked_meterGainHook_reg, eax;
+
+		mov eax, [esp + 8h];
+		mov _meterGainHook_MeterAmount, eax;
+
+		mov eax, [esp + 4h];
+		mov _meterGainHook_CharacterAddr, eax;
+
+		mov eax, [eax + 02F0h];
+		mov _meterGainHook_ObjectOwner, eax;
+
+		mov eax, _naked_meterGainHook_reg;
 	};
 
+	PUSH_ALL;
+	meterGainHook();
+	POP_ALL;
+
+	// actual code for the function that was overwritten by our jump
+	// taken from 00476ce0
+	// i do not trust MASM to compile things with addresses correctly, which is why i am emiting the bytes raw here
+
+	// sub esp 0x8
+	__asm _emit 0x83;
+	__asm _emit 0xEC;
+	__asm _emit 0x08;
+
+	// cmp byte ptr [0x00562a6f], 0x0 
+	__asm _emit 0x80;
+	__asm _emit 0x3D;
+	__asm _emit 0x6F;
+	__asm _emit 0x2A;
+	__asm _emit 0x56;
+	__asm _emit 0x00;
+	__asm _emit 0x00;
+
+	// jump to old code.
+	// i could use a global variable here, but that is annoying, which is why i am instead doing this
 	__asm {
-		// at this point, i now have direct access to the 4 func params, and a lack of worry over messing things up
-		mov ecx, [esp + 0h]; // CharacterSubObj
-		mov edx, [esp + 4h]; // METER AMOUNT;
-
-		cmp ecx, 00555134h; // P1 ADDR
-		JE _P1;
-		cmp ecx, 00555C30h; // P2 ADDR
-		JE _P2;
-		cmp ecx, 0055672Ch; // P3 ADDR
-		JE _P1;
-		cmp ecx, 00557228h; // P4 ADDR
-		JE _P2;
-		// this means a projectile hit.
-		mov ecx, [ecx + 02F0h]; // owner offset
-		test ecx, 1;
-		JE _P1;
-
-	_P2 : // add to P2 meter gain
-		mov nTempP2MeterGain, edx;
-		JMP _END;
-	_P1: // add to P1 meter gain
-		mov nTempP1MeterGain, edx;
-	_END:
-	};
-
-	PUSH_CALLEE;
-	PUSH_FRAME;
-
-	// these calls could(SHOULD) be made in asm, but the assembler really doesnt like it when i do 
-	// although, it is more readable
-	// if any of these happen to put a temp var on the stack, or dont use stdcall format, this whole thing will break.
-
-	asmPatchMemcpy((void*)0x00476ce0, (void*)arrMeterGainHookOrig, 10);
-
-	POP_FRAME;
-	POP_CALLEE;
-
-	// perform the actual function call
-	__asm {
-		mov eax, 00476CE0h;
-		call eax;
-		// do i need to clean the stack here?
-		// NO. the original caller will.
-	};
-
-	PUSH_CALLEE;
-	PUSH_FRAME;
-
-	asmPatchMemcpy((void*)0x00476ce0, (void*)arrMeterGainHookMod, 10);
-
-	POP_FRAME;
-	POP_CALLEE;
-
-	// restore the proper stack state and ret
-	__asm {
-		push tempRegister2;
-		push tempRegister1;
+		push 00476ceah;
 		ret;
-	};
+	}
 }
 
 void battleResetCallback()
@@ -1377,15 +1421,7 @@ void initAttackMeterDisplay()
 
 void initMeterGainHook()
 {
-	void* funcAddress = (void*)0x00476ce0;
-	// backup
-	patchMemcpy(arrMeterGainHookOrig, funcAddress, 10);
-	// new bytes
-	patchFunction(funcAddress, meterGainHook);
-	// ret
-	patchByte(((BYTE*)funcAddress) + 5, 0xC3);
-	// backup modded bytes 
-	patchMemcpy(arrMeterGainHookMod, funcAddress, 10);
+	patchJump(0x00476ce0, _naked_meterGainHook);
 }
 
 void initBattleResetCallback()

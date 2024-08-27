@@ -421,9 +421,9 @@ public:
 		}
 		prevState = tempState;
 
-		//if (!isFocused()) {
-			//return false;
-		//}
+		if (!isFocused()) {
+			return false;
+		}
 
 		return res;
 	}
