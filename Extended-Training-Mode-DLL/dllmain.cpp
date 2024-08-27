@@ -629,14 +629,14 @@ void drawFrameBar()
 
 	int nBarDrawCounter = 0;
 
+	short sAdjustedScroll = min(min(nBarCounter - DISPLAY_RANGE, BAR_MEMORY_SIZE - DISPLAY_RANGE), sBarScrolling);
 
-
-	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - nBarScrolling;
-	int nForEnd = (nBarCounter % BAR_MEMORY_SIZE) - nBarScrolling;
-	if (nBarCounter <= nBarDisplayRange)
+	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - DISPLAY_RANGE - sAdjustedScroll;
+	int nForEnd = (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll;
+	if (nBarCounter <= DISPLAY_RANGE)
 	{
 		nForStart = 0;
-		nForEnd = nBarDisplayRange;
+		nForEnd = DISPLAY_RANGE;
 	}
 
 	for (int i = nForStart; i < nForEnd; i++)
@@ -1067,8 +1067,12 @@ void frameDoneCallback()
 	DWORD nSubMenuPointer = *reinterpret_cast<DWORD*>(dwBaseAddress + dwBasePointer) + 0x84;
 	int nSubMenu;
 	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
-	if (!safeWrite() || isPaused() && nSubMenu != 12)
+	if (!safeWrite() || isPaused() && nSubMenu != 12) {
+		if (safeWrite() && *(bool*)(dwBaseAddress + adSharedHoveringScroll)) {
+			drawFrameBar();
+		}
 		return;
+	}
 
 	if (bHitboxesDisplay) {
 		drawFrameData();

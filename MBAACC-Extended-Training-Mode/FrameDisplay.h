@@ -19,7 +19,7 @@ char cFN2Input = 0;
 char cDummyState = 0; // Same as Common.h "Enemy Status" except -1 for recording
 
 int nBarCounter = 0;
-int nBarScrolling = 0;
+short sBarScrolling = 0;
 int nBarIntervalCounter = 0;
 int nBarIntervalMax = 0;
 int nBarDisplayRange = 0;
@@ -47,24 +47,24 @@ int nSharedHitstop;
 struct Save {
 	bool bSaved = false;
 
-	DWORD dwSaveEffects[74576 / 4] = {}; //Effect and projectile data
-	DWORD dwSaveStopSituation[1632 / 4] = {};
-	char cSaveGlobalEXFlash = 0;
-	DWORD dwSaveAttackDisplayInfo[52 / 4] = {}; //Ends just before Max Damage
-	DWORD dwSaveAttackDisplayInfo2[1004 / 4] = {}; //Starts after Max Damage, maybe also has current combo info
-	DWORD dwSaveDestinationCamX = 0x0;
-	DWORD dwSaveCurrentCamX = 0x0;
-	DWORD dwSaveDestinationCamY = 0x0;
-	DWORD dwSaveCurrentCamY = 0x0;
-	DWORD dwSaveDestinationCamZoom = 0x0;
-	DWORD dwSaveCurrentCamZoom = 0x0;
-	DWORD dwSaveContlFlag = 0x0; //No idea
-	DWORD dwSaveContlFlag2 = 0x0; //No idea
+	BYTE dwSaveEffects[74576]; //Effect and projectile data
+	BYTE dwSaveStopSituation[1632];
+	BYTE cSaveGlobalEXFlash = 0;
+	BYTE dwSaveAttackDisplayInfo[52]; //Ends just before Max Damage
+	BYTE dwSaveAttackDisplayInfo2[1004]; //Starts after Max Damage, maybe also has current combo info
+	DWORD dwSaveDestinationCamX;
+	DWORD dwSaveCurrentCamX;
+	DWORD dwSaveDestinationCamY;
+	DWORD dwSaveCurrentCamY;
+	DWORD dwSaveDestinationCamZoom;
+	DWORD dwSaveCurrentCamZoom;
+	DWORD dwSaveContlFlag; //No idea
+	DWORD dwSaveContlFlag2; //No idea
 
-	DWORD dwSaveP1[972 / 4] = {}; //Player data from pattern to just before input buffers
-	DWORD dwSaveP2[972 / 4] = {};
-	DWORD dwSaveP3[972 / 4] = {};
-	DWORD dwSaveP4[972 / 4] = {};
+	BYTE dwSaveP1[972]; //Player data from pattern to just before input buffers
+	BYTE dwSaveP2[972];
+	BYTE dwSaveP3[972];
+	BYTE dwSaveP4[972];
 };
 
 Save Saves[MAX_SAVES];
@@ -383,7 +383,7 @@ void ResetBars(Player& P)
 	bIsBarReset = true;
 	nBarCounter = 0;
 	nBarIntervalCounter = 0;
-	nBarScrolling = 0;
+	sBarScrolling = 0;
 	bDoBarReset = false;
 	nBarIntervalMax = nBarDisplayRange;
 	for (int i = 0; i < BAR_MEMORY_SIZE; i++)
@@ -791,12 +791,14 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 	}
 	sColumnHeader += "\x1b[0m\x1b[K\n";
 
+	short sAdjustedScroll = min(min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange), sBarScrolling);
+
 	P1.sBarString1 = "";
 	P1.sBarString2 = "";
 	P1.sBarString3 = "";
 	P1.sBarString4 = "";
 	P1.sBarString5 = "";
-	for (int i = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - nBarScrolling; i < (nBarCounter % BAR_MEMORY_SIZE) - nBarScrolling; i++)
+	for (int i = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - sAdjustedScroll; i < (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll; i++)
 	{
 		if (i < 0)
 		{
@@ -826,7 +828,7 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 	P2.sBarString3 = "";
 	P2.sBarString4 = "";
 	P2.sBarString5 = "";
-	for (int i = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - nBarScrolling; i < (nBarCounter % BAR_MEMORY_SIZE) - nBarScrolling; i++)
+	for (int i = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - sAdjustedScroll; i < (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll; i++)
 	{
 		if (i < 0)
 		{

@@ -9,14 +9,17 @@ int nLastFrameCount = 0; //Counts slower during slowdown
 int nLastTrueFrameCount = 0; //Counts all frames during slowdown
 
 int nBarCounter = 0;
-int nBarScrolling = 0;
+int sBarScrolling = 0;
 int nBarIntervalCounter = 0;
 int nBarIntervalMax = 0;
-int nBarDisplayRange = 75;
+
 bool bIsBarReset = false;
 bool bDoBarReset = false;
 bool bUpdateBar = false;
 bool bDoAdvantage = false;
+
+bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
+bool bDisplayInputs = false;
 
 int nPlayerAdvantage;
 int nSharedHitstop;
@@ -96,9 +99,9 @@ void ResetBars(Player& P)
 	bIsBarReset = true;
 	nBarCounter = 0;
 	nBarIntervalCounter = 0;
-	nBarScrolling = 0;
+	sBarScrolling = 0;
 	bDoBarReset = false;
-	nBarIntervalMax = nBarDisplayRange;
+	nBarIntervalMax = DISPLAY_RANGE;
 	for (int i = 0; i < BAR_MEMORY_SIZE; i++)
 	{
 		P.dwColorBar1[i][0] = 0x00000000;
@@ -345,7 +348,7 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 		nBarIntervalCounter++;
 	}
 
-	if (nBarCounter >= nBarDisplayRange)
+	if (nBarCounter >= DISPLAY_RANGE)
 	{
 		nBarIntervalMax = BAR_INTERVAL;
 	}
@@ -385,7 +388,7 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 			nSharedHitstop > 1
 			);
 
-		if (!bIsFreeze)
+		if (bDisplayFreeze || !bIsFreeze)
 		{
 			IncrementActive(P1);
 			IncrementActive(P2);
@@ -410,6 +413,10 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 
 void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 {
+	bDisplayFreeze = *(char*)(adMBAABase + adSharedDisplayFreeze);
+	bDisplayInputs = *(char*)(adMBAABase + adSharedDisplayInputs);
+	sBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+
 	Player1 = &P1;
 	Player2 = &P2;
 	Player3 = &P3;

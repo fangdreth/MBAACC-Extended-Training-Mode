@@ -132,22 +132,22 @@ const DWORD dwP2AnimationPtr = dwP2Struct + 0x320;
 const int BAR_MEMORY_SIZE = 400; //Number of frames stored before overriding (FIFO). Only used in determining how far back you can scroll.
 const int BAR_INTERVAL = 20; //Number of frames of only blanks before the bar stops and resets on the next non-blank frame
 const int MAX_SAVES = 3;
-const int SAVE_RESET_TIME = 120;
-const char TEXT_TIMER = 60;
+const int SAVE_RESET_TIME = 60; //Frames of holding Save State Hotkey before clearing that save
+const char TEXT_TIMER = 30; //How many frames Save State popup text stays on screen
 
 const char REVERSE_INPUT_MAP[10] = { 0, 3, 2, 1, 6, 0, 4, 9, 8, 7 };
 const char CH_MAP[3] = { ' ', 'H', 'L' };
 
 const DWORD dwPlayerStructSize = 0xAFC;
 const ADDRESS adP1Base = 0x155130; //0x155130
-const ADDRESS adP2Base = 0x155130 + dwPlayerStructSize; //0x155C2C
+const ADDRESS adP2Base = 0x155130 + 1 * dwPlayerStructSize; //0x155C2C
 const ADDRESS adP3Base = 0x155130 + 2 * dwPlayerStructSize; //0x156728
 const ADDRESS adP4Base = 0x155130 + 3 * dwPlayerStructSize; //0x157224
 
 const ADDRESS adP1ControlledCharacter = 0x157DB8;
 const ADDRESS adP2ControlledCharacter = 0x157FC4;
 const ADDRESS adP1TagFlag = 0x155130 + 0x178; //0x1552A8
-const ADDRESS adP2TagFlag = 0x155130 + 0x178 + dwPlayerStructSize; //0x155DA4
+const ADDRESS adP2TagFlag = 0x155130 + 0x178 + 1 * dwPlayerStructSize; //0x155DA4
 const ADDRESS adP3TagFlag = 0x155130 + 0x178 + 2 * dwPlayerStructSize; //0x1568A0
 const ADDRESS adP4TagFlag = 0x155130 + 0x178 + 3 * dwPlayerStructSize; //0x15739C
 
@@ -155,6 +155,8 @@ const DWORD dwProjectileStructSize = 0x33C;
 const ADDRESS adProjectileBase = 0x27BDE8;
 
 //FrameBar Constants
+const int DISPLAY_RANGE = 75;
+
 const ADDRESS adMBAABase = 0x400000;
 
 const ADDRESS adPattern = 0x10;
@@ -206,6 +208,10 @@ const ADDRESS adShareBase = 0x381000;
 const ADDRESS adSharedSaveSlot =					adShareBase + 0x0;	// 1 byte
 const ADDRESS adSharedSaveTextTimer =				adShareBase + 0x1;	// 1 byte
 const ADDRESS adSharedClearTextTimer =				adShareBase + 0x2;	// 1 byte
+const ADDRESS adSharedDisplayFreeze =				adShareBase + 0x3;	// 1 byte
+const ADDRESS adSharedDisplayInputs =				adShareBase + 0x4;	// 1 byte
+const ADDRESS adSharedScrolling =					adShareBase + 0x5;	// 2 bytes
+const ADDRESS adSharedHoveringScroll =				adShareBase + 0x7;	// 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x10;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x11;	// 1 byte
