@@ -26,6 +26,10 @@ int nSharedHitstop;
 
 static int nFrameBarY = 400;
 
+int nSaveTextTimer = 0;
+int nClearTextTimer = 0;
+int nClearSaveTimer = 0;
+
 struct Player
 {
 	char Port = 0;

@@ -38,8 +38,6 @@ static bool bDisplayFreeze = false; //Whether to show global ex flashes and fram
 static bool bDisplayInputs = false;
 
 static uint8_t nSaveSlot = 0;
-static uint8_t nSaveStateKey = VK_KEY_6;
-int nResetStartFrame = 0;
 
 static int nPlayerAdvantage;
 int nSharedHitstop;
@@ -957,30 +955,25 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 
 	UpdateGlobals(hMBAAHandle, dwBaseAddress);
 
-	static KeyState oSaveStateKey;
-	oSaveStateKey.setKey(nSaveStateKey);
-	if (oSaveStateKey.keyDown() && nSaveSlot > 0)
+	bool bDoSave;
+	bool bDoClearSave;
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDoSave), &bDoSave, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDoClearSave), &bDoClearSave, 1, 0);
+	if (bDoSave)
 	{
-		if (!bLockInput)
-		{
-			bLockInput = true;
-			SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
-			nResetStartFrame = nTrueFrameCount;
-			char cSaveSlot = nSaveSlot;
-			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &cSaveSlot, 1, 0);
-			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveTextTimer), &TEXT_TIMER, 1, 0);
-		}
+		SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
 		char c5 = 5;
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x162A48), &c5, 1, 0);
+
+		char c0 = 0;
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDoSave), &c0, 1, 0);
 	}
-	else if (oSaveStateKey.keyHeld() && nSaveSlot > 0)
+	else if (bDoClearSave)
 	{
-		if (nTrueFrameCount >= nResetStartFrame + SAVE_RESET_TIME && nResetStartFrame != 0)
-		{
-			ClearSave(nSaveSlot);
-			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedClearTextTimer), &TEXT_TIMER, 1, 0);
-			nResetStartFrame = 0;
-		}
+		ClearSave(nSaveSlot);
+
+		char c0 = 0;
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDoClearSave), &c0, 1, 0);
 	}
 	else if (cFN2Input > 0 && bEnableFN2Load && !bInExtendedSettings)
 	{

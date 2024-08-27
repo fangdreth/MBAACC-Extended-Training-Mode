@@ -206,8 +206,8 @@ const ADDRESS adFont2 = 0x55DAA0;
 // to make it easier to add more.
 const ADDRESS adShareBase = 0x381000;
 const ADDRESS adSharedSaveSlot =					adShareBase + 0x0;	// 1 byte
-const ADDRESS adSharedSaveTextTimer =				adShareBase + 0x1;	// 1 byte
-const ADDRESS adSharedClearTextTimer =				adShareBase + 0x2;	// 1 byte
+const ADDRESS adSharedDoSave =						adShareBase + 0x1;	// 1 byte
+const ADDRESS adSharedDoClearSave =					adShareBase + 0x2;	// 1 byte
 const ADDRESS adSharedDisplayFreeze =				adShareBase + 0x3;	// 1 byte
 const ADDRESS adSharedDisplayInputs =				adShareBase + 0x4;	// 1 byte
 const ADDRESS adSharedScrolling =					adShareBase + 0x5;	// 2 bytes

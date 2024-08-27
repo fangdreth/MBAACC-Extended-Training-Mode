@@ -1081,8 +1081,10 @@ void frameDoneCallback()
 {
 	static KeyState oHitboxesDisplayKey;
 	static KeyState oFrameDataDisplayKey;
+	static KeyState oSaveStateKey;
 	oHitboxesDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHitboxesDisplayKey));
 	oFrameDataDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameDataDisplayKey));
+	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
 
 	if (oHitboxesDisplayKey.keyDown()) {
 		bHitboxesDisplay = !bHitboxesDisplay;
@@ -1090,6 +1092,38 @@ void frameDoneCallback()
 
 	if (oFrameDataDisplayKey.keyDown()) {
 		bFrameDataDisplay = !bFrameDataDisplay;
+	}
+
+	if (oSaveStateKey.keyDown() && safeWrite()) {
+		*(char*)(dwBaseAddress + adSharedDoSave) = 1;
+		nSaveTextTimer = TEXT_TIMER;
+	}
+
+	if (oSaveStateKey.keyHeld() && safeWrite()) {
+		nClearSaveTimer++;
+		if (nClearSaveTimer == SAVE_RESET_TIME) {
+			*(char*)(dwBaseAddress + adSharedDoClearSave) = 1;
+			nClearTextTimer = TEXT_TIMER;
+		}
+}
+	else {
+		nClearSaveTimer = 0;
+	}
+
+	if (nSaveTextTimer != 0 && safeWrite()) {
+		static char buffer[256];
+
+		snprintf(buffer, 256, "Saved State %i", *(char*)(dwBaseAddress + adSharedSaveSlot));
+		drawTextWithBorder(270, 470, 10, 10, buffer);
+		nSaveTextTimer--;
+	}
+
+	if (nClearTextTimer != 0 && safeWrite()) {
+		static char buffer[256];
+
+		snprintf(buffer, 256, "Cleared State %i", *(char*)(dwBaseAddress + adSharedSaveSlot));
+		drawTextWithBorder(270, 470, 10, 10, buffer);
+		nClearTextTimer--;
 	}
 
 	// don't draw on the pause menu, but do on VIEW SCREEN
@@ -1109,22 +1143,6 @@ void frameDoneCallback()
 
 	if (bFrameDataDisplay) {
 		drawFrameBar();
-	}
-
-	if (*(char*)(dwBaseAddress + adSharedSaveTextTimer) != 0) {
-		static char buffer[256];
-
-		snprintf(buffer, 256, "Saved State %i", *(char*)(dwBaseAddress + adSharedSaveSlot));
-		drawTextWithBorder(270, 470, 10, 10, buffer);
-		*(char*)(dwBaseAddress + adSharedSaveTextTimer) = *(char*)(dwBaseAddress + adSharedSaveTextTimer) - 1;
-	}
-
-	if (*(char*)(dwBaseAddress + adSharedClearTextTimer)!= 0) {
-		static char buffer[256];
-
-		snprintf(buffer, 256, "Cleared State %i", *(char*)(dwBaseAddress + adSharedSaveSlot));
-		drawTextWithBorder(270, 470, 10, 10, buffer);
-		*(char*)(dwBaseAddress + adSharedClearTextTimer) = *(char*)(dwBaseAddress + adSharedClearTextTimer) - 1;
 	}
 
 	drawStats();

@@ -103,6 +103,7 @@ int main(int argc, char* argv[])
     uint8_t nHitboxDisplayKey = VK_KEY_3;
     uint8_t nFrameDataDisplayKey = VK_KEY_4;
     uint8_t nHighlightsOnKey = VK_KEY_5;
+    uint8_t nSaveStateKey = VK_KEY_6;
 
     bool bFreezeKeySet = true;
     bool bFrameStepKeySet = true;
@@ -312,6 +313,7 @@ int main(int argc, char* argv[])
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplayKey), &nFrameDataDisplayKey, 1, 0);
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlightsOnKey), &nHighlightsOnKey, 1, 0);
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveStateKey), &nSaveStateKey, 1, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayFreeze), &bDisplayFreeze, 1, 0);
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayInputs), &bDisplayInputs, 1, 0);
 
@@ -1205,10 +1207,12 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                         {
                             SetRegistryValue(L"SaveSlot", --nSaveSlot);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
                         }
                         else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                         {
                             SetRegistryValue(L"SaveSlot", ++nSaveSlot);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
                         }
                         if (nSaveSlot > 0)
                         {
