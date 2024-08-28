@@ -340,6 +340,7 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 }
 
 #include "textureModification.h"
+#include "CSSModification.h"
 
 // actual functions 
 
@@ -1064,10 +1065,16 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	//log("frame %d", callBackFrameCount);
 	callBackFrameCount++;
 
-	static bool initIdkIsGood = false;
-	if (!initIdkIsGood) {
-		initIdkIsGood = initTextureModifications();
+	static bool initTextureIsGood = false;
+	if (!initTextureIsGood) {
+		initTextureIsGood = initTextureModifications();
 	}
+
+	static bool initCSSIsGood = false;
+	if (!initCSSIsGood) {
+		initCSSIsGood = initCSSModifications();
+	}
+	
 
 	Sleep(dwMilliseconds);
 }

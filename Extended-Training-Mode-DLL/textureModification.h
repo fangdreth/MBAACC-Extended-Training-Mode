@@ -438,7 +438,7 @@ void listAppendHook() {
 			char source = *(char*)(listAppendHook_objAddr - 8);
 
 
-			log("source : %d", source);
+			//log("source : %d", source);
 
 			//log("listAppendHook_objAddr: %08X", listAppendHook_objAddr);
 			//log("source is %d %02X", source, source);
@@ -460,7 +460,7 @@ void listAppendHook() {
 					blendMode = *(BYTE*)(_animDataPtr + 0x1B);
 				}
 				
-				log("pattern: %d state: %d", pattern, state);
+				//log("pattern: %d state: %d", pattern, state);
 
 				//log("obj: %08X", listAppendHook_objAddr);
 				//if (blendMode == 0) { // for now, disable these. where is blend mode passed into a func to be used? 
@@ -590,8 +590,10 @@ __declspec(naked) void _naked_listAppendHook() {
 		// 3c/2c on flen shouldnt color
 		// cwlen dash forward, hold back, etc
 		// fhime fly???
-		//cmech 236a is .pat
+		// cmech 236a is .pat
 		// cmech j214a crossbow changes color when dropped??
+		// wara 236c (red orb)
+		// every shield fucks things up
 
 		mov eax, [esp + 350h];
 		mov listAppendHook_objAddr, eax;
