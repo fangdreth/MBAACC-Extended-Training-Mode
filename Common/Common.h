@@ -138,63 +138,103 @@ const char TEXT_TIMER = 30; //How many frames Save State popup text stays on scr
 const char REVERSE_INPUT_MAP[10] = { 0, 3, 2, 1, 6, 0, 4, 9, 8, 7 };
 const char CH_MAP[3] = { ' ', 'H', 'L' };
 
+const ADDRESS adSaveCurrentCamZoom = 0x14EB70;
+const ADDRESS adSaveDestinationCamZoom = 0x14EB74;
+const ADDRESS adGameState = 0x14EEE8;
+const ADDRESS adSaveDestinationCamX = 0x155124;
+const ADDRESS adSaveDestinationCamY = 0x155128;
+
 const DWORD dwPlayerStructSize = 0xAFC;
 const ADDRESS adP1Base = 0x155130; //0x155130
 const ADDRESS adP2Base = 0x155130 + 1 * dwPlayerStructSize; //0x155C2C
 const ADDRESS adP3Base = 0x155130 + 2 * dwPlayerStructSize; //0x156728
 const ADDRESS adP4Base = 0x155130 + 3 * dwPlayerStructSize; //0x157224
 
-const ADDRESS adP1ControlledCharacter = 0x157DB8;
-const ADDRESS adP2ControlledCharacter = 0x157FC4;
+const ADDRESS adPattern = 0x10;
+const ADDRESS adState = 0x14;
+const ADDRESS adHealth = 0xBC;
+const ADDRESS adRedHealth = 0xC0;
+const ADDRESS adGuardGauge = 0xC4;
+const ADDRESS adGuardQuality = 0xD8;
+const ADDRESS adMagicCircuit = 0xE0;
+const ADDRESS adPlayerFrameCount = 0xF0;
+const ADDRESS adXPosition = 0x108;
+const ADDRESS adYPosition = 0x10C;
+const ADDRESS adXSpeed = 0x11C;
+const ADDRESS adYSpeed = 0x120;
+const ADDRESS adXAcceleration = 0x124;
+const ADDRESS adYAcceleration = 0x126;
+const ADDRESS adMomentum = 0x138;
+const ADDRESS adHitstop = 0x172;
+const ADDRESS adThrowFlag = 0x176;
+const ADDRESS adTagFlag = 0x178;
+const ADDRESS adBlockstunFlag = 0x17B;
+const ADDRESS adEFStrikeInvuln = 0x185;
+const ADDRESS adEFThrowInvuln = 0x186;
+const ADDRESS adUntechTotal = 0x18E;
+const ADDRESS adUntechCounter = 0x190;
+const ADDRESS adHitstunRemaining = 0x1AC;
+const ADDRESS adCounterHit = 0x1FA;
+const ADDRESS adGravity = 0x2E4;
+const ADDRESS adUntechPenalty = 0x2E8;
+const ADDRESS adAirDirectionalInput = 0x2EA;
+const ADDRESS adRawDirectionalInput = 0x2EB;
+const ADDRESS adButtonInput = 0x2ED;
+const ADDRESS adMacroInput = 0x2EE;
+const ADDRESS adOnRightFlag = 0x315;
+const ADDRESS adAnimationDataPointer = 0x320;
+const ADDRESS adAttackDataPointer = 0x324;
+const ADDRESS adAnimationData_StateDataPointer = 0x38;
+const ADDRESS adAnimationData_BoxIndex = 0x42;
+const ADDRESS adStateData_Stance = 0xC;
+const ADDRESS adStateData_Invuln = 0xD;
+const ADDRESS adStateData_NormalCancel = 0xE;
+const ADDRESS adStateData_SpecialCancel = 0xF;
+const ADDRESS adStateData_Flagset2 = 0x18;
+
 const ADDRESS adP1TagFlag = 0x155130 + 0x178; //0x1552A8
 const ADDRESS adP2TagFlag = 0x155130 + 0x178 + 1 * dwPlayerStructSize; //0x155DA4
 const ADDRESS adP3TagFlag = 0x155130 + 0x178 + 2 * dwPlayerStructSize; //0x1568A0
 const ADDRESS adP4TagFlag = 0x155130 + 0x178 + 3 * dwPlayerStructSize; //0x15739C
 
-const DWORD dwProjectileStructSize = 0x33C;
-const ADDRESS adProjectileBase = 0x27BDE8;
+const ADDRESS adP1ControlledCharacter = 0x157DB8;
+const ADDRESS adP1NextControlledCharacter = 0x157DBC;
+const ADDRESS adSaveAttackDisplayInfo = 0x157DD8;
+const ADDRESS adSaveAttackDisplayInfo2 = 0x157E10;
+const ADDRESS adP1Inaction = 0x157FC0;
+const ADDRESS adP2ControlledCharacter = 0x157FC4;
+const ADDRESS adP2NextControlledCharacter = 0x157FC8;
+const ADDRESS adP2Inaction = 0x1581CC;
+
+const ADDRESS adSaveStopSituation = 0x158600;
+
+const ADDRESS adP1Freeze = 0x158908;
+const ADDRESS adP2Freeze = 0x158C14;
+const ADDRESS adFrameCount = 0x15D1CC;
+
+const ADDRESS adSaveCurrentCamX = 0x15DEC4;
+const ADDRESS adSaveCurrentCamY = 0x15DEC8;
+
+const ADDRESS adTrueFrameCount = 0x162A40;
+const ADDRESS adGlobalFreeze = 0x162A48;
+const ADDRESS adSaveCurrentCamXCopy = 0x164B14;
+const ADDRESS adSaveCurrentCamYCopy = 0x164B18;
+
+const DWORD dwEffectStructSize = 0x33C;
+const ADDRESS adSaveEffects = 0x27BD70;
+const ADDRESS adEffectBase = 0x27BDE8;
+const ADDRESS adEffectSource = 0x8;
+
+const ADDRESS adDummyState = 0x34D7F8;
+const ADDRESS adP1FN1Input = 0x37144C;
+const ADDRESS adP1FN2Input = 0x37144D;
 
 //FrameBar Constants
 const int DISPLAY_RANGE = 75;
 
 const ADDRESS adMBAABase = 0x400000;
-
-const ADDRESS adPattern = 0x10;
 const ADDRESS adNotInCombo = 0x64;
-const ADDRESS adPlayerFrameCount = 0xF0;
-const ADDRESS adHitstop = 0x172;
-const ADDRESS adBlockstunFlag = 0x17B;
-const ADDRESS adThrowFlag = 0x176;
-const ADDRESS adTagFlag = 0x178;
-const ADDRESS adStrikeInvuln = 0x185;
-const ADDRESS adUntechTotal = 0x18E;
-const ADDRESS adUntechElapsed = 0x190;
-const ADDRESS adHitstunRemaining = 0x1AC;
-const ADDRESS adRawInput = 0x2EB;
-const ADDRESS adButtonInput = 0x2ED;
-const ADDRESS adMacroInput = 0x2EE;
-const ADDRESS adOnRightFlag = 0x315;
-const ADDRESS adAnimationDataPointer = 0x320;
-const ADDRESS adAnimStateDataPointer = 0x38;
-const ADDRESS adStateStance = 0xC;
-const ADDRESS adStateInvuln = 0xD;
-const ADDRESS adStateFlagset2 = 0x18;
-const ADDRESS adAnimBoxIndex = 0x42;
-const ADDRESS adAttackDataPointer = 0x324;
-
-const ADDRESS adP1Inaction = 0x157FC0;
-const ADDRESS adP2Inaction = 0x1581CC;
-
-const ADDRESS adP1Freeze = 0x158908;
-const ADDRESS adP2Freeze = 0x158C14;
-
-const ADDRESS adFrameCount = 0x15D1CC;
-const ADDRESS adTrueFrameCount = 0x162A40;
-
-const ADDRESS adGlobalFreeze = 0x162A48;
-
-const ADDRESS adProjSource = 0x8;
-const ADDRESS adProjOwner = 0x2F4;
+const ADDRESS adEffectOwner = 0x2F4;
 
 // addresses for fonts
 const ADDRESS adFont0 = 0x55D680;
