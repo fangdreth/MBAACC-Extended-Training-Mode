@@ -302,7 +302,7 @@ void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n) {
 
 void __stdcall patchFunction(auto patchAddr_, auto newAddr_)
 {
-
+	// todo, rename this to patchCall pls
 	static_assert(sizeof(patchAddr_) == 4, "Type must be 4 bytes");
 	static_assert(sizeof(newAddr_) == 4, "Type must be 4 bytes");
 
@@ -1650,78 +1650,6 @@ void messUpTextureActual(DWORD addr) {
 
 
 	pTex->Release();
-}
-
-void messUpTexture() {
-	//for (int i = 0; i < textureAddrs.size(); i++) {
-	//	messUpTextureActual(textureAddrs[i]);
-	//}
-
-	return;
-
-	if (device == NULL) {
-		return;
-	}
-
-
-
-	std::vector<IDirect3DSurface9*> renderTargets;
-
-	for (DWORD i = 0; i < 4; ++i) {
-		IDirect3DSurface9* surface = nullptr;
-		if (SUCCEEDED(device->GetRenderTarget(i, &surface)))
-		{
-			renderTargets.push_back(surface);
-			log("index: %d surface: %08X", i, surface);
-
-			
-			D3DLOCKED_RECT lockedRect;
-			HRESULT hr = surface->LockRect(&lockedRect, NULL, 0);
-			if (FAILED(hr)) {
-				log("failed to lock rect");
-				continue;
-			}
-
-
-			D3DSURFACE_DESC desc;
-			hr = surface->GetDesc(&desc);
-
-			int width = desc.Width;
-			int height = desc.Height;
-
-			BYTE* pBits = static_cast<BYTE*>(lockedRect.pBits);
-
-			// Example: fill the surface with a solid color (e.g., blue with full alpha)
-			for (int y = 0; y < height; ++y) {
-				DWORD* pPixel = (DWORD*)(pBits + y * lockedRect.Pitch);
-				for (int x = 0; x < width; ++x) {
-					*pPixel++ = 0xFF0000FF; // ARGB format: Alpha=FF, Red=00, Green=00, Blue=FF
-				}
-			}
-
-			// 3. Unlock the surface
-			hr = surface->UnlockRect();
-			if (FAILED(hr)) {
-				log("failed to unlock rect");
-				continue;
-			}
-
-			log("success");
-		}
-		else
-		{
-			break;  // No more render targets available
-		}
-	}
-
-
-
-
-	for (DWORD i = 0; i < renderTargets.size(); i++) {
-		renderTargets[i]->Release();
-	}
-
-	log("-----");
 }
 
 void MASMSucks() {

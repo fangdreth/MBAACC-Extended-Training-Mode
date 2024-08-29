@@ -269,6 +269,8 @@ int main(int argc, char* argv[])
             //LogInfo("MBAA is in training mode");
         }
 
+        continue;
+
         FrameDisplay(hMBAAHandle, dwBaseAddress, P1, P2, P3, P4);
 
         //nWriteBuffer = nPlayerAdvantage;
