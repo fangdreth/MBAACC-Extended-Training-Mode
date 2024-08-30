@@ -22,7 +22,7 @@ void saveTexture(IDirect3DBaseTexture9* pTex) { // does this inc the refcounter?
 	static unsigned imageCounter = 0;
 
 	static char fileName[256];
-	snprintf(fileName, 256, "%s%4d.png", writePath, imageCounter);
+	snprintf(fileName, 256, "%s%7d.png", writePath, imageCounter);
 
 	D3DXSaveTextureToFileA(fileName, D3DXIFF_PNG, pTex, NULL);
 
@@ -30,7 +30,7 @@ void saveTexture(IDirect3DBaseTexture9* pTex) { // does this inc the refcounter?
 	log("texture successfully saved to file");
 }
 
-void saveThisFrame() {
+void saveCurrentTexture() {
 	//for (IDirect3DTexture9* pTex : currentTextures) {
 	//	saveTexture(pTex);
 	//}
@@ -145,9 +145,9 @@ __declspec(naked) void _IDirect3DDevice9_Present_func() {
 		call[_IDirect3DDevice9_Present_addr];
 	}
 
-	PUSH_ALL;
-	saveThisFrame();
-	POP_ALL;
+	//PUSH_ALL;
+	//saveThisFrame();
+	//POP_ALL;
 
 	__asm {
 		push _IDirect3DDevice9_Present_ret;
@@ -455,14 +455,27 @@ __declspec(naked) void _IDirect3DDevice9_BeginScene_func() {
 		jmp[_IDirect3DDevice9_BeginScene_addr];
 	}
 }
+DWORD _IDirect3DDevice9_EndScene_ret;
 DWORD _IDirect3DDevice9_EndScene_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_EndScene_func() {
 	//PUSH_ALL;
 	//log("IDirect3DDevice9_EndScene called!");
 	//POP_ALL;
 	__asm {
-		jmp[_IDirect3DDevice9_EndScene_addr];
+		pop _IDirect3DDevice9_EndScene_ret;
+		//jmp[_IDirect3DDevice9_EndScene_addr];
+		call[_IDirect3DDevice9_EndScene_addr];
 	}
+
+	PUSH_ALL;
+	saveCurrentTexture();
+	POP_ALL;
+
+	__asm {
+		push _IDirect3DDevice9_EndScene_ret;
+		ret;
+	}
+
 }
 DWORD _IDirect3DDevice9_Clear_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_Clear_func() {
