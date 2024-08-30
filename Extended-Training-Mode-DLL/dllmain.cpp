@@ -1073,7 +1073,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 
 	static bool initCSSIsGood = false;
 	if (!initCSSIsGood) {
-		//initCSSIsGood = initCSSModifications();
+		initCSSIsGood = initCSSModifications();
 	}
 	
 
@@ -1308,94 +1308,8 @@ void frameDoneCallback()
 
 		log("avail tex mem is %08X", avalTexMem);
 
-		
-		//HookThisShit(device);
-
-		/*
-		PUSH_ALL;
-		__asm { // oh boy i love MASM where we have types in asm which is a thing that makes 100% sense and isnt stupid
-			nop;
-			nop;
-			nop;
-
-			// this hooks.
-			// things
-			// check d3d9.h for what offsets to use.
-			// if i use this,,,,,, and actually understand how directx works, this is doable.
-			// by hooking off this bs, i can hijack ref counting, or just be a sane person and hiack things as they are written to the screen.
-			// issue is, i still dont understand how the fuck directx works
-
-			mov eax, [device];
-			mov ecx, [eax];
-			mov edx, [ecx + 0A8h];
-
-			mov tempD3DHook, edx;
-
-			mov edx, tempD3DFunc;
-			mov[ecx + 0A8h], edx;
-
-			nop;
-			nop;
-			nop;
-		};
-		POP_ALL;
-
-		*/
-
-		/*
-		DWORD* pDevice = (DWORD*)device;
-
-		DWORD* testDevice1 = (DWORD*)0x0076e7d4;
-		DWORD* testDevice2 = (DWORD*)testDevice1;
-
-		if (testDevice2 == NULL) {
-			log("wtf testDevice2 wasnull");
-		}
-
-		DWORD addrBackup = testDevice2[0x94 / 0x4];
-		tempD3DHook = (DWORD*)addrBackup;
-
-		DWORD* patchAddr = &testDevice2[0x94 / 0x4];
-
-		patchMemcpy(patchAddr, tempD3DFunc, 4);
-
-		log("done patch at %08X", patchAddr);
-		*/
-		
-		//textureAddrs.clear();
-	}
-
-	/*
-	if (needHookReset) {
-		needHookReset = false;
-		if (device != NULL) { // put mov needHookReset, 1; in _IDirect3DDevice9_BeginStateBlock_func
-			HookThisShit(device);
-		}
-	}
-	*/	
-
-	//miscDirectX();
-
-	
-	//dumpAddr(getObjFrameDataPointer(0x00555130));
-
-	/*
-	i am sorry for commenting thi	s out
-	for unknown reasons, when the input display and attack combo display things are on, this causes lag? 
-	ill look into hooking it from somewhere else
-	*/
-	//enemyReversal();
-
-	//
-	//static bool drawTextureInited = false;
-	//if (!drawTextureInited) {
-	//	initDrawTextureHook();
-	//	drawTextureInited = true;
-	//}
-
-	
-	
-	
+		HookThisShit(device);
+	}	
 }
 
 __declspec(naked) void nakedFrameDoneCallback() {
@@ -2309,7 +2223,7 @@ void initDirectX() {
 	}
 
 	// this is not a good idea
-	Sleep(3 * 1000);
+	//Sleep(3 * 1000);
 
 	log("endScene at %08X", dwCasterBaseAddress + addrEndScene);
 	log("endScene patch at %08X", dwCasterBaseAddress + addrEndScenePatch);
@@ -2334,7 +2248,7 @@ void threadFunc()
 	srand(time(NULL));
 
 	// make sure that caster has time to hook at the start
-	Sleep(16 * 5);
+	//Sleep(16 * 5);
 	//Sleep(3000);
 
 	// todo, put something here to prevent mult injection

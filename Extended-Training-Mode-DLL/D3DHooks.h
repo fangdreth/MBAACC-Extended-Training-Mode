@@ -1,7 +1,48 @@
 #pragma once
 #include <Windows.h>
+
+#include <set>
+
 IDirect3DDevice9* __device;
 void HookThisShit(IDirect3DDevice9* _device);
+
+std::set<IDirect3DBaseTexture9*> currentTextures;
+
+void saveTexture(IDirect3DBaseTexture9* pTex) { // does this inc the refcounter??
+
+	if (pTex == NULL) {
+		log("saveTexture tex was NULL! ret");
+		return;
+	}
+
+	log("attempting to save a texture to disk");
+
+	const char* writePath = "C:/Users/Meepster99/Documents/Programming/MBAACC-Extended-Training-Mode/temp/";
+
+	static unsigned imageCounter = 0;
+
+	static char fileName[256];
+	snprintf(fileName, 256, "%s%4d.png", writePath, imageCounter);
+
+	D3DXSaveTextureToFileA(fileName, D3DXIFF_PNG, pTex, NULL);
+
+	imageCounter++;
+	log("texture successfully saved to file");
+}
+
+void saveThisFrame() {
+	//for (IDirect3DTexture9* pTex : currentTextures) {
+	//	saveTexture(pTex);
+	//}
+
+	IDirect3DBaseTexture9* pTex = NULL;
+	__device->GetTexture(0, &pTex);
+
+	saveTexture(pTex);
+
+	currentTextures.clear();
+}
+
 DWORD _IDirect3DDevice9_TestCooperativeLevel_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_TestCooperativeLevel_func() {
 	//PUSH_ALL;
@@ -92,13 +133,25 @@ __declspec(naked) void _IDirect3DDevice9_Reset_func() {
 		jmp[_IDirect3DDevice9_Reset_addr];
 	}
 }
+DWORD _IDirect3DDevice9_Present_ret;
 DWORD _IDirect3DDevice9_Present_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_Present_func() {
 	PUSH_ALL;
 	log("IDirect3DDevice9_Present called!");
 	POP_ALL;
 	__asm {
-		jmp[_IDirect3DDevice9_Present_addr];
+		pop _IDirect3DDevice9_Present_ret;
+		//jmp[_IDirect3DDevice9_Present_addr];
+		call[_IDirect3DDevice9_Present_addr];
+	}
+
+	PUSH_ALL;
+	saveThisFrame();
+	POP_ALL;
+
+	__asm {
+		push _IDirect3DDevice9_Present_ret;
+		ret;
 	}
 }
 DWORD _IDirect3DDevice9_GetBackBuffer_addr = 0;
@@ -137,6 +190,27 @@ DWORD _IDirect3DDevice9_CreateTexture_fmt = 0;
 DWORD _IDirect3DDevice9_CreateTexture_reg = 0;
 DWORD _IDirect3DDevice9_CreateTexture_ret = 0;
 
+DWORD _IDirect3DDevice9_CreateTexture_texAddr = 0;
+
+void CreateTexture_Investigate() {
+
+	if (_IDirect3DDevice9_CreateTexture_texAddr == 0) {
+		log("_IDirect3DDevice9_CreateTexture_texAddr was NULL, ret");
+		return;
+	}
+
+	IDirect3DTexture9* pTex = (IDirect3DTexture9*)(*(DWORD*)_IDirect3DDevice9_CreateTexture_texAddr);
+
+	int type = pTex->GetType();
+
+	log("CreateTexture type: %3d tex: %08X", type, _IDirect3DDevice9_CreateTexture_texAddr);
+
+	//saveTexture(pTex);
+	currentTextures.insert(pTex);
+
+}
+
+
 DWORD _IDirect3DDevice9_CreateTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
 
@@ -155,6 +229,13 @@ __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
 		mov eax, [esp + 24];
 		mov _IDirect3DDevice9_CreateTexture_fmt, eax;
 
+		mov _IDirect3DDevice9_CreateTexture_texAddr, 0;
+
+		mov eax, [esp + 32];
+		mov _IDirect3DDevice9_CreateTexture_texAddr, eax;
+
+	_SKIP:
+
 		mov eax, _IDirect3DDevice9_CreateTexture_reg;
 	}
 
@@ -163,17 +244,15 @@ __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
 	PUSH_ALL;
 	log("IDirect3DDevice9_CreateTexture called! ret: %08X w: %4d h: %4d fmt: %3d", _IDirect3DDevice9_CreateTexture_ret, _IDirect3DDevice9_CreateTexture_w, _IDirect3DDevice9_CreateTexture_h, _IDirect3DDevice9_CreateTexture_fmt);
 
-	//  D3DFMT_A8 (28)
-	
 	switch (_IDirect3DDevice9_CreateTexture_fmt) {
 	case D3DFMT_A8R8G8B8:
 	case D3DFMT_X8R8G8B8:
 	case D3DFMT_A1R5G5B5:
 	case D3DFMT_A8:
 
-	// called when going back to CSS
-	case D3DFMT_DXT3: 
-	case D3DFMT_DXT5:
+	case D3DFMT_DXT1: // called on initial load??
+	case D3DFMT_DXT3: // gotten when going back to CSS, most likely the char profile pics?
+	case D3DFMT_DXT5: // gotten when going back to CSS, most likely the char profile pics?
 		break;
 	default:
 		log("unknown fmt of %3d", _IDirect3DDevice9_CreateTexture_fmt);
@@ -187,10 +266,32 @@ __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
 		break;
 	}
 
-	POP_ALL;
 	__asm {
-		jmp[_IDirect3DDevice9_CreateTexture_addr];
+		nop;
+		nop;
+		nop;
 	}
+
+	POP_ALL;
+
+
+	__asm {
+
+		pop _IDirect3DDevice9_CreateTexture_ret;
+
+		call[_IDirect3DDevice9_CreateTexture_addr];
+		//jmp[_IDirect3DDevice9_CreateTexture_addr];
+	}
+
+	PUSH_ALL;
+	CreateTexture_Investigate();
+	POP_ALL;
+
+	__asm {
+		push _IDirect3DDevice9_CreateTexture_ret;
+		ret;
+	}
+
 }
 DWORD _IDirect3DDevice9_CreateVolumeTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateVolumeTexture_func() {
@@ -938,10 +1039,34 @@ __declspec(naked) void _IDirect3DDevice9_CreatePixelShader_func() {
 		jmp[_IDirect3DDevice9_CreatePixelShader_addr];
 	}
 }
+
+DWORD _IDirect3DDevice9_SetPixelShader_reg;
+DWORD _IDirect3DDevice9_SetPixelShader_shaderAddr;
+
 DWORD _IDirect3DDevice9_SetPixelShader_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetPixelShader_func() {
+	
+	__asm {
+		mov _IDirect3DDevice9_SetPixelShader_reg, eax;
+
+		mov eax, [esp + 8];
+		mov _IDirect3DDevice9_SetPixelShader_shaderAddr, eax;
+
+		mov eax, _IDirect3DDevice9_SetPixelShader_reg;
+	}
+
+	
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetPixelShader called!");
+	log("IDirect3DDevice9_SetPixelShader called! shader addr: %08X", _IDirect3DDevice9_SetPixelShader_shaderAddr);
+
+	if (_IDirect3DDevice9_SetPixelShader_shaderAddr != 0) {
+		__asm {
+			nop;
+			int 3;
+			nop;
+		};
+	}
+
 	POP_ALL;
 	__asm {
 

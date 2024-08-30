@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <fstream>
 
 extern IDirect3DDevice9* device;
 
@@ -37,6 +38,8 @@ palettes are possibly applied during the section after beginstate is called, whi
 it would make no sense for them to apply palettes every frame
 a ton of createtextures are called on starting a battle
 most likely, for the preview, but is it possible that those textures are the palette ones?
+
+Hime crashes on CSS. ofcs
 
 */
 
@@ -189,6 +192,37 @@ void loadTextureFromPathLogger() {
 
 }
 
+DWORD _naked_loadTextureFromPathUnknown_pngAddr;
+DWORD _naked_loadTextureFromPathUnknown_pngLen;
+void loadTextureFromPathUnknown() {
+
+	return; 
+
+	// todo, overwrite the text that floats in the back of CSS
+
+	log("png at %08X filesize: %08X", _naked_loadTextureFromPathUnknown_pngAddr, _naked_loadTextureFromPathUnknown_pngLen);
+
+	const char* writePath = "C:/Users/Meepster99/Documents/Programming/MBAACC-Extended-Training-Mode/temp/";
+
+	static unsigned imageCounter = 0;
+
+	static char fileName[256];
+	snprintf(fileName, 256, "%s%4d.png", writePath, imageCounter);
+
+	// def not the fastest approach, but it will work, and be safe. 
+	// actually,,, there has to be an easier way for this right? the length of the buffer might be somewhere
+	// yup! the value of eax before its edi is the file length. easy.
+
+	std::ofstream outFile;
+	outFile.open(fileName, std::ios::binary | std::ios::out);
+	outFile.write((char*)_naked_loadTextureFromPathUnknown_pngAddr, _naked_loadTextureFromPathUnknown_pngLen);
+	outFile.close();
+
+	imageCounter++;;
+	log("we wrote the png successfully");
+
+}
+
 // naked funcs 
 
 DWORD _naked_drawPaletteColumn_reg;
@@ -322,7 +356,7 @@ DWORD _naked_loadTextureFromPathUnknown_FuncAddr = 0x004bd2d0;
 __declspec(naked) void _naked_loadTextureFromPathUnknown() {
 
 	__asm {
-		// eax, at this point, on a break, has the addr to 
+		// eax, at this point, on a break, has the addr to a png????
 		// the rectangles used to color the palette things?
 		//cmp loadTextureFromPathLogger_needBreak, 1;
 		//JNE _SKIP;
@@ -331,10 +365,23 @@ __declspec(naked) void _naked_loadTextureFromPathUnknown() {
 
 		nop;
 		nop;
+
+		mov _naked_loadTextureFromPathUnknown_pngAddr, eax;
+
+		mov eax, [esp + 0];
+		mov _naked_loadTextureFromPathUnknown_pngLen, eax;
+
+		mov eax, _naked_loadTextureFromPathUnknown_pngAddr;
+
+
 		//int 3;
 		nop;
 	_SKIP:
 	}
+
+	PUSH_ALL;
+	loadTextureFromPathUnknown();
+	POP_ALL;
 
 	__asm {
 		call[_naked_loadTextureFromPathUnknown_FuncAddr];
@@ -431,7 +478,7 @@ bool initCSSModifications() {
 
 	initMorePalettes();
 	initDrawPaletteColumn();
-	initPaletteLoad();
+	//initPaletteLoad();
 	initLoadTextureFromPathLogger();
 
 	log("initCSSModifications ran");

@@ -267,6 +267,7 @@ int main(int argc, char* argv[])
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             std::cout << "Attached to MBAA.exe\x1b[K" << "\n\x1b[K\n";
             //LogInfo("MBAA is in training mode");
+        
         }
 
         continue;
