@@ -219,6 +219,7 @@ DWORD leadToDrawPrimHook_ret = 0;
 
 // actual funcs
 
+IDirect3DPixelShader9* pPixelShader_backup_test = nullptr;
 DWORD drawPrimHook_texAddr = 0;
 void drawPrimHook() {
 
@@ -233,6 +234,12 @@ void drawPrimHook() {
 	actual todo, investigate the stack, and figure out how to capture what is actually being drawn, and use that 
 	
 	*/
+
+	device->GetPixelShader(&pPixelShader_backup_test);
+	if (pPixelShader_backup_test != NULL) {
+		log("something else was using the pixel shader??");
+		pPixelShader_backup_test = NULL;
+	}
 
 	static unsigned index = 0;
 
@@ -655,14 +662,13 @@ bool initTextureModifications() {
 		return true;
 	}
 
-	initShader();
-
-	initDrawPrimHook();
-	initDrawPrimCallback();
-	initLeadToDrawPrimHook();
-	initListAppendHook();
-	initFrameCountCallback();
-	//initSetRenderStatesHook();
+	//initShader();
+	//
+	//initDrawPrimHook();
+	//initDrawPrimCallback();
+	//initLeadToDrawPrimHook();
+	//initListAppendHook();
+	//initFrameCountCallback();
 
 
 

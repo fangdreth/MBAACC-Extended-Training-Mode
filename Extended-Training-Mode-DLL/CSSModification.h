@@ -33,6 +33,11 @@ there seems to be 2 copies of,,, everything? one for gameplay, one for css, what
 maybe set custom colors in caster??
 
 
+palettes are possibly applied during the section after beginstate is called, which is very bad for me
+it would make no sense for them to apply palettes every frame
+a ton of createtextures are called on starting a battle
+most likely, for the preview, but is it possible that those textures are the palette ones?
+
 */
 
 // actual funcs
@@ -109,14 +114,14 @@ void paletteLoadHelper(DWORD colorAddr) {
 	DWORD col1 = 0x00FF0080;
 	DWORD col2 = 0x0000FF00;
 
-	/*
+	
 	for (int i = 0; i < 0x100 * 42; i+=2) {
 		pPalette[i + 0] = col1;
 		pPalette[i + 1] = col2;
 	}
-	*/
+	
 
-	log("%08X %08X %08X %08X", pPalette[0 + 0], pPalette[0 + 1], pPalette[0 + 2], pPalette[0 + 3]);
+	//log("%08X %08X %08X %08X", pPalette[0 + 0], pPalette[0 + 1], pPalette[0 + 2], pPalette[0 + 3]);
 
 
 
@@ -272,7 +277,7 @@ __declspec(naked) void _naked_loadTextureFromPathLoggerCallback() {
 
 		nop;
 		nop;
-		int 3;
+		//int 3;
 		nop;
 
 	_SKIP:
@@ -299,7 +304,7 @@ __declspec(naked) void _naked_loadTextureFromPathLoggerCallback2() {
 
 		nop;
 		nop;
-		int 3;
+		//int 3;
 		nop;
 
 	_SKIP:
@@ -326,7 +331,7 @@ __declspec(naked) void _naked_loadTextureFromPathUnknown() {
 
 		nop;
 		nop;
-		int 3;
+		//int 3;
 		nop;
 	_SKIP:
 	}
@@ -427,7 +432,6 @@ bool initCSSModifications() {
 	initMorePalettes();
 	initDrawPaletteColumn();
 	initPaletteLoad();
-
 	initLoadTextureFromPathLogger();
 
 	log("initCSSModifications ran");

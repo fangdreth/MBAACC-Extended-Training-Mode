@@ -273,7 +273,6 @@ bool __stdcall safeWrite() {
 }
 
 DWORD needHookReset = false;
-//#include "D3DHooks.h"
 
 // patch funcs
 
@@ -339,6 +338,7 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 	patchMemcpy(addr, temp, 1);
 }
 
+#include "D3DHooks.h"
 #include "textureModification.h"
 #include "CSSModification.h"
 
@@ -1065,6 +1065,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	//log("frame %d", callBackFrameCount);
 	callBackFrameCount++;
 
+
 	static bool initTextureIsGood = false;
 	if (!initTextureIsGood) {
 		initTextureIsGood = initTextureModifications();
@@ -1072,7 +1073,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 
 	static bool initCSSIsGood = false;
 	if (!initCSSIsGood) {
-		initCSSIsGood = initCSSModifications();
+		//initCSSIsGood = initCSSModifications();
 	}
 	
 
@@ -1308,7 +1309,7 @@ void frameDoneCallback()
 		log("avail tex mem is %08X", avalTexMem);
 
 		
-		//HookThisShit(device);
+		HookThisShit(device);
 
 		/*
 		PUSH_ALL;
@@ -1364,14 +1365,14 @@ void frameDoneCallback()
 		//textureAddrs.clear();
 	}
 
-	
+	/*
 	if (needHookReset) {
 		needHookReset = false;
-		if (device != NULL) {
-			//HookThisShit(device);
+		if (device != NULL) { // put mov needHookReset, 1; in _IDirect3DDevice9_BeginStateBlock_func
+			HookThisShit(device);
 		}
 	}
-	
+	*/	
 
 	//miscDirectX();
 
