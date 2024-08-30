@@ -155,9 +155,10 @@ __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
 		mov eax, [esp + 24];
 		mov _IDirect3DDevice9_CreateTexture_fmt, eax;
 
-
 		mov eax, _IDirect3DDevice9_CreateTexture_reg;
 	}
+
+	// todo, check out the 16x16 textures
 
 	PUSH_ALL;
 	log("IDirect3DDevice9_CreateTexture called! ret: %08X w: %4d h: %4d fmt: %3d", _IDirect3DDevice9_CreateTexture_ret, _IDirect3DDevice9_CreateTexture_w, _IDirect3DDevice9_CreateTexture_h, _IDirect3DDevice9_CreateTexture_fmt);
