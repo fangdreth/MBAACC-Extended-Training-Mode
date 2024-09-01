@@ -811,7 +811,7 @@ void drawObject(DWORD objAddr, bool isProjectile) {
 	}
 }
 
-void miscTests() {
+void miscAdjustTests() {
 	static AdjustableVar<5> currentTexture([]() -> DWORD {
 		if (!((*(int*)(0x67bde8) != 0) && (*(char*)(0x67be09) == '\0'))) {
 			return 0;
@@ -913,7 +913,7 @@ void drawFrameData() {
 		}
 	}
 
-	//miscTests();
+	//miscAdjustTests();
 }
 
 void highlightStates()
@@ -1308,7 +1308,7 @@ void frameDoneCallback()
 
 		log("avail tex mem is %08X", avalTexMem);
 
-		HookThisShit(device);
+		//HookThisShit(device);
 	}	
 }
 

@@ -8,18 +8,72 @@ void HookThisShit(IDirect3DDevice9* _device);
 
 std::set<IDirect3DBaseTexture9*> currentTextures;
 
+// i am unsure of how big to make this array. i dont want to have crashes from reading uninited mem
+// loop until 0040d355, which is the ret addr of gamestart. set
+// i didnt find that in the stack until somewhere like 4C0, might as well alloc 0x1000 
+DWORD saveTexture_stack[0x1000];
+DWORD stackAddr = 0;
+void saveStack() {
+
+	return;
+
+	if (stackAddr == 0) {
+		return;
+	}
+
+	DWORD temp;
+
+	for (int i = 0; i < 0x1000; i++) {
+
+		temp = *(DWORD*)(stackAddr + (i * 4));
+
+		saveTexture_stack[i] = temp;
+
+		if (temp == 0x0040d355) {
+			break;
+		}
+	}
+}
+
+void logStack() {
+
+	return;
+
+	// sections:
+	// .text ram:00401000-ram:0051afff
+	// .rdata ram:0051b000-ram:0054afff 
+
+	DWORD temp;
+
+	// havng this many log calls aint ideal. i should snprintf!
+	for (int i = 0; i < 0x1000; i++) {
+
+		temp = saveTexture_stack[i];
+
+		if (temp >= 0x00401000 && temp < 0x0051afff) {
+			log("possible ret attr: %08X", temp);
+		}
+
+		if (temp == 0x0040d355) {
+			break;
+		}
+	}
+}
+
 void saveTexture(IDirect3DBaseTexture9* pTex) { // does this inc the refcounter??
+
+	return;
 
 	if (pTex == NULL) {
 		log("saveTexture tex was NULL! ret");
 		return;
 	}
 
-	log("attempting to save a texture to disk");
+	static unsigned imageCounter = 0;
+
+	log("attempting to save a texture to disk tex: %08X num:%7d", (DWORD)pTex, imageCounter);
 
 	const char* writePath = "C:/Users/Meepster99/Documents/Programming/MBAACC-Extended-Training-Mode/temp/";
-
-	static unsigned imageCounter = 0;
 
 	static char fileName[256];
 	snprintf(fileName, 256, "%s%7d.png", writePath, imageCounter);
@@ -31,6 +85,9 @@ void saveTexture(IDirect3DBaseTexture9* pTex) { // does this inc the refcounter?
 }
 
 void saveCurrentTexture() {
+
+	return;
+
 	//for (IDirect3DTexture9* pTex : currentTextures) {
 	//	saveTexture(pTex);
 	//}
@@ -209,7 +266,6 @@ void CreateTexture_Investigate() {
 	currentTextures.insert(pTex);
 
 }
-
 
 DWORD _IDirect3DDevice9_CreateTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
@@ -461,6 +517,16 @@ __declspec(naked) void _IDirect3DDevice9_EndScene_func() {
 	//PUSH_ALL;
 	//log("IDirect3DDevice9_EndScene called!");
 	//POP_ALL;
+
+	__asm {
+		mov stackAddr, esp;
+	}
+
+	PUSH_ALL;
+	saveStack();
+	logStack();
+	POP_ALL;
+
 	__asm {
 		pop _IDirect3DDevice9_EndScene_ret;
 		//jmp[_IDirect3DDevice9_EndScene_addr];
@@ -692,14 +758,45 @@ __declspec(naked) void _IDirect3DDevice9_GetTexture_func() {
 		jmp[_IDirect3DDevice9_GetTexture_addr];
 	}
 }
+
+DWORD _IDirect3DDevice9_SetTexture_texAddr;
+DWORD _IDirect3DDevice9_SetTexture_ret;
+DWORD _IDirect3DDevice9_SetTexture_reg;
 DWORD _IDirect3DDevice9_SetTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetTexture_func() {
 	//PUSH_ALL;
 	//log("IDirect3DDevice9_SetTexture called!");
 	//POP_ALL;
+
 	__asm {
-		jmp[_IDirect3DDevice9_SetTexture_addr];
+		mov _IDirect3DDevice9_SetTexture_reg, eax;
+
+		mov eax, [esp + 12]; // ret, device, stage, tex
+		mov _IDirect3DDevice9_SetTexture_texAddr, eax;
+
+		mov eax, _IDirect3DDevice9_SetTexture_reg;
 	}
+
+	__asm {
+		mov stackAddr, esp;
+	}
+
+	PUSH_ALL;
+	log("SetTexture tex: %08X", _IDirect3DDevice9_SetTexture_texAddr);
+	saveStack();
+	logStack();
+	POP_ALL;
+
+	__asm {
+		pop _IDirect3DDevice9_SetTexture_ret;
+		
+		//jmp[_IDirect3DDevice9_SetTexture_addr];
+		call[_IDirect3DDevice9_SetTexture_addr];
+		
+		push _IDirect3DDevice9_SetTexture_ret;
+		ret;
+	}
+
 }
 DWORD _IDirect3DDevice9_GetTextureStageState_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetTextureStageState_func() {

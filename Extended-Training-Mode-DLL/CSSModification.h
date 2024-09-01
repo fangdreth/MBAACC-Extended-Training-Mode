@@ -33,13 +33,44 @@ there seems to be 2 copies of,,, everything? one for gameplay, one for css, what
 
 maybe set custom colors in caster??
 
-
 palettes are possibly applied during the section after beginstate is called, which is very bad for me
 it would make no sense for them to apply palettes every frame
 a ton of createtextures are called on starting a battle
 most likely, for the preview, but is it possible that those textures are the palette ones?
 
 Hime crashes on CSS. ofcs
+
+i need the ability to dynamically reload this shit
+but they,,, doing it via pixel shader is so much easier
+
+tbh i could;,
+load the palette on my own and then use that as a pixel shader map? but the colors being altered would make this a world of pain
+
+i could possibly(hopefully)
+reload the chat sprites with the new palette, and swap the buffers somehow? but god that’s a pain
+
+alternatively,
+
+i remake the palette until, and therefore have a guarantee that slots 36-42 would be constant
+i then now know what the colors are, and can write a shader
+the issues with that may be,,, how things like orbs and kohaku chair are classified, will they be shaded?
+but this way of doing it is non destructive to the base texture, and so much easier
+
+will i have to write a ui? yes, but i would have had to do at least something for the effects colors
+
+this guarantees me sanity
+ok, no more tangents, no more running.
+options are:
+
+pixel shader
+i would need to either prerecord all chars 37 palette, or load them and use that
+but wouldn’t finding that possibly give me solution #2?
+
+at the end of the day, i know how to do shit with pixel shaders, and that shit gives me MORE options than,,, without. 
+so its the right path right?
+i just dont want to have to rewrite palmod
+
+i know i should just focus on getting something out, but i cant figure this basic shit out
 
 */
 
@@ -114,6 +145,14 @@ void paletteLoadHelper(DWORD colorAddr) {
 	}
 
 
+	Sleep(1000);
+
+	__asm {
+		nop;
+		int 3;
+		nop;
+	}
+
 	DWORD col1 = 0x00FF0080;
 	DWORD col2 = 0x0000FF00;
 
@@ -122,6 +161,8 @@ void paletteLoadHelper(DWORD colorAddr) {
 		pPalette[i + 0] = col1;
 		pPalette[i + 1] = col2;
 	}
+
+
 	
 
 	//log("%08X %08X %08X %08X", pPalette[0 + 0], pPalette[0 + 1], pPalette[0 + 2], pPalette[0 + 3]);
@@ -223,6 +264,20 @@ void loadTextureFromPathUnknown() {
 
 }
 
+DWORD _naked_miscTests_ebx;
+void miscTests() {
+
+	// palette loads take a different route. this route.
+
+	if (_naked_miscTests_ebx == 0) {
+		log("miscTests ebx was NULL");
+		return;
+	}
+
+
+	log("miscTests ebx: %.256s", (char*)_naked_miscTests_ebx);
+
+}
 // naked funcs 
 
 DWORD _naked_drawPaletteColumn_reg;
@@ -394,6 +449,34 @@ __declspec(naked) void _naked_loadTextureFromPathUnknown() {
 
 }
 
+__declspec(naked) void _naked_miscTests() {
+
+	__asm {
+		mov _naked_miscTests_ebx, ebx;
+	}
+
+	PUSH_ALL;
+	miscTests();
+	POP_ALL;
+
+
+	// overridden bytes
+	__asm _emit 0x55;
+
+	__asm _emit 0x8B;
+	__asm _emit 0xEC;
+
+	__asm _emit 0x83;
+	__asm _emit 0xE4;
+	__asm _emit 0xF8;
+
+
+	__asm {
+		push 0041f7c6h
+		ret;
+	}
+}
+
 // init 
 
 void initMorePalettes() {
@@ -465,6 +548,10 @@ void initLoadTextureFromPathLogger() {
 	patchJump(0x004c8ae2, _naked_loadTextureFromPathUnknown);
 }
 
+void initMiscTests() {
+	patchJump(0x0041f7c0, _naked_miscTests);
+}
+
 bool initCSSModifications() {
 
 	if (device == NULL) {
@@ -480,6 +567,7 @@ bool initCSSModifications() {
 	initDrawPaletteColumn();
 	//initPaletteLoad();
 	initLoadTextureFromPathLogger();
+	initMiscTests();
 
 	log("initCSSModifications ran");
 
