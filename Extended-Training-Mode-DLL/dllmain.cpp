@@ -16,6 +16,7 @@
 #include <d3d9.h>
 #include <d3dx9.h> // https://www.microsoft.com/en-us/download/details.aspx?id=6812
 
+
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
 
@@ -43,6 +44,76 @@ void initDrawTextureHook();
 void messUpTexture();
 void miscDirectX();
 void initIdk();
+
+
+D3DXVECTOR3 RGBtoHSV(const D3DXVECTOR3& rgb) {
+	float r = rgb.x;
+	float g = rgb.y;
+	float b = rgb.z;
+
+	float max = MAX(r, MAX(g, b));
+	float min = MIN(r, MIN(g, b));
+	float delta = max - min;
+
+	float h = 0.0f;
+	float s = (max == 0.0f) ? 0.0f : (delta / max);
+	float v = max;
+
+	if (delta != 0.0f) {
+		if (max == r) {
+			h = 60.0f * (fmod(((g - b) / delta), 6.0f));
+		}
+		else if (max == g) {
+			h = 60.0f * (((b - r) / delta) + 2.0f);
+		}
+		else if (max == b) {
+			h = 60.0f * (((r - g) / delta) + 4.0f);
+		}
+	}
+
+	if (h < 0.0f) {
+		h += 360.0f;
+	}
+
+	return D3DXVECTOR3(h, s, v);
+}
+
+D3DXVECTOR3 HSVtoRGB(const D3DXVECTOR3& hsv) {
+	float h = hsv.x;
+	float s = hsv.y;
+	float v = hsv.z;
+
+	float c = v * s; // Chroma
+	float x = c * (1 - fabs(fmod(h / 60.0f, 2) - 1));
+	float m = v - c;
+
+	float r = 0.0f, g = 0.0f, b = 0.0f;
+
+	if (h >= 0.0f && h < 60.0f) {
+		r = c; g = x; b = 0.0f;
+	}
+	else if (h >= 60.0f && h < 120.0f) {
+		r = x; g = c; b = 0.0f;
+	}
+	else if (h >= 120.0f && h < 180.0f) {
+		r = 0.0f; g = c; b = x;
+	}
+	else if (h >= 180.0f && h < 240.0f) {
+		r = 0.0f; g = x; b = c;
+	}
+	else if (h >= 240.0f && h < 300.0f) {
+		r = x; g = 0.0f; b = c;
+	}
+	else if (h >= 300.0f && h < 360.0f) {
+		r = c; g = 0.0f; b = x;
+	}
+
+	r += m;
+	g += m;
+	b += m;
+
+	return D3DXVECTOR3(r, g, b);
+}
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did

@@ -264,20 +264,78 @@ void loadTextureFromPathUnknown() {
 
 }
 
-DWORD _naked_miscTests_ebx;
-void miscTests() {
-
+DWORD _naked_PalettePatcherHook_ebx;
+DWORD _naked_PalettePatcherCallback_eax;
+void palettePatcherCallback() {
 	// palette loads take a different route. this route.
 
-	if (_naked_miscTests_ebx == 0) {
+	// this crashes on fhime. like all things do 
+	// doesnt she have 2 loading anims? whats up with that?
+
+	if (_naked_PalettePatcherHook_ebx == 0) {
 		log("miscTests ebx was NULL");
 		return;
 	}
 
+	const char* loadString = (char*)_naked_PalettePatcherHook_ebx;
 
-	log("miscTests ebx: %.256s", (char*)_naked_miscTests_ebx);
+	size_t len = strnlen_s(loadString, 256);
 
+	if (len == 0) {
+		log("miscTests ebx was NULL");
+		return;
+	}
+
+	log("miscTests ebx: %s", loadString);
+
+	const char* fileType = loadString + len - 3;
+
+	// P_ARC_D gave a crash? what evem is that
+
+	if (strcmp(fileType, "pal")) { // not a palette, do nothing
+		return;
+	}
+
+	// is a palette
+
+	// textures, when loaded in, are in 4 byte RGBA format.
+	// weirdly, there is a 40 00 00 00 at the start. what is that?
+	// its 64, which is the num of palettes? but idrk
+
+	DWORD* colors = (DWORD*)(_naked_PalettePatcherCallback_eax + 4);
+
+	
+	//for (int i = 0; i < 64; i++) {
+	for (int i = 36; i < 42; i++) {
+		for (int j = 0; j < 256; j++) {
+
+			DWORD tempColor = colors[(256 * i) + j];
+
+			BYTE a = (tempColor & 0xFF000000) >> 24;
+
+			D3DXVECTOR3 rgb = D3DXVECTOR3(
+				(float)((tempColor & 0x00FF0000) >> 16),
+				(float)((tempColor & 0x0000FF00) >> 8),
+				(float)((tempColor & 0x000000FF) >> 0)
+				);
+
+			D3DXVECTOR3 hsv = RGBtoHSV(rgb);
+
+			hsv.x = 0.63;
+
+			D3DXVECTOR3 tempRGB = HSVtoRGB(hsv);
+
+			BYTE r = tempRGB.x;
+			BYTE g = tempRGB.y;
+			BYTE b = tempRGB.z;
+
+			DWORD tempNewColor = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+
+			colors[(256 * i) + j] = tempNewColor;
+		}		
+	}
 }
+
 // naked funcs 
 
 DWORD _naked_drawPaletteColumn_reg;
@@ -449,16 +507,11 @@ __declspec(naked) void _naked_loadTextureFromPathUnknown() {
 
 }
 
-__declspec(naked) void _naked_miscTests() {
+__declspec(naked) void _naked_PalettePatcherHook() {
 
 	__asm {
-		mov _naked_miscTests_ebx, ebx;
+		mov _naked_PalettePatcherHook_ebx, ebx;
 	}
-
-	PUSH_ALL;
-	miscTests();
-	POP_ALL;
-
 
 	// overridden bytes
 	__asm _emit 0x55;
@@ -473,6 +526,21 @@ __declspec(naked) void _naked_miscTests() {
 
 	__asm {
 		push 0041f7c6h
+		ret;
+	}
+}
+
+__declspec(naked) void _naked_PalettePatcherCallback() {
+
+	__asm {
+		mov _naked_PalettePatcherCallback_eax, eax;
+	}
+
+	PUSH_ALL;
+	palettePatcherCallback();
+	POP_ALL;
+
+	__asm {
 		ret;
 	}
 }
@@ -548,8 +616,9 @@ void initLoadTextureFromPathLogger() {
 	patchJump(0x004c8ae2, _naked_loadTextureFromPathUnknown);
 }
 
-void initMiscTests() {
-	patchJump(0x0041f7c0, _naked_miscTests);
+void initPalettePatcher() {
+	patchJump(0x0041f7c0, _naked_PalettePatcherHook);
+	patchJump(0x0041f87a, _naked_PalettePatcherCallback);
 }
 
 bool initCSSModifications() {
@@ -567,7 +636,7 @@ bool initCSSModifications() {
 	initDrawPaletteColumn();
 	//initPaletteLoad();
 	initLoadTextureFromPathLogger();
-	initMiscTests();
+	initPalettePatcher();
 
 	log("initCSSModifications ran");
 
