@@ -456,6 +456,18 @@ void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4)
 	drawRect(x, y + h - 1, w, lineWidth, ARGB);
 }
 
+void drawBorderWithHighlight(int x, int y, int w, int h, DWORD ARGB = 0x8042e5f4)
+{
+	drawBorder(x, y, w, h, ARGB);
+
+	BYTE r = (ARGB & 0x00FF0000) >> 16;
+	BYTE g = (ARGB & 0x0000FF00) >> 8;
+	BYTE b = (ARGB & 0x000000FF) >> 0;
+	
+	drawRect(x, y, w, h, r, g, b, 0x38);
+}
+
+
 // -----
 
 void scaleCords(const float xOrig, const float yOrig, float& x1Cord, float& y1Cord, float& x2Cord, float& y2Cord)
@@ -611,7 +623,7 @@ void drawObject(DWORD objAddr, bool isProjectile)
 				scaleCords(xOrig, yOrig, x1Cord, y1Cord, x2Cord, y2Cord);
 			}
 			
-			drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
+			drawBorderWithHighlight((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
 		}
 	}
 
@@ -642,7 +654,7 @@ void drawObject(DWORD objAddr, bool isProjectile)
 				scaleCords(xOrig, yOrig, x1Cord, y1Cord, x2Cord, y2Cord);
 			}
 
-			drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
+			drawBorderWithHighlight((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
 		}
 	}
 }
