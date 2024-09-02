@@ -1111,25 +1111,17 @@ void frameDoneCallback()
 
 	// this hooks directx
 	static bool deviceInit = false;
-	if (*(DWORD*)0x0076e7d4 != 0 && !deviceInit) {
+	if (!deviceInit && *(DWORD*)0x0076e7d4 != 0) {
 		deviceInit = true;
-
 
 		dwDevice = *(DWORD*)0x0076e7d4;
 
 		device = (IDirect3DDevice9*)dwDevice;
 
-		//log("dwDevice: %08X", dwDevice);
-
-		// repatch original bytes and remove my code 
-		BYTE bytes[4] = { 0x5B, 0xC2, 0x04, 0x00 };
-		patchMemcpy(dwCasterBaseAddress + addrEndScenePatch, &bytes, 4);
-
 		unsigned avalTexMem = device->GetAvailableTextureMem();
 
 		log("directx device has been acquired! texmem: %08X", avalTexMem);
 	}
-
 
 	if (oHitboxesDisplayKey.keyDown()) {
 		bHitboxesDisplay = !bHitboxesDisplay;
