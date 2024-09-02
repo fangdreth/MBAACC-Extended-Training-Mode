@@ -17,7 +17,12 @@
 #include "..\Common\SharedMemoryHelper.h"
 #include "FrameBar.h"
 
+#include <d3d9.h>
+#include <d3dx9.h> // https://www.microsoft.com/en-us/download/details.aspx?id=6812
+
 #pragma comment(lib, "ws2_32.lib") 
+#pragma comment(lib, "d3d9.lib") 
+#pragma comment(lib, "d3dx9.lib") 
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
@@ -43,8 +48,14 @@ void enemyReversal();
 
 const ADDRESS dwBaseAddress = (0x00400000);
 
+DWORD addrEndScene = 0x663fb900;
+DWORD addrEndScenePatch = 0x663fb996;
+
 bool bCasterInit = false;
 ADDRESS dwCasterBaseAddress = 0;
+
+DWORD dwDevice = 0; // MASM is horrid when it comes to writing pointers vs value of pointer bc it has type checking. thats why this cant be a pointer
+IDirect3DDevice9* device = NULL;
 
 const ADDRESS INPUTDISPLAYTOGGLE = (dwBaseAddress + 0x001585f8);
 
@@ -1098,6 +1109,28 @@ void frameDoneCallback()
 	oFrameDataDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameDataDisplayKey));
 	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
 
+	// this hooks directx
+	static bool deviceInit = false;
+	if (*(DWORD*)0x0076e7d4 != 0 && !deviceInit) {
+		deviceInit = true;
+
+
+		dwDevice = *(DWORD*)0x0076e7d4;
+
+		device = (IDirect3DDevice9*)dwDevice;
+
+		//log("dwDevice: %08X", dwDevice);
+
+		// repatch original bytes and remove my code 
+		BYTE bytes[4] = { 0x5B, 0xC2, 0x04, 0x00 };
+		patchMemcpy(dwCasterBaseAddress + addrEndScenePatch, &bytes, 4);
+
+		unsigned avalTexMem = device->GetAvailableTextureMem();
+
+		log("directx device has been acquired! texmem: %08X", avalTexMem);
+	}
+
+
 	if (oHitboxesDisplayKey.keyDown()) {
 		bHitboxesDisplay = !bHitboxesDisplay;
 	}
@@ -1165,6 +1198,8 @@ void frameDoneCallback()
 	ill look into hooking it from somewhere else
 	*/
 	//enemyReversal();
+
+	
 }
 
 __declspec(naked) void nakedFrameDoneCallback()
@@ -1497,6 +1532,7 @@ void threadFunc()
 	initMeterGainHook();
 	initBattleResetCallback();
 
+	
 	while (true) 
 	{
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrIdleHighlightSetting, 3, 0);
