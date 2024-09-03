@@ -389,14 +389,14 @@ const char pcRed_4[4] = "RED";
 const char pcGreen_6[6] = "GREEN";
 const char pcBlue_5[5] = "BLUE";
 
-const char pcFreeze_11[11] = "FREEZE [A]";
-const char pcNextStep_14[14] = "NEXT STEP [A]";
-const char pcHitboxes_13[13] = "HITBOXES [A]";
-const char pcFrameDisplay_18[18] = "FRAME DISPLAY [A]";
-const char pcHighlights_15[15] = "HIGHLIGHTS [A]";
-const char pcSaveState_15[15] = "SAVE STATE [A]";
-const char pcPrevSaveSlot_19[19] = "PREV SAVE SLOT [A]";
-const char pcNextSaveSlot_19[19] = "NEXT SAVE SLOT [A]";
+const char pcFreeze_11[11] = "FREEZE KEY";
+const char pcNextStep_14[14] = "NEXT STEP KEY";
+const char pcHitboxes_13[13] = "HITBOXES KEY";
+const char pcFrameDisplay_18[18] = "FRAME DISPLAY KEY";
+const char pcHighlights_15[15] = "HIGHLIGHTS KEY";
+const char pcSaveState_15[15] = "SAVE STATE KEY";
+const char pcPrevSaveSlot_19[19] = "PREV SAVE SLOT KEY";
+const char pcNextSaveSlot_19[19] = "NEXT SAVE SLOT KEY";
 
 #define VK_KEY_0 0x30
 #define VK_KEY_1 0x31
