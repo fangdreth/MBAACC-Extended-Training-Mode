@@ -361,6 +361,9 @@ int main(int argc, char* argv[])
         }
         else
         {
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
+            bEnableFN2Load = nSaveSlot > 0 ? true : false;
+
             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1APressed), &nReadResult, 1, 0);
             bOldAPressed = bAPressed;
             bAPressed = (nReadResult == 1 ? true : false);
@@ -1214,22 +1217,17 @@ int main(int argc, char* argv[])
                             nOldEnemyDefenseIndex = nEnemyDefenseIndex;
                         else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                         {
-                            SetRegistryValue(L"SaveSlot", --nSaveSlot);
+                            nSaveSlot = max(0, nSaveSlot - 1);
+                            SetRegistryValue(L"SaveSlot", nSaveSlot);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
                         }
                         else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                         {
-                            SetRegistryValue(L"SaveSlot", ++nSaveSlot);
+                            nSaveSlot = min(nSaveSlot + 1, MAX_SAVES);
+                            SetRegistryValue(L"SaveSlot", nSaveSlot);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
                         }
-                        if (nSaveSlot > 0)
-                        {
-                            bEnableFN2Load = true;
-                        }
-                        else
-                        {
-                            bEnableFN2Load = false;
-                        }
+                        bEnableFN2Load = nSaveSlot > 0 ? true : false;
 
                         if (nOldAirRecoveryIndex == -1)
                             nOldAirRecoveryIndex = nAirRecoveryIndex;

@@ -488,3 +488,4 @@ private:
 	int vKey;
 	bool prevState = false;
 };
+

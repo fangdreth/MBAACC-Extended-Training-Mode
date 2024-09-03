@@ -14,7 +14,6 @@
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
-#include "..\Common\SharedMemoryHelper.h"
 #include "FrameBar.h"
 
 #include <d3d9.h>
@@ -218,6 +217,59 @@ bool __stdcall safeWrite()
 bool __stdcall isPaused()
 {
 	return *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
+}
+
+void processKeys()
+{
+	static KeyState oHitboxesDisplayKey;
+	static KeyState oFrameDataDisplayKey;
+	static KeyState oSaveStateKey;
+	static KeyState oDecrementSaveSlotKey;
+	static KeyState oIncrementSaveSlotKey;
+	static KeyState oFreezeKey;
+	static KeyState oHighlightsOnKey;
+	oHighlightsOnKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHighlightsOnKey));
+	oHitboxesDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHitboxesDisplayKey));
+	oFrameDataDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameDataDisplayKey));
+	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
+	oFreezeKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFreezeKey));
+	oDecrementSaveSlotKey.setKey(VK_KEY_7);
+	oIncrementSaveSlotKey.setKey(VK_KEY_8);
+
+	if (oDecrementSaveSlotKey.keyDown())
+	{
+		uint8_t nTempSaveSlot;
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+		nTempSaveSlot = max(0, nTempSaveSlot - 1);
+		//SetRegistryValue(L"SaveSlot", nTempSaveSlot);
+		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+	}
+	if (oIncrementSaveSlotKey.keyDown())
+	{
+		uint8_t nTempSaveSlot;
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+		nTempSaveSlot = min(nTempSaveSlot + 1, MAX_SAVES);
+		//SetRegistryValue(L"SaveSlot", nTempSaveSlot);
+		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+	}
+
+	if (oHitboxesDisplayKey.keyDown())
+	{
+		bHitboxesDisplay = !bHitboxesDisplay;
+	}
+
+	if (oFrameDataDisplayKey.keyDown())
+	{
+		bFrameDataDisplay = !bFrameDataDisplay;
+	}
+
+	if (oFreezeKey.keyDown())
+	{
+		bFreeze = !bFreeze;
+	}
+
+	if (oHighlightsOnKey.keyDown())
+		bHighlightsOn = !bHighlightsOn;
 }
 
 // patch funcs
@@ -843,11 +895,6 @@ void highlightStates()
 {
 	static int nP1ThrowProtectionTimer = 0;
 	static int nP2ThrowProtectionTimer = 0;
-	static KeyState oHighlightsOnKey;
-	oHighlightsOnKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHighlightsOnKey));
-
-	if (oHighlightsOnKey.keyDown())
-		bHighlightsOn = !bHighlightsOn;
 
 	if (!safeWrite()) {
 		return;
@@ -954,16 +1001,13 @@ void highlightStates()
 	}
 }
 
+// windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
 void __stdcall pauseCallback(DWORD dwMilliseconds)
 {
-	// windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
-	static KeyState oFreezeKey;
 	static KeyState oFrameStepKey;
-	oFreezeKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFreezeKey));
 	oFrameStepKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey));
 
-	if (oFreezeKey.keyDown())
-		bFreeze = !bFreeze;		
+	processKeys();
 
 	// commenting this because I don't like pausing with this key
 	//if (!bFreeze && oFrameStepKey.keyDown())
@@ -993,11 +1037,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 			DispatchMessage(&msg);
 		}
 
-		if (oFreezeKey.keyDown())
-		{
-			bFreeze = !bFreeze;
-		}
-
+		processKeys();
 		if (oFrameStepKey.keyDown()) {
 			break;
 		}
@@ -1106,11 +1146,7 @@ void enemyReversal()
 
 void frameDoneCallback()
 {
-	static KeyState oHitboxesDisplayKey;
-	static KeyState oFrameDataDisplayKey;
 	static KeyState oSaveStateKey;
-	oHitboxesDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHitboxesDisplayKey));
-	oFrameDataDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameDataDisplayKey));
 	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
 
 	// this hooks directx
@@ -1127,31 +1163,30 @@ void frameDoneCallback()
 		log("directx device has been acquired! texmem: %08X", avalTexMem);
 	}
 
-	if (oHitboxesDisplayKey.keyDown()) {
-		bHitboxesDisplay = !bHitboxesDisplay;
-	}
+	processKeys();
 
-	if (oFrameDataDisplayKey.keyDown()) {
-		bFrameDataDisplay = !bFrameDataDisplay;
-	}
-
-	if (oSaveStateKey.keyDown() && safeWrite()) {
+	if (oSaveStateKey.keyDown() && safeWrite())
+	{
 		*(char*)(dwBaseAddress + adSharedDoSave) = 1;
 		nSaveTextTimer = TEXT_TIMER;
 	}
 
-	if (oSaveStateKey.keyHeld() && safeWrite()) {
+	if (oSaveStateKey.keyHeld() && safeWrite())
+	{
 		nClearSaveTimer++;
-		if (nClearSaveTimer == SAVE_RESET_TIME) {
+		if (nClearSaveTimer == SAVE_RESET_TIME)
+		{
 			*(char*)(dwBaseAddress + adSharedDoClearSave) = 1;
 			nClearTextTimer = TEXT_TIMER;
 		}
 }
-	else {
+	else
+	{
 		nClearSaveTimer = 0;
 	}
 
-	if (nSaveTextTimer != 0 && safeWrite()) {
+	if (nSaveTextTimer != 0 && safeWrite())
+	{
 		static char buffer[256];
 
 		snprintf(buffer, 256, "Saved State %i", *(char*)(dwBaseAddress + adSharedSaveSlot));
@@ -1159,7 +1194,8 @@ void frameDoneCallback()
 		nSaveTextTimer--;
 	}
 
-	if (nClearTextTimer != 0 && safeWrite()) {
+	if (nClearTextTimer != 0 && safeWrite())
+	{
 		static char buffer[256];
 
 		snprintf(buffer, 256, "Cleared State %i", *(char*)(dwBaseAddress + adSharedSaveSlot));
@@ -1172,17 +1208,20 @@ void frameDoneCallback()
 	int nSubMenu;
 	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
 	if (!safeWrite() || isPaused() && nSubMenu != 12) {
-		if (safeWrite() && *(bool*)(dwBaseAddress + adSharedHoveringScroll)) {
+		if (safeWrite() && *(bool*)(dwBaseAddress + adSharedHoveringScroll))
+		{
 			drawFrameBar();
 		}
 		return;
 	}
 
-	if (bHitboxesDisplay) {
+	if (bHitboxesDisplay)
+	{
 		drawFrameData();
 	}
 
-	if (bFrameDataDisplay) {
+	if (bFrameDataDisplay)
+	{
 		drawFrameBar();
 	}
 
