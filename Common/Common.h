@@ -5,6 +5,8 @@
 #include <map>
 #include <unordered_map>
 #include <iostream>
+#include <cwctype>
+#include <algorithm>
 
 typedef DWORD ADDRESS;
 
@@ -495,3 +497,44 @@ private:
 	bool prevState = false;
 };
 
+static std::wstring GetOpenFileName()
+{
+    char pcFileName[MAX_PATH];
+
+    OPENFILENAME ofn;
+    ZeroMemory(pcFileName, sizeof(pcFileName));
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = NULL;
+    ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
+    ofn.lpstrFile = (LPWSTR)pcFileName;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrTitle = (LPWSTR)L"Open Save State";
+    ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
+
+    GetOpenFileNameW(&ofn);
+
+    return std::wstring(ofn.lpstrFile);
+}
+
+static std::wstring GetSaveFileName()
+{
+    char pcFileName[MAX_PATH];
+
+    OPENFILENAME ofn;
+    ZeroMemory(pcFileName, sizeof(pcFileName));
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = NULL;
+    ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
+    ofn.lpstrFile = (LPWSTR)pcFileName;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrTitle = (LPWSTR)L"Create Save State";
+    ofn.lpstrDefExt = L"sav";
+    ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT;
+
+    //GetOpenFileNameW(&ofn);
+    GetSaveFileNameW(&ofn);
+
+    return std::wstring(ofn.lpstrFile);
+}

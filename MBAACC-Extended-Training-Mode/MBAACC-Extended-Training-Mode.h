@@ -168,48 +168,6 @@ HANDLE GetProcessByName(const wchar_t* name)
     return nullptr;
 }
 
-std::wstring GetFilePath()
-{
-    char pcFileName[MAX_PATH];
-
-    OPENFILENAME ofn;
-    ZeroMemory(pcFileName, sizeof(pcFileName));
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = NULL;
-    ofn.lpstrFilter = (LPWSTR)L"MBAA.exe\0MBAA.exe\0";
-    ofn.lpstrFile = (LPWSTR)pcFileName;
-    ofn.nMaxFile = MAX_PATH;
-    ofn.lpstrTitle = (LPWSTR)L"Select MBAA.exe";
-    ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
-
-    GetOpenFileNameW(&ofn);
-
-    return std::wstring(ofn.lpstrFile);
-
-    /*
-    // use this to process errors if we need to at some point
-    switch (CommDlgExtendedError())
-    {
-      case CDERR_DIALOGFAILURE   : std::cout << "CDERR_DIALOGFAILURE\n";   break;
-      case CDERR_FINDRESFAILURE  : std::cout << "CDERR_FINDRESFAILURE\n";  break;
-      case CDERR_INITIALIZATION  : std::cout << "CDERR_INITIALIZATION\n";  break;
-      case CDERR_LOADRESFAILURE  : std::cout << "CDERR_LOADRESFAILURE\n";  break;
-      case CDERR_LOADSTRFAILURE  : std::cout << "CDERR_LOADSTRFAILURE\n";  break;
-      case CDERR_LOCKRESFAILURE  : std::cout << "CDERR_LOCKRESFAILURE\n";  break;
-      case CDERR_MEMALLOCFAILURE : std::cout << "CDERR_MEMALLOCFAILURE\n"; break;
-      case CDERR_MEMLOCKFAILURE  : std::cout << "CDERR_MEMLOCKFAILURE\n";  break;
-      case CDERR_NOHINSTANCE     : std::cout << "CDERR_NOHINSTANCE\n";     break;
-      case CDERR_NOHOOK          : std::cout << "CDERR_NOHOOK\n";          break;
-      case CDERR_NOTEMPLATE      : std::cout << "CDERR_NOTEMPLATE\n";      break;
-      case CDERR_STRUCTSIZE      : std::cout << "CDERR_STRUCTSIZE\n";      break;
-      case FNERR_BUFFERTOOSMALL  : std::cout << "FNERR_BUFFERTOOSMALL\n";  break;
-      case FNERR_INVALIDFILENAME : std::cout << "FNERR_INVALIDFILENAME\n"; break;
-      case FNERR_SUBCLASSFAILURE : std::cout << "FNERR_SUBCLASSFAILURE\n"; break;
-      default                    : std::cout << "You cancelled.\n";
-    }*/
-}
-
 void CreateRegistryKey()
 {
     try
