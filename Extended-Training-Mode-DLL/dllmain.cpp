@@ -876,9 +876,6 @@ void highlightStates()
 
 	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState, DWORD notInCombo, BYTE armorTimer, DWORD throwInvuln) -> void
 		{
-			// reset the color in case it falls through
-			patchMemcpy(animDataAddr + 0x18, arrDefaultHighlightSetting.data(), 3);
-
 			// the order of this if block denotes the priority for each highlight
 			if (blockState == 1)	// BLOCKING
 				patchMemcpy(animDataAddr + 0x18, arrBlockingHighlightSetting.data(), 3);
@@ -912,6 +909,8 @@ void highlightStates()
 					patchMemcpy(animDataAddr + 0x18, arrIdleHighlightSetting.data(), 3);
 					break;
 				default:
+					// reset the color in case it falls through
+					patchMemcpy(animDataAddr + 0x18, arrDefaultHighlightSetting.data(), 3);
 					break;
 				}
 			}
