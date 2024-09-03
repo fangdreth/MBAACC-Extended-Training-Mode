@@ -128,12 +128,12 @@ __asm pop ebp		   \
 __asm pop esp		   \
 }
 
-std::array<BYTE, 3> arrDefaultHighlightSetting({ 255, 255, 255 });
-std::array<BYTE, 3> arrIdleHighlightSetting({ 255, 255, 255 });
-std::array<BYTE, 3> arrBlockingHighlightSetting({ 255, 255, 255 });
-std::array<BYTE, 3> arrHitHighlightSetting({ 255, 255, 255 });
-std::array<BYTE, 3> arrArmorHighlightSetting({ 255, 255, 255 });
-std::array<BYTE, 3> arrThrowProtectionHighlightSetting({ 255, 255, 255 });
+std::array<uint8_t, 4> arrDefaultHighlightSetting({ 255, 255, 255, 0 });
+std::array<uint8_t, 4> arrIdleHighlightSetting({ 255, 255, 255, 0 });
+std::array<uint8_t, 4> arrBlockingHighlightSetting({ 255, 255, 255, 0 });
+std::array<uint8_t, 4> arrHitHighlightSetting({ 255, 255, 255, 0 });
+std::array<uint8_t, 4> arrArmorHighlightSetting({ 255, 255, 255, 0 });
+std::array<uint8_t, 4> arrThrowProtectionHighlightSetting({ 255, 255, 255, 0 });
 
 void __stdcall ___log(const char* msg)
 {
@@ -867,25 +867,25 @@ void highlightStates()
 
 	if (!bHighlightsOn)
 	{
-		arrIdleHighlightSetting = { 255, 255, 255 };
-		arrBlockingHighlightSetting = { 255, 255, 255 };
-		arrHitHighlightSetting = { 255, 255, 255 };
-		arrArmorHighlightSetting = { 255, 255, 255 };
-		arrThrowProtectionHighlightSetting = { 255, 255, 255 };
+		arrIdleHighlightSetting = { 255, 255, 255, 0 };
+		arrBlockingHighlightSetting = { 255, 255, 255, 0 };
+		arrHitHighlightSetting = { 255, 255, 255, 0 };
+		arrArmorHighlightSetting = { 255, 255, 255, 0 };
+		arrThrowProtectionHighlightSetting = { 255, 255, 255, 0 };
 	}
 
 	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState, DWORD notInCombo, BYTE armorTimer, DWORD throwInvuln) -> void
 		{
 			// the order of this if block denotes the priority for each highlight
-			if (blockState == 1)	// BLOCKING
+			if (arrBlockingHighlightSetting[3] == 1 && blockState == 1)	// BLOCKING
 				patchMemcpy(animDataAddr + 0x18, arrBlockingHighlightSetting.data(), 3);
-			else if (armorTimer != 0)
+			else if (arrArmorHighlightSetting[3] == 1 && armorTimer != 0)
 				patchMemcpy(animDataAddr + 0x18, arrArmorHighlightSetting.data(), 3);
-			else if (notInCombo == 0)
+			else if (arrHitHighlightSetting[3] == 1 && notInCombo == 0)
 				patchMemcpy(animDataAddr + 0x18, arrHitHighlightSetting.data(), 3);
-			else if (throwInvuln != 0)
+			else if (arrThrowProtectionHighlightSetting[3] == 1 && throwInvuln != 0)
 				patchMemcpy(animDataAddr + 0x18, arrThrowProtectionHighlightSetting.data(), 3);
-			else // last check is IDLE
+			else if (arrIdleHighlightSetting[3] == 1 && blockState != 1) // last check is IDLE
 			{
 				switch (patternState)
 				{
@@ -906,13 +906,18 @@ void highlightStates()
 				case 39:		// dj 8
 				case 40:		// dj7
 				case 360:		// sj8
+					// this does not work for every character.
+					// come back to this and fix it later.
 					patchMemcpy(animDataAddr + 0x18, arrIdleHighlightSetting.data(), 3);
 					break;
 				default:
-					// reset the color in case it falls through
-					patchMemcpy(animDataAddr + 0x18, arrDefaultHighlightSetting.data(), 3);
 					break;
 				}
+			}
+			else
+			{
+				// reset the color in case it falls through
+				patchMemcpy(animDataAddr + 0x18, arrDefaultHighlightSetting.data(), 3);
 			}
 
 			
@@ -1526,11 +1531,11 @@ void threadFunc()
 	
 	while (true) 
 	{
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrIdleHighlightSetting, 3, 0);
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrBlockingHighlightSetting, 3, 0);
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrHitHighlightSetting, 3, 0);
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrArmorHighlightSetting, 3, 0);
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrThrowProtectionHighlightSetting, 3, 0);
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrIdleHighlightSetting, 4, 0);
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrBlockingHighlightSetting, 4, 0);
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrHitHighlightSetting, 4, 0);
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrArmorHighlightSetting, 4, 0);
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrThrowProtectionHighlightSetting, 4, 0);
 		Sleep(8);
 	}
 }

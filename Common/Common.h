@@ -260,11 +260,11 @@ const ADDRESS adSharedFrameDataDisplayKey =			adShareBase + 0x13;	// 1 byte
 const ADDRESS adSharedHighlightsOnKey =				adShareBase + 0x14;	// 1 byte
 const ADDRESS adSharedSaveStateKey =				adShareBase + 0x15;	// 1 byte
 
-const ADDRESS adSharedIdleHighlight =				adShareBase + 0x20; // 3 bytes
-const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x23; // 3 bytes
-const ADDRESS adSharedHitHighlight =				adShareBase + 0x26; // 3 bytes
-const ADDRESS adSharedArmorHighlight =				adShareBase + 0x29; // 3 bytes
-const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x2C; // 3 bytes
+const ADDRESS adSharedIdleHighlight =				adShareBase + 0x20; // 4 bytes
+const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x24; // 4 bytes
+const ADDRESS adSharedHitHighlight =				adShareBase + 0x28; // 4 bytes
+const ADDRESS adSharedArmorHighlight =				adShareBase + 0x2C; // 4 bytes
+const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x30; // 4 bytes
 
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough

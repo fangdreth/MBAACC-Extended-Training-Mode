@@ -410,24 +410,24 @@ uint8_t KeyJustPressed()
     return 0;
 }
 
-std::array<uint8_t, 3> CreateColorArray2(int nHighlightID)
+std::array<uint8_t, 4> CreateColorArray2(int nHighlightID)
 {
     switch (nHighlightID)
     {
     default:
     case NO_HIGHLIGHT:
-        return { 255, 255, 255 };
+        return { 255, 255, 255, 0 };
     case RED_HIGHLIGHT:
-        return { 255, 90, 90 };
+        return { 255, 90, 90, 1 };
     case YELLOW_HIGHLIGHT:
-        return { 255, 255, 0 };
+        return { 255, 255, 0, 1 };
     case GREEN_HIGHLIGHT:
-        return { 60, 255, 60 };
+        return { 60, 255, 60, 1 };
     case BLUE_HIGHLIGHT:
-        return { 90, 90, 255 };
+        return { 90, 90, 255, 1 };
     case PURPLE_HIGHLIGHT:
-        return { 255, 90, 255 };
+        return { 255, 90, 255, 1 };
     case BLACK_HIGHLIGHT:
-        return { 60, 60, 60 };
+        return { 60, 60, 60, 1 };
     }
 }
