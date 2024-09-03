@@ -133,7 +133,7 @@ const int BAR_MEMORY_SIZE = 400; //Number of frames stored before overriding (FI
 const int BAR_INTERVAL = 20; //Number of frames of only blanks before the bar stops and resets on the next non-blank frame
 const int MAX_SAVES = 3;
 const int SAVE_RESET_TIME = 60; //Frames of holding Save State Hotkey before clearing that save
-const char TEXT_TIMER = 30; //How many frames Save State popup text stays on screen
+const char TEXT_TIMER = 40; //How many frames Save State popup text stays on screen
 
 const int SAVE_EFFECTS_SIZE = 74576;
 const int SAVE_STOP_SITUATION_SIZE = 1632;

@@ -26,8 +26,9 @@ int nSharedHitstop;
 
 static int nFrameBarY = 400;
 
-int nSaveTextTimer = 0;
-int nClearTextTimer = 0;
+char pcTextToDisplay[256];
+char pcTextPattern[256];
+int nDrawTextTimer = 0;
 int nClearSaveTimer = 0;
 
 struct Player

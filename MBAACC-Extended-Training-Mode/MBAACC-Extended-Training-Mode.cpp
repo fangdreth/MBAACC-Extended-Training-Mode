@@ -236,10 +236,6 @@ int main(int argc, char* argv[])
     }
     ReadFromRegistry(L"DisplayFreeze", &bDisplayFreeze);
     ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
-    if (ReadFromRegistry(L"SaveSlot", &nSaveSlot) == 0 && nSaveSlot > 0)
-    {
-        bEnableFN2Load = true;
-    }
 
     char pcModPath[MAX_PATH];
     GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
@@ -1304,13 +1300,11 @@ int main(int argc, char* argv[])
                         else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                         {
                             nSaveSlot = max(0, nSaveSlot - 1);
-                            SetRegistryValue(L"SaveSlot", nSaveSlot);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
                         }
                         else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                         {
                             nSaveSlot = min(nSaveSlot + 1, MAX_SAVES);
-                            SetRegistryValue(L"SaveSlot", nSaveSlot);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
                         }
                         bEnableFN2Load = nSaveSlot > 0 ? true : false;

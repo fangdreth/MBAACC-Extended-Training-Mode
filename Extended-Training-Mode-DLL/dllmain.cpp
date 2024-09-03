@@ -219,57 +219,25 @@ bool __stdcall isPaused()
 	return *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
 }
 
-void processKeys()
+static KeyState oSaveStateKey;
+static KeyState oPrevSaveSlotKey;
+static KeyState oNextSaveSlotKey;
+static KeyState oFreezeKey;
+static KeyState oFrameStepKey;
+static KeyState oFrameDataDisplayKey;
+static KeyState oHitboxesDisplayKey;
+static KeyState oHighlightsOnKey;
+void setAllKeys()
 {
-	static KeyState oHitboxesDisplayKey;
-	static KeyState oFrameDataDisplayKey;
-	static KeyState oSaveStateKey;
-	static KeyState oPrevSaveSlotKey;
-	static KeyState oNextSaveSlotKey;
-	static KeyState oFreezeKey;
-	static KeyState oHighlightsOnKey;
-	oHighlightsOnKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHighlightsOnKey));
-	oHitboxesDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHitboxesDisplayKey));
-	oFrameDataDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameDataDisplayKey));
 	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
-	oFreezeKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFreezeKey));
 	oPrevSaveSlotKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedPrevSaveSlotKey));
 	oNextSaveSlotKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedNextSaveSlotKey));
-
-	if (oPrevSaveSlotKey.keyDown())
-	{
-		uint8_t nTempSaveSlot;
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-		nTempSaveSlot = max(0, nTempSaveSlot - 1);
-		//SetRegistryValue(L"SaveSlot", nTempSaveSlot);
-		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-	}
-	if (oNextSaveSlotKey.keyDown())
-	{
-		uint8_t nTempSaveSlot;
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-		nTempSaveSlot = min(nTempSaveSlot + 1, MAX_SAVES);
-		//SetRegistryValue(L"SaveSlot", nTempSaveSlot);
-		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-	}
-
-	if (oHitboxesDisplayKey.keyDown())
-	{
-		bHitboxesDisplay = !bHitboxesDisplay;
-	}
-
-	if (oFrameDataDisplayKey.keyDown())
-	{
-		bFrameDataDisplay = !bFrameDataDisplay;
-	}
-
-	if (oFreezeKey.keyDown())
-	{
-		bFreeze = !bFreeze;
-	}
-
-	if (oHighlightsOnKey.keyDown())
-		bHighlightsOn = !bHighlightsOn;
+	
+	oFreezeKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFreezeKey));
+	oFrameStepKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey));
+	oFrameDataDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameDataDisplayKey));
+	oHitboxesDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHitboxesDisplayKey));
+	oHighlightsOnKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHighlightsOnKey));
 }
 
 // patch funcs
@@ -1004,10 +972,9 @@ void highlightStates()
 // windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
 void __stdcall pauseCallback(DWORD dwMilliseconds)
 {
-	static KeyState oFrameStepKey;
-	oFrameStepKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey));
+	setAllKeys();
 
-	processKeys();
+	//processSimpleKeys();
 
 	// commenting this because I don't like pausing with this key
 	//if (!bFreeze && oFrameStepKey.keyDown())
@@ -1037,7 +1004,29 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 			DispatchMessage(&msg);
 		}
 
-		processKeys();
+		if (oHitboxesDisplayKey.keyDown())
+		{
+			bHitboxesDisplay = !bHitboxesDisplay;
+		}
+
+		if (oFrameDataDisplayKey.keyDown())
+		{
+			bFrameDataDisplay = !bFrameDataDisplay;
+		}
+
+		if (oHighlightsOnKey.keyDown())
+			bHighlightsOn = !bHighlightsOn;
+
+		if (oSaveStateKey.keyDown() && safeWrite())
+		{
+			*(char*)(dwBaseAddress + adSharedDoSave) = 1;
+		}
+
+		if (oFreezeKey.keyDown())
+		{
+			bFreeze = !bFreeze;
+		}
+
 		if (oFrameStepKey.keyDown()) {
 			break;
 		}
@@ -1146,8 +1135,7 @@ void enemyReversal()
 
 void frameDoneCallback()
 {
-	static KeyState oSaveStateKey;
-	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
+	setAllKeys();
 
 	// this hooks directx
 	static bool deviceInit = false;
@@ -1163,44 +1151,109 @@ void frameDoneCallback()
 		log("directx device has been acquired! texmem: %08X", avalTexMem);
 	}
 
-	processKeys();
+	if (oHitboxesDisplayKey.keyDown())
+	{
+		bHitboxesDisplay = !bHitboxesDisplay;
+		nDrawTextTimer = TEXT_TIMER;
+		if (bHitboxesDisplay)
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HITBOXES ON");
+		else
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HITBOXES OFF");
+	}
+
+	if (oFrameDataDisplayKey.keyDown())
+	{
+		bFrameDataDisplay = !bFrameDataDisplay;
+		nDrawTextTimer = TEXT_TIMER;
+		if (bFrameDataDisplay)
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "FRAME DATA ON");
+		else
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "FRAME DATA OFF");
+	}
+
+	if (oHighlightsOnKey.keyDown())
+	{
+		bHighlightsOn = !bHighlightsOn;
+		nDrawTextTimer = TEXT_TIMER;
+		if (bHighlightsOn)
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HIGHLIGHTS ON");
+		else
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HIGHLIGHTS OFF");
+	}
+
+	if (oFreezeKey.keyDown())
+	{
+		bFreeze = !bFreeze;
+	}
 
 	if (oSaveStateKey.keyDown() && safeWrite())
 	{
 		*(char*)(dwBaseAddress + adSharedDoSave) = 1;
-		nSaveTextTimer = TEXT_TIMER;
+		nDrawTextTimer = TEXT_TIMER;
+		if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "SAVING IS DISABLED");
+		else
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SAVED SLOT", *(char*)(dwBaseAddress + adSharedSaveSlot));
 	}
 
-	if (oSaveStateKey.keyHeld() && safeWrite())
+	if (oSaveStateKey.keyHeld() && safeWrite() && *(char*)(dwBaseAddress + adSharedSaveSlot) != 0)
 	{
 		nClearSaveTimer++;
 		if (nClearSaveTimer == SAVE_RESET_TIME)
 		{
 			*(char*)(dwBaseAddress + adSharedDoClearSave) = 1;
-			nClearTextTimer = TEXT_TIMER;
+			nDrawTextTimer = TEXT_TIMER;
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "CLEARED SAVE", *(char*)(dwBaseAddress + adSharedSaveSlot));
 		}
-}
+	}
 	else
 	{
 		nClearSaveTimer = 0;
 	}
 
-	if (nSaveTextTimer != 0 && safeWrite())
+	if (oPrevSaveSlotKey.keyDown())
 	{
-		static char buffer[256];
-
-		snprintf(buffer, 256, "Saved State %i", *(char*)(dwBaseAddress + adSharedSaveSlot));
-		drawTextWithBorder(270, 470, 10, 10, buffer);
-		nSaveTextTimer--;
+		uint8_t nTempSaveSlot;
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+		nTempSaveSlot = max(0, nTempSaveSlot - 1);
+		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+		nDrawTextTimer = TEXT_TIMER;
+		if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "SAVING DISABLED");
+		else
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SELECTED SAVE", *(char*)(dwBaseAddress + adSharedSaveSlot));
+	}
+	if (oNextSaveSlotKey.keyDown())
+	{
+		uint8_t nTempSaveSlot;
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+		nTempSaveSlot = min(nTempSaveSlot + 1, MAX_SAVES);
+		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+		nDrawTextTimer = TEXT_TIMER;
+		if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "SAVING DISABLED");
+		else
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SELECTED SAVE", *(char*)(dwBaseAddress + adSharedSaveSlot));
 	}
 
-	if (nClearTextTimer != 0 && safeWrite())
+	if (nDrawTextTimer != 0 && safeWrite())
 	{
 		static char buffer[256];
 
-		snprintf(buffer, 256, "Cleared State %i", *(char*)(dwBaseAddress + adSharedSaveSlot));
-		drawTextWithBorder(270, 470, 10, 10, buffer);
-		nClearTextTimer--;
+		drawTextWithBorder(243, 470, 10, 10, pcTextToDisplay);
+
+		/*if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
+		{
+			strcpy_s(pcTextToDisplay, "SAVE STATES DISABLED");
+			snprintf(buffer, 256, "%s", pcTextToDisplay);
+			drawTextWithBorder(243, 470, 10, 10, buffer);
+		}
+		else
+		{
+			snprintf(buffer, 256, pcTextPattern, pcTextToDisplay, *(char*)(dwBaseAddress + adSharedSaveSlot));
+			drawTextWithBorder(260, 470, 10, 10, buffer);
+		}*/
+		nDrawTextTimer--;
 	}
 
 	// don't draw on the pause menu, but do on VIEW SCREEN
