@@ -648,6 +648,10 @@ int main(int argc, char* argv[])
                         }
                         case FRAME_TOOL:
                         {
+                            if (nEnemySettingsCursor == 0)
+                            {
+                                LoadStateFromFile(nSaveSlot);
+                            }
                             if (nEnemySettingsCursor == 2)
                             {
                                 ClearSave(nSaveSlot);
@@ -655,6 +659,10 @@ int main(int argc, char* argv[])
                             else if (nEnemySettingsCursor == 3)
                             {
                                 SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
+                            }
+                            else if (nEnemySettingsCursor == 5)
+                            {
+                                SaveStateToFile(nSaveSlot);
                             }
                             else if (nEnemySettingsCursor == 8)
                             {

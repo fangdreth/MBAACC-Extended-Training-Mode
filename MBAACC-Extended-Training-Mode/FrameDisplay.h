@@ -43,11 +43,11 @@ int nSharedHitstop;
 struct Save {
 	bool bSaved = false;
 
-	BYTE dwSaveEffects[74576] = {}; //Effect and projectile data
-	BYTE dwSaveStopSituation[1632] = {};
-	BYTE cSaveGlobalFreeze = 0;
-	BYTE dwSaveAttackDisplayInfo[52] = {}; //Ends just before Max Damage
-	BYTE dwSaveAttackDisplayInfo2[1004] = {}; //Starts after Max Damage, maybe also has current combo info
+	DWORD dwaSaveEffects[ADJ_SAVE_EFFECTS_SIZE] = {}; //Effect and projectile data
+	DWORD dwaSaveStopSituation[ADJ_SAVE_STOP_SITUATION_SIZE] = {};
+	DWORD dwSaveGlobalFreeze = 0;
+	DWORD dwaSaveAttackDisplayInfo[ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE] = {}; //Ends just before Max Damage
+	DWORD dwaSaveAttackDisplayInfo2[ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE] = {}; //Starts after Max Damage, maybe also has current combo info
 	DWORD dwSaveDestinationCamX = 0;
 	DWORD dwSaveCurrentCamX = 0;
 	DWORD dwSaveCurrentCamXCopy = 0;
@@ -57,14 +57,18 @@ struct Save {
 	DWORD dwSaveDestinationCamZoom = 0;
 	DWORD dwSaveCurrentCamZoom = 0;
 	DWORD dwSaveP1ControlledCharacter = 0;
-	DWORD dwSaveP1NextControlledCharacter = 0; //No idea
+	DWORD dwSaveP1NextControlledCharacter = 0;
 	DWORD dwSaveP2ControlledCharacter = 0;
 	DWORD dwSaveP2NextControlledCharacter = 0;
 
-	BYTE dwSaveP1[972] = {}; //Player data from pattern to just before input buffers
-	BYTE dwSaveP2[972] = {};
-	BYTE dwSaveP3[972] = {};
-	BYTE dwSaveP4[972] = {};
+	DWORD dwaSave1P1[ADJ_SAVE_PLAYER_1_SIZE] = {}; //Player data from pattern up to (not including) recieving attack data pointer
+	DWORD dwaSave2P1[ADJ_SAVE_PLAYER_2_SIZE] = {}; //Player data from (not including) recieving attack data pointer to (not including) pattern data pointer
+	DWORD dwaSave1P2[ADJ_SAVE_PLAYER_1_SIZE] = {};
+	DWORD dwaSave2P2[ADJ_SAVE_PLAYER_2_SIZE] = {};
+	DWORD dwaSave1P3[ADJ_SAVE_PLAYER_1_SIZE] = {};
+	DWORD dwaSave2P3[ADJ_SAVE_PLAYER_2_SIZE] = {};
+	DWORD dwaSave1P4[ADJ_SAVE_PLAYER_1_SIZE] = {};
+	DWORD dwaSave2P4[ADJ_SAVE_PLAYER_2_SIZE] = {};
 };
 
 Save Saves[MAX_SAVES];
@@ -277,11 +281,11 @@ void SaveState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
 	{
 		Save &S = Saves[nSaveSlot - 1];
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveEffects), &S.dwSaveEffects, 74576, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveStopSituation), &S.dwSaveStopSituation, 1632, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adGlobalFreeze), &S.cSaveGlobalFreeze, 1, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo), &S.dwSaveAttackDisplayInfo, 52, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo2), &S.dwSaveAttackDisplayInfo2, 1004, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveEffects), &S.dwaSaveEffects, SAVE_EFFECTS_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveStopSituation), &S.dwaSaveStopSituation, SAVE_STOP_SITUATION_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adGlobalFreeze), &S.dwSaveGlobalFreeze, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo), &S.dwaSaveAttackDisplayInfo, SAVE_ATTACK_DISPLAY_INFO_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo2), &S.dwaSaveAttackDisplayInfo2, SAVE_ATTACK_DISPLAY_INFO_2_SIZE, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveDestinationCamX), &S.dwSaveDestinationCamX, 4, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamX), &S.dwSaveCurrentCamX, 4, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamXCopy), &S.dwSaveCurrentCamXCopy, 4, 0);
@@ -295,10 +299,14 @@ void SaveState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &S.dwSaveP2ControlledCharacter, 4, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2NextControlledCharacter), &S.dwSaveP2NextControlledCharacter, 4, 0);
 
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adPattern), &S.dwSaveP1, 972, 0); //Add pattern offset to skip the recording flag
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Base + adPattern), &S.dwSaveP2, 972, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adPattern), &S.dwSaveP3, 972, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adPattern), &S.dwSaveP4, 972, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adSave1Offset), &S.dwaSave1P1, SAVE_PLAYER_1_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adSave2Offset), &S.dwaSave2P1, SAVE_PLAYER_2_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Base + adSave1Offset), &S.dwaSave1P2, SAVE_PLAYER_1_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Base + adSave2Offset), &S.dwaSave2P2, SAVE_PLAYER_2_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adSave1Offset), &S.dwaSave1P3, SAVE_PLAYER_1_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adSave2Offset), &S.dwaSave2P3, SAVE_PLAYER_2_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave1Offset), &S.dwaSave1P4, SAVE_PLAYER_1_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave2Offset), &S.dwaSave2P4, SAVE_PLAYER_2_SIZE, 0);
 
 		S.bSaved = true;
 	}
@@ -308,12 +316,12 @@ void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 {
 	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
 	{
-		Save &S = Saves[nSaveSlot - 1];
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveEffects), &S.dwSaveEffects, 74576, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveStopSituation), &S.dwSaveStopSituation, 1632, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adGlobalFreeze), &S.cSaveGlobalFreeze, 1, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo), &S.dwSaveAttackDisplayInfo, 52, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo2), &S.dwSaveAttackDisplayInfo2, 1004, 0);
+		Save& S = Saves[nSaveSlot - 1];
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveEffects), &S.dwaSaveEffects, SAVE_EFFECTS_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveStopSituation), &S.dwaSaveStopSituation, SAVE_STOP_SITUATION_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adGlobalFreeze), &S.dwSaveGlobalFreeze, 1, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo), &S.dwaSaveAttackDisplayInfo, SAVE_ATTACK_DISPLAY_INFO_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo2), &S.dwaSaveAttackDisplayInfo2, SAVE_ATTACK_DISPLAY_INFO_2_SIZE, 0);
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveDestinationCamX), &S.dwSaveDestinationCamX, 4, 0);
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamX), &S.dwSaveCurrentCamX, 4, 0);
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamXCopy), &S.dwSaveCurrentCamXCopy, 4, 0);
@@ -327,10 +335,159 @@ void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &S.dwSaveP2ControlledCharacter, 4, 0);
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2NextControlledCharacter), &S.dwSaveP2NextControlledCharacter, 4, 0);
 
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adPattern), &S.dwSaveP1, 972, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Base + adPattern), &S.dwSaveP2, 972, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adPattern), &S.dwSaveP3, 972, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adPattern), &S.dwSaveP4, 972, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adSave1Offset), &S.dwaSave1P1, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adSave2Offset), &S.dwaSave2P1, SAVE_PLAYER_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Base + adSave1Offset), &S.dwaSave1P2, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Base + adSave2Offset), &S.dwaSave2P2, SAVE_PLAYER_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adSave1Offset), &S.dwaSave1P3, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adSave2Offset), &S.dwaSave2P3, SAVE_PLAYER_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave1Offset), &S.dwaSave1P4, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave2Offset), &S.dwaSave2P4, SAVE_PLAYER_2_SIZE, 0);
+	}
+}
+
+void SaveStateToFile(int nSaveSlot)
+{
+	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	{
+		Save& S = Saves[nSaveSlot - 1];
+		std::ofstream SaveOutFile;
+		SaveOutFile.open("MBAA.save");
+		for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSaveEffects[i] << std::endl;
+		}
+		for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSaveStopSituation[i] << std::endl;
+		}
+		SaveOutFile << S.dwSaveGlobalFreeze << std::endl;
+		for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSaveAttackDisplayInfo[i] << std::endl;
+		}
+		for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSaveAttackDisplayInfo2[i] << std::endl;
+		}
+		SaveOutFile << S.dwSaveDestinationCamX << std::endl;
+		SaveOutFile << S.dwSaveCurrentCamX << std::endl;
+		SaveOutFile << S.dwSaveCurrentCamXCopy << std::endl;
+		SaveOutFile << S.dwSaveDestinationCamY << std::endl;
+		SaveOutFile << S.dwSaveCurrentCamY << std::endl;
+		SaveOutFile << S.dwSaveCurrentCamYCopy << std::endl;
+		SaveOutFile << S.dwSaveCurrentCamZoom << std::endl;
+		SaveOutFile << S.dwSaveDestinationCamZoom << std::endl;
+		SaveOutFile << S.dwSaveP1ControlledCharacter << std::endl;
+		SaveOutFile << S.dwSaveP1NextControlledCharacter << std::endl;
+		SaveOutFile << S.dwSaveP2ControlledCharacter << std::endl;
+		SaveOutFile << S.dwSaveP2NextControlledCharacter << std::endl;
+		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSave1P1[i] << std::endl;
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSave2P1[i] << std::endl;
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSave1P2[i] << std::endl;
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSave2P2[i] << std::endl;
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSave1P3[i] << std::endl;
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSave2P3[i] << std::endl;
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSave1P4[i] << std::endl;
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+		{
+			SaveOutFile << S.dwaSave2P4[i] << std::endl;
+		}
+		SaveOutFile.close();
+	}
+}
+
+void LoadStateFromFile(int nSaveSlot)
+{
+	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	{
+		Save& S = Saves[nSaveSlot - 1];
+		std::ifstream SaveInFile;
+		SaveInFile.open("MBAA.save");
+		for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSaveEffects[i];
+		}
+		for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSaveStopSituation[i];
+		}
+		SaveInFile >> S.dwSaveGlobalFreeze;
+		for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSaveAttackDisplayInfo[i];
+		}
+		for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSaveAttackDisplayInfo2[i];
+		}
+		SaveInFile >> S.dwSaveDestinationCamX;
+		SaveInFile >> S.dwSaveCurrentCamX;
+		SaveInFile >> S.dwSaveCurrentCamXCopy;
+		SaveInFile >> S.dwSaveDestinationCamY;
+		SaveInFile >> S.dwSaveCurrentCamY;
+		SaveInFile >> S.dwSaveCurrentCamYCopy;
+		SaveInFile >> S.dwSaveCurrentCamZoom;
+		SaveInFile >> S.dwSaveDestinationCamZoom;
+		SaveInFile >> S.dwSaveP1ControlledCharacter;
+		SaveInFile >> S.dwSaveP1NextControlledCharacter;
+		SaveInFile >> S.dwSaveP2ControlledCharacter;
+		SaveInFile >> S.dwSaveP2NextControlledCharacter;
+		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSave1P1[i];
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSave2P1[i];
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSave1P2[i];
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSave2P2[i];
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSave1P3[i];
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSave2P3[i];
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSave1P4[i];
+		}
+		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+		{
+			SaveInFile >> S.dwaSave2P4[i];
+		}
+		S.bSaved = true;
+		SaveInFile.close();
 	}
 }
 
@@ -972,7 +1129,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 	{
 		SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
 		char c5 = 5;
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x162A48), &c5, 1, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adGlobalFreeze), &c5, 1, 0);
 
 		char c0 = 0;
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDoSave), &c0, 1, 0);

@@ -135,6 +135,20 @@ const int MAX_SAVES = 3;
 const int SAVE_RESET_TIME = 60; //Frames of holding Save State Hotkey before clearing that save
 const char TEXT_TIMER = 30; //How many frames Save State popup text stays on screen
 
+const int SAVE_EFFECTS_SIZE = 74576;
+const int SAVE_STOP_SITUATION_SIZE = 1632;
+const int SAVE_ATTACK_DISPLAY_INFO_SIZE = 52;
+const int SAVE_ATTACK_DISPLAY_INFO_2_SIZE = 1004;
+const int SAVE_PLAYER_1_SIZE = 492;
+const int SAVE_PLAYER_2_SIZE = 284;
+
+const int ADJ_SAVE_EFFECTS_SIZE = SAVE_EFFECTS_SIZE / 4;
+const int ADJ_SAVE_STOP_SITUATION_SIZE = SAVE_STOP_SITUATION_SIZE /4;
+const int ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE = SAVE_ATTACK_DISPLAY_INFO_SIZE / 4;
+const int ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE = SAVE_ATTACK_DISPLAY_INFO_2_SIZE / 4;
+const int ADJ_SAVE_PLAYER_1_SIZE = SAVE_PLAYER_1_SIZE / 4;
+const int ADJ_SAVE_PLAYER_2_SIZE = SAVE_PLAYER_2_SIZE / 4;
+
 const char REVERSE_INPUT_MAP[10] = { 0, 3, 2, 1, 6, 0, 4, 9, 8, 7 };
 const char CH_MAP[3] = { ' ', 'H', 'L' };
 
@@ -151,6 +165,7 @@ const ADDRESS adP3Base = 0x155130 + 2 * dwPlayerStructSize; //0x156728
 const ADDRESS adP4Base = 0x155130 + 3 * dwPlayerStructSize; //0x157224
 
 const ADDRESS adPattern = 0x10;
+const ADDRESS adSave1Offset = 0x10;
 const ADDRESS adState = 0x14;
 const ADDRESS adHealth = 0xBC;
 const ADDRESS adRedHealth = 0xC0;
@@ -175,6 +190,7 @@ const ADDRESS adUntechTotal = 0x18E;
 const ADDRESS adUntechCounter = 0x190;
 const ADDRESS adHitstunRemaining = 0x1AC;
 const ADDRESS adCounterHit = 0x1FA;
+const ADDRESS adSave2Offset = 0x200;
 const ADDRESS adGravity = 0x2E4;
 const ADDRESS adUntechPenalty = 0x2E8;
 const ADDRESS adAirDirectionalInput = 0x2EA;
