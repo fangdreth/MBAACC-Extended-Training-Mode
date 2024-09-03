@@ -1027,6 +1027,21 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 			bFreeze = !bFreeze;
 		}
 
+		if (oPrevSaveSlotKey.keyDown())
+		{
+			uint8_t nTempSaveSlot;
+			ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+			nTempSaveSlot = max(0, nTempSaveSlot - 1);
+			WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+		}
+		if (oNextSaveSlotKey.keyDown())
+		{
+			uint8_t nTempSaveSlot;
+			ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+			nTempSaveSlot = min(nTempSaveSlot + 1, MAX_SAVES);
+			WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+		}
+
 		if (oFrameStepKey.keyDown()) {
 			break;
 		}
