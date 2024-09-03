@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include "..\Common\Common.h"
+#include "Logger.h"
 
 char cGameState = 0; // 1:In-Game 2:Title 3:Logos 8:Loading 9:Arcade Cutscene 10:Next Stage 12:Options 20:CSS 25:Main Menu
 char cP1Freeze = 0; //Used for EXFlashes where initiator still moves (ex. Satsuki 214C winds up during flash)
@@ -346,156 +347,214 @@ void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 	}
 }
 
-void SaveStateToFile(int nSaveSlot)
+void SaveStateToFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 {
-	if (nSaveSlot > 0)
+	try
 	{
-		Save& S = Saves[nSaveSlot - 1];
-		std::wstring wsFileName;
-		if (GetSaveSAVFileName(&wsFileName))
+		if (nSaveSlot > 0)
 		{
-			std::ofstream SaveOutFile;
-			SaveOutFile.open(wsFileName);
-			for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+			Save& S = Saves[nSaveSlot - 1];
+			std::wstring wsFileName;
+			if (GetSaveSAVFileName(&wsFileName))
 			{
-				SaveOutFile << S.dwaSaveEffects[i] << std::endl;
+				std::ofstream SaveOutFile;
+				SaveOutFile.open(wsFileName);
+
+				int nP1CharacterNumber;
+				int nP2CharacterNumber;
+				int nP1Moon;
+				int nP2Moon;
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharNumber), &nP1CharacterNumber, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharNumber), &nP2CharacterNumber, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharMoon), &nP1Moon, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharMoon), &nP2Moon, 4, 0);
+
+				int nP1CharacterID = 10 * nP1CharacterNumber + nP1Moon;
+				int nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
+				SaveOutFile << nP1CharacterID << std::endl;
+				SaveOutFile << nP2CharacterID << std::endl;
+
+				for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSaveEffects[i] << std::endl;
+				}
+				for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSaveStopSituation[i] << std::endl;
+				}
+				SaveOutFile << S.dwSaveGlobalFreeze << std::endl;
+				for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSaveAttackDisplayInfo[i] << std::endl;
+				}
+				for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSaveAttackDisplayInfo2[i] << std::endl;
+				}
+				SaveOutFile << S.dwSaveDestinationCamX << std::endl;
+				SaveOutFile << S.dwSaveCurrentCamX << std::endl;
+				SaveOutFile << S.dwSaveCurrentCamXCopy << std::endl;
+				SaveOutFile << S.dwSaveDestinationCamY << std::endl;
+				SaveOutFile << S.dwSaveCurrentCamY << std::endl;
+				SaveOutFile << S.dwSaveCurrentCamYCopy << std::endl;
+				SaveOutFile << S.dwSaveCurrentCamZoom << std::endl;
+				SaveOutFile << S.dwSaveDestinationCamZoom << std::endl;
+				SaveOutFile << S.dwSaveP1ControlledCharacter << std::endl;
+				SaveOutFile << S.dwSaveP1NextControlledCharacter << std::endl;
+				SaveOutFile << S.dwSaveP2ControlledCharacter << std::endl;
+				SaveOutFile << S.dwSaveP2NextControlledCharacter << std::endl;
+				for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSave1P1[i] << std::endl;
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSave2P1[i] << std::endl;
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSave1P2[i] << std::endl;
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSave2P2[i] << std::endl;
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSave1P3[i] << std::endl;
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSave2P3[i] << std::endl;
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSave1P4[i] << std::endl;
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSave2P4[i] << std::endl;
+				}
+				SaveOutFile.close();
 			}
-			for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
-			{
-				SaveOutFile << S.dwaSaveStopSituation[i] << std::endl;
-			}
-			SaveOutFile << S.dwSaveGlobalFreeze << std::endl;
-			for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE; i++)
-			{
-				SaveOutFile << S.dwaSaveAttackDisplayInfo[i] << std::endl;
-			}
-			for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE; i++)
-			{
-				SaveOutFile << S.dwaSaveAttackDisplayInfo2[i] << std::endl;
-			}
-			SaveOutFile << S.dwSaveDestinationCamX << std::endl;
-			SaveOutFile << S.dwSaveCurrentCamX << std::endl;
-			SaveOutFile << S.dwSaveCurrentCamXCopy << std::endl;
-			SaveOutFile << S.dwSaveDestinationCamY << std::endl;
-			SaveOutFile << S.dwSaveCurrentCamY << std::endl;
-			SaveOutFile << S.dwSaveCurrentCamYCopy << std::endl;
-			SaveOutFile << S.dwSaveCurrentCamZoom << std::endl;
-			SaveOutFile << S.dwSaveDestinationCamZoom << std::endl;
-			SaveOutFile << S.dwSaveP1ControlledCharacter << std::endl;
-			SaveOutFile << S.dwSaveP1NextControlledCharacter << std::endl;
-			SaveOutFile << S.dwSaveP2ControlledCharacter << std::endl;
-			SaveOutFile << S.dwSaveP2NextControlledCharacter << std::endl;
-			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-			{
-				SaveOutFile << S.dwaSave1P1[i] << std::endl;
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-			{
-				SaveOutFile << S.dwaSave2P1[i] << std::endl;
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-			{
-				SaveOutFile << S.dwaSave1P2[i] << std::endl;
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-			{
-				SaveOutFile << S.dwaSave2P2[i] << std::endl;
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-			{
-				SaveOutFile << S.dwaSave1P3[i] << std::endl;
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-			{
-				SaveOutFile << S.dwaSave2P3[i] << std::endl;
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-			{
-				SaveOutFile << S.dwaSave1P4[i] << std::endl;
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-			{
-				SaveOutFile << S.dwaSave2P4[i] << std::endl;
-			}
-			SaveOutFile.close();
 		}
+	}
+	catch (...)
+	{
+		std::string sErrorString = "UNABLE TO CREATE SAVE STATE FILE";
+		int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONERROR);
+		LogError("UNABLE TO CREATE SAVE STATE FILE");
 	}
 }
 
-void LoadStateFromFile(int nSaveSlot)
+void LoadStateFromFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 {
-	if (nSaveSlot > 0)
+	try
 	{
-		Save& S = Saves[nSaveSlot - 1];
-		std::wstring wsFileName;
-		if (GetOpenSAVFileName(&wsFileName))
+		if (nSaveSlot > 0)
 		{
-			std::ifstream SaveInFile;
-			SaveInFile.open(wsFileName);
-			for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+			Save& S = Saves[nSaveSlot - 1];
+			std::wstring wsFileName;
+			if (GetOpenSAVFileName(&wsFileName))
 			{
-				SaveInFile >> S.dwaSaveEffects[i];
+				std::ifstream SaveInFile;
+				SaveInFile.open(wsFileName);
+
+				int nP1CharacterNumber;
+				int nP2CharacterNumber;
+				int nP1Moon;
+				int nP2Moon;
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharNumber), &nP1CharacterNumber, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharNumber), &nP2CharacterNumber, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharMoon), &nP1Moon, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharMoon), &nP2Moon, 4, 0);
+
+				int nP1CharacterID = 10 * nP1CharacterNumber + nP1Moon;
+				int nP1FileCharacterID;
+				int nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
+				int nP2FileCharacterID;
+				SaveInFile >> nP1FileCharacterID;
+				SaveInFile >> nP2FileCharacterID;
+				if (nP1FileCharacterID != nP1CharacterID || nP2FileCharacterID != nP2CharacterID)
+				{
+					std::string sErrorTitle = "INCORRECT CHARACTER IDS";
+					std::string sErrorString = "This save state file is for P1: " + GetCharacterName(nP1FileCharacterID) + " & P2: " + GetCharacterName(nP2FileCharacterID);
+					int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), sErrorTitle.c_str(), MB_ICONERROR);
+					LogError("INCORRECT CHARACTER IDS");
+					return;
+				}
+
+				for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSaveEffects[i];
+				}
+				for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSaveStopSituation[i];
+				}
+				SaveInFile >> S.dwSaveGlobalFreeze;
+				for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSaveAttackDisplayInfo[i];
+				}
+				for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSaveAttackDisplayInfo2[i];
+				}
+				SaveInFile >> S.dwSaveDestinationCamX;
+				SaveInFile >> S.dwSaveCurrentCamX;
+				SaveInFile >> S.dwSaveCurrentCamXCopy;
+				SaveInFile >> S.dwSaveDestinationCamY;
+				SaveInFile >> S.dwSaveCurrentCamY;
+				SaveInFile >> S.dwSaveCurrentCamYCopy;
+				SaveInFile >> S.dwSaveCurrentCamZoom;
+				SaveInFile >> S.dwSaveDestinationCamZoom;
+				SaveInFile >> S.dwSaveP1ControlledCharacter;
+				SaveInFile >> S.dwSaveP1NextControlledCharacter;
+				SaveInFile >> S.dwSaveP2ControlledCharacter;
+				SaveInFile >> S.dwSaveP2NextControlledCharacter;
+				for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSave1P1[i];
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSave2P1[i];
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSave1P2[i];
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSave2P2[i];
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSave1P3[i];
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSave2P3[i];
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSave1P4[i];
+				}
+				for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSave2P4[i];
+				}
+				S.bSaved = true;
+				SaveInFile.close();
 			}
-			for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
-			{
-				SaveInFile >> S.dwaSaveStopSituation[i];
-			}
-			SaveInFile >> S.dwSaveGlobalFreeze;
-			for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE; i++)
-			{
-				SaveInFile >> S.dwaSaveAttackDisplayInfo[i];
-			}
-			for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE; i++)
-			{
-				SaveInFile >> S.dwaSaveAttackDisplayInfo2[i];
-			}
-			SaveInFile >> S.dwSaveDestinationCamX;
-			SaveInFile >> S.dwSaveCurrentCamX;
-			SaveInFile >> S.dwSaveCurrentCamXCopy;
-			SaveInFile >> S.dwSaveDestinationCamY;
-			SaveInFile >> S.dwSaveCurrentCamY;
-			SaveInFile >> S.dwSaveCurrentCamYCopy;
-			SaveInFile >> S.dwSaveCurrentCamZoom;
-			SaveInFile >> S.dwSaveDestinationCamZoom;
-			SaveInFile >> S.dwSaveP1ControlledCharacter;
-			SaveInFile >> S.dwSaveP1NextControlledCharacter;
-			SaveInFile >> S.dwSaveP2ControlledCharacter;
-			SaveInFile >> S.dwSaveP2NextControlledCharacter;
-			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-			{
-				SaveInFile >> S.dwaSave1P1[i];
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-			{
-				SaveInFile >> S.dwaSave2P1[i];
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-			{
-				SaveInFile >> S.dwaSave1P2[i];
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-			{
-				SaveInFile >> S.dwaSave2P2[i];
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-			{
-				SaveInFile >> S.dwaSave1P3[i];
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-			{
-				SaveInFile >> S.dwaSave2P3[i];
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-			{
-				SaveInFile >> S.dwaSave1P4[i];
-			}
-			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-			{
-				SaveInFile >> S.dwaSave2P4[i];
-			}
-			S.bSaved = true;
-			SaveInFile.close();
 		}
+	}
+	catch (...)
+	{
+		std::wstring wsErrorString = L"UNABLE TO PARSE SAVE STATE FILE";
+		int nReturnVal = MessageBoxW(NULL, wsErrorString.c_str(), L"", MB_ICONERROR);
+		LogError("UNABLE TO PARSE SAVE STATE FILE");
 	}
 }
 

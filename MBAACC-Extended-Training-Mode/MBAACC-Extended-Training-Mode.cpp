@@ -661,7 +661,7 @@ int main(int argc, char* argv[])
                         {
                             if (nEnemySettingsCursor == 0)
                             {
-                                LoadStateFromFile(nSaveSlot);
+                                LoadStateFromFile(hMBAAHandle, dwBaseAddress, nSaveSlot);
                             }
                             if (nEnemySettingsCursor == 2)
                             {
@@ -673,7 +673,7 @@ int main(int argc, char* argv[])
                             }
                             else if (nEnemySettingsCursor == 5)
                             {
-                                SaveStateToFile(nSaveSlot);
+                                SaveStateToFile(hMBAAHandle, dwBaseAddress, nSaveSlot);
                             }
                             else if (nEnemySettingsCursor == 8)
                             {

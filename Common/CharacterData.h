@@ -204,6 +204,16 @@ static int GetPattern(int nCharacterID, std::string sPatternName)
 	return max(MBAACC_Map[eCharacterValues::UNIVERSAL][sPatternName], MBAACC_Map[nCharacterID][sPatternName]);
 }
 
+static std::string GetCharacterName(int nCharacterID)
+{
+	for (std::pair<const std::string, int>& x : CharacterValues_Map)
+	{
+		if (x.second == nCharacterID)
+			return x.first;
+	}
+	return "UNKNOWN";
+}
+
 static std::vector<std::string> GetPatternList(int nCharacterID)
 {
 	std::vector<std::string> vReturnList = { "None" };
