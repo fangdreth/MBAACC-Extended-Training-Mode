@@ -351,70 +351,74 @@ void SaveStateToFile(int nSaveSlot)
 	if (nSaveSlot > 0)
 	{
 		Save& S = Saves[nSaveSlot - 1];
-		std::ofstream SaveOutFile;
-		SaveOutFile.open("MBAA.save");
-		for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+		std::wstring wsFileName;
+		if (GetSaveSAVFileName(&wsFileName))
 		{
-			SaveOutFile << S.dwaSaveEffects[i] << std::endl;
+			std::ofstream SaveOutFile;
+			SaveOutFile.open(wsFileName);
+			for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSaveEffects[i] << std::endl;
+			}
+			for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSaveStopSituation[i] << std::endl;
+			}
+			SaveOutFile << S.dwSaveGlobalFreeze << std::endl;
+			for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSaveAttackDisplayInfo[i] << std::endl;
+			}
+			for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSaveAttackDisplayInfo2[i] << std::endl;
+			}
+			SaveOutFile << S.dwSaveDestinationCamX << std::endl;
+			SaveOutFile << S.dwSaveCurrentCamX << std::endl;
+			SaveOutFile << S.dwSaveCurrentCamXCopy << std::endl;
+			SaveOutFile << S.dwSaveDestinationCamY << std::endl;
+			SaveOutFile << S.dwSaveCurrentCamY << std::endl;
+			SaveOutFile << S.dwSaveCurrentCamYCopy << std::endl;
+			SaveOutFile << S.dwSaveCurrentCamZoom << std::endl;
+			SaveOutFile << S.dwSaveDestinationCamZoom << std::endl;
+			SaveOutFile << S.dwSaveP1ControlledCharacter << std::endl;
+			SaveOutFile << S.dwSaveP1NextControlledCharacter << std::endl;
+			SaveOutFile << S.dwSaveP2ControlledCharacter << std::endl;
+			SaveOutFile << S.dwSaveP2NextControlledCharacter << std::endl;
+			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSave1P1[i] << std::endl;
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSave2P1[i] << std::endl;
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSave1P2[i] << std::endl;
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSave2P2[i] << std::endl;
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSave1P3[i] << std::endl;
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSave2P3[i] << std::endl;
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSave1P4[i] << std::endl;
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+			{
+				SaveOutFile << S.dwaSave2P4[i] << std::endl;
+			}
+			SaveOutFile.close();
 		}
-		for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
-		{
-			SaveOutFile << S.dwaSaveStopSituation[i] << std::endl;
-		}
-		SaveOutFile << S.dwSaveGlobalFreeze << std::endl;
-		for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE; i++)
-		{
-			SaveOutFile << S.dwaSaveAttackDisplayInfo[i] << std::endl;
-		}
-		for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE; i++)
-		{
-			SaveOutFile << S.dwaSaveAttackDisplayInfo2[i] << std::endl;
-		}
-		SaveOutFile << S.dwSaveDestinationCamX << std::endl;
-		SaveOutFile << S.dwSaveCurrentCamX << std::endl;
-		SaveOutFile << S.dwSaveCurrentCamXCopy << std::endl;
-		SaveOutFile << S.dwSaveDestinationCamY << std::endl;
-		SaveOutFile << S.dwSaveCurrentCamY << std::endl;
-		SaveOutFile << S.dwSaveCurrentCamYCopy << std::endl;
-		SaveOutFile << S.dwSaveCurrentCamZoom << std::endl;
-		SaveOutFile << S.dwSaveDestinationCamZoom << std::endl;
-		SaveOutFile << S.dwSaveP1ControlledCharacter << std::endl;
-		SaveOutFile << S.dwSaveP1NextControlledCharacter << std::endl;
-		SaveOutFile << S.dwSaveP2ControlledCharacter << std::endl;
-		SaveOutFile << S.dwSaveP2NextControlledCharacter << std::endl;
-		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-		{
-			SaveOutFile << S.dwaSave1P1[i] << std::endl;
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-		{
-			SaveOutFile << S.dwaSave2P1[i] << std::endl;
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-		{
-			SaveOutFile << S.dwaSave1P2[i] << std::endl;
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-		{
-			SaveOutFile << S.dwaSave2P2[i] << std::endl;
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-		{
-			SaveOutFile << S.dwaSave1P3[i] << std::endl;
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-		{
-			SaveOutFile << S.dwaSave2P3[i] << std::endl;
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-		{
-			SaveOutFile << S.dwaSave1P4[i] << std::endl;
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-		{
-			SaveOutFile << S.dwaSave2P4[i] << std::endl;
-		}
-		SaveOutFile.close();
 	}
 }
 
@@ -423,71 +427,75 @@ void LoadStateFromFile(int nSaveSlot)
 	if (nSaveSlot > 0)
 	{
 		Save& S = Saves[nSaveSlot - 1];
-		std::ifstream SaveInFile;
-		SaveInFile.open("MBAA.save");
-		for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+		std::wstring wsFileName;
+		if (GetOpenSAVFileName(&wsFileName))
 		{
-			SaveInFile >> S.dwaSaveEffects[i];
+			std::ifstream SaveInFile;
+			SaveInFile.open(wsFileName);
+			for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSaveEffects[i];
+			}
+			for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSaveStopSituation[i];
+			}
+			SaveInFile >> S.dwSaveGlobalFreeze;
+			for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSaveAttackDisplayInfo[i];
+			}
+			for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSaveAttackDisplayInfo2[i];
+			}
+			SaveInFile >> S.dwSaveDestinationCamX;
+			SaveInFile >> S.dwSaveCurrentCamX;
+			SaveInFile >> S.dwSaveCurrentCamXCopy;
+			SaveInFile >> S.dwSaveDestinationCamY;
+			SaveInFile >> S.dwSaveCurrentCamY;
+			SaveInFile >> S.dwSaveCurrentCamYCopy;
+			SaveInFile >> S.dwSaveCurrentCamZoom;
+			SaveInFile >> S.dwSaveDestinationCamZoom;
+			SaveInFile >> S.dwSaveP1ControlledCharacter;
+			SaveInFile >> S.dwSaveP1NextControlledCharacter;
+			SaveInFile >> S.dwSaveP2ControlledCharacter;
+			SaveInFile >> S.dwSaveP2NextControlledCharacter;
+			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSave1P1[i];
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSave2P1[i];
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSave1P2[i];
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSave2P2[i];
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSave1P3[i];
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSave2P3[i];
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSave1P4[i];
+			}
+			for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
+			{
+				SaveInFile >> S.dwaSave2P4[i];
+			}
+			S.bSaved = true;
+			SaveInFile.close();
 		}
-		for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
-		{
-			SaveInFile >> S.dwaSaveStopSituation[i];
-		}
-		SaveInFile >> S.dwSaveGlobalFreeze;
-		for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE; i++)
-		{
-			SaveInFile >> S.dwaSaveAttackDisplayInfo[i];
-		}
-		for (int i = 0; i < ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE; i++)
-		{
-			SaveInFile >> S.dwaSaveAttackDisplayInfo2[i];
-		}
-		SaveInFile >> S.dwSaveDestinationCamX;
-		SaveInFile >> S.dwSaveCurrentCamX;
-		SaveInFile >> S.dwSaveCurrentCamXCopy;
-		SaveInFile >> S.dwSaveDestinationCamY;
-		SaveInFile >> S.dwSaveCurrentCamY;
-		SaveInFile >> S.dwSaveCurrentCamYCopy;
-		SaveInFile >> S.dwSaveCurrentCamZoom;
-		SaveInFile >> S.dwSaveDestinationCamZoom;
-		SaveInFile >> S.dwSaveP1ControlledCharacter;
-		SaveInFile >> S.dwSaveP1NextControlledCharacter;
-		SaveInFile >> S.dwSaveP2ControlledCharacter;
-		SaveInFile >> S.dwSaveP2NextControlledCharacter;
-		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-		{
-			SaveInFile >> S.dwaSave1P1[i];
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-		{
-			SaveInFile >> S.dwaSave2P1[i];
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-		{
-			SaveInFile >> S.dwaSave1P2[i];
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-		{
-			SaveInFile >> S.dwaSave2P2[i];
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-		{
-			SaveInFile >> S.dwaSave1P3[i];
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-		{
-			SaveInFile >> S.dwaSave2P3[i];
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
-		{
-			SaveInFile >> S.dwaSave1P4[i];
-		}
-		for (int i = 0; i < ADJ_SAVE_PLAYER_2_SIZE; i++)
-		{
-			SaveInFile >> S.dwaSave2P4[i];
-		}
-		S.bSaved = true;
-		SaveInFile.close();
 	}
 }
 

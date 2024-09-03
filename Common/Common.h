@@ -497,7 +497,7 @@ private:
 	bool prevState = false;
 };
 
-static bool GetOpenFileName(std::wstring* pwsFileName)
+static bool GetOpenSAVFileName(std::wstring* pwsFileName)
 {
     char pcFileName[MAX_PATH];
 
@@ -520,7 +520,7 @@ static bool GetOpenFileName(std::wstring* pwsFileName)
 	return false;
 }
 
-static bool GetSaveFileName(std::wstring* pwsFileName)
+static bool GetSaveSAVFileName(std::wstring* pwsFileName)
 {
     char pcFileName[MAX_PATH];
 

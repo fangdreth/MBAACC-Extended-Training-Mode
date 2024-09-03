@@ -200,9 +200,6 @@ int main(int argc, char* argv[])
         LogError("Cannot fetch latest version");
     }
 
-    std::wstring wsTemp;
-    GetSaveFileName(&wsTemp);
-
     CreateRegistryKey();
     ReadFromRegistry(L"FreezeKey", &nFreezeKey);
     if (MapVirtualKeyW(nFreezeKey, MAPVK_VK_TO_VSC) == 0)
