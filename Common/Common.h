@@ -497,7 +497,7 @@ private:
 	bool prevState = false;
 };
 
-static std::wstring GetOpenFileName()
+static bool GetOpenFileName(std::wstring* pwsFileName)
 {
     char pcFileName[MAX_PATH];
 
@@ -512,12 +512,15 @@ static std::wstring GetOpenFileName()
     ofn.lpstrTitle = (LPWSTR)L"Open Save State";
     ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
 
-    GetOpenFileNameW(&ofn);
-
-    return std::wstring(ofn.lpstrFile);
+	if (GetOpenFileNameW(&ofn))
+	{
+		*pwsFileName = std::wstring(ofn.lpstrFile);
+		return true;
+	}
+	return false;
 }
 
-static std::wstring GetSaveFileName()
+static bool GetSaveFileName(std::wstring* pwsFileName)
 {
     char pcFileName[MAX_PATH];
 
@@ -534,7 +537,10 @@ static std::wstring GetSaveFileName()
     ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT;
 
     //GetOpenFileNameW(&ofn);
-    GetSaveFileNameW(&ofn);
-
-    return std::wstring(ofn.lpstrFile);
+    if (GetSaveFileNameW(&ofn))
+	{
+		*pwsFileName = std::wstring(ofn.lpstrFile);
+		return true;
+	}
+	return false;
 }
