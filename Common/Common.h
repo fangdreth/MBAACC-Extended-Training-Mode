@@ -17,7 +17,7 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, POSITIONS_PAGE = 3, FRAME_TOOL = 4, CHARACTER_SPECIFICS = 5, HIGHLIGHT_PAGE = 6, HOTKEYS_PAGE = 7 };
+enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, HIGHLIGHT_PAGE = 3, POSITIONS_PAGE = 4, CHARACTER_SPECIFICS = 5, FRAME_TOOL = 6, FRAME_TOOL_HOTKEYS_PAGE = 7, GENERIC_HOTKEYS_PAGE = 8 };
 enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
 enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, YELLOW_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT, PURPLE_HIGHLIGHT, BLACK_HIGHLIGHT };
@@ -275,6 +275,8 @@ const ADDRESS adSharedHitboxesDisplayKey =			adShareBase + 0x12;	// 1 byte
 const ADDRESS adSharedFrameDataDisplayKey =			adShareBase + 0x13;	// 1 byte
 const ADDRESS adSharedHighlightsOnKey =				adShareBase + 0x14;	// 1 byte
 const ADDRESS adSharedSaveStateKey =				adShareBase + 0x15;	// 1 byte
+const ADDRESS adSharedPrevSaveSlotKey =		adShareBase + 0x16;	// 1 byte
+const ADDRESS adSharedNextSaveSlotKey =		adShareBase + 0x17;	// 1 byte
 
 const ADDRESS adSharedIdleHighlight =				adShareBase + 0x20; // 4 bytes
 const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x24; // 4 bytes
@@ -294,7 +296,7 @@ const std::vector<int> vGuardLevelLookupTable =
 const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
-const int MAX_PAGES = 7;
+const int MAX_PAGES = 8;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
 const int MAX_HEARTS = 5; //6:normal 7:infinite
@@ -391,6 +393,8 @@ const char pcHitboxes_13[13] = "HITBOXES [A]";
 const char pcFrameDisplay_18[18] = "FRAME DISPLAY [A]";
 const char pcHighlights_15[15] = "HIGHLIGHTS [A]";
 const char pcSaveState_15[15] = "SAVE STATE [A]";
+const char pcPrevSaveSlot_19[19] = "PREV SAVE SLOT [A]";
+const char pcNextSaveSlot_19[19] = "NEXT SAVE SLOT [A]";
 
 #define VK_KEY_0 0x30
 #define VK_KEY_1 0x31
@@ -430,12 +434,14 @@ const char pcSaveState_15[15] = "SAVE STATE [A]";
 #define VK_KEY_Y 0x59
 #define VK_KEY_Z 0x5A
 
-const int nDefaultFreezeKey = VK_KEY_1;
-const int nDefaultFrameStepKey = VK_KEY_2;
-const int nDefaultHitboxDisplayKey = VK_KEY_3;
-const int nDefaultFrameDataDisplayKey = VK_KEY_4;
-const int nDefaultHighlightsOnKey = VK_KEY_5;
-const int nDefaultSaveStateKey = VK_KEY_6;
+const int nDefaultFreezeKey = VK_KEY_4;
+const int nDefaultFrameStepKey = VK_KEY_5;
+const int nDefaultHitboxDisplayKey = VK_KEY_6;
+const int nDefaultFrameDataDisplayKey = VK_KEY_7;
+const int nDefaultHighlightsOnKey = VK_KEY_8;
+const int nDefaultSaveStateKey = VK_KEY_1;
+const int nDefaultPrevSaveSlotKey = VK_KEY_2;
+const int nDefaultNextSaveSlotKey = VK_KEY_3;
 
 class KeyState
 {

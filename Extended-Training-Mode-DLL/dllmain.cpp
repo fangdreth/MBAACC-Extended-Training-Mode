@@ -224,8 +224,8 @@ void processKeys()
 	static KeyState oHitboxesDisplayKey;
 	static KeyState oFrameDataDisplayKey;
 	static KeyState oSaveStateKey;
-	static KeyState oDecrementSaveSlotKey;
-	static KeyState oIncrementSaveSlotKey;
+	static KeyState oPrevSaveSlotKey;
+	static KeyState oNextSaveSlotKey;
 	static KeyState oFreezeKey;
 	static KeyState oHighlightsOnKey;
 	oHighlightsOnKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHighlightsOnKey));
@@ -233,10 +233,10 @@ void processKeys()
 	oFrameDataDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameDataDisplayKey));
 	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
 	oFreezeKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFreezeKey));
-	oDecrementSaveSlotKey.setKey(VK_KEY_7);
-	oIncrementSaveSlotKey.setKey(VK_KEY_8);
+	oPrevSaveSlotKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedPrevSaveSlotKey));
+	oNextSaveSlotKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedNextSaveSlotKey));
 
-	if (oDecrementSaveSlotKey.keyDown())
+	if (oPrevSaveSlotKey.keyDown())
 	{
 		uint8_t nTempSaveSlot;
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
@@ -244,7 +244,7 @@ void processKeys()
 		//SetRegistryValue(L"SaveSlot", nTempSaveSlot);
 		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
 	}
-	if (oIncrementSaveSlotKey.keyDown())
+	if (oNextSaveSlotKey.keyDown())
 	{
 		uint8_t nTempSaveSlot;
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
