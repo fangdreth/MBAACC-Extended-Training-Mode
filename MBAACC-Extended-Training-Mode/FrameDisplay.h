@@ -278,7 +278,7 @@ void UpdatePlayer(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P) {
 
 void SaveState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 {
-	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	if (nSaveSlot > 0)
 	{
 		Save &S = Saves[nSaveSlot - 1];
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveEffects), &S.dwaSaveEffects, SAVE_EFFECTS_SIZE, 0);
@@ -314,7 +314,7 @@ void SaveState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 
 void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 {
-	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	if (nSaveSlot > 0)
 	{
 		Save& S = Saves[nSaveSlot - 1];
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveEffects), &S.dwaSaveEffects, SAVE_EFFECTS_SIZE, 0);
@@ -348,7 +348,7 @@ void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 
 void SaveStateToFile(int nSaveSlot)
 {
-	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	if (nSaveSlot > 0)
 	{
 		Save& S = Saves[nSaveSlot - 1];
 		std::ofstream SaveOutFile;
@@ -420,7 +420,7 @@ void SaveStateToFile(int nSaveSlot)
 
 void LoadStateFromFile(int nSaveSlot)
 {
-	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	if (nSaveSlot > 0)
 	{
 		Save& S = Saves[nSaveSlot - 1];
 		std::ifstream SaveInFile;
@@ -493,7 +493,7 @@ void LoadStateFromFile(int nSaveSlot)
 
 bool CheckSave(int nSaveSlot)
 {
-	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	if (nSaveSlot > 0)
 	{
 		return Saves[nSaveSlot - 1].bSaved;
 	}
@@ -502,7 +502,7 @@ bool CheckSave(int nSaveSlot)
 
 void ClearSave(int nSaveSlot)
 {
-	if (nSaveSlot > 0 && nSaveSlot < MAX_SAVES)
+	if (nSaveSlot > 0)
 	{
 		Saves[nSaveSlot - 1].bSaved = false;
 	}
@@ -510,7 +510,7 @@ void ClearSave(int nSaveSlot)
 
 void ClearAllSaves()
 {
-	for (int i = 0; i < MAX_SAVES; i++)
+	for (int i = 0; i <= MAX_SAVES; i++)
 	{
 		Saves[i].bSaved = false;
 	}
