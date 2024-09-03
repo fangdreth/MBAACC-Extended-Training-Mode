@@ -442,7 +442,7 @@ void SaveStateToFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 	catch (...)
 	{
 		std::string sErrorString = "UNABLE TO CREATE SAVE STATE FILE";
-		int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONERROR);
+		int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONWARNING);
 		LogError("UNABLE TO CREATE SAVE STATE FILE");
 	}
 }
@@ -479,7 +479,7 @@ void LoadStateFromFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 				{
 					std::string sErrorTitle = "INCORRECT CHARACTER IDS";
 					std::string sErrorString = "This save state file is for P1: " + GetCharacterName(nP1FileCharacterID) + " & P2: " + GetCharacterName(nP2FileCharacterID);
-					int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), sErrorTitle.c_str(), MB_ICONERROR);
+					int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), sErrorTitle.c_str(), MB_ICONWARNING);
 					LogError("INCORRECT CHARACTER IDS");
 					return;
 				}
@@ -553,7 +553,7 @@ void LoadStateFromFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 	catch (...)
 	{
 		std::wstring wsErrorString = L"UNABLE TO PARSE SAVE STATE FILE";
-		int nReturnVal = MessageBoxW(NULL, wsErrorString.c_str(), L"", MB_ICONERROR);
+		int nReturnVal = MessageBoxW(NULL, wsErrorString.c_str(), L"", MB_ICONWARNING);
 		LogError("UNABLE TO PARSE SAVE STATE FILE");
 	}
 }
