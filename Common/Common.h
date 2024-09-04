@@ -203,12 +203,16 @@ const ADDRESS adOnRightFlag = 0x315;
 const ADDRESS adAnimationDataPointer = 0x320;
 const ADDRESS adAttackDataPointer = 0x324;
 const ADDRESS adAnimationData_StateDataPointer = 0x38;
+const ADDRESS adAnimationData_ConditionCount = 0x40;
 const ADDRESS adAnimationData_BoxIndex = 0x42;
+const ADDRESS adAnimationData_ConditionsPointer = 0x44;
 const ADDRESS adStateData_Stance = 0xC;
 const ADDRESS adStateData_Invuln = 0xD;
 const ADDRESS adStateData_NormalCancel = 0xE;
 const ADDRESS adStateData_SpecialCancel = 0xF;
 const ADDRESS adStateData_Flagset2 = 0x18;
+const ADDRESS adConditions_Condition1Pointer = 0x0;
+const ADDRESS adCondition_Type = 0x0;
 
 const ADDRESS adP1TagFlag = 0x155130 + 0x178; //0x1552A8
 const ADDRESS adP2TagFlag = 0x155130 + 0x178 + 1 * dwPlayerStructSize; //0x155DA4

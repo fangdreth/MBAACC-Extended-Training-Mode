@@ -203,7 +203,8 @@ void UpdateBars(Player& P, Player& Assist)
 		dwColor = 0xFF6E6E6E;
 		//sBarValue = " t";
 	}
-	else if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_BoxIndex) == 10) //Shield
+	else if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_ConditionCount) > 0 &&
+		*(char*)(*(DWORD*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_ConditionsPointer) + adConditions_Condition1Pointer) + adCondition_Type) == 51) //Shield
 	{
 		dwColor = 0xFF91C2FF;
 	}

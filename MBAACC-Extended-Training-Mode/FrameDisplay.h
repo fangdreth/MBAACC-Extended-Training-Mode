@@ -131,7 +131,11 @@ struct Player
 	bool bIsOnRight = false;
 	DWORD dwAnimationDataPointer = 0x0;
 	DWORD dwStateDataPointer = 0x0;
+	char cAnimation_ConditionCount = 0;
 	char cAnimation_BoxIndex = 0;
+	DWORD dwConditionsPointer = 0x0;
+	DWORD dwCondition1Pointer = 0x0;
+	DWORD dwCondition1Type = 0;
 	DWORD dwAttackDataPointer = 0x0;
 	char cState_Stance = 0;
 	char cState_Invuln = 0;
@@ -260,12 +264,24 @@ void UpdatePlayer(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P) {
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adAnimationDataPointer), &P.dwAnimationDataPointer, 4, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adAttackDataPointer), &P.dwAttackDataPointer, 4, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_StateDataPointer), &P.dwStateDataPointer, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionCount), &P.cAnimation_ConditionCount, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_BoxIndex), &P.cAnimation_BoxIndex, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwStateDataPointer + adStateData_Stance), &P.cState_Stance, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwStateDataPointer + adStateData_Invuln), &P.cState_Invuln, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwStateDataPointer + adStateData_NormalCancel), &P.cState_NormalCancel, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwStateDataPointer + adStateData_SpecialCancel), &P.cState_SpecialCancel, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwStateDataPointer + adStateData_Flagset2), &P.nState_Flagset2, 4, 0);
+	
+	if (P.cAnimation_ConditionCount > 0)
+	{
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionsPointer), &P.dwConditionsPointer, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwConditionsPointer + adConditions_Condition1Pointer), &P.dwCondition1Pointer, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwCondition1Pointer + adCondition_Type), &P.dwCondition1Type, 4, 0);
+	}
+	else
+	{
+		P.dwCondition1Type = 0;
+	}
 	if (P.nPlayerNumber % 2 == 1)
 	{
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Inaction), &P.nInactionableFrames, 4, 0);
@@ -698,7 +714,7 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;225;184;0m";
 	}
-	else if (P.cAnimation_BoxIndex == 10) //Shield
+	else if (P.dwCondition1Type == 51) //Shield
 	{
 		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;145;194;255m";
 	}
