@@ -343,6 +343,71 @@ bool __stdcall safeWrite() {
 	return true;
 }
 
+// i am unsure of how big to make this array. i dont want to have crashes from reading uninited mem
+// loop until 0040d355, which is the ret addr of gamestart. set
+// i didnt find that in the stack until somewhere like 4C0, might as well alloc 0x1000 
+DWORD saveTexture_stack[0x1000];
+DWORD stackAddr = 0;
+int stackSaveIndex = 0;
+void saveStack() {
+	
+	return;
+
+	if (stackAddr == 0) {
+		return;
+	}
+
+	log("attemping to save stack");
+
+	DWORD temp;
+	
+	int i = 0;
+	for (; i < 0x1000 / 4; i++) {
+
+		log("saving %04X %08X", i, stackAddr + (i * 4));
+		temp = *(DWORD*)(stackAddr + (i * 4));
+
+		saveTexture_stack[i] = temp;
+
+		if (temp == 0x0040d355 || 
+			(temp >= 0x00401770 && temp <= 0x0040182f) // mainMelty
+			) {
+			break;
+		}
+	}
+
+	stackSaveIndex = i;
+
+	log("stack saved");
+}
+
+void logStack() {
+
+	return;
+
+	// sections:
+	// .text ram:00401000-ram:0051afff
+	// .rdata ram:0051b000-ram:0054afff 
+
+	DWORD temp;
+
+	// havng this many log calls aint ideal. i should snprintf!
+	for (int i = 0; i < stackSaveIndex; i++) {
+
+		temp = saveTexture_stack[i];
+
+		if (temp >= 0x00401000 && temp < 0x0051afff) {
+			log("possible ret attr: %08X", temp);
+		}
+
+		if (temp == 0x0040d355) {
+			break;
+		}
+	}
+
+	stackSaveIndex = 0;
+}
+
 DWORD needHookReset = false;
 
 // patch funcs
@@ -408,10 +473,6 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 
 	patchMemcpy(addr, temp, 1);
 }
-
-#include "D3DHooks.h"
-#include "textureModification.h"
-#include "CSSModification.h"
 
 // actual functions 
 
@@ -589,6 +650,10 @@ void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4) {
 	drawRect(x + w - 1, y, lineWidth, h, ARGB);
 	drawRect(x, y + h - 1, w, lineWidth, ARGB);
 }
+
+#include "D3DHooks.h"
+#include "textureModification.h"
+#include "CSSModification.h"
 
 // -----
 
