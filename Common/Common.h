@@ -524,14 +524,13 @@ static bool GetOpenSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wst
     ofn.lpstrTitle = (LPWSTR)L"Open Save State";
     ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
 
-	if (GetOpenFileNameW(&ofn))
+	bool bResult = GetOpenFileNameW(&ofn);
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
+	if (bResult)
 	{
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
 		*pwsFileName = std::wstring(ofn.lpstrFile);
 		return true;
 	}
-
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
 	return false;
 }
 
@@ -555,13 +554,12 @@ static bool GetSaveSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wst
     ofn.lpstrDefExt = L"sav";
     ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT;
 
-    //GetOpenFileNameW(&ofn);
-    if (GetSaveFileNameW(&ofn))
+	bool bResult = GetSaveFileNameW(&ofn);
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
+    if (bResult)
 	{
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
 		*pwsFileName = std::wstring(ofn.lpstrFile);
 		return true;
 	}
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
 	return false;
 }
