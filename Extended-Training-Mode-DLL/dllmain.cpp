@@ -1206,7 +1206,7 @@ void frameDoneCallback()
 		*(char*)(dwBaseAddress + adSharedDoSave) = 1;
 		nDrawTextTimer = TEXT_TIMER;
 		if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "SAVING IS DISABLED");
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "NO SLOT SELECTED");
 		else
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SAVED SLOT", *(char*)(dwBaseAddress + adSharedSaveSlot));
 	}
@@ -1234,7 +1234,7 @@ void frameDoneCallback()
 		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
 		nDrawTextTimer = TEXT_TIMER;
 		if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "SAVING DISABLED");
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "NO SLOT SELECTED");
 		else
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SELECTED SAVE", *(char*)(dwBaseAddress + adSharedSaveSlot));
 	}
@@ -1246,7 +1246,7 @@ void frameDoneCallback()
 		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
 		nDrawTextTimer = TEXT_TIMER;
 		if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "SAVING DISABLED");
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "NO SLOT SELECTED");
 		else
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SELECTED SAVE", *(char*)(dwBaseAddress + adSharedSaveSlot));
 	}
