@@ -982,7 +982,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 
 	bool ok = true;
 	MSG msg;
-	while (bFreeze)
+	while (bFreeze || *(uint8_t*)(dwBaseAddress + adSharedFreezeOverride) == 1)
 	{
 		Sleep(1);
 
@@ -1004,46 +1004,49 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 			DispatchMessage(&msg);
 		}
 
-		if (oHitboxesDisplayKey.keyDown())
+		if (*(uint8_t*)(dwBaseAddress + adSharedFreezeOverride) != 1)
 		{
-			bHitboxesDisplay = !bHitboxesDisplay;
-		}
+			if (oHitboxesDisplayKey.keyDown())
+			{
+				bHitboxesDisplay = !bHitboxesDisplay;
+			}
 
-		if (oFrameDataDisplayKey.keyDown())
-		{
-			bFrameDataDisplay = !bFrameDataDisplay;
-		}
+			if (oFrameDataDisplayKey.keyDown())
+			{
+				bFrameDataDisplay = !bFrameDataDisplay;
+			}
 
-		if (oHighlightsOnKey.keyDown())
-			bHighlightsOn = !bHighlightsOn;
+			if (oHighlightsOnKey.keyDown())
+				bHighlightsOn = !bHighlightsOn;
 
-		if (oSaveStateKey.keyDown() && safeWrite())
-		{
-			*(char*)(dwBaseAddress + adSharedDoSave) = 1;
-		}
+			if (oSaveStateKey.keyDown() && safeWrite())
+			{
+				*(char*)(dwBaseAddress + adSharedDoSave) = 1;
+			}
 
-		if (oFreezeKey.keyDown())
-		{
-			bFreeze = !bFreeze;
-		}
+			if (oFreezeKey.keyDown())
+			{
+				bFreeze = !bFreeze;
+			}
 
-		if (oPrevSaveSlotKey.keyDown())
-		{
-			uint8_t nTempSaveSlot;
-			ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-			nTempSaveSlot = max(0, nTempSaveSlot - 1);
-			WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-		}
-		if (oNextSaveSlotKey.keyDown())
-		{
-			uint8_t nTempSaveSlot;
-			ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-			nTempSaveSlot = min(nTempSaveSlot + 1, MAX_SAVES);
-			WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-		}
+			if (oPrevSaveSlotKey.keyDown())
+			{
+				uint8_t nTempSaveSlot;
+				ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+				nTempSaveSlot = max(0, nTempSaveSlot - 1);
+				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+			}
+			if (oNextSaveSlotKey.keyDown())
+			{
+				uint8_t nTempSaveSlot;
+				ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+				nTempSaveSlot = min(nTempSaveSlot + 1, MAX_SAVES);
+				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+			}
 
-		if (oFrameStepKey.keyDown()) {
-			break;
+			if (oFrameStepKey.keyDown()) {
+				break;
+			}
 		}
 	} 
 	

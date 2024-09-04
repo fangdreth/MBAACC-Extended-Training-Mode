@@ -19,7 +19,7 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, HIGHLIGHT_PAGE = 3, POSITIONS_PAGE = 4, CHARACTER_SPECIFICS = 5, FRAME_TOOL = 6, FRAME_TOOL_HOTKEYS_PAGE = 7, GENERIC_HOTKEYS_PAGE = 8 };
+enum ePages { REVERSALS_PAGE = 1, STATS_PAGE = 2, HIGHLIGHT_PAGE = 3, POSITIONS_PAGE = 4, CHARACTER_SPECIFICS = 5, SAVE_STATE_PAGE = 6, FRAME_TOOL = 7, FRAME_TOOL_HOTKEYS_PAGE = 8, GENERIC_HOTKEYS_PAGE = 9 };
 enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
 enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, YELLOW_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT, PURPLE_HIGHLIGHT, BLACK_HIGHLIGHT };
@@ -270,6 +270,7 @@ const ADDRESS adSharedDisplayFreeze =				adShareBase + 0x3;	// 1 byte
 const ADDRESS adSharedDisplayInputs =				adShareBase + 0x4;	// 1 byte
 const ADDRESS adSharedScrolling =					adShareBase + 0x5;	// 2 bytes
 const ADDRESS adSharedHoveringScroll =				adShareBase + 0x7;	// 1 byte
+const ADDRESS adSharedFreezeOverride =				adShareBase + 0x8;	// 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x10;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x11;	// 1 byte
@@ -298,7 +299,7 @@ const std::vector<int> vGuardLevelLookupTable =
 const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
-const int MAX_PAGES = 8;
+const int MAX_PAGES = 9;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
 const int MAX_HEARTS = 5; //6:normal 7:infinite
@@ -379,6 +380,13 @@ const char pcAdvanced_9[9] = "ADVANCED";
 const char pcOff_4[4] = "OFF";
 const char pcOn_3[3] = "ON";
 const char pcNone_5[5] = "NONE";
+
+const char pcClearAllSaves_16[16] = "CLEAR ALL SAVES";
+const char pcImportSave_12[12] = "IMPORT SAVE";
+const char pcExportSave_12[12] = "EXPORT SAVE";
+const char pcNoData_8[8] = "NO DATA";
+const char pcNoSlotSelected_17[17] = "NO SLOT SELECTED";
+const char pcPressA_8[8] = "PRESS A";
 
 const char pcIdle_5[5] = "IDLE";
 const char pcBlock_6[6] = "BLOCK";
@@ -497,8 +505,12 @@ private:
 	bool prevState = false;
 };
 
-static bool GetOpenSAVFileName(std::wstring* pwsFileName)
+static bool GetOpenSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wstring* pwsFileName)
 {
+	const uint8_t nOne = 1;
+	const uint8_t nZero = 0;
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nOne, 1, 0);
+
     char pcFileName[MAX_PATH];
 
     OPENFILENAME ofn;
@@ -514,14 +526,21 @@ static bool GetOpenSAVFileName(std::wstring* pwsFileName)
 
 	if (GetOpenFileNameW(&ofn))
 	{
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
 		*pwsFileName = std::wstring(ofn.lpstrFile);
 		return true;
 	}
+
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
 	return false;
 }
 
-static bool GetSaveSAVFileName(std::wstring* pwsFileName)
+static bool GetSaveSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wstring* pwsFileName)
 {
+	const uint8_t nOne = 1;
+	const uint8_t nZero = 0;
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nOne, 1, 0);
+
     char pcFileName[MAX_PATH];
 
     OPENFILENAME ofn;
@@ -539,8 +558,10 @@ static bool GetSaveSAVFileName(std::wstring* pwsFileName)
     //GetOpenFileNameW(&ofn);
     if (GetSaveFileNameW(&ofn))
 	{
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
 		*pwsFileName = std::wstring(ofn.lpstrFile);
 		return true;
 	}
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
 	return false;
 }

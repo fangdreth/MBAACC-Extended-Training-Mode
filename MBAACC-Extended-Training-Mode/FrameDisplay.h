@@ -347,15 +347,24 @@ void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 	}
 }
 
+bool CheckSave(int nSaveSlot)
+{
+	if (nSaveSlot > 0)
+	{
+		return Saves[nSaveSlot - 1].bSaved;
+	}
+	return false;
+}
+
 void SaveStateToFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 {
 	try
 	{
-		if (nSaveSlot > 0)
+		if (nSaveSlot > 0 && CheckSave(nSaveSlot))
 		{
 			Save& S = Saves[nSaveSlot - 1];
 			std::wstring wsFileName;
-			if (GetSaveSAVFileName(&wsFileName))
+			if (GetSaveSAVFileName(hMBAAHandle, dwBaseAddress, &wsFileName))
 			{
 				std::ofstream SaveOutFile;
 				SaveOutFile.open(wsFileName);
@@ -455,7 +464,7 @@ void LoadStateFromFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 		{
 			Save& S = Saves[nSaveSlot - 1];
 			std::wstring wsFileName;
-			if (GetOpenSAVFileName(&wsFileName))
+			if (GetOpenSAVFileName(hMBAAHandle, dwBaseAddress, &wsFileName))
 			{
 				std::ifstream SaveInFile;
 				SaveInFile.open(wsFileName);
@@ -558,15 +567,6 @@ void LoadStateFromFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 	}
 }
 
-bool CheckSave(int nSaveSlot)
-{
-	if (nSaveSlot > 0)
-	{
-		return Saves[nSaveSlot - 1].bSaved;
-	}
-	return false;
-}
-
 void ClearSave(int nSaveSlot)
 {
 	if (nSaveSlot > 0)
@@ -577,7 +577,7 @@ void ClearSave(int nSaveSlot)
 
 void ClearAllSaves()
 {
-	for (int i = 0; i <= MAX_SAVES; i++)
+	for (int i = 0; i < MAX_SAVES; i++)
 	{
 		Saves[i].bSaved = false;
 	}
