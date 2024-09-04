@@ -478,7 +478,7 @@ void LoadStateFromFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 				if (nP1FileCharacterID != nP1CharacterID || nP2FileCharacterID != nP2CharacterID)
 				{
 					std::string sErrorTitle = "INCORRECT CHARACTER IDS";
-					std::string sErrorString = "This save state file is for P1: " + GetCharacterName(nP1FileCharacterID) + " & P2: " + GetCharacterName(nP2FileCharacterID);
+					std::string sErrorString = "This save state file is for P1: " + GetCharacterNameFromID(nP1FileCharacterID) + " & P2: " + GetCharacterNameFromID(nP2FileCharacterID);
 					int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), sErrorTitle.c_str(), MB_ICONWARNING);
 					LogError("INCORRECT CHARACTER IDS");
 					return;
