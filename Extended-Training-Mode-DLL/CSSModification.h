@@ -123,8 +123,6 @@ void palettePatcherCallback() {
 	}
 	*/
 
-	Sleep(50);
-
 	DWORD nonvolPlayerIndex = _naked_PalettePatcherCharDetect_playerIndex;
 
 	log("modifying a palette with playerIndex = %d", nonvolPlayerIndex);
@@ -153,64 +151,25 @@ void palettePatcherCallback() {
 
 			D3DXVECTOR3 hsv = RGBtoHSV(rgb);
 
-			// h is 0-360 s is 0-1 v is 0-255
-
-			/*
-			switch (i % 3) {
-			default:
-			case 0:
-				hsv.x = 0.0f;
-				break;
-			case 1:
-				hsv.x = 120.0f;
-				break;
-			case 2:
-				hsv.x = 240.0f;
-				break;
-			}
-			*/
-
-			//log("%6.2f %6.2f %6.2f", hsv.x, hsv.y, hsv.z);
-			
-			/*
+	
 			
 			if (nonvolPlayerIndex == 0) {
-				//hsv.x = fabs(fmod(hsv.x - 120.0f, 360.0f));
-				hsv.x = 180.0f;
+				hsv.x = 0.5f;
 			} else if (nonvolPlayerIndex == 1) {
-				//hsv.x = fabs(fmod(hsv.x + 120.0f, 360.0f));
 				hsv.x = 0.0f;
 			} else {
 
 			}
 
-			*/
+			hsv.y = (hsv.y / 2.0f) + 0.5f;
+			hsv.z = (hsv.z / 2.0f) + 0.5f;
 
-			//hsv.x = fabs(fmod(hsv.x + 180.0f, 360.0f));
-			//hsv.x = 60.0f / 360.0f;
-			//
-			//hsv.y = 1.0f * sqrtf(hsv.y / 1.0f);
-			//
-			//hsv.z = 255.0f * sqrtf(hsv.z / 255.0f);
-			
-			//hsv.x = 0.5f;
-			//hsv.x = 60.0f / 360.0f;
-
-			hsv.x = 0.0f;
-			
-			
-
-			//log("h: %5.2f s: %5.2f v: %5.2f", hsv.x, hsv.y, hsv.z);
 
 			D3DXVECTOR3 tempRGB = HSVtoRGB(hsv);
 
 			BYTE r = tempRGB.x;
 			BYTE g = tempRGB.y;
 			BYTE b = tempRGB.z;
-
-			if (tempRGB != rgb) {
-				log("%6.2f %6.2f %6.2f -> %6.2f %6.2f %6.2f", rgb.x, rgb.y, rgb.z, tempRGB.x, tempRGB.y, tempRGB.z);
-			}
 
 			//g = 0xF0;
 
