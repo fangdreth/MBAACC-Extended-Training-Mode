@@ -15,7 +15,7 @@
 #include <stdarg.h>
 #include <d3d9.h>
 #include <d3dx9.h> // https://www.microsoft.com/en-us/download/details.aspx?id=6812
-
+#include <algorithm>
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
@@ -45,74 +45,101 @@ void messUpTexture();
 void miscDirectX();
 void initIdk();
 
-
 D3DXVECTOR3 RGBtoHSV(const D3DXVECTOR3& rgb) {
-	float r = rgb.x;
-	float g = rgb.y;
-	float b = rgb.z;
+	float r_f = rgb.x / 255.0f;
+	float g_f = rgb.y / 255.0f;
+	float b_f = rgb.z / 255.0f;
 
-	float max = MAX(r, MAX(g, b));
-	float min = MIN(r, MIN(g, b));
+	float max = MAX(MAX( r_f, g_f), b_f );
+
+	float min = MIN(MIN( r_f, g_f), b_f );
 	float delta = max - min;
 
-	float h = 0.0f;
-	float s = (max == 0.0f) ? 0.0f : (delta / max);
-	float v = max;
+	D3DXVECTOR3 hsv;
+	
+	hsv.x = 0.0f;
 
-	if (delta != 0.0f) {
-		if (max == r) {
-			h = 60.0f * (fmod(((g - b) / delta), 6.0f));
-		}
-		else if (max == g) {
-			h = 60.0f * (((b - r) / delta) + 2.0f);
-		}
-		else if (max == b) {
-			h = 60.0f * (((r - g) / delta) + 4.0f);
-		}
+	hsv.z = max;
+	hsv.y = 0.0f;
+
+	if (max != 0.0f) { // should i be epsiloning here
+		hsv.y = delta / max;
 	}
 
-	if (h < 0.0f) {
-		h += 360.0f;
+	if (delta == 0) {
+		return hsv;
 	}
 
-	return D3DXVECTOR3(h, s, v);
+	if (r_f > g_f && r_f > b_f) { // RMAX
+		hsv.x = fmod((g_f-b_f)/delta, 6.0f);
+
+		hsv.x /= 6.0f;
+	} else if (g_f > r_f && g_f > b_f) { // GMAX
+		hsv.x = ((b_f - r_f) / delta) + 2;
+
+		hsv.x /= 6.0f;
+
+		//hsv.x = 1 - hsv.x;
+	} else { // BMAX
+		hsv.x = ((r_f - g_f) / delta) + 4;
+
+		hsv.x /= 6.0f;
+	}
+
+	return hsv;
 }
 
 D3DXVECTOR3 HSVtoRGB(const D3DXVECTOR3& hsv) {
-	float h = hsv.x;
+	float h = hsv.x * 360.0f;
 	float s = hsv.y;
 	float v = hsv.z;
 
-	float c = v * s; // Chroma
-	float x = c * (1 - fabs(fmod(h / 60.0f, 2) - 1));
+	float r_f, g_f, b_f;
+
+	float c = v * s;
+	float x = c * (1 - fabs(fmod(h / 60.0f, 2.0f) - 1));
 	float m = v - c;
 
-	float r = 0.0f, g = 0.0f, b = 0.0f;
+	switch ((int)(h / 60.0f)) {
+	default:
+	case 0:
+		r_f = c;
+		g_f = x;
+		b_f = 0.0f;
+		break;
+	case 1:
+		r_f = x;
+		g_f = c;
+		b_f = 0.0f;
+		break;
+	case 2:
+		r_f = 0.0f;
+		g_f = c;
+		b_f = x;
+		break;
+	case 3:
+		r_f = 0.0f;
+		g_f = x;
+		b_f = c;
+		break;
+	case 4:
+		r_f = x;
+		g_f = 0.0f;
+		b_f = c;
+		break;
+	case 5:
+		r_f = c;
+		g_f = 0.0f;
+		b_f = x;
+		break;
+	}
 
-	if (h >= 0.0f && h < 60.0f) {
-		r = c; g = x; b = 0.0f;
-	}
-	else if (h >= 60.0f && h < 120.0f) {
-		r = x; g = c; b = 0.0f;
-	}
-	else if (h >= 120.0f && h < 180.0f) {
-		r = 0.0f; g = c; b = x;
-	}
-	else if (h >= 180.0f && h < 240.0f) {
-		r = 0.0f; g = x; b = c;
-	}
-	else if (h >= 240.0f && h < 300.0f) {
-		r = x; g = 0.0f; b = c;
-	}
-	else if (h >= 300.0f && h < 360.0f) {
-		r = c; g = 0.0f; b = x;
-	}
+	D3DXVECTOR3 rgb;
+	rgb.x = (r_f + m) * 255.0f;
+	rgb.y = (g_f + m) * 255.0f;
+	rgb.z = (b_f + m) * 255.0f;
 
-	r += m;
-	g += m;
-	b += m;
-
-	return D3DXVECTOR3(r, g, b);
+	return rgb;
 }
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
@@ -343,6 +370,15 @@ bool __stdcall safeWrite() {
 	return true;
 }
 
+bool __stdcall isAddrValid(DWORD addr) {
+	__try {
+		volatile BYTE test = *(BYTE*)addr; 
+		return true;
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		return false; 
+	}
+}
+
 // i am unsure of how big to make this array. i dont want to have crashes from reading uninited mem
 // loop until 0040d355, which is the ret addr of gamestart. set
 // i didnt find that in the stack until somewhere like 4C0, might as well alloc 0x1000 
@@ -351,8 +387,6 @@ DWORD stackAddr = 0;
 int stackSaveIndex = 0;
 void saveStack() {
 	
-	return;
-
 	if (stackAddr == 0) {
 		return;
 	}
@@ -364,7 +398,11 @@ void saveStack() {
 	int i = 0;
 	for (; i < 0x1000 / 4; i++) {
 
-		log("saving %04X %08X", i, stackAddr + (i * 4));
+		if (!isAddrValid(stackAddr + (i * 4))) {
+			break;
+		}
+
+		//log("saving %04X %08X", i, stackAddr + (i * 4));
 		temp = *(DWORD*)(stackAddr + (i * 4));
 
 		saveTexture_stack[i] = temp;
@@ -383,8 +421,6 @@ void saveStack() {
 
 void logStack() {
 
-	return;
-
 	// sections:
 	// .text ram:00401000-ram:0051afff
 	// .rdata ram:0051b000-ram:0054afff 
@@ -397,7 +433,7 @@ void logStack() {
 		temp = saveTexture_stack[i];
 
 		if (temp >= 0x00401000 && temp < 0x0051afff) {
-			log("possible ret attr: %08X", temp);
+			log("possible ret attr: [esp + %04X] %08X", i * 4, temp);
 		}
 
 		if (temp == 0x0040d355) {
@@ -2365,6 +2401,38 @@ void initDirectX() {
 	log("endScene patch at %08X", dwCasterBaseAddress + addrEndScenePatch);
 
 	patchJump(dwCasterBaseAddress + addrEndScenePatch, directXHook);
+
+	/*
+	D3DXVECTOR3 rgb;
+	D3DXVECTOR3 hsv;
+
+	rgb = D3DXVECTOR3(255.0f, 254.0f, 0.0f);
+
+	hsv = RGBtoHSV(rgb);
+	log("h: %6.2f s: %6.2f v: %6.2f", hsv.x, hsv.y, hsv.z);
+	rgb = HSVtoRGB(hsv);
+	log("r: %6.2f g: %6.2f b: %6.2f", rgb.x, rgb.y, rgb.z);
+
+
+	rgb = D3DXVECTOR3(0.0f, 255.0f, 200.0f);
+
+	hsv = RGBtoHSV(rgb);
+	log("h: %6.2f s: %6.2f v: %6.2f", hsv.x, hsv.y, hsv.z);
+	rgb = HSVtoRGB(hsv);
+	log("r: %6.2f g: %6.2f b: %6.2f", rgb.x, rgb.y, rgb.z);
+
+	rgb = D3DXVECTOR3(254.0f, 0.0f, 255.0f);
+
+	hsv = RGBtoHSV(rgb);
+	log("h: %6.2f s: %6.2f v: %6.2f", hsv.x, hsv.y, hsv.z);
+	rgb = HSVtoRGB(hsv);
+	log("r: %6.2f g: %6.2f b: %6.2f", rgb.x, rgb.y, rgb.z);
+
+	__asm {
+		int 3;
+	}
+	*/
+
 }
 
 void initIdk() {

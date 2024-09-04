@@ -22,18 +22,13 @@ void drawPaletteColumn() {
 
 	//log("param1: %08X param2: %08X param3: %08X", drawPaletteColumn_Player, drawPaletteColumn_IsInPalette, drawPaletteColumn_Param3);
 
-	int x = 100;
+	int x = 200;
 	int palette = *(DWORD*)0x0074d904;
 
 	if (drawPaletteColumn_Player == 1) {
 		x = 640 - 200;
 		palette = *(DWORD*)0x0074D928;
 	}
-
-
-	
-
-	
 
 	static char buffer[256];
 
@@ -43,31 +38,10 @@ void drawPaletteColumn() {
 
 }
 
+volatile DWORD _naked_PalettePatcherCharDetect_playerIndex = -1;
 DWORD _naked_PalettePatcherHook_ebx = 0;
 DWORD _naked_PalettePatcherCallback_eax = 0;
 void palettePatcherCallback() {
-
-	// todo, i can probs,, recall the func that loads palettes, and swap the pointers
-	// hopefully
-	// i just have to find the func
-
-	// palette loads take a different route. this route.
-
-	// this crashes on fhime. like all things do 
-	// doesnt she have 2 loading anims? whats up with that?
-
-	/*
-	
-	ok:
-	changing things going into gameplay is easy. both clients will have each others data, and when loading in, i just use that to choose/figure out
-	the issue is CSS. i need to reload these dynamically. 
-	
-	actually,,,, do i?
-	if i exchange all palette data before boot, and hook these calls before load,,, i should/would be fine, wouldnt i be?
-	i also need to fix the menus
-
-	
-	*/
 
 	if (_naked_PalettePatcherHook_ebx == 0) {
 		log("miscTests ebx was NULL");
@@ -116,6 +90,9 @@ void palettePatcherCallback() {
 
 	// is a palette
 
+	saveStack();
+	logStack();
+
 	bool isWarc = false;
 
 	if (!strcmp(fileName, "WARC.pal")) {
@@ -125,6 +102,14 @@ void palettePatcherCallback() {
 	// textures, when loaded in, are in 4 byte RGBA format.
 	// weirdly, there is a 40 00 00 00 at the start. what is that?
 	// its 64, which is the num of palettes? but idrk
+
+	__asm {
+		nop;
+		nop;
+		//int 3;
+		nop; 
+		nop;
+	}
 
 	DWORD* colors = (DWORD*)(_naked_PalettePatcherCallback_eax + 4);
 
@@ -137,7 +122,13 @@ void palettePatcherCallback() {
 		log("-----");
 	}
 	*/
-	
+
+	Sleep(50);
+
+	DWORD nonvolPlayerIndex = _naked_PalettePatcherCharDetect_playerIndex;
+
+	log("modifying a palette with playerIndex = %d", nonvolPlayerIndex);
+
 	for (int i = 0; i < 64; i++) {
 	//for (int i = 36; i < 42; i++) {
 		for (int j = 0; j < 256; j++) {
@@ -153,12 +144,16 @@ void palettePatcherCallback() {
 			}
 			
 			D3DXVECTOR3 rgb = D3DXVECTOR3(
-				(float)((tempColor & 0x00FF0000) >> 16),
+				(float)((tempColor & 0x000000FF) >> 0),
+				
 				(float)((tempColor & 0x0000FF00) >> 8),
-				(float)((tempColor & 0x000000FF) >> 0)
+				
+				(float)((tempColor & 0x00FF0000) >> 16)
 				);
 
 			D3DXVECTOR3 hsv = RGBtoHSV(rgb);
+
+			// h is 0-360 s is 0-1 v is 0-255
 
 			/*
 			switch (i % 3) {
@@ -175,8 +170,36 @@ void palettePatcherCallback() {
 			}
 			*/
 
-			hsv.x = fmod(hsv.x - 120.0f, 360.0f);
+			//log("%6.2f %6.2f %6.2f", hsv.x, hsv.y, hsv.z);
 			
+			/*
+			
+			if (nonvolPlayerIndex == 0) {
+				//hsv.x = fabs(fmod(hsv.x - 120.0f, 360.0f));
+				hsv.x = 180.0f;
+			} else if (nonvolPlayerIndex == 1) {
+				//hsv.x = fabs(fmod(hsv.x + 120.0f, 360.0f));
+				hsv.x = 0.0f;
+			} else {
+
+			}
+
+			*/
+
+			//hsv.x = fabs(fmod(hsv.x + 180.0f, 360.0f));
+			//hsv.x = 60.0f / 360.0f;
+			//
+			//hsv.y = 1.0f * sqrtf(hsv.y / 1.0f);
+			//
+			//hsv.z = 255.0f * sqrtf(hsv.z / 255.0f);
+			
+			//hsv.x = 0.5f;
+			//hsv.x = 60.0f / 360.0f;
+
+			hsv.x = 0.0f;
+			
+			
+
 			//log("h: %5.2f s: %5.2f v: %5.2f", hsv.x, hsv.y, hsv.z);
 
 			D3DXVECTOR3 tempRGB = HSVtoRGB(hsv);
@@ -185,9 +208,14 @@ void palettePatcherCallback() {
 			BYTE g = tempRGB.y;
 			BYTE b = tempRGB.z;
 
+			if (tempRGB != rgb) {
+				log("%6.2f %6.2f %6.2f -> %6.2f %6.2f %6.2f", rgb.x, rgb.y, rgb.z, tempRGB.x, tempRGB.y, tempRGB.z);
+			}
+
 			//g = 0xF0;
 
-			DWORD tempNewColor = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+			//DWORD tempNewColor = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+			DWORD tempNewColor = (a << 24) | (b << 16) | (g << 8) | (r << 0);
 
 			//if (j >= 16) {
 			//	continue;
@@ -196,6 +224,8 @@ void palettePatcherCallback() {
 
 		}		
 	}
+
+	
 }
 
 // naked funcs 
@@ -259,12 +289,33 @@ __declspec(naked) void _naked_PalettePatcherCallback() {
 	}
 
 	PUSH_ALL;
-	saveStack();
-	logStack();
 	palettePatcherCallback();
 	POP_ALL;
 
 	__asm {
+		ret;
+	}
+}
+
+__declspec(naked) void _naked_PalettePatcherCharDetect() {
+
+	__asm {
+		mov _naked_PalettePatcherCharDetect_playerIndex, eax;
+	};
+
+	// overwritten asm 
+
+	__asm _emit 0x55;
+
+	__asm _emit 0x8B;
+	__asm _emit 0xEC;
+
+	__asm _emit 0x83;
+	__asm _emit 0xE4;
+	__asm _emit 0xF8;
+
+	__asm {
+		push 004899f6h;
 		ret;
 	}
 }
@@ -290,6 +341,7 @@ void initDrawPaletteColumn() {
 void initPalettePatcher() {
 	patchJump(0x0041f7c0, _naked_PalettePatcherHook);
 	patchJump(0x0041f87a, _naked_PalettePatcherCallback);
+	patchJump(0x004899f0, _naked_PalettePatcherCharDetect);
 }
 
 bool initCSSModifications() {
