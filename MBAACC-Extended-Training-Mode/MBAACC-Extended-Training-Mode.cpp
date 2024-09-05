@@ -230,8 +230,6 @@ int main(int argc, char* argv[])
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             std::cout << "                                              ";
 
-
-
             Sleep(100);
             dwBaseAddress = GetBaseAddressByName(hMBAAHandle, L"MBAA.exe");
             LogInfo("Got BaseAddressByName");
@@ -243,6 +241,15 @@ int main(int argc, char* argv[])
             // this is just for my convenience
             if (std::filesystem::exists("C:\\Users\\willf\\WH\\Repos\\MBAACC-Extended-Training-Mode\\MBAACC-Extended-Training-Mode\\Debug\\Extended-Training-Mode-DLL.dll"))
                 sProcessPath = "C:\\Users\\willf\\WH\\Repos\\MBAACC-Extended-Training-Mode\\MBAACC-Extended-Training-Mode\\Debug\\Extended-Training-Mode-DLL.dll";
+
+
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwGameMode), &nReadResult, 4, 0);
+            nGameMode = nReadResult;
+            if (nGameMode != 4112)
+            {
+                continue;
+            }
+
 
             bool bInjectStatus = WH_Inject(PID, sProcessPath);
             if (bInjectStatus)
@@ -260,7 +267,7 @@ int main(int argc, char* argv[])
             SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             std::cout << "Cannot attach to versus mode....\x1b[K";
             //LogInfo("MBAA is in versus mode");
-            //continue;
+            continue;
         }
         else
         {

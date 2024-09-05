@@ -1247,7 +1247,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	}
 
 	
-	log("frame %d", callBackFrameCount);
+	//log("frame %d", callBackFrameCount);
 	callBackFrameCount++;
 
 

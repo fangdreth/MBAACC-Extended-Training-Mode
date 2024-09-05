@@ -46,7 +46,7 @@ float3 RGBtoHSV(float3 rgb)
     // RGB [0..1] to Hue-Saturation-Value [0..1]
     float3 hcv = RGBtoHCV(rgb);
     float s = hcv.y / (hcv.z + EPSILON);
-    return float3(hcv.x, s, hcv.z);
+    return float3(hcv.x, s, hcv.z); 
 }
 
 float3 HSVtoRGB(float3 hsv)
