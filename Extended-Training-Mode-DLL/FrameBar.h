@@ -198,13 +198,30 @@ void UpdateBars(Player& P, Player& Assist)
 		}
 	}
 
+	char cCondition1Type = 0;
+	if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_ConditionCount) > 0)
+	{
+		DWORD dwPointer = *(DWORD*)(P.adPlayerBase + adAnimationDataPointer);
+		if (dwPointer > 0)
+		{
+			dwPointer = *(DWORD*)(dwPointer + adAnimationData_ConditionsPointer);
+			if (dwPointer > 0)
+			{
+				dwPointer = *(DWORD*)(dwPointer + adConditions_Condition1Pointer);
+				if (dwPointer > 0)
+				{
+					cCondition1Type = *(char*)(dwPointer + adCondition_Type);
+				}
+			}
+		}
+	}
+
 	if (*(char*)(P.adPlayerBase + adThrowFlag) != 0) //Being thrown
 	{
 		dwColor = 0xFF6E6E6E;
 		//sBarValue = " t";
 	}
-	else if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_ConditionCount) > 0 &&
-		*(char*)(*(DWORD*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_ConditionsPointer) + adConditions_Condition1Pointer) + adCondition_Type) == 51) //Shield
+	else if (cCondition1Type == 51) //Shield
 	{
 		dwColor = 0xFF91C2FF;
 	}
