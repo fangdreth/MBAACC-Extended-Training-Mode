@@ -308,6 +308,7 @@ void SetFMaidsHearts(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nHearts)
     else
         nHearts = 5 - min(nHearts, MAX_HEARTS);
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1FMaidsHearts), &nHearts, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2FMaidsHearts), &nHearts, 4, 0);
 }
 
 void SetRyougiKnife(HANDLE hMBAAHandle, DWORD dwBaseAddress, bool bInfinite)
