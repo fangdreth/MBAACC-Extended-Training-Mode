@@ -280,6 +280,7 @@ KeyState quoteKey(VK_OEM_7);
 
 KeyState backslashKey(VK_OEM_5);
 
+KeyState F11Key(VK_F11); // reload shader
 KeyState F12Key(VK_F12); // non release caster builds use this
 bool useCustomPalettes = true;
 
@@ -1437,6 +1438,9 @@ void frameDoneCallback()
 		useCustomPalettes = !useCustomPalettes;
 	}
 
+	if (F11Key.keyDown()) {
+		initShaderFromFile();
+	}
 
 	static KeyState hKey('H');
 	static bool bShowHitboxes = false;

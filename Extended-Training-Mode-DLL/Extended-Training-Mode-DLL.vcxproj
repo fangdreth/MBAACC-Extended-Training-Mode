@@ -123,6 +123,9 @@
       <AdditionalDependencies>%(AdditionalDependencies);$(IntDir)\DLLAsmFuncs.obj</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers />
     </Link>
+    <PostBuildEvent>
+      <Command>if not "%MELTYPATH%"=="" (xcopy /y "$(TargetDir)$(TargetFileName)" "%MELTYPATH%")</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -184,6 +187,11 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ml.exe /c /Fo"$(IntDir)/DLLAsmFuncs.obj" DLLAsmFuncs.asm</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/DLLAsmFuncs.obj</Outputs>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="testShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
