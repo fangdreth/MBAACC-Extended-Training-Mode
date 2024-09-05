@@ -435,11 +435,19 @@ void logStack() {
 
 		temp = saveTexture_stack[i];
 
-		//if (temp >= 0x00401000 && temp < 0x0051afff) {
-		//	log("possible ret attr: [esp + %04X] %08X", i * 4, temp);
-		//}
+		if (temp >= 0x00401000 && temp < 0x0051afff) {
+			log("possible ret    attr: [esp + %04X] %08X", i * 4, temp);
+		}
 
-		log("stack: [%08X + %04X] %08X", stackAddr, i * 4, temp);
+		if (temp >= 0x00555130 && temp < 0x555130 + (5 * 0xAFC)) {
+			log("possible char   attr: [esp + %04X] %08X", i * 4, temp);
+		}
+
+		if (temp >= 0x0067bde8 && temp < 0x67bde8 + (1000 * 0x33c)) {
+			log("possible effect attr: [esp + %04X] %08X", i * 4, temp);
+		}
+
+		//log("stack: [%08X + %04X] %08X", stackAddr, i * 4, temp);
 
 		if (temp == 0x0040d355) {
 			break;

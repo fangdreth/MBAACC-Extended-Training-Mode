@@ -145,6 +145,24 @@ constexpr const CharPattern blacklist[] = {
 	{ himeID, 78 }, // misc fly?
 	{ himeID, 77 }, // misc fly?
 
+	{ himeID, 166 }, // 236a, rocks on the ground
+	{ himeID, 168 }, // more rocks
+	{ himeID, 167 }, // more rocks
+
+	{ himeID, 298 }, // AAD
+	{ himeID, 302 }, // AAD
+	{ himeID, 301 }, // AAD
+	{ himeID, 300 }, // AAD
+	{ himeID, 312 }, // AAD
+	{ himeID, 318 }, // AAD
+	{ himeID, 306 }, // AAD
+	{ himeID, 307 }, // AAD
+	{ himeID, 319 }, // AAD
+	{ himeID, 316 }, // AAD
+	{ himeID, 310 }, // AAD
+
+	{ himeID, 277 }, // grab??? what?
+
 	// roog
 
 	// TODO
@@ -177,6 +195,9 @@ constexpr const CharPattern blacklist[] = {
 	{ hisuID, 419 }, // 22 picnic
 	{ hisuID, 420 }, // 22 picnic
 
+	// pceil, her 214s are,,, way to bright? im just disabling them for now. sorry pciel players
+	{ pceilID, 336 }, // 214
+	{ pceilID, 335 }, // 214
 
 	{0xFF, 0} // i was very tired of adding commas to prev lines
 };

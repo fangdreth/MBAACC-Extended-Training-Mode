@@ -60,14 +60,14 @@ float3 HSVtoRGB(float3 hsv)
 float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 	float4 texColor = tex2D(textureSampler, texCoord);
 
-	float3 hcyVal = RGBtoHSV(texColor.rgb);
+	float3 hsvVal = RGBtoHSV(texColor.rgb);
 
-	hcyVal.r = Hue.r;
-	//hcyVal.r = 0.6f;
+	hsvVal.r = Hue.r;
+	//hsvVal.r = 0.6f;
 
-	//hcyVal.r = ActiveColor.r;
+	//hsvVal.r = ActiveColor.r;
 
-	float3 rgbVal = HSVtoRGB(hcyVal.rgb);
+	float3 rgbVal = HSVtoRGB(hsvVal.rgb);
 
 	texColor.rgb = rgbVal;
 
@@ -298,10 +298,18 @@ void drawPrimCallback() {
 DWORD listAppendHook_effectRetAddr = 0;
 DWORD listAppendHook_objAddr = 0;
 DWORD listAppendHook_texAddr = 0;
+
+DWORD listAppendHook_effectRetAddr_pat = 0;
+DWORD listAppendHook_objAddr_pat = 0;
+
 void listAppendHook() {
 	//log("listAppendHook: %08X  objAddr: %08X retAddr: %08X", listAppendHook_texAddr, listAppendHook_objAddr, listAppendHook_effectRetAddr);
 
-	if (listAppendHook_effectRetAddr == 0x0045410F) {
+	if (listAppendHook_effectRetAddr == 0x0045410F || listAppendHook_effectRetAddr_pat == 0x0045410F) {
+
+		if (listAppendHook_effectRetAddr_pat == 0x0045410F) {
+			listAppendHook_objAddr = listAppendHook_objAddr_pat;
+		}
 
 		if (listAppendHook_objAddr >= 0x0067BDE8) { // effect
 			// source is how its listed in the cheat engine file, im not actually sure what it is
@@ -518,8 +526,22 @@ __declspec(naked) void _naked_listAppendHook() {
 		mov eax, [esp + 3E0h];
 		mov listAppendHook_effectRetAddr, eax;
 
+		// this testing is for .pat effects
+		mov eax, [esp + 470h];
+		mov listAppendHook_objAddr_pat, eax;
+
+		mov eax, [esp + 500h];
+		mov listAppendHook_effectRetAddr_pat, eax;
+
 		mov eax, listAppendHook_texAddr;
+
+		//mov stackAddr, esp;
 	};
+
+	//PUSH_ALL;
+	//saveStack();
+	//logStack();
+	//POP_ALL;
 	
 	// down here so it doesnt mess with my above stuff
 	
