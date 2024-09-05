@@ -1719,7 +1719,7 @@ static DWORD GetReturnToMainMenuStringAddress(HANDLE hMBAAHandle, DWORD dwBaseAd
     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwTempAddress + 0x40), &nReadResult, 4, 0);
     dwTempAddress = nReadResult;
     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwTempAddress + 0x24), &nReadResult, 4, 0);
-    dwTempAddress = nReadResult + 0x0;
+    dwTempAddress = nReadResult;
 
     return dwTempAddress;
 }

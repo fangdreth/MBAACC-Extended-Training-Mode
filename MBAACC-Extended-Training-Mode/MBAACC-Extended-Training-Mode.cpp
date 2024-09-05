@@ -108,14 +108,14 @@ int main(int argc, char* argv[])
     uint8_t nPrevSaveSlotKey = nDefaultPrevSaveSlotKey;
     uint8_t nNextSaveSlotKey = nDefaultNextSaveSlotKey;
 
-    bool bFreezeKeySet = true;
-    bool bFrameStepKeySet = true;
-    bool bHitboxDisplayKeySet = true;
-    bool bFrameDataDisplayKeySet = true;
-    bool bHighlightsOnKeySet = true;
-    bool bSaveStateKeySet = true;
-    bool bPrevSaveSlotKey = true;
-    bool bNextSaveSlotKey = true;
+    bool bFreezeKeySet = false;
+    bool bFrameStepKeySet = false;
+    bool bHitboxDisplayKeySet = false;
+    bool bFrameDataDisplayKeySet = false;
+    bool bHighlightsOnKeySet = false;
+    bool bSaveStateKeySet = false;
+    bool bPrevSaveSlotKey = false;
+    bool bNextSaveSlotKey = false;
 
     int nSettingsPage = 1;
     int nHotkeyPage = 1;
@@ -206,27 +206,43 @@ int main(int argc, char* argv[])
     ReadFromRegistry(L"FreezeKey", &nFreezeKey);
     if (MapVirtualKeyW(nFreezeKey, MAPVK_VK_TO_VSC) == 0)
         nFreezeKey = nDefaultFreezeKey;
+    else
+        bFreezeKeySet = true;
     ReadFromRegistry(L"FrameStepKey", &nFrameStepKey);
     if (MapVirtualKeyW(nFrameStepKey, MAPVK_VK_TO_VSC) == 0)
         nFrameStepKey = nDefaultFrameDataDisplayKey;
+    else
+        bFrameStepKeySet = true;
     ReadFromRegistry(L"HitboxesDisplayKey", &nHitboxDisplayKey);
     if (MapVirtualKeyW(nHitboxDisplayKey, MAPVK_VK_TO_VSC) == 0)
         nHitboxDisplayKey = nDefaultHitboxDisplayKey;
+    else
+        bHitboxDisplayKeySet = true;
     ReadFromRegistry(L"FrameDataDisplayKey", &nFrameDataDisplayKey);
     if (MapVirtualKeyW(nFrameDataDisplayKey, MAPVK_VK_TO_VSC) == 0)
         nFrameDataDisplayKey = nDefaultFrameDataDisplayKey;
+    else
+        bFrameDataDisplayKeySet = true;
     ReadFromRegistry(L"HighlightsOnKey", &nHighlightsOnKey);
     if (MapVirtualKeyW(nHighlightsOnKey, MAPVK_VK_TO_VSC) == 0)
         nHighlightsOnKey = nDefaultHighlightsOnKey;
+    else
+        bHighlightsOnKeySet = true;
     ReadFromRegistry(L"SaveStateKey", &nSaveStateKey);
     if (MapVirtualKeyW(nSaveStateKey, MAPVK_VK_TO_VSC) == 0)
         nSaveStateKey = nDefaultSaveStateKey;
+    else
+        bSaveStateKeySet = true;
     ReadFromRegistry(L"PrevSaveSlotKey", &nPrevSaveSlotKey);
     if (MapVirtualKeyW(nPrevSaveSlotKey, MAPVK_VK_TO_VSC) == 0)
         nPrevSaveSlotKey = nDefaultPrevSaveSlotKey;
+    else
+        bPrevSaveSlotKey = true;
     ReadFromRegistry(L"NextSaveSlotKey", &nNextSaveSlotKey);
     if (MapVirtualKeyW(nNextSaveSlotKey, MAPVK_VK_TO_VSC) == 0)
         nNextSaveSlotKey = nDefaultNextSaveSlotKey;
+    else
+        bNextSaveSlotKey = true;
     ReadFromRegistry(L"FrameDisplay", &nFrameData);
     if (nFrameData == FRAMEDISPLAY_NORMAL)
     {
@@ -456,7 +472,7 @@ int main(int argc, char* argv[])
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwReduceRecovery), &nWriteBuffer, 4, 0);
                         
                     DWORD dwReturnToMainMenuString = GetReturnToMainMenuStringAddress(hMBAAHandle, dwBaseAddress);
-                    char pcConfigureKeys[19] = "CONFIGURE KEYS";
+                    char pcConfigureKeys[19] = "HOTKEY SETTINGS";
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReturnToMainMenuString), &pcConfigureKeys, 19, 0);
 #ifdef sadly_obsolete
                     // Replace the RETURN TO MAIN MENU option with fancy scrolling text
@@ -2946,13 +2962,15 @@ int main(int argc, char* argv[])
                                     ResetKeysHeld();
                                     bFreezeKeySet = false;
                                     nFreezeKey = 0;
-                                    //SetRegistryValue(L"FreezeKey", nFreezeKey);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeKey), &nFreezeKey, 1, 0);
+                                    SetRegistryValue(L"FreezeKey", nFreezeKey);
                                 }
                                 else if (nEnemySettingsCursor == 2)
                                 {
                                     ResetKeysHeld();
                                     bFrameStepKeySet = false;
                                     nFrameStepKey = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameStepKey), &nFrameStepKey, 1, 0);
                                     SetRegistryValue(L"FrameStepKey", nFrameStepKey);
                                 }
                                 else if (nEnemySettingsCursor == 3)
@@ -2960,6 +2978,7 @@ int main(int argc, char* argv[])
                                     ResetKeysHeld();
                                     bHitboxDisplayKeySet = false;
                                     nHitboxDisplayKey = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxesDisplayKey), &nHitboxDisplayKey, 1, 0);
                                     SetRegistryValue(L"HitboxesDisplayKey", nHitboxDisplayKey);
                                 }
                                 else if (nEnemySettingsCursor == 5)
@@ -2967,6 +2986,7 @@ int main(int argc, char* argv[])
                                     ResetKeysHeld();
                                     bFrameDataDisplayKeySet = false;
                                     nFrameDataDisplayKey = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplayKey), &nFrameDataDisplayKey, 1, 0);
                                     SetRegistryValue(L"FrameDataDisplayKey", nFrameDataDisplayKey);
                                 }
                                 else if (nEnemySettingsCursor == 6)
@@ -2974,6 +2994,7 @@ int main(int argc, char* argv[])
                                     ResetKeysHeld();
                                     bHighlightsOnKeySet = false;
                                     nHighlightsOnKey = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlightsOnKey), &nHighlightsOnKey, 1, 0);
                                     SetRegistryValue(L"HighlightsOnKey", nHighlightsOnKey);
                                 }
                                 break;
@@ -2985,6 +3006,7 @@ int main(int argc, char* argv[])
                                     ResetKeysHeld();
                                     bSaveStateKeySet = false;
                                     nSaveStateKey = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveStateKey), &nSaveStateKey, 1, 0);
                                     SetRegistryValue(L"SaveStateKey", nSaveStateKey);
                                 }
                                 else if (nEnemySettingsCursor == 2)
@@ -2992,6 +3014,7 @@ int main(int argc, char* argv[])
                                     ResetKeysHeld();
                                     bPrevSaveSlotKey = false;
                                     nPrevSaveSlotKey = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevSaveSlotKey), &nPrevSaveSlotKey, 1, 0);
                                     SetRegistryValue(L"PrevSaveSlotKey", nPrevSaveSlotKey);
                                 }
                                 else if (nEnemySettingsCursor == 3)
@@ -2999,6 +3022,7 @@ int main(int argc, char* argv[])
                                     ResetKeysHeld();
                                     bNextSaveSlotKey = false;
                                     nNextSaveSlotKey = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedNextSaveSlotKey), &nNextSaveSlotKey, 1, 0);
                                     SetRegistryValue(L"NextSaveSlotKey", nNextSaveSlotKey);
                                 }
                                 else if (nEnemySettingsCursor == 5)

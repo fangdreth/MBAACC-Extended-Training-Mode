@@ -417,6 +417,8 @@ const char pcSaveState_15[15] = "SAVE STATE KEY";
 const char pcPrevSaveSlot_19[19] = "PREV SAVE SLOT KEY";
 const char pcNextSaveSlot_19[19] = "NEXT SAVE SLOT KEY";
 
+#define VK_KEY_UNSET 0x0;
+
 #define VK_KEY_0 0x30
 #define VK_KEY_1 0x31
 #define VK_KEY_2 0x32
@@ -455,14 +457,14 @@ const char pcNextSaveSlot_19[19] = "NEXT SAVE SLOT KEY";
 #define VK_KEY_Y 0x59
 #define VK_KEY_Z 0x5A
 
-const int nDefaultFreezeKey = VK_KEY_4;
-const int nDefaultFrameStepKey = VK_KEY_5;
-const int nDefaultHitboxDisplayKey = VK_KEY_6;
-const int nDefaultFrameDataDisplayKey = VK_KEY_7;
-const int nDefaultHighlightsOnKey = VK_KEY_8;
-const int nDefaultSaveStateKey = VK_KEY_1;
-const int nDefaultPrevSaveSlotKey = VK_KEY_2;
-const int nDefaultNextSaveSlotKey = VK_KEY_3;
+const int nDefaultFreezeKey = VK_KEY_UNSET;
+const int nDefaultFrameStepKey = VK_KEY_UNSET;
+const int nDefaultHitboxDisplayKey = VK_KEY_UNSET;
+const int nDefaultFrameDataDisplayKey = VK_KEY_UNSET;
+const int nDefaultHighlightsOnKey = VK_KEY_UNSET;
+const int nDefaultSaveStateKey = VK_KEY_UNSET;
+const int nDefaultPrevSaveSlotKey = VK_KEY_UNSET;
+const int nDefaultNextSaveSlotKey = VK_KEY_UNSET;
 
 class KeyState
 {
@@ -492,7 +494,7 @@ public:
 	}
 
 	bool keyHeld() {
-		return (GetAsyncKeyState(vKey) & 0x8000) ? true : false;
+		return (vKey != 0x0 && GetAsyncKeyState(vKey) & 0x8000) ? true : false;
 	}
 
 	bool keyDown() {
@@ -504,7 +506,7 @@ public:
 		}
 		prevState = tempState;
 
-		if (!isFocused()) {
+		if (vKey == 0x0 || !isFocused()) {
 			return false;
 		}
 
