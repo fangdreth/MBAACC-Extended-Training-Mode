@@ -1269,7 +1269,7 @@ void frameDoneCallback()
 	{
 		static char buffer[256];
 
-		drawTextWithBorder(243, 470, 10, 10, pcTextToDisplay);
+		drawTextWithBorder(243, 460, 15, 15, pcTextToDisplay);
 
 		/*if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
 		{

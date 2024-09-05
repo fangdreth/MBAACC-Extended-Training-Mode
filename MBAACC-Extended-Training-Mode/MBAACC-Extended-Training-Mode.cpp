@@ -671,14 +671,25 @@ int main(int argc, char* argv[])
                             if (nEnemySettingsCursor == 0)
                             {
                                 ClearSave(nSaveSlot);
+
+                                char pcMessageBuffer[32] = "CLEARED SAVE";
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
                             }
                             else if (nEnemySettingsCursor == 2)
                             {
+                                if (nSaveSlot == 0)
+                                {
+                                    char pcMessageBuffer[32] = "NO SLOT SELECTED";
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
+                                }
                                 SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
                             }
                             else if (nEnemySettingsCursor == 3)
                             {
                                 ClearAllSaves();
+                                
+                                char pcMessageBuffer[32] = "CLEARED ALL SAVES";
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
                             }
                             if (nEnemySettingsCursor == 5)
                             {
