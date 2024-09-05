@@ -163,11 +163,6 @@ constexpr const CharPattern blacklist[] = {
 
 	{ himeID, 277 }, // grab??? what?
 
-	// roog
-
-	// TODO
-	{ roogID, 20 }, // blinker
-
 	// arc
 
 	// TODO
@@ -179,12 +174,199 @@ constexpr const CharPattern blacklist[] = {
 	{ arcID, 115 }, // last arc
 	{ arcID, 118 }, // last arc
 
-	// kohamech (H: 214C, 624C
+	// pceil, her 214s are,,, way to bright? im just disabling them for now. sorry pciel players
+
+	{ pceilID, 336 }, // 214
+	{ pceilID, 335 }, // 214
+
+	// aoko
+
+	{ aokoID, 161 }, // last arc
+	{ aokoID, 160 }, // last arc
+	{ aokoID, 167 }, // last arc
+	{ aokoID, 159 }, // last arc
+	{ aokoID, 162 }, // last arc
+	{ aokoID, 163 }, // last arc
+	{ aokoID, 164 }, // last arc
+	{ aokoID, 165 }, // last arc
+
+	// ceil
+
+	{ ceilID, 201 }, // AD/AAD, her cape shouldnt change color
+	{ ceilID, 202 }, // AD/AAD, her cape shouldnt change color
+	{ ceilID, 207 }, // what is this? more needs to be looked into 
+
+	// ries
+
+	{ riesID , 500 }, // last arc
+	{ riesID , 496 }, // last arc
+	{ riesID , 505 }, // AAD bg
+
+	// vsion
+
+	{ vsionID, 505 }, // last arc
+	{ vsionID, 506 }, // last arc
+	{ vsionID, 507 }, // last arc
+	{ vsionID, 508 }, // last arc
+	{ vsionID, 509 }, // last arc
+	{ vsionID, 510 }, // last arc
+	{ vsionID, 511 }, // last arc
+	{ vsionID, 512 }, // last arc
+	{ vsionID, 513 }, // last arc
+	{ vsionID, 514 }, // last arc
+	{ vsionID, 515 }, // last arc
+	{ vsionID, 516 }, // last arc
+	{ vsionID, 517 }, // last arc
+	{ vsionID, 518 }, // last arc
+
+	{ vsionID, 206 }, // AAD
+	{ vsionID, 209 }, // AAD
+
+	// i should maybe disable the coloration on her summons
+
+	// wara
+
+	{ waraID, 83 }, // last arc, 81 and 82 maybe should get it as well?
+	{ waraID, 82 },
+	{ waraID, 81 },
+	{ waraID, 84 },
+	{ waraID, 85 },
+	{ waraID, 86 },
+	{ waraID, 87 },
+	{ waraID, 88 },
+
+	{ waraID, 156 }, // AD
+
+	// roa 
+
+	{ roaID, 198 }, // last arc bg
+	{ roaID, 196 }, // last arc
+	{ roaID, 195 }, // last arc
+
+	{ roaID, 169 }, // AD BG
+
+	{ roaID, 155 }, // AD
+	{ roaID, 156 }, // AD
+	{ roaID, 157 }, // AD
+	{ roaID, 177 }, // AD
+	{ roaID, 171 }, // AD
+	{ roaID, 172 }, // AD
+	{ roaID, 173 }, // AD
+
+	{ roaID, 160 }, // AAD
+	{ roaID, 161 }, // AAD
+	{ roaID, 162 }, // AAD
+	{ roaID, 163 }, // AAD
+	{ roaID, 164 }, // AAD
+	{ roaID, 165 }, // AAD
+	{ roaID, 166 }, // AAD
+	{ roaID, 167 }, // AAD
+
+	{ roaID, 184 }, // AAD
+	{ roaID, 185 }, // AAD
+
+	// maids. this is a confusing case. can i ,,,, duplicate hisu and koha stuff here? or like, will i have to do them seperately
+
+	// all maids, koha, hisui, mech, and neco need to be looked over
+	// check and see if can just,,, apply all maids blacklists to both maids? i think i can?
+
+	// hisumaids
+
+	{ maidsID, 153 }, // last arc when on hisui, are they different per char?
+	{ maidsID, 139 },	
+	{ maidsID, 140 },
+	{ maidsID, 141 },
+	{ maidsID, 142 },
+	{ maidsID, 143 },
+	{ maidsID, 144 },
+	{ maidsID, 145 },
+	{ maidsID, 146 },
+	{ maidsID, 147 },
+	{ maidsID, 148 },
+	{ maidsID, 154 },
+	{ maidsID, 155 }, 
+
+	{ maidsID, 98 }, // jc table
+	{ maidsID, 96 }, // jc table
+	{ maidsID, 90 }, // jc table
+	{ maidsID, 91 }, // jc table
+	{ maidsID, 92 }, // jc table
+	{ maidsID, 93 }, // jc table
+	{ maidsID, 94 }, // jc table
+	{ maidsID, 95 }, // jc table
+
+	{ maidsID, 45 }, // charge 5c chair
+	{ maidsID, 46 }, // charge 5c chair
+	{ maidsID, 47 }, // charge 5c chair
+
+	{ maidsID, 414 }, // 22 picnic
+	{ maidsID, 415 }, // 22 picnic
+	{ maidsID, 416 }, // 22 picnic
+
+	{ maidsID, 418 }, // 22 picnic
+	{ maidsID, 419 }, // 22 picnic
+	{ maidsID, 420 }, // 22 picnic
+	{ maidsID, 423 }, // 22 picnic
+	{ maidsID, 424 }, // 22 picnic
+	{ maidsID, 481 }, // 22c picnic when it hits???
+
+	{ maidsID, 202 }, // hisui AAD arms
+	{ maidsID, 201 }, // hisui AAD arms
+
+	{ maidsID, 431 }, // fmoon hisui 22 chair
+	{ maidsID, 432 }, // fmoon hisui 22 chair
+	{ maidsID, 433 }, // fmoon hisui 22 chair
+	{ maidsID, 434 }, // fmoon hisui 22 chair
+	{ maidsID, 435 }, // fmoon hisui 22 chair
 	
+	{ maidsID, 438 }, // fmoon hisui 22 chair
+	{ maidsID, 439 }, // fmoon hisui 22 chair
+	{ maidsID, 440 }, // fmoon hisui 22 chair
+	{ maidsID, 441 }, // fmoon hisui 22 chair
+	{ maidsID, 442 }, // fmoon hisui 22 chair
+	
+	{ maidsID, 446 }, // fmoon hisui 22 chair
+	{ maidsID, 447 }, // fmoon hisui 22 chair
+	{ maidsID, 448 }, // fmoon hisui 22 chair
+	{ maidsID, 449 }, // fmoon hisui 22 chair
+	{ maidsID, 450 }, // fmoon hisui 22 chair
 
-	// mech	, jetpack, 236
+	// kohamaids
 
-	// hisui arc drive, arms
+	{ maidsID, 183 }, // koha last arc
+	{ maidsID, 184 }, 
+	{ maidsID, 185 }, 
+	{ maidsID, 186 },
+	{ maidsID, 169 }, 
+
+	// koha plants
+	{ maidsID, 129 }, // koha 22
+	{ maidsID, 130 }, // koha 22
+	{ maidsID, 131 }, // koha 22
+	{ maidsID, 132 }, // koha 22
+	{ maidsID, 133 }, // koha 22
+	{ maidsID, 134 }, // koha 22
+	{ maidsID, 135 }, // koha 22
+	{ maidsID, 136 }, // koha 22
+	{ maidsID, 460 }, // koha 22
+	{ maidsID, 462 }, // koha 22
+
+	{ maidsID, 202 }, // koha AAD
+	{ maidsID, 203 }, // koha AAD
+	{ maidsID, 228 }, // koha AAD
+	{ maidsID, 212 }, // koha AAD
+	{ maidsID, 213 }, // koha AAD
+	{ maidsID, 214 }, // koha AAD
+	{ maidsID, 226 }, // koha AAD
+
+	// koha pretzel oh no i cant even input that
+
+
+	// the things for each koha could probs/should be copied to each maid
+
+
+	// hisui 
+
 	{ hisuID, 202 }, // arms
 	{ hisuID, 201 }, // arms
 	{ hisuID, 414 }, // 22 picnic
@@ -194,10 +376,146 @@ constexpr const CharPattern blacklist[] = {
 	{ hisuID, 418 }, // 22 picnic
 	{ hisuID, 419 }, // 22 picnic
 	{ hisuID, 420 }, // 22 picnic
+	{ hisuID, 423 }, // 22 picnic
+	{ hisuID, 424 }, // 22 picnic
+	{ hisuID, 481 }, // 22c picnic when it hits???
 
-	// pceil, her 214s are,,, way to bright? im just disabling them for now. sorry pciel players
-	{ pceilID, 336 }, // 214
-	{ pceilID, 335 }, // 214
+	{ hisuID, 431 }, // fmoon hisui 22 chair
+	{ hisuID, 432 }, // fmoon hisui 22 chair
+	{ hisuID, 433 }, // fmoon hisui 22 chair
+	{ hisuID, 434 }, // fmoon hisui 22 chair
+	{ hisuID, 435 }, // fmoon hisui 22 chair
+	  
+	{ hisuID, 438 }, // fmoon hisui 22 chair
+	{ hisuID, 439 }, // fmoon hisui 22 chair
+	{ hisuID, 440 }, // fmoon hisui 22 chair
+	{ hisuID, 441 }, // fmoon hisui 22 chair
+	{ hisuID, 442 }, // fmoon hisui 22 chair
+		
+	{ hisuID, 446 }, // fmoon hisui 22 chair
+	{ hisuID, 447 }, // fmoon hisui 22 chair
+	{ hisuID, 448 }, // fmoon hisui 22 chair
+	{ hisuID, 449 }, // fmoon hisui 22 chair
+	{ hisuID, 450 }, // fmoon hisui 22 chair
+
+	// koha
+
+	{ kohaID, 183 }, // koha last arc
+	{ kohaID, 184 },
+	{ kohaID, 185 },
+	{ kohaID, 186 },
+	{ kohaID, 169 },
+
+	// koha plants
+	{ kohaID, 129 }, // koha 22
+	{ kohaID, 130 }, // koha 22
+	{ kohaID, 131 }, // koha 22
+	{ kohaID, 132 }, // koha 22
+	{ kohaID, 133 }, // koha 22
+	{ kohaID, 134 }, // koha 22
+	{ kohaID, 135 }, // koha 22
+	{ kohaID, 136 }, // koha 22
+	{ kohaID, 460 }, // koha 22
+	{ kohaID, 462 }, // koha 22
+
+	{ kohaID, 202 }, // koha AAD
+	{ kohaID, 203 }, // koha AAD
+	{ kohaID, 228 }, // koha AAD
+	{ kohaID, 212 }, // koha AAD
+	{ kohaID, 213 }, // koha AAD
+	{ kohaID, 214 }, // koha AAD
+	{ kohaID, 226 }, // koha AAD
+
+	// kohamech (H: 214C, 624C
+
+	// mech	todo, her rare summons?
+
+	{ mechID, 134 }, // j214
+	
+	{ mechID, 110 }, // jetpack
+	{ mechID, 113 }, // jetpack
+	{ mechID, 116 }, // jetpack
+	{ mechID, 117 }, // jetpack
+	{ mechID, 118 }, // jetpack
+	{ mechID, 119 }, // jetpack
+
+	{ mechID, 98 }, // j22c dropped weapon
+
+	{ mechID, 218 }, // the GOONS
+	{ mechID, 219 }, // the GOONS
+	{ mechID, 220 }, // the GOONS
+
+	{ mechID, 45 }, // chainsaw on floor, its dark so doesnt show but still
+
+	// aki
+
+	{ akiID, 212 }, // last arc
+	//{ akiID, 240 }, // last arc (maybe?
+	//{ akiID, 241 }, // last arc (maybe?
+	//{ akiID, 242 }, // last arc (maybe?
+	//{ akiID, 243 }, // last arc (maybe?
+	//{ akiID, 244 }, // last arc (maybe?
+	//{ akiID, 245 }, // last arc (maybe?
+	//{ akiID, 246 }, // last arc (maybe?
+
+	// warc
+	{ warcID, 220 }, // chains in last arc
+	{ warcID, 221 }, // chains in last arc
+
+	{ warcID, 155 }, // teleport afterimage
+	{ warcID, 156 }, // teleport afterimage
+	{ warcID, 157 }, // teleport afterimage
+	{ warcID, 158 }, // teleport afterimage
+	{ warcID, 159 }, // teleport afterimage
+	{ warcID, 160 }, // teleport afterimage
+	{ warcID, 161 }, // teleport afterimage
+	{ warcID, 162 }, // teleport afterimage
+
+	// vaki
+
+	{ vakiID, 537 }, // last arc
+
+	// roog
+
+	{ roogID, 20 }, // blinker
+	{ roogID, 608 }, // last arc bg
+	{ roogID, 640 }, // last arc 
+
+	// nero 
+
+	{ neroID, 202 }, // last arc
+	{ neroID, 203 }, // last arc
+	{ neroID, 169 }, // last arc
+	{ neroID, 175 }, // AAD
+	{ neroID, 178 }, // AAD
+
+	// nac
+
+	{ nacID, 115 }, // lil neros on 214
+	
+	{ nacID, 162 }, // last arc
+	{ nacID, 163 }, // last arc
+	
+	{ nacID, 233 }, // AAD
+	{ nacID, 234 }, // AAD
+	{ nacID, 235 }, // AD
+	{ nacID, 236 }, // AD
+	{ nacID, 237 }, // AAD
+
+	// nec
+
+	{ necoID, 115 }, // lil necos on 214
+
+	{ necoID, 162 }, // last arc
+	{ necoID, 163 }, // last arc
+
+	{ necoID, 219 }, // AD
+	{ necoID, 220 }, // AD
+	{ necoID, 225 }, // AAD
+	{ necoID, 203 }, // AAD
+	{ necoID, 204 }, // AAD
+
+	// things are pretty much done, but more work needs to be done on assist/dual chars
 
 	{0xFF, 0} // i was very tired of adding commas to prev lines
 };
