@@ -349,6 +349,7 @@ void listAppendHook() {
 					// this prevents heat from making things weird
 					// warc AAD still causes rave, but tbh im keeping that in
 					// this almost definitely messes something else up. only thing that will help is per char testing, and tbh per char pattern checks.
+					//log("heat shortcut");
 					return;
 				}
 

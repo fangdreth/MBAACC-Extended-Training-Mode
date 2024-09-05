@@ -87,7 +87,12 @@ constexpr const CharPattern blacklist[] = {
 
 	{ lenID, 183 }, // clen cake (last arc)
 
+	{ lenID, 468 }, // bonk hammer
+
 	// wlen
+
+	// todo, need to check out her icicles
+	// grounded 236a, uncharged, icicle is colored, it breaking isnt. why??
 
 	{ wlenID, 170 }, // dash forward
 	{ wlenID, 173 }, // dash forward
@@ -111,8 +116,67 @@ constexpr const CharPattern blacklist[] = {
 	{ wlenID, 153 }, // AAD
 	{ wlenID, 155 }, // AAD
 
+	{ wlenID, 496 }, // hwlen 22b
 
-	// TODO, HWLEN, FWLEN (RECHECK CWLEN)
+	// nanana
+
+	{ nanaID, 206 }, // AAD
+	{ nanaID, 501 }, // H 623C
+	
+	// hime 
+
+	// TODO, FINISH THIS UP
+	{ himeID, 143 }, // 214C
+	{ himeID, 144 }, // 214C
+	{ himeID, 145 }, // 214C
+	{ himeID, 146 }, // 214C
+
+	{ himeID, 147 }, // 214A-A
+	{ himeID, 148 }, // 214A-A
+	{ himeID, 149 }, // 214A-A
+
+	{ himeID, 150 }, // 214A-A
+	{ himeID, 151 }, // 214A-A
+	{ himeID, 152 }, // 214A-A
+
+	{ himeID, 76 }, // fly
+	{ himeID, 208}, // fly
+	{ himeID, 209 }, // fly
+	{ himeID, 78 }, // misc fly?
+	{ himeID, 77 }, // misc fly?
+
+	// roog
+
+	// TODO
+	{ roogID, 20 }, // blinker
+
+	// arc
+
+	// TODO
+	{ arcID, 125 }, // 214
+	{ arcID, 126 }, // 214
+	{ arcID, 127 }, // 214
+
+	{ arcID, 116 }, // lil hime
+	{ arcID, 115 }, // last arc
+	{ arcID, 118 }, // last arc
+
+	// kohamech (H: 214C, 624C
+	
+
+	// mech	, jetpack, 236
+
+	// hisui arc drive, arms
+	{ hisuID, 202 }, // arms
+	{ hisuID, 201 }, // arms
+	{ hisuID, 414 }, // 22 picnic
+	{ hisuID, 415 }, // 22 picnic
+	{ hisuID, 416 }, // 22 picnic
+
+	{ hisuID, 418 }, // 22 picnic
+	{ hisuID, 419 }, // 22 picnic
+	{ hisuID, 420 }, // 22 picnic
+
 
 	{0xFF, 0} // i was very tired of adding commas to prev lines
 };
@@ -137,7 +201,7 @@ constexpr auto textureModificationData = []() constexpr -> auto {
 	}
 
 	for (size_t i = 0; i < blacklistLen; ++i) {
-		res[blacklist[i].charID][blacklist[i].pattern / 125] |= (1 << (blacklist[i].pattern % 8));
+		res[blacklist[i].charID][blacklist[i].pattern / 8] |= (1 << (blacklist[i].pattern % 8));
 	}
 
 	return res;
@@ -199,13 +263,21 @@ bool shouldThisBeColored(BYTE charID, DWORD pattern) {
 		return false;
 	}
 	
-	BYTE temp = textureModificationData[index][pattern / 125];
+	BYTE temp = textureModificationData[index][pattern / 8];
 
-	//log("byte is %02X", temp);
+	bool printCond = pattern == 128;
+
+	printCond = false;
+
+	if (printCond) {
+		log("index: %02X byte is %02X", index, temp);
+	}
 
 	temp >>= (pattern % 8);
 
-	//log("ret is %d", !(temp & 1));
+	if (printCond) {
+		log("ret is %d", !(temp & 1));
+	}
 
 	return !(temp & 1);
 }
