@@ -171,6 +171,7 @@
     <ClInclude Include="D3DHooks.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="textureModification.h" />
+    <ClInclude Include="textureModificationData.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />

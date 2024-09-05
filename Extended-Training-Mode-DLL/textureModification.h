@@ -3,6 +3,8 @@
 #include <set>
 #include <map>
 
+#include "textureModificationData.h"
+
 unsigned textureFrameCount = 0;
 
 extern IDirect3DDevice9* device;
@@ -60,10 +62,10 @@ float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 
 	float3 hcyVal = RGBtoHSV(texColor.rgb);
 
-	//hcyVal.r = Hue.r;
+	hcyVal.r = Hue.r;
 	//hcyVal.r = 0.6f;
 
-	hcyVal.r = ActiveColor.r;
+	//hcyVal.r = ActiveColor.r;
 
 	float3 rgbVal = HSVtoRGB(hcyVal.rgb);
 
@@ -331,105 +333,33 @@ void listAppendHook() {
 				// blend mode addr
 				blendMode = *(BYTE*)(_animDataPtr + 0x1B);
 				
-				DWORD boxPtr1 = *(DWORD*)(_animDataPtr + 0x4C);
-				DWORD boxPtr2 = *(DWORD*)(_animDataPtr + 0x50);
-				
-				if (boxPtr1 == 0 && boxPtr2 == 0) {
-					// this is probs, very, very stupid
-					//return;
-					ActiveColor.x = 0.83f;
-				}
-				else {
-					ActiveColor.x = 0.16f;
+
+				BYTE owner = *(BYTE*)(listAppendHook_objAddr - 0x10 + 0x02F4);
+			
+				BYTE charID;
+
+				if (owner == 0) {
+					charID = *(BYTE*)0x555135;
+				} else {
+					charID = *(BYTE*)0x555C31;
 				}
 
-				device->SetPixelShaderConstantF(220, (float*)&ActiveColor, 1);
-				
 				if (*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x20) == 0x00000101) {
 					// im just looking for patterns here
 					// this prevents heat from making things weird
 					// warc AAD still causes rave, but tbh im keeping that in
+					// this almost definitely messes something else up. only thing that will help is per char testing, and tbh per char pattern checks.
 					return;
 				}
 
-
-				log(
-				"0C: %08X "
-				"20: %08X "
-				"24: %08X "
-				"28: %08X "
-
-				"64: %08X "
-				"68: %08X "
-				"6C: %08X "
-				"70: %08X "
-				, 
-				* (DWORD*)(listAppendHook_objAddr - 0x10 + 0xC),
-				*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x20),
-				*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x24),
-				*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x28),
-
-				* (DWORD*)(listAppendHook_objAddr - 0x10 + 0x64),
-				* (DWORD*)(listAppendHook_objAddr - 0x10 + 0x68),
-				* (DWORD*)(listAppendHook_objAddr - 0x10 + 0x6C),
-				* (DWORD*)(listAppendHook_objAddr - 0x10 + 0x70)
-				);
-				
-
-				/*
-				got data: 0C: 00000000 20: 01000000 24: 00000000 28: 00000000 2C: 00000000 30: 00000000 34: 00000000 38: 00000000 3C: 00000000 40: 00000000 44: 00000000 48: 00000000 4C: 00000000
-				got data: 0C: 00000000 20: 00000000 24: 00010800 28: 00010000 2C: 00000000 30: 00000000 34: 00000000 38: 00000000 3C: 00000000 40: 00000000 44: 00000000 48: 00000000 4C: 00000000
-
-				got data: 0C: 00000000 20: 00000001 24: 00000000 28: 00000000 2C: 00000000 30: 00000000 34: 00000000 38: 00000000 3C: 00000000 40: 00000000 44: 00000000 48: 00000000 4C: 00000000
-				got data: 0C: 00000000 20: 00000000 24: 00010700 28: 00010000 2C: 00000000 30: 00000000 34: 00000000 38: 00000000 3C: 00000000 40: 00000000 44: 00000000 48: 00000000 4C: 00000000
-
-
-
-				*/
-				
-				/*
-				if (*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x28) == 0x00000001) {
-					// this fixes ckouma's grounded 22B
-					// and probs breaks a bunch of other shit
-					return;
-				}
-				*/
-
-				// new theory.
-				// if something doesnt have any boxes,,, dont color it?
-
-
-
-				/*
-				if (*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x24) == 0x00410000) {
-					// this fixes ckouma's grounded 22B
+				if (!shouldThisBeColored(charID, pattern)) {
 					return;
 				}
 
-				if (*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x20) == 0x00000001) {
-					// this fixes ????
-					return;
-				}
-				*/
-				
-				
-				//log("pattern: %d state: %d", pattern, state);
+				log("char: %3d pattern: %5d", charID, pattern);
 
-				// heat is done by cloning a sprite of the char, and having it as an effect. thats very annoying
-
-				// this testing was done on cwarc. is it different per char? (please dont be)
-				// or like,,, idk there must be something else different
-				// maybe i should,,, avoid overwriting the shader or something?
+				textureAddrs.insert({ listAppendHook_texAddr, TextureModification(blendMode)});
 				
-
-				//log("obj: %08X", listAppendHook_objAddr);
-				//if (blendMode == 0) { // for now, disable these. where is blend mode passed into a func to be used? 
-					// changing it by this point is to late i believe, but it HAS to be put somewhere during this func!!
-					// or somewhere else farther down the pipeline, or i find what actually is causing it
-					// worst case scenario, and alternate shader could be written
-					// actually, what should happen is piping that variable INTO the shader.
-					textureAddrs.insert({ listAppendHook_texAddr, TextureModification(blendMode)});
-				//}
 			}
 
 		} else { // char? possibly or the hit effects
