@@ -107,6 +107,8 @@ int main(int argc, char* argv[])
     uint8_t nSaveStateKey = nDefaultSaveStateKey;
     uint8_t nPrevSaveSlotKey = nDefaultPrevSaveSlotKey;
     uint8_t nNextSaveSlotKey = nDefaultNextSaveSlotKey;
+    uint8_t nFrameBarScrollLeftKey = nDefaultFrameBarScrollLeftKey;
+    uint8_t nFrameBarScrollRightKey = nDefaultFrameBarScrollRightKey;
 
     bool bFreezeKeySet = false;
     bool bFrameStepKeySet = false;
@@ -116,6 +118,8 @@ int main(int argc, char* argv[])
     bool bSaveStateKeySet = false;
     bool bPrevSaveSlotKey = false;
     bool bNextSaveSlotKey = false;
+    bool bFrameBarScrollLeftKey = false;
+    bool bFrameBarScrollRightKey = false;
 
     int nSettingsPage = 1;
     int nHotkeyPage = 1;
@@ -243,6 +247,16 @@ int main(int argc, char* argv[])
         nNextSaveSlotKey = nDefaultNextSaveSlotKey;
     else
         bNextSaveSlotKey = true;
+    ReadFromRegistry(L"FrameBarScrollLeftKey", &nFrameBarScrollLeftKey);
+    if (MapVirtualKeyW(nFrameBarScrollLeftKey, MAPVK_VK_TO_VSC) == 0)
+        nFrameBarScrollLeftKey = nDefaultFrameBarScrollLeftKey;
+    else
+        bFrameBarScrollLeftKey = true;
+    ReadFromRegistry(L"FrameBarScrollRightKey", &nFrameBarScrollRightKey);
+    if (MapVirtualKeyW(nFrameBarScrollRightKey, MAPVK_VK_TO_VSC) == 0)
+        nFrameBarScrollRightKey = nDefaultFrameBarScrollRightKey;
+    else
+        bFrameBarScrollRightKey = true;
     ReadFromRegistry(L"FrameDisplay", &nFrameData);
     if (nFrameData == FRAMEDISPLAY_NORMAL)
     {
@@ -339,6 +353,8 @@ int main(int argc, char* argv[])
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveStateKey), &nSaveStateKey, 1, 0);
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevSaveSlotKey), &nPrevSaveSlotKey, 1, 0);
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedNextSaveSlotKey), &nNextSaveSlotKey, 1, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollLeftKey), &nFrameBarScrollLeftKey, 1, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollRightKey), &nFrameBarScrollRightKey, 1, 0);
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayFreeze), &bDisplayFreeze, 1, 0);
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayInputs), &bDisplayInputs, 1, 0);
@@ -472,8 +488,8 @@ int main(int argc, char* argv[])
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwReduceRecovery), &nWriteBuffer, 4, 0);
                         
                     DWORD dwReturnToMainMenuString = GetReturnToMainMenuStringAddress(hMBAAHandle, dwBaseAddress);
-                    char pcConfigureKeys[19] = "HOTKEYS";
-                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReturnToMainMenuString), &pcConfigureKeys, 19, 0);
+                    char pcHotkeys[19] = "HOTKEYS";
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReturnToMainMenuString), &pcHotkeys, 19, 0);
 #ifdef sadly_obsolete
                     // Replace the RETURN TO MAIN MENU option with fancy scrolling text
                     // this is 100% unnecessary but I did it for fun
@@ -518,7 +534,7 @@ int main(int argc, char* argv[])
 #endif
                 }
 
-                // Turn VIEW SCREEN into EXTENDED SETTINGS
+                // Turn COMMAND LIST into EXTENDED SETTINGS
                 DWORD dwTrainingMenuCursor = GetTrainingMenuCursorAddress(hMBAAHandle, dwBaseAddress);
                 int nTrainingMenuCursor;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwTrainingMenuCursor), &nTrainingMenuCursor, 4, 0);
@@ -700,11 +716,6 @@ int main(int argc, char* argv[])
                             }
                             case FRAME_TOOL:
                             {
-                                if (nEnemySettingsCursor == 8)
-                                {
-                                    sBarScrolling = 0;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &sBarScrolling, 2, 0);
-                                }
                                 break;
                             }
                             case SAVE_STATE_PAGE:
@@ -762,82 +773,6 @@ int main(int argc, char* argv[])
                                     }
                                     else
                                         SaveStateToFile(hMBAAHandle, dwBaseAddress, nSaveSlot);
-                                }
-                                break;
-                            }
-                            case GENERIC_HOTKEYS_PAGE:
-                            {
-                                if (nEnemySettingsCursor == 0)
-                                {
-                                    ResetKeysHeld();
-                                    bFreezeKeySet = false;
-                                    nFreezeKey = 0;
-                                    //SetRegistryValue(L"FreezeKey", nFreezeKey);
-                                }
-                                else if (nEnemySettingsCursor == 2)
-                                {
-                                    ResetKeysHeld();
-                                    bFrameStepKeySet = false;
-                                    nFrameStepKey = 0;
-                                    SetRegistryValue(L"FrameStepKey", nFrameStepKey);
-                                }
-                                else if (nEnemySettingsCursor == 3)
-                                {
-                                    ResetKeysHeld();
-                                    bHitboxDisplayKeySet = false;
-                                    nHitboxDisplayKey = 0;
-                                    SetRegistryValue(L"HitboxesDisplayKey", nHitboxDisplayKey);
-                                }
-                                else if (nEnemySettingsCursor == 5)
-                                {
-                                    ResetKeysHeld();
-                                    bFrameDataDisplayKeySet = false;
-                                    nFrameDataDisplayKey = 0;
-                                    SetRegistryValue(L"FrameDataDisplayKey", nFrameDataDisplayKey);
-                                }
-                                else if (nEnemySettingsCursor == 6)
-                                {
-                                    ResetKeysHeld();
-                                    bHighlightsOnKeySet = false;
-                                    nHighlightsOnKey = 0;
-                                    SetRegistryValue(L"HighlightsOnKey", nHighlightsOnKey);
-                                }
-                                break;
-                            }
-                            case FRAME_TOOL_HOTKEYS_PAGE:
-                            {
-                                if (nEnemySettingsCursor == 0)
-                                {
-                                    ResetKeysHeld();
-                                    bSaveStateKeySet = false;
-                                    nSaveStateKey = 0;
-                                    SetRegistryValue(L"SaveStateKey", nSaveStateKey);
-                                }
-                                else if (nEnemySettingsCursor == 2)
-                                {
-                                    ResetKeysHeld();
-                                    bPrevSaveSlotKey = false;
-                                    nPrevSaveSlotKey = 0;
-                                    SetRegistryValue(L"PrevSaveSlotKey", nPrevSaveSlotKey);
-                                }
-                                else if (nEnemySettingsCursor == 3)
-                                {
-                                    ResetKeysHeld();
-                                    bNextSaveSlotKey = false;
-                                    nNextSaveSlotKey = 0;
-                                    SetRegistryValue(L"NextSaveSlotKey", nNextSaveSlotKey);
-                                }
-                                else if (nEnemySettingsCursor == 5)
-                                {
-
-                                }
-                                else if (nEnemySettingsCursor == 6)
-                                {
-
-                                }
-                                else if (nEnemySettingsCursor == 8)
-                                {
-
                                 }
                                 break;
                             }
@@ -1408,18 +1343,20 @@ int main(int argc, char* argv[])
                                 nOldAirRecoveryIndex = nAirRecoveryIndex;
                             else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
                             {
-                                if (sBarScrolling < min(nBarCounter - min(nBarDisplayRange, DISPLAY_RANGE), BAR_MEMORY_SIZE - min(nBarDisplayRange, DISPLAY_RANGE)))
+                                if (nBarScrolling < min(nBarCounter - min(nBarDisplayRange, DISPLAY_RANGE), BAR_MEMORY_SIZE - min(nBarDisplayRange, DISPLAY_RANGE)))
                                 {
-                                    sBarScrolling++;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &sBarScrolling, 2, 0);
+                                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+                                    nBarScrolling++;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
                                 }
                             }
                             else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
                             {
-                                if (sBarScrolling > 0)
+                                if (nBarScrolling > 0)
                                 {
-                                    sBarScrolling--;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &sBarScrolling, 2, 0);
+                                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+                                    nBarScrolling--;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
                                 }
                             }
 
@@ -2338,10 +2275,11 @@ int main(int argc, char* argv[])
                                 nEnemyDefenseTypeIndex = 2;
                             }
 
-                            if (sBarScrolling == 0)
+                            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+                            if (nBarScrolling == 0)
                             {
                                 char pcTemp[3];
-                                strcpy_s(pcTemp, std::to_string(sBarScrolling).c_str());
+                                strcpy_s(pcTemp, std::to_string(nBarScrolling).c_str());
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom1String), &pcTemp, 19, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom2String), &pcTemp, 19, 0);
 
@@ -2349,10 +2287,10 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
                                 nAirRecoveryIndex = 5;
                             }
-                            else if (sBarScrolling >= min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange))
+                            else if (nBarScrolling >= min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange))
                             {
                                 char pcTemp[19];
-                                strcpy_s(pcTemp, ("-" + std::to_string(sBarScrolling)).c_str());
+                                strcpy_s(pcTemp, ("-" + std::to_string(nBarScrolling)).c_str());
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOffString), &pcTemp, 19, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 19, 0);
 
@@ -2363,7 +2301,7 @@ int main(int argc, char* argv[])
                             else
                             {
                                 char pcTemp[19];
-                                strcpy_s(pcTemp, ("-" + std::to_string(sBarScrolling)).c_str());
+                                strcpy_s(pcTemp, ("-" + std::to_string(nBarScrolling)).c_str());
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 19, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryBackString), &pcTemp, 19, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryForwardString), &pcTemp, 19, 0);
@@ -3027,11 +2965,17 @@ int main(int argc, char* argv[])
                                 }
                                 else if (nEnemySettingsCursor == 5)
                                 {
-
+                                    ResetKeysHeld();
+                                    bFrameBarScrollLeftKey = false;
+                                    nFrameBarScrollLeftKey = 0;
+                                    SetRegistryValue(L"FrameBarScrollLeftKey", nFrameBarScrollLeftKey);
                                 }
                                 else if (nEnemySettingsCursor == 6)
                                 {
-
+                                    ResetKeysHeld();
+                                    bFrameBarScrollRightKey = false;
+                                    nFrameBarScrollRightKey = 0;
+                                    SetRegistryValue(L"FrameBarScrollRightKey", nFrameBarScrollRightKey);
                                 }
                                 else if (nEnemySettingsCursor == 8)
                                 {
@@ -3066,8 +3010,8 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcSaveState_15, 15, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcPrevSaveSlot_19, 19, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcNextSaveSlot_19, 19, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcBlank_1, 1, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcFrameBarLeft_15, 15, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcFrameBarRight_17, 17, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
                             break;
                         }
@@ -3126,19 +3070,19 @@ int main(int argc, char* argv[])
                         }
                         case FRAME_TOOL_HOTKEYS_PAGE:
                         {
-                            if (nOldEnemySettingsCursor == 3 && nEnemySettingsCursor == 5)
+                            if (nOldEnemySettingsCursor == 6 && nEnemySettingsCursor == 8)
                             {
                                 nWriteBuffer = 10;
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
                                 nEnemySettingsCursor = 10;
                                 nOldEnemySettingsCursor = 10;
                             }
-                            else if (nEnemySettingsCursor > 3 && nEnemySettingsCursor < 10)
+                            else if (nEnemySettingsCursor == 8)
                             {
-                                nWriteBuffer = 3;
+                                nWriteBuffer = 6;
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                                nEnemySettingsCursor = 3;
-                                nOldEnemySettingsCursor = 3;
+                                nEnemySettingsCursor = 6;
+                                nOldEnemySettingsCursor = 6;
                             }
                             break;
                         }
@@ -3410,10 +3354,10 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
-
-                            nWriteBuffer = OFFSCREEN_LOCATION;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
+
+                            nWriteBuffer = OFFSCREEN_LOCATION;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
 
                             char pcTemp[19];
@@ -3525,6 +3469,78 @@ int main(int argc, char* argv[])
                             nWriteBuffer = 1;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
                             nEnemyDefenseTypeIndex = 1;
+
+                            // FRAME BAR SCROLL LEFT SLOT
+                            if (!bFrameBarScrollLeftKey)
+                            {
+                                uint8_t nKeyJustPressed = 0;
+                                if (nEnemySettingsCursor == 5)
+                                    nKeyJustPressed = KeyJustPressed();
+
+                                if (nKeyJustPressed == 0)
+                                    strcpy_s(pcTemp, "PRESS ANY KEY");
+                                else
+                                {
+                                    bFrameBarScrollLeftKey = true;
+                                    nFrameBarScrollLeftKey = nKeyJustPressed;
+                                    SetRegistryValue(L"FrameBarScrollLeftKey", nFrameBarScrollLeftKey);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollLeftKey), &nFrameBarScrollLeftKey, 1, 0);
+                                }
+                            }
+                            if (bFrameBarScrollLeftKey)
+                            {
+                                WCHAR wcName[19];
+                                UINT scanCode = MapVirtualKeyW(nFrameBarScrollLeftKey, MAPVK_VK_TO_VSC);
+                                LONG lParamValue = (scanCode << 16);
+                                int result = GetKeyNameTextW(lParamValue, wcName, 19);
+                                std::wstring wsKeyName = wcName;
+                                std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
+                                strcpy_s(pcTemp, sKeyName.c_str());
+                            }
+
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 19, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryBackString), &pcTemp, 19, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryForwardString), &pcTemp, 19, 0);
+
+                            nWriteBuffer = 2;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                            nAirRecoveryIndex = 2;
+
+                            // FRAME BAR SCROLL RIGHT SLOT
+                            if (!bFrameBarScrollRightKey)
+                            {
+                                uint8_t nKeyJustPressed = 0;
+                                if (nEnemySettingsCursor == 6)
+                                    nKeyJustPressed = KeyJustPressed();
+
+                                if (nKeyJustPressed == 0)
+                                    strcpy_s(pcTemp, "PRESS ANY KEY");
+                                else
+                                {
+                                    bFrameBarScrollRightKey = true;
+                                    nFrameBarScrollRightKey = nKeyJustPressed;
+                                    SetRegistryValue(L"FrameBarScrollRightKey", nFrameBarScrollRightKey);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollRightKey), &nFrameBarScrollRightKey, 1, 0);
+                                }
+                            }
+                            if (bFrameBarScrollRightKey)
+                            {
+                                WCHAR wcName[19];
+                                UINT scanCode = MapVirtualKeyW(nFrameBarScrollRightKey, MAPVK_VK_TO_VSC);
+                                LONG lParamValue = (scanCode << 16);
+                                int result = GetKeyNameTextW(lParamValue, wcName, 19);
+                                std::wstring wsKeyName = wcName;
+                                std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
+                                strcpy_s(pcTemp, sKeyName.c_str());
+                            }
+
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 19, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryBackString), &pcTemp, 19, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryForwardString), &pcTemp, 19, 0);
+
+                            nWriteBuffer = 2;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                            nDownRecoveryIndex = 2;
 
                             break;
                         }

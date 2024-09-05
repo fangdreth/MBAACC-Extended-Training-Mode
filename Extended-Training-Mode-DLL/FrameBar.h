@@ -5,11 +5,13 @@
 #include <string>
 #include "..\Common\Common.h"
 
+const ADDRESS adBaseAddress = (0x00400000);
+
 int nLastFrameCount = 0; //Counts slower during slowdown
 int nLastTrueFrameCount = 0; //Counts all frames during slowdown
 
 int nBarCounter = 0;
-int sBarScrolling = 0;
+int nBarScrolling = 0;
 int nBarIntervalCounter = 0;
 int nBarIntervalMax = 0;
 
@@ -104,7 +106,7 @@ void ResetBars(Player& P)
 	bIsBarReset = true;
 	nBarCounter = 0;
 	nBarIntervalCounter = 0;
-	sBarScrolling = 0;
+	nBarScrolling = 0;
 	bDoBarReset = false;
 	nBarIntervalMax = DISPLAY_RANGE;
 	for (int i = 0; i < BAR_MEMORY_SIZE; i++)
@@ -117,6 +119,8 @@ void ResetBars(Player& P)
 		P.nNumBar[i][0] = -1;
 		P.nNumBar[i][1] = 0;
 	}
+
+	WriteProcessMemory(GetCurrentProcess(), (LPVOID)(adBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
 }
 
 void UpdateBars(Player& P, Player& Assist)
@@ -438,7 +442,7 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 {
 	bDisplayFreeze = *(char*)(adMBAABase + adSharedDisplayFreeze);
 	bDisplayInputs = *(char*)(adMBAABase + adSharedDisplayInputs);
-	sBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+	nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
 
 	Player1 = &P1;
 	Player2 = &P2;

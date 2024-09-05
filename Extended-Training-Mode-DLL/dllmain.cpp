@@ -227,6 +227,8 @@ static KeyState oFrameStepKey;
 static KeyState oFrameDataDisplayKey;
 static KeyState oHitboxesDisplayKey;
 static KeyState oHighlightsOnKey;
+static KeyState oFrameBarLeftScrollKey;
+static KeyState oFrameBarRightScrollKey;
 void setAllKeys()
 {
 	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
@@ -238,6 +240,8 @@ void setAllKeys()
 	oFrameDataDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameDataDisplayKey));
 	oHitboxesDisplayKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHitboxesDisplayKey));
 	oHighlightsOnKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHighlightsOnKey));
+	oFrameBarLeftScrollKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameBarScrollLeftKey));
+	oFrameBarRightScrollKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameBarScrollRightKey));
 }
 
 // patch funcs
@@ -701,7 +705,8 @@ void drawFrameBar()
 
 	int nBarDrawCounter = 0;
 
-	short sAdjustedScroll = min(min(nBarCounter - DISPLAY_RANGE, BAR_MEMORY_SIZE - DISPLAY_RANGE), sBarScrolling);
+	nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+	short sAdjustedScroll = min(min(nBarCounter - DISPLAY_RANGE, BAR_MEMORY_SIZE - DISPLAY_RANGE), nBarScrolling);
 
 	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - DISPLAY_RANGE - sAdjustedScroll;
 	int nForEnd = (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll;
@@ -1006,6 +1011,20 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 
 		if (*(uint8_t*)(dwBaseAddress + adSharedFreezeOverride) != 1)
 		{
+			if (oFrameBarLeftScrollKey.keyHeld())
+			{
+				nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+				nBarScrolling++;
+				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+			}
+
+			if (oFrameBarRightScrollKey.keyHeld())
+			{
+				nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+				nBarScrolling--;
+				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+			}
+			
 			if (oHitboxesDisplayKey.keyDown())
 			{
 				bHitboxesDisplay = !bHitboxesDisplay;
@@ -1167,6 +1186,20 @@ void frameDoneCallback()
 		unsigned avalTexMem = device->GetAvailableTextureMem();
 
 		log("directx device has been acquired! texmem: %08X", avalTexMem);
+	}
+
+	if (oFrameBarLeftScrollKey.keyHeld())
+	{
+		nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+		nBarScrolling++;
+		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+	}
+
+	if (oFrameBarRightScrollKey.keyHeld())
+	{
+		nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+		nBarScrolling--;
+		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
 	}
 
 	if (oHitboxesDisplayKey.keyDown())

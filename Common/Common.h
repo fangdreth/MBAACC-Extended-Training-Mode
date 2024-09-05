@@ -286,14 +286,16 @@ const ADDRESS adSharedHitboxesDisplayKey =			adShareBase + 0x12;	// 1 byte
 const ADDRESS adSharedFrameDataDisplayKey =			adShareBase + 0x13;	// 1 byte
 const ADDRESS adSharedHighlightsOnKey =				adShareBase + 0x14;	// 1 byte
 const ADDRESS adSharedSaveStateKey =				adShareBase + 0x15;	// 1 byte
-const ADDRESS adSharedPrevSaveSlotKey =		adShareBase + 0x16;	// 1 byte
-const ADDRESS adSharedNextSaveSlotKey =		adShareBase + 0x17;	// 1 byte
+const ADDRESS adSharedPrevSaveSlotKey =				adShareBase + 0x16;	// 1 byte
+const ADDRESS adSharedNextSaveSlotKey =				adShareBase + 0x17;	// 1 byte
+const ADDRESS adSharedFrameBarScrollLeftKey =		adShareBase + 0x18;	// 1 byte
+const ADDRESS adSharedFrameBarScrollRightKey =		adShareBase + 0x19;	// 1 byte
 
-const ADDRESS adSharedIdleHighlight =				adShareBase + 0x20; // 4 bytes
-const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x24; // 4 bytes
-const ADDRESS adSharedHitHighlight =				adShareBase + 0x28; // 4 bytes
-const ADDRESS adSharedArmorHighlight =				adShareBase + 0x2C; // 4 bytes
-const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x30; // 4 bytes
+const ADDRESS adSharedIdleHighlight =				adShareBase + 0x30; // 4 bytes
+const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x34; // 4 bytes
+const ADDRESS adSharedHitHighlight =				adShareBase + 0x38; // 4 bytes
+const ADDRESS adSharedArmorHighlight =				adShareBase + 0x3C; // 4 bytes
+const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x40; // 4 bytes
 
 const ADDRESS adSharedMessageBuffer =				adShareBase + 0x100; // 32 bytes
 
@@ -416,6 +418,8 @@ const char pcHighlights_15[15] = "HIGHLIGHTS KEY";
 const char pcSaveState_15[15] = "SAVE STATE KEY";
 const char pcPrevSaveSlot_19[19] = "PREV SAVE SLOT KEY";
 const char pcNextSaveSlot_19[19] = "NEXT SAVE SLOT KEY";
+const char pcFrameBarLeft_15[15] = "FRAME BAR LEFT";
+const char pcFrameBarRight_17[17] = "FRAME BAR RIGHT";
 
 #define VK_KEY_UNSET 0x0;
 
@@ -457,14 +461,16 @@ const char pcNextSaveSlot_19[19] = "NEXT SAVE SLOT KEY";
 #define VK_KEY_Y 0x59
 #define VK_KEY_Z 0x5A
 
-const int nDefaultFreezeKey = VK_KEY_UNSET;
-const int nDefaultFrameStepKey = VK_KEY_UNSET;
-const int nDefaultHitboxDisplayKey = VK_KEY_UNSET;
-const int nDefaultFrameDataDisplayKey = VK_KEY_UNSET;
-const int nDefaultHighlightsOnKey = VK_KEY_UNSET;
-const int nDefaultSaveStateKey = VK_KEY_UNSET;
-const int nDefaultPrevSaveSlotKey = VK_KEY_UNSET;
-const int nDefaultNextSaveSlotKey = VK_KEY_UNSET;
+const uint8_t nDefaultFreezeKey = VK_KEY_UNSET;
+const uint8_t nDefaultFrameStepKey = VK_KEY_UNSET;
+const uint8_t nDefaultHitboxDisplayKey = VK_KEY_UNSET;
+const uint8_t nDefaultFrameDataDisplayKey = VK_KEY_UNSET;
+const uint8_t nDefaultHighlightsOnKey = VK_KEY_UNSET;
+const uint8_t nDefaultSaveStateKey = VK_KEY_UNSET;
+const uint8_t nDefaultPrevSaveSlotKey = VK_KEY_UNSET;
+const uint8_t nDefaultNextSaveSlotKey = VK_KEY_UNSET;
+const uint8_t nDefaultFrameBarScrollLeftKey = VK_KEY_UNSET;
+const uint8_t nDefaultFrameBarScrollRightKey = VK_KEY_UNSET;
 
 class KeyState
 {

@@ -18,7 +18,7 @@ char cP1FN2Input = 0;
 char cDummyState = 0; // Same as Common.h "Enemy Status" except -1 for recording
 
 int nBarCounter = 0;
-short sBarScrolling = 0;
+short nBarScrolling = 0;
 int nBarIntervalCounter = 0;
 int nBarIntervalMax = 0;
 int nBarDisplayRange = 0;
@@ -625,12 +625,12 @@ void CalculateAdvantage(Player& P1, Player& P2)
 	}
 }
 
-void ResetBars(Player& P)
+void ResetBars(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
 {
 	bIsBarReset = true;
 	nBarCounter = 0;
 	nBarIntervalCounter = 0;
-	sBarScrolling = 0;
+	nBarScrolling = 0;
 	bDoBarReset = false;
 	nBarIntervalMax = nBarDisplayRange;
 	for (int i = 0; i < BAR_MEMORY_SIZE; i++)
@@ -641,6 +641,7 @@ void ResetBars(Player& P)
 		P.sBar4[i] = "";
 		P.sBar5[i] = "";
 	}
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
 }
 
 void UpdateBars(Player& P, Player& Assist)
@@ -921,7 +922,7 @@ void HandleInactive(Player& P)
 	}
 }
 
-void BarHandling(Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
+void BarHandling(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
 {
 	CalculateAdvantage(P1, P2);
 
@@ -962,10 +963,10 @@ void BarHandling(Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
 
 	if (bDoBarReset && bUpdateBar)
 	{
-		ResetBars(P1);
-		ResetBars(P2);
-		ResetBars(P1Assist);
-		ResetBars(P2Assist);
+		ResetBars(hMBAAHandle, dwBaseAddress, P1);
+		ResetBars(hMBAAHandle, dwBaseAddress, P2);
+		ResetBars(hMBAAHandle, dwBaseAddress, P1Assist);
+		ResetBars(hMBAAHandle, dwBaseAddress, P2Assist);
 	}
 
 	if (nBarIntervalCounter < nBarIntervalMax && !bIsBarReset)
@@ -1015,14 +1016,14 @@ void BarHandling(Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
 
 	if (nTrueFrameCount == 0)
 	{
-		ResetBars(P1);
-		ResetBars(P2);
-		ResetBars(P1Assist);
-		ResetBars(P2Assist);
+		ResetBars(hMBAAHandle, dwBaseAddress, P1);
+		ResetBars(hMBAAHandle, dwBaseAddress, P2);
+		ResetBars(hMBAAHandle, dwBaseAddress, P1Assist);
+		ResetBars(hMBAAHandle, dwBaseAddress, P2Assist);
 	}
 }
 
-void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
+void PrintFrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P1, Player &P2, Player &P3, Player &P4)
 {
 	std::string sColumnHeader = "\x1b[0;4m";
 	for (int i = 1; i <= nBarDisplayRange; i++)
@@ -1038,7 +1039,8 @@ void PrintFrameDisplay(Player &P1, Player &P2, Player &P3, Player &P4)
 	}
 	sColumnHeader += "\x1b[0m\x1b[K\n";
 
-	short sAdjustedScroll = min(min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange), sBarScrolling);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+	short sAdjustedScroll = min(min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange), nBarScrolling);
 
 	P1.sBarString1 = "";
 	P1.sBarString2 = "";
@@ -1263,19 +1265,19 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 		UpdatePlayer(hMBAAHandle, dwBaseAddress, P3);
 		UpdatePlayer(hMBAAHandle, dwBaseAddress, P4);
 		
-		BarHandling(*Player1, *Player2, *Player3, *Player4);
+		BarHandling(hMBAAHandle, dwBaseAddress, *Player1, *Player2, *Player3, *Player4);
 
 		if (nTrueFrameCount == 1 && CheckSave(nSaveSlot) && bEnableFN2Load)
 		{
-			ResetBars(P1);
-			ResetBars(P2);
-			ResetBars(P3);
-			ResetBars(P4);
+			ResetBars(hMBAAHandle, dwBaseAddress, P1);
+			ResetBars(hMBAAHandle, dwBaseAddress, P2);
+			ResetBars(hMBAAHandle, dwBaseAddress, P3);
+			ResetBars(hMBAAHandle, dwBaseAddress, P4);
 			LoadState(hMBAAHandle, dwBaseAddress, nSaveSlot);
 		}
 	}
 
 	nPlayerAdvantage = (P1.nAdvantageCounter - P2.nAdvantageCounter) % 100;
 
-	PrintFrameDisplay(*Player1, *Player2, *Player3, *Player4);
+	PrintFrameDisplay(hMBAAHandle, dwBaseAddress, *Player1, *Player2, *Player3, *Player4);
 }
