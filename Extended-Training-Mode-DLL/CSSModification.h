@@ -90,6 +90,10 @@ DWORD _naked_PalettePatcherHook_ebx = 0;
 DWORD _naked_PalettePatcherCallback_eax = 0;
 void palettePatcherCallback() {
 
+	if (!useCustomPalettes) {
+		return;
+	}
+
 	if (_naked_PalettePatcherHook_ebx == 0) {
 		log("miscTests ebx was NULL");
 		return;
@@ -137,33 +141,14 @@ void palettePatcherCallback() {
 
 	// is a palette
 
-	saveStack();
-	//logStack();
-
 	bool isWarc = false;
 
 	if (!strcmp(fileName, "WARC.pal")) {
 		isWarc = true;
 	}
 
-	/*
-	
-	when loading into a game, P1 will always be loaded first, then P2.
-	the issue with determining order is in CSS
-	
-	*/
-
-	
-
-
 	DWORD* colors = (DWORD*)(_naked_PalettePatcherCallback_eax + 4);
-
-	DWORD nonvolPlayerIndex = saveTexture_stack[0x012C / 0x4];
-
-	log("modifying a palette with playerIndex = %d", nonvolPlayerIndex);
-
-	//for (int i = 0; i < 64; i++) {
-	//for (int i = 36; i < 42; i++) {
+	
 	for (int i = 36; i < 48; i++) {
 		for (int j = 0; j < 256; j++) {
 			
@@ -171,32 +156,19 @@ void palettePatcherCallback() {
 
 			BYTE a = (tempColor & 0xFF000000) >> 24;
 
-			/*
-			if (isWarc && (i == 36 || i == 37) && (nonvolPlayerIndex == 1)) {
-				//colors[(256 * i) + j] = (a << 24) | ougi_warc[j];
-				//colors[(256 * i) + j] = (a << 24) | (0xFF80);
-				continue;
-			}
-			*/
-			
 			D3DXVECTOR3 rgb = D3DXVECTOR3(
 				(float)((tempColor & 0x000000FF) >> 0),
-				
 				(float)((tempColor & 0x0000FF00) >> 8),
-				
 				(float)((tempColor & 0x00FF0000) >> 16)
 				);
 
 			D3DXVECTOR3 hsv = RGBtoHSV(rgb);
 
 	
-			
-			if (nonvolPlayerIndex == 0) {
+			if (i < 42) {
 				hsv.x = 0.5f;
-			} else if (nonvolPlayerIndex == 1) {
-				hsv.x = 0.0f;
 			} else {
-
+				hsv.x = 0.0f;
 			}
 
 			hsv.y = (hsv.y / 2.0f) + 0.5f;
@@ -209,14 +181,8 @@ void palettePatcherCallback() {
 			BYTE g = tempRGB.y;
 			BYTE b = tempRGB.z;
 
-			//g = 0xF0;
-
-			//DWORD tempNewColor = (a << 24) | (r << 16) | (g << 8) | (b << 0);
 			DWORD tempNewColor = (a << 24) | (b << 16) | (g << 8) | (r << 0);
 
-			//if (j >= 16) {
-			//	continue;
-			//}
 			colors[(256 * i) + j] = tempNewColor;
 
 		}		

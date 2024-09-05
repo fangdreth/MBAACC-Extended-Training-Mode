@@ -629,13 +629,13 @@ bool initTextureModifications() {
 		return true;
 	}
 
-	//initShader();
-	//
-	//initDrawPrimHook();
-	//initDrawPrimCallback();
-	//initLeadToDrawPrimHook();
-	//initListAppendHook();
-	//initFrameCountCallback();
+	initShader();
+	
+	initDrawPrimHook();
+	initDrawPrimCallback();
+	initLeadToDrawPrimHook();
+	initListAppendHook();
+	initFrameCountCallback();
 
 
 

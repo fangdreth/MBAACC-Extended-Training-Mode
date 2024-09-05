@@ -280,6 +280,9 @@ KeyState quoteKey(VK_OEM_7);
 
 KeyState backslashKey(VK_OEM_5);
 
+KeyState F12Key(VK_F12); // non release caster builds use this
+bool useCustomPalettes = true;
+
 void __stdcall ___log(const char* msg)
 {
 	const char* ipAddress = "127.0.0.1";
@@ -1420,6 +1423,10 @@ void frameDoneCallback()
 
 	if (backslashKey.keyDown()) {
 		trigBreak = 1;
+	}
+
+	if (F12Key.keyDown()) { // this setting should be saved, and also shouldnt override ur own palettes! but thats a we need caster thing for
+		useCustomPalettes = !useCustomPalettes;
 	}
 
 
