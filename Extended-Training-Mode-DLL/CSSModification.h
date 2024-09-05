@@ -22,23 +22,70 @@ void drawPaletteColumn() {
 
 	//log("param1: %08X param2: %08X param3: %08X", drawPaletteColumn_Player, drawPaletteColumn_IsInPalette, drawPaletteColumn_Param3);
 
-	int x = 200;
+	int x = 180;
 	int palette = *(DWORD*)0x0074d904;
 
 	if (drawPaletteColumn_Player == 1) {
-		x = 640 - 200;
+		x = 640 - 280;
 		palette = *(DWORD*)0x0074D928;
+
+		// gaslight ppl into thinking they are not 6 palettes above where they actually are
+		if (palette >= 36) {
+			palette -= 6;
+		}
 	}
 
 	static char buffer[256];
 
+	/*
+	
+	very weird shit is occuring here
+
+	lets say 2 players, both on warc, both on custom 37
+	for unknown reasons(probs due to optimizing somwhere else in the code)
+	this lets P2 select P1's palette
+
+	solution? either give each player a seperate 6 to choose from, or find the code that causes this optimization
+	the seperate 6 is a bit jank, but like
+	it would work
+	i could also add the ability to choose enemy palettes? but it would be annoying to have urs stolen?
+	TODO, talk with ppl abt this
+
+	actually, wouldnt doing this completely fix my issues with,,, which palettes go to which chars?
+	ill restrict what pals can be selected by what person
+	and then easily sync up the .pal formats, first 6 from p1, second from p2
+
+	*/
+
+
+	// see if P1 random at [0074d808]+0x38
+	// see if P2 random at [0074d808]+0x38+0x1DC
+
+	if (*(DWORD*)0x0074d808 == 0) {
+		return;
+	}
+
+	DWORD baseCSSAddr = *(DWORD*)0x0074d808;
+
+	DWORD p1Rand = *(DWORD*)(baseCSSAddr + 0x38);
+	DWORD p2Rand = *(DWORD*)(baseCSSAddr + 0x38 + 0x1DC);
+
+	if(drawPaletteColumn_Player == 0 && p1Rand) {
+		drawTextWithBorder(x, 300, 10, 14, "Palette: RAND");
+		return;
+	}
+
+	if (drawPaletteColumn_Player == 1 && p2Rand) {
+		drawTextWithBorder(x, 300, 10, 14, "Palette: RAND");
+		return;
+	}
+
 	//snprintf(buffer, 256, "what %08X %08X %08X", drawPaletteColumn_Player, drawPaletteColumn_IsInPalette, drawPaletteColumn_Param3);
-	snprintf(buffer, 256, "Palette: %3d", palette + 1);
+	snprintf(buffer, 256, "Palette: %4d", palette + 1);
 	drawTextWithBorder(x, 300, 10, 14, buffer);
 
 }
 
-volatile DWORD _naked_PalettePatcherCharDetect_playerIndex = -1;
 DWORD _naked_PalettePatcherHook_ebx = 0;
 DWORD _naked_PalettePatcherCallback_eax = 0;
 void palettePatcherCallback() {
@@ -91,7 +138,7 @@ void palettePatcherCallback() {
 	// is a palette
 
 	saveStack();
-	logStack();
+	//logStack();
 
 	bool isWarc = false;
 
@@ -99,47 +146,38 @@ void palettePatcherCallback() {
 		isWarc = true;
 	}
 
-	// textures, when loaded in, are in 4 byte RGBA format.
-	// weirdly, there is a 40 00 00 00 at the start. what is that?
-	// its 64, which is the num of palettes? but idrk
+	/*
+	
+	when loading into a game, P1 will always be loaded first, then P2.
+	the issue with determining order is in CSS
+	
+	*/
 
-	__asm {
-		nop;
-		nop;
-		//int 3;
-		nop; 
-		nop;
-	}
+	
+
 
 	DWORD* colors = (DWORD*)(_naked_PalettePatcherCallback_eax + 4);
 
-	/*
-	if (isWarc) {
-		log("warc palette:");
-		for (int j = 0; j < 256; j++) {
-			log("%3d %08X", j, colors[(256 * 36) + j]);
-		}
-		log("-----");
-	}
-	*/
-
-	DWORD nonvolPlayerIndex = _naked_PalettePatcherCharDetect_playerIndex;
+	DWORD nonvolPlayerIndex = saveTexture_stack[0x012C / 0x4];
 
 	log("modifying a palette with playerIndex = %d", nonvolPlayerIndex);
 
-	for (int i = 0; i < 64; i++) {
+	//for (int i = 0; i < 64; i++) {
 	//for (int i = 36; i < 42; i++) {
+	for (int i = 36; i < 48; i++) {
 		for (int j = 0; j < 256; j++) {
 			
 			DWORD tempColor = colors[(256 * i) + j];
 
 			BYTE a = (tempColor & 0xFF000000) >> 24;
 
-			if (isWarc && (i == 36 || i == 37)) {
+			/*
+			if (isWarc && (i == 36 || i == 37) && (nonvolPlayerIndex == 1)) {
 				//colors[(256 * i) + j] = (a << 24) | ougi_warc[j];
 				//colors[(256 * i) + j] = (a << 24) | (0xFF80);
 				continue;
 			}
+			*/
 			
 			D3DXVECTOR3 rgb = D3DXVECTOR3(
 				(float)((tempColor & 0x000000FF) >> 0),
@@ -185,6 +223,37 @@ void palettePatcherCallback() {
 	}
 
 	
+}
+
+DWORD _naked_changePaletteIndex_playerInput;
+DWORD _naked_changePaletteIndex_index;
+DWORD _naked_changePaletteIndex_playerIndex;
+void changePaletteIndex() {
+	if (_naked_changePaletteIndex_playerInput == 0) {
+		return;
+	}
+
+	//log("_naked_changePaletteIndex_playerInput: %3d _naked_changePalette_eax: %3d _naked_changePalette_playerIndex: %3d", _naked_changePaletteIndex_playerInput, _naked_changePaletteIndex_index, _naked_changePaletteIndex_playerIndex);
+
+	if (_naked_changePaletteIndex_playerIndex == 0) { // player 1
+		if (_naked_changePaletteIndex_index >= 42) {
+			if (_naked_changePaletteIndex_playerInput == 4) {
+				_naked_changePaletteIndex_index -= 6;
+			} else if (_naked_changePaletteIndex_playerInput == 6) {
+				_naked_changePaletteIndex_index = _naked_changePaletteIndex_index % 6;
+			} // no clue if any other vals could ever occur under current states
+		}
+	} else { // player 2
+		if (_naked_changePaletteIndex_index < 42 && _naked_changePaletteIndex_index >= 36) {
+			if (_naked_changePaletteIndex_playerInput == 6) {
+				_naked_changePaletteIndex_index += 6;
+			}
+			else if (_naked_changePaletteIndex_playerInput == 4) {
+				_naked_changePaletteIndex_index -= 6;
+			} // no clue if any other vals could ever occur under current states
+		}
+	}
+
 }
 
 // naked funcs 
@@ -256,34 +325,37 @@ __declspec(naked) void _naked_PalettePatcherCallback() {
 	}
 }
 
-__declspec(naked) void _naked_PalettePatcherCharDetect() {
-
+DWORD _naked_changePaletteIndex_funcAddr = 0x0048abd0;
+__declspec(naked) void _naked_changePaletteIndex() {
 	__asm {
-		mov _naked_PalettePatcherCharDetect_playerIndex, eax;
+		mov _naked_changePaletteIndex_playerInput, eax;
+		mov _naked_changePaletteIndex_playerIndex, edx;
+
+		call[_naked_changePaletteIndex_funcAddr];
+
+		mov _naked_changePaletteIndex_index, eax;
 	};
 
-	// overwritten asm 
-
-	__asm _emit 0x55;
-
-	__asm _emit 0x8B;
-	__asm _emit 0xEC;
-
-	__asm _emit 0x83;
-	__asm _emit 0xE4;
-	__asm _emit 0xF8;
+	PUSH_ALL;
+	changePaletteIndex();
+	POP_ALL;
 
 	__asm {
-		push 004899f6h;
+
+		mov eax, _naked_changePaletteIndex_index;
+		mov ecx, _naked_changePaletteIndex_index;
+
+		push 0048ab4ch;
 		ret;
-	}
+	};
 }
 
 // init 
 
 void initMorePalettes() {
 
-	const BYTE paletteCount = 0x2A;
+	//const BYTE paletteCount = 0x2A;
+	const BYTE paletteCount = 36 + (6 * 2);
 
 	// input adjustments
 	patchByte(0x0048ac12 + 2, paletteCount);
@@ -300,7 +372,10 @@ void initDrawPaletteColumn() {
 void initPalettePatcher() {
 	patchJump(0x0041f7c0, _naked_PalettePatcherHook);
 	patchJump(0x0041f87a, _naked_PalettePatcherCallback);
-	patchJump(0x004899f0, _naked_PalettePatcherCharDetect);
+}
+
+void initChangePalette() {
+	patchJump(0x0048ab47, _naked_changePaletteIndex);
 }
 
 bool initCSSModifications() {
@@ -317,6 +392,7 @@ bool initCSSModifications() {
 	initMorePalettes();
 	initDrawPaletteColumn();
 	initPalettePatcher();
+	initChangePalette();
 
 	log("initCSSModifications ran");
 
