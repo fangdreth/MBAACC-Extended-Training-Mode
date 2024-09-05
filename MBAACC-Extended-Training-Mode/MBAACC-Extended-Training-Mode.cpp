@@ -682,7 +682,13 @@ int main(int argc, char* argv[])
                                     char pcMessageBuffer[32] = "NO SLOT SELECTED";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
                                 }
-                                SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
+                                else
+                                {
+                                    SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
+
+                                    char pcMessageBuffer[32] = "CREATED SAVE";
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
+                                }
                             }
                             else if (nEnemySettingsCursor == 3)
                             {
