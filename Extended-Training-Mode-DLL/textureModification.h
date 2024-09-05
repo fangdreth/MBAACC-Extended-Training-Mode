@@ -16,6 +16,8 @@ DWORD blendMode : register(c222);
 
 float4 Hue : register(c221);
 
+float4 ActiveColor : register(c220);
+
 const float EPSILON = 1e-10;
 
 float3 HUEtoRGB(float hue)
@@ -58,7 +60,10 @@ float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 
 	float3 hcyVal = RGBtoHSV(texColor.rgb);
 
-	hcyVal.r = Hue.r;
+	//hcyVal.r = Hue.r;
+	//hcyVal.r = 0.6f;
+
+	hcyVal.r = ActiveColor.r;
 
 	float3 rgbVal = HSVtoRGB(hcyVal.rgb);
 
@@ -74,6 +79,7 @@ D3DXVECTOR4 dynamicColor(0.0f, 0.0f, 0.0f, 1.0f);
 D3DXVECTOR4 blendMode(0.0f, 0.0f, 0.0f, 1.0f);
 
 D3DXVECTOR4 Hue(0.0f, 0.0f, 0.0f, 1.0f);
+D3DXVECTOR4 ActiveColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 
 bool pixelShaderNeedsReset = false;
@@ -225,8 +231,8 @@ void drawPrimHook() {
 		pixelShaderNeedsReset = true;
 		device->SetPixelShader(pPixelShader);
 
-		blendMode.x = (float)textureAddrs[drawPrimHook_texAddr].blend;
-		device->SetPixelShaderConstantF(222, (float*)&blendMode, 1);
+		//blendMode.x = (float)textureAddrs[drawPrimHook_texAddr].blend;
+		//device->SetPixelShaderConstantF(222, (float*)&blendMode, 1);
 
 		
 
@@ -236,18 +242,6 @@ void drawPrimHook() {
 		renderStateNeedsReset = true;
 
 		//device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	}
-
-	//log("%3d primHook tex addr %08X ret: %08X", index, drawPrimHook_texAddr, leadToDrawPrimHook_ret);
-
-	if (drawPrimHook_texAddr != 0) {
-		//log("attempting to see if tex is valid");
-		//IDirect3DBaseTexture9* pTex = (IDirect3DBaseTexture9*)(drawPrimHook_texAddr);
-		//IDirect3DBaseTexture9* pTex = (IDirect3DBaseTexture9*)(*(DWORD*)drawPrimHook_texAddr);
-		//
-		//int type = pTex->GetType();
-		//
-		//log("ok %d", type);
 	}
 
 	index++;
@@ -328,13 +322,105 @@ void listAppendHook() {
 				
 				// override blend mode to 0 so the shader works properly
 				DWORD _animDataAddr = listAppendHook_objAddr + 0x310;
-				if (*(DWORD*)_animDataAddr != 0) {
-					DWORD _animDataPtr = *(DWORD*)_animDataAddr;
-					// blend mode addr
-					blendMode = *(BYTE*)(_animDataPtr + 0x1B);
+				if (*(DWORD*)_animDataAddr == 0) {
+					return; // is this ret here smart?
 				}
 				
+				
+				DWORD _animDataPtr = *(DWORD*)_animDataAddr;
+				// blend mode addr
+				blendMode = *(BYTE*)(_animDataPtr + 0x1B);
+				
+				DWORD boxPtr1 = *(DWORD*)(_animDataPtr + 0x4C);
+				DWORD boxPtr2 = *(DWORD*)(_animDataPtr + 0x50);
+				
+				if (boxPtr1 == 0 && boxPtr2 == 0) {
+					// this is probs, very, very stupid
+					//return;
+					ActiveColor.x = 0.83f;
+				}
+				else {
+					ActiveColor.x = 0.16f;
+				}
+
+				device->SetPixelShaderConstantF(220, (float*)&ActiveColor, 1);
+				
+				if (*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x20) == 0x00000101) {
+					// im just looking for patterns here
+					// this prevents heat from making things weird
+					// warc AAD still causes rave, but tbh im keeping that in
+					return;
+				}
+
+
+				log(
+				"0C: %08X "
+				"20: %08X "
+				"24: %08X "
+				"28: %08X "
+
+				"64: %08X "
+				"68: %08X "
+				"6C: %08X "
+				"70: %08X "
+				, 
+				* (DWORD*)(listAppendHook_objAddr - 0x10 + 0xC),
+				*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x20),
+				*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x24),
+				*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x28),
+
+				* (DWORD*)(listAppendHook_objAddr - 0x10 + 0x64),
+				* (DWORD*)(listAppendHook_objAddr - 0x10 + 0x68),
+				* (DWORD*)(listAppendHook_objAddr - 0x10 + 0x6C),
+				* (DWORD*)(listAppendHook_objAddr - 0x10 + 0x70)
+				);
+				
+
+				/*
+				got data: 0C: 00000000 20: 01000000 24: 00000000 28: 00000000 2C: 00000000 30: 00000000 34: 00000000 38: 00000000 3C: 00000000 40: 00000000 44: 00000000 48: 00000000 4C: 00000000
+				got data: 0C: 00000000 20: 00000000 24: 00010800 28: 00010000 2C: 00000000 30: 00000000 34: 00000000 38: 00000000 3C: 00000000 40: 00000000 44: 00000000 48: 00000000 4C: 00000000
+
+				got data: 0C: 00000000 20: 00000001 24: 00000000 28: 00000000 2C: 00000000 30: 00000000 34: 00000000 38: 00000000 3C: 00000000 40: 00000000 44: 00000000 48: 00000000 4C: 00000000
+				got data: 0C: 00000000 20: 00000000 24: 00010700 28: 00010000 2C: 00000000 30: 00000000 34: 00000000 38: 00000000 3C: 00000000 40: 00000000 44: 00000000 48: 00000000 4C: 00000000
+
+
+
+				*/
+				
+				/*
+				if (*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x28) == 0x00000001) {
+					// this fixes ckouma's grounded 22B
+					// and probs breaks a bunch of other shit
+					return;
+				}
+				*/
+
+				// new theory.
+				// if something doesnt have any boxes,,, dont color it?
+
+
+
+				/*
+				if (*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x24) == 0x00410000) {
+					// this fixes ckouma's grounded 22B
+					return;
+				}
+
+				if (*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x20) == 0x00000001) {
+					// this fixes ????
+					return;
+				}
+				*/
+				
+				
 				//log("pattern: %d state: %d", pattern, state);
+
+				// heat is done by cloning a sprite of the char, and having it as an effect. thats very annoying
+
+				// this testing was done on cwarc. is it different per char? (please dont be)
+				// or like,,, idk there must be something else different
+				// maybe i should,,, avoid overwriting the shader or something?
+				
 
 				//log("obj: %08X", listAppendHook_objAddr);
 				//if (blendMode == 0) { // for now, disable these. where is blend mode passed into a func to be used? 
@@ -418,6 +504,30 @@ __declspec(naked) void _naked_drawPrimCallback() {
 	};
 }
 
+__declspec(naked) void _naked_drawPrimCallback2() {
+	// see if reseting the pixel shader early has benifits
+	PUSH_ALL;
+	drawPrimCallback();
+	POP_ALL;
+	
+	// overwritten asm from 0x004be35a
+	__asm _emit 0x8B;
+	__asm _emit 0x55;
+	__asm _emit 0x00;
+
+	__asm _emit 0x8B;
+	__asm _emit 0x82;
+	__asm _emit 0xA4;
+	__asm _emit 0x00;
+	__asm _emit 0x00;
+	__asm _emit 0x00;
+
+	__asm {
+		push 004be363h;
+		ret;
+	}
+}
+
 //DWORD* __absolutelyUseless = (DWORD*)0x0076e7c8;
 DWORD _naked_leadToDrawPrimHook_jmp = 0x004c0385;
 __declspec(naked) void _naked_leadToDrawPrimHook() {
@@ -469,6 +579,7 @@ __declspec(naked) void _naked_listAppendHook() {
 		// wara 236c (red orb)
 		// every shield fucks things up
 		// kouma 22b j22a/b/c should be transparent. am i OVERWRITING A PIXEL SHADER?? THAT WOULD BE BAD
+		// cvaki j22a somehow, i have no clue, but look towards the bottom of the screen, theres just a weird thing at the end of it 
 
 		mov eax, [esp + 350h];
 		mov listAppendHook_objAddr, eax;
@@ -600,6 +711,7 @@ void initDrawPrimHook() {
 
 void initDrawPrimCallback() {
 	patchJump(0x004be524, _naked_drawPrimCallback);
+	//patchJump(0x004be35a, _naked_drawPrimCallback2);
 }
 
 void initLeadToDrawPrimHook() {

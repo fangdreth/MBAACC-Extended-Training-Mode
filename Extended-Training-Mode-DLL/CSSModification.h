@@ -95,7 +95,7 @@ void palettePatcherCallback() {
 	}
 
 	if (_naked_PalettePatcherHook_ebx == 0) {
-		log("miscTests ebx was NULL");
+		log("palettePatcherCallback ebx was NULL");
 		return;
 	}
 
@@ -104,11 +104,11 @@ void palettePatcherCallback() {
 	size_t len = strnlen_s(loadString, 256);
 
 	if (len == 0) {
-		log("miscTests ebx was NULL");
+		log("palettePatcherCallback ebx was NULL");
 		return;
 	}
 
-	log("miscTests ebx: %s", loadString);
+	log("palettePatcherCallback ebx: %s", loadString);
 
 	const char* fileType = loadString + len - 3;
 
