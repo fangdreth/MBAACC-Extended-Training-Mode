@@ -315,6 +315,7 @@ void SetRyougiKnife(HANDLE hMBAAHandle, DWORD dwBaseAddress, bool bInfinite)
 {
     int nTemp = bInfinite ? 0 : 1;
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RyougiKnife), &nTemp, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RyougiKnife), &nTemp, 4, 0);
 }
 
 void SetP1X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
