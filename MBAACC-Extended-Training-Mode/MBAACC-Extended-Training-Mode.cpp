@@ -472,7 +472,7 @@ int main(int argc, char* argv[])
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwReduceRecovery), &nWriteBuffer, 4, 0);
                         
                     DWORD dwReturnToMainMenuString = GetReturnToMainMenuStringAddress(hMBAAHandle, dwBaseAddress);
-                    char pcConfigureKeys[19] = "HOTKEY SETTINGS";
+                    char pcConfigureKeys[19] = "HOTKEYS";
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReturnToMainMenuString), &pcConfigureKeys, 19, 0);
 #ifdef sadly_obsolete
                     // Replace the RETURN TO MAIN MENU option with fancy scrolling text
