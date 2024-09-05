@@ -62,10 +62,11 @@ float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 
 	float3 hsvVal = RGBtoHSV(texColor.rgb);
 
-	hsvVal.r = Hue.r;
-	//hsvVal.r = 0.6f;
+	// hsvVal.r = Hue.r;
 
-	//hsvVal.r = ActiveColor.r;
+	//hsvVal.r = texColor.x;
+
+	hsvVal.r = 0.5;	
 
 	float3 rgbVal = HSVtoRGB(hsvVal.rgb);
 
@@ -74,7 +75,8 @@ float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 	return texColor;
 }
 
-)";
+)"; 
+
 
 // shader vars
 D3DXVECTOR4 dynamicColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -365,7 +367,7 @@ void listAppendHook() {
 					return;
 				}
 
-				log("char: %3d pattern: %5d", charID, pattern);
+				//log("char: %3d pattern: %5d", charID, pattern);
 
 				textureAddrs.insert({ listAppendHook_texAddr, TextureModification(blendMode)});
 				

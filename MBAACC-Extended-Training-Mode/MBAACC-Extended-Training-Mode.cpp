@@ -247,6 +247,7 @@ int main(int argc, char* argv[])
             nGameMode = nReadResult;
             if (nGameMode != 4112)
             {
+                hMBAAHandle = 0;
                 continue;
             }
 
