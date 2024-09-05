@@ -1254,6 +1254,17 @@ void frameDoneCallback()
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SELECTED SAVE", *(char*)(dwBaseAddress + adSharedSaveSlot));
 	}
 
+	char pcMessageBuffer[32];
+	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
+	if (strcmp(pcMessageBuffer, "") != 0)
+	{
+		char pcEmpty[32] = "";
+		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcEmpty, 32, 0);
+
+		nDrawTextTimer = TEXT_TIMER;
+		snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", pcMessageBuffer);
+	}
+
 	if (nDrawTextTimer != 0 && safeWrite())
 	{
 		static char buffer[256];

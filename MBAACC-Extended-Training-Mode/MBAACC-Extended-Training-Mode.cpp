@@ -682,11 +682,28 @@ int main(int argc, char* argv[])
                             }
                             if (nEnemySettingsCursor == 5)
                             {
-                                LoadStateFromFile(hMBAAHandle, dwBaseAddress, nSaveSlot);
+                                if (nSaveSlot == 0)
+                                {
+                                    char pcTemp[32] = "NO SLOT SELECTED";
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcTemp, 32, 0);
+                                }
+                                else
+                                    LoadStateFromFile(hMBAAHandle, dwBaseAddress, nSaveSlot);
                             }
                             else if (nEnemySettingsCursor == 6)
                             {
-                                SaveStateToFile(hMBAAHandle, dwBaseAddress, nSaveSlot);
+                                if (nSaveSlot == 0)
+                                {
+                                    char pcMessageBuffer[32] = "NO SLOT SELECTED";
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
+                                }
+                                else if (!CheckSave(nSaveSlot))
+                                {
+                                    char pcMessageBuffer[32] = "NO SAVE DATA";
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
+                                }
+                                else
+                                    SaveStateToFile(hMBAAHandle, dwBaseAddress, nSaveSlot);
                             }
                             break;
                         }
@@ -2360,14 +2377,14 @@ int main(int argc, char* argv[])
                     case SAVE_STATE_PAGE:
                     {
                         nWriteBuffer = ONSCREEN_LOCATION;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
 
                         nWriteBuffer = OFFSCREEN_LOCATION;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
 
                         if (nSaveSlot == 0)
                         {

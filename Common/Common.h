@@ -291,6 +291,8 @@ const ADDRESS adSharedHitHighlight =				adShareBase + 0x28; // 4 bytes
 const ADDRESS adSharedArmorHighlight =				adShareBase + 0x2C; // 4 bytes
 const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x30; // 4 bytes
 
+const ADDRESS adSharedMessageBuffer =				adShareBase + 0x100; // 32 bytes
+
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
 const std::vector<int> vGuardLevelLookupTable =
