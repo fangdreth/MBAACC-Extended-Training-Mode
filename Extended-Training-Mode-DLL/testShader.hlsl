@@ -172,7 +172,7 @@ float4 infrared(float2 texCoord : TEXCOORD0) : COLOR
 	return texColor;
 }
 
-float4 main(float2 texCoord : TEXCOORD0) : COLOR {
+float4 weirdBadApple(float2 texCoord : TEXCOORD0) : COLOR {
 	
 	float4 orig = tex2D(textureSampler, texCoord);
 	
@@ -218,4 +218,16 @@ float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 	newCol.a = orig.a;
 	
 	return newCol;
+}
+
+float4 main(float2 texCoord : TEXCOORD0) : COLOR
+{
+	
+    float4 orig = tex2D(textureSampler, texCoord);
+	
+    float4 newCol = tex2D(textureSampler2, texCoord);
+
+    newCol.a = orig.a;
+	
+    return newCol;
 }

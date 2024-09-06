@@ -401,6 +401,45 @@ void loadBadApple() {
 	log("setup directx thing too");
 }
 
+void initSong() {
+
+	static bool isPlaying = false;
+	if (isPlaying) {
+		return;
+	}
+
+	isPlaying = true;
+
+	std::string folderPath = std::string(__FILE__);
+
+	size_t pos = folderPath.find_last_of('\\');
+
+	folderPath = folderPath.substr(0, pos);
+
+	folderPath += "\\BadApple.wav";
+
+	std::string command = "open \"" + folderPath + "\" type waveaudio alias BadApple";
+
+	mciSendStringA(command.c_str(), NULL, 0, NULL);
+
+	
+	mciSendStringA("play BadApple", NULL, 0, NULL);
+	//mciSendStringA("setaudio BadApple volume to 10", NULL, 0, NULL);	
+
+	// this code somehow maintains state over multiple runs, and can and will fuck your melty up permanently
+	waveOutSetVolume(NULL, 0xFFFFFFFF);
+	//waveOutSetVolume(NULL, 0x0000);
+}
+
+void pauseSong() {
+	mciSendStringA("pause BadApple", NULL, 0, NULL);
+}
+
+void playSong() {
+	initSong();
+	mciSendStringA("resume BadApple", NULL, 0, NULL);
+}
+
 // actual funcs
 
 DWORD leadToDrawPrimHook_ret = 0;
@@ -480,6 +519,7 @@ void drawPrimHook() {
 			}
 		}
 
+		shouldPlaySong = true;
 		
 
 		device->SetTexture(1, pBadAppleTex);

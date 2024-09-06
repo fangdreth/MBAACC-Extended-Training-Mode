@@ -16,13 +16,17 @@
 #include <d3d9.h>
 #include <d3dx9.h> // https://www.microsoft.com/en-us/download/details.aspx?id=6812
 #include <algorithm>
+#include <dsound.h>
+#include <mmsystem.h>
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
 
 #pragma comment(lib, "ws2_32.lib") 
 #pragma comment(lib, "d3d9.lib") 
-#pragma comment(lib, "d3dx9.lib") 
+#pragma comment(lib, "d3dx9.lib")
+#pragma comment(lib, "dsound.lib")
+#pragma comment(lib, "winmm.lib")
 
 #pragma push_macro("optimize")
 //#pragma optimize("t", on) 
@@ -157,6 +161,11 @@ ADDRESS dwCasterBaseAddress = 0;
 ADDRESS dwCasterFullBaseAddress = 0;
 DWORD dwDevice = 0; // MASM is horrid when it comes to writing pointers vs value of pointer bc it has type checking. thats why this cant be a pointer
 IDirect3DDevice9* device = NULL;
+
+DWORD dwSoundDevice = 0;
+IDirectSound8* soundDevice = NULL;
+
+bool shouldPlaySong = false;
 
 const ADDRESS INPUTDISPLAYTOGGLE = (dwBaseAddress + 0x001585f8);
 
@@ -1502,7 +1511,21 @@ void frameDoneCallback()
 		log("avail tex mem is %08X", avalTexMem);
 
 		//HookThisShit(device);
-	}	
+	}
+
+	static bool soundDeviceInit = false;
+	if (!soundDeviceInit) {
+
+		//playSong();
+		
+	}
+
+	if (shouldPlaySong) {
+		playSong();
+	} else {
+		pauseSong();
+	}
+	shouldPlaySong = false;
 }
 
 __declspec(naked) void nakedFrameDoneCallback() {
@@ -2415,45 +2438,10 @@ void initDirectX() {
 		Sleep(16 * 10);
 	}
 
-	// this is not a good idea
-	//Sleep(3 * 1000);
-
 	log("endScene at %08X", dwCasterBaseAddress + addrEndScene);
 	log("endScene patch at %08X", dwCasterBaseAddress + addrEndScenePatch);
 
 	patchJump(dwCasterBaseAddress + addrEndScenePatch, directXHook);
-
-	/*
-	D3DXVECTOR3 rgb;
-	D3DXVECTOR3 hsv;
-
-	rgb = D3DXVECTOR3(255.0f, 254.0f, 0.0f);
-
-	hsv = RGBtoHSV(rgb);
-	log("h: %6.2f s: %6.2f v: %6.2f", hsv.x, hsv.y, hsv.z);
-	rgb = HSVtoRGB(hsv);
-	log("r: %6.2f g: %6.2f b: %6.2f", rgb.x, rgb.y, rgb.z);
-
-
-	rgb = D3DXVECTOR3(0.0f, 255.0f, 200.0f);
-
-	hsv = RGBtoHSV(rgb);
-	log("h: %6.2f s: %6.2f v: %6.2f", hsv.x, hsv.y, hsv.z);
-	rgb = HSVtoRGB(hsv);
-	log("r: %6.2f g: %6.2f b: %6.2f", rgb.x, rgb.y, rgb.z);
-
-	rgb = D3DXVECTOR3(254.0f, 0.0f, 255.0f);
-
-	hsv = RGBtoHSV(rgb);
-	log("h: %6.2f s: %6.2f v: %6.2f", hsv.x, hsv.y, hsv.z);
-	rgb = HSVtoRGB(hsv);
-	log("r: %6.2f g: %6.2f b: %6.2f", rgb.x, rgb.y, rgb.z);
-
-	__asm {
-		int 3;
-	}
-	*/
-
 }
 
 void initIdk() {
