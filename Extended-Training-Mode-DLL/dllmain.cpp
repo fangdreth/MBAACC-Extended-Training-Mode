@@ -1199,7 +1199,7 @@ void frameDoneCallback()
 		oFrameBarLeftScrollKey.nHeldKeyCounter++;
 	else
 		oFrameBarLeftScrollKey.nHeldKeyCounter = 0;
-	if (oFrameBarLeftScrollKey.keyDown() || oFrameBarLeftScrollKey.nHeldKeyCounter >= 150)
+	if (oFrameBarLeftScrollKey.keyDown() || oFrameBarLeftScrollKey.nHeldKeyCounter >= 20)
 	{
 		nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
 		nBarScrolling++;
@@ -1210,7 +1210,7 @@ void frameDoneCallback()
 		oFrameBarRightScrollKey.nHeldKeyCounter++;
 	else
 		oFrameBarRightScrollKey.nHeldKeyCounter = 0;
-	if (oFrameBarRightScrollKey.keyDown() || oFrameBarRightScrollKey.nHeldKeyCounter >= 150)
+	if (oFrameBarRightScrollKey.keyDown() || oFrameBarRightScrollKey.nHeldKeyCounter >= 20)
 	{
 		nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
 		nBarScrolling--;
