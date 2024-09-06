@@ -154,14 +154,14 @@ float4 infrared(float2 texCoord : TEXCOORD0) : COLOR
 	const float insideDelta = 4 * (1.0 - 0.75f);
 	
 	float alpha = colorLeft.a + colorRight.a + colorUp.a + colorDown.a;
-    
+	
 	float3 res = RGBtoHSV(texColor.rgb);
 	
 	//res.x = 0.0;
 	
 	if (alpha > insideDelta) {
-        res.x -= 0.5 * (alpha / 4.0) * (alpha / 4.0) * (alpha / 4.0);
-    }
+		res.x -= 0.5 * (alpha / 4.0) * (alpha / 4.0) * (alpha / 4.0);
+	}
 	
 	if (res.x < 0.0) {
 		res.x += 1.0;
@@ -174,11 +174,48 @@ float4 infrared(float2 texCoord : TEXCOORD0) : COLOR
 
 float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 	
-    float4 orig = tex2D(textureSampler, texCoord);
+	float4 orig = tex2D(textureSampler, texCoord);
 	
-    float4 newCol = tex2D(textureSampler2, texCoord);
+	float4 newCol = tex2D(textureSampler2, texCoord);
 	
-    newCol.a = orig.a;
+	float2 texOffset = 2.0 / texSize;
+	float4 colorUp   = tex2D(textureSampler2, texCoord - float2(0, texOffset.y));
+	float4 colorDown = tex2D(textureSampler2, texCoord + float2(0, texOffset.y));
+	float4 colorLeft = tex2D(textureSampler2, texCoord - float2(texOffset.x, 0));
+	float4 colorRight = tex2D(textureSampler2, texCoord + float2(texOffset.x, 0));
 	
-    return newCol;
+	float4 upDif    = abs(colorUp - newCol);
+	float4 downDif  = abs(colorDown - newCol);
+    float4 leftDif  = abs(colorLeft - newCol);
+    float4 rightDif = abs(colorRight - newCol);
+	
+	float up    = upDif.r      * upDif.g      * upDif.b;
+	float down  = downDif.r    * downDif.g    * downDif.b;
+    float left  = leftDif.r    * leftDif.g    * leftDif.b;
+    float right = rightDif.r   * rightDif.g   * rightDif.b;
+	
+	const float idrk = 0.01;
+	
+    float3 newHSV = float3(0.0, 0.0, 0.0);
+
+	if (down > idrk) {
+        newHSV.xyz = float3(0.9, 1.0, 1.0);
+    }
+	
+	if (up > idrk) {
+        newHSV.xyz = float3(0.5, 1.0, 1.0);
+    }
+	
+	if (left > idrk) {
+        newHSV.xyz = float3(0.3, 1.0, 1.0);
+    }
+	
+    if (right > idrk) {
+        newHSV.xyz = float3(0.0, 1.0, 1.0);
+    }
+	
+    newCol.rgb = HSVtoRGB(newHSV);
+	newCol.a = orig.a;
+	
+	return newCol;
 }

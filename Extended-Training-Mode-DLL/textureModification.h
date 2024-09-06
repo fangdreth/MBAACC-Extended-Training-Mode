@@ -390,7 +390,8 @@ void loadBadApple() {
 		D3DFMT_A8R8G8B8,
 		D3DPOOL_DEFAULT,
 		D3DX_FILTER_NONE, //filter?
-		D3DX_DEFAULT, // mip filter????
+		//D3DX_DEFAULT, // mip filter????
+		D3DX_FILTER_NONE,
 		0, // replace color
 		NULL, // img info
 		NULL, // palette
@@ -467,7 +468,8 @@ void drawPrimHook() {
 					D3DPOOL_DEFAULT,
 					//D3DX_DEFAULT, //filter?
 					D3DX_FILTER_NONE, // default filter is whatwas slowing things down https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dx-filter
-					D3DX_DEFAULT, // mip filter????
+					//D3DX_DEFAULT, // mip filter????
+					D3DX_FILTER_NONE, 
 					0, // replace color
 					NULL, // img info
 					NULL, // palette
