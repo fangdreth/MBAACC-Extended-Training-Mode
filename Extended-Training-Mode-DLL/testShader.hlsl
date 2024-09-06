@@ -172,7 +172,7 @@ float4 infrared(float2 texCoord : TEXCOORD0) : COLOR
 	return texColor;
 }
 
-float4 weirdBadApple(float2 texCoord : TEXCOORD0) : COLOR {
+float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 	
 	float4 orig = tex2D(textureSampler, texCoord);
 	
@@ -186,48 +186,62 @@ float4 weirdBadApple(float2 texCoord : TEXCOORD0) : COLOR {
 	
 	float4 upDif    = abs(colorUp - newCol);
 	float4 downDif  = abs(colorDown - newCol);
-    float4 leftDif  = abs(colorLeft - newCol);
-    float4 rightDif = abs(colorRight - newCol);
+	float4 leftDif  = abs(colorLeft - newCol);
+	float4 rightDif = abs(colorRight - newCol);
 	
 	float up    = upDif.r      * upDif.g      * upDif.b;
 	float down  = downDif.r    * downDif.g    * downDif.b;
-    float left  = leftDif.r    * leftDif.g    * leftDif.b;
-    float right = rightDif.r   * rightDif.g   * rightDif.b;
+	float left  = leftDif.r    * leftDif.g    * leftDif.b;
+	float right = rightDif.r   * rightDif.g   * rightDif.b;
 	
 	const float idrk = 0.01;
 	
-    float3 newHSV = float3(0.0, 0.0, 0.0);
+	float3 newHSV = float3(0.0, 0.0, 0.0);
 
+	float newHue = 0.0;
+	
 	if (down > idrk) {
-        newHSV.xyz = float3(0.9, 1.0, 1.0);
-    }
+		//newHSV.xyz = float3(0.73, 1.0, 1.0);
+		newHue += 0.2;
+	}
 	
 	if (up > idrk) {
-        newHSV.xyz = float3(0.5, 1.0, 1.0);
-    }
+		//newHSV.xyz = float3(0.5, 1.0, 1.0);
+		newHue += 0.2;
+	}
 	
 	if (left > idrk) {
-        newHSV.xyz = float3(0.3, 1.0, 1.0);
-    }
+		//newHSV.xyz = float3(0.3, 1.0, 1.0);
+		newHue += 0.2;
+	}
 	
-    if (right > idrk) {
-        newHSV.xyz = float3(0.0, 1.0, 1.0);
-    }
+	if (right > idrk) {
+		//newHSV.xyz = float3(0.0, 1.0, 1.0);
+		newHue += 0.25;
+	}
 	
-    newCol.rgb = HSVtoRGB(newHSV);
+	if (newHue > 0) {
+		if (newHue > 1.0) {
+            newHue -= 1;
+        }
+		newHSV.xyz = float3(newHue, 1.0, 1.0);
+
+	}
+	
+		newCol.rgb = HSVtoRGB(newHSV);
 	newCol.a = orig.a;
 	
 	return newCol;
 }
 
-float4 main(float2 texCoord : TEXCOORD0) : COLOR
+float4 badApple(float2 texCoord : TEXCOORD0) : COLOR
 {
 	
-    float4 orig = tex2D(textureSampler, texCoord);
+	float4 orig = tex2D(textureSampler, texCoord);
 	
-    float4 newCol = tex2D(textureSampler2, texCoord);
+	float4 newCol = tex2D(textureSampler2, texCoord);
 
-    newCol.a = orig.a;
+	newCol.a = orig.a;
 	
-    return newCol;
+	return newCol;
 }

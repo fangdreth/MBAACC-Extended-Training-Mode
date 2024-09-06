@@ -131,8 +131,14 @@ __declspec(naked) void _IDirect3DDevice9_GetSwapChain_func() {
 }
 DWORD _IDirect3DDevice9_Reset_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_Reset_func() {
+	// this func causes the device pointer to,,,, be reset????
+	// all resources need to be freed here. this is,,,,, bad.
+	// ill need a seperate callback for reset tbh ill need to regrab the device pointer??? ill,, ugh
+	// do i need to regrab it? or just release my shit
 	PUSH_ALL;
-	log("IDirect3DDevice9_Reset called!");
+	log("IDirect3DDevice9_Reset called! NULLING THE DEVICE POINTER. FIREWORKS");
+	//device = NULL; 
+	//__device = NULL;
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_Reset_addr];
@@ -452,7 +458,7 @@ __declspec(naked) void _IDirect3DDevice9_GetDepthStencilSurface_func() {
 }
 DWORD _IDirect3DDevice9_BeginScene_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_BeginScene_func() {
-	//PUSH_ALL;
+	//USH_ALL;
 	//log("IDirect3DDevice9_BeginScene called!");
 	//POP_ALL;
 	__asm {

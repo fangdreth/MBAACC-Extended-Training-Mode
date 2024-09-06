@@ -469,6 +469,19 @@ void logStack() {
 
 DWORD needHookReset = false;
 
+std::string getExtraDataPath() {
+
+	std::string loadPath = std::string(__FILE__);
+	size_t pos = loadPath.find_last_of('\\');
+	loadPath = loadPath.substr(0, pos);
+	//loadPath += "\\testShader.hlsl";
+
+	loadPath += "\\";
+
+	//return loadPath;
+	return ".\\"; // for distribution, just have the extra files in the melty folder
+}
+
 // patch funcs
 
 void __stdcall patchMemcpy(auto dst, auto src, size_t n)
@@ -1510,7 +1523,7 @@ void frameDoneCallback()
 
 		log("avail tex mem is %08X", avalTexMem);
 
-		//HookThisShit(device);
+		HookThisShit(device);
 	}
 
 	static bool soundDeviceInit = false;

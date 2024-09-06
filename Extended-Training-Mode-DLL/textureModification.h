@@ -249,13 +249,12 @@ void initShader() {
 
 void initShaderFromFile() {
 
-	std::string loadPath = std::string(__FILE__);
+	//std::string loadPath = std::string(__FILE__);
+	//size_t pos = loadPath.find_last_of('\\');
+	//loadPath = loadPath.substr(0, pos);
+	//loadPath += "\\testShader.hlsl";
 
-	size_t pos = loadPath.find_last_of('\\');
-	
-	loadPath = loadPath.substr(0, pos);
-
-	loadPath += "\\testShader.hlsl";
+	std::string loadPath = getExtraDataPath() + "testShader.hlsl";
 
 	log("path: %s", loadPath.c_str());
 
@@ -339,6 +338,8 @@ std::vector<BadAppleFrame> badAppleFrames;
 IDirect3DTexture9* pBadAppleTex = NULL;
 
 void loadBadApple() {
+	
+	return;
 
 	if (device == NULL) {
 		return;
@@ -352,13 +353,12 @@ void loadBadApple() {
 
 	loadBadApple = true;
 	
-	std::string folderPath = std::string(__FILE__);
+	//std::string folderPath = std::string(__FILE__);
+	//size_t pos = folderPath.find_last_of('\\');
+	//folderPath = folderPath.substr(0, pos);
+	//folderPath += "\\BadApple\\";
 
-	size_t pos = folderPath.find_last_of('\\');
-
-	folderPath = folderPath.substr(0, pos);
-
-	folderPath += "\\BadApple\\";
+	std::string folderPath = getExtraDataPath() + "BadApple\\";
 
 	log("loading BadApple from %s", folderPath.c_str());
 
@@ -383,8 +383,9 @@ void loadBadApple() {
 	log("textures loaded successfully");
 
 	D3DXCreateTextureFromFileInMemoryEx(device,
-		badAppleFrames[100].data, badAppleFrames[100].size,
+		badAppleFrames[0].data, badAppleFrames[0].size,
 		480, 360,
+		//640, 360,
 		0, // MIP
 		D3DUSAGE_DYNAMIC,
 		D3DFMT_A8R8G8B8,
@@ -401,22 +402,26 @@ void loadBadApple() {
 	log("setup directx thing too");
 }
 
-void initSong() {
+void initSong(bool force = false) {
 
 	static bool isPlaying = false;
+
+	if (force) {
+		isPlaying = false;
+	}
+
 	if (isPlaying) {
 		return;
 	}
 
 	isPlaying = true;
 
-	std::string folderPath = std::string(__FILE__);
+	//std::string folderPath = std::string(__FILE__);
+	//size_t pos = folderPath.find_last_of('\\');
+	//folderPath = folderPath.substr(0, pos);
+	//folderPath += "\\BadApple.wav";
 
-	size_t pos = folderPath.find_last_of('\\');
-
-	folderPath = folderPath.substr(0, pos);
-
-	folderPath += "\\BadApple.wav";
+	std::string folderPath = getExtraDataPath() + "BadApple.wav";
 
 	std::string command = "open \"" + folderPath + "\" type waveaudio alias BadApple";
 
@@ -440,12 +445,25 @@ void playSong() {
 	mciSendStringA("resume BadApple", NULL, 0, NULL);
 }
 
+void restartSong() {
+	mciSendStringA("stop BadApple", NULL, 0, NULL);
+	mciSendStringA("seek BadApple to start", NULL, 0, NULL);
+	mciSendStringA("play BadApple", NULL, 0, NULL);
+}
+
 // actual funcs
 
 DWORD leadToDrawPrimHook_ret = 0;
 IDirect3DPixelShader9* pPixelShader_backup_test = nullptr;
 DWORD drawPrimHook_texAddr = 0;
 void drawPrimHook() {
+
+	
+	/*if (device != NULL) {
+		log("device: %08X deviceVal: %08X", (DWORD)device, *(DWORD*)device);
+	} else {
+		log("device: %08X deviceVal: NULL", (DWORD)device);
+	}*/
 
 	loadBadApple();
 
@@ -501,6 +519,7 @@ void drawPrimHook() {
 				D3DXCreateTextureFromFileInMemoryEx(device,
 					badAppleFrames[badAppleFrame].data, badAppleFrames[badAppleFrame].size,
 					480, 360,
+					//640, 360,
 					0, // MIP
 					D3DUSAGE_DYNAMIC,
 					D3DFMT_A8R8G8B8,
@@ -515,7 +534,11 @@ void drawPrimHook() {
 					&pBadAppleTex
 				);
 			
-				badAppleFrame = (badAppleFrame + 1) % badAppleFrames.size();
+				badAppleFrame++;
+				if (badAppleFrame >= badAppleFrames.size()) {
+					badAppleFrame = 0;
+					restartSong();
+				}
 			}
 		}
 
@@ -535,6 +558,7 @@ void drawPrimHook() {
 		// ffmpeg -i "..\Touhou - Bad Apple.mp4" -vf "scale=iw/2:ih/2" "BadApple%04d.jpg"
 		// ffmpeg -i "..\Touhou - Bad Apple.mp4" -vf "scale=iw/2:ih/2" "BadApple%04d.jpg"
 		// ffmpeg -i "..\Touhou - Bad Apple.mp4" -vf "scale=-1:255" "BadApple%04d.jpg"
+		// ffmpeg -i "..\Hi_Fine_FOX_Original.mp4" -vf "scale=-1:360" "BadApple%04d.jpg"
 
 
 
