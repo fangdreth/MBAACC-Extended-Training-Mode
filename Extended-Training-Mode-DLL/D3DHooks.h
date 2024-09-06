@@ -269,7 +269,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
 
 		__asm {
 			nop;
-			int 3;
+			//int 3;
 			nop;
 		}
 
@@ -1126,7 +1126,7 @@ __declspec(naked) void _IDirect3DDevice9_SetPixelShader_func() {
 	if (_IDirect3DDevice9_SetPixelShader_shaderAddr != 0) {
 		__asm {
 			nop;
-			int 3;
+			//int 3;
 			nop;
 		};
 	}
@@ -1157,6 +1157,8 @@ DWORD SetPixelShaderConstantF_Vector4fCount = 0;
 DWORD SetPixelShaderConstantF_reg = 0;
 
 void omfg() {
+
+	return;
 
 	static float idk = 0.0f;
 

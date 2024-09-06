@@ -339,7 +339,7 @@ IDirect3DTexture9* pBadAppleTex = NULL;
 
 void loadBadApple() {
 	
-	return;
+	//return;
 
 	if (device == NULL) {
 		return;
@@ -382,6 +382,7 @@ void loadBadApple() {
 
 	log("textures loaded successfully");
 
+	/*
 	D3DXCreateTextureFromFileInMemoryEx(device,
 		badAppleFrames[0].data, badAppleFrames[0].size,
 		480, 360,
@@ -400,6 +401,7 @@ void loadBadApple() {
 	);
 	
 	log("setup directx thing too");
+	*/
 }
 
 void initSong(bool force = false) {
@@ -432,7 +434,8 @@ void initSong(bool force = false) {
 	//mciSendStringA("setaudio BadApple volume to 10", NULL, 0, NULL);	
 
 	// this code somehow maintains state over multiple runs, and can and will fuck your melty up permanently
-	waveOutSetVolume(NULL, 0xFFFFFFFF);
+	// i need to find where melty calls volume stuff
+	//waveOutSetVolume(NULL, 0xFFFFFFFF);
 	//waveOutSetVolume(NULL, 0x0000);
 }
 
@@ -458,27 +461,8 @@ IDirect3DPixelShader9* pPixelShader_backup_test = nullptr;
 DWORD drawPrimHook_texAddr = 0;
 void drawPrimHook() {
 
-	
-	/*if (device != NULL) {
-		log("device: %08X deviceVal: %08X", (DWORD)device, *(DWORD*)device);
-	} else {
-		log("device: %08X deviceVal: NULL", (DWORD)device);
-	}*/
-
 	loadBadApple();
-
-	/*
 	
-	TODO:
-	the random thing currently in works. 
-	however:
-
-	top UI elems were constantly inverted, why
-
-	actual todo, investigate the stack, and figure out how to capture what is actually being drawn, and use that 
-	
-	*/
-
 	device->GetPixelShader(&pPixelShader_backup_test);
 	if (pPixelShader_backup_test != NULL) {
 		log("something else was using the pixel shader??");
@@ -495,10 +479,12 @@ void drawPrimHook() {
 
 	//bool cond = (index >= 5 && index <= 8);
 	if (textureAddrs.contains(drawPrimHook_texAddr)) {
-		device->GetPixelShader(&pPixelShader_backup);
+		
+		/*device->GetPixelShader(&pPixelShader_backup);
 		if (pPixelShader_backup != NULL) {
 			log("non null shader??");
-		}
+		}*/
+
 		pixelShaderNeedsReset = true;
 		device->SetPixelShader(pPixelShader);
 
@@ -507,14 +493,16 @@ void drawPrimHook() {
 
 		// this better not cause slowdown
 		static unsigned lastTextureFrameCount = -1;
-		if (pBadAppleTex != NULL && lastTextureFrameCount != textureFrameCount) {
+		if (lastTextureFrameCount != textureFrameCount) {
 
 			lastTextureFrameCount = textureFrameCount;
 
 			if (textureFrameCount & 1) {
 
-				pBadAppleTex->Release();
-				pBadAppleTex = NULL;
+				if (pBadAppleTex != NULL) {
+					pBadAppleTex->Release();
+					pBadAppleTex = NULL;
+				}
 
 				D3DXCreateTextureFromFileInMemoryEx(device,
 					badAppleFrames[badAppleFrame].data, badAppleFrames[badAppleFrame].size,
@@ -550,8 +538,6 @@ void drawPrimHook() {
 		//IDirect3DBaseTexture9* pTex = (IDirect3DBaseTexture9*)drawPrimHook_texAddr;
 		IDirect3DTexture9* pTex = (IDirect3DTexture9*)drawPrimHook_texAddr;
 
-	
-
 		// bad apple is 480x360, 30fps
 		// i could have used ffmpeg in c++, but then i would have to go deal with library compiler error bs and wish i was on linux
 		// just use this ffmpeg -i '..\Touhou - Bad Apple.mp4' "BadApple%04d.jpg"
@@ -560,9 +546,6 @@ void drawPrimHook() {
 		// ffmpeg -i "..\Touhou - Bad Apple.mp4" -vf "scale=-1:255" "BadApple%04d.jpg"
 		// ffmpeg -i "..\Hi_Fine_FOX_Original.mp4" -vf "scale=-1:360" "BadApple%04d.jpg"
 
-
-
-
 		D3DSURFACE_DESC desc;
 		pTex->GetLevelDesc(0, &desc); // Get the texture size
 		
@@ -570,62 +553,19 @@ void drawPrimHook() {
 		device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
 
 		//pTex->Release();
+		// 		
+		//renderStateNeedsReset = true;
 
-		// make all things use normal color blending
-		//device->SetRenderState(D3DRS_BLENDOP, 0);
-		device->GetRenderState(D3DRS_ALPHABLENDENABLE, &renderState_backup);
-		renderStateNeedsReset = true;
-
-		//device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	}
 
 	index++;
 }
 
 void drawPrimCallback() {
-	
-
-	if (renderStateNeedsReset) {
-		DWORD srcblend;
-		DWORD dstblend;
-
-		DWORD sepAlphaEnable;
-		DWORD srcAlpha;
-		DWORD dstAlpha;
-		DWORD blendAlpha;
-		DWORD otherBlendAlpha;
-
-		device->GetRenderState(D3DRS_SRCBLEND, &srcblend);
-		device->GetRenderState(D3DRS_DESTBLEND, &dstblend);
-
-		device->GetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, &sepAlphaEnable);
-		device->GetRenderState(D3DRS_SRCBLENDALPHA, &srcAlpha);
-		device->GetRenderState(D3DRS_DESTBLENDALPHA, &dstAlpha);
-		device->GetRenderState(D3DRS_BLENDOPALPHA, &blendAlpha);
-		device->GetRenderState(D3DRS_BLENDOP, &otherBlendAlpha);
-
-		DWORD magFilter;
-		DWORD minFilter;
-
-		device->GetSamplerState(0, D3DSAMP_MAGFILTER, &magFilter);
-		device->GetSamplerState(0, D3DSAMP_MINFILTER, &minFilter);
-
-		//log("D3DRS_SRCBLEND: %2d D3DRS_DESTBLEND: %2d D3DRS_SEPARATEALPHABLENDENABLE: %2d D3DRS_SRCBLENDALPHA: %2d D3DRS_DESTBLENDALPHA: %2d D3DRS_BLENDOPALPHA: %2d D3DRS_BLENDOP: %2d D3DSAMP_MAGFILTER: %2d D3DSAMP_MINFILTER: %2d", srcblend, dstblend, sepAlphaEnable, srcAlpha, dstAlpha, blendAlpha, otherBlendAlpha, magFilter, minFilter);
-	}
-
 	if (pixelShaderNeedsReset) {
 		pixelShaderNeedsReset = false;
 		device->SetPixelShader(pPixelShader_backup);
 	}
-	
-
-	if (renderStateNeedsReset) {
-		renderStateNeedsReset = false;
-		//device->SetRenderState(D3DRS_ALPHABLENDENABLE, renderState_backup);
-	}
-
-	
-	//device->SetPixelShader(pPixelShader_backup);
 }
  
 DWORD listAppendHook_effectRetAddr = 0;
@@ -708,36 +648,6 @@ void listAppendHook() {
 
 		}	
 	}
-}
-
-DWORD BLENDOP_Val;
-DWORD ALPHABLENDENABLE_Val;
-DWORD SRCBLEND_Val;
-DWORD DESTBLEND_Val;
-DWORD SEPARATEALPHABLENDENABLE_Val;
-DWORD SRCBLENDALPHA_Val;
-DWORD DESTBLENDALPHA_Val;
-void setRenderStatesHook() {
-
-	if (renderStateNeedsReset) {
-		//log("D3DRS_BLENDOP: %2d D3DRS_ALPHABLENDENABLE: %2d D3DRS_SRCBLEND: %2d D3DRS_DESTBLEND: %2d D3DRS_SEPARATEALPHABLENDENABLE: %2d D3DRS_SRCBLENDALPHA: %2d D3DRS_DESTBLENDALPHA: %2d", BLENDOP_Val, ALPHABLENDENABLE_Val, SRCBLEND_Val, DESTBLEND_Val, SEPARATEALPHABLENDENABLE_Val, SRCBLENDALPHA_Val, DESTBLENDALPHA_Val);
-	
-		if (D3DRS_DESTBLEND != 6) {
-			//DESTBLEND_Val = 6;
-			//log("changing DESTBLEND_Val to 6");
-		}
-	}
-	
-	
-
-	device->SetRenderState(D3DRS_BLENDOP, BLENDOP_Val);
-	device->SetRenderState(D3DRS_ALPHABLENDENABLE, ALPHABLENDENABLE_Val);
-	device->SetRenderState(D3DRS_SRCBLEND, SRCBLEND_Val);
-	device->SetRenderState(D3DRS_DESTBLEND, DESTBLEND_Val);
-	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, SEPARATEALPHABLENDENABLE_Val);
-	device->SetRenderState(D3DRS_SRCBLENDALPHA, SRCBLENDALPHA_Val);
-	device->SetRenderState(D3DRS_DESTBLENDALPHA, DESTBLENDALPHA_Val);
-
 }
 
 // naked funcs
@@ -917,76 +827,104 @@ __declspec(naked) void _naked_frameCountCallback() {
 	}
 }
 
-__declspec(naked) void _naked_setRenderStatesHook() {
+// directX hooking (this should maybe be in a seperate file)
+
+void cleanForDirectXReset() {
+
+	
+
+	if (pBadAppleTex != NULL) {
+		pBadAppleTex->Release();
+		pBadAppleTex = NULL;
+		device->SetTexture(1, NULL);
+	}
+
+}
+
+DWORD _RESET_HOOKS = 0;
+
+DWORD _DirectX_Reset_Func_Addr = 0;
+__declspec(naked) void _DirectX_Reset_Func() {
+	PUSH_ALL;
+	log("DIRECTX RESET CALLED, CLEANING");
+	cleanForDirectXReset();
+	POP_ALL;
 	__asm {
-		test ecx, ecx;
-		push edi;
-		mov edi, eax;
-		JBE _justLeave;
-		cmp ecx, 7h;
-		JA _justLeave;
+		jmp[_DirectX_Reset_Func_Addr];
+	}
+}
 
-		// iVar1 setup (MAKE SURE TO CHECK ASM) 004c06a4
-		mov eax, dword ptr[edi + 4h];
-		push esi;
-		lea esi, [ecx * 8 + 0];
-		sub esi, ecx;
-		mov ecx, dword ptr[eax];
-		add esi, esi;
-		mov edx, dword ptr[esi + esi * 1 + 0054cc50h];
-		add esi, esi; 
-		// what is happening to esi here
+DWORD _DirectX_BeginStateBlock_Func_Addr = 0;
+__declspec(naked) void _DirectX_BeginStateBlock_Func() {
+	PUSH_ALL;
+	log("beginstateblockfunc called");
+	POP_ALL;
+	__asm {
+		mov _RESET_HOOKS, 1;
+		jmp[_DirectX_BeginStateBlock_Func_Addr];
+	}
+}
+
+__declspec(naked) void _naked_InitDirectXHooks() {
+
+	PUSH_ALL;
+	log("hooking directx");
+	POP_ALL;
+
+	__asm {
 		
-		mov BLENDOP_Val, edx;
-		
-		mov edx, dword ptr[esi + 0054cc54h];
-		mov ALPHABLENDENABLE_Val, edx;
-
-		mov edx, dword ptr[esi + 0054cc58h];
-		mov SRCBLEND_Val, edx;
-
-		mov edx, dword ptr[esi + 0054cc5ch];
-		mov DESTBLEND_Val, edx;
-
-		mov edx, dword ptr[esi + 0054cc60h];
-		mov SEPARATEALPHABLENDENABLE_Val, edx;
-
-		mov edx, dword ptr[esi + 0054cc64h];
-		mov SRCBLENDALPHA_Val, edx;
-
-		mov edx, dword ptr[esi + 0054cc68h];
-		mov DESTBLENDALPHA_Val, edx;
-
-		// i cannot call my pushall/popall, doing it manually :(
-		push esp;
-		push ebp;
-		push edi;
-		push esi;
-		push edx;
-		push ecx;
-		push ebx;
 		push eax;
-		push ebp;
-		mov ebp, esp;
+		push ecx;
+		push edx;
 
-		call setRenderStatesHook;
+		// hook directx reset, we need to free all alloced textures when this is called
+		mov eax, [device];
+		mov ecx, [eax];
+		mov edx, [ecx + 00000040h];
+		mov _DirectX_Reset_Func_Addr, edx;
+		mov edx, _DirectX_Reset_Func;
+		mov[ecx + 00000040h], edx;
 
-		// pop all
-		pop ebp;
-		pop eax;
-		pop ebx;
-		pop ecx;
+		// hook beginstate block, as it overwrites my hooks.
+		mov eax, [device];
+		mov ecx, [eax];
+		mov edx, [ecx + 000000F0h];
+		mov _DirectX_BeginStateBlock_Func_Addr, edx;
+		mov edx, _DirectX_BeginStateBlock_Func;
+		mov[ecx + 000000F0h], edx;
+
 		pop edx;
-		pop esi;
-		pop edi;
-		pop ebp;
-		pop esp;
+		pop ecx;
+		pop eax;
 
-		pop esi;
-	_justLeave:
-		pop edi;
 		ret;
-	};
+	}
+}
+
+_declspec(naked) void _naked_RehookDirectX() {
+	// this appears to reset the state issues as fast as possible, more things flicker (the meter bars) now
+	__asm {
+
+		cmp _RESET_HOOKS, 1;
+		JNE _OK;
+		mov _RESET_HOOKS, 0;
+
+		call _naked_InitDirectXHooks;
+
+	_OK:
+
+		test eax, eax;	
+		JZ LAB_004be3d2;
+
+		mov dword ptr[esp + 10h], 00000000h;
+
+		push 004be3e3h;
+		ret;
+
+	LAB_004be3d2:
+		push 004be3d2h;
+		ret;
+	}
 }
 
 // init 
@@ -1012,8 +950,17 @@ void initFrameCountCallback() {
 	patchJump(0x004238f5, _naked_frameCountCallback);
 }
 
-void initSetRenderStatesHook() {
-	patchFunction(0x004be2d2, _naked_setRenderStatesHook);
+void initDirectXHooks() {
+
+
+	// i need a hook specifically for when reset is called in here.
+	// i also need to 
+
+	_naked_InitDirectXHooks();
+
+	// this specifically checks if our hooks were overwritten, and then rehooks
+	patchJump(0x004be3c4, _naked_RehookDirectX);
+
 }
 
 bool initTextureModifications() {
@@ -1034,6 +981,8 @@ bool initTextureModifications() {
 	initLeadToDrawPrimHook();
 	initListAppendHook();
 	initFrameCountCallback();
+
+	initDirectXHooks();
 
 
 

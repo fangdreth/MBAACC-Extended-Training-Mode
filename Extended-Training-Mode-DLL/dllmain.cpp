@@ -1523,7 +1523,7 @@ void frameDoneCallback()
 
 		log("avail tex mem is %08X", avalTexMem);
 
-		HookThisShit(device);
+		//HookThisShit(device);
 	}
 
 	static bool soundDeviceInit = false;
