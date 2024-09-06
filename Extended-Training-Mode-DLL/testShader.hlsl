@@ -174,7 +174,6 @@ float4 infrared(float2 texCoord : TEXCOORD0) : COLOR
 
 float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 	
-	
     float4 orig = tex2D(textureSampler, texCoord);
 	
     float4 newCol = tex2D(textureSampler2, texCoord);

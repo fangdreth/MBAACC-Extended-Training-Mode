@@ -384,12 +384,12 @@ void loadBadApple() {
 
 	D3DXCreateTextureFromFileInMemoryEx(device,
 		badAppleFrames[100].data, badAppleFrames[100].size,
-		256, 256,
+		480, 360,
 		0, // MIP
 		D3DUSAGE_DYNAMIC,
 		D3DFMT_A8R8G8B8,
 		D3DPOOL_DEFAULT,
-		D3DX_DEFAULT, //filter?
+		D3DX_FILTER_NONE, //filter?
 		D3DX_DEFAULT, // mip filter????
 		0, // replace color
 		NULL, // img info
@@ -453,29 +453,32 @@ void drawPrimHook() {
 
 			lastTextureFrameCount = textureFrameCount;
 
-			pBadAppleTex->Release();
-			pBadAppleTex = NULL;
+			if (textureFrameCount & 1) {
 
-			D3DXCreateTextureFromFileInMemoryEx(device,
-				badAppleFrames[badAppleFrame].data, badAppleFrames[badAppleFrame].size,
-				256, 256,
-				0, // MIP
-				D3DUSAGE_DYNAMIC,
-				D3DFMT_A8R8G8B8,
-				D3DPOOL_DEFAULT,
-				D3DX_DEFAULT, //filter?
-				D3DX_DEFAULT, // mip filter????
-				0, // replace color
-				NULL, // img info
-				NULL, // palette
-				&pBadAppleTex
-			);
+				pBadAppleTex->Release();
+				pBadAppleTex = NULL;
+
+				D3DXCreateTextureFromFileInMemoryEx(device,
+					badAppleFrames[badAppleFrame].data, badAppleFrames[badAppleFrame].size,
+					480, 360,
+					0, // MIP
+					D3DUSAGE_DYNAMIC,
+					D3DFMT_A8R8G8B8,
+					D3DPOOL_DEFAULT,
+					//D3DX_DEFAULT, //filter?
+					D3DX_FILTER_NONE, // default filter is whatwas slowing things down https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dx-filter
+					D3DX_DEFAULT, // mip filter????
+					0, // replace color
+					NULL, // img info
+					NULL, // palette
+					&pBadAppleTex
+				);
+			
+				badAppleFrame = (badAppleFrame + 1) % badAppleFrames.size();
+			}
 		}
 
-		if (textureFrameCount & 1) {
-			badAppleFrame = (badAppleFrame + 1) % badAppleFrames.size();
-		}
-
+		
 
 		device->SetTexture(1, pBadAppleTex);
 
@@ -488,6 +491,9 @@ void drawPrimHook() {
 		// i could have used ffmpeg in c++, but then i would have to go deal with library compiler error bs and wish i was on linux
 		// just use this ffmpeg -i '..\Touhou - Bad Apple.mp4' "BadApple%04d.jpg"
 		// ffmpeg -i "..\Touhou - Bad Apple.mp4" -vf "scale=iw/2:ih/2" "BadApple%04d.jpg"
+		// ffmpeg -i "..\Touhou - Bad Apple.mp4" -vf "scale=iw/2:ih/2" "BadApple%04d.jpg"
+		// ffmpeg -i "..\Touhou - Bad Apple.mp4" -vf "scale=-1:255" "BadApple%04d.jpg"
+
 
 
 
