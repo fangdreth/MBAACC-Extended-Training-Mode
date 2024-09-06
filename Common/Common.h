@@ -479,32 +479,36 @@ public:
 
 	KeyState()
 	{
-		vKey = 0x00;
+		nKey = 0x00;
+		nHeldKeyCounter = 0;
 	}
 
 	void setKey(int vKey_)
 	{
-		if (vKey != vKey_)
+		if (nKey != vKey_)
 		{
 			// reset the key state here to prevent it from firing
 			// when it gets changed
 			prevState = true;
-			vKey = vKey_;
+			nKey = vKey_;
 		}
 	}
 
-	bool isFocused() {
+	bool isFocused()
+	{
 		HWND hActiveWindow = GetActiveWindow();
 		HWND hForegroundWindow = GetForegroundWindow();
 		return hActiveWindow == hForegroundWindow;
 	}
 
-	bool keyHeld() {
-		return (vKey != 0x0 && GetAsyncKeyState(vKey) & 0x8000) ? true : false;
+	bool keyHeld()
+	{
+		return nKey != 0x0 && GetAsyncKeyState(nKey) & 0x8000;
 	}
 
-	bool keyDown() {
-		bool tempState = (GetAsyncKeyState(vKey) & 0x8000) ? true : false;
+	bool keyDown()
+	{
+		bool tempState = (GetAsyncKeyState(nKey) & 0x8000) ? true : false;
 		bool res = false;
 		if (prevState != tempState && tempState)
 		{
@@ -512,15 +516,16 @@ public:
 		}
 		prevState = tempState;
 
-		if (vKey == 0x0 || !isFocused()) {
+		if (nKey == 0x0 || !isFocused()) {
 			return false;
 		}
 
 		return res;
 	}
-
+public:
+	int nHeldKeyCounter;
 private:
-	int vKey;
+	uint8_t nKey;
 	bool prevState = false;
 };
 

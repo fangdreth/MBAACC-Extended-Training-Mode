@@ -979,12 +979,6 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 {
 	setAllKeys();
 
-	//processSimpleKeys();
-
-	// commenting this because I don't like pausing with this key
-	//if (!bFreeze && oFrameStepKey.keyDown())
-		//bFreeze = true;
-
 	bool ok = true;
 	MSG msg;
 	while (bFreeze || *(uint8_t*)(dwBaseAddress + adSharedFreezeOverride) == 1)
@@ -1012,6 +1006,10 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 		if (*(uint8_t*)(dwBaseAddress + adSharedFreezeOverride) != 1)
 		{
 			if (oFrameBarLeftScrollKey.keyHeld())
+				oFrameBarLeftScrollKey.nHeldKeyCounter++;
+			else
+				oFrameBarLeftScrollKey.nHeldKeyCounter = 0;
+			if (oFrameBarLeftScrollKey.keyDown() || oFrameBarLeftScrollKey.nHeldKeyCounter >= 150)
 			{
 				nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
 				nBarScrolling++;
@@ -1019,6 +1017,10 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 			}
 
 			if (oFrameBarRightScrollKey.keyHeld())
+				oFrameBarRightScrollKey.nHeldKeyCounter++;
+			else
+				oFrameBarRightScrollKey.nHeldKeyCounter = 0;
+			if (oFrameBarRightScrollKey.keyDown() || oFrameBarRightScrollKey.nHeldKeyCounter >= 150)
 			{
 				nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
 				nBarScrolling--;
@@ -1063,7 +1065,12 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
 			}
 
-			if (oFrameStepKey.keyDown()) {
+			if (oFrameStepKey.keyHeld())
+				oFrameStepKey.nHeldKeyCounter++;
+			else
+				oFrameStepKey.nHeldKeyCounter = 0;
+			if (oFrameStepKey.keyDown() || oFrameStepKey.nHeldKeyCounter >= 150)
+			{
 				break;
 			}
 		}
@@ -1189,6 +1196,10 @@ void frameDoneCallback()
 	}
 
 	if (oFrameBarLeftScrollKey.keyHeld())
+		oFrameBarLeftScrollKey.nHeldKeyCounter++;
+	else
+		oFrameBarLeftScrollKey.nHeldKeyCounter = 0;
+	if (oFrameBarLeftScrollKey.keyDown() || oFrameBarLeftScrollKey.nHeldKeyCounter >= 150)
 	{
 		nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
 		nBarScrolling++;
@@ -1196,6 +1207,10 @@ void frameDoneCallback()
 	}
 
 	if (oFrameBarRightScrollKey.keyHeld())
+		oFrameBarRightScrollKey.nHeldKeyCounter++;
+	else
+		oFrameBarRightScrollKey.nHeldKeyCounter = 0;
+	if (oFrameBarRightScrollKey.keyDown() || oFrameBarRightScrollKey.nHeldKeyCounter >= 150)
 	{
 		nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
 		nBarScrolling--;
