@@ -1,5 +1,9 @@
 
+
 sampler2D textureSampler : register(s0); // is using this low of a reg ok?
+sampler2D textureSampler2 : register(s1); 
+
+
 float4 dynamicColor : register(c223); // using register 223 bc i dont want to mess something up
 DWORD blendMode : register(c222);
 
@@ -131,7 +135,7 @@ float4 trans(float2 texCoord : TEXCOORD0) : COLOR
 	return texColor;
 }
 
-float4 main(float2 texCoord : TEXCOORD0) : COLOR
+float4 infrared(float2 texCoord : TEXCOORD0) : COLOR
 {
 	float4 texColor = tex2D(textureSampler, texCoord);
 
@@ -149,30 +153,33 @@ float4 main(float2 texCoord : TEXCOORD0) : COLOR
 	const float borderDelta = 4 * (0.05f);
 	const float insideDelta = 4 * (1.0 - 0.75f);
 	
-	// Determine if the pixel is part of the outline
-	
 	float alpha = colorLeft.a + colorRight.a + colorUp.a + colorDown.a;
-    //float alpha = colorLeft.a * colorRight.a * colorUp.a * colorDown.a;
-	
-	// Return outline color if it's part of the outline, else return the original 
-	
+    
 	float3 res = RGBtoHSV(texColor.rgb);
 	
 	//res.x = 0.0;
 	
-	if (alpha < borderDelta) {
-		res.x += 0.1 * ((4.0 - alpha) / 4.0);
-	}
-	
 	if (alpha > insideDelta) {
-		res.x -= .5 * (alpha / 4.0);
-	}
+        res.x -= 0.5 * (alpha / 4.0) * (alpha / 4.0) * (alpha / 4.0);
+    }
 	
 	if (res.x < 0.0) {
 		res.x += 1.0;
 	}
 	
-		texColor.rgb = HSVtoRGB(res);
+	texColor.rgb = HSVtoRGB(res);
  
 	return texColor;
+}
+
+float4 main(float2 texCoord : TEXCOORD0) : COLOR {
+	
+	
+    float4 orig = tex2D(textureSampler, texCoord);
+	
+    float4 newCol = tex2D(textureSampler2, texCoord);
+	
+    newCol.a = orig.a;
+	
+    return newCol;
 }

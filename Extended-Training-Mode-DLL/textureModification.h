@@ -4,7 +4,11 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include <vector>
 #include "textureModificationData.h"
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 unsigned textureFrameCount = 0;
 
@@ -323,13 +327,87 @@ options are:
 004332e1
 0043306F
 */
-DWORD leadToDrawPrimHook_ret = 0;
+
+typedef struct BadAppleFrame {
+	char* data = NULL;
+	size_t size = 0;
+} BadAppleFrame;
+
+int badAppleFrame = 0;
+std::vector<BadAppleFrame> badAppleFrames;
+
+IDirect3DTexture9* pBadAppleTex = NULL;
+
+void loadBadApple() {
+
+	if (device == NULL) {
+		return;
+	}
+
+	static bool loadBadApple = false;
+
+	if (loadBadApple) {
+		return;
+	}
+
+	loadBadApple = true;
+	
+	std::string folderPath = std::string(__FILE__);
+
+	size_t pos = folderPath.find_last_of('\\');
+
+	folderPath = folderPath.substr(0, pos);
+
+	folderPath += "\\BadApple\\";
+
+	log("loading BadApple from %s", folderPath.c_str());
+
+	std::vector<IDirect3DTexture9*> textures;
+	for (const auto& entry : fs::directory_iterator(folderPath)) {
+		if (entry.is_regular_file()) {
+			const std::string filePath = entry.path().string();
+			
+			std::ifstream file(filePath, std::ios::binary | std::ios::ate);
+			//std::streamsize size = file.tellg();
+			size_t size = file.tellg();
+			file.seekg(0, std::ios::beg);
+
+			char* buffer = (char*)malloc(size);
+
+			file.read(buffer, size);
+
+			badAppleFrames.push_back({ buffer, size });
+		}
+	}
+
+	log("textures loaded successfully");
+
+	D3DXCreateTextureFromFileInMemoryEx(device,
+		badAppleFrames[100].data, badAppleFrames[100].size,
+		256, 256,
+		0, // MIP
+		D3DUSAGE_DYNAMIC,
+		D3DFMT_A8R8G8B8,
+		D3DPOOL_DEFAULT,
+		D3DX_DEFAULT, //filter?
+		D3DX_DEFAULT, // mip filter????
+		0, // replace color
+		NULL, // img info
+		NULL, // palette
+		&pBadAppleTex
+	);
+	
+	log("setup directx thing too");
+}
 
 // actual funcs
 
+DWORD leadToDrawPrimHook_ret = 0;
 IDirect3DPixelShader9* pPixelShader_backup_test = nullptr;
 DWORD drawPrimHook_texAddr = 0;
 void drawPrimHook() {
+
+	loadBadApple();
 
 	/*
 	
@@ -369,9 +447,48 @@ void drawPrimHook() {
 		//blendMode.x = (float)textureAddrs[drawPrimHook_texAddr].blend;
 		//device->SetPixelShaderConstantF(222, (float*)&blendMode, 1);
 
+		// this better not cause slowdown
+		static unsigned lastTextureFrameCount = -1;
+		if (pBadAppleTex != NULL && lastTextureFrameCount != textureFrameCount) {
+
+			lastTextureFrameCount = textureFrameCount;
+
+			pBadAppleTex->Release();
+			pBadAppleTex = NULL;
+
+			D3DXCreateTextureFromFileInMemoryEx(device,
+				badAppleFrames[badAppleFrame].data, badAppleFrames[badAppleFrame].size,
+				256, 256,
+				0, // MIP
+				D3DUSAGE_DYNAMIC,
+				D3DFMT_A8R8G8B8,
+				D3DPOOL_DEFAULT,
+				D3DX_DEFAULT, //filter?
+				D3DX_DEFAULT, // mip filter????
+				0, // replace color
+				NULL, // img info
+				NULL, // palette
+				&pBadAppleTex
+			);
+		}
+
+		if (textureFrameCount & 1) {
+			badAppleFrame = (badAppleFrame + 1) % badAppleFrames.size();
+		}
+
+
+		device->SetTexture(1, pBadAppleTex);
 
 		//IDirect3DBaseTexture9* pTex = (IDirect3DBaseTexture9*)drawPrimHook_texAddr;
 		IDirect3DTexture9* pTex = (IDirect3DTexture9*)drawPrimHook_texAddr;
+
+	
+
+		// bad apple is 480x360, 30fps
+		// i could have used ffmpeg in c++, but then i would have to go deal with library compiler error bs and wish i was on linux
+		// just use this ffmpeg -i '..\Touhou - Bad Apple.mp4' "BadApple%04d.jpg"
+		// ffmpeg -i "..\Touhou - Bad Apple.mp4" -vf "scale=iw/2:ih/2" "BadApple%04d.jpg"
+
 
 
 		D3DSURFACE_DESC desc;
