@@ -830,15 +830,11 @@ __declspec(naked) void _naked_frameCountCallback() {
 // directX hooking (this should maybe be in a seperate file)
 
 void cleanForDirectXReset() {
-
-	
-
 	if (pBadAppleTex != NULL) {
 		pBadAppleTex->Release();
 		pBadAppleTex = NULL;
-		device->SetTexture(1, NULL);
+		//device->SetTexture(1, NULL); // this may not be neccessary
 	}
-
 }
 
 DWORD _RESET_HOOKS = 0;
@@ -983,8 +979,6 @@ bool initTextureModifications() {
 	initFrameCountCallback();
 
 	initDirectXHooks();
-
-
 
 	log("initTextureModifications ran");
 	

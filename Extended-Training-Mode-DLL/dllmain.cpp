@@ -1539,6 +1539,15 @@ void frameDoneCallback()
 		pauseSong();
 	}
 	shouldPlaySong = false;
+
+	PUSH_ALL;
+	__asm {
+		push 00000000h;
+		mov eax, 004de160h;
+		call eax;
+		add esp, 4;
+	}
+	POP_ALL;
 }
 
 __declspec(naked) void nakedFrameDoneCallback() {
