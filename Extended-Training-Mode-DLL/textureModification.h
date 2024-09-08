@@ -8,6 +8,7 @@
 #include "textureModificationData.h"
 #include <filesystem>
 
+
 namespace fs = std::filesystem;
 
 unsigned textureFrameCount = 0;
@@ -138,33 +139,30 @@ float4 trans(float2 texCoord : TEXCOORD0) : COLOR {
 
 const char* pixelShaderCode3 = R"(
 
+sampler2D textureSampler : register(s0); // is using this low of a reg ok?
+sampler2D textureSampler2 : register(s1); 
 
-cbuffer vars : register(b0)
+
+float4 dynamicColor : register(c223); // using register 223 bc i dont want to mess something up
+DWORD blendMode : register(c222);
+
+float4 Hue : register(c221);
+
+float4 ActiveColor : register(c220);
+
+float4 texSize : register(c219);
+
+float4 main(float2 texCoord : TEXCOORD0) : COLOR
 {
-	float2 uResolution;
-	float uTime;
-};
+	
+	float4 orig = tex2D(textureSampler, texCoord);
+	
+	float4 newCol = tex2D(textureSampler2, texCoord);
 
-SamplerState smp : register(s0);
-Texture2D tex1 : register(t0);
-
-// all this pain for something that wont work in dx9
-
-float4 main(float4 fragCoord : SV_POSITION) : SV_TARGET
-{
-
-	float2 uv = fragCoord.xy/uResolution;
+	newCol.a = orig.a;
 	
-	float4 res = float4(0.0, 0.0, 0.0, 1.0);
-	
-	
-	res = tex1.Sample(smp, uv);
-	
-	return res;
-	
+	return newCol;
 }
-
-
 
 )";
 
@@ -244,7 +242,7 @@ void initShader(const char* pixelShaderCode) {
 }
 
 void initShader() {
-	initShader(pixelShaderCode2);
+	initShader(pixelShaderCode3);
 }
 
 void initShaderFromFile() {
@@ -339,6 +337,16 @@ IDirect3DTexture9* pBadAppleTex = NULL;
 
 void loadBadApple() {
 	
+	/*
+	
+	todo, at this point, just require ffmpeg to be installed on system.
+	just require a video file in melty path.
+	
+	todo, have, ffmpeg be,, idk where i should put it, can i have it as a submodule?
+	and then use that. make sure to link statically.
+
+	*/
+
 	//return;
 
 	if (device == NULL) {
@@ -430,6 +438,11 @@ void initSong(bool force = false) {
 	mciSendStringA(command.c_str(), NULL, 0, NULL);
 
 	
+	// todo, the volume setting in memory is read when loading into a battle
+	// whats happening(most likely) is dsound buffers are being created, and their vol is being set to that val
+	// find whats creating those buffers, find the dsound thing, convert this to use that
+	// alternatively, conv that vol value to this?
+
 	mciSendStringA("play BadApple", NULL, 0, NULL);
 	//mciSendStringA("setaudio BadApple volume to 10", NULL, 0, NULL);	
 
@@ -544,7 +557,9 @@ void drawPrimHook() {
 		// ffmpeg -i "..\Touhou - Bad Apple.mp4" -vf "scale=iw/2:ih/2" "BadApple%04d.jpg"
 		// ffmpeg -i "..\Touhou - Bad Apple.mp4" -vf "scale=iw/2:ih/2" "BadApple%04d.jpg"
 		// ffmpeg -i "..\Touhou - Bad Apple.mp4" -vf "scale=-1:255" "BadApple%04d.jpg"
-		// ffmpeg -i "..\Hi_Fine_FOX_Original.mp4" -vf "scale=-1:360" "BadApple%04d.jpg"
+		// ffmpeg -i "..\Hi_Fine_FOX_Original.mp4" -vf "scale=-1:360" "BadApple%04d.jpg"'
+		// ideally, i would actually link ffmpeg with c++ but thats a massive pain
+		// ill have to include the libs here so others dont go through my pain
 
 		D3DSURFACE_DESC desc;
 		pTex->GetLevelDesc(0, &desc); // Get the texture size

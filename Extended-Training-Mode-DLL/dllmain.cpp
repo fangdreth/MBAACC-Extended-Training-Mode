@@ -1461,7 +1461,7 @@ void frameDoneCallback()
 	}
 
 	if (F11Key.keyDown()) {
-		initShaderFromFile();
+		//initShaderFromFile();
 	}
 
 	static KeyState hKey('H');
