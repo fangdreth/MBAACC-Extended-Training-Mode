@@ -15,128 +15,6 @@ unsigned textureFrameCount = 0;
 
 extern IDirect3DDevice9* device;
 
-// the shader
-const char* pixelShaderCode2 = R"(
-	
-sampler2D textureSampler : register(s0); // is using this low of a reg ok?
-float4 dynamicColor : register(c223); // using register 223 bc i dont want to mess something up
-DWORD blendMode : register(c222);
-
-float4 Hue : register(c221);
-
-float4 ActiveColor : register(c220);
-
-const float EPSILON = 1e-10;
-
-float3 HUEtoRGB(float hue)
-{
-    // Hue [0..1] to RGB [0..1]
-    // See http://www.chilliant.com/rgb2hsv.html
-    float3 rgb = abs(hue * 6. - float3(3, 2, 4)) * float3(1, -1, -1) + float3(-1, 2, 2);
-    return clamp(rgb, 0., 1.);
-}
-
-float3 RGBtoHCV(float3 rgb)
-{
-    // RGB [0..1] to Hue-Chroma-Value [0..1]
-    // Based on work by Sam Hocevar and Emil Persson
-    float4 p = (rgb.g < rgb.b) ? float4(rgb.bg, -1., 2. / 3.) : float4(rgb.gb, 0., -1. / 3.);
-    float4 q = (rgb.r < p.x) ? float4(p.xyw, rgb.r) : float4(rgb.r, p.yzx);
-    float c = q.x - min(q.w, q.y);
-    float h = abs((q.w - q.y) / (6. * c + EPSILON) + q.z);
-    return float3(h, c, q.x);
-}
-
-float3 RGBtoHSV(float3 rgb)
-{
-    // RGB [0..1] to Hue-Saturation-Value [0..1]
-    float3 hcv = RGBtoHCV(rgb);
-    float s = hcv.y / (hcv.z + EPSILON);
-    return float3(hcv.x, s, hcv.z); 
-}
-
-float3 HSVtoRGB(float3 hsv)
-{
-    // Hue-Saturation-Value [0..1] to RGB [0..1]
-    float3 rgb = HUEtoRGB(hsv.x);
-    return ((rgb - 1.) * hsv.y + 1.) * hsv.z;
-}
-
-
-float4 main(float2 texCoord : TEXCOORD0) : COLOR {
-	float4 texColor = tex2D(textureSampler, texCoord);
-
-	float3 hsvVal = RGBtoHSV(texColor.rgb);
-
-	// rotate through rainbow
-	// hsvVal.r = Hue.r;
-
-	// weird but cool
-	//hsvVal.r = texColor.x;
-	
-	// make whole texture a rainbow
-	//hsvVal.r = texCoord.x;
-
-	// rainbow but different
-	hsvVal.r = (texCoord.x + texCoord.y) / 2.0; 
-
-	float3 rgbVal = HSVtoRGB(hsvVal.rgb);
-
-	texColor.rgb = rgbVal;
-
-	return texColor;
-}
-
-const float3 col1 = float3(91.0/256.0, 205.0/256.0, 250.0/256.0);
-const float3 col2 = float3(245.0/256.0, 169.0/256.0, 184.0/256.0);
-const float3 col3 = float3(1.0,1.0,1.0);
-
-float4 trans(float2 texCoord : TEXCOORD0) : COLOR {
-
-	// this shader is horrid, optimize it
-
-	float4 texColor = tex2D(textureSampler, texCoord);
-
-	//texCoord = frac(texCoord + Hue.r); // same as mod 1
-	//texCoord.x = frac(texCoord.x + Hue.r);
-	//texCoord.y = frac(texCoord.y + Hue.r);
-
-	//texCoord *= 2.0;
-	texCoord.x *= 2.0;
-	texCoord.y *= 2.0;
-	
-	if(texCoord.x > 1.0) {
-		texCoord.x = 2.0 - texCoord.x;
-	}
-
-	if(texCoord.y > 1.0) {
-		texCoord.y = 2.0 - texCoord.y;
-	}
-	
-	float val = (texCoord.x + texCoord.y) / 2.0;
-
-	val = 0.5;
-
-	float3 res; // actual trans color
-	
-	if(val < 0.5) {
-		res = (col2 * 2.0*val) + (col1 * (1.0-2.0*val));
-    } else {
-        val -= 0.5;
-        res = (col3 * 2.0*val) + (col2 * (1.0-2.0*val));
-	}
-
-	res.b = 1.0;
-
-	texColor.rgb = res.rgb;
-
-	return texColor;
-}
-
-)"; 
-
-
-
 const char* pixelShaderCode3 = R"(
 
 sampler2D textureSampler : register(s0); // is using this low of a reg ok?
@@ -306,9 +184,7 @@ public:
 		blend = blend_;
 	}
 	
-
 	DWORD blend;
-
 
 private:
 };
@@ -335,6 +211,162 @@ std::vector<BadAppleFrame> badAppleFrames;
 
 IDirect3DTexture9* pBadAppleTex = NULL;
 
+// ffmpeg funcs
+
+void loadMP4(const std::string& filePath) {
+
+	int res;
+
+	const AVCodec* outCodec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
+	const AVCodec* inCodec = NULL; // input codec of the file 
+
+	AVFormatContext* inFmtCtx = NULL;
+	AVFormatContext* outFmtCtx = NULL;
+
+	AVCodecContext* inCtx = NULL;
+	AVCodecContext* outCtx = avcodec_alloc_context3(outCodec);
+	outCtx->strict_std_compliance = FF_COMPLIANCE_UNOFFICIAL; 
+
+	if (!outCtx) {
+		log("initing the output codex failed??? how??");
+		exit(1);
+	}
+
+	// open the actual file
+	// https://ffmpeg.org/doxygen/2.8/group__lavf__decoding.html#details
+
+	
+	res = avformat_open_input(&inFmtCtx, filePath.c_str(), NULL, NULL);
+	if (res < 0) {
+		log("avformat_open_input failed");
+		exit(1);
+	}
+
+	res = avformat_find_stream_info(inFmtCtx, NULL);
+	if (res < 0) {
+		log("avformat_find_stream_info failed");
+		exit(1);
+	}
+
+	res = av_find_best_stream(inFmtCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &inCodec, 0);
+	if (res < 0) {
+		log("av_find_best_stream failed");
+		exit(1);
+	}
+
+	int videoStreamIndex = res;
+
+	// create a context for the input video codec 
+	inCtx = avcodec_alloc_context3(inCodec);
+	if (!inCtx) {
+		log("avcodec_alloc_context3 failed");
+		exit(1);
+	}
+
+	// give the codecs params (width, height, etc i think) to the context
+	res = avcodec_parameters_to_context(inCtx, inFmtCtx->streams[videoStreamIndex]->codecpar);
+	if (res < 0) {
+		log("avcodec_parameters_to_context failed");
+		exit(1);
+	}
+
+	// init the decoder for the input
+	res = avcodec_open2(inCtx, inCodec, NULL);
+	if (res < 0) {
+		log("avcodec_open2 failed");
+		exit(1);
+	}
+
+	// init the decoder for the output
+	outCtx->pix_fmt = inCtx->pix_fmt;
+	outCtx->height  = inCtx->height;
+	outCtx->width   = inCtx->width;
+	outCtx->time_base = AVRational{ 1,10 };
+
+	res = avcodec_open2(outCtx, outCodec, NULL);
+	if (res < 0) {
+		log("opening the output decoder failed????");
+		exit(1);
+	}
+
+	AVPacket* outPkt = av_packet_alloc();
+	if (!outPkt) {
+		log("couldnt even alloc a packet?");
+		return;
+	}
+	
+	AVPacket* pkt = av_packet_alloc();
+	if (!pkt) {
+		log("couldnt even alloc a packet?");
+		return;
+	}
+
+	AVFrame* frame = av_frame_alloc();
+
+	while (true) {
+		
+		if ((res = av_read_frame(inFmtCtx, pkt)) < 0) {
+			break;
+		}
+
+		if (pkt->stream_index == videoStreamIndex) {
+			log("uhhh frame %d", badAppleFrames.size());
+
+			res = avcodec_send_packet(inCtx, pkt);
+			if (res < 0) {
+				log("failed to send packet to inCtx decoder?");
+				exit(1);
+			}
+
+			// decode that one packet
+			while (true) { 
+				// get the frame from that packet
+				res = avcodec_receive_frame(inCtx, frame);
+				if (res == AVERROR(EAGAIN) || res == AVERROR_EOF) { // end of packet
+					break;
+				} else if (res < 0) {
+					log("avcodec_receive_frame failed");
+					exit(1);
+				}
+
+				// at this point, we now (should) have a frame of the video. do something with it
+
+				// send the video frame to the jpeg encoder
+				res = avcodec_send_frame(outCtx, frame);
+				if (res < 0) {
+					log("sending frame to output decoder failed");
+					exit(1);
+				}
+
+				// get the resulting packet from said frame
+				res = avcodec_receive_packet(outCtx, outPkt);
+				if (res < 0) {
+					log("jpeg encoder failed to give us a packet?");
+					exit(1);
+				}
+
+				BadAppleFrame tempFrame = { (char*)malloc(outPkt->size), outPkt->size };
+
+				if (tempFrame.data == NULL) {
+					log("you malloced like an idiot");
+					exit(1);
+				}
+
+				memcpy(tempFrame.data, outPkt->data, tempFrame.size);
+
+				badAppleFrames.push_back(tempFrame);
+
+				av_packet_unref(outPkt);
+
+				av_frame_unref(frame);
+			}
+		}
+
+		av_packet_unref(pkt);
+	}
+
+}
+
 void loadBadApple() {
 	
 	/*
@@ -348,7 +380,7 @@ void loadBadApple() {
 	*/
 
 	//return;
-
+	
 	if (device == NULL) {
 		return;
 	}
@@ -361,55 +393,23 @@ void loadBadApple() {
 
 	loadBadApple = true;
 	
-	//std::string folderPath = std::string(__FILE__);
-	//size_t pos = folderPath.find_last_of('\\');
-	//folderPath = folderPath.substr(0, pos);
-	//folderPath += "\\BadApple\\";
+	log("desperately attempting to load a mp4");
+	
+	std::string filePath = "./EffectsVideo.mp4";
+	//std::string filePath = "./EffectsVideoNoAudio.mp4";
 
-	std::string folderPath = getExtraDataPath() + "BadApple\\";
+	// is doing this via ffmpeg worth it.
+	// tbh i could just,,, idek
+	// i would have to stream the mp4, i would need another thread, i would,,
+	// this is the correct way. i should do it the correct way
 
-	log("loading BadApple from %s", folderPath.c_str());
-
-	std::vector<IDirect3DTexture9*> textures;
-	for (const auto& entry : fs::directory_iterator(folderPath)) {
-		if (entry.is_regular_file()) {
-			const std::string filePath = entry.path().string();
-			
-			std::ifstream file(filePath, std::ios::binary | std::ios::ate);
-			//std::streamsize size = file.tellg();
-			size_t size = file.tellg();
-			file.seekg(0, std::ios::beg);
-
-			char* buffer = (char*)malloc(size);
-
-			file.read(buffer, size);
-
-			badAppleFrames.push_back({ buffer, size });
-		}
-	}
+	loadMP4(filePath);
+	
+	log("there are,,,, %d frame somehow?", badAppleFrames.size());
+	
+	
 
 	log("textures loaded successfully");
-
-	/*
-	D3DXCreateTextureFromFileInMemoryEx(device,
-		badAppleFrames[0].data, badAppleFrames[0].size,
-		480, 360,
-		//640, 360,
-		0, // MIP
-		D3DUSAGE_DYNAMIC,
-		D3DFMT_A8R8G8B8,
-		D3DPOOL_DEFAULT,
-		D3DX_FILTER_NONE, //filter?
-		//D3DX_DEFAULT, // mip filter????
-		D3DX_FILTER_NONE,
-		0, // replace color
-		NULL, // img info
-		NULL, // palette
-		&pBadAppleTex
-	);
-	
-	log("setup directx thing too");
-	*/
 }
 
 void initSong(bool force = false) {
@@ -519,7 +519,8 @@ void drawPrimHook() {
 
 				D3DXCreateTextureFromFileInMemoryEx(device,
 					badAppleFrames[badAppleFrame].data, badAppleFrames[badAppleFrame].size,
-					480, 360,
+					D3DX_DEFAULT, D3DX_DEFAULT, 
+					// 480, 360,
 					//640, 360,
 					0, // MIP
 					D3DUSAGE_DYNAMIC,

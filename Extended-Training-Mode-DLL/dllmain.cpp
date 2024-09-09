@@ -22,11 +22,59 @@
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
 
+#define FFMPEG_STATIC
+#define __STDC_CONSTANT_MACROS
+#define __STDC_FORMAT_MACROS
+
+extern "C" {
+
+	// for the love of all that is holy, build ffpeg in a powershel dev console in visual studio 2022 with:
+	// bash ./configure --toolchain=msvc --arch=x86 --disable-shared --enable-static --disable-network
+	// and then just run make
+	// you will also need NASM in path
+	// this will take a while, TODO, see what ffmpeg features i can disable
+	// maybe --disable-doc --disable-debug
+
+	#define FFMPEG_STATIC
+	#define __STDC_CONSTANT_MACROS
+	#define __STDC_FORMAT_MACROS
+	                      
+	#include <libavformat/avformat.h>
+	#include <libavcodec/avcodec.h>
+	#include <libswscale/swscale.h>
+	#include <libavutil/imgutils.h>
+	#include <libavcodec/avcodec.h>
+	#include <libavutil/opt.h>
+
+	
+}
+
+// the order of these libraries matter. i love linking
+#pragma comment(lib, "FFmpeg/libavformat/libavformat.a")
+#pragma comment(lib, "FFmpeg/libavcodec/libavcodec.a")
+#pragma comment(lib, "FFmpeg/libswscale/libswscale.a")
+#pragma comment(lib, "FFmpeg/libavutil/libavutil.a")	
+#pragma comment(lib, "FFmpeg/libavutil/libavutil.a")	
+#pragma comment(lib, "FFmpeg/libavdevice/libavdevice.a")
+#pragma comment(lib, "FFmpeg/libavfilter/libavfilter.a")
+#pragma comment(lib, "FFmpeg/libswresample/libswresample.a")
+
+// the 5 following libs are all needed for ffmpeg????
+#pragma comment(lib, "bcrypt.lib")
+#pragma comment(lib, "strmiids") 
+#pragma comment(lib, "Mfplat.lib")
+#pragma comment(lib, "Mfuuid.lib")
+#pragma comment(lib, "Secur32.lib")
+
 #pragma comment(lib, "ws2_32.lib") 
 #pragma comment(lib, "d3d9.lib") 
 #pragma comment(lib, "d3dx9.lib")
 #pragma comment(lib, "dsound.lib")
 #pragma comment(lib, "winmm.lib")
+
+
+
+
 
 #pragma push_macro("optimize")
 //#pragma optimize("t", on) 
@@ -2482,6 +2530,8 @@ void threadFunc()
 {
 	srand(time(NULL));
 
+	log("dll injected, threadfunc running");
+
 	// make sure that caster has time to hook at the start
 	//Sleep(16 * 5);
 	//Sleep(3000);
@@ -2536,6 +2586,9 @@ void threadFunc()
 
 BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved) 
 {
+
+	//log("dllmain");
+
 	(void)hinstDLL;
 	(void)lpReserved;
 

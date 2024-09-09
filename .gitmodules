@@ -1,0 +1,3 @@
+[submodule "Extended-Training-Mode-DLL/FFmpeg"]
+	path = Extended-Training-Mode-DLL/FFmpeg
+	url = https://github.com/FFmpeg/FFmpeg
