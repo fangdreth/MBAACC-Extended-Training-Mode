@@ -225,7 +225,8 @@ void loadMP4(const std::string& filePath) {
 
 	AVCodecContext* inCtx = NULL;
 	AVCodecContext* outCtx = avcodec_alloc_context3(outCodec);
-	outCtx->strict_std_compliance = FF_COMPLIANCE_UNOFFICIAL; 
+	outCtx->strict_std_compliance = FF_COMPLIANCE_UNOFFICIAL;  // this line is required?? and without it, the decoder doesnt even work
+	//outCtx->strict_std_compliance = FF_COMPLIANCE_STRICT;  // this line is required??
 
 	if (!outCtx) {
 		log("initing the output codex failed??? how??");
@@ -279,13 +280,26 @@ void loadMP4(const std::string& filePath) {
 
 	// init the decoder for the output
 	outCtx->pix_fmt = inCtx->pix_fmt;
-	outCtx->height  = inCtx->height;
-	outCtx->width   = inCtx->width;
-	outCtx->time_base = AVRational{ 1,10 };
+	//outCtx->width   = inCtx->width;
+	//outCtx->height  = inCtx->height;
+	outCtx->width = 640;
+	outCtx->height = 480;
+	outCtx->time_base = AVRational{ 1,10 }; // ????
 
 	res = avcodec_open2(outCtx, outCodec, NULL);
 	if (res < 0) {
 		log("opening the output decoder failed????");
+		exit(1);
+	}
+
+	// todo, bilinear probs not the fastest
+	SwsContext* swsCtx = sws_getContext(
+		inCtx->width, inCtx->height, inCtx->pix_fmt,
+		640, 480, inCtx->pix_fmt,
+		SWS_FAST_BILINEAR, NULL, NULL, NULL);
+
+	if (!swsCtx) {
+		log("swscontext failed");
 		exit(1);
 	}
 
@@ -302,10 +316,22 @@ void loadMP4(const std::string& filePath) {
 	}
 
 	AVFrame* frame = av_frame_alloc();
+	AVFrame* frame2 = av_frame_alloc(); // for the jpeg??
 
-	while (true) {
+	// needing this call confuses me. how the hell am i supposed to know that
+	res = av_image_alloc(frame2->data, frame2->linesize, 640, 480, inCtx->pix_fmt, 1);
+	if (res < 0) {
+		log("av_image_alloc failed");
+		exit(1);
+	}
+
+	frame2->width = 640;
+	frame2->height= 480;
+	frame2->format = inCtx->pix_fmt;
+
+	while (true) { // should i maintain this state and not load the whole video into ram?
 		
-		if ((res = av_read_frame(inFmtCtx, pkt)) < 0) {
+		if ((res = av_read_frame(inFmtCtx, pkt)) < 0) { // read frame but reads a packet???
 			break;
 		}
 
@@ -331,8 +357,10 @@ void loadMP4(const std::string& filePath) {
 
 				// at this point, we now (should) have a frame of the video. do something with it
 
+				sws_scale(swsCtx, (const uint8_t* const*)frame->data, frame->linesize, 0, frame->height, frame2->data, frame2->linesize);
+
 				// send the video frame to the jpeg encoder
-				res = avcodec_send_frame(outCtx, frame);
+				res = avcodec_send_frame(outCtx, frame2);
 				if (res < 0) {
 					log("sending frame to output decoder failed");
 					exit(1);
@@ -359,11 +387,23 @@ void loadMP4(const std::string& filePath) {
 				av_packet_unref(outPkt);
 
 				av_frame_unref(frame);
+				//av_frame_unref(frame2);
 			}
 		}
 
 		av_packet_unref(pkt);
 	}
+
+	// TODO, CLEANUP MEMORY
+
+	avcodec_free_context(&inCtx);
+	avformat_close_input(&inFmtCtx);
+	av_frame_free(&frame2);
+	av_frame_free(&frame);
+	avcodec_free_context(&outCtx);
+	av_packet_free(&pkt);
+	av_packet_free(&outPkt);
+	sws_freeContext(swsCtx);
 
 }
 
@@ -405,7 +445,23 @@ void loadBadApple() {
 
 	loadMP4(filePath);
 	
-	log("there are,,,, %d frame somehow?", badAppleFrames.size());
+	char buffer[256];
+
+	unsigned videoFileSize = 0;
+	for (size_t i = 0; i < badAppleFrames.size(); i++) {
+		videoFileSize += badAppleFrames[i].size;
+
+		snprintf(buffer, 256, "./temp/frame%04d.jpeg", i);
+
+		std::ofstream outFile(buffer);
+
+		outFile.write(badAppleFrames[i].data, badAppleFrames[i].size);
+
+		outFile.close();
+
+	}
+
+	log("there are,,,, %d frames somehow? taking up %6.2f MB", badAppleFrames.size(), ((float)videoFileSize) / (1 << 20));
 	
 	
 
@@ -510,17 +566,18 @@ void drawPrimHook() {
 
 			lastTextureFrameCount = textureFrameCount;
 
-			if (textureFrameCount & 1) {
+			if ((textureFrameCount & 11) == 0) { // on 15 fps rn
 
 				if (pBadAppleTex != NULL) {
 					pBadAppleTex->Release();
 					pBadAppleTex = NULL;
 				}
-
+				// todo, get the dims from the actual file
 				D3DXCreateTextureFromFileInMemoryEx(device,
 					badAppleFrames[badAppleFrame].data, badAppleFrames[badAppleFrame].size,
-					D3DX_DEFAULT, D3DX_DEFAULT, 
-					// 480, 360,
+					//D3DX_DEFAULT, D3DX_DEFAULT, 
+					640, 480,
+					//480, 360,
 					//640, 360,
 					0, // MIP
 					D3DUSAGE_DYNAMIC,
