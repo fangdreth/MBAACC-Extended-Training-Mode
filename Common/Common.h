@@ -19,7 +19,7 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE = 2, HIGHLIGHT_PAGE = 3, POSITIONS_PAGE = 4, CHARACTER_SPECIFICS = 5, SAVE_STATE_PAGE = 6, FRAME_TOOL = 7 };
+enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE = 2, HIGHLIGHT_PAGE = 3, POSITIONS_PAGE = 4, CHARACTER_SPECIFICS = 5, SAVE_STATE_PAGE = 6, FRAME_TOOL = 7, HOTKEYS_PAGE = 8 };
 enum eHotkeyPages { FRAME_TOOL_HOTKEYS_PAGE = 1, GENERIC_HOTKEYS_PAGE = 2 };
 enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
@@ -82,7 +82,7 @@ const DWORD dwP1CharMoon = 0x34D900;
 const DWORD dwP1CharNumber = 0x34D8F8;
 const DWORD dwP1ButtonPress = 0x154654;
 const DWORD dwP1APressed = 0x371399;
-const DWORD dwP1Input = 0x15461C;
+const DWORD dwP1BPressed = 0x37139A;
 const DWORD dwP1F1Pressed = 0x37144C;
 const DWORD dwP1F2Pressed = 0x37144D;
 const DWORD dwP1DPressed = 0x37139C;
@@ -311,7 +311,7 @@ const std::vector<int> vGuardLevelLookupTable =
 const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
-const int MAX_SETTINGS_PAGES = 7;
+const int MAX_SETTINGS_PAGES = 8;
 const int MAX_HOTKEY_PAGES = 2;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
@@ -363,6 +363,7 @@ const char pcMeter_18[18] = "METER [A]->SLOWER";
 const char pcHealth_19[19] = "HEALTH [A]->SLOWER";
 const char pcGuardBar_10[10] = "GUARD BAR";
 const char pcBlank_1[1] = "";
+const char pcHotkeys_8[8] = "HOTKEYS";
 
 const std::vector<const char*> vHighlightNames = {    "OFF",
                                                 "RED",

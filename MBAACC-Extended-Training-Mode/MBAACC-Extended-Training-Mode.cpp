@@ -11,7 +11,9 @@ int main(int argc, char* argv[])
 
     bool bPaused = false;
     bool bAPressed = false;
+    bool bBPressed = false;
     bool bOldAPressed = false;
+    bool bOldBPressed = false;
     bool bF1Pressed = false;
     bool bOldF1Pressed = false;
     bool bF2Pressed = false;
@@ -406,9 +408,14 @@ int main(int argc, char* argv[])
             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
             bEnableFN2Load = nSaveSlot > 0 ? true : false;
 
-            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Input), &nReadResult, 1, 0);
+            nReadResult = 0;
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1APressed), &nReadResult, 1, 0);
             bOldAPressed = bAPressed;
-            bAPressed = (nReadResult & 4 ? true : false);
+            bAPressed = (nReadResult == 1 ? true : false);
+            nReadResult = 0;
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1BPressed), &nReadResult, 1, 0);
+            bOldBPressed = bBPressed;
+            bBPressed = (nReadResult == 1 ? true : false);
             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1F1Pressed), &nReadResult, 1, 0);
             bOldF1Pressed = bF1Pressed;
             bF1Pressed = (nReadResult == 1 ? true : false);
@@ -486,10 +493,7 @@ int main(int argc, char* argv[])
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwThrowRecovery), &nWriteBuffer, 4, 0);
                     nWriteBuffer = nStoredReduceDamage;
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwReduceRecovery), &nWriteBuffer, 4, 0);
-                        
-                    DWORD dwReturnToMainMenuString = GetReturnToMainMenuStringAddress(hMBAAHandle, dwBaseAddress);
-                    char pcHotkeys[19] = "HOTKEYS";
-                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReturnToMainMenuString), &pcHotkeys, 19, 0);
+#define sadly_obsolete
 #ifdef sadly_obsolete
                     // Replace the RETURN TO MAIN MENU option with fancy scrolling text
                     // this is 100% unnecessary but I did it for fun
@@ -547,8 +551,11 @@ int main(int argc, char* argv[])
 
                     bOnSettingsMenu = true;
                     bInExtendedSettings = true;
+
+                    // wait for two frames to prevent a bug with the A press reader
+                    Sleep(32);
                 }
-                else if (!bOnHotkeySettingsMenu && bAPressed && !bOldAPressed && nTrainingMenuCursor == 16)
+                /*else if (!bOnHotkeySettingsMenu && bAPressed && !bOldAPressed && nTrainingMenuCursor == 16)
                 {
                     nWriteBuffer = eMenu::ENEMY_SETTINGS;
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nWriteBuffer, 4, 0);
@@ -557,10 +564,11 @@ int main(int argc, char* argv[])
 
                     bOnHotkeySettingsMenu = true;
                     bInExtendedSettings = true;
-                }
+                }*/
                 else if (nCurrentSubMenu != eMenu::ENEMY_SETTINGS)
                 {
                     bOnSettingsMenu = false;
+                    bInExtendedSettings = false;
                     bOnHotkeySettingsMenu = false;
                 }
 
@@ -678,7 +686,7 @@ int main(int argc, char* argv[])
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nReadResult, 4, 0);
                     int nEnemyStatusIndex = nReadResult;
 
-                    if (bOnSettingsMenu)
+                    if (bOnSettingsMenu && !bOnHotkeySettingsMenu)
                     {
                         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
                         nCurrentSubMenu = nReadResult;
@@ -776,6 +784,15 @@ int main(int argc, char* argv[])
                                 }
                                 break;
                             }
+                            case HOTKEYS_PAGE:
+                                if (nEnemySettingsCursor == 0)
+                                {
+                                    bOldAPressed = bAPressed = true;
+                                    bOnHotkeySettingsMenu = true;
+                                    ResetKeysHeld();
+                                    Sleep(32);
+                                }
+                                break;
                             default:
                                 break;
                             }
@@ -875,6 +892,16 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcHit_4, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcArmor_6, 6, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcThrowProtection_17, 17, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
+                            break;
+                        }
+                        case HOTKEYS_PAGE:
+                        {
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcHotkeys_8, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcBlank_1, 1, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcBlank_1, 1, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcBlank_1, 1, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
                             break;
                         }
@@ -1051,6 +1078,24 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
                                 nEnemySettingsCursor = 6;
                                 nOldEnemySettingsCursor = 6;
+                            }
+                            break;
+                        }
+                        case HOTKEYS_PAGE:
+                        {
+                            if (nOldEnemySettingsCursor == 0 && nEnemySettingsCursor == 2)
+                            {
+                                nWriteBuffer = 10;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 10;
+                                nOldEnemySettingsCursor = 10;
+                            }
+                            else if (nEnemySettingsCursor > 0 && nEnemySettingsCursor < 10)
+                            {
+                                nWriteBuffer = 0;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                nEnemySettingsCursor = 0;
+                                nOldEnemySettingsCursor = 0;
                             }
                             break;
                         }
@@ -1565,6 +1610,7 @@ int main(int argc, char* argv[])
                             break;
                         }
                             break;
+                        case HOTKEYS_PAGE:
                         default:
                             break;
                         }
@@ -2851,6 +2897,18 @@ int main(int argc, char* argv[])
                             }
                             break;
                         }
+                        case HOTKEYS_PAGE:
+                        {
+                            nWriteBuffer = OFFSCREEN_LOCATION;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
+
+                            break;
+                        }
                         default:
                             break;
                         }
@@ -2986,6 +3044,18 @@ int main(int argc, char* argv[])
                             default:
                                 break;
                             }
+                        }
+
+                        // B Press Handler
+                        if (bBPressed && !bOldBPressed)
+                        {
+                            bOldAPressed = bAPressed = bOldBPressed = bBPressed = true;
+
+                            bOnSettingsMenu = false;
+                            bInExtendedSettings = false;
+                            bOnHotkeySettingsMenu = false;
+
+                            continue;
                         }
 
                         // Replace static menu fields
@@ -3363,7 +3433,10 @@ int main(int argc, char* argv[])
                             char pcTemp[19];
 
                             // SAVE STATE
-                            if (!bSaveStateKeySet)
+                            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1BPressed), &nReadResult, 1, 0);
+                            bOldBPressed = bBPressed;
+                            bBPressed = (nReadResult == 1 ? true : false);
+                            if (!bSaveStateKeySet && !bBPressed)
                             {
                                 uint8_t nKeyJustPressed = 0;
                                 if (nEnemySettingsCursor == 0)
