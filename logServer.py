@@ -30,7 +30,11 @@ def server(packetQueue):
 				data, addr = sock.recvfrom(1024)
 				if data:
 					# what are these 12 junk bytes?
-					d = data.decode("ascii").strip()
+					try:
+						d = data.decode("ascii").strip()
+					except:
+						packetQueue.put(f"{data}")
+						continue
 					#if d != "0":
 					packetQueue.put(f"{d}")
 			except socket.timeout: # only here so ctrl c works

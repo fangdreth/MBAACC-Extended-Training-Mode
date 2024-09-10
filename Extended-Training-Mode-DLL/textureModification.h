@@ -204,6 +204,7 @@ options are:
 typedef struct BadAppleFrame {
 	char* data = NULL;
 	size_t size = 0;
+	int64_t pts = 0;
 } BadAppleFrame;
 
 int badAppleFrame = 0;
@@ -213,23 +214,71 @@ IDirect3DTexture9* pBadAppleTex = NULL;
 
 // ffmpeg funcs
 
+int videoOutWidth = 640;
+int videoOutHeight = 480;
+
+void _FFmpeg_logCallback(void* ptr, int level, const char* fmt, va_list vargs) {
+
+	static char tempBuffer[1024];
+
+	//snprintf(tempBuffer, 1024, "%08X lvl: %3d %s", ptr, level, fmt);
+
+	//log(tempBuffer, vargs);
+	log(fmt, vargs);
+}
+
+bool fileExists(const std::string& file) {
+	std::ifstream f(file.c_str());
+	return f.good();
+}
+
 void loadMP4(const std::string& filePath) {
 
-	int res;
+	if (!fileExists(filePath)) {
+		log("dude. straight up, where is my %s", filePath.c_str());
+		return;
+	}
 
+
+	// you could, in theory, hook this up to a twitch stream.
+	// what the fuck
+
+	//av_log_set_level(AV_LOG_ERROR);
+	//av_log_set_callback(_FFmpeg_logCallback);
+
+	/*
+	const AVCodec* current_codec = nullptr;
+	void* i = 0;
+	while ((current_codec = av_codec_iterate(&i))) {
+		if (av_codec_is_encoder(current_codec)) {
+			// a new ffmpeg build is needed
+			log("Found encoder %s", current_codec->long_name);
+		}
+	}
+	*/
+
+	int res;
+	
 	const AVCodec* outCodec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
+	//const AVCodec* outCodec = avcodec_find_encoder(AV_CODEC_ID_APNG);
 	const AVCodec* inCodec = NULL; // input codec of the file 
+
+	if (outCodec == NULL) {
+		log("outcodec was null?? how??");
+		exit(1);
+	}
 
 	AVFormatContext* inFmtCtx = NULL;
 	AVFormatContext* outFmtCtx = NULL;
 
 	AVCodecContext* inCtx = NULL;
 	AVCodecContext* outCtx = avcodec_alloc_context3(outCodec);
-	outCtx->strict_std_compliance = FF_COMPLIANCE_UNOFFICIAL;  // this line is required?? and without it, the decoder doesnt even work
+	//outCtx->strict_std_compliance = FF_COMPLIANCE_UNOFFICIAL;  // this line is required(for jpeg??)?? and without it, the decoder doesnt even work
 	//outCtx->strict_std_compliance = FF_COMPLIANCE_STRICT;  // this line is required??
+	
 
 	if (!outCtx) {
-		log("initing the output codex failed??? how??");
+		log("initing the output codex failed??? how??");	
 		exit(1);
 	}
 
@@ -278,25 +327,52 @@ void loadMP4(const std::string& filePath) {
 		exit(1);
 	}
 
+	// AVPixelFormat outputFormat = AV_PIX_FMT_YUV420P; // this made it weirdly transparent. most likely it not being the full color space?
+	AVPixelFormat outputFormat = AV_PIX_FMT_YUVJ420P;
+	//AVPixelFormat outputFormat = AV_PIX_FMT_YUVJ444P; // might be faster when transfering to gpu? check RGBA too
+	//AVPixelFormat outputFormat = AV_PIX_FMT_ARGB;
+	//AVPixelFormat outputFormat = AV_PIX_FMT_RGBA;
+	//AVPixelFormat outputFormat = inCtx->pix_fmt;
+
 	// init the decoder for the output
-	outCtx->pix_fmt = inCtx->pix_fmt;
+	//outCtx->pix_fmt = inCtx->pix_fmt;
+	outCtx->pix_fmt = outputFormat;
 	//outCtx->width   = inCtx->width;
 	//outCtx->height  = inCtx->height;
-	outCtx->width = 640;
-	outCtx->height = 480;
-	outCtx->time_base = AVRational{ 1,10 }; // ????
+	outCtx->width = videoOutWidth;
+	outCtx->height = videoOutHeight;
+
+	outCtx->bit_rate = 4000; // does this do anything
+
+	//outCtx->codec_type = AVMEDIA_TYPE_VIDEO; // this line confuses me.
+	
+	// needed?
+	outCtx->time_base = AVRational{ 1,30 }; // ????
+	//outCtx->time_base = inCtx->time_base;
+	//outCtx->framerate = AVRational{ 30, 1 };
+
+
+	outCtx->compression_level = 0;
+	//av_opt_set_int(outCtx, "qmin", 30, 0); 
+	//av_opt_set_int(outCtx, "qmax", 31, 0);
+	//outCtx->flags |= AV_CODEC_FLAG_LOW_DELAY; // ooo
+
 
 	res = avcodec_open2(outCtx, outCodec, NULL);
 	if (res < 0) {
 		log("opening the output decoder failed????");
+		char errbuf[1024];
+		av_strerror(res, errbuf, sizeof(errbuf));
+		log("err: %s\n", errbuf);
 		exit(1);
 	}
 
 	// todo, bilinear probs not the fastest
 	SwsContext* swsCtx = sws_getContext(
 		inCtx->width, inCtx->height, inCtx->pix_fmt,
-		640, 480, inCtx->pix_fmt,
-		SWS_FAST_BILINEAR, NULL, NULL, NULL);
+		//640, 480, inCtx->pix_fmt,
+		videoOutWidth, videoOutHeight, outputFormat,
+		SWS_LANCZOS, NULL, NULL, NULL);
 
 	if (!swsCtx) {
 		log("swscontext failed");
@@ -319,15 +395,16 @@ void loadMP4(const std::string& filePath) {
 	AVFrame* frame2 = av_frame_alloc(); // for the jpeg??
 
 	// needing this call confuses me. how the hell am i supposed to know that
-	res = av_image_alloc(frame2->data, frame2->linesize, 640, 480, inCtx->pix_fmt, 1);
+	res = av_image_alloc(frame2->data, frame2->linesize, videoOutWidth, videoOutHeight, outputFormat, 1);
 	if (res < 0) {
 		log("av_image_alloc failed");
 		exit(1);
 	}
 
-	frame2->width = 640;
-	frame2->height= 480;
-	frame2->format = inCtx->pix_fmt;
+	frame2->width = videoOutWidth;
+	frame2->height= videoOutHeight;
+	//frame2->format = inCtx->pix_fmt;
+	frame2->format = outputFormat;
 
 	while (true) { // should i maintain this state and not load the whole video into ram?
 		
@@ -336,7 +413,7 @@ void loadMP4(const std::string& filePath) {
 		}
 
 		if (pkt->stream_index == videoStreamIndex) {
-			log("uhhh frame %d", badAppleFrames.size());
+			//log("decoding frame %d", badAppleFrames.size());
 
 			res = avcodec_send_packet(inCtx, pkt);
 			if (res < 0) {
@@ -369,14 +446,14 @@ void loadMP4(const std::string& filePath) {
 				// get the resulting packet from said frame
 				res = avcodec_receive_packet(outCtx, outPkt);
 				if (res < 0) {
-					log("jpeg encoder failed to give us a packet?");
+					log("output encoder failed to give us a packet?");
 					exit(1);
 				}
 
-				BadAppleFrame tempFrame = { (char*)malloc(outPkt->size), outPkt->size };
+				BadAppleFrame tempFrame = { (char*)malloc(outPkt->size), outPkt->size, frame->pts };
 
 				if (tempFrame.data == NULL) {
-					log("you malloced like an idiot");
+					log("you malloced to close to the sun like an idiot");
 					exit(1);
 				}
 
@@ -451,14 +528,21 @@ void loadBadApple() {
 	for (size_t i = 0; i < badAppleFrames.size(); i++) {
 		videoFileSize += badAppleFrames[i].size;
 
+		continue;
+
+		// 512 was 1/30s, im assuming 256 would be 1/60
+
+		log("frame %4d pts %ld", i, badAppleFrames[i].pts);
+
+		continue;
+
 		snprintf(buffer, 256, "./temp/frame%04d.jpeg", i);
 
-		std::ofstream outFile(buffer);
+		std::ofstream outFile(buffer, std::ios::binary);
 
 		outFile.write(badAppleFrames[i].data, badAppleFrames[i].size);
 
 		outFile.close();
-
 	}
 
 	log("there are,,,, %d frames somehow? taking up %6.2f MB", badAppleFrames.size(), ((float)videoFileSize) / (1 << 20));
@@ -470,57 +554,19 @@ void loadBadApple() {
 
 void initSong(bool force = false) {
 
-	static bool isPlaying = false;
-
-	if (force) {
-		isPlaying = false;
-	}
-
-	if (isPlaying) {
-		return;
-	}
-
-	isPlaying = true;
-
-	//std::string folderPath = std::string(__FILE__);
-	//size_t pos = folderPath.find_last_of('\\');
-	//folderPath = folderPath.substr(0, pos);
-	//folderPath += "\\BadApple.wav";
-
-	std::string folderPath = getExtraDataPath() + "BadApple.wav";
-
-	std::string command = "open \"" + folderPath + "\" type waveaudio alias BadApple";
-
-	mciSendStringA(command.c_str(), NULL, 0, NULL);
-
 	
-	// todo, the volume setting in memory is read when loading into a battle
-	// whats happening(most likely) is dsound buffers are being created, and their vol is being set to that val
-	// find whats creating those buffers, find the dsound thing, convert this to use that
-	// alternatively, conv that vol value to this?
-
-	mciSendStringA("play BadApple", NULL, 0, NULL);
-	//mciSendStringA("setaudio BadApple volume to 10", NULL, 0, NULL);	
-
-	// this code somehow maintains state over multiple runs, and can and will fuck your melty up permanently
-	// i need to find where melty calls volume stuff
-	//waveOutSetVolume(NULL, 0xFFFFFFFF);
-	//waveOutSetVolume(NULL, 0x0000);
 }
 
 void pauseSong() {
-	mciSendStringA("pause BadApple", NULL, 0, NULL);
+	
 }
 
 void playSong() {
-	initSong();
-	mciSendStringA("resume BadApple", NULL, 0, NULL);
+	
 }
 
 void restartSong() {
-	mciSendStringA("stop BadApple", NULL, 0, NULL);
-	mciSendStringA("seek BadApple to start", NULL, 0, NULL);
-	mciSendStringA("play BadApple", NULL, 0, NULL);
+	
 }
 
 // actual funcs
@@ -566,22 +612,26 @@ void drawPrimHook() {
 
 			lastTextureFrameCount = textureFrameCount;
 
-			if ((textureFrameCount & 11) == 0) { // on 15 fps rn
+			if ((textureFrameCount & 0b1) == 0) { 
 
 				if (pBadAppleTex != NULL) {
 					pBadAppleTex->Release();
 					pBadAppleTex = NULL;
 				}
-				// todo, get the dims from the actual file
+				
+				// todo, this is def causing slowdown. fix it
+				// should this be done in a seperate thread?
+				// decreasing the jpeg compression also seemed to,,, help,, maybe?
 				D3DXCreateTextureFromFileInMemoryEx(device,
 					badAppleFrames[badAppleFrame].data, badAppleFrames[badAppleFrame].size,
 					//D3DX_DEFAULT, D3DX_DEFAULT, 
-					640, 480,
+					videoOutWidth, videoOutHeight,
 					//480, 360,
 					//640, 360,
 					0, // MIP
 					D3DUSAGE_DYNAMIC,
-					D3DFMT_A8R8G8B8,
+					//D3DFMT_A8R8G8B8,
+					D3DFMT_FROM_FILE, // seemed to cause some speedup?
 					D3DPOOL_DEFAULT,
 					//D3DX_DEFAULT, //filter?
 					D3DX_FILTER_NONE, // default filter is whatwas slowing things down https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dx-filter

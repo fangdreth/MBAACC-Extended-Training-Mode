@@ -30,10 +30,13 @@ extern "C" {
 
 	// for the love of all that is holy, build ffpeg in a powershel dev console in visual studio 2022 with:
 	// bash ./configure --toolchain=msvc --arch=x86 --disable-shared --enable-static --disable-network
+	// bash ./configure --toolchain=msvc --arch=x86 --disable-shared --enable-static --disable-network --enable-encoder=png
 	// and then just run make
 	// you will also need NASM in path
 	// this will take a while, TODO, see what ffmpeg features i can disable
 	// maybe --disable-doc --disable-debug
+	// due to building on windows, my shit is neutered
+	// i dont even have pngs?
 
 	#define FFMPEG_STATIC
 	#define __STDC_CONSTANT_MACROS
