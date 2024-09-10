@@ -14,6 +14,7 @@ namespace fs = std::filesystem;
 unsigned textureFrameCount = 0;
 
 extern IDirect3DDevice9* device;
+IDirectSound8* pSD = NULL;
 
 const char* pixelShaderCode3 = R"(
 
@@ -557,16 +558,16 @@ void initSong(bool force = false) {
 	
 }
 
-void pauseSong() {
-	
-}
-
 void playSong() {
-	
+
 }
 
 void restartSong() {
-	
+
+}
+
+void pauseSong() {
+
 }
 
 // actual funcs
@@ -773,6 +774,201 @@ void listAppendHook() {
 	}
 }
 
+void LoadWavData(const char* fileName, LPDIRECTSOUNDBUFFER& sBuf)
+{
+
+	HRESULT hr;
+
+	log("loading wav, data? or at least trying to ");
+
+	std::ifstream inFile(fileName, std::ios::binary | std::ios::ate);
+	size_t size = inFile.tellg();
+	inFile.seekg(0, std::ios::beg);
+
+	char* buffer = (char*)malloc(size);
+
+	inFile.read(buffer, size);
+
+	//uint32_t fileSize = *(uint32_t*)(buffer + 0x4);
+
+	uint16_t format = *(uint16_t*)(buffer + 0x14);
+	uint16_t channelCount = *(uint16_t*)(buffer + 0x16);
+
+	uint32_t sampleRate = *(uint32_t*)(buffer + 0x18);
+	uint32_t bytesPerSecond = *(uint32_t*)(buffer + 0x1C);
+	uint16_t bitsPerSample = *(uint16_t*)(buffer + 0x22);
+
+	// wavdatasize comes after the data word
+	char* dataWordPtr = NULL;
+	uint32_t dataSize = 0;
+	char* dataStartPtr = NULL;
+	for (int i = 0x20; i < size; i++) { // idk why im starting at 0x20
+		if (*(uint32_t*)(buffer + i) == 0x61746164) { // data
+			dataWordPtr = buffer + i;
+			dataSize = *(uint32_t*)(buffer + i + 4);
+			dataStartPtr = buffer + i + 8;
+			break;
+		}
+	}
+
+	if (dataSize == 0) {
+		log("unable to find data section");
+		return;
+	}
+
+	WAVEFORMATEX sFmt = { 0 };
+
+	DSBUFFERDESC sDesc = { 0 };
+	sDesc.dwSize = sizeof(DSBUFFERDESC);
+	sDesc.dwFlags = 0;
+	//sDesc.dwSize = size;
+	sDesc.lpwfxFormat = &sFmt;
+
+	sFmt.wFormatTag = WAVE_FORMAT_PCM;
+	sFmt.nChannels = channelCount;
+	sFmt.wBitsPerSample = bitsPerSample;
+	sFmt.nSamplesPerSec = sampleRate;
+	sFmt.nBlockAlign = sFmt.nChannels * sFmt.wBitsPerSample / 8;
+	//sFmt.nAvgBytesPerSec = sFmt.nBlockAlign * sFmt.nSamplesPerSec;
+	sFmt.nAvgBytesPerSec = bytesPerSecond;
+	sFmt.cbSize = 0;
+
+	// ???
+	const int numchunks = 8;
+	const int chunksize = 1024;
+
+	sDesc.dwSize = sizeof(sDesc);
+	sDesc.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME;
+	//sDesc.dwFlags |= DSBCAPS_STICKYFOCUS;
+	//sDesc.dwBufferBytes = numchunks * chunksize;
+	sDesc.dwBufferBytes = dataSize;
+	sDesc.dwReserved = 0;
+	sDesc.lpwfxFormat = &sFmt;
+
+	//LPDIRECTSOUNDBUFFER sBuf = NULL;
+
+	hr = pSD->CreateSoundBuffer(&sDesc, &sBuf, NULL);
+	if (FAILED(hr)) {
+		log("createsoundbuffer failed");
+		return;
+	}
+
+	uint8_t* data1 = NULL;
+	uint8_t* data2 = NULL;
+	uint32_t size1 = 0;
+	uint32_t size2 = 0;
+
+	hr = IDirectSoundBuffer_Lock(sBuf, 0, sDesc.dwBufferBytes, (LPVOID*)&data1, (LPDWORD)&size1, (LPVOID*)&data2, (LPDWORD)&size2, DSBLOCK_ENTIREBUFFER);
+	if (FAILED(hr)) {
+		log("IDirectSoundBuffer_Lock failed");
+		return;
+	}
+
+	//log("size1: %d size2: %d dataSize: %d", size1, size2, dataSize);
+	// size1 and dataSize should be equal
+
+	for (uint32_t i = 0; i < size1; i++) {
+		
+		data1[i] = *dataStartPtr;
+		
+		if (dataStartPtr - buffer < size) {
+			dataStartPtr++;
+		}
+
+	}
+
+	IDirectSoundBuffer_Unlock(sBuf, (LPVOID)data1, (DWORD)size1, (LPVOID)data2, (DWORD)size2);
+
+	free(buffer);
+
+	log("wav loading was a success");
+}
+
+void soundHook() {
+
+
+	// going 3 refs on this pointer leads us to dsound.dll. what. why.
+	DWORD baseSoundAddr1 = 0x0076e000;
+
+	DWORD baseSoundAddr2 = *(DWORD*)baseSoundAddr1;
+
+	if (baseSoundAddr2 == 0) {
+		log("baseSoundAddr2 was null");
+		return;
+	}
+
+	DWORD baseSoundAddr3 = *(DWORD*)baseSoundAddr2;
+
+	if (baseSoundAddr3 == 0) {
+		log("baseSoundAddr3 was null");
+		return;
+	}
+
+	log("baseSoundAddr3 was %08X", baseSoundAddr3);
+
+	pSD = (IDirectSound8*)baseSoundAddr3;
+
+	static LPDIRECTSOUNDBUFFER sBuf = NULL;
+
+	// ok. start with loading a wav from disc to assert sanity, then ill go fuck around with ffmpeg
+	//pSD->CreateSoundBuffer(&sDesc, &sBuf, NULL);	
+
+	if (sBuf == NULL) {
+		
+		LoadWavData("./testWav.wav", sBuf);
+		
+	}
+
+	log("trying to play %08X", sBuf);
+
+	HRESULT hr = sBuf->Play(0, 0, DSBPLAY_LOOPING);
+	if (FAILED(hr)) {
+		log("song failed");
+		log("err string:  %s", DXGetErrorString(hr));
+		log("err descr:   %s", DXGetErrorDescription(hr));
+	} else {
+		log("song played?");
+	}
+
+
+
+	//log("trying to play a sound?");
+	//sBuf->Play(0, 0, 0);
+
+	return;
+
+	//log("sound device? %08X", possibleDirectSoundDevice);
+
+	//pSD = (IDirectSound8*)possibleDirectSoundDevice;
+
+	if (pSD == NULL) {
+		return;
+	}
+
+	// this format is the same as the format used in actual wav files
+	// check [[esp+4]+10], a bit behind it for the RIFF header.
+	WAVEFORMATEX sFmt; // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee419019(v=vs.85)
+	sFmt.wFormatTag = 1; // WORD 
+	sFmt.nChannels = 1; // WORD
+	sFmt.nSamplesPerSec = 0x00005622; // DWORD 
+	sFmt.nAvgBytesPerSec = 0x00005622; // DWORD 
+	sFmt.nBlockAlign = 1; // WORD
+	sFmt.wBitsPerSample = 8; // WORD
+	sFmt.cbSize; // WORD for reasons unknown, this overlines with the "data" part of the wav file?
+	// For WAVE_FORMAT_PCM formats (and only WAVE_FORMAT_PCM formats), this member is ignored.
+	// weird.
+
+
+	DSBUFFERDESC sDesc; // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416820(v=vs.85)
+	sDesc.dwSize = 0x24; // ?
+	sDesc.dwFlags = 0x000080E0; // DSBCAPS_TRUEPLAYPOSITION | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY
+	sDesc.dwBufferBytes = 0x0000EBA5;
+	sDesc.dwReserved = 0;
+	sDesc.lpwfxFormat = &sFmt;
+	sDesc.guid3DAlgorithm = (GUID)0;
+
+}
+
 // naked funcs
 
 DWORD _naked_drawPrimHook_reg;
@@ -833,7 +1029,6 @@ __declspec(naked) void _naked_drawPrimCallback2() {
 	}
 }
 
-//DWORD* __absolutelyUseless = (DWORD*)0x0076e7c8;
 DWORD _naked_leadToDrawPrimHook_jmp = 0x004c0385;
 __declspec(naked) void _naked_leadToDrawPrimHook() {
 	__asm {
@@ -1082,6 +1277,10 @@ void initDirectXHooks() {
 
 }
 
+void initSoundHooks() {
+	soundHook();
+}
+
 bool initTextureModifications() {
 
 	if (device == NULL) {
@@ -1102,6 +1301,8 @@ bool initTextureModifications() {
 	initFrameCountCallback();
 
 	initDirectXHooks();
+
+	initSoundHooks();
 
 	log("initTextureModifications ran");
 	

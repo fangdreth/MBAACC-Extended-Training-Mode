@@ -15,6 +15,7 @@
 #include <stdarg.h>
 #include <d3d9.h>
 #include <d3dx9.h> // https://www.microsoft.com/en-us/download/details.aspx?id=6812
+#include <dxerr.h>
 #include <algorithm>
 #include <dsound.h>
 #include <mmsystem.h>
@@ -73,8 +74,10 @@ extern "C" {
 #pragma comment(lib, "d3d9.lib") 
 #pragma comment(lib, "d3dx9.lib")
 #pragma comment(lib, "dsound.lib")
+#pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "winmm.lib")
-
+#pragma comment(lib, "dxerr.lib")
+#pragma comment(lib, "legacy_stdio_definitions.lib")
 
 
 
