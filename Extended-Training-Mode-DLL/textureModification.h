@@ -15,6 +15,8 @@ unsigned textureFrameCount = 0;
 
 extern IDirect3DDevice9* device;
 IDirectSound8* pSD = NULL;
+LPDIRECTSOUNDBUFFER sBuf = NULL;
+//DWORD pausePos = 0;
 
 const char* pixelShaderCode3 = R"(
 
@@ -209,6 +211,7 @@ typedef struct BadAppleFrame {
 } BadAppleFrame;
 
 int badAppleFrame = 0;
+int fpsMod = 0b0;
 std::vector<BadAppleFrame> badAppleFrames;
 
 IDirect3DTexture9* pBadAppleTex = NULL;
@@ -233,33 +236,133 @@ bool fileExists(const std::string& file) {
 	return f.good();
 }
 
-void loadMP4(const std::string& filePath) {
+bool loadWav(char* buffer, size_t size, LPDIRECTSOUNDBUFFER& sBuf)
+{
+	// buffer is wavdata, size is len of it
+	HRESULT hr;
 
-	if (!fileExists(filePath)) {
-		log("dude. straight up, where is my %s", filePath.c_str());
-		return;
+	log("loading wav, data? or at least trying to ");
+
+	/*
+	std::ifstream inFile(fileName, std::ios::binary | std::ios::ate);
+	size_t size = inFile.tellg();
+	inFile.seekg(0, std::ios::beg);
+
+	char* buffer = (char*)malloc(size);
+
+	inFile.read(buffer, size);
+
+	*/
+
+	//uint32_t fileSize = *(uint32_t*)(buffer + 0x4);
+
+	uint16_t format = *(uint16_t*)(buffer + 0x14);
+	uint16_t channelCount = *(uint16_t*)(buffer + 0x16);
+
+	uint32_t sampleRate = *(uint32_t*)(buffer + 0x18);
+	uint32_t bytesPerSecond = *(uint32_t*)(buffer + 0x1C);
+	uint16_t bitsPerSample = *(uint16_t*)(buffer + 0x22);
+
+	// wavdatasize comes after the data word
+	char* dataWordPtr = NULL;
+	uint32_t dataSize = 0;
+	char* dataStartPtr = NULL;
+	for (int i = 0x20; i < size; i++) { // idk why im starting at 0x20
+		if (*(uint32_t*)(buffer + i) == 0x61746164) { // data
+			dataWordPtr = buffer + i;
+			dataSize = *(uint32_t*)(buffer + i + 4);
+			dataStartPtr = buffer + i + 8;
+			break;
+		}
 	}
 
+	if (dataSize == 0) {
+		log("unable to find data section");
+		return false;
+	}
+
+	WAVEFORMATEX sFmt = { 0 };
+
+	DSBUFFERDESC sDesc = { 0 };
+	sDesc.dwSize = sizeof(DSBUFFERDESC);
+	sDesc.dwFlags = 0;
+	//sDesc.dwSize = size;
+	sDesc.lpwfxFormat = &sFmt;
+
+	sFmt.wFormatTag = WAVE_FORMAT_PCM;
+	sFmt.nChannels = channelCount;
+	sFmt.wBitsPerSample = bitsPerSample;
+	sFmt.nSamplesPerSec = sampleRate;
+	sFmt.nBlockAlign = sFmt.nChannels * sFmt.wBitsPerSample / 8;
+	//sFmt.nAvgBytesPerSec = sFmt.nBlockAlign * sFmt.nSamplesPerSec;
+	sFmt.nAvgBytesPerSec = bytesPerSecond;
+	sFmt.cbSize = 0;
+
+	// ???
+	const int numchunks = 8;
+	const int chunksize = 1024;
+
+	sDesc.dwSize = sizeof(sDesc);
+	//sDesc.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME;
+	// sDesc.dwFlags = 0x000080E0; // DSBCAPS_TRUEPLAYPOSITION | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY
+	sDesc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME;
+	//sDesc.dwFlags |= DSBCAPS_STICKYFOCUS;
+	//sDesc.dwBufferBytes = numchunks * chunksize;
+	sDesc.dwBufferBytes = dataSize;
+	sDesc.dwReserved = 0;
+	sDesc.lpwfxFormat = &sFmt;
+
+	//LPDIRECTSOUNDBUFFER sBuf = NULL;
+
+	hr = pSD->CreateSoundBuffer(&sDesc, &sBuf, NULL);
+	if (FAILED(hr)) {
+		log("createsoundbuffer failed");
+		return false;
+	}
+
+	uint8_t* data1 = NULL;
+	uint8_t* data2 = NULL;
+	uint32_t size1 = 0;
+	uint32_t size2 = 0;
+
+	hr = IDirectSoundBuffer_Lock(sBuf, 0, sDesc.dwBufferBytes, (LPVOID*)&data1, (LPDWORD)&size1, (LPVOID*)&data2, (LPDWORD)&size2, DSBLOCK_ENTIREBUFFER);
+	if (FAILED(hr)) {
+		log("IDirectSoundBuffer_Lock failed");
+		return false;
+	}
+
+	//log("size1: %d size2: %d dataSize: %d", size1, size2, dataSize);
+	// size1 and dataSize should be equal
+
+	for (uint32_t i = 0; i < size1; i++) {
+
+		data1[i] = *dataStartPtr;
+
+		if (dataStartPtr - buffer < size) {
+			dataStartPtr++;
+		}
+
+	}
+
+	IDirectSoundBuffer_Unlock(sBuf, (LPVOID)data1, (DWORD)size1, (LPVOID)data2, (DWORD)size2);
+
+	// vol addr (the decibal form)
+	sBuf->SetVolume(*(LONG*)(0x0076e648));
+
+	free(buffer);
+
+	log("wav loading was a success");
+
+	return true;
+}
+
+void loadVideoStream(const std::string& filePath) {
 
 	// you could, in theory, hook this up to a twitch stream.
 	// what the fuck
 
-	//av_log_set_level(AV_LOG_ERROR);
-	//av_log_set_callback(_FFmpeg_logCallback);
-
-	/*
-	const AVCodec* current_codec = nullptr;
-	void* i = 0;
-	while ((current_codec = av_codec_iterate(&i))) {
-		if (av_codec_is_encoder(current_codec)) {
-			// a new ffmpeg build is needed
-			log("Found encoder %s", current_codec->long_name);
-		}
-	}
-	*/
-
 	int res;
-	
+
 	const AVCodec* outCodec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
 	//const AVCodec* outCodec = avcodec_find_encoder(AV_CODEC_ID_APNG);
 	const AVCodec* inCodec = NULL; // input codec of the file 
@@ -276,17 +379,17 @@ void loadMP4(const std::string& filePath) {
 	AVCodecContext* outCtx = avcodec_alloc_context3(outCodec);
 	//outCtx->strict_std_compliance = FF_COMPLIANCE_UNOFFICIAL;  // this line is required(for jpeg??)?? and without it, the decoder doesnt even work
 	//outCtx->strict_std_compliance = FF_COMPLIANCE_STRICT;  // this line is required??
-	
+
 
 	if (!outCtx) {
-		log("initing the output codex failed??? how??");	
+		log("initing the output codex failed??? how??");
 		exit(1);
 	}
 
 	// open the actual file
 	// https://ffmpeg.org/doxygen/2.8/group__lavf__decoding.html#details
 
-	
+
 	res = avformat_open_input(&inFmtCtx, filePath.c_str(), NULL, NULL);
 	if (res < 0) {
 		log("avformat_open_input failed");
@@ -301,7 +404,7 @@ void loadMP4(const std::string& filePath) {
 
 	res = av_find_best_stream(inFmtCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &inCodec, 0);
 	if (res < 0) {
-		log("av_find_best_stream failed");
+		log("av_find_best_stream VIDEO failed");
 		exit(1);
 	}
 
@@ -320,6 +423,27 @@ void loadMP4(const std::string& filePath) {
 		log("avcodec_parameters_to_context failed");
 		exit(1);
 	}
+
+
+	AVRational fps = inFmtCtx->streams[videoStreamIndex]->r_frame_rate;
+	double fpsValue = static_cast<double>(fps.num) / fps.den;
+
+	log("mp4 fps: %lf", fpsValue);
+
+	if (fpsValue <= (double)15.00001) {
+		fpsMod = 0b11;
+	}
+	else if (fpsValue <= (double)30.00001) {
+		fpsMod = 0b01;
+	}
+	else {
+		// 60fps
+		fpsMod = 0b00;
+	}
+
+	//if(fpsValue)
+
+	//fpsMod
 
 	// init the decoder for the input
 	res = avcodec_open2(inCtx, inCodec, NULL);
@@ -346,7 +470,7 @@ void loadMP4(const std::string& filePath) {
 	outCtx->bit_rate = 4000; // does this do anything
 
 	//outCtx->codec_type = AVMEDIA_TYPE_VIDEO; // this line confuses me.
-	
+
 	// needed?
 	outCtx->time_base = AVRational{ 1,30 }; // ????
 	//outCtx->time_base = inCtx->time_base;
@@ -385,7 +509,7 @@ void loadMP4(const std::string& filePath) {
 		log("couldnt even alloc a packet?");
 		return;
 	}
-	
+
 	AVPacket* pkt = av_packet_alloc();
 	if (!pkt) {
 		log("couldnt even alloc a packet?");
@@ -403,12 +527,12 @@ void loadMP4(const std::string& filePath) {
 	}
 
 	frame2->width = videoOutWidth;
-	frame2->height= videoOutHeight;
+	frame2->height = videoOutHeight;
 	//frame2->format = inCtx->pix_fmt;
 	frame2->format = outputFormat;
 
 	while (true) { // should i maintain this state and not load the whole video into ram?
-		
+
 		if ((res = av_read_frame(inFmtCtx, pkt)) < 0) { // read frame but reads a packet???
 			break;
 		}
@@ -423,17 +547,19 @@ void loadMP4(const std::string& filePath) {
 			}
 
 			// decode that one packet
-			while (true) { 
+			while (true) {
 				// get the frame from that packet
 				res = avcodec_receive_frame(inCtx, frame);
 				if (res == AVERROR(EAGAIN) || res == AVERROR_EOF) { // end of packet
 					break;
-				} else if (res < 0) {
+				}
+				else if (res < 0) {
 					log("avcodec_receive_frame failed");
 					exit(1);
 				}
 
 				// at this point, we now (should) have a frame of the video. do something with it
+
 
 				sws_scale(swsCtx, (const uint8_t* const*)frame->data, frame->linesize, 0, frame->height, frame2->data, frame2->linesize);
 
@@ -482,7 +608,273 @@ void loadMP4(const std::string& filePath) {
 	av_packet_free(&pkt);
 	av_packet_free(&outPkt);
 	sws_freeContext(swsCtx);
+}
 
+void loadAudioStream(const std::string& filePath) {
+
+	int res;
+
+	const AVCodec* outCodec = avcodec_find_encoder(AV_CODEC_ID_PCM_S16LE);
+	const AVCodec* inCodec = NULL; // input codec of the file 
+
+	if (outCodec == NULL) {
+		log("outcodec was null?? how??");
+		exit(1);
+	}
+
+	AVFormatContext* inFmtCtx = NULL;
+	AVFormatContext* outFmtCtx = NULL;
+
+	AVCodecContext* inCtx = NULL;
+	AVCodecContext* outCtx = avcodec_alloc_context3(outCodec);
+	outCtx->strict_std_compliance = FF_COMPLIANCE_UNOFFICIAL;  // this line is required(for jpeg??)?? and without it, the decoder doesnt even work
+	//outCtx->strict_std_compliance = FF_COMPLIANCE_STRICT;  // this line is required??
+
+
+	if (!outCtx) {
+		log("initing the output codex failed??? how??");
+		exit(1);
+	}
+
+	// open the actual file
+	// https://ffmpeg.org/doxygen/2.8/group__lavf__decoding.html#details
+
+
+	res = avformat_open_input(&inFmtCtx, filePath.c_str(), NULL, NULL);
+	if (res < 0) {
+		log("avformat_open_input failed");
+		exit(1);
+	}
+
+	res = avformat_find_stream_info(inFmtCtx, NULL);
+	if (res < 0) {
+		log("avformat_find_stream_info failed");
+		exit(1);
+	}
+
+	res = av_find_best_stream(inFmtCtx, AVMEDIA_TYPE_AUDIO, -1, -1, &inCodec, 0);
+	if (res < 0) {
+		log("av_find_best_stream VIDEO failed");
+		exit(1);
+	}
+
+	int streamIndex = res;
+
+	// create a context for the input video codec 
+	inCtx = avcodec_alloc_context3(inCodec);
+	if (!inCtx) {
+		log("avcodec_alloc_context3 failed");
+		exit(1);
+	}
+
+	// give the codecs params (width, height, etc i think) to the context
+	res = avcodec_parameters_to_context(inCtx, inFmtCtx->streams[streamIndex]->codecpar);
+	if (res < 0) {
+		log("avcodec_parameters_to_context failed");
+		exit(1);
+	}
+
+
+
+	res = avcodec_open2(inCtx, inCodec, NULL);
+	if (res < 0) {
+		log("avcodec_open2 audio input failed");
+		exit(1);
+	}
+
+	AVChannelLayout stereoLayout;
+	av_channel_layout_default(&stereoLayout, 2);
+	outCtx->ch_layout = stereoLayout;
+
+	outCtx->time_base = inCtx->time_base;
+	outCtx->sample_fmt = AV_SAMPLE_FMT_S16;
+	outCtx->sample_rate = 44100;
+
+	res = avcodec_open2(outCtx, outCodec, NULL);
+	if (res < 0) {
+		log("avcodec_open2 audio output failed");
+		exit(1);
+	}
+
+	AVPacket* outPkt = av_packet_alloc();
+	if (!outPkt) {
+		log("couldnt even alloc a packet?");
+		return;
+	}
+
+	AVPacket* pkt = av_packet_alloc();
+	if (!pkt) {
+		log("couldnt even alloc a packet?");
+		return;
+	}
+
+	AVFrame* frame = av_frame_alloc();
+	//AVFrame* frame2 = av_frame_alloc(); 
+
+
+	SwrContext* swrContext = swr_alloc();
+
+	av_opt_set_chlayout(swrContext, "in_chlayout", &inCtx->ch_layout, 0); // i love when a whole codebase changes every fucking year!
+	av_opt_set_int(swrContext, "in_sample_rate", inCtx->sample_rate, 0);
+	av_opt_set_sample_fmt(swrContext, "in_sample_fmt", inCtx->sample_fmt, 0);
+	
+	av_opt_set_chlayout(swrContext, "out_chlayout", &outCtx->ch_layout, 0);
+	av_opt_set_int(swrContext, "out_sample_rate", 44100, 0);
+	av_opt_set_sample_fmt(swrContext, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
+
+	res = swr_init(swrContext);
+	if (res < 0) {
+		log("initing swr context failed");
+		return;
+	}
+
+	std::vector<uint8_t> wavData;
+
+	while (true) { // should i maintain this state and not load the whole video into ram?
+
+		if ((res = av_read_frame(inFmtCtx, pkt)) < 0) { // read frame but reads a packet???
+			break;
+		}
+
+		if (pkt->stream_index == streamIndex) {
+			//log("decoding frame %d", badAppleFrames.size());
+
+			res = avcodec_send_packet(inCtx, pkt);
+			if (res < 0) {
+				log("failed to send packet to inCtx decoder?");
+				exit(1);
+			}
+
+			// decode that one packet
+			while (true) {
+
+				res = avcodec_receive_frame(inCtx, frame);
+				if (res == AVERROR(EAGAIN) || res == AVERROR_EOF) { // end of packet
+					break;
+				}
+				else if (res < 0) {
+					log("avcodec_receive_frame failed");
+					exit(1);
+				}
+
+				// at this point, we now (should) have a frame of the video. do something with it
+
+				//sws_scale(swsCtx, (const uint8_t* const*)frame->data, frame->linesize, 0, frame->height, frame2->data, frame2->linesize);
+
+				// ohh you are rescaling a video? its source, dest
+				// ohh you are resampling audio? its dest, source!
+				// that makes sense right?
+				// i cannot believe this code is this shit
+				// anyone who justifies or says ffmpeg's codebase is,, anything but a trash fire,, is wrong.
+				
+				uint8_t** outputData = nullptr;
+				int outputLinesize;
+				int maxOutputSamples = av_rescale_rnd(swr_get_delay(swrContext, inCtx->sample_rate) + frame->nb_samples, outCtx->sample_rate, inCtx->sample_rate, AV_ROUND_UP);
+
+				// Allocate samples for output (maxOutputSamples for safe resampling)	
+				res = av_samples_alloc_array_and_samples(&outputData, &outputLinesize, inCtx->ch_layout.nb_channels, maxOutputSamples, AV_SAMPLE_FMT_S16, 0);
+				if (res < 0) {
+					log("av_samples_alloc_array_and_samples failed");
+					return;
+				}
+
+
+				res = swr_convert(swrContext, outputData, outputLinesize, frame->data, frame->nb_samples);
+				if (res < 0) {
+					log("swr conv really messed up");
+					return;
+				}
+
+				for (int i = 0; i < outputLinesize; i++) {
+					wavData.push_back(outputData[0][i]);
+				}
+
+				/*
+				// send the video frame to the jpeg encoder
+				res = avcodec_send_frame(outCtx, frame2);
+				if (res < 0) {
+					log("sending frame to output decoder failed");
+					exit(1);
+				}
+
+				// get the resulting packet from said frame
+				res = avcodec_receive_packet(outCtx, outPkt);
+				if (res < 0) {
+					log("output encoder failed to give us a packet?");
+					exit(1);
+				}
+				*/
+
+				//BadAppleFrame tempFrame = { (char*)malloc(outPkt->size), outPkt->size, frame->pts };
+
+				/*if (tempFrame.data == NULL) {
+					log("you malloced to close to the sun like an idiot");
+					exit(1);
+				}*/
+
+				//memcpy(tempFrame.data, outPkt->data, tempFrame.size);
+
+				//badAppleFrames.push_back(tempFrame);
+
+				//av_packet_unref(outPkt);
+
+				av_freep(&outputData[0]);
+				av_freep(&outputData);
+
+				av_frame_unref(frame);
+			}	
+		}
+
+		av_packet_unref(pkt);
+	}
+
+	//std::ofstream outFile("idek.wav", std::ios::binary);
+	//outFile.write((char*)wavData.data(), wavData.size());
+	//outFile.close();
+
+	// clean
+	// todo, you are leaking here
+
+	avcodec_free_context(&inCtx);
+	avformat_close_input(&inFmtCtx);
+	//av_frame_free(&frame2);
+	av_frame_free(&frame);
+	avcodec_free_context(&outCtx);
+	swr_free(&swrContext);
+	av_packet_free(&pkt);
+	//av_packet_free(&outPkt);
+	//sws_freeContext(swsCtx);
+
+}
+
+void loadMP4(const std::string& filePath) {
+
+	if (!fileExists(filePath)) {
+		log("dude. straight up, where is my %s", filePath.c_str());
+		return;
+	}
+
+
+	//av_log_set_level(AV_LOG_ERROR);
+	av_log_set_callback(_FFmpeg_logCallback);
+
+	/*
+	const AVCodec* current_codec = nullptr;
+	void* i = 0;
+	while ((current_codec = av_codec_iterate(&i))) {
+		if (av_codec_is_encoder(current_codec)) {
+			// a new ffmpeg build is needed
+			log("Found encoder %s", current_codec->long_name);
+		}
+	}
+	*/
+
+	// ik i should do both of these together. but im afraid to touch ffmpeg with anything other than a 20 foot pole
+	log("loading video stream");
+	loadVideoStream(filePath);
+	log("loading audio stream");
+	loadAudioStream(filePath);
+	
 }
 
 void loadBadApple() {
@@ -559,15 +951,28 @@ void initSong(bool force = false) {
 }
 
 void playSong() {
-
+	if (sBuf == NULL) {
+		return;
+	}
+	//sBuf->SetCurrentPosition(pausePos);
+	sBuf->Play(0, 0, DSBPLAY_LOOPING);
 }
 
 void restartSong() {
-
+	if (sBuf == NULL) {
+		return;
+	}
+	//pausePos = 0; // not exactly needed anymore, but just in case
+	sBuf->SetCurrentPosition(0);
+	playSong(); 
 }
 
 void pauseSong() {
-
+	if (sBuf == NULL) {
+		return;
+	}
+	//sBuf->SetCurrentPosition(pausePos);
+	sBuf->Stop();
 }
 
 // actual funcs
@@ -613,7 +1018,7 @@ void drawPrimHook() {
 
 			lastTextureFrameCount = textureFrameCount;
 
-			if ((textureFrameCount & 0b1) == 0) { 
+			if ((textureFrameCount & fpsMod) == 0) { 
 
 				if (pBadAppleTex != NULL) {
 					pBadAppleTex->Release();
@@ -774,118 +1179,7 @@ void listAppendHook() {
 	}
 }
 
-void LoadWavData(const char* fileName, LPDIRECTSOUNDBUFFER& sBuf)
-{
-
-	HRESULT hr;
-
-	log("loading wav, data? or at least trying to ");
-
-	std::ifstream inFile(fileName, std::ios::binary | std::ios::ate);
-	size_t size = inFile.tellg();
-	inFile.seekg(0, std::ios::beg);
-
-	char* buffer = (char*)malloc(size);
-
-	inFile.read(buffer, size);
-
-	//uint32_t fileSize = *(uint32_t*)(buffer + 0x4);
-
-	uint16_t format = *(uint16_t*)(buffer + 0x14);
-	uint16_t channelCount = *(uint16_t*)(buffer + 0x16);
-
-	uint32_t sampleRate = *(uint32_t*)(buffer + 0x18);
-	uint32_t bytesPerSecond = *(uint32_t*)(buffer + 0x1C);
-	uint16_t bitsPerSample = *(uint16_t*)(buffer + 0x22);
-
-	// wavdatasize comes after the data word
-	char* dataWordPtr = NULL;
-	uint32_t dataSize = 0;
-	char* dataStartPtr = NULL;
-	for (int i = 0x20; i < size; i++) { // idk why im starting at 0x20
-		if (*(uint32_t*)(buffer + i) == 0x61746164) { // data
-			dataWordPtr = buffer + i;
-			dataSize = *(uint32_t*)(buffer + i + 4);
-			dataStartPtr = buffer + i + 8;
-			break;
-		}
-	}
-
-	if (dataSize == 0) {
-		log("unable to find data section");
-		return;
-	}
-
-	WAVEFORMATEX sFmt = { 0 };
-
-	DSBUFFERDESC sDesc = { 0 };
-	sDesc.dwSize = sizeof(DSBUFFERDESC);
-	sDesc.dwFlags = 0;
-	//sDesc.dwSize = size;
-	sDesc.lpwfxFormat = &sFmt;
-
-	sFmt.wFormatTag = WAVE_FORMAT_PCM;
-	sFmt.nChannels = channelCount;
-	sFmt.wBitsPerSample = bitsPerSample;
-	sFmt.nSamplesPerSec = sampleRate;
-	sFmt.nBlockAlign = sFmt.nChannels * sFmt.wBitsPerSample / 8;
-	//sFmt.nAvgBytesPerSec = sFmt.nBlockAlign * sFmt.nSamplesPerSec;
-	sFmt.nAvgBytesPerSec = bytesPerSecond;
-	sFmt.cbSize = 0;
-
-	// ???
-	const int numchunks = 8;
-	const int chunksize = 1024;
-
-	sDesc.dwSize = sizeof(sDesc);
-	sDesc.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME;
-	//sDesc.dwFlags |= DSBCAPS_STICKYFOCUS;
-	//sDesc.dwBufferBytes = numchunks * chunksize;
-	sDesc.dwBufferBytes = dataSize;
-	sDesc.dwReserved = 0;
-	sDesc.lpwfxFormat = &sFmt;
-
-	//LPDIRECTSOUNDBUFFER sBuf = NULL;
-
-	hr = pSD->CreateSoundBuffer(&sDesc, &sBuf, NULL);
-	if (FAILED(hr)) {
-		log("createsoundbuffer failed");
-		return;
-	}
-
-	uint8_t* data1 = NULL;
-	uint8_t* data2 = NULL;
-	uint32_t size1 = 0;
-	uint32_t size2 = 0;
-
-	hr = IDirectSoundBuffer_Lock(sBuf, 0, sDesc.dwBufferBytes, (LPVOID*)&data1, (LPDWORD)&size1, (LPVOID*)&data2, (LPDWORD)&size2, DSBLOCK_ENTIREBUFFER);
-	if (FAILED(hr)) {
-		log("IDirectSoundBuffer_Lock failed");
-		return;
-	}
-
-	//log("size1: %d size2: %d dataSize: %d", size1, size2, dataSize);
-	// size1 and dataSize should be equal
-
-	for (uint32_t i = 0; i < size1; i++) {
-		
-		data1[i] = *dataStartPtr;
-		
-		if (dataStartPtr - buffer < size) {
-			dataStartPtr++;
-		}
-
-	}
-
-	IDirectSoundBuffer_Unlock(sBuf, (LPVOID)data1, (DWORD)size1, (LPVOID)data2, (DWORD)size2);
-
-	free(buffer);
-
-	log("wav loading was a success");
-}
-
 void soundHook() {
-
 
 	// going 3 refs on this pointer leads us to dsound.dll. what. why.
 	DWORD baseSoundAddr1 = 0x0076e000;
@@ -904,69 +1198,10 @@ void soundHook() {
 		return;
 	}
 
-	log("baseSoundAddr3 was %08X", baseSoundAddr3);
+	//log("baseSoundAddr3 was %08X", baseSoundAddr3);
 
-	pSD = (IDirectSound8*)baseSoundAddr3;
-
-	static LPDIRECTSOUNDBUFFER sBuf = NULL;
-
-	// ok. start with loading a wav from disc to assert sanity, then ill go fuck around with ffmpeg
-	//pSD->CreateSoundBuffer(&sDesc, &sBuf, NULL);	
-
-	if (sBuf == NULL) {
-		
-		LoadWavData("./testWav.wav", sBuf);
-		
-	}
-
-	log("trying to play %08X", sBuf);
-
-	HRESULT hr = sBuf->Play(0, 0, DSBPLAY_LOOPING);
-	if (FAILED(hr)) {
-		log("song failed");
-		log("err string:  %s", DXGetErrorString(hr));
-		log("err descr:   %s", DXGetErrorDescription(hr));
-	} else {
-		log("song played?");
-	}
-
-
-
-	//log("trying to play a sound?");
-	//sBuf->Play(0, 0, 0);
-
-	return;
-
-	//log("sound device? %08X", possibleDirectSoundDevice);
-
-	//pSD = (IDirectSound8*)possibleDirectSoundDevice;
-
-	if (pSD == NULL) {
-		return;
-	}
-
-	// this format is the same as the format used in actual wav files
-	// check [[esp+4]+10], a bit behind it for the RIFF header.
-	WAVEFORMATEX sFmt; // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee419019(v=vs.85)
-	sFmt.wFormatTag = 1; // WORD 
-	sFmt.nChannels = 1; // WORD
-	sFmt.nSamplesPerSec = 0x00005622; // DWORD 
-	sFmt.nAvgBytesPerSec = 0x00005622; // DWORD 
-	sFmt.nBlockAlign = 1; // WORD
-	sFmt.wBitsPerSample = 8; // WORD
-	sFmt.cbSize; // WORD for reasons unknown, this overlines with the "data" part of the wav file?
-	// For WAVE_FORMAT_PCM formats (and only WAVE_FORMAT_PCM formats), this member is ignored.
-	// weird.
-
-
-	DSBUFFERDESC sDesc; // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416820(v=vs.85)
-	sDesc.dwSize = 0x24; // ?
-	sDesc.dwFlags = 0x000080E0; // DSBCAPS_TRUEPLAYPOSITION | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY
-	sDesc.dwBufferBytes = 0x0000EBA5;
-	sDesc.dwReserved = 0;
-	sDesc.lpwfxFormat = &sFmt;
-	sDesc.guid3DAlgorithm = (GUID)0;
-
+	log("we got the sound device");
+	pSD = (IDirectSound8*)baseSoundAddr3;	
 }
 
 // naked funcs

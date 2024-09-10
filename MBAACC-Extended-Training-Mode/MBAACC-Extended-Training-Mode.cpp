@@ -187,13 +187,15 @@ int main(int argc, char* argv[])
         
         SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
         std::cout << "===========================================================================\x1b[K" << std::endl;
-        std::cout << "|   Fang, gonp, and meepster99(Inana)'s Extended Training Mode Mod " << VERSION << "   |\x1b[K" << std::endl;
-        std::cout << "|                                                                         |\x1b[K" << std::endl;
-        std::cout << "|   " << GITHUB_RELEASE << "   |\x1b[K" << std::endl;
-        if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
+        std::cout << "|   Fang, gonp, and meepster99(Inana)'s,,,, thing?                        |\x1b[K" << std::endl;
+        std::cout << "|   Look ima be real, i have cut almost all of that their stuff and am    |\x1b[K" << std::endl;
+        //std::cout << "|   " << GITHUB_RELEASE << "   |\x1b[K" << std::endl;
+        std::cout << "|   just using this for injection. The real training mode isnt this buggy |\x1b[K" << std::endl;
+        /*if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
             std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                 |\x1b[K" << std::endl;
         else
-            std::cout << "|                                                                         |\x1b[K" << std::endl;
+            std::cout << "|                                                                         |\x1b[K" << std::endl;*/
+        std::cout << "|   for the love of all, make sure this exe and dll are both with MBAA    |\x1b[K" << std::endl;
         std::cout << "===========================================================================\x1b[K" << std::endl;
 
         GetExitCodeProcess(hMBAAHandle, &dwExitCode);

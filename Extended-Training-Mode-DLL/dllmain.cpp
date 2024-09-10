@@ -49,6 +49,8 @@ extern "C" {
 	#include <libavutil/imgutils.h>
 	#include <libavcodec/avcodec.h>
 	#include <libavutil/opt.h>
+	#include <libswresample/swresample.h>
+
 
 	
 }
@@ -1594,6 +1596,8 @@ void frameDoneCallback()
 	}
 	shouldPlaySong = false;
 
+	// this,,, actually does manage to change the volume?
+	/*
 	PUSH_ALL;
 	__asm {
 		push 00000000h;
@@ -1602,12 +1606,15 @@ void frameDoneCallback()
 		add esp, 4;
 	}
 	POP_ALL;
+	*/
 }
 
 __declspec(naked) void nakedFrameDoneCallback() {
+	PUSH_ALL;
+	frameDoneCallback();
+	POP_ALL;
 	__asm {
 		add esp, 4Ch;
-		call frameDoneCallback;
 		ret;
 	};
 }
@@ -2538,6 +2545,8 @@ void threadFunc()
 
 	log("dll injected, threadfunc running");
 
+	
+
 	// make sure that caster has time to hook at the start
 	//Sleep(16 * 5);
 	//Sleep(3000);
@@ -2556,9 +2565,10 @@ void threadFunc()
 	}
 
 	initPauseCallback();
-	initFrameDoneCallback();
+	initFrameDoneCallback();	
 	initAnimHook();
 	InitializeCharacterMaps();
+	
 	// when running with caster, the prints to this area are disabled
 	// when not running with caster, they arent even there, so this is fine to run regardless of caster 
 	initAttackMeterDisplay();
@@ -2566,17 +2576,6 @@ void threadFunc()
 	initBattleResetCallback();
 
 	initDirectX();
-
-	//initTextureModifications();
-
-	//Sleep(5000);
-
-	//initDrawTextureHook();
-	//initDrawCharacterTextureCallback();
-
-	//initDirectX();
-
-	//initIdk(); 
 
 	while (true) 
 	{
