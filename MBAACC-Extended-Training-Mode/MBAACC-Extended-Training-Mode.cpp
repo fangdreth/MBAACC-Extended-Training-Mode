@@ -3433,10 +3433,7 @@ int main(int argc, char* argv[])
                             char pcTemp[19];
 
                             // SAVE STATE
-                            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1BPressed), &nReadResult, 1, 0);
-                            bOldBPressed = bBPressed;
-                            bBPressed = (nReadResult == 1 ? true : false);
-                            if (!bSaveStateKeySet && !bBPressed)
+                            if (!bSaveStateKeySet)
                             {
                                 uint8_t nKeyJustPressed = 0;
                                 if (nEnemySettingsCursor == 0)

@@ -11,6 +11,7 @@
 #include <array>
 #include <stdint.h>
 #include <cmath>
+#include <random>
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
@@ -229,6 +230,8 @@ static KeyState oHitboxesDisplayKey;
 static KeyState oHighlightsOnKey;
 static KeyState oFrameBarLeftScrollKey;
 static KeyState oFrameBarRightScrollKey;
+static KeyState oDecRNG;
+static KeyState oIncRNG;
 void setAllKeys()
 {
 	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
@@ -974,6 +977,23 @@ void highlightStates()
 	}
 }
 
+void SetRNG(uint64_t nRNG)
+{
+	*(uint64_t*)(dwBaseAddress + adRNGIndex) = 21;
+	
+	std::srand(nRNG);
+	uint64_t nRN1 = std::rand() + std::rand() * 0x10000;
+
+	std::srand(nRN1);
+	uint64_t nRN2 = std::rand() + std::rand() * 0x10000;
+
+	uint64_t nOffset = 0;
+	do
+	{
+		*(uint64_t*)(dwBaseAddress + adRNGArray + 4 * nOffset++) = (nOffset >= 22 && nOffset < 43) ? nRN1 : nRN2;
+	} while (nOffset < 55);
+}
+
 // windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
 void __stdcall pauseCallback(DWORD dwMilliseconds)
 {
@@ -1364,7 +1384,14 @@ void frameDoneCallback()
 	*/
 	//enemyReversal();
 
-	
+	static uint64_t nCustomRN = 0;
+	oIncRNG.setKey(VK_KEY_A);
+	oDecRNG.setKey(VK_KEY_S);
+	if (oIncRNG.keyDown())
+		nCustomRN++;
+	if (oDecRNG.keyDown() && nCustomRN > 0)
+		nCustomRN--;
+	SetRNG(nCustomRN);
 }
 
 __declspec(naked) void nakedFrameDoneCallback()
