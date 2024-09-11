@@ -19,10 +19,14 @@
 
 #include <d3d9.h>
 #include <d3dx9.h> // https://www.microsoft.com/en-us/download/details.aspx?id=6812
+#include <dxerr.h>
+#include <dsound.h>
 
 #pragma comment(lib, "ws2_32.lib") 
 #pragma comment(lib, "d3d9.lib") 
-#pragma comment(lib, "d3dx9.lib") 
+#pragma comment(lib, "d3dx9.lib")
+#pragma comment(lib, "dxerr.lib")
+#pragma comment(lib, "dsound.lib")
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
@@ -505,6 +509,7 @@ void drawBorderWithHighlight(int x, int y, int w, int h, DWORD ARGB = 0x8042e5f4
 	drawRect(x, y, w, h, r, g, b, 0x38);
 }
 
+#include "DirectX.h"
 
 // -----
 
@@ -1095,25 +1100,17 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 			}
 		}
 	} 
+
+	// i am unsure if doing this here is the best location, but it has been working
+
+	static bool isDirectXHooked = false;
+	if (!isDirectXHooked) {
+		isDirectXHooked = HookDirectX();
+	}
 	
 	Sleep(dwMilliseconds);
 }
 
-void initPauseCallback()
-{
-
-	/*
-	this func seems to, be responsible for slowing the game down to 60fps, i think?
-	*/
-	void* addr = (void*)0x0041fe05;
-
-	patchFunction(addr, pauseCallback);
-
-	// the call being patched is 6 bytes long, patch the extra byte with a nop
-	patchByte((BYTE*)addr + 5, 0x90);
-
-}
- 
 
 int nOldMot;
 int nMot = 0;
@@ -1362,7 +1359,7 @@ void frameDoneCallback()
 		{
 			drawFrameBar();
 		}
-		return;
+		return; // unsure of this returns purpose
 	}
 
 	if (bHitboxesDisplay)
@@ -1693,6 +1690,21 @@ void initBattleResetCallback()
 	// this patch is a bit funky, since we need to have ret dec the stack pointer
 	BYTE tempCode[3] = {0xc2, 0x04, 0x00};
 	patchMemcpy(((BYTE*)funcAddr) + 5, tempCode, 3);
+}
+
+void initPauseCallback()
+{
+
+	/*
+	this func seems to, be responsible for slowing the game down to 60fps, i think?
+	*/
+	void* addr = (void*)0x0041fe05;
+
+	patchFunction(addr, pauseCallback);
+
+	// the call being patched is 6 bytes long, patch the extra byte with a nop
+	patchByte((BYTE*)addr + 5, 0x90);
+
 }
 
 void threadFunc() 
