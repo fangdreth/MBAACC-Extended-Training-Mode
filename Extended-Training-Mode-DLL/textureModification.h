@@ -318,7 +318,7 @@ bool loadWav(char* buffer, size_t size)
 	sDesc.dwSize = sizeof(sDesc);
 	//sDesc.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME;
 	// sDesc.dwFlags = 0x000080E0; // DSBCAPS_TRUEPLAYPOSITION | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY
-	sDesc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME;
+	sDesc.dwFlags = DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME;
 	//sDesc.dwFlags |= DSBCAPS_STICKYFOCUS;
 	//sDesc.dwBufferBytes = numchunks * chunksize;
 	sDesc.dwBufferBytes = dataSize;
@@ -987,6 +987,15 @@ void pauseSong() {
 	sBuf->Stop();
 }
 
+bool __stdcall isPlaying() {
+	if (sBuf == NULL) {
+		return false;
+	}
+	DWORD playStatus;
+	sBuf->GetStatus(&playStatus);
+	return !!(playStatus & DSBSTATUS_PLAYING);
+}
+
 // actual funcs
 
 DWORD leadToDrawPrimHook_ret = 0;
@@ -1413,15 +1422,34 @@ void cleanForDirectXReset() {
 }
 
 DWORD _RESET_HOOKS = 0;
-
+DWORD _DirectX_Reset_Func_ret;
 DWORD _DirectX_Reset_Func_Addr = 0;
+DWORD _DirectX_Reset_Func_soundStatus;
 __declspec(naked) void _DirectX_Reset_Func() {
 	PUSH_ALL;
 	log("DIRECTX RESET CALLED, CLEANING");
 	cleanForDirectXReset();
+	_DirectX_Reset_Func_soundStatus = isPlaying();
+	if (_DirectX_Reset_Func_soundStatus) {
+		pauseSong();
+		log("song was playing, paused");
+	}
 	POP_ALL;
 	__asm {
-		jmp[_DirectX_Reset_Func_Addr];
+		pop _DirectX_Reset_Func_ret;
+		//jmp[_DirectX_Reset_Func_Addr];
+		call[_DirectX_Reset_Func_Addr];
+	}
+
+	PUSH_ALL;
+	if (_DirectX_Reset_Func_soundStatus) {
+		//playSong();
+	}
+	POP_ALL;
+
+	__asm {
+		push _DirectX_Reset_Func_ret;
+		ret;
 	}
 }
 
