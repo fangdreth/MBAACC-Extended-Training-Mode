@@ -35,6 +35,7 @@ static bool bInExtendedSettings = false;
 static bool bSimpleFrameInfo = true;
 static bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
 static bool bDisplayInputs = false;
+static bool bPrintColorGuide = false;
 
 static uint8_t nSaveSlot = 0;
 
@@ -599,6 +600,31 @@ void ClearAllSaves()
 	}
 }
 
+void PrintColorGuide()
+{
+	std::cout << FD_INACTIONABLE << "00" << FD_CLEAR << " INACTIONABLE\t\t\t";
+	std::cout << FD_JUMP << "00" << FD_CLEAR << " JUMP STARTUP\n";
+	std::cout << FD_HITSTUN << "00" << FD_CLEAR << " HITSTUN\t\t\t";
+	std::cout << FD_BLOCKSTUN << "00" << FD_CLEAR << " BLOCKSTUN\n";
+	std::cout << FD_ACTIONABLE << "00" << FD_CLEAR << " FULLY ACTIONABLE\t\t";
+	std::cout << FD_ADVANTAGE << "00" << FD_CLEAR << " FRAME ADVANTAGE\n";
+	std::cout << FD_NEUTRAL << "00" << FD_CLEAR << " NEUTRAL FRAME\t\t";
+	std::cout << FD_THROWN << " t" << FD_CLEAR << " BEING THROWN\n";
+	std::cout << FD_CLASH << "00" << FD_CLEAR << " CLASH\t\t\t";
+	std::cout << FD_SHIELD << "00" << FD_CLEAR << " SHIELD\n";
+	std::cout << FD_INACTIONABLE_INVULN << "00" << FD_CLEAR << " INVULN\t\t\t";
+	std::cout << FD_ACTIONABLE_INVULN << "00" << FD_CLEAR << " INVULN AND FULLY ACTIONABLE\n";
+	std::cout << FD_FREEZE << "00" << FD_CLEAR << " EX FLASH SCREEN FREEZE\t";
+	std::cout << FD_HITSTOP << "00" << FD_CLEAR << " HITSTOP\n";
+	std::cout << FD_ACTIVE << "00" << FD_CLEAR << " ACTIVE FRAMES\t\t";
+	std::cout << FD_ASSIST_ACTIVE << "00" << FD_CLEAR << " ASSIST ACTIVE FRAMES\n";
+	std::cout << FD_BUTTON_PRESSED << "00" << FD_CLEAR << " BUTTON PRESSED\n";
+	std::cout << FD_A_PRESSED << "00" << FD_CLEAR << " A PRESSED\t\t\t";
+	std::cout << FD_B_PRESSED << "00" << FD_CLEAR << " B PRESSED\n";
+	std::cout << FD_C_PRESSED << "00" << FD_CLEAR << " C PRESSED\t\t\t";
+	std::cout << FD_D_PRESSED << "00" << FD_CLEAR << " D PRESSED\n";
+}
+
 void CalculateAdvantage(Player& P1, Player& P2)
 {
 	if (P1.nInactionableFrames == 0 && P2.nInactionableFrames == 0)
@@ -648,10 +674,10 @@ void UpdateBars(Player& P, Player& Assist)
 {
 	// Foreground color -> \x1b[38;2;R;G;Bm
 	// Background color -> \x1b[48;2;R;G;Bm
-	std::string sFont = "\x1b[0m";
+	std::string sFont = FD_CLEAR;
 	std::string sBarValue = "  ";
-	std::string sLeftFont = "\x1b[0m";
-	std::string sRightFont = "\x1b[0m";
+	std::string sLeftFont = FD_CLEAR;
+	std::string sRightFont = FD_CLEAR;
 	std::string sLeftValue = " ";
 	std::string sRightValue = " ";
 	bool bIsButtonPressed = P.cButtonInput != 0 || P.cMacroInput != 0;
@@ -659,15 +685,15 @@ void UpdateBars(Player& P, Player& Assist)
 	//Bar 1 - General action information
 	if (P.nInactionableFrames != 0) //Doing something with limited actionability
 	{
-		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;65;200;0m";
+		sFont = FD_INACTIONABLE;
 		sBarValue = std::format("{:2}", P.nInactionableFrames % 100);
 		if (P.nPattern >= 35 && P.nPattern <= 37) //Jump Startup
 		{
-			sFont = "\x1b[38;2;177;177;255m\x1b[48;2;241;224;132m";
+			sFont = FD_JUMP;
 		}
 		else if (P.nHitstunRemaining != 0 && P.bBlockstunFlag == 0) //Hitstun
 		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;140;140;140m";
+			sFont = FD_HITSTUN;
 			if (P.cState_Stance == 1) //Airborne
 			{
 				if (P.sUntechCounter < P.sUntechTotal) //Still has untech remaining
@@ -683,12 +709,12 @@ void UpdateBars(Player& P, Player& Assist)
 		}
 		else if (P.bBlockstunFlag) //Blockstun
 		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;180;180;180m";
+			sFont = FD_BLOCKSTUN;
 		}
 	}
 	else //Fully actionable
 	{
-		sFont = "\x1b[38;2;92;92;92m\x1b[48;2;0;0;0m";
+		sFont = FD_ACTIONABLE;
 		sBarValue = std::format("{:2}", P.nPattern % 100);
 
 		if (bDoAdvantage) //Has advantage
@@ -696,54 +722,54 @@ void UpdateBars(Player& P, Player& Assist)
 			sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
 			if (P.nAdvantageCounter != 0)
 			{
-				sFont = "\x1b[38;2;255;255;255m\x1b[48;2;0;0;0m";
+				sFont = FD_ADVANTAGE;
 			}
 		}
 			
 		if (P.nLastInactionableFrames != 0) //Neutral frame
 		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;32;90;0m";
+			sFont = FD_NEUTRAL;
 		}
 	}
 
 	if (P.bThrowFlag != 0) //Being thrown
 	{
-		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;110;110;110m";
+		sFont = FD_THROWN;
 		sBarValue = " t";
 	}
 	else if (P.cAnimation_BoxIndex == 12) //Clash
 	{
-		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;225;184;0m";
+		sFont = FD_CLASH;
 	}
 	else if (P.dwCondition1Type == 51) //Shield
 	{
-		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;145;194;255m";
+		sFont = FD_SHIELD;
 	}
 	else if (P.cAnimation_BoxIndex <= 1 || P.sGrantedStrikeInvuln != 0 || P.cState_Invuln == 3) //Various forms of invuln
 	{
 		if (P.nInactionableFrames != 0) //Doing something with limited actionability
 		{
-			sFont = "\x1b[38;2;160;160;160m\x1b[48;2;255;255;255m";
+			sFont = FD_INACTIONABLE_INVULN;
 		}
 		else //Fully actionable
 		{
-			sFont = "\x1b[38;2;100;100;100m\x1b[48;2;255;255;255m";
+			sFont = FD_ACTIONABLE_INVULN;
 		}
 
 	}
 
 	if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0) //Screen is frozen
 	{
-		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
+		sFont = FD_FREEZE;
 	}
 	else if (P.cHitstop != 0) //in hitstop
 	{
-		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;80;128m";
+		sFont = FD_HITSTOP;
 	}
 
-	P.sBar1[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
+	P.sBar1[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + FD_CLEAR;
 
-	sFont = "\x1b[0m";
+	sFont = FD_CLEAR;
 	sBarValue = "  ";
 
 	//Bar 2 - Active frames
@@ -757,24 +783,24 @@ void UpdateBars(Player& P, Player& Assist)
 		sBarValue = std::format("{:2}", P.nActiveCounter % 100);
 		if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0)
 		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
+			sFont = FD_FREEZE;
 		}
 		else if (P.cHitstop != 0)
 		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;80;128m";
+			sFont = FD_HITSTOP;
 		}
 		else
 		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;255;0;0m";
+			sFont = FD_ACTIVE;
 		}
 
 		if (P.cState_Stance == 1)
 		{
-			sFont += "\x1b[4m";
+			sFont += FD_UNDERLINE;
 		}
 	}
 
-	P.sBar2[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
+	P.sBar2[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + FD_CLEAR;
 
 	sFont = "";
 	sBarValue = "  ";
@@ -782,7 +808,7 @@ void UpdateBars(Player& P, Player& Assist)
 	//Bar 3 - Projectile and assist active frames
 	if (P.nActiveProjectileCount != 0 || Assist.nActiveProjectileCount != 0)
 	{
-		sFont = "\x1b[38;2;255;255;255m\x1b[48;2;255;0;0m";
+		sFont = FD_ACTIVE;
 		sBarValue = std::format("{:2}", (P.nActiveProjectileCount + Assist.nActiveProjectileCount) % 100);
 	}
 
@@ -791,24 +817,24 @@ void UpdateBars(Player& P, Player& Assist)
 		sBarValue = std::format("{:2}", Assist.nActiveCounter  % 100);
 		if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0)
 		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
+			sFont = FD_FREEZE;
 		}
 		else if (Assist.cHitstop != 0)
 		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;60;80;128m";
+			sFont = FD_HITSTOP;
 		}
 		else
 		{
-			sFont = "\x1b[38;2;255;255;255m\x1b[48;2;255;128;0m";
+			sFont = FD_ASSIST_ACTIVE;
 		}
 
 		if (Assist.cState_Stance == 1)
 		{
-			sFont += "\x1b[4m";
+			sFont += FD_UNDERLINE;
 		}
 	}
 
-	P.sBar3[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + "\x1b[0m";
+	P.sBar3[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + FD_CLEAR;
 
 	sFont = "";
 	sBarValue = "  ";
@@ -827,32 +853,32 @@ void UpdateBars(Player& P, Player& Assist)
 
 		if (P.cButtonInput & 0x10)
 		{
-			sLeftFont = "\x1b[38;2;255;143;169m\x1b[48;2;170;27;58m";
+			sLeftFont = FD_A_PRESSED;
 		}
 		else if (bIsButtonPressed)
 		{
-			sLeftFont = "\x1b[38;2;255;255;255m\x1b[48;2;128;128;128m";
+			sLeftFont = FD_BUTTON_PRESSED;
 		}
 
 		if (P.cButtonInput & 0x20)
 		{
-			sRightFont = "\x1b[38;2;255;255;137m\x1b[48;2;169;91;7m";
+			sRightFont = FD_B_PRESSED;
 		}
 		else if (bIsButtonPressed)
 		{
-			sRightFont = "\x1b[38;2;255;255;255m\x1b[48;2;128;128;128m";
+			sRightFont = FD_BUTTON_PRESSED;
 		}
 
 		if (P.bLastOnRight != P.bIsOnRight)
 		{
-			sLeftFont += "\x1b[4m";
-			sRightFont += "\x1b[4m";
+			sLeftFont += FD_UNDERLINE;
+			sRightFont += FD_UNDERLINE;
 		}
 
-		P.sBar4[nBarCounter % BAR_MEMORY_SIZE] = sLeftFont + sLeftValue + sRightFont + sRightValue + "\x1b[0m";
+		P.sBar4[nBarCounter % BAR_MEMORY_SIZE] = sLeftFont + sLeftValue + sRightFont + sRightValue + FD_CLEAR;
 
-		sLeftFont = "\x1b[0m";
-		sRightFont = "\x1b[0m";
+		sLeftFont = FD_CLEAR;
+		sRightFont = FD_CLEAR;
 		sLeftValue = " ";
 		sRightValue = " ";
 
@@ -876,26 +902,26 @@ void UpdateBars(Player& P, Player& Assist)
 
 		if (P.cButtonInput & 0x40)
 		{
-			sLeftFont = "\x1b[38;2;143;255;195m\x1b[48;2;18;132;62m";
+			sLeftFont = FD_C_PRESSED;
 		}
 		else if (bIsButtonPressed)
 		{
-			sLeftFont = "\x1b[38;2;255;255;255m\x1b[48;2;128;128;128m";
+			sLeftFont = FD_BUTTON_PRESSED;
 		}
 
 		if (P.cButtonInput & 0x80)
 		{
-			sRightFont = "\x1b[38;2;137;255;255m\x1b[48;2;21;66;161m";
+			sRightFont = FD_D_PRESSED;
 		}
 		else if (bIsButtonPressed)
 		{
-			sRightFont = "\x1b[38;2;255;255;255m\x1b[48;2;128;128;128m";
+			sRightFont = FD_BUTTON_PRESSED;
 		}
 
 		if (P.bLastOnRight != P.bIsOnRight)
 		{
-			sLeftFont += "\x1b[4m";
-			sRightFont += "\x1b[4m";
+			sLeftFont += FD_UNDERLINE;
+			sRightFont += FD_UNDERLINE;
 		}
 
 		P.sBar5[nBarCounter % BAR_MEMORY_SIZE] = sLeftFont + sLeftValue + sRightFont + sRightValue + "\x1b[0m";
@@ -1279,5 +1305,12 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 
 	nPlayerAdvantage = (P1.nAdvantageCounter - P2.nAdvantageCounter) % 100;
 
-	PrintFrameDisplay(hMBAAHandle, dwBaseAddress, *Player1, *Player2, *Player3, *Player4);
+	if (bPrintColorGuide)
+	{
+		PrintColorGuide();
+	}
+	else
+	{
+		PrintFrameDisplay(hMBAAHandle, dwBaseAddress, *Player1, *Player2, *Player3, *Player4);
+	}
 }

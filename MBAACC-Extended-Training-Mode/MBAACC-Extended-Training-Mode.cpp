@@ -724,6 +724,11 @@ int main(int argc, char* argv[])
                             }
                             case FRAME_TOOL:
                             {
+                                if (nEnemySettingsCursor == 6)
+                                {
+                                    bPrintColorGuide = !bPrintColorGuide;
+                                    system("cls");
+                                }
                                 break;
                             }
                             case SAVE_STATE_PAGE:
@@ -854,7 +859,7 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcDisplayFreeze_16, 16, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcDisplayInputs_15, 15, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcScrollDisplay_15, 15, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcToggleColorGuide_19, 19, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
                             break;
                         }
@@ -1008,19 +1013,19 @@ int main(int argc, char* argv[])
                         }
                         case FRAME_TOOL:
                         {
-                            if (nOldEnemySettingsCursor == 5 && nEnemySettingsCursor == 6)
+                            if (nOldEnemySettingsCursor == 6 && nEnemySettingsCursor == 8)
                             {
                                 nWriteBuffer = 10;
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
                                 nEnemySettingsCursor = 10;
                                 nOldEnemySettingsCursor = 10;
                             }
-                            else if (nEnemySettingsCursor > 5 && nEnemySettingsCursor < 10)
+                            else if (nEnemySettingsCursor > 6 && nEnemySettingsCursor < 10)
                             {
-                                nWriteBuffer = 5;
+                                nWriteBuffer = 6;
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                                nEnemySettingsCursor = 5;
-                                nOldEnemySettingsCursor = 5;
+                                nEnemySettingsCursor = 6;
+                                nOldEnemySettingsCursor = 6;
                             }
                             break;
                         }
