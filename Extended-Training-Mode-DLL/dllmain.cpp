@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <dsound.h>
 #include <mmsystem.h>
+#include <thread>
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
@@ -1323,16 +1324,29 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 		if (nKey.keyDown()) {
 			break;
 		}
-	}
+	}	
 
 	
 	//log("frame %d", callBackFrameCount);
 	callBackFrameCount++;
 
-
+	static std::thread* loadVideoThread = NULL;
 	static bool initTextureIsGood = false;
+
+	if (initTextureIsGood && loadVideoThread != NULL && loadBadAppleFinished) {
+		log("joining loader thread");
+		loadVideoThread->join();
+		loadVideoThread = NULL;
+	}
+
 	if (!initTextureIsGood) {
 		initTextureIsGood = initTextureModifications();
+
+		if (initTextureIsGood) {
+			// this needs to be called with a thread loadBadApple
+			log("launching loader thread");
+			loadVideoThread = new std::thread(loadBadApple);
+		}
 	}
 
 	static bool initCSSIsGood = false;

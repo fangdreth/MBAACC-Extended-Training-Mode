@@ -211,7 +211,8 @@ typedef struct BadAppleFrame {
 } BadAppleFrame;
 
 int badAppleFrame = 0;
-int fpsMod = 0b0;
+//int fpsMod = 0b0;
+double invVideoFps = (1.0 / 60.0);
 std::vector<BadAppleFrame> badAppleFrames;
 
 IDirect3DTexture9* pBadAppleTex = NULL;
@@ -236,8 +237,13 @@ bool fileExists(const std::string& file) {
 	return f.good();
 }
 
-bool loadWav(char* buffer, size_t size, LPDIRECTSOUNDBUFFER& sBuf)
+bool loadWav(char* buffer, size_t size)
 {
+	if (pSD == NULL) {
+		log("you called loadWav with a null sound device?");
+		return false;
+	}
+
 	// buffer is wavdata, size is len of it
 	HRESULT hr;
 
@@ -256,6 +262,7 @@ bool loadWav(char* buffer, size_t size, LPDIRECTSOUNDBUFFER& sBuf)
 
 	//uint32_t fileSize = *(uint32_t*)(buffer + 0x4);
 
+	/*
 	uint16_t format = *(uint16_t*)(buffer + 0x14);
 	uint16_t channelCount = *(uint16_t*)(buffer + 0x16);
 
@@ -280,6 +287,10 @@ bool loadWav(char* buffer, size_t size, LPDIRECTSOUNDBUFFER& sBuf)
 		log("unable to find data section");
 		return false;
 	}
+	*/
+
+	char* dataStartPtr = buffer;
+	uint32_t dataSize = size;
 
 	WAVEFORMATEX sFmt = { 0 };
 
@@ -290,12 +301,14 @@ bool loadWav(char* buffer, size_t size, LPDIRECTSOUNDBUFFER& sBuf)
 	sDesc.lpwfxFormat = &sFmt;
 
 	sFmt.wFormatTag = WAVE_FORMAT_PCM;
-	sFmt.nChannels = channelCount;
-	sFmt.wBitsPerSample = bitsPerSample;
-	sFmt.nSamplesPerSec = sampleRate;
+	//sFmt.nChannels = channelCount;
+	sFmt.nChannels = 2;
+	//sFmt.wBitsPerSample = bitsPerSample;
+	sFmt.wBitsPerSample = 16;
+	//sFmt.nSamplesPerSec = sampleRate;
+	sFmt.nSamplesPerSec = 44100;
 	sFmt.nBlockAlign = sFmt.nChannels * sFmt.wBitsPerSample / 8;
-	//sFmt.nAvgBytesPerSec = sFmt.nBlockAlign * sFmt.nSamplesPerSec;
-	sFmt.nAvgBytesPerSec = bytesPerSecond;
+	sFmt.nAvgBytesPerSec = sFmt.nBlockAlign * sFmt.nSamplesPerSec;
 	sFmt.cbSize = 0;
 
 	// ???
@@ -312,9 +325,9 @@ bool loadWav(char* buffer, size_t size, LPDIRECTSOUNDBUFFER& sBuf)
 	sDesc.dwReserved = 0;
 	sDesc.lpwfxFormat = &sFmt;
 
-	//LPDIRECTSOUNDBUFFER sBuf = NULL;
+	LPDIRECTSOUNDBUFFER tempsBuf = NULL;
 
-	hr = pSD->CreateSoundBuffer(&sDesc, &sBuf, NULL);
+	hr = pSD->CreateSoundBuffer(&sDesc, &tempsBuf, NULL);
 	if (FAILED(hr)) {
 		log("createsoundbuffer failed");
 		return false;
@@ -325,7 +338,7 @@ bool loadWav(char* buffer, size_t size, LPDIRECTSOUNDBUFFER& sBuf)
 	uint32_t size1 = 0;
 	uint32_t size2 = 0;
 
-	hr = IDirectSoundBuffer_Lock(sBuf, 0, sDesc.dwBufferBytes, (LPVOID*)&data1, (LPDWORD)&size1, (LPVOID*)&data2, (LPDWORD)&size2, DSBLOCK_ENTIREBUFFER);
+	hr = IDirectSoundBuffer_Lock(tempsBuf, 0, sDesc.dwBufferBytes, (LPVOID*)&data1, (LPDWORD)&size1, (LPVOID*)&data2, (LPDWORD)&size2, DSBLOCK_ENTIREBUFFER);
 	if (FAILED(hr)) {
 		log("IDirectSoundBuffer_Lock failed");
 		return false;
@@ -344,12 +357,14 @@ bool loadWav(char* buffer, size_t size, LPDIRECTSOUNDBUFFER& sBuf)
 
 	}
 
-	IDirectSoundBuffer_Unlock(sBuf, (LPVOID)data1, (DWORD)size1, (LPVOID)data2, (DWORD)size2);
+	IDirectSoundBuffer_Unlock(tempsBuf, (LPVOID)data1, (DWORD)size1, (LPVOID)data2, (DWORD)size2);
 
 	// vol addr (the decibal form)
-	sBuf->SetVolume(*(LONG*)(0x0076e648));
+	tempsBuf->SetVolume(*(LONG*)(0x0076e648));
 
-	free(buffer);
+	//free(buffer);
+
+	sBuf = tempsBuf;
 
 	log("wav loading was a success");
 
@@ -359,6 +374,7 @@ bool loadWav(char* buffer, size_t size, LPDIRECTSOUNDBUFFER& sBuf)
 void loadVideoStream(const std::string& filePath) {
 
 	// you could, in theory, hook this up to a twitch stream.
+	// just be sure to rebuild ffmpeg with networking
 	// what the fuck
 
 	int res;
@@ -430,16 +446,20 @@ void loadVideoStream(const std::string& filePath) {
 
 	log("mp4 fps: %lf", fpsValue);
 
-	if (fpsValue <= (double)15.00001) {
+	/*
+	if (fpsValue <= (double)15.10001) {
 		fpsMod = 0b11;
 	}
-	else if (fpsValue <= (double)30.00001) {
+	else if (fpsValue <= (double)30.10001) {
 		fpsMod = 0b01;
 	}
 	else {
 		// 60fps
 		fpsMod = 0b00;
 	}
+	*/
+
+	invVideoFps = 1.0 / fpsValue;
 
 	//if(fpsValue)
 
@@ -757,10 +777,6 @@ void loadAudioStream(const std::string& filePath) {
 					exit(1);
 				}
 
-				// at this point, we now (should) have a frame of the video. do something with it
-
-				//sws_scale(swsCtx, (const uint8_t* const*)frame->data, frame->linesize, 0, frame->height, frame2->data, frame2->linesize);
-
 				// ohh you are rescaling a video? its source, dest
 				// ohh you are resampling audio? its dest, source!
 				// that makes sense right?
@@ -785,38 +801,15 @@ void loadAudioStream(const std::string& filePath) {
 					return;
 				}
 
-				for (int i = 0; i < outputLinesize; i++) {
+				// idek
+				// god i hate this api
+				int unknownBufSize = av_samples_get_buffer_size(&outputLinesize, 2, res, AV_SAMPLE_FMT_S16, 1);
+
+				for (int i = 0; i < unknownBufSize; i++) {
 					wavData.push_back(outputData[0][i]);
 				}
 
-				/*
-				// send the video frame to the jpeg encoder
-				res = avcodec_send_frame(outCtx, frame2);
-				if (res < 0) {
-					log("sending frame to output decoder failed");
-					exit(1);
-				}
-
-				// get the resulting packet from said frame
-				res = avcodec_receive_packet(outCtx, outPkt);
-				if (res < 0) {
-					log("output encoder failed to give us a packet?");
-					exit(1);
-				}
-				*/
-
-				//BadAppleFrame tempFrame = { (char*)malloc(outPkt->size), outPkt->size, frame->pts };
-
-				/*if (tempFrame.data == NULL) {
-					log("you malloced to close to the sun like an idiot");
-					exit(1);
-				}*/
-
-				//memcpy(tempFrame.data, outPkt->data, tempFrame.size);
-
-				//badAppleFrames.push_back(tempFrame);
-
-				//av_packet_unref(outPkt);
+			
 
 				av_freep(&outputData[0]);
 				av_freep(&outputData);
@@ -831,6 +824,18 @@ void loadAudioStream(const std::string& filePath) {
 	//std::ofstream outFile("idek.wav", std::ios::binary);
 	//outFile.write((char*)wavData.data(), wavData.size());
 	//outFile.close();
+
+	// i dont trust this vector
+	char* actualWavData = (char*)malloc(wavData.size());
+	memcpy(actualWavData, wavData.data(), wavData.size());
+
+	bool loadWavRes = loadWav(actualWavData, wavData.size());
+	if (!loadWavRes) {
+		log("failed to load audio, idiot");
+		sBuf = NULL;
+	}
+
+	free(actualWavData);
 
 	// clean
 	// todo, you are leaking here
@@ -856,7 +861,7 @@ void loadMP4(const std::string& filePath) {
 
 
 	//av_log_set_level(AV_LOG_ERROR);
-	av_log_set_callback(_FFmpeg_logCallback);
+	//av_log_set_callback(_FFmpeg_logCallback);
 
 	/*
 	const AVCodec* current_codec = nullptr;
@@ -869,14 +874,17 @@ void loadMP4(const std::string& filePath) {
 	}
 	*/
 
+	log("loading audio stream");
+	loadAudioStream(filePath);
+
 	// ik i should do both of these together. but im afraid to touch ffmpeg with anything other than a 20 foot pole
 	log("loading video stream");
 	loadVideoStream(filePath);
-	log("loading audio stream");
-	loadAudioStream(filePath);
+	
 	
 }
 
+bool loadBadAppleFinished = false;
 void loadBadApple() {
 	
 	/*
@@ -943,6 +951,10 @@ void loadBadApple() {
 	
 
 	log("textures loaded successfully");
+
+
+	log("THREAD RETURNING WITHOUT INCIDENT");
+	loadBadAppleFinished = true;
 }
 
 void initSong(bool force = false) {
@@ -982,7 +994,7 @@ IDirect3DPixelShader9* pPixelShader_backup_test = nullptr;
 DWORD drawPrimHook_texAddr = 0;
 void drawPrimHook() {
 
-	loadBadApple();
+	//loadBadApple();
 	
 	device->GetPixelShader(&pPixelShader_backup_test);
 	if (pPixelShader_backup_test != NULL) {
@@ -1014,11 +1026,20 @@ void drawPrimHook() {
 
 		// this better not cause slowdown
 		static unsigned lastTextureFrameCount = -1;
-		if (lastTextureFrameCount != textureFrameCount) {
+		static double idekTime = 0.0;
+		if (lastTextureFrameCount != textureFrameCount && badAppleFrames.size() != 0) {
 
 			lastTextureFrameCount = textureFrameCount;
 
-			if ((textureFrameCount & fpsMod) == 0) { 
+			// this might be super dumb and not work, but im tired ok
+			// i just dont want ppl saying their videos dont work
+			// this was regretably easier than i thought it would be.
+			idekTime += (1.0 / 60.0);
+
+			//if ((textureFrameCount & fpsMod) == 0) { 
+			if(idekTime >= invVideoFps) {
+
+				idekTime -= invVideoFps;
 
 				if (pBadAppleTex != NULL) {
 					pBadAppleTex->Release();
@@ -1053,6 +1074,7 @@ void drawPrimHook() {
 				if (badAppleFrame >= badAppleFrames.size()) {
 					badAppleFrame = 0;
 					restartSong();
+					idekTime = 0.0;
 				}
 			}
 		}
