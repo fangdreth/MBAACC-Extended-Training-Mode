@@ -987,7 +987,7 @@ void SetRNG(uint64_t nRNG)
 	std::srand(nRN1);
 	uint64_t nRN2 = std::rand() + std::rand() * 0x10000;
 
-	uint64_t nOffset = 0;
+	uint8_t nOffset = 0;
 	do
 	{
 		*(uint64_t*)(dwBaseAddress + adRNGArray + 4 * nOffset++) = (nOffset >= 22 && nOffset < 43) ? nRN1 : nRN2;
