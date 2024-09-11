@@ -164,6 +164,7 @@ struct Player
 	int nLastFrameCount = 0;
 	int nActiveProjectileCount = 0;
 	bool bLastOnRight = false;
+	char cLastStance = 0;
 };
 
 void CheckProjectiles(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
@@ -225,6 +226,7 @@ void UpdatePlayer(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P) {
 	P.nLastInactionableFrames = P.nInactionableFrames;
 	P.nLastFrameCount = P.nFrameCount;
 	P.bLastOnRight = P.bIsOnRight;
+	P.cLastStance = P.cState_Stance;
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress), &P.cExists, 1, 0);
 	if (!P.cExists)
 	{
@@ -727,6 +729,10 @@ void UpdateBars(Player& P, Player& Assist)
 		}
 			
 		if (P.nLastInactionableFrames != 0) //Neutral frame
+		{
+			sFont = FD_NEUTRAL;
+		}
+		else if (P.cLastStance == 1 && P.cState_Stance != 1)
 		{
 			sFont = FD_NEUTRAL;
 		}
