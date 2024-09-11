@@ -250,7 +250,7 @@ int main(int argc, char* argv[])
             if (nGameMode != 4112)
             {
                 hMBAAHandle = 0;
-                continue;
+                //continue;
             }
 
 

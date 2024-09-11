@@ -1198,7 +1198,7 @@ void listAppendHook() {
 					return;
 				}
 
-				//log("char: %3d pattern: %5d", charID, pattern);
+				log("char: %3d pattern: %5d", charID, pattern);
 
 				textureAddrs.insert({ listAppendHook_texAddr, TextureModification(blendMode)});
 				

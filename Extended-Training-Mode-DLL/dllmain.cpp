@@ -410,7 +410,7 @@ void __stdcall log(const char* format, ...) {
 	static char buffer[1024]; // no more random char buffers everywhere.
 	va_list args;
 	va_start(args, format);
-	vsnprintf(buffer, 1024, format, args);
+	vsnprintf_s(buffer, 1024, format, args);
 	___log(buffer);
 	va_end(args);
 }

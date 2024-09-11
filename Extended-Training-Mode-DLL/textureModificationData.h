@@ -447,6 +447,13 @@ constexpr const CharPattern blacklist[] = {
 
 	{ mechID, 45 }, // chainsaw on floor, its dark so doesnt show but still
 
+	{ mechID, 544 }, // fmech 22a bomb thing 
+	{ mechID, 422 },
+	{ mechID, 428 },
+	{ mechID, 541 }, // mech,,, bomb countdown
+	{ mechID, 438 },
+	{ mechID, 434 },
+
 	// aki
 
 	{ akiID, 212 }, // last arc
@@ -474,6 +481,7 @@ constexpr const CharPattern blacklist[] = {
 	// vaki
 
 	{ vakiID, 537 }, // last arc
+	{ vakiID, 168 }, // on c with a 22 out, she will sometimes flicker. is this the cause?
 
 	// roog
 
@@ -520,10 +528,10 @@ constexpr const CharPattern blacklist[] = {
 	{0xFF, 0} // i was very tired of adding commas to prev lines
 };
 
-constexpr size_t blacklistLen = (sizeof(blacklist) / sizeof(blacklist[0])) - 1;
+constexpr size_t blacklistLen = (sizeof(blacklist) / sizeof(blacklist[0])) - 1; // minus 1 bc of the trailing 0xFF, 0
 
 constexpr auto textureModificationData = []() constexpr -> auto {
-	std::array<std::array<BYTE, 125>, 32> res{};
+	std::array<std::array<BYTE, 125>, 32> res{}; // roughly 4kb, worth it vs using a map tbh
 
 	for (int x = 0; x < 32; x++) {
 		for (int y = 0; y < 125; y++) {
@@ -545,6 +553,12 @@ constexpr auto textureModificationData = []() constexpr -> auto {
 
 	return res;
 }();
+
+#pragma push_macro("optimize")
+#pragma optimize("t", on)
+// go check godbolt. this opt level is shit. /O2 is a flag which exists, but has to be enabled for the whole project
+// the asm for this with and without t on is the same. why.
+// i write my shit to be fast, and this compiler spits on me
 
 uint_fast8_t getPatternIndex(uint_fast8_t base) {
 	// translate the games id system into the one listed above
@@ -604,19 +618,9 @@ bool shouldThisBeColored(BYTE charID, DWORD pattern) {
 	
 	BYTE temp = textureModificationData[index][pattern / 8];
 
-	bool printCond = pattern == 128;
-
-	printCond = false;
-
-	if (printCond) {
-		log("index: %02X byte is %02X", index, temp);
-	}
-
 	temp >>= (pattern % 8);
-
-	if (printCond) {
-		log("ret is %d", !(temp & 1));
-	}
 
 	return !(temp & 1);
 }
+
+#pragma pop_macro("optimize")
