@@ -1760,7 +1760,7 @@ int main(int argc, char* argv[])
                                 {
                                     if (nRNGMode == RNG_SEED)
                                     {
-                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomSeed), &nCustomSeed, 4, 0);
+                                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomSeed), &nCustomSeed, 4, 0);
                                         nCustomSeed--;
                                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomSeed), &nCustomSeed, 4, 0);
                                     }
@@ -3147,12 +3147,14 @@ int main(int argc, char* argv[])
                                 char pcTemp[19];
                                 if (nRNGMode == RNG_SEED)
                                 {
+                                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomSeed), &nCustomSeed, 4, 0);
                                     std::string sSeedString = std::format("{:x}", nCustomSeed);
                                     std::transform(sSeedString.begin(), sSeedString.end(), sSeedString.begin(), ::toupper);
                                     strcpy_s(pcTemp, std::string("0x" + sSeedString).c_str());
                                 }
                                 if (nRNGMode == RNG_RN)
                                 {
+                                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomRN), &nCustomRN, 4, 0);
                                     std::string sRNString = std::format("{:x}", nCustomRN);
                                     std::transform(sRNString.begin(), sRNString.end(), sRNString.begin(), ::toupper);
                                     strcpy_s(pcTemp, std::string("0x" + sRNString).c_str());
