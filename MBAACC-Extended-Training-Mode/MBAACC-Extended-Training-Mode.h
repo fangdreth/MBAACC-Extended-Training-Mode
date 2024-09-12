@@ -397,7 +397,7 @@ std::array<uint8_t, 4> CreateColorArray2(int nHighlightID)
 #define ID_BUTTON 2
 HWND hEdit;
 uint32_t nDialogOutput;
-bool bSubmitPressed = false;    // this is such a dumb way to do it but I'm sick of winapi bs
+bool bSubmitPressed = false;    // <- this is such a dumb way to do it but I'm sick of winapi bs
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     HWND hwndButton;
