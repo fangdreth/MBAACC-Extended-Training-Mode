@@ -19,11 +19,13 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE = 2, HIGHLIGHT_PAGE = 3, POSITIONS_PAGE = 4, CHARACTER_SPECIFICS = 5, SAVE_STATE_PAGE = 6, FRAME_TOOL = 7, HOTKEYS_PAGE = 8 };
+enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE = 2, HIGHLIGHT_PAGE = 3, POSITIONS_PAGE = 4, CHARACTER_SPECIFICS = 5, SAVE_STATE_PAGE = 6, FRAME_TOOL = 7, RNG_PAGE = 8, HOTKEYS_PAGE = 9 };
 enum eHotkeyPages { FRAME_TOOL_HOTKEYS_PAGE = 1, GENERIC_HOTKEYS_PAGE = 2 };
 enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
 enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, YELLOW_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT, PURPLE_HIGHLIGHT, BLACK_HIGHLIGHT };
+enum eRNGMode { RNG_OFF, RNG_SEED, RNG_RN };
+enum eRNGRate { RNG_EVERY_FRAME, RNG_EVERY_RESET };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
@@ -311,23 +313,29 @@ const ADDRESS adSharedDisplayInputs =				adShareBase + 0x4;	// 1 byte
 const ADDRESS adSharedScrolling =					adShareBase + 0x5;	// 2 bytes
 const ADDRESS adSharedHoveringScroll =				adShareBase + 0x7;	// 1 byte
 const ADDRESS adSharedFreezeOverride =				adShareBase + 0x8;	// 1 byte
+const ADDRESS adSharedRNGMode =						adShareBase + 0x9;	// 1 byte
+const ADDRESS adSharedRNGRate =						adShareBase + 0xA;	// 1 byte
+const ADDRESS adSharedRNGCustomSeed =				adShareBase + 0xB;	// 4 bytes
+const ADDRESS adSharedRNGCustomRN =					adShareBase + 0xF;	// 4 bytes
 
-const ADDRESS adSharedFreezeKey =					adShareBase + 0x10;	// 1 byte
-const ADDRESS adSharedFrameStepKey =				adShareBase + 0x11;	// 1 byte
-const ADDRESS adSharedHitboxesDisplayKey =			adShareBase + 0x12;	// 1 byte
-const ADDRESS adSharedFrameDataDisplayKey =			adShareBase + 0x13;	// 1 byte
-const ADDRESS adSharedHighlightsOnKey =				adShareBase + 0x14;	// 1 byte
-const ADDRESS adSharedSaveStateKey =				adShareBase + 0x15;	// 1 byte
-const ADDRESS adSharedPrevSaveSlotKey =				adShareBase + 0x16;	// 1 byte
-const ADDRESS adSharedNextSaveSlotKey =				adShareBase + 0x17;	// 1 byte
-const ADDRESS adSharedFrameBarScrollLeftKey =		adShareBase + 0x18;	// 1 byte
-const ADDRESS adSharedFrameBarScrollRightKey =		adShareBase + 0x19;	// 1 byte
+const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
+const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte
+const ADDRESS adSharedHitboxesDisplayKey =			adShareBase + 0x22;	// 1 byte
+const ADDRESS adSharedFrameDataDisplayKey =			adShareBase + 0x23;	// 1 byte
+const ADDRESS adSharedHighlightsOnKey =				adShareBase + 0x24;	// 1 byte
+const ADDRESS adSharedSaveStateKey =				adShareBase + 0x25;	// 1 byte
+const ADDRESS adSharedPrevSaveSlotKey =				adShareBase + 0x26;	// 1 byte
+const ADDRESS adSharedNextSaveSlotKey =				adShareBase + 0x27;	// 1 byte
+const ADDRESS adSharedFrameBarScrollLeftKey =		adShareBase + 0x28;	// 1 byte
+const ADDRESS adSharedFrameBarScrollRightKey =		adShareBase + 0x29;	// 1 byte
+const ADDRESS adSharedRNGIncreaseKey =				adShareBase + 0x2A; // 1 byte
+const ADDRESS adSharedRNGDecreaseKey =				adShareBase + 0x2B; // 1 byte
 
-const ADDRESS adSharedIdleHighlight =				adShareBase + 0x30; // 4 bytes
-const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x34; // 4 bytes
-const ADDRESS adSharedHitHighlight =				adShareBase + 0x38; // 4 bytes
-const ADDRESS adSharedArmorHighlight =				adShareBase + 0x3C; // 4 bytes
-const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x40; // 4 bytes
+const ADDRESS adSharedIdleHighlight =				adShareBase + 0x40; // 4 bytes
+const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x44; // 4 bytes
+const ADDRESS adSharedHitHighlight =				adShareBase + 0x48; // 4 bytes
+const ADDRESS adSharedArmorHighlight =				adShareBase + 0x4C; // 4 bytes
+const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x50; // 4 bytes
 
 const ADDRESS adSharedMessageBuffer =				adShareBase + 0x100; // 32 bytes
 
@@ -343,7 +351,7 @@ const std::vector<int> vGuardLevelLookupTable =
 const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
-const int MAX_SETTINGS_PAGES = 8;
+const int MAX_SETTINGS_PAGES = 9;
 const int MAX_HOTKEY_PAGES = 2;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
@@ -396,6 +404,12 @@ const char pcHealth_19[19] = "HEALTH [A]->SLOWER";
 const char pcGuardBar_10[10] = "GUARD BAR";
 const char pcBlank_1[1] = "";
 const char pcHotkeys_8[8] = "HOTKEYS";
+const char pcCustomRNG_11[11] = "CUSTOM RNG";
+const char pcSeed_5[5] = "SEED";
+const char pcRate_5[5] = "RATE";
+const char pcEveryFrame_13[13] = "EVERY FRAME";
+const char pcEveryReset_13[13] = "EVERY RESET";
+const char pcValue_6[6] = "VALUE";
 
 const std::vector<const char*> vHighlightNames = {    "OFF",
                                                 "RED",

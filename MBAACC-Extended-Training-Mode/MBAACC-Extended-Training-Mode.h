@@ -12,6 +12,8 @@
 #include <WinUser.h>
 #include <strsafe.h>
 #include <algorithm>
+#include <format>
+#include <regex>
 
 #include "json.hpp"
 
@@ -389,4 +391,116 @@ std::array<uint8_t, 4> CreateColorArray2(int nHighlightID)
     case BLACK_HIGHLIGHT:
         return { 60, 60, 60, 1 };
     }
+}
+
+#define ID_EDIT 1
+#define ID_BUTTON 2
+HWND hEdit;
+uint32_t nDialogOutput;
+bool bSubmitPressed = false;    // this is such a dumb way to do it but I'm sick of winapi bs
+LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    HWND hwndButton;
+
+    switch (msg)
+    {
+    case WM_CREATE:
+    {
+        // Create an Edit box
+        hEdit = CreateWindow(TEXT("EDIT"), TEXT(""),
+            WS_VISIBLE | WS_CHILD | WS_BORDER,
+            10, 10, 150, 20, hwnd, (HMENU)ID_EDIT, NULL, NULL);
+
+        EnableWindow(hEdit, TRUE);
+        SetFocus(hEdit);
+        SendMessage(hEdit, EM_SETREADONLY, FALSE, 0);
+
+        // Create a button
+        hwndButton = CreateWindowW(TEXT("BUTTON"), TEXT("Submit"),
+            WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+            10, 35, 80, 25, hwnd, (HMENU)ID_BUTTON, NULL, NULL);
+
+        break;
+    }
+
+    case WM_COMMAND:
+    {
+        if (LOWORD(wParam) == ID_BUTTON)
+        {
+            bool bGoodInput = true;
+            wchar_t buffer[256];
+            
+            GetWindowTextW(hEdit, buffer, 256);
+            std::wstring wsBuffer = std::wstring(buffer);
+
+            if (wsBuffer.substr(0, 2) == L"0x")
+                wsBuffer.erase(0, 2);
+
+            if (wsBuffer.length() > 8)
+            {
+                bGoodInput = false;
+                MessageBox(NULL, L"Number is too large.  Value should be between 0 and FFFFFFFF.", L"", NULL);
+                break;
+            }
+            
+            std::wregex hexRegex(L"[0-9A-Fa-f]+$");
+            if (!std::regex_match(wsBuffer, hexRegex))
+            {
+                MessageBox(NULL, L"Number is invalid.  Value should be a hex number containing only 0-9 and A-F", L"", NULL);
+                bGoodInput = false;
+                break;
+            }
+
+            nDialogOutput = std::stoi(wsBuffer, nullptr, 16);
+            bSubmitPressed = true;
+            PostMessage(hwnd, WM_CLOSE, 0, 0);
+        }
+        
+        break;
+    }
+
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+
+    default:
+        return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+    return 0;
+}
+
+uint32_t PromptForNumber(HANDLE hMBAAHandle, DWORD dwBaseAddress)
+{
+    const uint8_t nOne = 1;
+    const uint8_t nZero = 0;
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nOne, 1, 0);
+
+    bSubmitPressed = false;
+    WNDCLASS wc = { 0 };
+    wc.lpszClassName = L"Edit Control";
+    wc.lpfnWndProc = WindowProcedure;
+    wc.hInstance = GetModuleHandleW(NULL);
+    wc.lpszClassName = TEXT("MyWindowClass");
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wc.hCursor = LoadCursorW(NULL, IDC_ARROW);
+    RegisterClass(&wc);
+
+    HWND hwnd = CreateWindowExW(0, TEXT("MyWindowClass"), TEXT("erm"),
+        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 200, 100,
+        NULL, NULL, GetModuleHandleW(NULL), NULL);
+    ShowWindow(hwnd, SW_SHOWDEFAULT);
+    UpdateWindow(hwnd);
+
+    MSG msg = {};
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
+
+    if (bSubmitPressed)
+        return nDialogOutput;
+    else
+        return -1;
 }

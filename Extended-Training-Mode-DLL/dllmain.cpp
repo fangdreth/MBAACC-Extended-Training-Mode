@@ -80,6 +80,11 @@ bool bFrameDataDisplay = false;
 bool bHitboxesDisplay = false;
 bool bHighlightsOn = true;
 
+uint8_t nRNGMode = RNG_OFF;
+uint8_t nRNGRate = RNG_EVERY_FRAME;
+uint32_t nCustomSeed = 0;
+uint32_t nCustomRN = 0;
+
 #define PUSH_CALLEE __asm \
 {                         \
    __asm push ebx   \
@@ -249,6 +254,8 @@ void setAllKeys()
 	oHighlightsOnKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHighlightsOnKey));
 	oFrameBarLeftScrollKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameBarScrollLeftKey));
 	oFrameBarRightScrollKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameBarScrollRightKey));
+	oIncRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGIncreaseKey));
+	oDecRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGDecreaseKey));
 }
 
 // patch funcs
@@ -982,20 +989,35 @@ void highlightStates()
 	}
 }
 
-void SetRNG(uint64_t nRNG)
+void SetSeed(uint32_t nSeed)
 {
-	*(uint64_t*)(dwBaseAddress + adRNGIndex) = 21;
-	
-	std::srand(nRNG);
-	uint64_t nRN1 = std::rand() + std::rand() * 0x10000;
+	*(uint32_t*)(dwBaseAddress + adRNGIndex) = 21;
 
-	std::srand(nRN1);
-	uint64_t nRN2 = std::rand() + std::rand() * 0x10000;
+	std::srand(nSeed);
+	//uint32_t nRN1 = std::rand() + std::rand() * 0x10000;
+
+	//std::srand(nRN1);
+	//uint32_t nRN2 = std::rand() + std::rand() * 0x10000;
+
+	//*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * 22) = std::rand() + std::rand() * 0x10000;
+	//*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * 43) = std::rand() + std::rand() * 0x10000;
+	
+	uint8_t nOffset = 0;
+	do
+	{
+		//*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * nOffset++) = (nOffset >= 22 && nOffset < 43) ? nRN1 : nRN2;
+		*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * nOffset++) = std::rand() + std::rand() * 0x10000;
+	} while (nOffset < 55);
+}
+
+void SetRN(uint32_t nRN)
+{
+	*(uint32_t*)(dwBaseAddress + adRNGIndex) = 21;
 
 	uint8_t nOffset = 0;
 	do
 	{
-		*(uint64_t*)(dwBaseAddress + adRNGArray + 4 * nOffset++) = (nOffset >= 22 && nOffset < 43) ? nRN1 : nRN2;
+		*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * nOffset++) = (nOffset >= 22 && nOffset < 43) ? nRN : 0;
 	} while (nOffset < 55);
 }
 
@@ -1319,6 +1341,52 @@ void frameDoneCallback()
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SELECTED SAVE", *(char*)(dwBaseAddress + adSharedSaveSlot));
 	}
 
+	if (oIncRNG.keyHeld())
+		oIncRNG.nHeldKeyCounter++;
+	else
+		oIncRNG.nHeldKeyCounter = 0;
+	if (nRNGMode != 0 && oIncRNG.keyDown() || oIncRNG.nHeldKeyCounter >= 20)
+	{
+		nDrawTextTimer = TEXT_TIMER;
+		if (nRNGMode == RNG_SEED)
+		{
+			nCustomSeed = *(uint8_t*)(dwBaseAddress + adSharedRNGCustomSeed);
+			nCustomSeed++;
+			*(uint8_t*)(dwBaseAddress + adSharedRNGCustomSeed) = nCustomSeed;
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "SEED: %i", (int)nCustomSeed);
+		}
+		else if (nRNGMode == RNG_RN)
+		{
+			nCustomRN = *(uint8_t*)(dwBaseAddress + adSharedRNGCustomRN);
+			nCustomRN++;
+			*(uint8_t*)(dwBaseAddress + adSharedRNGCustomRN) = nCustomRN;
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RN: %i", (int)nCustomRN);
+		}
+	}
+
+	if (oDecRNG.keyHeld())
+		oDecRNG.nHeldKeyCounter++;
+	else
+		oDecRNG.nHeldKeyCounter = 0;
+	if (nRNGMode != 0 && oDecRNG.keyDown() || oDecRNG.nHeldKeyCounter >= 20)
+	{
+		nDrawTextTimer = TEXT_TIMER;
+		if (nRNGMode == RNG_SEED)
+		{
+			nCustomSeed = *(uint8_t*)(dwBaseAddress + adSharedRNGCustomSeed);
+			nCustomSeed = max(0, nCustomSeed - 1);
+			*(uint8_t*)(dwBaseAddress + adSharedRNGCustomSeed) = nCustomSeed;
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "SEED: %i", (int)nCustomSeed);
+		}
+		else if (nRNGMode == RNG_RN)
+		{
+			nCustomRN = *(uint8_t*)(dwBaseAddress + adSharedRNGCustomRN);
+			nCustomRN = max(0, nCustomRN - 1);
+			*(uint8_t*)(dwBaseAddress + adSharedRNGCustomRN) = nCustomRN;
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RN: %i", (int)nCustomRN);
+		}
+	}
+
 	char pcMessageBuffer[32];
 	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
 	if (strcmp(pcMessageBuffer, "") != 0)
@@ -1381,14 +1449,18 @@ void frameDoneCallback()
 	*/
 	//enemyReversal();
 
-	static uint64_t nCustomRN = 0;
-	oIncRNG.setKey(VK_KEY_A);
-	oDecRNG.setKey(VK_KEY_S);
-	if (oIncRNG.keyDown())
-		nCustomRN++;
-	if (oDecRNG.keyDown() && nCustomRN > 0)
-		nCustomRN--;
-	//SetRNG(nCustomRN);
+	nRNGMode = *(uint8_t*)(dwBaseAddress + adSharedRNGMode);
+	nRNGRate = *(uint8_t*)(dwBaseAddress + adSharedRNGRate);
+	nCustomSeed = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomSeed);
+	nCustomRN = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomRN);
+	if (nRNGRate == RNG_EVERY_FRAME ||
+		(nRNGRate == RNG_EVERY_RESET && *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer) == 1))
+	{
+		if (nRNGMode == RNG_SEED)
+			SetSeed(nCustomSeed);
+		if (nRNGMode == RNG_RN)
+			SetRN(nCustomRN);
+	}
 }
 
 __declspec(naked) void nakedFrameDoneCallback()
