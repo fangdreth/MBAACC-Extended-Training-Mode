@@ -485,7 +485,7 @@ uint32_t PromptForNumber(HANDLE hMBAAHandle, DWORD dwBaseAddress)
     wc.hCursor = LoadCursorW(NULL, IDC_ARROW);
     RegisterClass(&wc);
 
-    HWND hwnd = CreateWindowExW(0, TEXT("MyWindowClass"), TEXT("erm"),
+    HWND hwnd = CreateWindowExW(0, TEXT("MyWindowClass"), TEXT(""),
         WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 200, 100,
         NULL, NULL, GetModuleHandleW(NULL), NULL);
     ShowWindow(hwnd, SW_SHOWDEFAULT);
