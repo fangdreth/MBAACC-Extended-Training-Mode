@@ -1846,9 +1846,11 @@ int main(int argc, char* argv[])
                         {
                             nWriteBuffer = ONSCREEN_LOCATION;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
 
                             switch (nReversalType)
                             {
@@ -1862,7 +1864,7 @@ int main(int argc, char* argv[])
                                 break;
                             case REVERSAL_REPEAT:
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyRecoverCString), &pcRepeat_7, 7, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyRecoverDString), &pcNormal_7, 7, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyRecoverDString), &pcRepeat_7, 7, 0);
 
                                 nWriteBuffer = 8;
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
