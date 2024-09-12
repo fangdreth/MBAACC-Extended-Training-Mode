@@ -254,8 +254,8 @@ void setAllKeys()
 	oHighlightsOnKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedHighlightsOnKey));
 	oFrameBarLeftScrollKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameBarScrollLeftKey));
 	oFrameBarRightScrollKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameBarScrollRightKey));
-	oIncRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGIncreaseKey));
-	oDecRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGDecreaseKey));
+	oIncRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGIncKey));
+	oDecRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGDecKey));
 }
 
 // patch funcs

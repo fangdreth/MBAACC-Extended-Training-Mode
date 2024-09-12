@@ -20,7 +20,7 @@ enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
 enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE = 2, HIGHLIGHT_PAGE = 3, POSITIONS_PAGE = 4, CHARACTER_SPECIFICS = 5, SAVE_STATE_PAGE = 6, FRAME_TOOL = 7, RNG_PAGE = 8, HOTKEYS_PAGE = 9 };
-enum eHotkeyPages { FRAME_TOOL_HOTKEYS_PAGE = 1, GENERIC_HOTKEYS_PAGE = 2 };
+enum eHotkeyPages { FRAME_TOOL_HOTKEYS_PAGE = 1, GENERIC_HOTKEYS_PAGE = 2, RNG_HOTKEYS_PAGE = 3 };
 enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
 enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, YELLOW_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT, PURPLE_HIGHLIGHT, BLACK_HIGHLIGHT };
@@ -328,8 +328,8 @@ const ADDRESS adSharedPrevSaveSlotKey =				adShareBase + 0x26;	// 1 byte
 const ADDRESS adSharedNextSaveSlotKey =				adShareBase + 0x27;	// 1 byte
 const ADDRESS adSharedFrameBarScrollLeftKey =		adShareBase + 0x28;	// 1 byte
 const ADDRESS adSharedFrameBarScrollRightKey =		adShareBase + 0x29;	// 1 byte
-const ADDRESS adSharedRNGIncreaseKey =				adShareBase + 0x2A; // 1 byte
-const ADDRESS adSharedRNGDecreaseKey =				adShareBase + 0x2B; // 1 byte
+const ADDRESS adSharedRNGIncKey =					adShareBase + 0x2A; // 1 byte
+const ADDRESS adSharedRNGDecKey =					adShareBase + 0x2B; // 1 byte
 
 const ADDRESS adSharedIdleHighlight =				adShareBase + 0x40; // 4 bytes
 const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x44; // 4 bytes
@@ -352,7 +352,7 @@ const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
 const int MAX_SETTINGS_PAGES = 9;
-const int MAX_HOTKEY_PAGES = 2;
+const int MAX_HOTKEY_PAGES = 3;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
 const int MAX_HEARTS = 5; //6:normal 7:infinite
@@ -469,6 +469,8 @@ const char pcPrevSaveSlot_19[19] = "PREV SAVE SLOT KEY";
 const char pcNextSaveSlot_19[19] = "NEXT SAVE SLOT KEY";
 const char pcFrameBarLeft_15[15] = "FRAME BAR LEFT";
 const char pcFrameBarRight_17[17] = "FRAME BAR RIGHT";
+const char pcNextRNG_13[13] = "NEXT RNG KEY";
+const char pcPrevRNG_13[13] = "PREV RNG KEY";
 
 #define VK_KEY_UNSET 0x0;
 
@@ -520,6 +522,8 @@ const uint8_t nDefaultPrevSaveSlotKey = VK_KEY_UNSET;
 const uint8_t nDefaultNextSaveSlotKey = VK_KEY_UNSET;
 const uint8_t nDefaultFrameBarScrollLeftKey = VK_KEY_UNSET;
 const uint8_t nDefaultFrameBarScrollRightKey = VK_KEY_UNSET;
+const uint8_t nDefaultRNGIncKey = VK_KEY_UNSET;
+const uint8_t nDefaultRNGDecKey = VK_KEY_UNSET;
 
 class KeyState
 {
