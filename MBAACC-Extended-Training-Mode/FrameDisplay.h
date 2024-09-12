@@ -36,6 +36,7 @@ static bool bSimpleFrameInfo = true;
 static bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
 static bool bDisplayInputs = false;
 static bool bPrintColorGuide = false;
+static bool bLoadRNG = false;
 
 static uint8_t nSaveSlot = 0;
 
@@ -62,6 +63,7 @@ struct Save {
 	DWORD dwSaveP1NextControlledCharacter = 0;
 	DWORD dwSaveP2ControlledCharacter = 0;
 	DWORD dwSaveP2NextControlledCharacter = 0;
+	DWORD dwaSaveRNG[ADJ_SAVE_RNG_SIZE] = {};
 
 	DWORD dwaSave1P1[ADJ_SAVE_PLAYER_1_SIZE] = {}; //Player data from pattern up to (not including) recieving attack data pointer
 	DWORD dwaSave2P1[ADJ_SAVE_PLAYER_2_SIZE] = {}; //Player data from (not including) recieving attack data pointer to (not including) pattern data pointer
@@ -327,12 +329,14 @@ void SaveState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adSave2Offset), &S.dwaSave2P3, SAVE_PLAYER_2_SIZE, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave1Offset), &S.dwaSave1P4, SAVE_PLAYER_1_SIZE, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave2Offset), &S.dwaSave2P4, SAVE_PLAYER_2_SIZE, 0);
+		
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveRNG), &S.dwaSaveRNG, SAVE_RNG_SIZE, 0);
 
 		S.bSaved = true;
 	}
 }
 
-void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
+void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot, bool bLoadRNG = false)
 {
 	if (nSaveSlot > 0)
 	{
@@ -363,6 +367,11 @@ void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adSave2Offset), &S.dwaSave2P3, SAVE_PLAYER_2_SIZE, 0);
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave1Offset), &S.dwaSave1P4, SAVE_PLAYER_1_SIZE, 0);
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave2Offset), &S.dwaSave2P4, SAVE_PLAYER_2_SIZE, 0);
+
+		if (bLoadRNG)
+		{
+			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveRNG), &S.dwaSaveRNG, SAVE_RNG_SIZE, 0);
+		}
 	}
 }
 
@@ -431,6 +440,10 @@ void SaveStateToFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 				SaveOutFile << S.dwSaveP1NextControlledCharacter << std::endl;
 				SaveOutFile << S.dwSaveP2ControlledCharacter << std::endl;
 				SaveOutFile << S.dwSaveP2NextControlledCharacter << std::endl;
+				for (int i = 0; i < ADJ_SAVE_RNG_SIZE; i++)
+				{
+					SaveOutFile << S.dwaSaveRNG[i] << std::endl;
+				}
 				for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
 				{
 					SaveOutFile << S.dwaSave1P1[i] << std::endl;
@@ -541,6 +554,10 @@ void LoadStateFromFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 				SaveInFile >> S.dwSaveP1NextControlledCharacter;
 				SaveInFile >> S.dwSaveP2ControlledCharacter;
 				SaveInFile >> S.dwSaveP2NextControlledCharacter;
+				for (int i = 0; i < ADJ_SAVE_RNG_SIZE; i++)
+				{
+					SaveInFile >> S.dwaSaveRNG[i];
+				}
 				for (int i = 0; i < ADJ_SAVE_PLAYER_1_SIZE; i++)
 				{
 					SaveInFile >> S.dwaSave1P1[i];
@@ -1305,7 +1322,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 			ResetBars(hMBAAHandle, dwBaseAddress, P2);
 			ResetBars(hMBAAHandle, dwBaseAddress, P3);
 			ResetBars(hMBAAHandle, dwBaseAddress, P4);
-			LoadState(hMBAAHandle, dwBaseAddress, nSaveSlot);
+			LoadState(hMBAAHandle, dwBaseAddress, nSaveSlot, bLoadRNG);
 		}
 	}
 

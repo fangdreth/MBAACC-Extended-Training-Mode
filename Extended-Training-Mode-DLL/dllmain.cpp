@@ -1388,7 +1388,7 @@ void frameDoneCallback()
 		nCustomRN++;
 	if (oDecRNG.keyDown() && nCustomRN > 0)
 		nCustomRN--;
-	SetRNG(nCustomRN);
+	//SetRNG(nCustomRN);
 }
 
 __declspec(naked) void nakedFrameDoneCallback()

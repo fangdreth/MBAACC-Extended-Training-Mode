@@ -870,7 +870,7 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcClearAllSaves_16, 16, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcImportSave_12, 12, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcExportSave_12, 12, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcLoadRNG_9, 9, 0);
                             break;
                         }
                         case CHARACTER_SPECIFICS:
@@ -1031,6 +1031,7 @@ int main(int argc, char* argv[])
                         }
                         case SAVE_STATE_PAGE:
                         {
+                            /*
                             if (nOldEnemySettingsCursor == 6 && nEnemySettingsCursor == 8)
                             {
                                 nWriteBuffer = 10;
@@ -1045,6 +1046,7 @@ int main(int argc, char* argv[])
                                 nEnemySettingsCursor = 6;
                                 nOldEnemySettingsCursor = 6;
                             }
+                            */
                             break;
                         }
                         case CHARACTER_SPECIFICS:
@@ -1418,12 +1420,15 @@ int main(int argc, char* argv[])
                                 nOldEnemyActionIndex = nEnemyActionIndex;
                             if (nOldEnemyDefenseIndex == -1)
                                 nOldEnemyDefenseIndex = nEnemyDefenseIndex;
+                            if (nOldEnemyDefenseTypeIndex == -1)
+                                nOldEnemyDefenseTypeIndex = nEnemyDefenseTypeIndex;
                             if (nOldAirRecoveryIndex == -1)
                                 nOldAirRecoveryIndex = nAirRecoveryIndex;
                             if (nOldDownRecoveryIndex == -1)
                                 nOldDownRecoveryIndex = nDownRecoveryIndex;
                             else if (nOldEnemyActionIndex > nEnemyActionIndex || // left
                                 nOldEnemyDefenseIndex > nEnemyDefenseIndex ||
+                                nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex ||
                                 nOldAirRecoveryIndex > nAirRecoveryIndex ||
                                 nOldDownRecoveryIndex > nDownRecoveryIndex)
                             {
@@ -1432,6 +1437,7 @@ int main(int argc, char* argv[])
                             }
                             else if (nOldEnemyActionIndex < nEnemyActionIndex || // right
                                 nOldEnemyDefenseIndex < nEnemyDefenseIndex ||
+                                nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex ||
                                 nOldAirRecoveryIndex < nAirRecoveryIndex ||
                                 nOldDownRecoveryIndex < nDownRecoveryIndex)
                             {
@@ -1439,6 +1445,19 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
                             }
                             bEnableFN2Load = nSaveSlot > 0 ? true : false;
+
+                            if (nOldThrowRecoveryIndex == -1)
+                                nOldThrowRecoveryIndex = nThrowRecoveryIndex;
+                            else if (nOldThrowRecoveryIndex > nThrowRecoveryIndex)// left
+                            {
+                                if (bLoadRNG)
+                                    bLoadRNG = false;
+                            }
+                            else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
+                            {
+                                if (!bLoadRNG)
+                                    bLoadRNG = true;
+                            }
 
                             break;
                         }
@@ -2367,11 +2386,11 @@ int main(int argc, char* argv[])
                         {
                             nWriteBuffer = ONSCREEN_LOCATION;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
 
                             nWriteBuffer = OFFSCREEN_LOCATION;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
 
@@ -2456,21 +2475,22 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
                             nAirRecoveryIndex = 2;
 
-
-                            char pcTempExport[19];
-                            if (nSaveSlot == 0)
-                                strcpy_s(pcTempExport, pcNoSlotSelected_17);
-                            else if (CheckSave(nSaveSlot))
-                                strcpy_s(pcTempExport, std::string("SLOT 0" + std::to_string(nSaveSlot) + " (PRESS A)").c_str());
+                            if (bLoadRNG)
+                            {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomLateString), &pcOn_3, 3, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomRandomString), &pcOn_3, 3, 0);
+                                nWriteBuffer = 6;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                nThrowRecoveryIndex = 6;
+                            }
                             else
-                                strcpy_s(pcTempExport, std::string("SLOT 0" + std::to_string(nSaveSlot) + " (NO DATA)").c_str());
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTempExport, 19, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryBackString), &pcTempExport, 19, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryForwardString), &pcTempExport, 19, 0);
-
-                            nWriteBuffer = 2;
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
-                            nDownRecoveryIndex = 2;
+                            {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryNormalString), &pcOff_4, 4, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcOff_4, 4, 0);
+                                nWriteBuffer = 0;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                nThrowRecoveryIndex = 0;
+                            }
 
                             break;
                         }

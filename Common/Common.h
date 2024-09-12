@@ -147,6 +147,7 @@ const int SAVE_ATTACK_DISPLAY_INFO_SIZE = 52;
 const int SAVE_ATTACK_DISPLAY_INFO_2_SIZE = 1004;
 const int SAVE_PLAYER_1_SIZE = 492;
 const int SAVE_PLAYER_2_SIZE = 284;
+const int SAVE_RNG_SIZE = 228;
 
 const int ADJ_SAVE_EFFECTS_SIZE = SAVE_EFFECTS_SIZE / 4;
 const int ADJ_SAVE_STOP_SITUATION_SIZE = SAVE_STOP_SITUATION_SIZE /4;
@@ -154,6 +155,7 @@ const int ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE = SAVE_ATTACK_DISPLAY_INFO_SIZE / 4;
 const int ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE = SAVE_ATTACK_DISPLAY_INFO_2_SIZE / 4;
 const int ADJ_SAVE_PLAYER_1_SIZE = SAVE_PLAYER_1_SIZE / 4;
 const int ADJ_SAVE_PLAYER_2_SIZE = SAVE_PLAYER_2_SIZE / 4;
+const int ADJ_SAVE_RNG_SIZE = SAVE_RNG_SIZE / 4;
 
 const char REVERSE_INPUT_MAP[10] = { 0, 3, 2, 1, 6, 0, 4, 9, 8, 7 };
 const char CH_MAP[3] = { ' ', 'H', 'L' };
@@ -270,6 +272,9 @@ const ADDRESS adSaveCurrentCamY = 0x15DEC8;
 
 const ADDRESS adTrueFrameCount = 0x162A40;
 const ADDRESS adGlobalFreeze = 0x162A48;
+
+const ADDRESS adSaveRNG = 0x164068;
+
 const ADDRESS adSaveCurrentCamXCopy = 0x164B14;
 const ADDRESS adSaveCurrentCamYCopy = 0x164B18;
 
@@ -426,6 +431,7 @@ const char pcNone_5[5] = "NONE";
 const char pcClearAllSaves_16[16] = "CLEAR ALL SAVES";
 const char pcImportSave_12[12] = "IMPORT SAVE";
 const char pcExportSave_12[12] = "EXPORT SAVE";
+const char pcLoadRNG_9[9] = "LOAD RNG";
 const char pcNoData_8[8] = "NO DATA";
 const char pcNoSlotSelected_17[17] = "NO SLOT SELECTED";
 const char pcPressA_8[8] = "PRESS A";
