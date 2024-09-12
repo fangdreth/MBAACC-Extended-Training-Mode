@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <cmath>
 #include <random>
+#include <format>
+#include <string.h>
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
@@ -1347,20 +1349,27 @@ void frameDoneCallback()
 		oIncRNG.nHeldKeyCounter = 0;
 	if (nRNGMode != 0 && oIncRNG.keyDown() || oIncRNG.nHeldKeyCounter >= 20)
 	{
+		char pcTemp[19];
 		nDrawTextTimer = TEXT_TIMER;
 		if (nRNGMode == RNG_SEED)
 		{
-			nCustomSeed = *(uint8_t*)(dwBaseAddress + adSharedRNGCustomSeed);
+			nCustomSeed = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomSeed);
 			nCustomSeed++;
-			*(uint8_t*)(dwBaseAddress + adSharedRNGCustomSeed) = nCustomSeed;
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "SEED: %i", (int)nCustomSeed);
+			*(uint32_t*)(dwBaseAddress + adSharedRNGCustomSeed) = nCustomSeed;
+			std::string sSeedString = std::format("{:x}", nCustomSeed);
+			std::transform(sSeedString.begin(), sSeedString.end(), sSeedString.begin(), ::toupper);
+			strcpy_s(pcTemp, std::string("0x" + sSeedString).c_str());
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "SEED: %s", pcTemp);
 		}
 		else if (nRNGMode == RNG_RN)
 		{
-			nCustomRN = *(uint8_t*)(dwBaseAddress + adSharedRNGCustomRN);
+			nCustomRN = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomRN);
 			nCustomRN++;
-			*(uint8_t*)(dwBaseAddress + adSharedRNGCustomRN) = nCustomRN;
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RN: %i", (int)nCustomRN);
+			*(uint32_t*)(dwBaseAddress + adSharedRNGCustomRN) = nCustomRN;
+			std::string sRNString = std::format("{:x}", nCustomRN);
+			std::transform(sRNString.begin(), sRNString.end(), sRNString.begin(), ::toupper);
+			strcpy_s(pcTemp, std::string("0x" + sRNString).c_str());
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RN: %s", pcTemp);
 		}
 	}
 
@@ -1370,20 +1379,27 @@ void frameDoneCallback()
 		oDecRNG.nHeldKeyCounter = 0;
 	if (nRNGMode != 0 && oDecRNG.keyDown() || oDecRNG.nHeldKeyCounter >= 20)
 	{
+		char pcTemp[19];
 		nDrawTextTimer = TEXT_TIMER;
 		if (nRNGMode == RNG_SEED)
 		{
-			nCustomSeed = *(uint8_t*)(dwBaseAddress + adSharedRNGCustomSeed);
+			nCustomSeed = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomSeed);
 			nCustomSeed = max(0, nCustomSeed - 1);
-			*(uint8_t*)(dwBaseAddress + adSharedRNGCustomSeed) = nCustomSeed;
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "SEED: %i", (int)nCustomSeed);
+			*(uint32_t*)(dwBaseAddress + adSharedRNGCustomSeed) = nCustomSeed;
+			std::string sSeedString = std::format("{:x}", nCustomSeed);
+			std::transform(sSeedString.begin(), sSeedString.end(), sSeedString.begin(), ::toupper);
+			strcpy_s(pcTemp, std::string("0x" + sSeedString).c_str());
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "SEED: %s", pcTemp);
 		}
 		else if (nRNGMode == RNG_RN)
 		{
-			nCustomRN = *(uint8_t*)(dwBaseAddress + adSharedRNGCustomRN);
+			nCustomRN = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomRN);
 			nCustomRN = max(0, nCustomRN - 1);
-			*(uint8_t*)(dwBaseAddress + adSharedRNGCustomRN) = nCustomRN;
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RN: %i", (int)nCustomRN);
+			*(uint32_t*)(dwBaseAddress + adSharedRNGCustomRN) = nCustomRN;
+			std::string sRNString = std::format("{:x}", nCustomRN);
+			std::transform(sRNString.begin(), sRNString.end(), sRNString.begin(), ::toupper);
+			strcpy_s(pcTemp, std::string("0x" + sRNString).c_str());
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RN: %s", pcTemp);
 		}
 	}
 
