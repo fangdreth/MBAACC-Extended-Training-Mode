@@ -88,7 +88,7 @@ const DWORD dwP1BPressed = 0x37139A;
 const DWORD dwP1F1Pressed = 0x37144C;
 const DWORD dwP1F2Pressed = 0x37144D;
 const DWORD dwP1DPressed = 0x37139C;
-const DWORD dwP1DirectionPress = 0x371448;
+const DWORD dwP1DirectionInput = 0x371398;
 const DWORD dwPausedFlag = 0x162A64;
 const DWORD dwEnemyAction = 0x37C1EC;
 const DWORD dwLifeRecover = 0x37C1F8;
@@ -511,6 +511,8 @@ const char pcPrevRNG_13[13] = "PREV RNG KEY";
 #define VK_KEY_X 0x58
 #define VK_KEY_Y 0x59
 #define VK_KEY_Z 0x5A
+
+enum eKeyNames { KEY_FREEZE, KEY_FRAMESTEP, KEY_HITBOX, KEY_FRAMEDATA, KEY_HIGHLIGHT, KEY_SAVESTATE, KEY_PREVSAVE, KEY_NEXTSAVE, KEY_FRAMEBARLEFT, KEY_FRAMEBARRIGHT, KEY_RNGINC, KEY_RNGDEC };
 
 const uint8_t nDefaultFreezeKey = VK_KEY_UNSET;
 const uint8_t nDefaultFrameStepKey = VK_KEY_UNSET;

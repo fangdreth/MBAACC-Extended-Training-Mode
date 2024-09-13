@@ -24,6 +24,35 @@
 #include "Injector.h"
 #include "Logger.h"
 
+HANDLE hMBAAHandle = 0x0;
+DWORD dwBaseAddress = 0;
+
+uint8_t nFreezeKey = nDefaultFreezeKey;
+uint8_t nFrameStepKey = nDefaultFrameStepKey;
+uint8_t nHitboxDisplayKey = nDefaultHitboxDisplayKey;
+uint8_t nFrameDataDisplayKey = nDefaultFrameDataDisplayKey;
+uint8_t nHighlightsOnKey = nDefaultHighlightsOnKey;
+uint8_t nSaveStateKey = nDefaultSaveStateKey;
+uint8_t nPrevSaveSlotKey = nDefaultPrevSaveSlotKey;
+uint8_t nNextSaveSlotKey = nDefaultNextSaveSlotKey;
+uint8_t nFrameBarScrollLeftKey = nDefaultFrameBarScrollLeftKey;
+uint8_t nFrameBarScrollRightKey = nDefaultFrameBarScrollRightKey;
+uint8_t nRNGIncKey = nDefaultRNGIncKey;
+uint8_t nRNGDecKey = nDefaultRNGIncKey;
+
+bool bFreezeKeySet = false;
+bool bFrameStepKeySet = false;
+bool bHitboxDisplayKeySet = false;
+bool bFrameDataDisplayKeySet = false;
+bool bHighlightsOnKeySet = false;
+bool bSaveStateKeySet = false;
+bool bPrevSaveSlotKey = false;
+bool bNextSaveSlotKey = false;
+bool bFrameBarScrollLeftKey = false;
+bool bFrameBarScrollRightKey = false;
+bool bRNGIncKey = false;
+bool bRNGDecKey = false;
+
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;
     std::string result;
@@ -369,6 +398,111 @@ uint8_t KeyJustPressed()
     } while (i);
 
     return 0;
+}
+
+//enum eKeyNames { KEY_FREEZE, KEY_FRAMESTEP, KEY_HITBOX, KEY_FRAMEDATA, KEY_HIGHLIGHT, KEY_SAVESTATE, KEY_PREVSAVE, KEY_NEXTSAVE, KEY_FRAMEBARLEFT, KEY_FRAMEBARRIGHT, KEY_RNGINC, KEY_RNGDEC };
+void ReplaceKey(uint8_t nKey, int nKeyNameEnum)
+{
+    if (nFreezeKey == nKey && nKeyNameEnum != KEY_FREEZE)
+    {
+        nFreezeKey = nDefaultFreezeKey;
+        bFreezeKeySet = false;
+        SetRegistryValue(L"FreezeKey", nFreezeKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeKey), &nFreezeKey, 1, 0);
+    }
+    else if (nFrameStepKey == nKey && nKeyNameEnum != KEY_FRAMESTEP)
+    {
+        nFrameStepKey = nDefaultFrameStepKey;
+        bFrameStepKeySet = false;
+        SetRegistryValue(L"FrameStepKey", nFrameStepKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameStepKey), &nFrameStepKey, 1, 0);
+    }
+    else if (nHitboxDisplayKey == nKey && nKeyNameEnum != KEY_HITBOX)
+    {
+        nHitboxDisplayKey = nDefaultHitboxDisplayKey;
+        bHitboxDisplayKeySet = false;
+        SetRegistryValue(L"HitboxDisplayKey", nHitboxDisplayKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxesDisplayKey), &nHitboxDisplayKey, 1, 0);
+    }
+    else if (nFrameDataDisplayKey == nKey && nKeyNameEnum != KEY_FRAMEDATA)
+    {
+        nFrameDataDisplayKey = nDefaultFrameDataDisplayKey;
+        bFrameDataDisplayKeySet = false;
+        SetRegistryValue(L"FrameDataDisplayKey", nFrameDataDisplayKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplayKey), &nFrameDataDisplayKey, 1, 0);
+    }
+    else if (nHighlightsOnKey == nKey && nKeyNameEnum != KEY_HIGHLIGHT)
+    {
+        nHighlightsOnKey = nDefaultHighlightsOnKey;
+        bHighlightsOnKeySet = false;
+        SetRegistryValue(L"HighlightsOnKey", nHighlightsOnKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlightsOnKey), &nHighlightsOnKey, 1, 0);
+    }
+    else if (nSaveStateKey == nKey && nKeyNameEnum != KEY_SAVESTATE)
+    {
+        nSaveStateKey = nDefaultSaveStateKey;
+        bSaveStateKeySet = false;
+        SetRegistryValue(L"SaveStateKey", nSaveStateKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveStateKey), &nSaveStateKey, 1, 0);
+    }
+    else if (nPrevSaveSlotKey == nKey && nKeyNameEnum != KEY_PREVSAVE)
+    {
+        nPrevSaveSlotKey = nDefaultPrevSaveSlotKey;
+        bPrevSaveSlotKey = false;
+        SetRegistryValue(L"PrevSaveSlotKey", nPrevSaveSlotKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevSaveSlotKey), &nPrevSaveSlotKey, 1, 0);
+    }
+    else if (nNextSaveSlotKey == nKey && nKeyNameEnum != KEY_NEXTSAVE)
+    {
+        nNextSaveSlotKey = nDefaultNextSaveSlotKey;
+        bNextSaveSlotKey = false;
+        SetRegistryValue(L"NextSaveSlotKey", nNextSaveSlotKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedNextSaveSlotKey), &nNextSaveSlotKey, 1, 0);
+    }
+    else if (nFrameBarScrollLeftKey == nKey && nKeyNameEnum != KEY_FRAMEBARLEFT)
+    {
+        nFrameBarScrollLeftKey = nDefaultFrameBarScrollLeftKey;
+        bFrameBarScrollLeftKey = false;
+        SetRegistryValue(L"FrameBarScrollLeftKey", nFrameBarScrollLeftKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollLeftKey), &nFrameBarScrollLeftKey, 1, 0);
+    }
+    else if (nFrameBarScrollRightKey == nKey && nKeyNameEnum != KEY_FRAMEBARRIGHT)
+    {
+        nFrameBarScrollRightKey = nDefaultFrameBarScrollRightKey;
+        bFrameBarScrollRightKey = false;
+        SetRegistryValue(L"FrameBarScrollRightKey", nFrameBarScrollRightKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollRightKey), &nFrameBarScrollRightKey, 1, 0);
+    }
+    else if (nRNGIncKey == nKey && nKeyNameEnum != KEY_RNGINC)
+    {
+        nRNGIncKey = nDefaultRNGIncKey;
+        bRNGIncKey = false;
+        SetRegistryValue(L"RNGIncKey", nRNGIncKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGIncKey), &nRNGIncKey, 1, 0);
+    }
+    else if (nRNGDecKey == nKey && nKeyNameEnum != KEY_RNGDEC)
+    {
+        nRNGDecKey = nDefaultRNGDecKey;
+        bRNGDecKey = false;
+        SetRegistryValue(L"RNGDecKey", nRNGDecKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGDecKey), &nRNGDecKey, 1, 0);
+    }
+}
+
+bool IsControllerNeutral()
+{
+    // do this to prevent arrows or buttons being bound
+    for (int i = 0; i < 16; i++)
+    {
+        Sleep(1);
+        uint64_t nInputsDirectionThruStart = 0;
+        uint16_t nInputsFn1Fn2 = 0;
+        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1DirectionInput), &nInputsDirectionThruStart, 8, 0);
+        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1DirectionInput + 0x8), &nInputsFn1Fn2, 2, 0);
+        if (nInputsDirectionThruStart != 0 || nInputsFn1Fn2)
+            return false;
+    }
+    return true;
 }
 
 std::array<uint8_t, 4> CreateColorArray2(int nHighlightID)
