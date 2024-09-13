@@ -192,7 +192,7 @@ const ADDRESS adGameState = 0x14EEE8;
 const ADDRESS adSaveDestinationCamX = 0x155124;
 const ADDRESS adSaveDestinationCamY = 0x155128;
 
-const ADDRESS adRNGArray = 0x164070;
+const ADDRESS adRNGArray = 0x16406C;
 const ADDRESS adRNGIndex = 0x164068;
 
 const DWORD dwPlayerStructSize = 0xAFC;

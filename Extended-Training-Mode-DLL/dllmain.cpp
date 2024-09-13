@@ -993,34 +993,35 @@ void highlightStates()
 
 void SetSeed(uint32_t nSeed)
 {
-	*(uint32_t*)(dwBaseAddress + adRNGIndex) = 21;
+	*(uint32_t*)(dwBaseAddress + adRNGIndex) = 55;
 
 	std::srand(nSeed);
 	
-	uint8_t nOffset = 0;
+	uint8_t nOffset = 1;
 	do
 	{
 		*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * nOffset++) = std::rand() + std::rand() * 0x10000;
-	} while (nOffset < 55);
+	} while (nOffset < 56);
 }
 
 void SetRN(uint32_t nRN)
 {
 	if (nRNGRate == RNG_EVERY_FRAME)
 	{
-		*(uint32_t*)(dwBaseAddress + adRNGIndex) = 21;
-		uint8_t nOffset = 0;
+		*(uint32_t*)(dwBaseAddress + adRNGIndex) = 55;
+		uint8_t nOffset = 1;
 		do
 		{
-			*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * nOffset++) = (nOffset >= 22 && nOffset < 43) ? nRN : 0;
-		} while (nOffset < 55);
+			*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * nOffset++) = (nOffset < 22) ? nRN : 0;
+		} while (nOffset < 56);
 	}
 	else if (nRNGRate == RNG_EVERY_RESET)
 	{
 		SetSeed(nRN);
-		*(uint32_t*)(dwBaseAddress + adRNGIndex) = 0;
-		*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * 0) = nRN;
-		*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * 21) = nRN;
+		*(uint32_t*)(dwBaseAddress + adRNGIndex) = 55;
+		uint32_t nRand = std::rand() + std::rand() * 0x10000;
+		*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * 1) = nRand + nRN;
+		*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * 22) = nRand;
 	}
 }
 
