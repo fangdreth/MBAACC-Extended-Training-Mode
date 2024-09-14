@@ -317,7 +317,6 @@ void _doDrawCalls() {
 
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
 
-	log("drawCallsLen %d", drawCalls.size());
 
 	for (const DrawCallInfo& drawCallInfo : drawCalls) {
 
