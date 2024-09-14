@@ -31,6 +31,8 @@ private:
 enum class DrawType {
 	Line,
 	Rect,
+	Border,
+	BorderRect,
 };
 
 typedef struct DrawCallInfo {
@@ -41,6 +43,11 @@ typedef struct DrawCallInfo {
 	float v4;
 	DWORD ARGB = 0x8042e5f4;
 } DrawCallInfo;
+
+typedef struct Point {
+	float x = 0.0;
+	float y = 0.0;
+} Point;
 
 // would a queue be better here?
 std::vector<DrawCallInfo> drawCalls;
@@ -220,7 +227,9 @@ void drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) { //
 	drawTri(v2, v3, v4, ARGB);
 }
 
-void drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4) { // top left is 0.0, bottom right is 1.0. 
+// this var may need to be set dynamically based on resolution, but for now 0.005 works fine.
+const float lineWidth = 0.003;
+void drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side=false) { // top left is 0.0, bottom right is 1.0. 
 	
 	// i am,,, i bit confused on how exactly to do this. 
 	// current vibes say,,, two very thin triangles.
@@ -228,12 +237,57 @@ void drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4) 
 	// i would like,,, diag lines please too.
 	// there are,,, angle issues with that tho
 
+	// feel free to play around with https://www.desmos.com/calculator/ppviwesili
+	// side chooses which "side" of the input line is actually drawn
+	// you will only really care about this,,, if you really care abt it?
+
+	Point p1 = { x1, y1 };
+	Point p2 = { x2, y2 };
+
+	float mx = p2.x - p1.x;
+	float my = p2.y - p1.y;
+	float m = my / mx;
+
+	float a = atan2(my, mx) + (3.1415926535 / 2.0f);
+	
+	float m2 = tan(a);
+
+	Point p3 = { x1, y1 };
+	Point p4 = { x2, y2 };
+
+	Point offset = { lineWidth * cos(a), lineWidth * sin(a) };
+
+	if (side) {
+		p3.x += offset.x;
+		p3.y += offset.y;
+		p4.x += offset.x;
+		p4.y += offset.y;
+	} else {
+		p3.x -= offset.x;
+		p3.y -= offset.y;
+		p4.x -= offset.x;
+		p4.y -= offset.y;
+	}
+
+	p1.y = 1 - p1.y;
+	p2.y = 1 - p2.y;
+	p3.y = 1 - p3.y;
+	p4.y = 1 - p4.y;
+
+	D3DVECTOR v1 = { (p1.x * 2.0) - 1.0, (p1.y * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v2 = { (p2.x * 2.0) - 1.0, (p2.y * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v3 = { (p3.x * 2.0) - 1.0, (p3.y * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v4 = { (p4.x * 2.0) - 1.0, (p4.y * 2.0) - 1.0, 0.0f };
+
+	drawTri(v1, v2, v3, ARGB);
+	drawTri(v2, v3, v4, ARGB);
+
+
+
+	/*
 	y1 = 1 - y1;
 	y2 = 1 - y2;
-
-	// this var may need to be set dynamically based on resolution, but for now 0.005 works fine.
-	const float lineWidth = 0.005;
-
+	
 	D3DVECTOR v1 = { ((x1 + 0) * 2.0) - 1.0, ((y1 + 0) * 2.0) - 1.0, 0.0f };
 	D3DVECTOR v2 = { ((x2 + 0) * 2.0) - 1.0, ((y2 + 0) * 2.0) - 1.0, 0.0f };
 	D3DVECTOR v3 = { ((x1 + lineWidth) * 2.0) - 1.0, ((y1 + 0) * 2.0) - 1.0, 0.0f };
@@ -241,6 +295,20 @@ void drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4) 
 
 	drawTri(v1, v2, v3, ARGB);
 	drawTri(v2, v3, v4, ARGB);
+	*/
+}
+
+void drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+
+	h -= lineWidth;
+	w -= lineWidth;
+
+	drawLine2(x + lineWidth, y, x + w, y, ARGB, true);
+	drawLine2(x, y, x, y + h, ARGB, false);
+	drawLine2(x + w, y, x + w, y + h, ARGB, false);
+	drawLine2(x, y + h, x + w + lineWidth, y + h, ARGB, true);
+	
+
 }
 
 void _doDrawCalls() {
@@ -259,6 +327,13 @@ void _doDrawCalls() {
 			drawLine2(drawCallInfo.v1, drawCallInfo.v2, drawCallInfo.v3, drawCallInfo.v4, drawCallInfo.ARGB);
 			break;
 		case DrawType::Rect:
+			drawRect2(drawCallInfo.v1, drawCallInfo.v2, drawCallInfo.v3, drawCallInfo.v4, drawCallInfo.ARGB);
+			break;
+		case DrawType::Border:
+			drawBorder2(drawCallInfo.v1, drawCallInfo.v2, drawCallInfo.v3, drawCallInfo.v4, drawCallInfo.ARGB);
+			break;
+		case DrawType::BorderRect:
+			drawBorder2(drawCallInfo.v1, drawCallInfo.v2, drawCallInfo.v3, drawCallInfo.v4, drawCallInfo.ARGB | 0xFF000000); // make sure border alpha is filled in
 			drawRect2(drawCallInfo.v1, drawCallInfo.v2, drawCallInfo.v3, drawCallInfo.v4, drawCallInfo.ARGB);
 			break;
 		default:

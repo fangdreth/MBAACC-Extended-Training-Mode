@@ -1451,6 +1451,18 @@ void frameDoneCallback()
 		drawCalls.push_back(DrawCallInfo{ DrawType::Rect, i, 0.9f - i, 0.1, 0.1, 0x8000FF00 });
 	}
 
+	drawCalls.push_back(DrawCallInfo{ DrawType::Rect, 0.9, 0.5, 0.1, 0.1, 0xFFFF0000 });
+	drawCalls.push_back(DrawCallInfo{ DrawType::Rect, 0.9, 0.6, 0.1, 0.1, 0xFFFFFFFF });
+	drawCalls.push_back(DrawCallInfo{ DrawType::Rect, 0.9, 0.7, 0.1, 0.1, 0xFFFF0000 });
+
+	drawCalls.push_back(DrawCallInfo{ DrawType::Border, 0.9, 0.6, 0.1, 0.1, 0x800000FF });
+
+	DWORD _tempCol = 0x8000FFFF;
+	for (float i = 0.0; i < 1.0; i += 0.1) {
+		drawCalls.push_back(DrawCallInfo{ DrawType::BorderRect, 0.7, i, 0.1, 0.1, _tempCol });
+		_tempCol ^= 0x00FF00000;
+	}
+
 	// don't draw on the pause menu, but do on VIEW SCREEN
 	DWORD nSubMenuPointer = *reinterpret_cast<DWORD*>(dwBaseAddress + dwBasePointer) + 0x84;
 	int nSubMenu;
