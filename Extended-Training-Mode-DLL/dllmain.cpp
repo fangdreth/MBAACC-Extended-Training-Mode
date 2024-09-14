@@ -14,6 +14,7 @@
 #include <random>
 #include <format>
 #include <string.h>
+#include <cstdarg>
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
@@ -1439,30 +1440,36 @@ void frameDoneCallback()
 	// heres a lil example for the new draw funcs
 	// i can change the syntax up if desired
 	// also, i dont have any new text funcs yet, sry
-	// top left of screen is (0.0, 0.0), bottom right is (1.0, 1.0)
+	// top left of screen is (0.0, 0.0), bottom right is (1.333333, 1.0)
 
-	//                                                 x1   x2   y1   y2    A R G B
-	drawCalls.push_back(DrawCallInfo{ DrawType::Line, 0.1, 0.1, 0.9, 0.9, 0x800000FF });
+	//         x1   x2   y1   y2    A R G B
+	LineDraw( 0.1, 0.1, 0.9, 0.9, 0x800000FF );
 
-	//                                                 x    y    w    h		A R G B
-	drawCalls.push_back(DrawCallInfo{ DrawType::Rect, 0.1, 0.1, 0.2, 0.2, 0x80FF0000 });
+	//        x    y    w    h		A R G B
+	RectDraw(0.1, 0.1, 0.2, 0.2, 0x80FF0000 );
 
 	for (float i = 0.0; i < 1.0; i += 0.1) {
-		drawCalls.push_back(DrawCallInfo{ DrawType::Rect, i, 0.9f - i, 0.1, 0.1, 0x8000FF00 });
-		drawCalls.push_back(DrawCallInfo{ DrawType::Rect, i+0.05f, 0.9f - i - 0.05f, 0.1, 0.1, 0x8000FF00 });
+		RectDraw( i, 0.9f - i, 0.1, 0.1, 0x8000FF00 );
+		RectDraw( i+0.05f, 0.9f - i - 0.05f, 0.1, 0.1, 0x8000FF00 );
 	}
 
-	drawCalls.push_back(DrawCallInfo{ DrawType::Rect, 0.9, 0.5, 0.1, 0.1, 0xFFFF0000 });
-	drawCalls.push_back(DrawCallInfo{ DrawType::Rect, 0.9, 0.6, 0.1, 0.1, 0xFFFFFFFF });
-	drawCalls.push_back(DrawCallInfo{ DrawType::Rect, 0.9, 0.7, 0.1, 0.1, 0xFFFF0000 });
+	RectDraw( 1.23333, 0.5, 0.1, 0.1, 0xFFFF0000 );
+	RectDraw( 1.23333, 0.6, 0.1, 0.1, 0xFFFFFFFF );
+	RectDraw( 1.23333, 0.7, 0.1, 0.1, 0xFFFF0000 );
 
-	drawCalls.push_back(DrawCallInfo{ DrawType::Border, 0.9, 0.6, 0.1, 0.1, 0x800000FF });
+	BorderDraw( 1.23333, 0.6, 0.1, 0.1, 0x800000FF );
 
 	DWORD _tempCol = 0x8000FFFF;
 	for (float i = 0.0; i < 1.0; i += 0.1) {
-		drawCalls.push_back(DrawCallInfo{ DrawType::BorderRect, 0.7, i, 0.1, 0.1, _tempCol });
+		BorderRectDraw( 0.7, i, 0.1, 0.1, _tempCol );
 		_tempCol ^= 0x00FF00000;
 	}
+	
+	TextDraw(0.5, 0.5, 0.1, 0x80FFFF00, "test %d %s %d", 123, "abc", 456);
+	//drawCalls.push_back(TextDraw(0.5, 0.5, 0.1, 0x80FFFF00, "test aaaaa"));
+
+	LineDraw(0.0, 1.0, 1.3333, 0.0, 0xFFFF00FF);
+
 
 	// don't draw on the pause menu, but do on VIEW SCREEN
 	DWORD nSubMenuPointer = *reinterpret_cast<DWORD*>(dwBaseAddress + dwBasePointer) + 0x84;

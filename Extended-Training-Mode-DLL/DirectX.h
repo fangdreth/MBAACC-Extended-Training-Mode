@@ -28,29 +28,15 @@ private:
 
 };
 
-enum class DrawType {
-	Line,
-	Rect,
-	Border,
-	BorderRect,
-};
 
-typedef struct DrawCallInfo {
-	DrawType drawType;
-	float v1;
-	float v2;
-	float v3;
-	float v4;
-	DWORD ARGB = 0x8042e5f4;
-} DrawCallInfo;
+// -----
 
 typedef struct Point {
 	float x = 0.0;
 	float y = 0.0;
 } Point;
 
-// would a queue be better here?
-std::vector<DrawCallInfo> drawCalls;
+
 
 bool _hasStateToRestore = false;
 IDirect3DPixelShader9* _pixelShaderBackup;
@@ -178,7 +164,7 @@ void restoreRenderState() {
 
 }
 
-void drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR& v3, D3DCOLOR col) {
+void __stdcall drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR& v3, D3DCOLOR col) {
 	if (device == NULL) return;
 
 	struct CUSTOMVERTEX {
@@ -226,14 +212,14 @@ void drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR& v3, D3DC
 	}
 }
 
-void drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) { // top left is 0.0, bottom right is 1.0. 
+void __stdcall drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) { // top left is 0.0, bottom right is 1.0. 
 	
 	y = 1 - y;
 	
-	D3DVECTOR v1 = { ((x + 0) * 2.0) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v2 = { ((x + w) * 2.0) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v3 = { ((x + 0) * 2.0) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v4 = { ((x + w) * 2.0) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v1 = { ((x + 0) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v2 = { ((x + w) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v3 = { ((x + 0) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v4 = { ((x + w) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
 	
 	drawTri(v1, v2, v3, ARGB);
 	drawTri(v2, v3, v4, ARGB);
@@ -241,7 +227,7 @@ void drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) { //
 
 // this var may need to be set dynamically based on resolution, but for now 0.005 works fine.
 const float lineWidth = 0.0025;
-void drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side=false) { // top left is 0.0, bottom right is 1.0. 
+void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side=false) { // top left is (0.0, 0.0), bottom right is (1.3333, 0). 
 	
 	// i am,,, i bit confused on how exactly to do this. 
 	// current vibes say,,, two very thin triangles.
@@ -286,10 +272,10 @@ void drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, 
 	p3.y = 1 - p3.y;
 	p4.y = 1 - p4.y;
 
-	D3DVECTOR v1 = { (p1.x * 2.0) - 1.0, (p1.y * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v2 = { (p2.x * 2.0) - 1.0, (p2.y * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v3 = { (p3.x * 2.0) - 1.0, (p3.y * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v4 = { (p4.x * 2.0) - 1.0, (p4.y * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v1 = { (p1.x * 1.5) - 1.0, (p1.y * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v2 = { (p2.x * 1.5) - 1.0, (p2.y * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v3 = { (p3.x * 1.5) - 1.0, (p3.y * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v4 = { (p4.x * 1.5) - 1.0, (p4.y * 2.0) - 1.0, 0.0f };
 
 	drawTri(v1, v2, v3, ARGB);
 	drawTri(v2, v3, v4, ARGB);
@@ -310,7 +296,7 @@ void drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, 
 	*/
 }
 
-void drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+void __stdcall drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 
 	h -= lineWidth;
 	w -= lineWidth;
@@ -323,48 +309,119 @@ void drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 
 }
 
-void _doDrawCalls() {
+void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* str) {
+	// pass things in as you would with printf, like printf("%d %.2f %s", 1, 1.23f, "abcdefg");
+	
+	if (str != NULL) {
+		log(str);
+	}
+
+	
+	
+	//va_end(*args); // args is already alloced, and needs to be cleaned up here.	
+
+	// goals:
+	// monospaced
+	// txt viewable at small sized
+	// non stupidity.
+	// font used: Cascadia Code, its comfy, its familiar
+	// i also need to statically link said font
+
+
+
+}
+
+// -----
+
+// would a queue be better here?
+// look, i know i like lambdas too much, but i was getting annoyed
+// constantly allocing and deallocing lambdas is probs,,, bad.
+// i could just have them be, refs? idek
+std::vector<std::function<void(void)>*> drawCalls;
+
+void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side = false) {
+	drawCalls.emplace_back(
+		new std::function<void(void)>(
+		[x1, y1, x2, y2, ARGB, side]() -> void {
+			drawLine2(x1, y1, x2, y2, ARGB, side);
+		}
+	));
+}
+
+void RectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+	drawCalls.emplace_back(
+		new std::function<void(void)>(
+		[x, y, w, h, ARGB]() -> void {
+			drawRect2(x, y, w, h, ARGB);
+		}
+	));
+}
+
+void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+	drawCalls.emplace_back(
+		new std::function<void(void)>(
+		[x, y, w, h, ARGB]() -> void {
+			drawBorder2(x, y, w, h, ARGB);
+		}
+	));
+}
+
+void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+	drawCalls.emplace_back(
+	new std::function<void(void)>(
+		[x, y, w, h, ARGB]() -> void {
+			drawRect2(x, y, w, h, ARGB);
+			drawBorder2(x, y, w, h, ARGB | 0xFF000000);
+		}
+	));
+}
+
+void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...) {
+	// i do hope that this allocing does not slow things down. i tried saving the va_args for when the actual print func was called, but it would not work
+
+	char* buffer = (char*)malloc(1024);
+
+	if (buffer == NULL) {
+		log("textdraw malloc somehow failed???");
+		return;
+	}
+
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, 1024, format, args);
+	va_end(args);
+
+	drawCalls.emplace_back(
+		new std::function<void(void)>(
+		[x, y, size, ARGB, buffer]() mutable -> void {
+			drawText2(x, y, size, ARGB, buffer);
+			if (buffer != NULL) {
+				free(buffer);
+				buffer = NULL;
+			}
+		}
+	));
+}
+
+// -----
+
+void __stdcall _doDrawCalls() {
 
 	backupRenderState();
 
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
 
-	for (const DrawCallInfo& drawCallInfo : drawCalls) {
-
-		// there is def a better and more readable way to do this
-		switch (drawCallInfo.drawType) {
-		case DrawType::Line:
-			drawLine2(drawCallInfo.v1, drawCallInfo.v2, drawCallInfo.v3, drawCallInfo.v4, drawCallInfo.ARGB);
-			break;
-		case DrawType::Rect:
-			drawRect2(drawCallInfo.v1, drawCallInfo.v2, drawCallInfo.v3, drawCallInfo.v4, drawCallInfo.ARGB);
-			break;
-		case DrawType::Border:
-			drawBorder2(drawCallInfo.v1, drawCallInfo.v2, drawCallInfo.v3, drawCallInfo.v4, drawCallInfo.ARGB);
-			break;
-		case DrawType::BorderRect:
-			drawBorder2(drawCallInfo.v1, drawCallInfo.v2, drawCallInfo.v3, drawCallInfo.v4, drawCallInfo.ARGB | 0xFF000000); // make sure border alpha is filled in
-			drawRect2(drawCallInfo.v1, drawCallInfo.v2, drawCallInfo.v3, drawCallInfo.v4, drawCallInfo.ARGB);
-			break;
-		default:
-			log("unknown drawcall type %d", drawCallInfo.drawType);
-			break;
-		}
-
+	for (std::function<void(void)>* drawCallInfo : drawCalls) {
+		(*drawCallInfo)();
 	}
-
-	/*
-	drawRect2(0.25, 0.25, 0.5, 0.5);
-	drawRect2(0.80, 0.80, 0.1, 0.1);
-	drawRect2(0.10, 0.10, 0.1, 0.8);
-
-	drawLine2(0.1, 0.1, 0.2, 0.9, 0x80FF0000);
-	drawLine2(0.1, 0.1, 0.9, 0.9, 0x80FF0000); 
-	*/
 
 	device->EndScene();
 
 	restoreRenderState();
+
+	for (int i = 0; i < drawCalls.size(); i++) {
+		delete drawCalls[i];
+	}
 
 	drawCalls.clear();
 }
