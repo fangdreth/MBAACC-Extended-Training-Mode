@@ -33,13 +33,13 @@ enum class DrawType {
 	Rect,
 };
 
-typedef struct {
+typedef struct DrawCallInfo {
 	DrawType drawType;
-	int v1;
-	int v2;
-	int v3;
-	int v4;
-	DWORD ARGB;
+	float v1;
+	float v2;
+	float v3;
+	float v4;
+	DWORD ARGB = 0x8042e5f4;
 } DrawCallInfo;
 
 // would a queue be better here?
@@ -231,7 +231,8 @@ void drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4) 
 	y1 = 1 - y1;
 	y2 = 1 - y2;
 
-	const float lineWidth = 0.001;
+	// this var may need to be set dynamically based on resolution, but for now 0.005 works fine.
+	const float lineWidth = 0.005;
 
 	D3DVECTOR v1 = { ((x1 + 0) * 2.0) - 1.0, ((y1 + 0) * 2.0) - 1.0, 0.0f };
 	D3DVECTOR v2 = { ((x2 + 0) * 2.0) - 1.0, ((y2 + 0) * 2.0) - 1.0, 0.0f };
@@ -248,7 +249,8 @@ void _doDrawCalls() {
 
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
 
-	/*
+	log("drawCallsLen %d", drawCalls.size());
+
 	for (const DrawCallInfo& drawCallInfo : drawCalls) {
 
 		// there is def a better and more readable way to do this
@@ -265,15 +267,15 @@ void _doDrawCalls() {
 		}
 
 	}
-	*/
 
-	
+	/*
 	drawRect2(0.25, 0.25, 0.5, 0.5);
 	drawRect2(0.80, 0.80, 0.1, 0.1);
 	drawRect2(0.10, 0.10, 0.1, 0.8);
 
 	drawLine2(0.1, 0.1, 0.2, 0.9, 0x80FF0000);
 	drawLine2(0.1, 0.1, 0.9, 0.9, 0x80FF0000); 
+	*/
 
 	device->EndScene();
 

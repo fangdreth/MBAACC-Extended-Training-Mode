@@ -1436,6 +1436,21 @@ void frameDoneCallback()
 		nDrawTextTimer--;
 	}
 
+	// heres a lil example for the new draw funcs
+	// i can change the syntax up if desired
+	// also, i dont have any new text funcs yet, sry
+	// top left of screen is (0.0, 0.0), bottom right is (1.0, 1.0)
+
+	//                                                 x1   x2   y1   y2    A R G B
+	drawCalls.push_back(DrawCallInfo{ DrawType::Line, 0.1, 0.1, 0.9, 0.9, 0x800000FF });
+
+	//                                                 x    y    w    h		A R G B
+	drawCalls.push_back(DrawCallInfo{ DrawType::Rect, 0.1, 0.1, 0.2, 0.2, 0x80FF0000 });
+
+	for (float i = 0.0; i < 1.0; i += 0.1) {
+		drawCalls.push_back(DrawCallInfo{ DrawType::Rect, i, 0.9f - i, 0.1, 0.1, 0x8000FF00 });
+	}
+
 	// don't draw on the pause menu, but do on VIEW SCREEN
 	DWORD nSubMenuPointer = *reinterpret_cast<DWORD*>(dwBaseAddress + dwBasePointer) + 0x84;
 	int nSubMenu;
@@ -1445,7 +1460,7 @@ void frameDoneCallback()
 		{
 			drawFrameBar();
 		}
-		return; // unsure of this returns purpose
+		return; // unsure of this returns purpose it cuts off below functions right?
 	}
 
 	if (bHitboxesDisplay)
