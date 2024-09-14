@@ -1442,6 +1442,7 @@ void frameDoneCallback()
 	// also, i dont have any new text funcs yet, sry
 	// top left of screen is (0.0, 0.0), bottom right is (1.333333, 1.0)
 
+	/*
 	//         x1   x2   y1   y2    A R G B
 	LineDraw( 0.1, 0.1, 0.9, 0.9, 0x800000FF );
 
@@ -1464,11 +1465,16 @@ void frameDoneCallback()
 		BorderRectDraw( 0.7, i, 0.1, 0.1, _tempCol );
 		_tempCol ^= 0x00FF00000;
 	}
-	
-	TextDraw(0.5, 0.5, 0.1, 0x80FFFF00, "test %d %s %d", 123, "abc", 456);
-	//drawCalls.push_back(TextDraw(0.5, 0.5, 0.1, 0x80FFFF00, "test aaaaa"));
 
 	LineDraw(0.0, 1.0, 1.3333, 0.0, 0xFFFF00FF);
+	
+	*/
+	//LineDraw(0.0, 1.0, 1.3333, 0.0, 0xFFFF00FF);
+
+	TextDraw(0.1, 0.1, 0.1, 0xFF00FFFF, "test %d %s %d", 123, "abc", 456);
+
+
+	
 
 
 	// don't draw on the pause menu, but do on VIEW SCREEN

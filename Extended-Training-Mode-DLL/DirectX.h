@@ -1,5 +1,7 @@
 #pragma once
 
+void _naked_InitDirectXHooks();
+
 class Texture {
 public:
 
@@ -28,6 +30,214 @@ private:
 
 };
 
+int fontSize = 36;
+int fontWidth = ((float)fontSize) / 2.0f;
+float fontRatio = ((float)fontWidth) / ((float)fontSize);
+
+size_t fontBufferSize = 0;
+BYTE* fontBuffer = NULL; // this is purposefully not freed on evict btw
+IDirect3DTexture9* fontTexture = NULL;
+
+unsigned scaleNextPow2(unsigned v) {
+	v--;
+	v |= v >> 1;
+	v |= v >> 2;
+	v |= v >> 4;
+	v |= v >> 8;
+	v |= v >> 16;
+	v++;
+	return v;
+}
+
+void _initFontFirstLoad() {
+	// i dont know why.
+	// i dont know how.
+	// but SOMEHOW
+	// calling DrawTextA overwrites my hooks, and completely fucks EVERYTHING up.
+	// i could rehook after it, but holy shit im already rehooking caster hooks, and rehooking beginstate hooks? i think that rehooking 3 times is to many hooks.
+	// im going to need to render the font manually.
+	// orrr,,, i could,,, try rehooking again? as a treat?
+	// no, no treat, you are going to have to do this painfully.
+	// never call this func more than once, or while hooked.
+
+	static bool hasRan = false;
+	if (hasRan) {
+		return;
+	}
+	hasRan = true;
+
+	ID3DXFont* font = NULL;
+	IDirect3DSurface9* surface = NULL;
+	ID3DXBuffer* buffer = NULL;
+	IDirect3DTexture9* texture = NULL;
+
+	// i still do not know what the hell MIP levels are. but it seems that they would be,, needed/a good idea
+	// for variable font sizing
+
+	//const int fontSize = 24;
+	
+	int fontSizePow2 = scaleNextPow2(fontSize);
+
+	HRESULT hr = D3DXCreateFontA(
+		device,
+		fontSize, // height 
+		fontWidth,  // width. this could be set to 0, but out of paranoia, i want it at a fixed value
+		FW_NORMAL, // weight?
+		1,  // mip? i should probs use these tbh
+		FALSE, // italicized
+		DEFAULT_CHARSET,
+		OUT_DEFAULT_PRECIS,
+		ANTIALIASED_QUALITY, // is this the best ver
+		FIXED_PITCH | FF_MODERN, // pitch is monospace,,, modern is,,, for constant stroke witdth?
+		"Courier New", // this appears to be the only monospaced font shipped by default on windows. i could also include another font in rom if needed tho
+		&font
+	);
+
+	if (FAILED(hr)) {
+		log("failed to create font?");
+		font = NULL;
+		return;
+	}
+
+	std::string dispChars = "";
+
+	size_t charCount = 0;
+
+	for (char c = ' '; c <= '~'; c++) {
+
+		if (((int)c & 0xF) == 0 && c != ' ') {
+			dispChars += "\n";
+		}
+
+		dispChars += c;
+		charCount++;
+	}
+
+	int texWidth = scaleNextPow2(charCount * fontSize);
+	int texHeight = fontSizePow2 * 16;
+
+	texWidth = 512;
+	texHeight = 512;
+
+	log("attempting to load a font, reallllly attempting w: %d h: %d", texWidth, texHeight);
+
+	hr = device->CreateTexture(texWidth, texHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
+	if (FAILED(hr)) {
+		font->Release();
+		log("font createtexture failed");
+		return;
+	}
+
+	hr = texture->GetSurfaceLevel(0, &surface);
+	if (FAILED(hr)) {
+		texture->Release();
+		texture = NULL;
+		font->Release();
+		log("font getsurfacelevel failed");
+		return;
+	}
+
+	D3DVIEWPORT9 viewport;
+
+	viewport.X = 0;
+	viewport.Y = 0;
+	viewport.Width = texWidth;
+	viewport.Height = texHeight;
+	viewport.MinZ = 0.0f;
+	viewport.MaxZ = 1.0f;
+	device->SetViewport(&viewport);
+
+	IDirect3DSurface9* oldRenderTarget = nullptr;
+	hr = device->GetRenderTarget(0, &oldRenderTarget);
+	if (FAILED(hr)) {
+		surface->Release();
+		texture->Release();
+		texture = NULL;
+		font->Release();
+		log("font getrendertarget failed");
+		return;
+	}
+
+	hr = device->SetRenderTarget(0, surface);
+	if (FAILED(hr)) {
+		oldRenderTarget->Release();
+		surface->Release();
+		texture->Release();
+		texture = NULL;
+		font->Release();
+		log("font setrendertarget failed");
+		return;
+	}
+
+
+	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+
+	hr = device->BeginScene();
+	if (SUCCEEDED(hr)) {
+		
+		RECT rect = { 0, 0, texWidth, texHeight };
+		font->DrawTextA(NULL, dispChars.c_str(), -1, &rect, DT_LEFT | DT_TOP, D3DCOLOR_XRGB(255, 255, 255)); // gross horrid disgusting hook removing call
+
+		// End the scene
+		device->EndScene();
+	}
+	else {
+		log("beginscene failed?????");
+	}
+
+	device->SetRenderTarget(0, oldRenderTarget);
+	oldRenderTarget->Release();
+	surface->Release();
+
+	//hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
+	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG	, texture, NULL);
+	texture->Release();
+	font->Release();
+
+	if (FAILED(hr)) {
+		log("savetextomem failed??");
+		return;
+	}
+
+	BYTE* bufferPtr = (BYTE*)buffer->GetBufferPointer();
+	size_t bufferSize = buffer->GetBufferSize();
+
+	fontBuffer = (BYTE*)malloc(bufferSize);
+	if (fontBuffer == NULL) {
+		log("font malloc failed, what are you doing");
+		return;
+	}
+
+	memcpy(fontBuffer, bufferPtr, bufferSize);
+	fontBufferSize = bufferSize;
+
+	log("loaded font BUFFER!!!");
+}
+
+void initFont() {
+
+	_initFontFirstLoad();
+
+	if (fontBuffer == NULL) {
+		log("initfont font buffer was null, dipping");
+		return;
+	}
+
+	if (fontTexture != NULL) {
+		fontTexture->Release();
+		fontTexture = NULL;
+	}
+
+	HRESULT hr;
+
+	hr = D3DXCreateTextureFromFileInMemory(device, fontBuffer, fontBufferSize, &fontTexture);
+	if (FAILED(hr)) {
+		log("font createtexfromfileinmem failed??");
+		return;
+	}
+
+	log("FONT TEXTURE LOADED");
+}
 
 // -----
 
@@ -35,8 +245,6 @@ typedef struct Point {
 	float x = 0.0;
 	float y = 0.0;
 } Point;
-
-
 
 bool _hasStateToRestore = false;
 IDirect3DPixelShader9* _pixelShaderBackup;
@@ -65,7 +273,7 @@ void scaleVertex(D3DVECTOR& v) {
 	}
 }
 
-void backupRenderState() {
+void __stdcall backupRenderState() {
 
 	if (_hasStateToRestore) {
 		return;
@@ -145,7 +353,7 @@ void backupRenderState() {
 	*/
 }
 	
-void restoreRenderState() {	
+void __stdcall restoreRenderState() {	
 
 	if (!_hasStateToRestore) {
 		return;
@@ -212,6 +420,76 @@ void __stdcall drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR
 	}
 }
 
+void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR& v3, const D3DVECTOR& v4, float size, D3DCOLOR col, char c) {
+	if (device == NULL) return;
+
+	//const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_DIFFUSE);
+	const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_TEX1);
+	//const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_DIFFUSE);
+
+	struct CUSTOMVERTEX {
+		D3DVECTOR position;
+		D3DXVECTOR2 texCoord;
+	};
+
+	constexpr float whatIsThis = 0.5f; // what is this?
+
+	col = D3DCOLOR_XRGB(255, 0, 0);
+
+	//device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+
+	// Set the source and destination blend factors
+	//device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	//device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+	// Define the vertices of the triangle
+	CUSTOMVERTEX vertices[] = {
+		{ D3DVECTOR(v1.x, v1.y, whatIsThis), D3DXVECTOR2(0.0, 0.0)}, //, col },
+		{ D3DVECTOR(v2.x, v2.y, whatIsThis), D3DXVECTOR2(1.0, 0.0)}, //, col },
+		{ D3DVECTOR(v3.x, v3.y, whatIsThis), D3DXVECTOR2(0.0, 1.0)}, //, col },
+		{ D3DVECTOR(v4.x, v4.y, whatIsThis), D3DXVECTOR2(1.0, 1.0)} //, col }
+		//{ D3DVECTOR(v1.x, v1.y, whatIsThis), col },
+		//{ D3DVECTOR(v2.x, v2.y, whatIsThis), col },
+		//{ D3DVECTOR(v3.x, v3.y, whatIsThis), col },
+		//{ D3DVECTOR(v4.x, v4.y, whatIsThis), col }	
+	};
+
+	scaleVertex(vertices[0].position);
+	scaleVertex(vertices[1].position);
+	scaleVertex(vertices[2].position);
+	scaleVertex(vertices[3].position);
+
+
+	//log("%6.2f %6.2f %6.2f", vertices[0].position.x, vertices[0].position.y, vertices[0].position.z);
+
+	// Set up the vertex buffer and draw
+	// i dislike allocing and unallocing stuff like this.
+	// ESPECIALLY HERE.
+	// if anythings going to lag the gpu, its this.
+
+	LPDIRECT3DVERTEXBUFFER9 v_buffer;
+	if (SUCCEEDED(device->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
+		VOID* pVoid;
+
+		v_buffer->Lock(0, 0, (void**)&pVoid, 0);
+		memcpy(pVoid, vertices, sizeof(vertices));
+		v_buffer->Unlock();
+
+		device->SetTexture(0, fontTexture);
+
+		device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+		device->SetFVF(vertFormat);
+		device->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
+
+		v_buffer->Release();
+
+		device->SetTexture(0, NULL);
+		log("drew char");
+	} else {
+		log("drawCharAlloc failed?");	
+	}
+}
+
 void __stdcall drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) { // top left is 0.0, bottom right is 1.0. 
 	
 	y = 1 - y;
@@ -225,7 +503,7 @@ void __stdcall drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042
 	drawTri(v2, v3, v4, ARGB);
 }
 
-// this var may need to be set dynamically based on resolution, but for now 0.005 works fine.
+// this var may. need to be set dynamically based on resolution, but for now 0.005 works fine.
 const float lineWidth = 0.0025;
 void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side=false) { // top left is (0.0, 0.0), bottom right is (1.3333, 0). 
 	
@@ -305,6 +583,7 @@ void __stdcall drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x80
 	drawLine2(x, y, x, y + h, ARGB, false);
 	drawLine2(x + w, y, x + w, y + h, ARGB, false);
 	drawLine2(x, y + h, x + w + lineWidth, y + h, ARGB, true);
+
 	
 
 }
@@ -312,22 +591,28 @@ void __stdcall drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x80
 void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* str) {
 	// pass things in as you would with printf, like printf("%d %.2f %s", 1, 1.23f, "abcdefg");
 	
-	if (str != NULL) {
-		log(str);
+	if (str == NULL) {
+		return;
 	}
-
 	
+	float charWidthOffset = fontRatio * size;
+	float charHeightOffset = size;
+
+	charWidthOffset = 0.75;
+	charHeightOffset = 0.75;
+
+	float w = charWidthOffset;
+	float h = charHeightOffset;
+
+	y = 1 - y;
+
+	D3DVECTOR v1 = { ((x + 0) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v2 = { ((x + w) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v3 = { ((x + 0) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v4 = { ((x + w) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
+
+	drawChar(v1, v2, v3, v4, size, ARGB, *str);
 	
-	//va_end(*args); // args is already alloced, and needs to be cleaned up here.	
-
-	// goals:
-	// monospaced
-	// txt viewable at small sized
-	// non stupidity.
-	// font used: Cascadia Code, its comfy, its familiar
-	// i also need to statically link said font
-
-
 
 }
 
@@ -411,7 +696,7 @@ void __stdcall _doDrawCalls() {
 
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
 
-	for (std::function<void(void)>* drawCallInfo : drawCalls) {
+	for (std::function<void(void)>* drawCallInfo : drawCalls) {	
 		(*drawCallInfo)();
 	}
 
@@ -431,7 +716,9 @@ void __stdcall _doDrawCalls() {
 __declspec(naked) void _naked_PresentHook() {
 	// just in case, im only hooking this one present call
 	PUSH_ALL;
+	//log("doDrawCalls start");
 	_doDrawCalls();
+	//log("doDrawCalls good");
 	POP_ALL;
 
 	__asm {
@@ -451,6 +738,25 @@ void cleanForDirectXReset() {
 	// all textures need to be reset here this occurs during the transition to and from fullscreen
 	// i should make a class to manage all of them, make it easier for ppl
 	Texture::_cleanForReset();
+
+	if (fontTexture != NULL) {
+		fontTexture->Release();
+		fontTexture = NULL;
+	}
+}
+
+void reInitAfterDirectXReset() {
+
+	/*
+	if (font != NULL) {
+		font->OnResetDevice();
+	}
+
+	if (fontSprite != NULL) {
+		fontSprite->OnResetDevice();
+	}
+	*/
+
 }
 
 DWORD _RESET_HOOKS = 0;
@@ -466,6 +772,10 @@ __declspec(naked) void _DirectX_Reset_Func() {
 		//jmp[_DirectX_Reset_Func_Addr];
 		call[_DirectX_Reset_Func_Addr];
 	}
+
+	PUSH_ALL;
+	reInitAfterDirectXReset();
+	POP_ALL;
 
 	__asm {
 		push _DirectX_Reset_Func_ret;
@@ -495,6 +805,7 @@ __declspec(naked) void _DirectX_EvictManagedResources_Func() {
 	}
 }
 
+DWORD _DirectX_Present_Func_ret;
 DWORD _DirectX_Present_Func_Addr = 0;
 __declspec(naked) void _DirectX_Present_Func() {
 	// IMPORTANT. i am unsure if the hooked areas where ppl would be adding draw calls here,, 
@@ -502,11 +813,23 @@ __declspec(naked) void _DirectX_Present_Func() {
 	// figure it out.
 	PUSH_ALL;
 	log("IDirect3DDevice9_Present called!");
-	_doDrawCalls();
+	//_doDrawCalls();
 	POP_ALL;
 	__asm {
-		jmp[_DirectX_Present_Func_Addr];
+		pop _DirectX_Present_Func_ret;
+		//jmp[_DirectX_Present_Func_Addr];
+		call[_DirectX_Present_Func_Addr];
 	}
+
+	PUSH_ALL;
+	log("present success");
+	POP_ALL;
+
+	__asm {
+		push _DirectX_Present_Func_ret;
+		ret;
+	}
+
 }
 
 __declspec(naked) void _naked_InitDirectXHooks() {
@@ -518,6 +841,7 @@ __declspec(naked) void _naked_InitDirectXHooks() {
 	__asm {
 
 		push eax;
+		push ebx;
 		push ecx;
 		push edx;
 
@@ -525,36 +849,49 @@ __declspec(naked) void _naked_InitDirectXHooks() {
 		mov eax, [device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000040h];
+		cmp edx, _DirectX_Reset_Func_Addr; // check if the current hook is already ours.
+		JE _DirectX_Reset_Func_DONT;
 		mov _DirectX_Reset_Func_Addr, edx;
 		mov edx, _DirectX_Reset_Func;
 		mov[ecx + 00000040h], edx;
+	_DirectX_Reset_Func_DONT:
 
 		// hook beginstate block, as it overwrites my hooks.
 		mov eax, [device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000F0h];
+		cmp edx, _DirectX_BeginStateBlock_Func_Addr; // check if the current hook is already ours.
+		JE _DirectX_BeginStateBlock_Func_DONT;
 		mov _DirectX_BeginStateBlock_Func_Addr, edx;
 		mov edx, _DirectX_BeginStateBlock_Func;
 		mov[ecx + 000000F0h], edx;
+	_DirectX_BeginStateBlock_Func_DONT:
 		
 		// hook present, so we can draw on the screen
-		//mov eax, [device];
-		//mov ecx, [eax];
-		//mov edx, [ecx + 00000044h];
-		//mov _DirectX_Present_Func_Addr, edx;
-		//mov edx, _DirectX_Present_Func;
-		//mov[ecx + 00000044h], edx;
+		mov eax, [device];
+		mov ecx, [eax];
+		mov edx, [ecx + 00000044h];
+		cmp edx, _DirectX_Present_Func_Addr; // check if the current hook is already ours.
+		JE _DirectX_Present_Func_DONT;
+		mov _DirectX_Present_Func_Addr, edx;
+		mov edx, _DirectX_Present_Func;
+		mov[ecx + 00000044h], edx;
+	_DirectX_Present_Func_DONT:
 
 		// hook evict, so i can manage memory properly for once
 		mov eax, [device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000014h];
+		cmp edx, _DirectX_EvictManagedResources_Func_Addr; // check if the current hook is already ours.
+		JE _DirectX_EvictManagedResources_Func_DONT;
 		mov _DirectX_EvictManagedResources_Func_Addr, edx;
 		mov edx, _DirectX_EvictManagedResources_Func;
 		mov[ecx + 00000014h], edx;
+	_DirectX_EvictManagedResources_Func_DONT:
 
 		pop edx;
 		pop ecx;
+		pop ebx;
 		pop eax;
 
 		ret;
@@ -594,12 +931,13 @@ bool HookDirectX() {
 		return false;
 	}
 
-
 	_naked_InitDirectXHooks();
 	// this specifically checks if our hooks were overwritten, and then rehooks
 	patchJump(0x004be3c4, _naked_RehookDirectX);
 
 	patchJump(0x004bdd0b, _naked_PresentHook);
+
+	initFont();
 
 	log("directX hooked");
 	return true;
