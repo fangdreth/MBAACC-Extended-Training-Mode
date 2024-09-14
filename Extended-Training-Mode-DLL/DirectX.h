@@ -144,7 +144,19 @@ void backupRenderState() {
 	//device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, false);
 	//device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
 	//device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
-	
+
+	/*
+	device->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);  
+	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
+
+	device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTSS_COLORARG1);
+	device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
+	*/
 }
 	
 void restoreRenderState() {	
@@ -228,7 +240,7 @@ void drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) { //
 }
 
 // this var may need to be set dynamically based on resolution, but for now 0.005 works fine.
-const float lineWidth = 0.003;
+const float lineWidth = 0.0025;
 void drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side=false) { // top left is 0.0, bottom right is 1.0. 
 	
 	// i am,,, i bit confused on how exactly to do this. 
@@ -316,7 +328,6 @@ void _doDrawCalls() {
 	backupRenderState();
 
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
-
 
 	for (const DrawCallInfo& drawCallInfo : drawCalls) {
 

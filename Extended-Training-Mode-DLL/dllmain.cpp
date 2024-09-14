@@ -1449,6 +1449,7 @@ void frameDoneCallback()
 
 	for (float i = 0.0; i < 1.0; i += 0.1) {
 		drawCalls.push_back(DrawCallInfo{ DrawType::Rect, i, 0.9f - i, 0.1, 0.1, 0x8000FF00 });
+		drawCalls.push_back(DrawCallInfo{ DrawType::Rect, i+0.05f, 0.9f - i - 0.05f, 0.1, 0.1, 0x8000FF00 });
 	}
 
 	drawCalls.push_back(DrawCallInfo{ DrawType::Rect, 0.9, 0.5, 0.1, 0.1, 0xFFFF0000 });
