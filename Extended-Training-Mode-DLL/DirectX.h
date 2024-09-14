@@ -48,6 +48,7 @@ std::vector<DrawCallInfo> drawCalls;
 bool _hasStateToRestore = false;
 IDirect3DPixelShader9* _pixelShaderBackup;
 IDirect3DVertexShader9* _vertexShaderBackup;
+IDirect3DBaseTexture9* _textureBackup;
 DWORD _D3DRS_BLENDOP;
 DWORD _D3DRS_ALPHABLENDENABLE;
 DWORD _D3DRS_SRCBLEND;
@@ -55,6 +56,21 @@ DWORD _D3DRS_DESTBLEND;
 DWORD _D3DRS_SEPARATEALPHABLENDENABLE;
 DWORD _D3DRS_SRCBLENDALPHA;
 DWORD _D3DRS_DESTBLENDALPHA;
+
+float vWidth = 640;
+float vHeight = 480;
+float wWidth = 640;
+float wHeight = 480;
+bool isWide = false;
+float factor = 1.0f;
+
+void scaleVertex(D3DVECTOR& v) {	
+	if (isWide) {
+		v.x /= factor;
+	} else {
+		v.y /= factor;
+	}
+}
 
 void backupRenderState() {
 
@@ -67,41 +83,64 @@ void backupRenderState() {
 	// store state
 	device->GetPixelShader(&_pixelShaderBackup);
 	device->GetVertexShader(&_vertexShaderBackup);
+	device->GetTexture(0, &_textureBackup);
 
-	device->GetRenderState(D3DRS_BLENDOP, &_D3DRS_BLENDOP);
-	device->GetRenderState(D3DRS_ALPHABLENDENABLE, &_D3DRS_ALPHABLENDENABLE);
-	device->GetRenderState(D3DRS_SRCBLEND, &_D3DRS_SRCBLEND);
-	device->GetRenderState(D3DRS_DESTBLEND, &_D3DRS_DESTBLEND);
-	device->GetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, &_D3DRS_SEPARATEALPHABLENDENABLE);
-	device->GetRenderState(D3DRS_SRCBLENDALPHA, &_D3DRS_SRCBLENDALPHA);
-	device->GetRenderState(D3DRS_DESTBLENDALPHA, &_D3DRS_DESTBLENDALPHA);
+	//device->GetRenderState(D3DRS_BLENDOP, &_D3DRS_BLENDOP);
+	//device->GetRenderState(D3DRS_ALPHABLENDENABLE, &_D3DRS_ALPHABLENDENABLE);
+	//device->GetRenderState(D3DRS_SRCBLEND, &_D3DRS_SRCBLEND);
+	//device->GetRenderState(D3DRS_DESTBLEND, &_D3DRS_DESTBLEND);
+	//device->GetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, &_D3DRS_SEPARATEALPHABLENDENABLE);
+	//device->GetRenderState(D3DRS_SRCBLENDALPHA, &_D3DRS_SRCBLENDALPHA);
+	//device->GetRenderState(D3DRS_DESTBLENDALPHA, &_D3DRS_DESTBLENDALPHA);
 
 	// set state to "normal"
 	// these are just directx defaults. i have no idea if they are the best case.
 	device->SetPixelShader(NULL);
 	device->SetVertexShader(NULL);
+	device->SetTexture(0, NULL);
 
-	const D3DBLEND blendType = D3DBLEND_SRCCOLOR;
+	// this should be done with a matrix transform!
+	// D3DXMatrixOrthoLH(
+	// D3DXMatrixPerspectiveFovLH
+	// device->SetTransform(
+	// this works well enough tho
 
-	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-	device->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
+	D3DVIEWPORT9 viewport;
+	device->GetViewport(&viewport);
+	vWidth = viewport.Width;
+	vHeight = viewport.Height;
+
+	HWND hwnd = (HWND)*(DWORD*)(0x0074dfac);
+
+	if (hwnd != NULL) {
+		RECT rect;
+		if (GetClientRect(hwnd, &rect)) {
+			wWidth = rect.right - rect.left;
+			wHeight = rect.bottom - rect.top;
+		}
+	}
+
+	const float ratio = 4.0f / 3.0f;
+
+	isWide = wWidth / wHeight > ratio;
+
+	if (isWide) {
+		factor = wWidth / (wHeight * ratio);
+	} else {
+		factor = wHeight / (wWidth / ratio);
+	}
+
+	//device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+	//device->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 	//device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 	//device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
-	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, false);
+	//device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, false);
 	//device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
 	//device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
-
-	device->SetRenderState(D3DRS_SRCBLEND, blendType);
-	device->SetRenderState(D3DRS_DESTBLEND, blendType);
-
-	device->SetRenderState(D3DRS_SRCBLENDALPHA, blendType);
-	device->SetRenderState(D3DRS_DESTBLENDALPHA, blendType);
-
-	// some others that are set are:
-	// ZENABLE                      
+	
 }
 	
-void restoreRenderState() {
+void restoreRenderState() {	
 
 	if (!_hasStateToRestore) {
 		return;
@@ -111,18 +150,16 @@ void restoreRenderState() {
 
 	device->SetPixelShader(_pixelShaderBackup);
 	device->SetVertexShader(_vertexShaderBackup);
-
-	device->SetRenderState(D3DRS_BLENDOP, _D3DRS_BLENDOP);
-	device->SetRenderState(D3DRS_ALPHABLENDENABLE, _D3DRS_ALPHABLENDENABLE);
-	device->SetRenderState(D3DRS_SRCBLEND, _D3DRS_SRCBLEND);
-	device->SetRenderState(D3DRS_DESTBLEND, _D3DRS_DESTBLEND);
-	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, _D3DRS_SEPARATEALPHABLENDENABLE);
-	device->SetRenderState(D3DRS_SRCBLENDALPHA, _D3DRS_SRCBLENDALPHA);
-	device->SetRenderState(D3DRS_DESTBLENDALPHA, _D3DRS_DESTBLENDALPHA);
+	
+	if (_textureBackup != NULL) {
+		_textureBackup->Release();
+	}
+	
+	device->SetTexture(0, _textureBackup);
 
 }
 
-void drawTri() {
+void drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR& v3, D3DCOLOR col) {
 	if (device == NULL) return;
 
 	struct CUSTOMVERTEX {
@@ -133,26 +170,31 @@ void drawTri() {
 	// todo, redo drawing and text with this
 	// make sure it works fullscreen and not, and scaled fullscreen and not.
 
-	constexpr float whatIsThis = 0.5f;
+	
 
-	const D3DCOLOR col = D3DCOLOR_ARGB(0x80, 0xFF, 0, 0);
+	constexpr float whatIsThis = 0.5f; // what is this?
 
 	// Define the vertices of the triangle
 	CUSTOMVERTEX vertices[] = {
-		{ D3DVECTOR(0.0f, 0.5f, whatIsThis), col },
-		{ D3DVECTOR(0.5f, -0.5f, whatIsThis), col  },
-		{ D3DVECTOR(-0.5f, -0.5f, whatIsThis), col  }
+		{ D3DVECTOR(v1.x, v1.y, whatIsThis), col },
+		{ D3DVECTOR(v2.x, v2.y, whatIsThis), col },
+		{ D3DVECTOR(v3.x, v3.y, whatIsThis), col },
 	};
 
+	scaleVertex(vertices[0].position);
+	scaleVertex(vertices[1].position);
+	scaleVertex(vertices[2].position);
+	
 	// todo, figure out why colors, dont
 
-	//#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ | D3DFVF_NORMAL)
-#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE)
+	#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE)
 	
 	// Set up the vertex buffer and draw
+	// i dislike allocing and unallocing stuff like this.
 	LPDIRECT3DVERTEXBUFFER9 v_buffer;
 	if (SUCCEEDED(device->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX), 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_MANAGED, &v_buffer, NULL))) {
 		VOID* pVoid;
+		
 		v_buffer->Lock(0, 0, (void**)&pVoid, 0);
 		memcpy(pVoid, vertices, sizeof(vertices));
 		v_buffer->Unlock();
@@ -165,12 +207,39 @@ void drawTri() {
 	}
 }
 
-void drawRect2(int x, int y, int w, int h, DWORD ARGB = 0x8042e5f4) {
-
+void drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) { // top left is 0.0, bottom right is 1.0. 
+	
+	y = 1 - y;
+	
+	D3DVECTOR v1 = { ((x + 0) * 2.0) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v2 = { ((x + w) * 2.0) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v3 = { ((x + 0) * 2.0) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v4 = { ((x + w) * 2.0) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
+	
+	drawTri(v1, v2, v3, ARGB);
+	drawTri(v2, v3, v4, ARGB);
 }
 
-void drawLine2(int x1, int y1, int x2, int y2, DWORD ARGB = 0x8042e5f4) {
+void drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4) { // top left is 0.0, bottom right is 1.0. 
 	
+	// i am,,, i bit confused on how exactly to do this. 
+	// current vibes say,,, two very thin triangles.
+
+	// i would like,,, diag lines please too.
+	// there are,,, angle issues with that tho
+
+	y1 = 1 - y1;
+	y2 = 1 - y2;
+
+	const float lineWidth = 0.001;
+
+	D3DVECTOR v1 = { ((x1 + 0) * 2.0) - 1.0, ((y1 + 0) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v2 = { ((x2 + 0) * 2.0) - 1.0, ((y2 + 0) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v3 = { ((x1 + lineWidth) * 2.0) - 1.0, ((y1 + 0) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v4 = { ((x2 + lineWidth) * 2.0) - 1.0, ((y2 + 0) * 2.0) - 1.0, 0.0f };
+
+	drawTri(v1, v2, v3, ARGB);
+	drawTri(v2, v3, v4, ARGB);
 }
 
 void _doDrawCalls() {
@@ -179,6 +248,7 @@ void _doDrawCalls() {
 
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
 
+	/*
 	for (const DrawCallInfo& drawCallInfo : drawCalls) {
 
 		// there is def a better and more readable way to do this
@@ -195,8 +265,15 @@ void _doDrawCalls() {
 		}
 
 	}
+	*/
 
-	//drawTri();
+	
+	drawRect2(0.25, 0.25, 0.5, 0.5);
+	drawRect2(0.80, 0.80, 0.1, 0.1);
+	drawRect2(0.10, 0.10, 0.1, 0.8);
+
+	drawLine2(0.1, 0.1, 0.2, 0.9, 0x80FF0000);
+	drawLine2(0.1, 0.1, 0.9, 0.9, 0x80FF0000); 
 
 	device->EndScene();
 
@@ -206,6 +283,25 @@ void _doDrawCalls() {
 }
 
 // -----
+
+__declspec(naked) void _naked_PresentHook() {
+	// just in case, im only hooking this one present call
+	PUSH_ALL;
+	_doDrawCalls();
+	POP_ALL;
+
+	__asm {
+		push 00000000h;
+		push 00000000h;
+		push 00000000h;
+		push 00000000h;
+		push eax;
+		call edx;
+
+		push 004bdd16h;
+		ret;
+	}
+}
 
 void cleanForDirectXReset() {
 	// all textures need to be reset here this occurs during the transition to and from fullscreen
@@ -261,7 +357,7 @@ __declspec(naked) void _DirectX_Present_Func() {
 	// some hooks for certain things might be after present. if so, things would get drawn a frame late. 
 	// figure it out.
 	PUSH_ALL;
-	//log("IDirect3DDevice9_Present called!");
+	log("IDirect3DDevice9_Present called!");
 	_doDrawCalls();
 	POP_ALL;
 	__asm {
@@ -298,12 +394,12 @@ __declspec(naked) void _naked_InitDirectXHooks() {
 		mov[ecx + 000000F0h], edx;
 		
 		// hook present, so we can draw on the screen
-		mov eax, [device];
-		mov ecx, [eax];
-		mov edx, [ecx + 00000044h];
-		mov _DirectX_Present_Func_Addr, edx;
-		mov edx, _DirectX_Present_Func;
-		mov[ecx + 00000044h], edx;
+		//mov eax, [device];
+		//mov ecx, [eax];
+		//mov edx, [ecx + 00000044h];
+		//mov _DirectX_Present_Func_Addr, edx;
+		//mov edx, _DirectX_Present_Func;
+		//mov[ecx + 00000044h], edx;
 
 		// hook evict, so i can manage memory properly for once
 		mov eax, [device];
@@ -359,6 +455,7 @@ bool HookDirectX() {
 	// this specifically checks if our hooks were overwritten, and then rehooks
 	patchJump(0x004be3c4, _naked_RehookDirectX);
 
+	patchJump(0x004bdd0b, _naked_PresentHook);
 
 	log("directX hooked");
 	return true;
