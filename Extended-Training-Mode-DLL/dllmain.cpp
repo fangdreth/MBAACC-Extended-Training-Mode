@@ -346,6 +346,8 @@ KeyState quoteKey(VK_OEM_7);
 
 KeyState backslashKey(VK_OEM_5);
 
+int increaseLogging = 0;
+KeyState F10Key(VK_F10); // reload shader
 KeyState F11Key(VK_F11); // reload shader
 KeyState F12Key(VK_F12); // non release caster builds use this
 bool useCustomPalettes = true;
@@ -1339,6 +1341,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 		loadVideoThread = NULL;
 	}
 
+	/*
 	if (!initTextureIsGood) {
 		initTextureIsGood = initTextureModifications();
 
@@ -1353,7 +1356,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	if (!initCSSIsGood) {
 		initCSSIsGood = initCSSModifications();
 	}
-	
+	*/
 
 	Sleep(dwMilliseconds);
 }
@@ -1534,6 +1537,13 @@ void frameDoneCallback()
 		//initShaderFromFile();
 	}
 
+	if (increaseLogging > 0) {
+		increaseLogging--;
+	}
+	if (F10Key.keyDown()) {
+		increaseLogging = 2;
+	}
+
 	static KeyState hKey('H');
 	static bool bShowHitboxes = false;
 
@@ -1593,7 +1603,7 @@ void frameDoneCallback()
 
 		log("avail tex mem is %08X", avalTexMem);
 
-		//HookThisShit(device);
+		HookThisShit(device);
 	}
 
 	static bool soundDeviceInit = false;

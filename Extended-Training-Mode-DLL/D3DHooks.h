@@ -10,7 +10,9 @@ std::set<IDirect3DBaseTexture9*> currentTextures;
 
 void saveTexture(IDirect3DBaseTexture9* pTex) { // does this inc the refcounter??
 
-	return;
+	if (increaseLogging == 0) {
+		return;
+	}
 
 	if (pTex == NULL) {
 		log("saveTexture tex was NULL! ret");
@@ -35,6 +37,10 @@ void saveTexture(IDirect3DBaseTexture9* pTex) { // does this inc the refcounter?
 void saveCurrentTexture() {
 
 	return;
+
+	if (increaseLogging == 0) {
+		return;
+	}
 
 	//for (IDirect3DTexture9* pTex : currentTextures) {
 	//	saveTexture(pTex);
@@ -156,9 +162,10 @@ __declspec(naked) void _IDirect3DDevice9_Present_func() {
 		call[_IDirect3DDevice9_Present_addr];
 	}
 
-	//PUSH_ALL;
+	PUSH_ALL;
 	//saveThisFrame();
-	//POP_ALL;
+	log("ret: %08X", _IDirect3DDevice9_Present_ret);
+	POP_ALL;
 
 	__asm {
 		push _IDirect3DDevice9_Present_ret;
@@ -205,6 +212,8 @@ DWORD _IDirect3DDevice9_CreateTexture_texAddr = 0;
 
 void CreateTexture_Investigate() {
 
+	return;
+
 	if (_IDirect3DDevice9_CreateTexture_texAddr == 0) {
 		log("_IDirect3DDevice9_CreateTexture_texAddr was NULL, ret");
 		return;
@@ -216,7 +225,7 @@ void CreateTexture_Investigate() {
 
 	log("CreateTexture type: %3d tex: %08X", type, _IDirect3DDevice9_CreateTexture_texAddr);
 
-	//saveTexture(pTex);
+	saveTexture(pTex);
 	currentTextures.insert(pTex);
 
 }
@@ -252,7 +261,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
 	// todo, check out the 16x16 textures
 
 	PUSH_ALL;
-	log("IDirect3DDevice9_CreateTexture called! ret: %08X w: %4d h: %4d fmt: %3d", _IDirect3DDevice9_CreateTexture_ret, _IDirect3DDevice9_CreateTexture_w, _IDirect3DDevice9_CreateTexture_h, _IDirect3DDevice9_CreateTexture_fmt);
+	//log("IDirect3DDevice9_CreateTexture called! ret: %08X w: %4d h: %4d fmt: %3d", _IDirect3DDevice9_CreateTexture_ret, _IDirect3DDevice9_CreateTexture_w, _IDirect3DDevice9_CreateTexture_h, _IDirect3DDevice9_CreateTexture_fmt);
 
 	switch (_IDirect3DDevice9_CreateTexture_fmt) {
 	case D3DFMT_A8R8G8B8:
@@ -294,6 +303,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
 	}
 
 	PUSH_ALL;
+	//log("createTexture ret: %08X", _IDirect3DDevice9_CreateTexture_ret);
 	CreateTexture_Investigate();
 	POP_ALL;
 
@@ -422,9 +432,9 @@ __declspec(naked) void _IDirect3DDevice9_CreateOffscreenPlainSurface_func() {
 }
 DWORD _IDirect3DDevice9_SetRenderTarget_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetRenderTarget_func() {
-	//PUSH_ALL;
-	//log("IDirect3DDevice9_SetRenderTarget called!");
-	//POP_ALL;
+	PUSH_ALL;
+	log("IDirect3DDevice9_SetRenderTarget called!");
+	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetRenderTarget_addr];
 	}
@@ -488,6 +498,7 @@ __declspec(naked) void _IDirect3DDevice9_EndScene_func() {
 	}
 
 	PUSH_ALL;
+	//log("ENDSCENE RET %08X", _IDirect3DDevice9_EndScene_ret);
 	saveCurrentTexture();
 	POP_ALL;
 
@@ -971,7 +982,7 @@ __declspec(naked) void _IDirect3DDevice9_CreateVertexShader_func() {
 DWORD _IDirect3DDevice9_SetVertexShader_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetVertexShader_func() {
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetVertexShader called!");
+	//log("IDirect3DDevice9_SetVertexShader called!");
 	POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetVertexShader_addr];
@@ -1121,7 +1132,7 @@ __declspec(naked) void _IDirect3DDevice9_SetPixelShader_func() {
 
 	
 	PUSH_ALL;
-	log("IDirect3DDevice9_SetPixelShader called! shader addr: %08X", _IDirect3DDevice9_SetPixelShader_shaderAddr);
+	//log("IDirect3DDevice9_SetPixelShader called! shader addr: %08X", _IDirect3DDevice9_SetPixelShader_shaderAddr);
 
 	if (_IDirect3DDevice9_SetPixelShader_shaderAddr != 0) {
 		__asm {
@@ -1195,8 +1206,8 @@ __declspec(naked) void _IDirect3DDevice9_SetPixelShaderConstantF_func() {
 	}
 
 	PUSH_ALL;
-	omfg();
-	log("IDirect3DDevice9_SetPixelShaderConstantF called! start: %3d data: %08X count: %3d", SetPixelShaderConstantF_StartRegister, SetPixelShaderConstantF_pConstantData, SetPixelShaderConstantF_Vector4fCount);
+	//omfg();
+	//log("IDirect3DDevice9_SetPixelShaderConstantF called! start: %3d data: %08X count: %3d", SetPixelShaderConstantF_StartRegister, SetPixelShaderConstantF_pConstantData, SetPixelShaderConstantF_Vector4fCount);
 	POP_ALL;
 
 	__asm {
