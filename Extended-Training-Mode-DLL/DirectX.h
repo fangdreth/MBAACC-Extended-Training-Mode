@@ -702,6 +702,12 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 std::vector<std::function<void(void)>*> drawCalls;
 
 void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side = false) {
+	
+	x1 /= 480.0;
+	x2 /= 480.0;
+	y1 /= 480.0;
+	y1 /= 480.0;
+	
 	drawCalls.emplace_back(
 		new std::function<void(void)>(
 		[x1, y1, x2, y2, ARGB, side]() -> void {
@@ -711,6 +717,12 @@ void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, b
 }
 
 void RectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+	
+	x /= 480.0;
+	w /= 480.0;
+	y /= 480.0;
+	h /= 480.0;
+	
 	drawCalls.emplace_back(
 		new std::function<void(void)>(
 		[x, y, w, h, ARGB]() -> void {
@@ -720,6 +732,12 @@ void RectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 }
 
 void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+	
+	x /= 480.0;
+	w /= 480.0;
+	y /= 480.0;
+	h /= 480.0;
+	
 	drawCalls.emplace_back(
 		new std::function<void(void)>(
 		[x, y, w, h, ARGB]() -> void {
@@ -729,6 +747,12 @@ void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 }
 
 void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+	
+	x /= 480.0;
+	w /= 480.0;
+	y /= 480.0;
+	h /= 480.0;	
+	
 	drawCalls.emplace_back(
 	new std::function<void(void)>(
 		[x, y, w, h, ARGB]() -> void {
@@ -740,6 +764,10 @@ void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4)
 
 void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...) {
 	// i do hope that this allocing does not slow things down. i tried saving the va_args for when the actual print func was called, but it would not work
+
+	x /= 480.0;
+	y /= 480.0;
+	size /= 480.0;
 
 	char* buffer = (char*)malloc(1024);
 
@@ -791,7 +819,10 @@ void __stdcall _doDrawCalls() {
 	}
 	res /= ((double)timeBufferLen);
 
-	TextDraw(1.21, 0.0, 0.025, 0xFF00FFFF, "FPS: %5.2lf", res);
+	//TextDraw(1.21, 0.0, 0.025, 0xFF00FFFF, "FPS: %5.2lf", res);
+	TextDraw(580, 0.0, 12, 0xFF00FFFF, "FPS: %5.2lf", res);
+
+	//TextDraw(1.11, 0.2, 0.050, 0xFF00FFFF, "FPS: %5.2lf", res);
 
 	startTime = endTime;
 

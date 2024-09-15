@@ -1594,6 +1594,86 @@ __declspec(naked) void nakedFrameDoneCallback()
 	};
 }
 
+bool newPauseCallback_IsFramestepMenu = false;
+void newPauseCallback() {
+
+	static KeyState F10Key(VK_F10);
+	static bool idek = false;
+
+	/*
+	
+	the section that writes when we enter viewscreen:
+	0047ef0d
+
+	the section that writes when we exit viewscreen: 
+	0047e68e
+
+	ebp+7C gives,, something
+
+	+0 is 1 when vis, 0 when invis
+	+8 is 2 when vis, C when invis
+
+	+12 is 0x3F80 when vis, 0 when invis. fade out timer.
+	most likely 4 bytes, but only mess with those two
+
+	1F05E918 - 1F05E8BC, 5C
+	+5C is 0 when vis, 0x64 when invis, fade in timer.
+
+	lastly, how do i get ebp.
+
+	[0x0074d7fc]
+	
+	*/
+
+	DWORD menuPtr = *(DWORD*)0x0074d7fc;
+
+	if (F10Key.keyDown()) {
+
+		if (idek) { // unpause
+			*(DWORD*)(0x0055d203) = 0;
+			*(DWORD*)(0x0055d256) = 2;
+			*(DWORD*)(0x00562a64) = 0;
+
+			if (menuPtr == 0) {
+				log("on unpause, menuptr was null?");
+			}
+
+		} else { // pause
+			*(DWORD*)(0x0055d203) = 1;
+			*(DWORD*)(0x0055d256) = 1;
+			*(DWORD*)(0x00562a64) = 1;
+		
+			// there is a 1f delay when,, setting these vars (in the place im setting them) and when the menu is actually created
+		
+			if (menuPtr == 0) {
+				log("on pause, menuptr was null?");
+			}
+		
+		
+		}
+		idek = !idek;
+	}
+
+}
+
+DWORD _naked_newPauseCallback_Func_Addr = 0x0044c7b0;
+__declspec(naked) void _naked_newPauseCallback() {
+
+	__asm {
+		call[_naked_newPauseCallback_Func_Addr];
+	};
+
+	PUSH_ALL;
+	newPauseCallback();
+	POP_ALL;
+
+	__asm {
+		push 0044c501h;
+		ret;
+	}
+
+}
+
 int nTempP1MeterGain = 0;
 int nTempP2MeterGain = 0;
 int nP1MeterGain = 0;
@@ -1901,6 +1981,10 @@ void initPauseCallback()
 
 }
 
+void initNewPauseCallback() {
+	patchJump(0x0044c4fc, _naked_newPauseCallback);
+}
+
 void threadFunc() 
 {
 	srand(time(NULL));
@@ -1929,6 +2013,8 @@ void threadFunc()
 	initAttackMeterDisplay();
 	initMeterGainHook();
 	initBattleResetCallback();
+
+	initNewPauseCallback();
 
 	
 	while (true) 

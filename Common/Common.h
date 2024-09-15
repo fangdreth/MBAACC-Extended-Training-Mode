@@ -548,6 +548,12 @@ public:
 		nHeldKeyCounter = 0;
 	}
 
+	KeyState(int k)
+	{
+		nKey = k;
+		nHeldKeyCounter = 0;
+	}
+
 	void setKey(int vKey_)
 	{
 		if (nKey != vKey_)
