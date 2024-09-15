@@ -318,6 +318,12 @@ const ADDRESS adSharedRNGMode =						adShareBase + 0x9;	// 1 byte
 const ADDRESS adSharedRNGRate =						adShareBase + 0xA;	// 1 byte
 const ADDRESS adSharedRNGCustomSeed =				adShareBase + 0xB;	// 4 bytes
 const ADDRESS adSharedRNGCustomRN =					adShareBase + 0xF;	// 4 bytes
+const ADDRESS adSharedDrawA1 =						adShareBase + 0x10; // 1 byte
+const ADDRESS adSharedDrawA2 =						adShareBase + 0x11; // 1 byte
+const ADDRESS adSharedDrawA3 =						adShareBase + 0x12; // 1 byte
+const ADDRESS adSharedDrawA4 =						adShareBase + 0x13; // 1 byte
+const ADDRESS adSharedDrawA5 =						adShareBase + 0x14; // 1 byte
+const ADDRESS adSharedDrawA6 =						adShareBase + 0x15; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte

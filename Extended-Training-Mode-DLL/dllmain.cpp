@@ -1508,34 +1508,20 @@ void frameDoneCallback()
 
 	// don't draw on the pause menu, but do on VIEW SCREEN
 	DWORD nSubMenuPointer = *reinterpret_cast<DWORD*>(dwBaseAddress + dwBasePointer) + 0x84;
-	int nSubMenu;
-	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
-	if (!safeWrite() || isPaused() && nSubMenu != 12) {
-		if (safeWrite() && *(bool*)(dwBaseAddress + adSharedHoveringScroll))
-		{
+	//int nSubMenu;
+	//ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
+	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12)) {
+		if (*(bool*)(dwBaseAddress + adSharedHoveringScroll))
 			drawFrameBar();
-		}
-		return; // unsure of this returns purpose it cuts off below functions right?
+		
+		if (bHitboxesDisplay)
+			drawFrameData();
+		
+		if (bFrameDataDisplay)
+			drawFrameBar();
+
+		drawStats();
 	}
-
-	if (bHitboxesDisplay)
-	{
-		drawFrameData();
-	}
-
-	if (bFrameDataDisplay)
-	{
-		drawFrameBar();
-	}
-
-	drawStats();
-
-	/*
-	i am sorry for commenting this out
-	for unknown reasons, when the input display and attack combo display things are on, this causes lag? 
-	ill look into hooking it from somewhere else
-	*/
-	//enemyReversal();
 
 	nRNGMode = *(uint8_t*)(dwBaseAddress + adSharedRNGMode);
 	nRNGRate = *(uint8_t*)(dwBaseAddress + adSharedRNGRate);
@@ -1548,6 +1534,13 @@ void frameDoneCallback()
 			SetSeed(nCustomSeed);
 		if (nRNGMode == RNG_RN)
 			SetRN(nCustomRN);
+	}
+
+	static uint8_t nDrawA1 = *(uint8_t*)(dwBaseAddress + adSharedDrawA1);
+	if (nDrawA1 || 1)
+	{
+		static char buffer[256] = "PRESS A";
+		drawTextWithBorder(50, 120, 10, 10, buffer);
 	}
 }
 
