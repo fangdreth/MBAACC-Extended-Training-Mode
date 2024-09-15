@@ -1480,6 +1480,7 @@ void frameDoneCallback()
 	// also, i dont have any new text funcs yet, sry
 	// top left of screen is (0.0, 0.0), bottom right is (1.333333, 1.0)
 
+	/*
 	
 	//         x1   x2   y1   y2    A R G B
 	LineDraw( 0.1, 0.1, 0.9, 0.9, 0x800000FF );
@@ -1511,7 +1512,7 @@ void frameDoneCallback()
 
 	TextDraw(0.1, 0.1, 0.025, 0xFF00FFFF, "test %d %s %d", 123, "abc", 456);
 	
-
+	*/
 
 	// don't draw on the pause menu, but do on VIEW SCREEN
 	DWORD nSubMenuPointer = *reinterpret_cast<DWORD*>(dwBaseAddress + dwBasePointer) + 0x84;
