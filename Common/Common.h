@@ -234,6 +234,7 @@ const ADDRESS adAirDirectionalInput = 0x2EA;
 const ADDRESS adRawDirectionalInput = 0x2EB;
 const ADDRESS adButtonInput = 0x2ED;
 const ADDRESS adMacroInput = 0x2EE;
+const ADDRESS adInputEvent = 0x30C;
 const ADDRESS adOnRightFlag = 0x315;
 const ADDRESS adAnimationDataPointer = 0x320;
 const ADDRESS adAttackDataPointer = 0x324;

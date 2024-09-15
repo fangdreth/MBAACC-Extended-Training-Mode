@@ -55,6 +55,9 @@ struct Player
 	bool bLastOnRight = false;
 	DWORD dwLastActivePointer = 0x0;
 	char cLastHitstop = 0;
+	int nFirstActive = 0;
+	bool bAlreadyGotFirstActive = false;
+	int nFirstActiveOffset = 0;
 };
 
 void UpdatePlayer(Player& P) {
@@ -63,6 +66,11 @@ void UpdatePlayer(Player& P) {
 	P.bLastOnRight = *(int*)(P.adPlayerBase + adOnRightFlag);
 	P.dwLastActivePointer = *(DWORD*)(P.adPlayerBase + adAttackDataPointer);
 	P.cLastHitstop = *(char*)(P.adPlayerBase + adHitstop);
+	if (*(short*)(P.adPlayerBase + adInputEvent) != -1)
+	{
+		P.bAlreadyGotFirstActive = false;
+		P.nFirstActiveOffset = *(int*)(P.adInaction);
+	}
 }
 
 Player P1{ 0, adMBAABase + adP1Base, adMBAABase + adP1Inaction };
@@ -130,15 +138,13 @@ void UpdateBars(Player& P, Player& Assist)
 	DWORD dwBar2Color0 = 0x00000000;
 	DWORD dwBar2Color1 = 0x00000000;
 	int nNumber = -1;
-	int nNumFlag = 0;
-	bool bClearNumFlag = true;
+	int nNumFlag = 0; //0 = default, go away on next info; 1 = persist always; 2 = persist and delete prior 2s; 3 = get deleted and pass it on if followed by 2
 	bool bIsButtonPressed = *(char*)(P.adPlayerBase + adButtonInput) != 0 || *(char*)(P.adPlayerBase + adMacroInput) != 0;
 
 	//Bar 1 - General action information
 	if (*(int*)(P.adInaction) != 0) //Doing something with limited actionability
 	{
 		dwColor = 0xFF41C800;
-		//sBarValue = std::format("{:2}", P.nInactionableFrames % 100);
 		nNumber = *(int*)P.adInaction;
 		if (*(int*)(P.adPlayerBase + adPattern) >= 35 && *(int*)(P.adPlayerBase + adPattern) <= 37) //Jump Startup
 		{
@@ -151,7 +157,6 @@ void UpdateBars(Player& P, Player& Assist)
 			{
 				if (*(short*)(P.adPlayerBase + adUntechCounter) < *(short*)(P.adPlayerBase + adUntechTotal)) //Still has untech remaining
 				{
-					//sBarValue = std::format("{:2}", (P.sUntechTotal - P.sUntechCounter) % 100);
 					nNumber = *(short*)(P.adPlayerBase + adUntechTotal) - *(short*)(P.adPlayerBase + adUntechCounter);
 				}
 			}
@@ -159,7 +164,6 @@ void UpdateBars(Player& P, Player& Assist)
 			{
 				if (*(int*)(P.adPlayerBase + adHitstunRemaining) > 2) //Still has hitstun remaining
 				{
-					//sBarValue = std::format("{:2}", P.nHitstunRemaining - 1 % 100);
 					nNumber = *(short*)(P.adPlayerBase + adHitstunRemaining) - 1;
 				}
 			}
@@ -171,29 +175,22 @@ void UpdateBars(Player& P, Player& Assist)
 		else if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0) //Attacking
 		{
 			dwColor = 0xFFFF0000;
-			if (P.dwLastActivePointer == 0x0) //First active only
+			nNumber = P.nActiveCounter;
+			nNumFlag = 2;
+			if (P.dwLastActivePointer == 0 && !P.bAlreadyGotFirstActive)
 			{
-				nNumFlag = 1;
+				P.nFirstActive = *(int*)(P.adInaction) - P.nFirstActiveOffset;
+				P.bAlreadyGotFirstActive = true;
 			}
 		}
 	}
 	else //Fully actionable
 	{
 		dwColor = 0xFF202020;
-		//sBarValue = std::format("{:2}", P.nPattern % 100);
 
 		if (bDoAdvantage) //Has advantage
 		{
-			//sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
-			nNumber = P.nAdvantageCounter;
-			if (P.nAdvantageCounter == 1)
-			{
-				bClearNumFlag = false;
-			}
-			if (P.nAdvantageCounter != 0)
-			{
-				dwColor = 0xFF101010;
-			}
+			dwColor = 0xFF101010;
 		}
 
 		if (P.nLastInactionableFrames != 0) //Neutral frame
@@ -223,7 +220,6 @@ void UpdateBars(Player& P, Player& Assist)
 	if (*(char*)(P.adPlayerBase + adThrowFlag) != 0) //Being thrown
 	{
 		dwColor = 0xFF6E6E6E;
-		//sBarValue = " t";
 	}
 	else if (cCondition1Type == 51) //Shield
 	{
@@ -253,6 +249,11 @@ void UpdateBars(Player& P, Player& Assist)
 		if (*(char*)(P.adPlayerBase + adNotInCombo) == 0 && P.cLastHitstop == 0)
 		{
 			nNumFlag = 1;
+		}
+		else if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0)
+		{
+			nNumFlag = 3;
+			nNumber = -1;
 		}
 	}
 
@@ -315,16 +316,33 @@ void UpdateBars(Player& P, Player& Assist)
 
 	P.nNumBar[nBarCounter % BAR_MEMORY_SIZE][0] = nNumber;
 	P.nNumBar[nBarCounter % BAR_MEMORY_SIZE][1] = nNumFlag;
-	if (nNumber >= 0 && bClearNumFlag && P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][1] == 0)
+	if (nNumFlag != 2 &&
+		nNumber >= 0 && 
+		P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][1] == 0) //clear last frame if current frame has info and last frame numFlag = 0
 	{
 		P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][0] = -1;
 	}
-
+	else if (nNumFlag == 2 &&
+		nNumber >= 0 &&
+		P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][1] == 2) //clear last frame if current and last frame numFlag = 2
+	{
+		P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][0] = -1;
+	}
+	else if (nNumFlag == 2 &&
+		nNumber >= 0 &&
+		P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][1] == 3) //clear last frame if current and last frame numFlag = 2
+	{
+		int i = 1;
+		while (P.nNumBar[(nBarCounter - i) % BAR_MEMORY_SIZE][1] == 3)
+		{
+			P.nNumBar[(nBarCounter - ++i) % BAR_MEMORY_SIZE][0] = -1;
+		}
+	}
 }
 
 void IncrementActive(Player& P)
 {
-	if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0 && *(DWORD*)(P.adPlayerBase + adHitstop) == 0)
+	if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0 && *(char*)(P.adPlayerBase + adHitstop) == 0)
 	{
 		P.nActiveCounter++;
 	}

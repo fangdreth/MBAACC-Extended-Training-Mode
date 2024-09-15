@@ -737,68 +737,51 @@ void drawFrameBar()
 		nForEnd = DISPLAY_RANGE;
 	}
 
+	int j = 0;
 	for (int i = nForStart; i < nForEnd; i++)
 	{
 		if (i < 0)
 		{
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 1, 7, 2, (*Player1).dwColorBar2[i + BAR_MEMORY_SIZE][0]);
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 11, 7, 2, (*Player1).dwColorBar2[i + BAR_MEMORY_SIZE][1]);
-
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 14, 7, 2, (*Player2).dwColorBar2[i + BAR_MEMORY_SIZE][0]);
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 24, 7, 2, (*Player2).dwColorBar2[i + BAR_MEMORY_SIZE][1]);
-
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 2, 4, 10, (*Player1).dwColorBar1[i + BAR_MEMORY_SIZE][0]);
-			drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 2, 3, 10, (*Player1).dwColorBar1[i + BAR_MEMORY_SIZE][1]);
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 15, 4, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][0]);
-			drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 15, 3, 10, (*Player2).dwColorBar1[i + BAR_MEMORY_SIZE][1]);
-
-			static char buffer[256];
-
-			if ((*Player1).nNumBar[i + BAR_MEMORY_SIZE][0] >= 0)
-			{
-				int nLength = floor(log10((*Player1).nNumBar[i + BAR_MEMORY_SIZE][0]));
-				snprintf(buffer, 256, "%i", (*Player1).nNumBar[i + BAR_MEMORY_SIZE][0]);
-				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 3, 7, 10, buffer);
-			}
-
-			if ((*Player2).nNumBar[i + BAR_MEMORY_SIZE][0] >= 0)
-			{
-				int nLength = floor(log10((*Player2).nNumBar[i + BAR_MEMORY_SIZE][0]));
-				snprintf(buffer, 256, "%i", (*Player2).nNumBar[i + BAR_MEMORY_SIZE][0]);
-				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 16, 7, 10, buffer);
-			}
+			j = i + BAR_MEMORY_SIZE;
 		}
 		else
 		{
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 1, 7, 2, (*Player1).dwColorBar2[i][0]);
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 11, 7, 2, (*Player1).dwColorBar2[i][1]);
+			j = i;
+		}
+		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 1, 7, 2, (*Player1).dwColorBar2[j][0]);
+		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 11, 7, 2, (*Player1).dwColorBar2[j][1]);
 
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 14, 7, 2, (*Player2).dwColorBar2[i][0]);
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 24, 7, 2, (*Player2).dwColorBar2[i][1]);
+		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 14, 7, 2, (*Player2).dwColorBar2[j][0]);
+		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 24, 7, 2, (*Player2).dwColorBar2[j][1]);
 
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 2, 4, 10, (*Player1).dwColorBar1[i][0]);
-			drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 2, 3, 10, (*Player1).dwColorBar1[i][1]);
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 15, 4, 10, (*Player2).dwColorBar1[i][0]);
-			drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 15, 3, 10, (*Player2).dwColorBar1[i][1]);
+		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 2, 4, 10, (*Player1).dwColorBar1[j][0]);
+		drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 2, 3, 10, (*Player1).dwColorBar1[j][1]);
+		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 15, 4, 10, (*Player2).dwColorBar1[j][0]);
+		drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 15, 3, 10, (*Player2).dwColorBar1[j][1]);
 
-			static char buffer[256];
+		static char buffer[256];
 
-			if ((*Player1).nNumBar[i][0] >= 0)
-			{
-				int nLength = floor(log10((*Player1).nNumBar[i][0]));
-				snprintf(buffer, 256, "%i", (*Player1).nNumBar[i][0]);
-				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 3, 7, 10, buffer);
-			}
+		if ((*Player1).nNumBar[j][0] >= 0)
+		{
+			int nLength = floor(log10((*Player1).nNumBar[j][0]));
+			snprintf(buffer, 256, "%i", (*Player1).nNumBar[j][0]);
+			drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 3, 7, 10, buffer);
+		}
 
-			if ((*Player2).nNumBar[i][0] >= 0)
-			{
-				int nLength = floor(log10((*Player2).nNumBar[i][0]));
-				snprintf(buffer, 256, "%i", (*Player2).nNumBar[i][0]);
-				drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 16, 7, 10, buffer);
-			}
+		if ((*Player2).nNumBar[j][0] >= 0)
+		{
+			int nLength = floor(log10((*Player2).nNumBar[j][0]));
+			snprintf(buffer, 256, "%i", (*Player2).nNumBar[j][0]);
+			drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 16, 7, 10, buffer);
 		}
 		nBarDrawCounter++;
 	}
+	static char buffer[256];
+	snprintf(buffer, 256, "Startup %2iF / Total %2iF / Advantage %2iF", (*Player1).nFirstActive % 100, (*Player1).nInactiveMemory % 100, nPlayerAdvantage % 100);
+	drawTextWithBorder(20, nFrameBarY - 11, 7, 10, buffer);
+
+	snprintf(buffer, 256, "Startup %2iF / Total %2iF / Advantage %2iF", (*Player2).nFirstActive % 100, (*Player2).nInactiveMemory % 100, -nPlayerAdvantage % 100);
+	drawTextWithBorder(20, nFrameBarY + 28, 7, 10, buffer);
 
 	drawRect(18, nFrameBarY, 602, 27, 0xFF000000); //Background
 
@@ -1442,7 +1425,7 @@ void frameDoneCallback()
 		}*/
 		nDrawTextTimer--;
 	}
-
+	/*
 	// heres a lil example for the new draw funcs
 	// i can change the syntax up if desired
 	// also, i dont have any new text funcs yet, sry
@@ -1478,6 +1461,7 @@ void frameDoneCallback()
 	//LineDraw(0.0, 1.0, 1.3333, 0.0, 0xFFFF00FF);
 
 	TextDraw(0.1, 0.1, 0.025, 0xFF00FFFF, "test %d %s %d", 123, "abc", 456);
+	*/
 
 
 	// don't draw on the pause menu, but do on VIEW SCREEN
