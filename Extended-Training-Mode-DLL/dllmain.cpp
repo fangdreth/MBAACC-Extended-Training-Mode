@@ -1156,12 +1156,17 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 		}
 	} 
 
+	
 	// i am unsure if doing this here is the best location, but it has been working
-
+	// and weird things happen if i call it right after i grab the device
 	static bool isDirectXHooked = false;
 	if (!isDirectXHooked) {
 		isDirectXHooked = HookDirectX();
 	}
+	
+	
+	
+	
 	
 	Sleep(dwMilliseconds);
 }
@@ -1268,6 +1273,8 @@ void frameDoneCallback()
 		unsigned avalTexMem = device->GetAvailableTextureMem();
 
 		log("directx device has been acquired! texmem: %08X", avalTexMem);
+
+		//HookDirectX();
 	}
 
 	if (oFrameBarLeftScrollKey.keyHeld())
@@ -1467,7 +1474,7 @@ void frameDoneCallback()
 		}*/
 		nDrawTextTimer--;
 	}
-	/*
+	
 	// heres a lil example for the new draw funcs
 	// i can change the syntax up if desired
 	// also, i dont have any new text funcs yet, sry
@@ -1503,7 +1510,7 @@ void frameDoneCallback()
 	//LineDraw(0.0, 1.0, 1.3333, 0.0, 0xFFFF00FF);
 
 	TextDraw(0.1, 0.1, 0.025, 0xFF00FFFF, "test %d %s %d", 123, "abc", 456);
-	*/
+	
 
 
 	// don't draw on the pause menu, but do on VIEW SCREEN

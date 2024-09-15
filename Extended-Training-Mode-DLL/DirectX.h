@@ -193,7 +193,7 @@ void _initFontFirstLoad() {
 	oldRenderTarget->Release();
 	surface->Release();
 
-	//hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
+	hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
 	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG	, texture, NULL);
 	texture->Release();
 	font->Release();
@@ -234,7 +234,7 @@ void initFont() {
 
 	HRESULT hr;
 
-	hr = D3DXCreateTextureFromFileInMemory(device, fontBuffer, fontBufferSize, &fontTexture);
+	hr = D3DXCreateTextureFromFileInMemory(device, fontBuffer, fontBufferSize, &fontTexture); // this texture is D3DPOOL_MANAGED, and so doesnt need a reset on every reset call! yipee
 	if (FAILED(hr)) {
 		log("font createtexfromfileinmem failed??");
 		return;
@@ -290,13 +290,48 @@ void __stdcall backupRenderState() {
 	device->GetVertexShader(&_vertexShaderBackup);
 	device->GetTexture(0, &_textureBackup);
 
-	//device->GetRenderState(D3DRS_BLENDOP, &_D3DRS_BLENDOP);
-	//device->GetRenderState(D3DRS_ALPHABLENDENABLE, &_D3DRS_ALPHABLENDENABLE);
-	//device->GetRenderState(D3DRS_SRCBLEND, &_D3DRS_SRCBLEND);
-	//device->GetRenderState(D3DRS_DESTBLEND, &_D3DRS_DESTBLEND);
-	//device->GetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, &_D3DRS_SEPARATEALPHABLENDENABLE);
-	//device->GetRenderState(D3DRS_SRCBLENDALPHA, &_D3DRS_SRCBLENDALPHA);
-	//device->GetRenderState(D3DRS_DESTBLENDALPHA, &_D3DRS_DESTBLENDALPHA);
+	device->GetRenderState(D3DRS_BLENDOP, &_D3DRS_BLENDOP);
+	device->GetRenderState(D3DRS_ALPHABLENDENABLE, &_D3DRS_ALPHABLENDENABLE);
+	device->GetRenderState(D3DRS_SRCBLEND, &_D3DRS_SRCBLEND);
+	device->GetRenderState(D3DRS_DESTBLEND, &_D3DRS_DESTBLEND);
+	device->GetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, &_D3DRS_SEPARATEALPHABLENDENABLE);
+	device->GetRenderState(D3DRS_SRCBLENDALPHA, &_D3DRS_SRCBLENDALPHA);
+	device->GetRenderState(D3DRS_DESTBLENDALPHA, &_D3DRS_DESTBLENDALPHA);
+
+	// 1 1 5 6 1 5 2
+
+	//log("%d %d %d %d %d %d %d", _D3DRS_BLENDOP, _D3DRS_ALPHABLENDENABLE, _D3DRS_SRCBLEND, _D3DRS_DESTBLEND, _D3DRS_SEPARATEALPHABLENDENABLE, _D3DRS_SRCBLENDALPHA, _D3DRS_DESTBLENDALPHA);
+
+	
+	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+	
+	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	
+	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
+	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_SRCALPHA);
+	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ONE);
+
+
+
+	/*
+	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+
+	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+
+	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
+	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
+	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
+	*/
+
+	//device->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	
+
+	//device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTSS_COLORARG1);
+	//device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
 
 	// set state to "normal"
 	// these are just directx defaults. i have no idea if they are the best case.
@@ -336,11 +371,11 @@ void __stdcall backupRenderState() {
 	}
 
 	//device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-	//device->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
+	//device->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
 	//device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 	//device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
-	//device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, false);
-	//device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
+	//device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, true);
+	///device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
 	//device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
 
 	/*
@@ -355,6 +390,9 @@ void __stdcall backupRenderState() {
 	device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTSS_COLORARG1);
 	device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
 	*/
+	//device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTSS_COLORARG1);
+	//device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
+
 }
 	
 void __stdcall restoreRenderState() {	
@@ -373,6 +411,14 @@ void __stdcall restoreRenderState() {
 	}
 	
 	device->SetTexture(0, _textureBackup);
+
+	device->SetRenderState(D3DRS_BLENDOP, _D3DRS_BLENDOP);
+	device->SetRenderState(D3DRS_ALPHABLENDENABLE, _D3DRS_ALPHABLENDENABLE);
+	device->SetRenderState(D3DRS_SRCBLEND, _D3DRS_SRCBLEND);
+	device->SetRenderState(D3DRS_DESTBLEND, _D3DRS_DESTBLEND);
+	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, _D3DRS_SEPARATEALPHABLENDENABLE);
+	device->SetRenderState(D3DRS_SRCBLENDALPHA, _D3DRS_SRCBLENDALPHA);
+	device->SetRenderState(D3DRS_DESTBLENDALPHA, _D3DRS_DESTBLENDALPHA);
 
 }
 
@@ -593,6 +639,12 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 	// pass things in as you would with printf, like printf("%d %.2f %s", 1, 1.23f, "abcdefg");
 	
 	if (str == NULL) {
+		log("str was null, not drawing text");
+		return;
+	}
+
+	if (fontTexture == NULL) {
+		log("fontTexture was null, im not drawing");
 		return;
 	}
 
@@ -639,10 +691,6 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 		str++;
 	}
 	
-
-	
-	
-
 }
 
 // -----
@@ -721,8 +769,6 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 
 void __stdcall _doDrawCalls() {
 
-	backupRenderState();
-
 	// on my machine at least, i swear we are having some slowdown
 	// lots of the areas that are hooked occur,,, between when the 60fps timing checks are done?
 	// id appreciate it if we kept this on until release
@@ -748,6 +794,8 @@ void __stdcall _doDrawCalls() {
 	TextDraw(1.21, 0.0, 0.025, 0xFF00FFFF, "FPS: %5.2lf", res);
 
 	startTime = endTime;
+
+	backupRenderState();
 
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
 
@@ -794,10 +842,8 @@ void cleanForDirectXReset() {
 	// i should make a class to manage all of them, make it easier for ppl
 	Texture::_cleanForReset();
 
-	if (fontTexture != NULL) {
-		fontTexture->Release();
-		fontTexture = NULL;
-	}
+	// fonttexture is managed, doesnt need release
+
 }
 
 void reInitAfterDirectXReset() {
@@ -867,7 +913,7 @@ __declspec(naked) void _DirectX_Present_Func() {
 	// some hooks for certain things might be after present. if so, things would get drawn a frame late. 
 	// figure it out.
 	PUSH_ALL;
-	log("IDirect3DDevice9_Present called!");
+	//log("IDirect3DDevice9_Present called!");
 	//_doDrawCalls();
 	POP_ALL;
 	__asm {
@@ -877,7 +923,7 @@ __declspec(naked) void _DirectX_Present_Func() {
 	}
 
 	PUSH_ALL;
-	log("present success");
+	//log("present success");
 	POP_ALL;
 
 	__asm {
@@ -904,8 +950,8 @@ __declspec(naked) void _naked_InitDirectXHooks() {
 		mov eax, [device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000040h];
-		cmp edx, _DirectX_Reset_Func_Addr; // check if the current hook is already ours.
-		JE _DirectX_Reset_Func_DONT;
+		//cmp edx, _DirectX_Reset_Func_Addr; // check if the current hook is already ours.
+		//JE _DirectX_Reset_Func_DONT;
 		mov _DirectX_Reset_Func_Addr, edx;
 		mov edx, _DirectX_Reset_Func;
 		mov[ecx + 00000040h], edx;
@@ -915,30 +961,32 @@ __declspec(naked) void _naked_InitDirectXHooks() {
 		mov eax, [device];
 		mov ecx, [eax];
 		mov edx, [ecx + 000000F0h];
-		cmp edx, _DirectX_BeginStateBlock_Func_Addr; // check if the current hook is already ours.
-		JE _DirectX_BeginStateBlock_Func_DONT;
+		//cmp edx, _DirectX_BeginStateBlock_Func_Addr; // check if the current hook is already ours.
+		//JE _DirectX_BeginStateBlock_Func_DONT;
 		mov _DirectX_BeginStateBlock_Func_Addr, edx;
 		mov edx, _DirectX_BeginStateBlock_Func;
 		mov[ecx + 000000F0h], edx;
 	_DirectX_BeginStateBlock_Func_DONT:
 		
+		/*
 		// hook present, so we can draw on the screen
 		mov eax, [device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000044h];
-		cmp edx, _DirectX_Present_Func_Addr; // check if the current hook is already ours.
-		JE _DirectX_Present_Func_DONT;
+		//cmp edx, _DirectX_Present_Func_Addr; // check if the current hook is already ours.
+		//JE _DirectX_Present_Func_DONT;
 		mov _DirectX_Present_Func_Addr, edx;
 		mov edx, _DirectX_Present_Func;
 		mov[ecx + 00000044h], edx;
 	_DirectX_Present_Func_DONT:
+		*/
 
 		// hook evict, so i can manage memory properly for once
 		mov eax, [device];
 		mov ecx, [eax];
 		mov edx, [ecx + 00000014h];
-		cmp edx, _DirectX_EvictManagedResources_Func_Addr; // check if the current hook is already ours.
-		JE _DirectX_EvictManagedResources_Func_DONT;
+		//cmp edx, _DirectX_EvictManagedResources_Func_Addr; // check if the current hook is already ours.
+		//JE _DirectX_EvictManagedResources_Func_DONT;
 		mov _DirectX_EvictManagedResources_Func_Addr, edx;
 		mov edx, _DirectX_EvictManagedResources_Func;
 		mov[ecx + 00000014h], edx;
@@ -981,18 +1029,32 @@ _declspec(naked) void _naked_RehookDirectX() {
 
 bool HookDirectX() {
 
-
 	if (device == NULL) {
 		return false;
 	}
+	
 
-	_naked_InitDirectXHooks();
 	// this specifically checks if our hooks were overwritten, and then rehooks
 	patchJump(0x004be3c4, _naked_RehookDirectX);
 
 	patchJump(0x004bdd0b, _naked_PresentHook);
 
+	// this NEEDS to be first, before directx is hooked
 	initFont();
+
+	// idrk why, but ig im just 
+	// why does my code still work even when, nothing is hooked, and my resets arent there
+	// like,, the font texture is not being recreated and doesnt crash
+	// the only thing i can think of is i installed the steam ver this morning???
+	// did the steam ver do something to directx? did it change melty's settings??? why is this happening?
+	// additionally, INITING the directx hook in pausecallback vs in framedonecallback 
+	// causes different things to happen. 
+	// the ONLY WAY this occurs, is if caster is,,, hooking and unhooking it periodically? on every call?
+	// actually, ok here. 
+	// either caster is calling my hook, or im calling caster's hook. caster doesnt seem to sanitize
+	// or actually maybe i was relying on casters unsanitized state as my default?
+	// however, it actually seems like caster does not call my hooks,, and that was the issue?
+	_naked_InitDirectXHooks();
 
 	log("directX hooked");
 	return true;
