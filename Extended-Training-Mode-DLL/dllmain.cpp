@@ -48,6 +48,7 @@ typedef unsigned long long ulonglong;
 typedef uint32_t uint;
 
 void enemyReversal();
+void frameStartCallback();
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
@@ -1057,108 +1058,11 @@ void SetRN(uint32_t nRN)
 // windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
 void __stdcall pauseCallback(DWORD dwMilliseconds)
 {
-	setAllKeys();
-
-	bool ok = true;
-	MSG msg;
-	while (bFreeze || *(uint8_t*)(dwBaseAddress + adSharedFreezeOverride) == 1)
-	{
-		Sleep(1);
-
-		while (ok = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			if (!ok) {
-				PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
-				return;
-			}
-
-			switch (msg.message) {
-			case WM_QUIT:
-			case WM_DESTROY:
-				PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
-				return;
-			}
-
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		if (*(uint8_t*)(dwBaseAddress + adSharedFreezeOverride) != 1)
-		{
-			if (oFrameBarLeftScrollKey.keyHeld())
-				oFrameBarLeftScrollKey.nHeldKeyCounter++;
-			else
-				oFrameBarLeftScrollKey.nHeldKeyCounter = 0;
-			if (oFrameBarLeftScrollKey.keyDown() || oFrameBarLeftScrollKey.nHeldKeyCounter >= 150)
-			{
-				nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
-				nBarScrolling++;
-				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
-			}
-
-			if (oFrameBarRightScrollKey.keyHeld())
-				oFrameBarRightScrollKey.nHeldKeyCounter++;
-			else
-				oFrameBarRightScrollKey.nHeldKeyCounter = 0;
-			if (oFrameBarRightScrollKey.keyDown() || oFrameBarRightScrollKey.nHeldKeyCounter >= 150)
-			{
-				nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
-				nBarScrolling--;
-				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
-			}
-			
-			if (oHitboxesDisplayKey.keyDown())
-			{
-				bHitboxesDisplay = !bHitboxesDisplay;
-			}
-
-			if (oFrameDataDisplayKey.keyDown())
-			{
-				bFrameDataDisplay = !bFrameDataDisplay;
-			}
-
-			if (oHighlightsOnKey.keyDown())
-				bHighlightsOn = !bHighlightsOn;
-
-			if (oSaveStateKey.keyDown() && safeWrite())
-			{
-				*(char*)(dwBaseAddress + adSharedDoSave) = 1;
-			}
-
-			if (oFreezeKey.keyDown())
-			{
-				bFreeze = !bFreeze;
-			}
-
-			if (oPrevSaveSlotKey.keyDown())
-			{
-				uint8_t nTempSaveSlot;
-				ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-				nTempSaveSlot = max(0, nTempSaveSlot - 1);
-				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-			}
-			if (oNextSaveSlotKey.keyDown())
-			{
-				uint8_t nTempSaveSlot;
-				ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-				nTempSaveSlot = min(nTempSaveSlot + 1, MAX_SAVES);
-				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-			}
-
-			if (oFrameStepKey.keyHeld())
-				oFrameStepKey.nHeldKeyCounter++;
-			else
-				oFrameStepKey.nHeldKeyCounter = 0;
-			if (oFrameStepKey.keyDown() || oFrameStepKey.nHeldKeyCounter >= 150)
-			{
-				break;
-			}
-		}
-	} 
-
+	
 	
 	// i am unsure if doing this here is the best location, but it has been working
 	// and weird things happen if i call it right after i grab the device
+	// please never move this
 	static bool isDirectXHooked = false;
 	if (!isDirectXHooked) {
 		isDirectXHooked = HookDirectX();
@@ -1253,6 +1157,112 @@ void enemyReversal()
 	}
 }
 #endif
+
+void frameStartCallback() {
+
+	// this is called right after directx present displays a new frame
+
+	setAllKeys();
+
+	bool ok = true;
+	MSG msg;
+	while (bFreeze || *(uint8_t*)(dwBaseAddress + adSharedFreezeOverride) == 1)
+	{
+		Sleep(1);
+
+		while (ok = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			if (!ok) {
+				PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+				return;
+			}
+
+			switch (msg.message) {
+			case WM_QUIT:
+			case WM_DESTROY:
+				PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+				return;
+			}
+
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		if (*(uint8_t*)(dwBaseAddress + adSharedFreezeOverride) != 1)
+		{
+			if (oFrameBarLeftScrollKey.keyHeld())
+				oFrameBarLeftScrollKey.nHeldKeyCounter++;
+			else
+				oFrameBarLeftScrollKey.nHeldKeyCounter = 0;
+			if (oFrameBarLeftScrollKey.keyDown() || oFrameBarLeftScrollKey.nHeldKeyCounter >= 150)
+			{
+				nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+				nBarScrolling++;
+				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+			}
+
+			if (oFrameBarRightScrollKey.keyHeld())
+				oFrameBarRightScrollKey.nHeldKeyCounter++;
+			else
+				oFrameBarRightScrollKey.nHeldKeyCounter = 0;
+			if (oFrameBarRightScrollKey.keyDown() || oFrameBarRightScrollKey.nHeldKeyCounter >= 150)
+			{
+				nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+				nBarScrolling--;
+				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+			}
+
+			if (oHitboxesDisplayKey.keyDown())
+			{
+				bHitboxesDisplay = !bHitboxesDisplay;
+			}
+
+			if (oFrameDataDisplayKey.keyDown())
+			{
+				bFrameDataDisplay = !bFrameDataDisplay;
+			}
+
+			if (oHighlightsOnKey.keyDown())
+				bHighlightsOn = !bHighlightsOn;
+
+			if (oSaveStateKey.keyDown() && safeWrite())
+			{
+				*(char*)(dwBaseAddress + adSharedDoSave) = 1;
+			}
+
+			if (oFreezeKey.keyDown())
+			{
+				bFreeze = !bFreeze;
+			}
+
+			if (oPrevSaveSlotKey.keyDown())
+			{
+				uint8_t nTempSaveSlot;
+				ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+				nTempSaveSlot = max(0, nTempSaveSlot - 1);
+				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+			}
+			if (oNextSaveSlotKey.keyDown())
+			{
+				uint8_t nTempSaveSlot;
+				ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+				nTempSaveSlot = min(nTempSaveSlot + 1, MAX_SAVES);
+				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+			}
+
+			if (oFrameStepKey.keyHeld())
+				oFrameStepKey.nHeldKeyCounter++;
+			else
+				oFrameStepKey.nHeldKeyCounter = 0;
+			if (oFrameStepKey.keyDown() || oFrameStepKey.nHeldKeyCounter >= 150)
+			{
+				break;
+			}
+		}
+	}
+
+
+}
 
 void frameDoneCallback()
 {

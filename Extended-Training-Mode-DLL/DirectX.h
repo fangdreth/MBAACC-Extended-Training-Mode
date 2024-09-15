@@ -831,6 +831,13 @@ __declspec(naked) void _naked_PresentHook() {
 		push 00000000h;
 		push eax;
 		call edx;
+	};
+
+	PUSH_ALL;
+	frameStartCallback(); 
+	POP_ALL;
+
+	__asm {
 
 		push 004bdd16h;
 		ret;
