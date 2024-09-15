@@ -349,7 +349,8 @@ void drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = 
 	// actually its at 0041d5b0, but still, not worth
 	// https://gist.github.com/aminnj/5ca372aa2def72fb017b531c894afdca as a starter
 	constexpr float charWidths[0x80 - 0x20 - 1] = {
-		4.4453125,   // ' '
+		//4.4453125,   // ' '
+		8.8984375, // ' '
 		4.4453125,   // '!'
 		5.6796875,   // '"'
 		8.8984375,   // '#'
@@ -363,10 +364,10 @@ void drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = 
 		9.34375,     // '+'
 		4.4453125,   // ','
 		5.328125,    // '-'
-		4.4453125,   // '.'
+		8.8984375,   // '.'
 		4.4453125,   // '/'
 		8.8984375,   // '0'
-		7.7228125,   // '1'
+		8.8984375,   // '1'
 		8.8984375,   // '2'
 		8.8984375,   // '3'
 		8.8984375,   // '4'
@@ -449,32 +450,73 @@ void drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = 
 	float tempWidth = 0;
 	const char* c = text;
 
+	char tempChar[2] = { '\0', '\0' };
+
+	float xVal = x;
+	tempWidth = (8.0f * textSize * 0.0625);
+
 	while (*c) {
 		if (*c < ' ' || *c > '~') {
 			c++;
 			continue;
 		}
-		tempWidth += charWidths[*c - 0x20];
+		//tempWidth += charWidths[*c - 0x20];
+		//tempWidth += 8.8984375;
+
+
+		tempChar[0] = *c;
+		drawText((int)xVal, y, (int)tempWidth, textSize, tempChar, 0xFF, 0xFF, 0x02CC, (void*)font); // this is horrid
+
+		xVal += tempWidth;
+		//tempWidth += 15.0;
 		c++;
 	}
 
+	tempWidth = strnlen_s(text, 256) * 15.0f;
+
 	tempWidth *= textSize * 0.0625;
 
-	//tempWidth = ((float)textSize / 5.0) * (float)len;
-
-	drawText(x, y, (int)tempWidth, textSize, text, 0xFF, 0xFF, 0x02CC, (void*)font);
+	//drawText(x, y, (int)tempWidth, textSize, text, 0xFF, 0xFF, 0x02CC, (void*)font);
 }
 
 void drawTextWithBorder(int x, int y, int w, int h, const char* text)
 {
+	// i am not proud of this.
 
+	/*
 	drawText(x, y, w, h, text, 0xFF, 0xFF);
 	
 	drawText(x - 1, y, w, h, text, 0xFF, 0x00);
 	drawText(x + 1, y, w, h, text, 0xFF, 0x00);
 	drawText(x, y - 1, w, h, text, 0xFF, 0x00);
 	drawText(x, y + 1, w, h, text, 0xFF, 0x00);
+	*/
 
+	char tempBuf[2] = { '\0', '\0' };
+
+	const char* c = text;
+
+	while (*c) {
+
+		if (*c == ' ') {
+			x += w;
+			c++;
+			continue;
+		}
+
+		tempBuf[0] = *c;
+
+		drawText(x, y, w, h, tempBuf, 0xFF, 0xFF);
+
+		drawText(x - 1, y, w, h, tempBuf, 0xFF, 0x00);
+		drawText(x + 1, y, w, h, tempBuf, 0xFF, 0x00);
+		drawText(x, y - 1, w, h, tempBuf, 0xFF, 0x00);
+		drawText(x, y + 1, w, h, tempBuf, 0xFF, 0x00);
+
+		x += w;
+
+		c++;
+	}
 }
 
 extern "C" int asmDrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
