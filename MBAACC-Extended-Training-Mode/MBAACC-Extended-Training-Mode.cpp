@@ -366,6 +366,14 @@ int main(int argc, char* argv[])
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 4, 0);
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 4, 0);
             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 4, 0);
+
+            char pcLineTest[32] = "";
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcLineTest, 32, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcLineTest, 32, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcLineTest, 32, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcLineTest, 32, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcLineTest, 32, 0);
+            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine6Text), &pcLineTest, 32, 0);
         }
 
         // check this to prevent attaching to netplay
@@ -847,6 +855,13 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcReversalSlot3_16, 16, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcReversalSlot4_16, 16, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcReversalDelay_15, 15, 0);
+
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine6Text), &pcBlank_32, 32, 0);
                             break;
                         }
                         case STATS_PAGE:
@@ -854,25 +869,48 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcBlank_1, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcExGuard_9, 9, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcGuardBar_10, 10, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcMeter_18, 18, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcHealth_19, 19, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcMeter_6, 6, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcHealth_7, 7, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcHitsUntilBurst_17, 17, 0);
+
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcHoldA_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcHoldA_32, 32, 0);
                             break;
                         }
                         case POSITIONS_PAGE:
                         {
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcASlow_12, 12, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcBlank_1, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcP1XLoc_11, 11, 0);
                             if (bP3Exists)
+                            {
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcAssistLoc_13, 13, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcHoldA_32, 32, 0);
+                            }
                             else
+                            {
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), pcBlank_1, 1, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcBlank_32, 32, 0);
+                            }
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcP2XLoc_11, 11, 0);
                             if (bP4Exists)
+                            {
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcAssistLoc_13, 13, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcHoldA_32, 32, 0);
+                            }
                             else
+                            {
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), pcBlank_1, 1, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcBlank_32, 32, 0);
+                            }
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcInvert_7, 7, 0);
+
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcHoldA_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcHoldA_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine6Text), &pcPressA_32, 32, 0);
                             break;
                         }
                         case FRAME_TOOL:
@@ -883,6 +921,13 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcScrollDisplay_15, 15, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcToggleColorGuide_19, 19, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
+
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcPressA_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine6Text), &pcBlank_32, 32, 0);
                             break;
                         }
                         case SAVE_STATE_PAGE:
@@ -893,6 +938,13 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcImportSave_12, 12, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcExportSave_12, 12, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcLoadRNG_9, 9, 0);
+
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcPressA_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcPressA_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcPressA_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcPressA_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcPressA_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine6Text), &pcBlank_32, 32, 0);
                             break;
                         }
                         case CHARACTER_SPECIFICS:
@@ -910,6 +962,13 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcFMaidsHearts_15, 15, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcRyougiKnife_13, 13, 0);
+
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine6Text), &pcBlank_32, 32, 0);
                             break;
                         }
                         case HIGHLIGHT_PAGE:
@@ -920,27 +979,46 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcArmor_6, 6, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcThrowProtection_17, 17, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
+
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine6Text), &pcBlank_32, 32, 0);
                             break;
                         }
                         case RNG_PAGE:
                         {
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcCustomRNG_11, 11, 0);
-                            
                             if (nRNGMode == RNG_OFF)
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcBlank_1, 1, 0);
                             else
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcRate_5, 5, 0);
-
                             if (nRNGMode == RNG_OFF)
+                            {
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcBlank_1, 1, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcBlank_32, 32, 0);
+                            }
                             else if (nRNGMode == RNG_SEED)
+                            {
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcSeed_5, 5, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcPressA_32, 32, 0);
+                            }
                             else if (nRNGMode == RNG_RN)
+                            {
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcValue_6, 6, 0);
-                            
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcPressA_32, 32, 0);
+                            }
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcBlank_1, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
+
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine6Text), &pcBlank_32, 32, 0);
                             break;
                         }
                         case HOTKEYS_PAGE:
@@ -951,6 +1029,13 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcBlank_1, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
+
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcPressA_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcBlank_32, 32, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine6Text), &pcBlank_32, 32, 0);
                             break;
                         }
                         default:
@@ -4189,6 +4274,16 @@ int main(int argc, char* argv[])
                         nStoredReduceDamage = nReduceDamageIndex;
                     }
                 }
+                else
+                {
+                    // don't want to write anything on the main menu
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                }
 
                 // BATTLE SETTINGS
                 if (nCurrentSubMenu == eMenu::BATTLE_SETTINGS)
@@ -4261,6 +4356,12 @@ int main(int argc, char* argv[])
                 bInExtendedSettings = false;
                 nOldCurrentSubMenu = -1;
                 nCurrentSubMenu = eMenu::MAIN;
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcBlank_32, 32, 0);
 
                 // Enable Ex Guard.  randomly if applicable
                 nWriteBuffer = 1;

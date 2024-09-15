@@ -318,12 +318,6 @@ const ADDRESS adSharedRNGMode =						adShareBase + 0x9;	// 1 byte
 const ADDRESS adSharedRNGRate =						adShareBase + 0xA;	// 1 byte
 const ADDRESS adSharedRNGCustomSeed =				adShareBase + 0xB;	// 4 bytes
 const ADDRESS adSharedRNGCustomRN =					adShareBase + 0xF;	// 4 bytes
-const ADDRESS adSharedDrawA1 =						adShareBase + 0x10; // 1 byte
-const ADDRESS adSharedDrawA2 =						adShareBase + 0x11; // 1 byte
-const ADDRESS adSharedDrawA3 =						adShareBase + 0x12; // 1 byte
-const ADDRESS adSharedDrawA4 =						adShareBase + 0x13; // 1 byte
-const ADDRESS adSharedDrawA5 =						adShareBase + 0x14; // 1 byte
-const ADDRESS adSharedDrawA6 =						adShareBase + 0x15; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte
@@ -345,6 +339,12 @@ const ADDRESS adSharedArmorHighlight =				adShareBase + 0x4C; // 4 bytes
 const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x50; // 4 bytes
 
 const ADDRESS adSharedMessageBuffer =				adShareBase + 0x100; // 32 bytes
+const ADDRESS adSharedLine1Text =					adShareBase + 0x120; // 32 bytes
+const ADDRESS adSharedLine2Text =					adShareBase + 0x140; // 32 bytes
+const ADDRESS adSharedLine3Text =					adShareBase + 0x160; // 32 bytes
+const ADDRESS adSharedLine4Text =					adShareBase + 0x180; // 32 bytes
+const ADDRESS adSharedLine5Text =					adShareBase + 0x1A0; // 32 bytes
+const ADDRESS adSharedLine6Text =					adShareBase + 0x1C0; // 32 bytes
 
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
@@ -406,8 +406,8 @@ const char pcReversalSlot4_16[16] = "REVERSAL SLOT 4";
 const char pcReversalType_14[14] = "REVERSAL TYPE";
 const char pcExGuard_9[9] = "EX GUARD";
 const char pcReversalDelay_15[15] = "REVERSAL DELAY";
-const char pcMeter_18[18] = "METER [A]->SLOWER";
-const char pcHealth_19[19] = "HEALTH [A]->SLOWER";
+const char pcMeter_6[6] = "METER";
+const char pcHealth_7[7] = "HEALTH";
 const char pcGuardBar_10[10] = "GUARD BAR";
 const char pcBlank_1[1] = "";
 const char pcHotkeys_8[8] = "HOTKEYS";
@@ -417,6 +417,9 @@ const char pcRate_5[5] = "RATE";
 const char pcEveryFrame_13[13] = "EVERY FRAME";
 const char pcEveryReset_13[13] = "EVERY RESET";
 const char pcValue_6[6] = "VALUE";
+const char pcBlank_32[32] = "";
+const char pcPressA_32[32] = "PRESS A";
+const char pcHoldA_32[32] = "HOLD A";
 
 const std::vector<const char*> vHighlightNames = {    "OFF",
                                                 "RED",

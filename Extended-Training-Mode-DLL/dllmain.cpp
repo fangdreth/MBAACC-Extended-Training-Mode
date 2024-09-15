@@ -1541,12 +1541,13 @@ void frameDoneCallback()
 		drawStats();
 	}
 
+	int nFrameTimer = *(int*)(dwBaseAddress + dwFrameTimer);
 	nRNGMode = *(uint8_t*)(dwBaseAddress + adSharedRNGMode);
 	nRNGRate = *(uint8_t*)(dwBaseAddress + adSharedRNGRate);
 	nCustomSeed = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomSeed);
 	nCustomRN = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomRN);
 	if (nRNGRate == RNG_EVERY_FRAME ||
-		(nRNGRate == RNG_EVERY_RESET && *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer) == 1))
+		(nRNGRate == RNG_EVERY_RESET && nFrameTimer == 1))
 	{
 		if (nRNGMode == RNG_SEED)
 			SetSeed(nCustomSeed);
@@ -1554,12 +1555,33 @@ void frameDoneCallback()
 			SetRN(nCustomRN);
 	}
 
-	static uint8_t nDrawA1 = *(uint8_t*)(dwBaseAddress + adSharedDrawA1);
-	if (nDrawA1 || 1)
-	{
-		static char buffer[256] = "PRESS A";
-		drawTextWithBorder(50, 120, 10, 10, buffer);
-	}
+	char pcLine1Text[32];
+	char pcLine2Text[32];
+	char pcLine3Text[32];
+	char pcLine4Text[32];
+	char pcLine5Text[32];
+	char pcLine6Text[32];
+	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcLine1Text, 32, 0);
+	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcLine2Text, 32, 0);
+	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcLine3Text, 32, 0);
+	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcLine4Text, 32, 0);
+	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcLine5Text, 32, 0);
+	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine6Text), &pcLine6Text, 32, 0);
+	if (strcmp(pcLine1Text, "") != 0)
+		drawTextWithBorder(2, 87, 10, 10, pcLine1Text);
+
+	if (strcmp(pcLine2Text, "") != 0)
+		drawTextWithBorder(2, 114, 10, 10, pcLine2Text);
+	if (strcmp(pcLine3Text, "") != 0)
+		drawTextWithBorder(2, 132, 10, 10, pcLine3Text);
+
+	if (strcmp(pcLine4Text, "") != 0)
+		drawTextWithBorder(2, 158, 10, 10, pcLine4Text);
+	if (strcmp(pcLine5Text, "") != 0)
+		drawTextWithBorder(2, 176, 10, 10, pcLine5Text);
+
+	if (strcmp(pcLine6Text, "") != 0)
+		drawTextWithBorder(2, 202, 10, 10, pcLine6Text);
 }
 
 __declspec(naked) void nakedFrameDoneCallback()
