@@ -808,22 +808,22 @@ void drawFrameBar()
 		{
 			int nLength = floor(log10((*Player1).nNumBar[j][0]));
 			snprintf(buffer, 256, "%i", (*Player1).nNumBar[j][0]);
-			drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 3, 7, 10, buffer);
+			drawTextWithBorder(20 + 8 * nBarDrawCounter - 7 * nLength, nFrameBarY + 3, 7, 10, buffer);
 		}
 
 		if ((*Player2).nNumBar[j][0] >= 0)
 		{
 			int nLength = floor(log10((*Player2).nNumBar[j][0]));
 			snprintf(buffer, 256, "%i", (*Player2).nNumBar[j][0]);
-			drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 16, 7, 10, buffer);
+			drawTextWithBorder(20 + 8 * nBarDrawCounter - 7 * nLength, nFrameBarY + 16, 7, 10, buffer);
 		}
 		nBarDrawCounter++;
 	}
 	static char buffer[256];
-	snprintf(buffer, 256, "Startup %2iF / Total %2iF / Advantage %2iF", (*Player1).nFirstActive % 100, (*Player1).nInactiveMemory % 100, nPlayerAdvantage % 100);
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Player1).nFirstActive % 1000, (*Player1).nInactiveMemory % 1000, nPlayerAdvantage % 1000);
 	drawTextWithBorder(20, nFrameBarY - 11, 7, 10, buffer);
 
-	snprintf(buffer, 256, "Startup %2iF / Total %2iF / Advantage %2iF", (*Player2).nFirstActive % 100, (*Player2).nInactiveMemory % 100, -nPlayerAdvantage % 100);
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Player2).nFirstActive % 1000, (*Player2).nInactiveMemory % 1000, -nPlayerAdvantage % 1000);
 	drawTextWithBorder(20, nFrameBarY + 28, 7, 10, buffer);
 
 	drawRect(18, nFrameBarY, 602, 27, 0xFF000000); //Background

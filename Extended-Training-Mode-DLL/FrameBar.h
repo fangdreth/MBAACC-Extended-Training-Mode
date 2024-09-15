@@ -19,6 +19,7 @@ bool bIsBarReset = false;
 bool bDoBarReset = false;
 bool bUpdateBar = false;
 bool bDoAdvantage = false;
+bool bAddPlayerFreeze = false;
 
 bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
 bool bDisplayInputs = false;
@@ -50,17 +51,19 @@ struct Player
 	int nActiveCounter = 0;
 	int nInactiveMemory = 0;
 	int nAdvantageCounter = 0;
+	int nFirstActiveCounter = 0;
 	int nLastFrameCount = 0;
-	int nActiveProjectileCount = 0;
 	bool bLastOnRight = false;
 	DWORD dwLastActivePointer = 0x0;
 	char cLastHitstop = 0;
 	int nFirstActive = 0;
 	bool bAlreadyGotFirstActive = false;
-	int nFirstActiveOffset = 0;
+	bool bProjectileActive = false;
+	bool bLastProjectileActive = false;
 };
 
-void UpdatePlayer(Player& P) {
+void UpdatePlayer(Player& P) //Called after bar handling
+{
 	P.nLastInactionableFrames = *(int*)(P.adInaction);
 	P.nLastFrameCount = *(int*)(P.adPlayerBase + adPlayerFrameCount);
 	P.bLastOnRight = *(int*)(P.adPlayerBase + adOnRightFlag);
@@ -69,7 +72,46 @@ void UpdatePlayer(Player& P) {
 	if (*(short*)(P.adPlayerBase + adInputEvent) != -1)
 	{
 		P.bAlreadyGotFirstActive = false;
-		P.nFirstActiveOffset = *(int*)(P.adInaction);
+		P.nFirstActiveCounter = 0;
+	}
+}
+
+void GetProjectileInfo(Player& P)
+{
+	P.bLastProjectileActive = P.bProjectileActive;
+	P.bProjectileActive = false;
+	int nCharacterID = 0;
+	if (P.Port % 2 == 0)
+	{
+		nCharacterID = *(char*)(adMBAABase + dwP1CharNumber) * 10 + *(char*)(adMBAABase + dwP1CharMoon);
+	}
+	else
+	{
+		nCharacterID = *(char*)(adMBAABase + dwP2CharNumber) * 10 + *(char*)(adMBAABase + dwP2CharMoon);
+	}
+	std::map<std::string, int> CharacterMap = MBAACC_Map[nCharacterID];
+	for (int i = 0; i < 1000; i++) //Check Projectiles for active
+	{
+		bool validProj = true;
+		if (*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i) != 0 &&
+			*(DWORD*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adAttackDataPointer) != 0 &&
+			*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectSource) >= 0 &&
+			*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectOwner) == P.Port &&
+			*(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adPattern) >= 60)
+		{
+			for (auto const& [key, val] : CharacterMap)
+			{
+				if (*(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adPattern) == val)
+				{
+					validProj = false;
+					break;
+				}
+			}
+			if (validProj)
+			{
+				P.bProjectileActive = true;
+			}
+		}
 	}
 }
 
@@ -179,7 +221,7 @@ void UpdateBars(Player& P, Player& Assist)
 			nNumFlag = 2;
 			if (P.dwLastActivePointer == 0 && !P.bAlreadyGotFirstActive)
 			{
-				P.nFirstActive = *(int*)(P.adInaction) - P.nFirstActiveOffset;
+				P.nFirstActive = P.nFirstActiveCounter;
 				P.bAlreadyGotFirstActive = true;
 			}
 		}
@@ -242,6 +284,10 @@ void UpdateBars(Player& P, Player& Assist)
 		*(int*)(adMBAABase + adP2Freeze) != 0)
 	{
 		dwColor = 0xFF3C3C3C;
+		if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0) //Attacking
+		{
+			dwColor = 0xFFFF8080;
+		}
 	}
 	else if (*(char*)(P.adPlayerBase + adHitstop) != 0) //in hitstop
 	{
@@ -262,43 +308,26 @@ void UpdateBars(Player& P, Player& Assist)
 		dwBar2Color0 = 0xFFF1E084;
 	}
 
-	int nCharacterID = 0;
-	if (P.Port % 2 == 0)
+	if (P.bProjectileActive)
 	{
-		nCharacterID = *(char*)(adMBAABase + dwP1CharNumber) * 10 + *(char*)(adMBAABase + dwP1CharMoon);
-	}
-	else
-	{
-		nCharacterID = *(char*)(adMBAABase + dwP2CharNumber) * 10 + *(char*)(adMBAABase + dwP2CharMoon);
-	}
-	std::map<std::string, int> CharacterMap = MBAACC_Map[nCharacterID];
-	for (int i = 0; i < 1000; i++) //Check Projectiles for active
-	{
-		bool validProj = true;
-		if (*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i) != 0 &&
-			*(DWORD*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adAttackDataPointer) != 0 &&
-			*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectSource) >= 0 &&
-			*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectOwner) == P.Port &&
-			*(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adPattern) >= 60)
+		dwBar2Color1 = 0xFFFF0000;
+		if (!P.bLastProjectileActive && !P.bAlreadyGotFirstActive)
 		{
-			for (auto const& [key, val] : CharacterMap)
-			{
-				if (*(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adPattern) == val)
-				{
-					validProj = false;
-					break;
-				}
-			}
-			if (validProj)
-			{
-				dwBar2Color1 = 0xFFFF0000;
-			}
+			P.nFirstActive = P.nFirstActiveCounter;
+			P.bAlreadyGotFirstActive = true;
+			P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][1] = 1;
 		}
 	}
 
 	if (*(DWORD*)(Assist.adPlayerBase + adAttackDataPointer) != 0) //Check Assist for active
 	{
 		dwBar2Color1 = 0xFFFF8000;
+		if (Assist.dwLastActivePointer == 0 && !P.bAlreadyGotFirstActive)
+		{
+			P.nFirstActive = P.nFirstActiveCounter;
+			P.bAlreadyGotFirstActive = true;
+			P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][1] = 1;
+		}
 	}
 
 	P.dwColorBar1[nBarCounter % BAR_MEMORY_SIZE][0] = dwColor;
@@ -330,7 +359,7 @@ void UpdateBars(Player& P, Player& Assist)
 	}
 	else if (nNumFlag == 2 &&
 		nNumber >= 0 &&
-		P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][1] == 3) //clear last frame if current and last frame numFlag = 2
+		P.nNumBar[(nBarCounter - 1) % BAR_MEMORY_SIZE][1] == 3) //continuous clear if numFlag = 2 and previous = 3
 	{
 		int i = 1;
 		while (P.nNumBar[(nBarCounter - i) % BAR_MEMORY_SIZE][1] == 3)
@@ -349,6 +378,25 @@ void IncrementActive(Player& P)
 	else if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) == 0)
 	{
 		P.nActiveCounter = 0;
+	}
+}
+
+void IncrementFirstActive(Player& P)
+{
+	if (*(char*)(P.adPlayerBase + adHitstop) == 0 &&
+		*(int*)(adMBAABase + adP1Freeze) == 0 &&
+		*(int*)(adMBAABase + adP2Freeze) == 0 &&
+		*(char*)(adMBAABase + adGlobalFreeze) == 0)
+	{
+		P.nFirstActiveCounter++;
+		bAddPlayerFreeze = true;
+	}
+	if (bAddPlayerFreeze &&
+		(*(int*)(adMBAABase + adP1Freeze) != 0 ||
+		*(int*)(adMBAABase + adP2Freeze) != 0))
+	{
+		P.nFirstActiveCounter++;
+		bAddPlayerFreeze = false;
 	}
 }
 
@@ -373,12 +421,12 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 		*(int*)(P2.adInaction) ||
 		*(DWORD*)(*(DWORD*)(*(DWORD*)(P1.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Flagset2) != 0 ||
 		*(DWORD*)(*(DWORD*)(*(DWORD*)(P2.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Flagset2) != 0 ||
-		P1.nActiveProjectileCount != 0 ||
-		P2.nActiveProjectileCount != 0 ||
+		P1.bProjectileActive != 0 ||
+		P2.bProjectileActive != 0 ||
 		*(DWORD*)(P1Assist.adPlayerBase + adAttackDataPointer) != 0 ||
 		*(DWORD*)(P2Assist.adPlayerBase + adAttackDataPointer) != 0 ||
-		P1Assist.nActiveProjectileCount != 0 ||
-		P2Assist.nActiveProjectileCount != 0
+		P1Assist.bProjectileActive != 0 ||
+		P2Assist.bProjectileActive != 0
 		); //True if either char is inactionable, can't block, has an active projectile, has an active assist, or has an active assist projectile
 
 	if (DoBarUpdate)
@@ -437,18 +485,19 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 		{
 			IncrementActive(P1);
 			IncrementActive(P2);
+			
 			HandleInactive(P1);
 			HandleInactive(P2);
 			UpdateBars(P1, P1Assist);
 			UpdateBars(P2, P2Assist);
 			if (*(char*)(P1Assist.adPlayerBase))
 			{
-				IncrementActive(P1Assist);
+				//IncrementActive(P1Assist);
 				UpdateBars(P1Assist, P1);
 			}
 			if (*(char*)(P2Assist.adPlayerBase))
 			{
-				IncrementActive(P2Assist);
+				//IncrementActive(P2Assist);
 				UpdateBars(P2Assist, P2);
 			}
 			nBarCounter++;
@@ -476,6 +525,13 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 		Player2 = &P4;
 		Player4 = &P2;
 	}
+	
+	GetProjectileInfo(P1);
+	GetProjectileInfo(P2);
+	GetProjectileInfo(P3);
+	GetProjectileInfo(P4);
+	IncrementFirstActive(P1);
+	IncrementFirstActive(P2);
 
 	if (*(int*)(adMBAABase + adTrueFrameCount) != nLastTrueFrameCount)
 	{
