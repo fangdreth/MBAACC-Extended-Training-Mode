@@ -1162,6 +1162,7 @@ void frameStartCallback() {
 
 	// this is called right after directx present displays a new frame
 
+	/*
 	setAllKeys();
 
 	bool ok = true;
@@ -1261,6 +1262,7 @@ void frameStartCallback() {
 		}
 	}
 
+	*/
 
 }
 
@@ -1594,12 +1596,38 @@ __declspec(naked) void nakedFrameDoneCallback()
 	};
 }
 
-bool newPauseCallback_IsFramestepMenu = false;
+DWORD newPauseCallback_IsFramestepMenu = false;
+
+void hidePauseMenu() {
+	if (!newPauseCallback_IsFramestepMenu) {
+		return;
+	}
+
+	DWORD menuPtr = *(DWORD*)0x0074d7fc;
+
+	if (menuPtr == 0) {
+		log("menuPtr was null while trying to hide it!");
+		return;
+	}
+
+	*(BYTE*)(menuPtr + 0x7C + 0x00) = 0x00;
+	*(BYTE*)(menuPtr + 0x7C + 0x08) = 0x0C;
+	*(WORD*)(menuPtr + 0x7C + 0x12) = 0x0000;
+	*(BYTE*)(menuPtr + 0x7C + 0x5C) = 0x64;
+
+	// [[0x0074d7fc]+DC] <- 3
+
+	if (*(DWORD*)(menuPtr + 0xDC) != 0) {
+		*(DWORD*)(*(DWORD*)(menuPtr + 0xDC)) = 3;
+	}
+
+
+}
+
 void newPauseCallback() {
 
-	static KeyState F10Key(VK_F10);
-	static bool idek = false;
-
+	//static KeyState F10Key(VK_F10);
+	
 	/*
 	
 	the section that writes when we enter viewscreen:
@@ -1622,36 +1650,50 @@ void newPauseCallback() {
 	lastly, how do i get ebp.
 
 	[0x0074d7fc]
+
+	also, [[0x0074d7fc]+DC]
+	has something for hiding the info menu
+
+
 	
 	*/
 
-	DWORD menuPtr = *(DWORD*)0x0074d7fc;
+	constexpr auto unpause = []() -> void {
+		DWORD menuPtr = *(DWORD*)0x0074d7fc;
 
-	if (F10Key.keyDown()) {
+		*(DWORD*)(0x0055d203) = 0;
+		*(DWORD*)(0x0055d256) = 2;
+		*(DWORD*)(0x00562a64) = 0;
 
-		if (idek) { // unpause
-			*(DWORD*)(0x0055d203) = 0;
-			*(DWORD*)(0x0055d256) = 2;
-			*(DWORD*)(0x00562a64) = 0;
+		newPauseCallback_IsFramestepMenu = false;
+	};
 
-			if (menuPtr == 0) {
-				log("on unpause, menuptr was null?");
-			}
+	constexpr auto pause = []() -> void {
+		*(DWORD*)(0x0055d203) = 1;
+		*(DWORD*)(0x0055d256) = 1;
+		*(DWORD*)(0x00562a64) = 1;
 
+		// there is a 1f delay when,, setting these vars (in the place im setting them) and when the menu is actually created
+		newPauseCallback_IsFramestepMenu = true;
+	};
+
+	
+	if (oFreezeKey.keyDown()) {
+		if (newPauseCallback_IsFramestepMenu) { // unpause
+			unpause();
 		} else { // pause
-			*(DWORD*)(0x0055d203) = 1;
-			*(DWORD*)(0x0055d256) = 1;
-			*(DWORD*)(0x00562a64) = 1;
-		
-			// there is a 1f delay when,, setting these vars (in the place im setting them) and when the menu is actually created
-		
-			if (menuPtr == 0) {
-				log("on pause, menuptr was null?");
-			}
-		
-		
+			pause();
 		}
-		idek = !idek;
+	}
+
+	static bool needPause = false;
+
+	if (oFrameStepKey.keyDown() && newPauseCallback_IsFramestepMenu) {
+		unpause();
+		needPause = true;
+	} else if(needPause) {
+		needPause = false;
+		pause();
 	}
 
 }
@@ -1672,6 +1714,40 @@ __declspec(naked) void _naked_newPauseCallback() {
 		ret;
 	}
 
+}
+
+__declspec(naked) void _naked_createPauseMenuCallback() {
+	
+	PUSH_ALL;
+	hidePauseMenu();
+	POP_ALL;
+	
+	__asm {
+		pop ecx;
+		pop esi;
+		pop ebx;
+		add esp, 010h;
+		ret;
+	};
+}
+
+DWORD _naked_pauseMenuProcessInput_Func_Addr = 0x0041f5a0;
+__declspec(naked) void _naked_pauseMenuProcessInput() {
+	__asm {
+
+		cmp newPauseCallback_IsFramestepMenu, 1;
+		JE _SKIP;
+
+		call[_naked_pauseMenuProcessInput_Func_Addr];
+
+		push 00477fcah;
+		ret;
+
+	_SKIP:
+		push 00478029h;
+		ret;
+
+	};
 }
 
 int nTempP1MeterGain = 0;
@@ -1983,6 +2059,8 @@ void initPauseCallback()
 
 void initNewPauseCallback() {
 	patchJump(0x0044c4fc, _naked_newPauseCallback);
+	patchJump(0x004781a8, _naked_createPauseMenuCallback);
+	patchJump(0x00477fc5, _naked_pauseMenuProcessInput);
 }
 
 void threadFunc() 
