@@ -30,8 +30,11 @@ private:
 
 };
 
-int fontSize = 36;
-int fontWidth = ((float)fontSize) / 2.0f;
+const int fontTexWidth = 512;
+const int fontTexHeight = 512;
+int fontSize = 64;
+int fontHeight = 64;
+int fontWidth = (((float)fontSize) / 2.0f) - 1; // 1 extra pixel is put between each char and the next. take this into account
 float fontRatio = ((float)fontWidth) / ((float)fontSize);
 
 size_t fontBufferSize = 0;
@@ -82,7 +85,8 @@ void _initFontFirstLoad() {
 		device,
 		fontSize, // height 
 		fontWidth,  // width. this could be set to 0, but out of paranoia, i want it at a fixed value
-		FW_NORMAL, // weight?
+		//FW_NORMAL, // weight?
+		FW_BOLD, 
 		1,  // mip? i should probs use these tbh
 		FALSE, // italicized
 		DEFAULT_CHARSET,
@@ -116,12 +120,12 @@ void _initFontFirstLoad() {
 	int texWidth = scaleNextPow2(charCount * fontSize);
 	int texHeight = fontSizePow2 * 16;
 
-	texWidth = 512;
-	texHeight = 512;
+	//texWidth = 512;
+	//texHeight = 512;
 
-	log("attempting to load a font, reallllly attempting w: %d h: %d", texWidth, texHeight);
+	log("attempting to load a font, reallllly attempting w: %d h: %d", fontTexWidth, fontTexHeight);
 
-	hr = device->CreateTexture(texWidth, texHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
+	hr = device->CreateTexture(fontTexWidth, fontTexHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
 	if (FAILED(hr)) {
 		font->Release();
 		log("font createtexture failed");
@@ -423,44 +427,42 @@ void __stdcall drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR
 void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR& v3, const D3DVECTOR& v4, float size, D3DCOLOR col, char c) {
 	if (device == NULL) return;
 
-	//const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_DIFFUSE);
-	const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_TEX1);
-	//const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	if (c < ' ' || c > '~') {
+		return;
+	}
 
-	struct CUSTOMVERTEX {
+	const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+	
+	// the order of params is not communicated. i think. so it must be in this order
+	// stupidest bug of my life
+	struct CUSTOMVERTEX { 
 		D3DVECTOR position;
+		D3DCOLOR color;
 		D3DXVECTOR2 texCoord;
 	};
 
 	constexpr float whatIsThis = 0.5f; // what is this?
 
-	col = D3DCOLOR_XRGB(255, 0, 0);
+	const float charWidth = ((float)(fontWidth + 1)) / ((float)fontTexWidth);
+	const float charHeight = ((float)(fontHeight + 0)) / ((float)fontTexHeight);
 
-	//device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	D3DXVECTOR2 charTopLeft(charWidth * (c & 0xF), charHeight * ((c - 0x20) / 0x10));
+	D3DXVECTOR2 charW(charWidth, 0.0);
+	D3DXVECTOR2 charH(0.0, charHeight);
 
-	// Set the source and destination blend factors
-	//device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	//device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
 	// Define the vertices of the triangle
 	CUSTOMVERTEX vertices[] = {
-		{ D3DVECTOR(v1.x, v1.y, whatIsThis), D3DXVECTOR2(0.0, 0.0)}, //, col },
-		{ D3DVECTOR(v2.x, v2.y, whatIsThis), D3DXVECTOR2(1.0, 0.0)}, //, col },
-		{ D3DVECTOR(v3.x, v3.y, whatIsThis), D3DXVECTOR2(0.0, 1.0)}, //, col },
-		{ D3DVECTOR(v4.x, v4.y, whatIsThis), D3DXVECTOR2(1.0, 1.0)} //, col }
-		//{ D3DVECTOR(v1.x, v1.y, whatIsThis), col },
-		//{ D3DVECTOR(v2.x, v2.y, whatIsThis), col },
-		//{ D3DVECTOR(v3.x, v3.y, whatIsThis), col },
-		//{ D3DVECTOR(v4.x, v4.y, whatIsThis), col }	
+		{ D3DVECTOR(v1.x, v1.y, whatIsThis), col, charTopLeft },
+		{ D3DVECTOR(v2.x, v2.y, whatIsThis), col, charTopLeft + charW },
+		{ D3DVECTOR(v3.x, v3.y, whatIsThis), col, charTopLeft + charH },
+		{ D3DVECTOR(v4.x, v4.y, whatIsThis), col, charTopLeft + charW + charH }
 	};
 
 	scaleVertex(vertices[0].position);
 	scaleVertex(vertices[1].position);
 	scaleVertex(vertices[2].position);
 	scaleVertex(vertices[3].position);
-
-
-	//log("%6.2f %6.2f %6.2f", vertices[0].position.x, vertices[0].position.y, vertices[0].position.z);
 
 	// Set up the vertex buffer and draw
 	// i dislike allocing and unallocing stuff like this.
@@ -484,7 +486,6 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 		v_buffer->Release();
 
 		device->SetTexture(0, NULL);
-		log("drew char");
 	} else {
 		log("drawCharAlloc failed?");	
 	}
@@ -594,24 +595,52 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 	if (str == NULL) {
 		return;
 	}
-	
-	float charWidthOffset = fontRatio * size;
-	float charHeightOffset = size;
 
-	charWidthOffset = 0.75;
-	charHeightOffset = 0.75;
+	float origX = x;
+	float origY = y;
+	
+	
+
+	float charWidthOffset = (fontRatio * size) * 1.01f; // this 1.01 might cause issues when aligning stuff, not sure
+	float charHeightOffset = size;
 
 	float w = charWidthOffset;
 	float h = charHeightOffset;
 
-	y = 1 - y;
+	while (*str) {
+		if (*str == '\r' || *str == '\n') {
+			x = origX;
+			origY += charHeightOffset;
+			str++;
+			continue;
+		}
 
-	D3DVECTOR v1 = { ((x + 0) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v2 = { ((x + w) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v3 = { ((x + 0) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v4 = { ((x + w) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
+		if (*str == ' ') {
+			x += charWidthOffset;
+			str++;
+			continue;
+		}
 
-	drawChar(v1, v2, v3, v4, size, ARGB, *str);
+		if (*str == '\t') { // please dont use tabs. please
+			str++;
+			continue;
+		}
+
+		y = 1 - origY;
+		
+		D3DVECTOR v1 = { ((x + 0) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
+		D3DVECTOR v2 = { ((x + w) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
+		D3DVECTOR v3 = { ((x + 0) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
+		D3DVECTOR v4 = { ((x + w) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
+
+		drawChar(v1, v2, v3, v4, size, ARGB, *str);
+
+		x += charWidthOffset;
+		str++;
+	}
+	
+
+	
 	
 
 }
@@ -693,6 +722,32 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 void __stdcall _doDrawCalls() {
 
 	backupRenderState();
+
+	// on my machine at least, i swear we are having some slowdown
+	// lots of the areas that are hooked occur,,, between when the 60fps timing checks are done?
+	// id appreciate it if we kept this on until release
+	// its in here bc present is guarenteed to only be called once a frame
+	static long long startTime = 0.0;
+	static long long endTime = 0.0;
+	const int timeBufferLen = 60;
+	static double timeBuffer[timeBufferLen];
+	static int timeBufferIndex = 0;
+
+	endTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+	timeBuffer[timeBufferIndex] = (double)1000000.0 / ((double)endTime - startTime);
+
+	timeBufferIndex = (timeBufferIndex + 1) % timeBufferLen;
+
+	double res = 0.0;
+	for (int i = 0; i < timeBufferLen; i++) {
+		res += timeBuffer[i];
+	}
+	res /= ((double)timeBufferLen);
+
+	TextDraw(1.21, 0.0, 0.025, 0xFF00FFFF, "FPS: %5.2lf", res);
+
+	startTime = endTime;
 
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
 

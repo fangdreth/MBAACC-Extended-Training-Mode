@@ -15,6 +15,7 @@
 #include <format>
 #include <string.h>
 #include <cstdarg>
+#include <chrono>
 
 #include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
@@ -70,6 +71,8 @@ DWORD tempRegister1;
 DWORD tempRegister2;
 DWORD tempRegister3;
 DWORD tempRegister4;
+
+DWORD __frameDoneCount;
 
 int nFreezeKey;
 int nFrameStepKey;
@@ -1223,6 +1226,9 @@ void enemyReversal()
 
 void frameDoneCallback()
 {
+
+	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
+
 	setAllKeys();
 
 	// this hooks directx
@@ -1442,7 +1448,7 @@ void frameDoneCallback()
 	// also, i dont have any new text funcs yet, sry
 	// top left of screen is (0.0, 0.0), bottom right is (1.333333, 1.0)
 
-	/*
+	
 	//         x1   x2   y1   y2    A R G B
 	LineDraw( 0.1, 0.1, 0.9, 0.9, 0x800000FF );
 
@@ -1468,13 +1474,10 @@ void frameDoneCallback()
 
 	LineDraw(0.0, 1.0, 1.3333, 0.0, 0xFFFF00FF);
 	
-	*/
+	
 	//LineDraw(0.0, 1.0, 1.3333, 0.0, 0xFFFF00FF);
 
-	TextDraw(0.1, 0.1, 0.1, 0xFF00FFFF, "test %d %s %d", 123, "abc", 456);
-
-
-	
+	TextDraw(0.1, 0.1, 0.025, 0xFF00FFFF, "test %d %s %d", 123, "abc", 456);
 
 
 	// don't draw on the pause menu, but do on VIEW SCREEN
@@ -1525,6 +1528,7 @@ void frameDoneCallback()
 __declspec(naked) void nakedFrameDoneCallback()
 {
 	__asm {
+		add __frameDoneCount, 1;
 		add esp, 4Ch;
 		call frameDoneCallback;
 		ret;
