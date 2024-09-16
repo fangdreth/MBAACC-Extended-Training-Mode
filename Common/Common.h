@@ -339,12 +339,9 @@ const ADDRESS adSharedArmorHighlight =				adShareBase + 0x4C; // 4 bytes
 const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x50; // 4 bytes
 
 const ADDRESS adSharedMessageBuffer =				adShareBase + 0x100; // 32 bytes
-const ADDRESS adSharedLine1Text =					adShareBase + 0x120; // 32 bytes
-const ADDRESS adSharedLine2Text =					adShareBase + 0x140; // 32 bytes
-const ADDRESS adSharedLine3Text =					adShareBase + 0x160; // 32 bytes
-const ADDRESS adSharedLine4Text =					adShareBase + 0x180; // 32 bytes
-const ADDRESS adSharedLine5Text =					adShareBase + 0x1A0; // 32 bytes
-const ADDRESS adSharedLine6Text =					adShareBase + 0x1C0; // 32 bytes
+const ADDRESS adSharedOnExtendedSettings =			adShareBase + 0x120; // 1 byte
+const ADDRESS adSharedMainInfoText =				adShareBase + 0x121; // 64 bytes
+const ADDRESS adSharedSubInfoText =					adShareBase + 0x161; // 64 bytes
 
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
@@ -418,16 +415,24 @@ const char pcEveryFrame_13[13] = "EVERY FRAME";
 const char pcEveryReset_13[13] = "EVERY RESET";
 const char pcValue_6[6] = "VALUE";
 const char pcBlank_32[32] = "";
+const char pcBlank_64[64] = "";
 const char pcPressA_32[32] = "PRESS A";
 const char pcHoldA_32[32] = "HOLD A";
 
-const std::vector<const char*> vHighlightNames = {    "OFF",
-                                                "RED",
-                                                "YELLOW",
-                                                "GREEN",
-                                                "BLUE",
-                                                "PURPLE",
-                                                "BLACK"};
+const std::vector<const char*> vHighlightNames = { "OFF",
+												"RED",
+												"YELLOW",
+												"GREEN",
+												"BLUE",
+												"PURPLE",
+												"BLACK" };
+const std::vector<const char*> vHighlightNamesWithFormatting = { "OFF",
+												"~RED",
+												"`YELLOW",
+												"@GREEN",
+												"{BLUE",
+												"^PURPLE",
+												"*BLACK" };
 
 const char pcEnemyReversal_15[15] = "ENEMY REVERSAL";
 
@@ -446,7 +451,7 @@ const char pcSaveState_11[11] = "SAVE STATE";
 const char pcDisplayFreeze_16[16] = "DISPLAY FREEZE";
 const char pcDisplayInputs_15[15] = "DISPLAY INPUTS";
 const char pcScrollDisplay_15[15] = "SCROLL DISPLAY";
-const char pcToggleColorGuide_19[19] = "TOGGLE COLOR GUIDE";
+const char pcColorGuide_12[12] = "COLOR GUIDE";
 const char pcAdvanced_9[9] = "ADVANCED";
 const char pcOff_4[4] = "OFF";
 const char pcOn_3[3] = "ON";

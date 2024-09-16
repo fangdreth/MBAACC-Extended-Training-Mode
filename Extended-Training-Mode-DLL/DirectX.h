@@ -644,6 +644,8 @@ void __stdcall drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x80
 void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* str) {
 	// pass things in as you would with printf, like printf("%d %.2f %s", 1, 1.23f, "abcdefg");
 	
+	DWORD TempARGB = ARGB;
+
 	if (str == NULL) {
 		log("str was null, not drawing text");
 		return;
@@ -684,6 +686,54 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 			continue;
 		}
 
+		// blue
+		if (*str == '{') {
+			TempARGB = 0xFF8F8FFF;
+			str++;
+			continue;
+		}
+
+		// red
+		if (*str == '~') {
+			TempARGB = 0xFFFF8F8F;
+			str++;
+			continue;
+		}
+
+		// green
+		if (*str == '@') {
+			TempARGB = 0xFF8FFF8F;
+			str++;
+			continue;
+		}
+
+		// yellow
+		if (*str == '`') {
+			TempARGB = 0xFFFFFF8F;
+			str++;
+			continue;
+		}
+
+		// purple
+		if (*str == '^') {
+			TempARGB = 0xFFFF8FFF;
+			str++;
+			continue;
+		}
+
+		// black
+		if (*str == '*') {
+			TempARGB = 0xFF8F8F8F;
+			str++;
+			continue;
+		}
+
+		if (*str == '}') {
+			TempARGB = ARGB;
+			str++;
+			continue;
+		}
+
 		y = 1 - origY;
 		
 		D3DVECTOR v1 = { ((x + 0) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
@@ -691,7 +741,7 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 		D3DVECTOR v3 = { ((x + 0) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
 		D3DVECTOR v4 = { ((x + w) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
 
-		drawChar(v1, v2, v3, v4, size, ARGB, *str);
+		drawChar(v1, v2, v3, v4, size, TempARGB, *str);
 
 		x += charWidthOffset;
 		str++;

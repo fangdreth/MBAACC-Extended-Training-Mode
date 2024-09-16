@@ -284,6 +284,36 @@ LONG ReadFromRegistry(std::wstring sKey, bool* bValue)
     return openResult;
 }
 
+LONG DeleteRegistry()
+{
+    LONG openResult = -1;
+
+    try
+    {
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+
+        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_ALL_ACCESS, &hKey);
+        if (openResult == ERROR_SUCCESS)
+        {
+            openResult = RegDeleteKeyW(HKEY_CURRENT_USER, sk);
+            if (openResult != ERROR_SUCCESS)
+                LogError("Unable to delete registry key");
+        }
+        else
+        {
+            LogError("Unable to open registry key");
+        }
+
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
+
+    return openResult;
+}
+
 void SetHealth(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 {
     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Health), &nValue, 4, 0);
