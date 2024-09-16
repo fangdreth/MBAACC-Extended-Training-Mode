@@ -193,7 +193,7 @@ void _initFontFirstLoad() {
 	oldRenderTarget->Release();
 	surface->Release();
 
-	hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
+	//hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
 	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG	, texture, NULL);
 	texture->Release();
 	font->Release();
@@ -493,8 +493,14 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 	const float charHeight = ((float)(fontHeight + 0)) / ((float)fontTexHeight);
 
 	D3DXVECTOR2 charTopLeft(charWidth * (c & 0xF), charHeight * ((c - 0x20) / 0x10));
+	
 	D3DXVECTOR2 charW(charWidth, 0.0);
 	D3DXVECTOR2 charH(0.0, charHeight);
+
+	// when drawing a o, the underscore would be to low, and cut into the top of it, this fixes that?
+	charTopLeft.y += 0.0001;
+	charH.y -= 0.0001;
+
 
 
 	// Define the vertices of the triangle
@@ -700,6 +706,13 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 // constantly allocing and deallocing lambdas is probs,,, bad.
 // i could just have them be, refs? idek
 std::vector<std::function<void(void)>*> drawCalls;
+typedef struct ProfileInfo {
+	unsigned callCount = 0; // amount called this frame 
+	long long currentFrameTime = 0; // time spent here this frame
+	unsigned index = 0; // having a index for each value might be overkill
+	std::array<long long, 64> times; // past log of times, to make number smoother
+} ProfileInfo;
+std::map<const char*, ProfileInfo > profilerData;
 
 void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side = false) {
 	
@@ -793,9 +806,79 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	));
 }
 
+// ----- horrid Profiler, as a treat 
+
+class Profiler {
+public:
+
+	const char* name;
+	long long startTime;
+
+	Profiler(const char* name_) {
+		name = name_;
+		startTime = getMicroSec();
+	}
+
+	~Profiler() {
+
+		auto it = profilerData.find(name);
+
+		if (it == profilerData.end()) [[unlikely]] {
+			profilerData[name] = ProfileInfo();
+		}
+
+		profilerData[name].callCount++;
+		profilerData[name].currentFrameTime += getMicroSec() - startTime;
+	}
+
+};
+
+
+#define profileFunction() \
+    volatile Profiler profiler(__func__);
+
 // -----
 
 void __stdcall _doDrawCalls() {
+	
+
+	//Sleep(1);
+
+	static bool drawDebug = false;
+	static KeyState F10Key(VK_F10);
+
+	if (F10Key.keyDown()) {
+		drawDebug = !drawDebug;
+	}
+
+	if (drawDebug) { 
+		// how slow is this,,, im not sure how expensive map lookups are, but the keys to it could be constexpr. ugh 
+		// i also have the pointer strat. might go do that tbh
+		int profileInfoY = 128;
+		for (auto& [name, info] : profilerData) {
+
+			info.times[info.index] = info.currentFrameTime;
+
+			long long totalTime = 0;
+			for (int i = 0; i < 64; i++) {
+				totalTime += info.times[i];
+			}
+			totalTime >>= 6; // div 64
+
+			TextDraw(0, profileInfoY, 12, 0xFF00FFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+
+			info.currentFrameTime = 0;
+			info.callCount = 0;
+
+			// i dont trust MSVC to actually do this
+			info.index = (info.index + 1) & 63;
+			
+			profileInfoY += 14;
+		}
+	}
+	//profileDrawCalls.clear();
+
+	profileFunction();
 
 	// on my machine at least, i swear we are having some slowdown
 	// lots of the areas that are hooked occur,,, between when the 60fps timing checks are done?
@@ -843,6 +926,7 @@ void __stdcall _doDrawCalls() {
 	}
 
 	drawCalls.clear();
+	
 }
 
 // -----

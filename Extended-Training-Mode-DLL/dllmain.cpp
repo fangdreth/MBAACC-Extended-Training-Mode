@@ -151,6 +151,10 @@ std::array<uint8_t, 4> arrHitHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrArmorHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrThrowProtectionHighlightSetting({ 255, 255, 255, 0 });
 
+long long getMicroSec() {
+	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+}
+
 void __stdcall ___log(const char* msg)
 {
 	const char* ipAddress = "127.0.0.1";
@@ -776,6 +780,7 @@ void drawObject(DWORD objAddr, bool isProjectile)
 //In-game frame bar
 void drawFrameBar()
 {
+	profileFunction();
 
 	if (!safeWrite())
 		return;
@@ -1283,6 +1288,7 @@ void frameStartCallback() {
 
 void frameDoneCallback()
 {
+	profileFunction();
 
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
 

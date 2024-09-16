@@ -4344,7 +4344,7 @@ int main(int argc, char* argv[])
             }
             else // not paused
             {
-                Sleep(1);
+                //Sleep(1);
 
                 if (bJustUnpaused)
                 {
