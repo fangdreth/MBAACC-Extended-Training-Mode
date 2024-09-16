@@ -1705,6 +1705,7 @@ __declspec(naked) void _naked_newPauseCallback2() {
 		// this call, should be ok?
 		call[_naked_newPauseCallback2_Func_TrainingPause];
 
+		
 		call[_naked_newPauseCallback2_Func_UpdateFX];
 
 		//push 0040e476h;
@@ -1752,12 +1753,12 @@ __declspec(naked) void _naked_trigPauseHook() {
 
 	__asm {
 		cmp _naked_newPauseCallback2_IsPaused, 1;
-		JNE _SKIP;
+		JNE _CONT;
 
 		// being here means we are in our pause section. ret.
 		ret;
 
-	_SKIP:
+	_CONT:
 	}
 
 	
@@ -1773,6 +1774,124 @@ __declspec(naked) void _naked_trigPauseHook() {
 		push 0044c7b5h;
 		ret;
 	}
+}
+
+__declspec(naked) void _naked_updateEffectsPause() {
+
+	
+	__asm {
+		push 00453f22h ;
+		ret;
+	}
+
+	__asm {
+
+		cmp _naked_newPauseCallback2_IsPaused, 1;
+		JNE _CONT2;
+
+		// return early from program, bytes from 00453f22
+		pop edi;
+		mov eax, 1;
+		pop esi;
+		pop ebp;
+		pop ebx;
+		mov esp, ebp;
+		pop ebp;
+		ret;
+
+	_CONT2:
+	}
+
+	__asm _emit 0xBD;
+	__asm _emit 0xF1;
+	__asm _emit 0xBD;
+	__asm _emit 0x67;
+	__asm _emit 0x00;
+
+
+	__asm {
+		push 00453b92h;
+		ret;
+	}
+	
+
+	__asm {
+
+		cmp _naked_newPauseCallback2_IsPaused, 1;
+		JNE _CONT;
+
+		// return early from program, bytes from 00453f22
+		pop edi;
+		mov eax, 1;
+		pop esi;
+		pop ebp;
+		pop ebx;
+		mov esp, ebp;
+		pop ebp;
+		ret;
+	
+	_CONT:
+	}
+
+	// overwritten bytes 
+	__asm _emit 0xBD;
+	__asm _emit 0xDD;
+	__asm _emit 0xC0;
+	__asm _emit 0x67;
+	__asm _emit 0x00;
+
+	__asm { // contnue func exec as normal
+		push 00453d5ch;
+		ret;
+	}
+
+}
+
+DWORD _updateEffectsPause2_Addr;
+DWORD _updateEffectsPause2_SkipEffect = 0;
+void updateEffectsPause2() {
+
+
+	log("ugh: %08X", _updateEffectsPause2_Addr);
+
+}
+
+__declspec(naked) void _naked_updateEffectsPause2() {
+
+	__asm {
+		mov _updateEffectsPause2_Addr, ebp;
+	};
+
+	PUSH_ALL;
+	updateEffectsPause2();
+	POP_ALL;
+
+	__asm {
+		cmp _updateEffectsPause2_SkipEffect, 0;
+		JE _CONT;
+
+		// skip this iteration
+		push 00453d45h;
+		ret;
+
+	_CONT:
+	}
+
+
+	// overwritten bytes from 00453bb5
+
+	__asm _emit 0x8d;
+	__asm _emit 0x5d;
+	__asm _emit 0xfb;
+
+	__asm _emit 0x8b;
+	__asm _emit 0xf3;
+
+	__asm {
+		push 00453bbah;
+		ret;
+	};
+
 }
 
 int nTempP1MeterGain = 0;
@@ -2093,6 +2212,10 @@ void initNewPauseCallback() {
 	patchJump(0x0044c48e, _naked_pauseMenuProcessInput2);
 
 	patchJump(0x0044c7b0, _naked_trigPauseHook);
+
+	patchJump(0x00453d57, _naked_updateEffectsPause);
+	//patchJump(0x00453b8d, _naked_updateEffectsPause);
+	patchJump(0x00453bb5, _naked_updateEffectsPause2);
 
 }
 

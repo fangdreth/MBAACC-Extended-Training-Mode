@@ -982,6 +982,61 @@ public:
 
 // -----
 
+enum class BoxType {
+	None,
+	Hitbox, // red
+	Hurtbox, // green
+	Clash, // yellow?
+
+
+};
+
+void drawHitboxes() {
+
+}
+
+void drawProfiler() {
+	static char buffer[1024];
+	static bool drawDebug = false;
+	static KeyState F10Key(VK_F10);
+
+	if (F10Key.keyDown()) {
+		drawDebug = !drawDebug;
+	}
+
+	if (drawDebug) {
+		// how slow is this,,, im not sure how expensive map lookups are, but the keys to it could be constexpr. ugh 
+		// i also have the pointer strat. might go do that tbh
+		float profileInfoY = 128;
+		for (auto& [name, info] : profilerData) {
+
+			info.times[info.index] = info.currentFrameTime;
+
+			long long totalTime = 0;
+			for (int i = 0; i < 64; i++) {
+				totalTime += info.times[i];
+			}
+			totalTime >>= 6; // div 64
+
+			//TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+			snprintf(buffer, 1024, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+			drawText2(-0.0f, (float)profileInfoY / 480.0f, (float)12 / 480.0f, 0xFF00FFFF, buffer);
+
+			//TextDraw(200, profileInfoY, 12, 0x7FFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+
+			//TextDraw(400, profileInfoY, 12, 0x10FFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+
+			info.currentFrameTime = 0;
+			info.callCount = 0;
+
+			// i dont trust MSVC to actually do this
+			info.index = (info.index + 1) & 63;
+
+			profileInfoY += 14;
+		}
+	}
+}
+
 void __stdcall _doDrawCalls() {
 	
 
@@ -1023,54 +1078,21 @@ void __stdcall _doDrawCalls() {
 
 	backupRenderState();
 
+	// im purposefully having these come before misc calls.
+	// and before we have an existing scene, since this has to do a lot of weird shit.
+	// hopefully it isnt too slow
+
+	drawHitboxes();
+
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
 	// i am unsure if stack alloced or heap allocing these things is better or worse
+	
 	for (const auto& drawCallInfo : drawCalls) {	
 		drawCallInfo();
 	}
 
-	//profiler.~Profiler();
 
-	static char buffer[1024];
-	static bool drawDebug = false;
-	static KeyState F10Key(VK_F10);
-
-	if (F10Key.keyDown()) {
-		drawDebug = !drawDebug;
-	}
-
-	if (drawDebug) {
-		// how slow is this,,, im not sure how expensive map lookups are, but the keys to it could be constexpr. ugh 
-		// i also have the pointer strat. might go do that tbh
-		float profileInfoY = 128;
-		for (auto& [name, info] : profilerData) {
-
-			info.times[info.index] = info.currentFrameTime;
-
-			long long totalTime = 0;
-			for (int i = 0; i < 64; i++) {
-				totalTime += info.times[i];
-			}
-			totalTime >>= 6; // div 64
-
-			//TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-			snprintf(buffer, 1024, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-			drawText2(-0.0f, (float)profileInfoY / 480.0f, (float)12 / 480.0f, 0xFF00FFFF, buffer);
-
-			//TextDraw(200, profileInfoY, 12, 0x7FFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-
-			//TextDraw(400, profileInfoY, 12, 0x10FFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-
-			info.currentFrameTime = 0;
-			info.callCount = 0;
-
-			// i dont trust MSVC to actually do this
-			info.index = (info.index + 1) & 63;
-
-			profileInfoY += 14;
-		}
-	}
-	
+	drawProfiler();
 
 	device->EndScene();
 
