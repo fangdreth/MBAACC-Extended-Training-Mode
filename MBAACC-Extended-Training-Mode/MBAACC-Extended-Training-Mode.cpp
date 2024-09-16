@@ -1575,6 +1575,11 @@ int main(int argc, char* argv[])
                             default:
                                 break;
                             }
+                            if (nEnemySettingsCursor >= 10)
+                            {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcBlank_64, 64, 0);
+                            }
 
                             // kludge
                             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
@@ -4176,6 +4181,11 @@ int main(int argc, char* argv[])
                             }
                             default:
                                 break;
+                            }
+                            if (nEnemySettingsCursor >= 10)
+                            {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcBlank_64, 64, 0);
                             }
 
                             // kludge
