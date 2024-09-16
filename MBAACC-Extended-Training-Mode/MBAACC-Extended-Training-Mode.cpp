@@ -288,16 +288,18 @@ int main(int argc, char* argv[])
         {
             nCurrentTime = std::time(nullptr);
         
+            // calling std::endl flushes to the console. doing that multiple times a frame causes slowdown.
+
             SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
-            std::cout << "===========================================================================\x1b[K" << std::endl;
-            std::cout << "|   Fang, gonp, and meepster99(Inana)'s Extended Training Mode Mod " << VERSION << "   |\x1b[K" << std::endl;
-            std::cout << "|                                                                         |\x1b[K" << std::endl;
-            std::cout << "|   " << GITHUB_RELEASE << "   |\x1b[K" << std::endl;
+            std::cout << "===========================================================================\x1b[K" << "\n";
+            std::cout << "|   Fang, gonp, and meepster99(Inana)'s Extended Training Mode Mod " << VERSION << "   |\x1b[K" << "\n";
+            std::cout << "|                                                                         |\x1b[K" << "\n";
+            std::cout << "|   " << GITHUB_RELEASE << "   |\x1b[K" << "\n";
             if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
-                std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                 |\x1b[K" << std::endl;
+                std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                 |\x1b[K" << "\n";
             else
-                std::cout << "|                                                                         |\x1b[K" << std::endl;
-            std::cout << "===========================================================================\x1b[K" << std::endl;
+                std::cout << "|                                                                         |\x1b[K" << "\n";
+            std::cout << "===========================================================================\x1b[K" << "\n";
 
             SetConsoleCursorPosition(hConsoleHandle, { 0, 6 });
             std::cout << "\x1b[K";
@@ -5341,6 +5343,7 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyStatus), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyStatusCopy), &nWriteBuffer, 4, 0);
                     }*/
+                    Sleep(4);
                 }
             }
         }

@@ -545,7 +545,7 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 		return;
 	}
 
-	const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+	const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1  );
 	
 	// the order of params is not communicated. i think. so it must be in this order
 	// stupidest bug of my life
@@ -986,43 +986,7 @@ void __stdcall _doDrawCalls() {
 
 	//Sleep(1);
 
-	static bool drawDebug = false;
-	static KeyState F10Key(VK_F10);
 
-	if (F10Key.keyDown()) {
-		drawDebug = !drawDebug;
-	}
-
-	if (drawDebug) { 
-		// how slow is this,,, im not sure how expensive map lookups are, but the keys to it could be constexpr. ugh 
-		// i also have the pointer strat. might go do that tbh
-		int profileInfoY = 128;
-		for (auto& [name, info] : profilerData) {
-
-			info.times[info.index] = info.currentFrameTime;
-
-			long long totalTime = 0;
-			for (int i = 0; i < 64; i++) {
-				totalTime += info.times[i];
-			}
-			totalTime >>= 6; // div 64
-
-			//TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-			TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-
-			TextDraw(200, profileInfoY, 12, 0x7FFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-
-			TextDraw(400, profileInfoY, 12, 0x10FFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-
-			info.currentFrameTime = 0;
-			info.callCount = 0;
-
-			// i dont trust MSVC to actually do this
-			info.index = (info.index + 1) & 63;
-			
-			profileInfoY += 14;
-		}
-	}
 	//profileDrawCalls.clear();
 
 	profileFunction();
@@ -1063,6 +1027,49 @@ void __stdcall _doDrawCalls() {
 	for (const auto& drawCallInfo : drawCalls) {	
 		drawCallInfo();
 	}
+
+	//profiler.~Profiler();
+
+	static char buffer[1024];
+	static bool drawDebug = false;
+	static KeyState F10Key(VK_F10);
+
+	if (F10Key.keyDown()) {
+		drawDebug = !drawDebug;
+	}
+
+	if (drawDebug) {
+		// how slow is this,,, im not sure how expensive map lookups are, but the keys to it could be constexpr. ugh 
+		// i also have the pointer strat. might go do that tbh
+		float profileInfoY = 128;
+		for (auto& [name, info] : profilerData) {
+
+			info.times[info.index] = info.currentFrameTime;
+
+			long long totalTime = 0;
+			for (int i = 0; i < 64; i++) {
+				totalTime += info.times[i];
+			}
+			totalTime >>= 6; // div 64
+
+			//TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+			snprintf(buffer, 1024, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+			drawText2(0, (float)profileInfoY / 480.0f, (float)12 / 480.0f, 0xFFFFFFFF, buffer);
+
+			//TextDraw(200, profileInfoY, 12, 0x7FFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+
+			//TextDraw(400, profileInfoY, 12, 0x10FFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+
+			info.currentFrameTime = 0;
+			info.callCount = 0;
+
+			// i dont trust MSVC to actually do this
+			info.index = (info.index + 1) & 63;
+
+			profileInfoY += 14;
+		}
+	}
+	
 
 	device->EndScene();
 

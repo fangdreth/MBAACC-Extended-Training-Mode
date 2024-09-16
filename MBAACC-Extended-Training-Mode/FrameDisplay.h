@@ -187,6 +187,8 @@ void CheckProjectiles(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
 	nCharacterID = 10 * cCharacterNumber + cMoon;
 	std::map<std::string, int> CharacterMap = MBAACC_Map[nCharacterID];
 
+
+	DWORD dwBlankEffectCount = 0;
 	bool bProjectileExists = 0;
 	char cProjectileSource = 0;
 	int nProjectilePattern = 0;
@@ -197,6 +199,7 @@ void CheckProjectiles(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adEffectBase + dwEffectStructSize * i), &bProjectileExists, 1, 0);
 		if (bProjectileExists)
 		{
+			dwBlankEffectCount = 0;
 			ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adEffectBase + dwEffectStructSize * i + adEffectSource), &cProjectileSource, 1, 0);
 			if (cProjectileSource + 1 == P.nPlayerNumber)
 			{
@@ -218,6 +221,11 @@ void CheckProjectiles(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
 						nCount++;
 					}
 				}
+			}
+		} else {
+			dwBlankEffectCount++;
+			if (dwBlankEffectCount > 16) {
+				break;
 			}
 		}
 	}
