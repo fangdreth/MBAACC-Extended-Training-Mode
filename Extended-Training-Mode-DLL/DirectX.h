@@ -41,6 +41,49 @@ size_t fontBufferSize = 0;
 BYTE* fontBuffer = NULL; // this is purposefully not freed on evict btw
 IDirect3DTexture9* fontTexture = NULL;
 
+IDirect3DPixelShader9* createShader(const char* pixelShaderCode) {
+
+	IDirect3DPixelShader9* res = NULL;
+	ID3DXBuffer* pShaderBuffer = NULL;
+	ID3DXBuffer* pErrorBuffer = NULL;
+
+	HRESULT hr;
+
+	hr = D3DXCompileShader(
+		pixelShaderCode,
+		strlen(pixelShaderCode),
+		NULL,
+		NULL,
+		"main",
+		//"trans",					 
+		"ps_3_0",
+		//"ps_4_0",
+		0,
+		&pShaderBuffer,
+		&pErrorBuffer,
+		NULL
+	);
+
+	if (FAILED(hr)) {
+		if (pErrorBuffer) {
+			log((char*)pErrorBuffer->GetBufferPointer());
+			pErrorBuffer->Release();
+		}
+		return NULL;
+	}
+
+	hr = device->CreatePixelShader((DWORD*)pShaderBuffer->GetBufferPointer(), &res);
+
+	if (FAILED(hr)) {
+		log("createShader died");
+		return NULL;
+	}
+
+	pShaderBuffer->Release();
+
+	return res;
+}
+
 unsigned scaleNextPow2(unsigned v) {
 	v--;
 	v |= v >> 1;
@@ -173,7 +216,6 @@ void _initFontFirstLoad() {
 		return;
 	}
 
-
 	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
 	hr = device->BeginScene();
@@ -240,6 +282,8 @@ void initFont() {
 		return;
 	}
 
+	//hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, fontTexture, NULL);
+
 	log("FONT TEXTURE LOADED");
 }
 
@@ -302,17 +346,41 @@ void __stdcall backupRenderState() {
 
 	//log("%d %d %d %d %d %d %d", _D3DRS_BLENDOP, _D3DRS_ALPHABLENDENABLE, _D3DRS_SRCBLEND, _D3DRS_DESTBLEND, _D3DRS_SEPARATEALPHABLENDENABLE, _D3DRS_SRCBLENDALPHA, _D3DRS_DESTBLENDALPHA);
 
+
 	
+	
+	// good
+	/*
 	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-	
+
 	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	
+
 	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
 	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_SRCALPHA);
 	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ONE);
+	*/
+	
+	
+	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+	//device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT);
+	//device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
 
+	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	//device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA); // mult the input by the source alpha 
+	//device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA); // in the event that there is 0 alpha black, invsrcalpha will make it such taht it instead uses the dest color
+
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
+
+	device->SetRenderState(D3DRS_BLENDOPALPHA, D3DBLENDOP_ADD);
+
+	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
+	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
+	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
+	
+	
 
 
 	/*
@@ -516,6 +584,30 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 	scaleVertex(vertices[2].position);
 	scaleVertex(vertices[3].position);
 
+	static IDirect3DPixelShader9* pShader = NULL;
+	if (pShader == NULL) {
+		pShader = createShader(R"(
+			sampler2D textureSampler : register(s0);
+			float4 texSize : register(c219);
+		
+			float4 main(float2 texCoord : TEXCOORD0) : COLOR {
+
+			
+					float4 texColor = tex2D(textureSampler, texCoord);
+
+					//texColor.r = 1.0 - texColor.r;
+
+					return float4(1.0, 1.0, 0.0, 0.5);
+			}
+
+		)");
+	}
+
+	D3DSURFACE_DESC desc;
+	fontTexture->GetLevelDesc(0, &desc); // Get the texture size
+	D3DXVECTOR4 textureSize((float)desc.Width, (float)desc.Height, 0.0, 0.0);
+	device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
+
 	// Set up the vertex buffer and draw
 	// i dislike allocing and unallocing stuff like this.
 	// ESPECIALLY HERE.
@@ -530,6 +622,7 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 		v_buffer->Unlock();
 
 		device->SetTexture(0, fontTexture);
+		device->SetPixelShader(pShader);
 
 		device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
 		device->SetFVF(vertFormat);
@@ -537,6 +630,7 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 
 		v_buffer->Release();
 
+		device->SetPixelShader(NULL);
 		device->SetTexture(0, NULL);
 	} else {
 		log("drawCharAlloc failed?");	
@@ -657,8 +751,6 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 	float origX = x;
 	float origY = y;
 	
-	
-
 	float charWidthOffset = (fontRatio * size) * 1.01f; // this 1.01 might cause issues when aligning stuff, not sure
 	float charHeightOffset = size;
 
@@ -696,6 +788,15 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 		x += charWidthOffset;
 		str++;
 	}
+
+	/*
+	if (pShader != NULL) {
+		pShader->Release();
+		pShader = NULL;
+	}
+	*/
+
+	//device->SetPixelShader(NULL);
 	
 }
 
@@ -705,7 +806,7 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 // look, i know i like lambdas too much, but i was getting annoyed
 // constantly allocing and deallocing lambdas is probs,,, bad.
 // i could just have them be, refs? idek
-std::vector<std::function<void(void)>*> drawCalls;
+std::vector<std::function<void(void)>> drawCalls;
 typedef struct ProfileInfo {
 	unsigned callCount = 0; // amount called this frame 
 	long long currentFrameTime = 0; // time spent here this frame
@@ -722,7 +823,7 @@ void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, b
 	y1 /= 480.0;
 	
 	drawCalls.emplace_back(
-		new std::function<void(void)>(
+		std::function<void(void)>(
 		[x1, y1, x2, y2, ARGB, side]() -> void {
 			drawLine2(x1, y1, x2, y2, ARGB, side);
 		}
@@ -737,7 +838,7 @@ void RectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 	h /= 480.0;
 	
 	drawCalls.emplace_back(
-		new std::function<void(void)>(
+		std::function<void(void)>(
 		[x, y, w, h, ARGB]() -> void {
 			drawRect2(x, y, w, h, ARGB);
 		}
@@ -752,7 +853,7 @@ void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 	h /= 480.0;
 	
 	drawCalls.emplace_back(
-		new std::function<void(void)>(
+		std::function<void(void)>(
 		[x, y, w, h, ARGB]() -> void {
 			drawBorder2(x, y, w, h, ARGB);
 		}
@@ -767,7 +868,7 @@ void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4)
 	h /= 480.0;	
 	
 	drawCalls.emplace_back(
-	new std::function<void(void)>(
+	std::function<void(void)>(
 		[x, y, w, h, ARGB]() -> void {
 			drawRect2(x, y, w, h, ARGB);
 			drawBorder2(x, y, w, h, ARGB | 0xFF000000);
@@ -795,7 +896,7 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	va_end(args);
 
 	drawCalls.emplace_back(
-		new std::function<void(void)>(
+		std::function<void(void)>(
 		[x, y, size, ARGB, buffer]() mutable -> void {
 			drawText2(x, y, size, ARGB, buffer);
 			if (buffer != NULL) {
@@ -865,7 +966,12 @@ void __stdcall _doDrawCalls() {
 			}
 			totalTime >>= 6; // div 64
 
-			TextDraw(0, profileInfoY, 12, 0xFF00FFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+			//TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+			TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+
+			TextDraw(200, profileInfoY, 12, 0x7FFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
+
+			TextDraw(400, profileInfoY, 12, 0x10FFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
 
 			info.currentFrameTime = 0;
 			info.callCount = 0;
@@ -886,7 +992,7 @@ void __stdcall _doDrawCalls() {
 	// its in here bc present is guarenteed to only be called once a frame
 	static long long startTime = 0.0;
 	static long long endTime = 0.0;
-	const int timeBufferLen = 60;
+	const int timeBufferLen = 64;
 	static double timeBuffer[timeBufferLen];
 	static int timeBufferIndex = 0;
 
@@ -894,7 +1000,7 @@ void __stdcall _doDrawCalls() {
 
 	timeBuffer[timeBufferIndex] = (double)1000000.0 / ((double)endTime - startTime);
 
-	timeBufferIndex = (timeBufferIndex + 1) % timeBufferLen;
+	timeBufferIndex = (timeBufferIndex + 1) & (timeBufferLen - 1);
 
 	double res = 0.0;
 	for (int i = 0; i < timeBufferLen; i++) {
@@ -912,18 +1018,18 @@ void __stdcall _doDrawCalls() {
 	backupRenderState();
 
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
-
-	for (std::function<void(void)>* drawCallInfo : drawCalls) {	
-		(*drawCallInfo)();
+	// i am unsure if stack alloced or heap allocing these things is better or worse
+	for (const auto& drawCallInfo : drawCalls) {	
+		drawCallInfo();
 	}
 
 	device->EndScene();
 
 	restoreRenderState();
 
-	for (int i = 0; i < drawCalls.size(); i++) {
+	/*for (int i = 0; i < drawCalls.size(); i++) {
 		delete drawCalls[i];
-	}
+	}*/
 
 	drawCalls.clear();
 	

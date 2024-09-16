@@ -346,6 +346,8 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 	patchMemcpy(addr, temp, 1);
 }
 
+#include "DirectX.h"
+
 // actual functions 
 
 extern "C" int asmDrawText(int w, int h, int x, int y, const char* text, int alpha, int shade, int layer, void* addr, int spacing, int idek, char* out);
@@ -499,6 +501,7 @@ void drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = 
 
 void drawTextWithBorder(int x, int y, int w, int h, const char* text)
 {
+	profileFunction();
 	// i am not proud of this.
 
 	/*
@@ -583,8 +586,6 @@ void drawBorderWithHighlight(int x, int y, int w, int h, DWORD ARGB = 0x8042e5f4
 	
 	drawRect(x, y, w, h, r, g, b, 0x38);
 }
-
-#include "DirectX.h"
 
 // -----
 
