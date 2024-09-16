@@ -1765,6 +1765,8 @@ DWORD _naked_pauseInputDisplay_FUN_004790a0 = 0x004790a0;
 DWORD _naked_pauseInputDisplay_FUN_004796a0 = 0x004796a0;
 __declspec(naked) void _naked_pauseInputDisplay() {
 
+	// overwrite at 0x004794c4
+
 	__asm {
 
 		push eax;
@@ -1840,15 +1842,72 @@ void newPauseCallback2() {
 	
 }
 
+__declspec(naked) void _naked_pauseInputDisplay2() {
+
+
+	__asm {
+
+
+
+		// i need to check if the menu is open in general, freeze menu, or normal
+		cmp _naked_newPauseCallback2_IsPaused, 0;
+		JE _SKIP;
+
+
+
+		// menu is open, dont do input bs
+		push 004794dch;
+		ret;
+
+	_SKIP:
+
+	}
+
+
+
+	// not risking having to argue with MASM.
+	// bytes taken from 004794c4
+
+	__asm {
+		push esi;
+		call[_naked_pauseInputDisplay_FUN_004790a0];
+	}
+	;
+	// MOVZX EBX,byte ptr [ESI + 0x2e7]
+	__asm _emit 0x0F;
+	__asm _emit 0xB6;
+	__asm _emit 0x9E;
+	__asm _emit 0xE7;
+	__asm _emit 0x02;
+	__asm _emit 0x00;
+	__asm _emit 0x00;
+
+	__asm {
+		push eax;
+		mov eax, edi;
+		call[_naked_pauseInputDisplay_FUN_004796a0];
+		add esp, 08h;
+	};
+
+
+	__asm {
+		push 004794dch;
+		ret;
+	};
+
+
+}
+
 //DWORD _naked_newPauseCallback2_Func_Addr = 0x00432c50;
 //DWORD _naked_newPauseCallback2_Func_Addr = 0x00432b40;
 //DWORD _naked_newPauseCallback2_Func_Addr = 0x00423630;
 //DWORD _naked_newPauseCallback2_Func_Addr = 0x0046db40;
-DWORD _naked_newPauseCallback2_Func_Addr = 0x004745e0;
-
+//DWORD _naked_newPauseCallback2_Func_Addr = 0x004745e0;
 //DWORD _naked_newPauseCallback2_Func_Addr = 0x00472b20;
+DWORD _naked_newPauseCallback2_UpdateBattleScene = 0x00423630;
 DWORD _naked_newPauseCallback2_Func_TrainingPause = 0x0044c480;
 __declspec(naked) void _naked_newPauseCallback2() {
+
 
 	PUSH_ALL;
 	newPauseCallback2();
@@ -1858,14 +1917,15 @@ __declspec(naked) void _naked_newPauseCallback2() {
 		cmp _naked_newPauseCallback2_IsPaused, 1;
 		JE _SKIP;
 
-		call[_naked_newPauseCallback2_Func_Addr];
+		//call[_naked_newPauseCallback2_Func_Addr];
+		call[_naked_newPauseCallback2_UpdateBattleScene];
 
 		//push 0040e476h;
 		//push 00432c82h;
-		//push 004235d6h;
+		push 004235d6h;
 		//push 0042370bh;
 		//push 00423747h;
-		push 00423742h;
+		//push 0042370bh;
 		ret;
 
 	_SKIP:
@@ -1875,16 +1935,44 @@ __declspec(naked) void _naked_newPauseCallback2() {
 		// i have 2/3 of those covered
 
 		// this call, should be ok?
-		//call[_naked_newPauseCallback2_Func_TrainingPause];
+		call[_naked_newPauseCallback2_Func_TrainingPause];
 
 		//push 0040e476h;
 		//push 00432c82h;
-		//push 004235d6h;
+		push 004235d6h;
 		//push 0042370bh;
 		//push 004540beh;
 		//push 004235d6h;
 		//push 004235dch;
-		push 00423747h;
+		//push 00423747h;
+
+		// i have no idea what state the stack is in rn
+
+		ret;
+	};
+}
+
+__declspec(naked) void _naked_newPauseCallback3() {
+
+	__asm {
+		cmp _naked_newPauseCallback2_IsPaused, 0;
+		JE _CONT;
+
+
+		// leave.
+
+	_CONT: // go down normal path
+	}
+
+	// bytes from 004237bd
+	__asm _emit 0xBF;
+	__asm _emit 0x30;
+	__asm _emit 0x51;
+	__asm _emit 0x55;
+	__asm _emit 0x00;
+
+	__asm {
+		push 004237c2h;
 		ret;
 	};
 }
@@ -2216,9 +2304,22 @@ void initNewPauseCallback() {
 	patchJump(0x004794c4, _naked_pauseInputDisplay);
 	*/
 
+	/*
+	
+	issue:
+	with drawing the input and attack display, its a simple check 
+	with the dummy recording, i doubt it
+	allocing an entire menu will most definitely process that. i need to go down the alternate routes
+	but those suck too because they dont pause the framebar
+
+
+	*/
+	
+	patchJump(0x004794c4, _naked_pauseInputDisplay2);
+
 	//patchJump(0x0040e471, _naked_newPauseCallback2);
 
-	//patchJump(0x004235d1, _naked_newPauseCallback2);
+	patchJump(0x004235d1, _naked_newPauseCallback2);
 
 	//patchJump(0x00432c7d, _naked_newPauseCallback2);
 
@@ -2226,7 +2327,11 @@ void initNewPauseCallback() {
 
 	//patchJump(0x00423742, _naked_newPauseCallback2);
 	
-	patchJump(0x0042373d, _naked_newPauseCallback2);
+	//patchJump(0x0042373d, _naked_newPauseCallback2);
+
+	//patchJump(0x00423706, _naked_newPauseCallback2);
+
+	//patchJump(0x004237bd, _naked_newPauseCallback3);
 	
 }
 
