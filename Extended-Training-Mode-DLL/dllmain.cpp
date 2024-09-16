@@ -1096,7 +1096,6 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	Sleep(dwMilliseconds);
 }
 
-
 int nOldMot;
 int nMot = 0;
 bool bReversaled = false;
@@ -1601,227 +1600,6 @@ __declspec(naked) void nakedFrameDoneCallback()
 	};
 }
 
-DWORD newPauseCallback_IsFramestepMenu = false;
-
-void hidePauseMenu() {
-	if (!newPauseCallback_IsFramestepMenu) {
-		return;
-	}
-
-	DWORD menuPtr = *(DWORD*)0x0074d7fc;
-
-	if (menuPtr == 0) {
-		log("menuPtr was null while trying to hide it!");
-		return;
-	}
-
-	*(BYTE*)(menuPtr + 0x7C + 0x00) = 0x00;
-	*(BYTE*)(menuPtr + 0x7C + 0x08) = 0x0C;
-	*(WORD*)(menuPtr + 0x7C + 0x12) = 0x0000;
-	*(BYTE*)(menuPtr + 0x7C + 0x5C) = 0x64;
-
-	// [[0x0074d7fc]+DC] <- 3
-	// this was here for,, hiding the information thingy. it however, hides input and attack display. thats not right
-	if (*(DWORD*)(menuPtr + 0xDC) != 0) {
-		//*(DWORD*)(*(DWORD*)(menuPtr + 0xDC)) = 3;  
-	}
-
-
-}
-
-void newPauseCallback() {
-
-	//static KeyState F10Key(VK_F10);
-	
-	/*
-	
-	the section that writes when we enter viewscreen:
-	0047ef0d
-
-	the section that writes when we exit viewscreen: 
-	0047e68e
-
-	ebp+7C gives,, something
-
-	+0 is 1 when vis, 0 when invis
-	+8 is 2 when vis, C when invis
-
-	+12 is 0x3F80 when vis, 0 when invis. fade out timer.
-	most likely 4 bytes, but only mess with those two
-
-	1F05E918 - 1F05E8BC, 5C
-	+5C is 0 when vis, 0x64 when invis, fade in timer.
-
-	lastly, how do i get ebp.
-
-	[0x0074d7fc]
-
-	also, [[0x0074d7fc]+DC]
-	has something for hiding the info menu
-
-
-	
-	*/
-
-	constexpr auto unpause = []() -> void {
-		DWORD menuPtr = *(DWORD*)0x0074d7fc;
-
-		*(DWORD*)(0x0055d203) = 0;
-		*(DWORD*)(0x0055d256) = 2;
-		*(DWORD*)(0x00562a64) = 0;
-
-		newPauseCallback_IsFramestepMenu = false;
-	};
-
-	constexpr auto pause = []() -> void {
-
-		if (*(DWORD*)(0x0055d203) == 1) {
-			// this means are paused in the pause menu, dont freeze;
-			return;
-		}
-
-		*(DWORD*)(0x0055d203) = 1;
-		*(DWORD*)(0x0055d256) = 1;
-		*(DWORD*)(0x00562a64) = 1;
-
-		// there is a 1f delay when,, setting these vars (in the place im setting them) and when the menu is actually created
-		newPauseCallback_IsFramestepMenu = true;
-	};
-
-	
-	if (oFreezeKey.keyDown()) {
-		if (newPauseCallback_IsFramestepMenu) { // unpause
-			unpause();
-		} else { // pause
-			pause();
-		}
-	}
-
-	static bool needPause = false;
-
-	if (oFrameStepKey.keyDown() && newPauseCallback_IsFramestepMenu) {
-		unpause();
-		needPause = true;
-	} else if(needPause) {
-		needPause = false;
-		pause();
-	}
-
-}
-
-DWORD _naked_newPauseCallback_Func_Addr = 0x0044c7b0;
-__declspec(naked) void _naked_newPauseCallback() {
-
-	__asm {
-		call[_naked_newPauseCallback_Func_Addr];
-	};
-
-	PUSH_ALL;
-	newPauseCallback();
-	POP_ALL;
-
-	__asm {
-		push 0044c501h;
-		ret;
-	}
-
-}
-
-__declspec(naked) void _naked_createPauseMenuCallback() {
-	
-	PUSH_ALL;
-	hidePauseMenu();
-	POP_ALL;
-	
-	__asm {
-		pop ecx;
-		pop esi;
-		pop ebx;
-		add esp, 010h;
-		ret;
-	};
-}
-
-DWORD _naked_pauseMenuProcessInput_Func_Addr = 0x0041f5a0;
-__declspec(naked) void _naked_pauseMenuProcessInput() {
-	__asm {
-
-		cmp newPauseCallback_IsFramestepMenu, 1;
-		JE _SKIP;
-
-		call[_naked_pauseMenuProcessInput_Func_Addr];
-
-		push 00477fcah;
-		ret;
-
-	_SKIP:
-		push 00478029h;
-		ret;
-
-	};
-}
-
-DWORD _naked_pauseInputDisplay_FUN_004790a0 = 0x004790a0;
-DWORD _naked_pauseInputDisplay_FUN_004796a0 = 0x004796a0;
-__declspec(naked) void _naked_pauseInputDisplay() {
-
-	// overwrite at 0x004794c4
-
-	__asm {
-
-		push eax;
-
-		// i hate masm so much
-		mov eax, 0x0055d203;
-		mov eax, [eax];
-
-		// i need to check if the menu is open in general, freeze menu, or normal
-		cmp eax, 0;
-		JE _SKIP;
-
-		pop eax;
-
-		// menu is open, dont do input bs
-		push 004794dch;
-		ret;
-
-	_SKIP:
-		pop eax;
-	}
-
-
-
-	// not risking having to argue with MASM.
-	// bytes taken from 004794c4
-
-	__asm {
-		push esi;
-		call[_naked_pauseInputDisplay_FUN_004790a0];
-	}
-	;
-	// MOVZX EBX,byte ptr [ESI + 0x2e7]
-	__asm _emit 0x0F;
-	__asm _emit 0xB6;
-	__asm _emit 0x9E;
-	__asm _emit 0xE7;
-	__asm _emit 0x02;
-	__asm _emit 0x00;
-	__asm _emit 0x00;
-
-	__asm {
-		push eax;
-		mov eax, edi;
-		call[_naked_pauseInputDisplay_FUN_004796a0];
-		add esp, 08h;
-	};
-
-
-	__asm {
-		push 004794dch;
-		ret;
-	};
-}
-
 DWORD _naked_newPauseCallback2_IsPaused = 0;
 void newPauseCallback2() {
 
@@ -1842,18 +1620,15 @@ void newPauseCallback2() {
 	
 }
 
+DWORD _naked_pauseInputDisplay2_FUN_004790a0 = 0x004790a0;
+DWORD _naked_pauseInputDisplay2_FUN_004796a0 = 0x004796a0;
 __declspec(naked) void _naked_pauseInputDisplay2() {
 
-
 	__asm {
-
-
 
 		// i need to check if the menu is open in general, freeze menu, or normal
 		cmp _naked_newPauseCallback2_IsPaused, 0;
 		JE _SKIP;
-
-
 
 		// menu is open, dont do input bs
 		push 004794dch;
@@ -1863,17 +1638,12 @@ __declspec(naked) void _naked_pauseInputDisplay2() {
 
 	}
 
-
-
-	// not risking having to argue with MASM.
-	// bytes taken from 004794c4
-
 	__asm {
 		push esi;
-		call[_naked_pauseInputDisplay_FUN_004790a0];
+		call[_naked_pauseInputDisplay2_FUN_004790a0];
 	}
 	;
-	// MOVZX EBX,byte ptr [ESI + 0x2e7]
+	// 004794c4, MOVZX EBX,byte ptr [ESI + 0x2e7]
 	__asm _emit 0x0F;
 	__asm _emit 0xB6;
 	__asm _emit 0x9E;
@@ -1885,17 +1655,14 @@ __declspec(naked) void _naked_pauseInputDisplay2() {
 	__asm {
 		push eax;
 		mov eax, edi;
-		call[_naked_pauseInputDisplay_FUN_004796a0];
+		call[_naked_pauseInputDisplay2_FUN_004796a0];
 		add esp, 08h;
 	};
-
 
 	__asm {
 		push 004794dch;
 		ret;
 	};
-
-
 }
 
 //DWORD _naked_newPauseCallback2_Func_Addr = 0x00432c50;
@@ -1906,6 +1673,7 @@ __declspec(naked) void _naked_pauseInputDisplay2() {
 //DWORD _naked_newPauseCallback2_Func_Addr = 0x00472b20;
 DWORD _naked_newPauseCallback2_UpdateBattleScene = 0x00423630;
 DWORD _naked_newPauseCallback2_Func_TrainingPause = 0x0044c480;
+DWORD _naked_newPauseCallback2_Func_UpdateFX = 0x00453b80;
 __declspec(naked) void _naked_newPauseCallback2() {
 
 
@@ -1936,6 +1704,8 @@ __declspec(naked) void _naked_newPauseCallback2() {
 
 		// this call, should be ok?
 		call[_naked_newPauseCallback2_Func_TrainingPause];
+
+		call[_naked_newPauseCallback2_Func_UpdateFX];
 
 		//push 0040e476h;
 		//push 00432c82h;
@@ -2003,31 +1773,6 @@ __declspec(naked) void _naked_trigPauseHook() {
 		push 0044c7b5h;
 		ret;
 	}
-}
-
-__declspec(naked) void _naked_newPauseCallback3() {
-
-	__asm {
-		cmp _naked_newPauseCallback2_IsPaused, 0;
-		JE _CONT;
-
-
-		// leave.
-
-	_CONT: // go down normal path
-	}
-
-	// bytes from 004237bd
-	__asm _emit 0xBF;
-	__asm _emit 0x30;
-	__asm _emit 0x51;
-	__asm _emit 0x55;
-	__asm _emit 0x00;
-
-	__asm {
-		push 004237c2h;
-		ret;
-	};
 }
 
 int nTempP1MeterGain = 0;
@@ -2340,33 +2085,6 @@ void initPauseCallback()
 }
 
 void initNewPauseCallback() {
-	
-	/*
-	patchJump(0x0044c4fc, _naked_newPauseCallback);
-	patchJump(0x004781a8, _naked_createPauseMenuCallback);
-	patchJump(0x00477fc5, _naked_pauseMenuProcessInput);
-
-	// when paused, input display and attack display are not displayed, because thats how shit works. this fixes that.
-	// 00477f00. has a compare for if the menu is open 
-	// removing it would be fine, but im not sure what the code at 00477f45 does.
-	// however, if its something that should be drawn when the menu is closed, then it should be fine
-
-	patchMemset(0x00477f00, 0x90, 9); // patch the cmp and jump with nops 7 for cmp, 2 for jmp
-
-	// input display is updated even while paused. 
-	patchJump(0x004794c4, _naked_pauseInputDisplay);
-	*/
-
-	/*
-	
-	issue:
-	with drawing the input and attack display, its a simple check 
-	with the dummy recording, i doubt it
-	allocing an entire menu will most definitely process that. i need to go down the alternate routes
-	but those suck too because they dont pause the framebar
-
-
-	*/
 	
 	patchJump(0x004794c4, _naked_pauseInputDisplay2);
 
