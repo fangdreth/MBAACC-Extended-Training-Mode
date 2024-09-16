@@ -1394,7 +1394,7 @@ int main(int argc, char* argv[])
                                 }
                                 case 8:
                                 {
-                                    char pcTemp64[64] = "Load RNG from a save state.";
+                                    char pcTemp64[64] = "Include RNG when loading a save state.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (bLoadRNG)
                                         strcpy_s(pcTemp64, ">RNG {is loaded.");
