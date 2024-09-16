@@ -1820,6 +1820,48 @@ __declspec(naked) void _naked_pauseInputDisplay() {
 	};
 }
 
+DWORD _naked_newPauseCallback2_IsPaused = 0;
+void newPauseCallback2() {
+
+
+	if (oFreezeKey.keyDown()) {
+		_naked_newPauseCallback2_IsPaused = !_naked_newPauseCallback2_IsPaused;
+	}
+
+	static bool needPause = false;
+
+	if (oFrameStepKey.keyDown() && _naked_newPauseCallback2_IsPaused) {
+		needPause = true;
+		_naked_newPauseCallback2_IsPaused = false;
+	} else if (needPause) {
+		needPause = false;
+		_naked_newPauseCallback2_IsPaused = true;
+	}
+	
+}
+
+//DWORD _naked_newPauseCallback2_Func_Addr = 0x00432c50;
+DWORD _naked_newPauseCallback2_Func_Addr = 0x00423630;
+__declspec(naked) void _naked_newPauseCallback2() {
+
+	PUSH_ALL;
+	newPauseCallback2();
+	POP_ALL;
+
+	__asm {
+		cmp _naked_newPauseCallback2_IsPaused, 1;
+		JE _SKIP;
+
+		call[_naked_newPauseCallback2_Func_Addr];
+
+	_SKIP:
+
+		//push 0040e476h;
+		push 004235d6h;
+		ret;
+	};
+}
+
 int nTempP1MeterGain = 0;
 int nTempP2MeterGain = 0;
 int nP1MeterGain = 0;
@@ -2130,6 +2172,8 @@ void initPauseCallback()
 }
 
 void initNewPauseCallback() {
+	
+	/*
 	patchJump(0x0044c4fc, _naked_newPauseCallback);
 	patchJump(0x004781a8, _naked_createPauseMenuCallback);
 	patchJump(0x00477fc5, _naked_pauseMenuProcessInput);
@@ -2143,6 +2187,11 @@ void initNewPauseCallback() {
 
 	// input display is updated even while paused. 
 	patchJump(0x004794c4, _naked_pauseInputDisplay);
+	*/
+
+	//patchJump(0x0040e471, _naked_newPauseCallback2);
+
+	patchJump(0x004235d1, _naked_newPauseCallback2);
 	
 }
 
