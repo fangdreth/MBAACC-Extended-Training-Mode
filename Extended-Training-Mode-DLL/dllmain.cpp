@@ -1841,7 +1841,13 @@ void newPauseCallback2() {
 }
 
 //DWORD _naked_newPauseCallback2_Func_Addr = 0x00432c50;
-DWORD _naked_newPauseCallback2_Func_Addr = 0x00423630;
+//DWORD _naked_newPauseCallback2_Func_Addr = 0x00432b40;
+//DWORD _naked_newPauseCallback2_Func_Addr = 0x00423630;
+//DWORD _naked_newPauseCallback2_Func_Addr = 0x0046db40;
+DWORD _naked_newPauseCallback2_Func_Addr = 0x004745e0;
+
+//DWORD _naked_newPauseCallback2_Func_Addr = 0x00472b20;
+DWORD _naked_newPauseCallback2_Func_TrainingPause = 0x0044c480;
 __declspec(naked) void _naked_newPauseCallback2() {
 
 	PUSH_ALL;
@@ -1854,10 +1860,31 @@ __declspec(naked) void _naked_newPauseCallback2() {
 
 		call[_naked_newPauseCallback2_Func_Addr];
 
+		//push 0040e476h;
+		//push 00432c82h;
+		//push 004235d6h;
+		//push 0042370bh;
+		//push 00423747h;
+		push 00423742h;
+		ret;
+
 	_SKIP:
 
+	
+		// when the func is NOT called, we still need to deal with input display, attack display, and whatever the fuck controls the dummy recorder
+		// i have 2/3 of those covered
+
+		// this call, should be ok?
+		//call[_naked_newPauseCallback2_Func_TrainingPause];
+
 		//push 0040e476h;
-		push 004235d6h;
+		//push 00432c82h;
+		//push 004235d6h;
+		//push 0042370bh;
+		//push 004540beh;
+		//push 004235d6h;
+		//push 004235dch;
+		push 00423747h;
 		ret;
 	};
 }
@@ -2191,7 +2218,15 @@ void initNewPauseCallback() {
 
 	//patchJump(0x0040e471, _naked_newPauseCallback2);
 
-	patchJump(0x004235d1, _naked_newPauseCallback2);
+	//patchJump(0x004235d1, _naked_newPauseCallback2);
+
+	//patchJump(0x00432c7d, _naked_newPauseCallback2);
+
+	//patchJump(0x00423706, _naked_newPauseCallback2);
+
+	//patchJump(0x00423742, _naked_newPauseCallback2);
+	
+	patchJump(0x0042373d, _naked_newPauseCallback2);
 	
 }
 

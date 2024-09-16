@@ -351,6 +351,7 @@ void __stdcall backupRenderState() {
 	
 	// good
 	
+	/*
 	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
 	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -360,7 +361,7 @@ void __stdcall backupRenderState() {
 	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
 	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_SRCALPHA);
 	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ONE);
-	
+	*/
 	
 	/*
 	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
@@ -1054,7 +1055,7 @@ void __stdcall _doDrawCalls() {
 
 			//TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
 			snprintf(buffer, 1024, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-			drawText2(0, (float)profileInfoY / 480.0f, (float)12 / 480.0f, 0xFFFFFFFF, buffer);
+			drawText2(-0.0f, (float)profileInfoY / 480.0f, (float)12 / 480.0f, 0xFF00FFFF, buffer);
 
 			//TextDraw(200, profileInfoY, 12, 0x7FFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
 
