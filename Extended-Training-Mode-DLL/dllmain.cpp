@@ -1952,6 +1952,59 @@ __declspec(naked) void _naked_newPauseCallback2() {
 	};
 }
 
+DWORD _naked_pauseMenuProcessInput2_Func = 0x00477ce0;
+__declspec(naked) void _naked_pauseMenuProcessInput2() {
+
+	// patched at 0x0044c48e
+
+	__asm {
+		call[_naked_pauseMenuProcessInput2_Func]; // call the actual func
+
+		// check if our pause is active
+		cmp _naked_newPauseCallback2_IsPaused, 1;
+		JNE _SKIP;
+
+		// if we are here, we are in our own menu, and modify the retval
+
+		mov eax, 0;
+
+
+	_SKIP: // ret
+
+		push 0044c493h;
+		ret;
+	}
+}
+
+__declspec(naked) void _naked_trigPauseHook() {
+	// makes sure menu doesnt open when we are in pause
+
+
+	__asm {
+		cmp _naked_newPauseCallback2_IsPaused, 1;
+		JNE _SKIP;
+
+		// being here means we are in our pause section. ret.
+		ret;
+
+	_SKIP:
+	}
+
+	
+
+	// overwritten bytes
+	__asm _emit 0xA1;
+	__asm _emit 0x74;
+	__asm _emit 0x2A;
+	__asm _emit 0x56;
+	__asm _emit 0x00;
+
+	__asm {
+		push 0044c7b5h;
+		ret;
+	}
+}
+
 __declspec(naked) void _naked_newPauseCallback3() {
 
 	__asm {
@@ -2317,22 +2370,12 @@ void initNewPauseCallback() {
 	
 	patchJump(0x004794c4, _naked_pauseInputDisplay2);
 
-	//patchJump(0x0040e471, _naked_newPauseCallback2);
-
 	patchJump(0x004235d1, _naked_newPauseCallback2);
 
-	//patchJump(0x00432c7d, _naked_newPauseCallback2);
+	patchJump(0x0044c48e, _naked_pauseMenuProcessInput2);
 
-	//patchJump(0x00423706, _naked_newPauseCallback2);
+	patchJump(0x0044c7b0, _naked_trigPauseHook);
 
-	//patchJump(0x00423742, _naked_newPauseCallback2);
-	
-	//patchJump(0x0042373d, _naked_newPauseCallback2);
-
-	//patchJump(0x00423706, _naked_newPauseCallback2);
-
-	//patchJump(0x004237bd, _naked_newPauseCallback3);
-	
 }
 
 void threadFunc() 
