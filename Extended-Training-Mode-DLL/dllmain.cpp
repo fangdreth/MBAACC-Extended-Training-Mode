@@ -281,6 +281,19 @@ void __stdcall patchMemcpy(auto dst, auto src, size_t n)
 	VirtualProtect(dest, n, oldProtect, NULL);
 }
 
+void __stdcall patchMemset(auto dst, BYTE v, size_t n)
+{
+
+	static_assert(sizeof(dst) == 4, "Type must be 4 bytes");
+
+	LPVOID dest = reinterpret_cast<LPVOID>(dst);
+
+	DWORD oldProtect;
+	VirtualProtect(dest, n, PAGE_EXECUTE_READWRITE, &oldProtect);
+	memset(dest, v, n);
+	VirtualProtect(dest, n, oldProtect, NULL);
+}
+
 // the patch func being templated causes problems when calling from asm
 void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n)
 {
@@ -494,6 +507,8 @@ void drawTextWithBorder(int x, int y, int w, int h, const char* text)
 	*/
 
 	char tempBuf[2] = { '\0', '\0' };
+
+	w = w - 1;
 
 	const char* c = text;
 
@@ -1616,9 +1631,9 @@ void hidePauseMenu() {
 	*(BYTE*)(menuPtr + 0x7C + 0x5C) = 0x64;
 
 	// [[0x0074d7fc]+DC] <- 3
-
+	// this was here for,, hiding the information thingy. it however, hides input and attack display. thats not right
 	if (*(DWORD*)(menuPtr + 0xDC) != 0) {
-		*(DWORD*)(*(DWORD*)(menuPtr + 0xDC)) = 3;
+		//*(DWORD*)(*(DWORD*)(menuPtr + 0xDC)) = 3;  
 	}
 
 
@@ -1669,6 +1684,12 @@ void newPauseCallback() {
 	};
 
 	constexpr auto pause = []() -> void {
+
+		if (*(DWORD*)(0x0055d203) == 1) {
+			// this means are paused in the pause menu, dont freeze;
+			return;
+		}
+
 		*(DWORD*)(0x0055d203) = 1;
 		*(DWORD*)(0x0055d256) = 1;
 		*(DWORD*)(0x00562a64) = 1;
@@ -1750,6 +1771,65 @@ __declspec(naked) void _naked_pauseMenuProcessInput() {
 	};
 }
 
+DWORD _naked_pauseInputDisplay_FUN_004790a0 = 0x004790a0;
+DWORD _naked_pauseInputDisplay_FUN_004796a0 = 0x004796a0;
+__declspec(naked) void _naked_pauseInputDisplay() {
+
+	__asm {
+
+		push eax;
+
+		// i hate masm so much
+		mov eax, 0x0055d203;
+		mov eax, [eax];
+
+		// i need to check if the menu is open in general, freeze menu, or normal
+		cmp eax, 0;
+		JE _SKIP;
+
+		pop eax;
+
+		// menu is open, dont do input bs
+		push 004794dch;
+		ret;
+
+	_SKIP:
+		pop eax;
+	}
+
+
+
+	// not risking having to argue with MASM.
+	// bytes taken from 004794c4
+
+	__asm {
+		push esi;
+		call[_naked_pauseInputDisplay_FUN_004790a0];
+	}
+	;
+	// MOVZX EBX,byte ptr [ESI + 0x2e7]
+	__asm _emit 0x0F;
+	__asm _emit 0xB6;
+	__asm _emit 0x9E;
+	__asm _emit 0xE7;
+	__asm _emit 0x02;
+	__asm _emit 0x00;
+	__asm _emit 0x00;
+
+	__asm {
+		push eax;
+		mov eax, edi;
+		call[_naked_pauseInputDisplay_FUN_004796a0];
+		add esp, 08h;
+	};
+
+
+	__asm {
+		push 004794dch;
+		ret;
+	};
+}
+
 int nTempP1MeterGain = 0;
 int nTempP2MeterGain = 0;
 int nP1MeterGain = 0;
@@ -1777,11 +1857,13 @@ void attackMeterDisplayCallback()
 
 	static char buffer[256];
 
-	snprintf(buffer, 256, "P1 METER GAIN %12d.%02d%%", nP1MeterGain / 100, nP1MeterGain % 100);
-	drawTextWithBorder(420, 186, 10, 14, buffer);
+	drawTextWithBorder(420, 186, 10, 14, "P1 METER GAIN");
+	snprintf(buffer, 256, "%4d.%02d%%", nP1MeterGain / 100, nP1MeterGain % 100);
+	drawTextWithBorder(420 + 130, 186, 10, 14, buffer);
 
-	snprintf(buffer, 256, "P2 METER GAIN %12d.%02d%%", nP2MeterGain/ 100, nP2MeterGain % 100);
-	drawTextWithBorder(420, 186 + 14, 10, 14, buffer);
+	drawTextWithBorder(420, 186 + 14, 10, 14, "P2 METER GAIN");
+	snprintf(buffer, 256, "%4d.%02d%%", nP2MeterGain / 100, nP2MeterGain % 100);
+	drawTextWithBorder(420 + 130, 186 + 14, 10, 14, buffer);
 }
 
 // hook funcs
@@ -2061,6 +2143,17 @@ void initNewPauseCallback() {
 	patchJump(0x0044c4fc, _naked_newPauseCallback);
 	patchJump(0x004781a8, _naked_createPauseMenuCallback);
 	patchJump(0x00477fc5, _naked_pauseMenuProcessInput);
+
+	// when paused, input display and attack display are not displayed, because thats how shit works. this fixes that.
+	// 00477f00. has a compare for if the menu is open 
+	// removing it would be fine, but im not sure what the code at 00477f45 does.
+	// however, if its something that should be drawn when the menu is closed, then it should be fine
+
+	patchMemset(0x00477f00, 0x90, 9); // patch the cmp and jump with nops 7 for cmp, 2 for jmp
+
+	// input display is updated even while paused. 
+	patchJump(0x004794c4, _naked_pauseInputDisplay);
+	
 }
 
 void threadFunc() 
