@@ -350,7 +350,7 @@ void __stdcall backupRenderState() {
 	
 	
 	// good
-	/*
+	
 	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
 	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -360,9 +360,9 @@ void __stdcall backupRenderState() {
 	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
 	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_SRCALPHA);
 	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ONE);
-	*/
 	
 	
+	/*
 	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 	//device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT);
 	//device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
@@ -379,7 +379,7 @@ void __stdcall backupRenderState() {
 	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
 	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
 	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
-	
+	*/
 	
 
 
@@ -566,8 +566,12 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 	D3DXVECTOR2 charH(0.0, charHeight);
 
 	// when drawing a o, the underscore would be to low, and cut into the top of it, this fixes that?
-	charTopLeft.y += 0.0001;
-	charH.y -= 0.0001;
+	charTopLeft.y += 0.0001f;
+	charH.y -= 0.0001f;
+
+	// LOWERCASE LETTERS ALL HAVE ISSUES
+	//charTopLeft.x += 0.00050f;
+	//charW.x -= 0.0001f;
 
 
 
@@ -622,7 +626,7 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 		v_buffer->Unlock();
 
 		device->SetTexture(0, fontTexture);
-		device->SetPixelShader(pShader);
+		//device->SetPixelShader(pShader);
 
 		device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
 		device->SetFVF(vertFormat);
@@ -641,10 +645,10 @@ void __stdcall drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042
 	
 	y = 1 - y;
 	
-	D3DVECTOR v1 = { ((x + 0) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v2 = { ((x + w) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v3 = { ((x + 0) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v4 = { ((x + w) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v1 = { ((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v2 = { ((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v3 = { ((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v4 = { ((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
 	
 	drawTri(v1, v2, v3, ARGB);
 	drawTri(v2, v3, v4, ARGB);
@@ -671,7 +675,7 @@ void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x
 	float my = p2.y - p1.y;
 	float m = my / mx;
 
-	float a = atan2(my, mx) + (3.1415926535 / 2.0f);
+	float a = atan2(my, mx) + (3.1415926535f / 2.0f);
 	
 	float m2 = tan(a);
 
@@ -697,10 +701,10 @@ void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x
 	p3.y = 1 - p3.y;
 	p4.y = 1 - p4.y;
 
-	D3DVECTOR v1 = { (p1.x * 1.5) - 1.0, (p1.y * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v2 = { (p2.x * 1.5) - 1.0, (p2.y * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v3 = { (p3.x * 1.5) - 1.0, (p3.y * 2.0) - 1.0, 0.0f };
-	D3DVECTOR v4 = { (p4.x * 1.5) - 1.0, (p4.y * 2.0) - 1.0, 0.0f };
+	D3DVECTOR v1 = { (p1.x * 1.5f) - 1.0f, (p1.y * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v2 = { (p2.x * 1.5f) - 1.0f, (p2.y * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v3 = { (p3.x * 1.5f) - 1.0f, (p3.y * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v4 = { (p4.x * 1.5f) - 1.0f, (p4.y * 2.0f) - 1.0f, 0.0f };
 
 	drawTri(v1, v2, v3, ARGB);
 	drawTri(v2, v3, v4, ARGB);
@@ -760,78 +764,65 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 	float h = charHeightOffset;
 
 	while (*str) {
-		if (*str == '\r' || *str == '\n') {
-			x = origX;
-			origY += charHeightOffset;
-			str++;
-			continue;
-		}
 
-		if (*str == ' ') {
-			x += charWidthOffset;
-			str++;
-			continue;
-		}
-
-		if (*str == '\t') { // please dont use tabs. please
-			str++;
-			continue;
-		}
-
-		// blue
-		if (*str == '{') {
-			TempARGB = 0xFF8F8FFF;
-			str++;
-			continue;
-		}
-
-		// red
-		if (*str == '~') {
-			TempARGB = 0xFFFF8F8F;
-			str++;
-			continue;
-		}
-
-		// green
-		if (*str == '@') {
-			TempARGB = 0xFF8FFF8F;
-			str++;
-			continue;
-		}
-
-		// yellow
-		if (*str == '`') {
-			TempARGB = 0xFFFFFF8F;
-			str++;
-			continue;
-		}
-
-		// purple
-		if (*str == '^') {
-			TempARGB = 0xFFFF8FFF;
-			str++;
-			continue;
-		}
-
-		// black
-		if (*str == '*') {
-			TempARGB = 0xFF8F8F8F;
-			str++;
-			continue;
-		}
-
-		if (*str == '}') {
-			TempARGB = ARGB;
-			str++;
-			continue;
+		switch (*str) {
+			case '\r':
+			case '\n':
+				x = origX;
+				origY += charHeightOffset;
+				str++;
+				continue;
+			case ' ':
+				x += charWidthOffset;
+				str++;
+				continue;
+			case '\t': // please dont use tabs. please
+				str++;
+				continue;
+			case '{': // blue
+				TempARGB = 0xFF8F8FFF;
+				str++;
+				continue;
+			case '~': // red
+				TempARGB = 0xFFFF8F8F;
+				str++;
+				continue;
+			case '@': // green 
+				TempARGB = 0xFF8FFF8F;
+				str++;
+				continue;
+			case '`': // yellow
+				TempARGB = 0xFFFFFF8F;
+				str++;
+				continue;
+			case '^': // purple
+				TempARGB = 0xFFFF8FFF;
+				str++;
+				continue;
+			case '*': // black
+				TempARGB = 0xFF8F8F8F;
+				str++;
+				continue;
+			case '}': // reset 
+				TempARGB = ARGB;
+				str++;
+				continue;
+			case '\\': // in case you want to print one of the above chars, you can escape them
+				str++;
+				if (*str == '\0') {
+					return;
+				}
+				break;
+			default:
+				break;
 		}
 
 		y = 1 - origY;
 		
-		D3DVECTOR v1 = { ((x + 0) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
-		D3DVECTOR v2 = { ((x + w) * 1.5) - 1.0, ((y + 0) * 2.0) - 1.0, 0.0f };
-		D3DVECTOR v3 = { ((x + 0) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
-		D3DVECTOR v4 = { ((x + w) * 1.5) - 1.0, ((y - h) * 2.0) - 1.0, 0.0f };
+		D3DVECTOR v1 = { ((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.0f };
+		D3DVECTOR v2 = { ((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.0f };
+		D3DVECTOR v3 = { ((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
+		D3DVECTOR v4 = { ((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
 
 		drawChar(v1, v2, v3, v4, size, TempARGB, *str);
 
@@ -867,10 +858,10 @@ std::map<const char*, ProfileInfo > profilerData;
 
 void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side = false) {
 	
-	x1 /= 480.0;
-	x2 /= 480.0;
-	y1 /= 480.0;
-	y1 /= 480.0;
+	x1 /= 480.0f;
+	x2 /= 480.0f;
+	y1 /= 480.0f;
+	y1 /= 480.0f;
 	
 	drawCalls.emplace_back(
 		std::function<void(void)>(
@@ -882,10 +873,10 @@ void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, b
 
 void RectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 	
-	x /= 480.0;
-	w /= 480.0;
-	y /= 480.0;
-	h /= 480.0;
+	x /= 480.0f;
+	w /= 480.0f;
+	y /= 480.0f;
+	h /= 480.0f;
 	
 	drawCalls.emplace_back(
 		std::function<void(void)>(
@@ -897,10 +888,10 @@ void RectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 
 void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 	
-	x /= 480.0;
-	w /= 480.0;
-	y /= 480.0;
-	h /= 480.0;
+	x /= 480.0f;
+	w /= 480.0f;
+	y /= 480.0f;
+	h /= 480.0f;
 	
 	drawCalls.emplace_back(
 		std::function<void(void)>(
@@ -912,10 +903,10 @@ void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 
 void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 	
-	x /= 480.0;
-	w /= 480.0;
-	y /= 480.0;
-	h /= 480.0;	
+	x /= 480.0f;
+	w /= 480.0f;
+	y /= 480.0f;
+	h /= 480.0f;	
 	
 	drawCalls.emplace_back(
 	std::function<void(void)>(
@@ -929,9 +920,9 @@ void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4)
 void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...) {
 	// i do hope that this allocing does not slow things down. i tried saving the va_args for when the actual print func was called, but it would not work
 
-	x /= 480.0;
-	y /= 480.0;
-	size /= 480.0;
+	x /= 480.0f;
+	y /= 480.0f;
+	size /= 480.0f;
 
 	char* buffer = (char*)malloc(1024);
 
