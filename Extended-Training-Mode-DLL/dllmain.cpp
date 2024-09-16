@@ -1579,33 +1579,16 @@ void frameDoneCallback()
 			SetRN(nCustomRN);
 	}
 
-	char pcLine1Text[32];
-	char pcLine2Text[32];
-	char pcLine3Text[32];
-	char pcLine4Text[32];
-	char pcLine5Text[32];
-	char pcLine6Text[32];
-	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine1Text), &pcLine1Text, 32, 0);
-	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine2Text), &pcLine2Text, 32, 0);
-	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine3Text), &pcLine3Text, 32, 0);
-	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine4Text), &pcLine4Text, 32, 0);
-	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine5Text), &pcLine5Text, 32, 0);
-	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedLine6Text), &pcLine6Text, 32, 0);
-	if (strcmp(pcLine1Text, "") != 0)
-		drawTextWithBorder(2, 87, 10, 10, pcLine1Text);
-
-	if (strcmp(pcLine2Text, "") != 0)
-		drawTextWithBorder(2, 114, 10, 10, pcLine2Text);
-	if (strcmp(pcLine3Text, "") != 0)
-		drawTextWithBorder(2, 132, 10, 10, pcLine3Text);
-
-	if (strcmp(pcLine4Text, "") != 0)
-		drawTextWithBorder(2, 158, 10, 10, pcLine4Text);
-	if (strcmp(pcLine5Text, "") != 0)
-		drawTextWithBorder(2, 176, 10, 10, pcLine5Text);
-
-	if (strcmp(pcLine6Text, "") != 0)
-		drawTextWithBorder(2, 202, 10, 10, pcLine6Text);
+	if (*(bool*)(dwBaseAddress + adSharedOnExtendedSettings))
+	{
+		char pcMainInfoText[64];
+		char pcSubInfoText[64];
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcMainInfoText, 64, 0);
+		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcSubInfoText, 64, 0);
+		RectDraw(-0.5f, 382.5f, 640.0f, 70.0f, 0xFF101010);
+		TextDraw(47.5f, 393.5f, 21.0f, 0xFFFFFFFF, pcMainInfoText);
+		TextDraw(66.5f, 420.5f, 21.0f, 0xFFFFFFFF, pcSubInfoText);
+	}
 }
 
 __declspec(naked) void nakedFrameDoneCallback()
