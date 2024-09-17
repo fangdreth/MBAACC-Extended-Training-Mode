@@ -1087,6 +1087,7 @@ typedef struct BoxData {
 	float y = 0.0f;
 	float w = 0.0f;
 	float h = 0.0f;
+	int player = 0; // what player this is being drawn for. should i,,, have each projectile be a seperate color as well?
 } BoxData;
 
 std::array<std::vector<BoxData>, static_cast<int>(BoxType::_Count)> boxDataList;
@@ -1094,6 +1095,10 @@ std::array<std::vector<BoxData>, static_cast<int>(BoxType::_Count)> boxDataList;
 IDirect3DTexture9* renderTargetTex = NULL;
 void HitboxBatchDraw(const std::vector<BoxData>& boxData, DWORD ARGB) {
 	if (device == NULL) {
+		return;
+	}
+
+	if (boxData.size() == 0) {
 		return;
 	}
 	
@@ -1142,28 +1147,17 @@ void HitboxBatchDraw(const std::vector<BoxData>& boxData, DWORD ARGB) {
 	// might need to do this?
 	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
-
 	device->BeginScene();
 	device->SetTexture(0, NULL);
-	// i believe im in my weird 1.333, 1.0 coord system rn
-
-	// this thing,,, oh fuck, it doesnt want to be scaled by,, omfg
-	// i dont want this to get scaled by the screen's res
-
-	//drawRect2(0.1, 0.1, 0.1, 0.1, 0xFF00FFFF);
-
-	//drawRect2(0.1, 0.1, 0.8, 0.8, 0xFF00FF00);
-	//drawRect2(0.0, 0.0, 1.333, 1.0, 0xFF00FF00);
-	// drawing on this texture, causes issues. 
-	// confusing issues.
-	// does, drawing outside of a textures range leak memory?
-	//drawRect2(0.25, 0.25, 0.5, 0.5, 0xFF00FF00);
-	//drawRect2(0, 0, 0.75, 0.75, 0xFF00FF00);
-
-	//drawRectUnscaled(0.25, 0.25, 0.5, 0.5, 0xFF00FF00);
-	//drawRectUnscaled(0.6, 0.6, 0.25, 0.25, 0xFF00FF00);
 
 	for (int i = 0; i < boxData.size(); i++) {
+
+		// by making the color we draw in different, i can, 
+		// wait hmm am i making a really stupid assumption here
+		// can green overlay green?
+		// yes. i no longer know what to do
+		// i need to figure out directx blend modes, blend based on COLOR ONLY, and then use that to see where things overlay.
+
 		drawRectUnscaled(boxData[i].y, boxData[i].x, boxData[i].h, boxData[i].w, ARGB);
 	}
 	
@@ -1190,6 +1184,8 @@ void HitboxBatchDraw(const std::vector<BoxData>& boxData, DWORD ARGB) {
 
 			float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 
+					// are pixel's positions in the center of pixel or top left???
+
 					float2 texOffset = 1.0 / texSize;
 					texOffset *= 2;
 					texOffset.y *= 0.6666666666666;
@@ -1200,48 +1196,33 @@ void HitboxBatchDraw(const std::vector<BoxData>& boxData, DWORD ARGB) {
 					if(texColor.a < 0.1) {
 						return texColor;
 					}
+					
+					float2 offsets[8] = {
+						texCoord + float2(-texOffset.x, -texOffset.y),
+						texCoord + float2(-texOffset.x, 0.0),
+						texCoord + float2(-texOffset.x, texOffset.y),
+						
+						texCoord + float2(0.0, -texOffset.y),
+						texCoord + float2(0.0, texOffset.y),
+						
+						texCoord + float2(texOffset.x, -texOffset.y),
+						texCoord + float2(texOffset.x, 0.0),
+						texCoord + float2(texOffset.x, texOffset.y)
+					};
 
-					float4 colorLeft =  tex2D(textureSampler, texCoord - float2(texOffset.x, 0));
-					float4 colorRight = tex2D(textureSampler, texCoord + float2(texOffset.x, 0));
-					float4 colorUp =    tex2D(textureSampler, texCoord - float2(0, texOffset.y));
-					float4 colorDown =  tex2D(textureSampler, texCoord + float2(0, texOffset.y));
-				
-					// check if colors are the same to do a cut as well. highlight P1 and P2 (and also p3/p4) shit slightly differently too?
-					// there has to be a better way of doing this
-					if(colorLeft.rgb != texColor.rgb) {
-						return float4(texColor.rgb, 1.0);
+					
+
+					float4 tempColor;
+					// ooooo 
+					[unroll(8)] for(int i=0; i<8; i++) {
+
+						tempColor = tex2D(textureSampler, offsets[i]);
+						if(tempColor.a == 0) {
+							return float4(texColor.rgb, 1.0);
+						}
+
 					}
-
-					if(colorRight.rgb != texColor.rgb) {
-						return float4(texColor.rgb, 1.0);
-					}
-
-					if(colorUp.rgb != texColor.rgb) {
-						return float4(texColor.rgb, 1.0);
-					}
-
-					if(colorDown.rgb != texColor.rgb) {
-						return float4(texColor.rgb, 1.0);
-					}
-
-					float cutoff = 0.0;
-
-					if(colorLeft.a <= cutoff) {
-						return float4(texColor.rgb, 1.0);
-					}
-
-					if(colorRight.a <= cutoff) {
-						return float4(texColor.rgb, 1.0);
-					}
-
-					if(colorUp.a <= cutoff) {
-						return float4(texColor.rgb, 1.0);
-					}
-
-					if(colorDown.a <= cutoff) {
-						return float4(texColor.rgb, 1.0);
-					}
-
+			
 					return float4(texColor.rgb, 0.25);
 			}
 
@@ -1335,11 +1316,13 @@ public:
 
 // -----
 
-void DrawHitbox(float x, float y, float w, float h, BoxType type) {
-	boxDataList[static_cast<int>(type)].emplace_back(BoxData{x / 640.0f, y / 480.0f, w / 640.0f, h / 480.0f });
+void DrawHitbox(float x, float y, float w, float h, BoxType type, int player) {
+	boxDataList[static_cast<int>(type)].emplace_back(BoxData{x / 640.0f, y / 480.0f, w / 640.0f, h / 480.0f, player });
 }
 
 void drawHitboxes() {
+
+	profileFunction();
 
 	constexpr DWORD colors[] = {
 		0xFF111111, // None
@@ -1354,16 +1337,37 @@ void drawHitboxes() {
 
 	// i could have avoided a div stage, but ugh, another time
 
-	for (int i = 1; i < static_cast<int>(BoxType::_Count); i++) {
+	int i;
 
-		DWORD col = colors[i];
+	i = static_cast<int>(BoxType::Hurtbox);
+	HitboxBatchDraw(boxDataList[i], colors[i]);
+	boxDataList[i].clear();
 
-		HitboxBatchDraw(boxDataList[i], col);
+	i = static_cast<int>(BoxType::Hitbox);
+	HitboxBatchDraw(boxDataList[i], colors[i]);
+	boxDataList[i].clear();
 
-		boxDataList[i].clear();
-	}
+	i = static_cast<int>(BoxType::Clash);
+	HitboxBatchDraw(boxDataList[i], colors[i]);
+	boxDataList[i].clear();
 
-	//HitboxBatchDraw(boxDataList[0], 0xFF00FF00);
+	i = static_cast<int>(BoxType::Blue);
+	HitboxBatchDraw(boxDataList[i], colors[i]);
+	boxDataList[i].clear();
+
+	i = static_cast<int>(BoxType::Shield);
+	HitboxBatchDraw(boxDataList[i], colors[i]);
+	boxDataList[i].clear();
+
+	// origin and collision never need to be overlaied. right? but tbh,, ugh i dont want more one off draw funcs
+	i = static_cast<int>(BoxType::Collision);
+	HitboxBatchDraw(boxDataList[i], colors[i]);
+	boxDataList[i].clear();
+
+	i = static_cast<int>(BoxType::Origin);
+	HitboxBatchDraw(boxDataList[i], colors[i]);
+	boxDataList[i].clear();
+
 }
 
 void drawProfiler() {

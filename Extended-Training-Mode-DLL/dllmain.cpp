@@ -629,7 +629,7 @@ DWORD getObjFrameDataPointer(DWORD objAddr)
 	return baseStatePtr;
 }
 
-void drawObject(DWORD objAddr, bool isProjectile)
+bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 {
 	int xPos = *(DWORD*)(objAddr + 0x108);
 	int yPos = *(DWORD*)(objAddr + 0x10C);
@@ -638,7 +638,7 @@ void drawObject(DWORD objAddr, bool isProjectile)
 	DWORD objFramePtr = getObjFrameDataPointer(objAddr);
 	
 	if (objFramePtr == 0) {
-		return;
+		return false;
 	}
 
 	// -----
@@ -684,7 +684,7 @@ void drawObject(DWORD objAddr, bool isProjectile)
 
 	if(!isProjectile) {
 		//drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
-		DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), BoxType::Origin);
+		DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), BoxType::Origin, playerIndex);
 	}
 
 	// current vibes say that the origin is in the bottom center of the above rectangle, needs more non vibe based confirmation though
@@ -752,7 +752,7 @@ void drawObject(DWORD objAddr, bool isProjectile)
 			}
 			
 			//drawBorderWithHighlight((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
-			DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), boxType);
+			DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), boxType, playerIndex);
 		}
 	}
 
@@ -785,9 +785,11 @@ void drawObject(DWORD objAddr, bool isProjectile)
 			}
 
 			//drawBorderWithHighlight((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
-			DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), boxType);
+			DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), boxType, playerIndex);
 		}
 	}
+
+	return true;
 }
 
 //In-game frame bar
@@ -935,16 +937,21 @@ void drawFrameData()
 	prevFrameCalled = currentFrame;
 	*/
 
-	drawObject(0x00555130 + (0xAFC * 0), false); // P1
-	drawObject(0x00555130 + (0xAFC * 1), false); // P2
-	drawObject(0x00555130 + (0xAFC * 2), false); // P3
-	drawObject(0x00555130 + (0xAFC * 3), false); // P4
+	drawObject(0x00555130 + (0xAFC * 0), false, 0); // P1
+	drawObject(0x00555130 + (0xAFC * 1), false, 1); // P2
+	drawObject(0x00555130 + (0xAFC * 2), false, 2); // P3
+	drawObject(0x00555130 + (0xAFC * 3), false, 3); // P4
 
 	// draw all effects
 
+	int projectileIndex = 4;
+	bool res;
 	for(unsigned index = 0; index < 1000; index++) {
 		if (((*(int*)(index * 0x33c + 0x67bde8) != 0) && (*(char*)(index * 0x33c + 0x67be09) == '\0'))) {
-			drawObject(index * 0x33c + 0x67bde8, true);
+			res = drawObject(index * 0x33c + 0x67bde8, true, projectileIndex);
+			if (res) {
+				projectileIndex++;
+			}
 		}
 	}
 }
