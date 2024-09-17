@@ -1334,6 +1334,8 @@ void frameDoneCallback()
 		//HookDirectX();
 	}
 
+	//drawTextWithBorder(300, 300, 36, 48	, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+
 	if (bFreeze)
 	{
 		try

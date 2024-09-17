@@ -565,25 +565,33 @@ void __stdcall drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR
 
 	const DWORD vertFormat = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 	
-	// Set up the vertex buffer and draw
-	// i dislike allocing and unallocing stuff like this.
-	LPDIRECT3DVERTEXBUFFER9 v_buffer;
-	if (SUCCEEDED(device->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
-		VOID* pVoid;
-		
-		v_buffer->Lock(0, 0, (void**)&pVoid, 0);
-		memcpy(pVoid, vertices, sizeof(vertices));
-		v_buffer->Unlock();
+	static LPDIRECT3DVERTEXBUFFER9 v_buffer = NULL; // not reallocing this buffer constantly was HUGE for performance!
 
-		device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
-		device->SetFVF(vertFormat);
-		device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
-
-		v_buffer->Release();
+	if (v_buffer == NULL) {
+		if (FAILED(device->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
+			v_buffer = NULL;
+			return;
+		}
 	}
+
+	
+	VOID* pVoid;
+		
+	v_buffer->Lock(0, 0, (void**)&pVoid, 0);
+	memcpy(pVoid, vertices, sizeof(vertices));
+	v_buffer->Unlock();
+
+	device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+	device->SetFVF(vertFormat);
+	device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
+
+	
 }
 
 void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR& v3, const D3DVECTOR& v4, float size, D3DCOLOR col, char c) {
+
+	// drawing the whole string as one tri strip is def better!!!
+
 	if (device == NULL) return;
 
 	if (c < ' ' || c > '~') {
@@ -633,6 +641,8 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 	scaleVertex(vertices[2].position);
 	scaleVertex(vertices[3].position);
 
+	// setting and unsetting the font texture is probs way to much here. 
+	// im going to assume that whatever caller is callling this will do it
 
 	//D3DSURFACE_DESC desc;
 	//fontTexture->GetLevelDesc(0, &desc); // Get the texture size
@@ -644,28 +654,26 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 	// ESPECIALLY HERE.
 	// if anythings going to lag the gpu, its this.
 
-	LPDIRECT3DVERTEXBUFFER9 v_buffer;
-	if (SUCCEEDED(device->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
-		VOID* pVoid;
+	static LPDIRECT3DVERTEXBUFFER9 v_buffer = NULL; // not reallocing this buffer constantly was HUGE for performance!
 
-		v_buffer->Lock(0, 0, (void**)&pVoid, 0);
-		memcpy(pVoid, vertices, sizeof(vertices));
-		v_buffer->Unlock();
-
-		device->SetTexture(0, fontTexture);
-		//device->SetPixelShader(pShader);
-
-		device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
-		device->SetFVF(vertFormat);
-		device->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
-
-		v_buffer->Release();
-
-		device->SetPixelShader(NULL);
-		device->SetTexture(0, NULL);
-	} else {
-		log("drawCharAlloc failed?");	
+	if (v_buffer == NULL) {
+		if (FAILED(device->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
+			v_buffer = NULL;
+			return;
+		}
 	}
+	
+	VOID* pVoid;
+
+	v_buffer->Lock(0, 0, (void**)&pVoid, 0);
+	memcpy(pVoid, vertices, sizeof(vertices));
+	v_buffer->Unlock();
+
+	device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+	device->SetFVF(vertFormat);
+	device->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
+
+	
 }
 
 void __stdcall drawTextureRect(float x, float y, float w, float h) {
@@ -701,20 +709,26 @@ void __stdcall drawTextureRect(float x, float y, float w, float h) {
 	scaleVertex(vertices[2].position);
 	scaleVertex(vertices[3].position);
 
-	LPDIRECT3DVERTEXBUFFER9 v_buffer;
-	if (SUCCEEDED(device->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
-		VOID* pVoid;
+	static LPDIRECT3DVERTEXBUFFER9 v_buffer = NULL; // not reallocing this buffer constantly was HUGE for performance!
 
-		v_buffer->Lock(0, 0, (void**)&pVoid, 0);
-		memcpy(pVoid, vertices, sizeof(vertices));
-		v_buffer->Unlock();
-
-		device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
-		device->SetFVF(vertFormat);
-		device->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
-
-		v_buffer->Release();
+	if (v_buffer == NULL) {
+		if (FAILED(device->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
+			v_buffer = NULL;
+			return;
+		}
 	}
+
+	
+	VOID* pVoid;
+
+	v_buffer->Lock(0, 0, (void**)&pVoid, 0);
+	memcpy(pVoid, vertices, sizeof(vertices));
+	v_buffer->Unlock();
+
+	device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+	device->SetFVF(vertFormat);
+	device->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
+	
 }
 
 void __stdcall drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) { // top left is 0.0, bottom right is 1.0. 
@@ -755,28 +769,30 @@ void __stdcall drawRectUnscaled(float x, float y, float w, float h, DWORD ARGB =
 		{ D3DVECTOR(v4.x, v4.y, whatIsThis), ARGB }
 	};
 
-	LPDIRECT3DVERTEXBUFFER9 v_buffer;
-	if (SUCCEEDED(device->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
-		VOID* pVoid;
+	static LPDIRECT3DVERTEXBUFFER9 v_buffer = NULL; // not reallocing this buffer constantly was HUGE for performance!
 
-		v_buffer->Lock(0, 0, (void**)&pVoid, 0);
-		memcpy(pVoid, vertices, sizeof(vertices));
-		v_buffer->Unlock();
-
-		device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
-		device->SetFVF(vertFormat);
-		device->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
-
-		v_buffer->Release();
-
-		device->SetPixelShader(NULL);
-		device->SetTexture(0, NULL);
+	if (v_buffer == NULL) {
+		if (FAILED(device->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
+			v_buffer = NULL;
+			return;
+		}
 	}
+
+	
+	VOID* pVoid;
+
+	v_buffer->Lock(0, 0, (void**)&pVoid, 0);
+	memcpy(pVoid, vertices, sizeof(vertices));
+	v_buffer->Unlock();
+
+	device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+	device->SetFVF(vertFormat);
+	device->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
 
 }
 
 // this var may. need to be set dynamically based on resolution, but for now 0.005 works fine.
-const float lineWidth = 0.0025;
+const float lineWidth = 0.001;
 void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side=false) { // top left is (0.0, 0.0), bottom right is (1.3333, 0). 
 	
 	// i am,,, i bit confused on how exactly to do this. 
@@ -863,6 +879,11 @@ void __stdcall drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x80
 void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* str) {
 	// pass things in as you would with printf, like printf("%d %.2f %s", 1, 1.23f, "abcdefg");
 	
+	// ideally, i would have all this as a tri strip. or would,, idk if tri strip is better or not when i wouldnt be able to skip spaces that way?
+	// how big would i have to have the vertex bufer?
+	// would it be worth it to instead do a block of say, 16 chars at a time?
+	// well tbh, maybe i could print each word as a triangle strip? that way im not drawing spaces, and also the buffer len would be a more reasonable length
+
 	DWORD TempARGB = ARGB;
 
 	if (str == NULL) {
@@ -883,6 +904,8 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 
 	float w = charWidthOffset;
 	float h = charHeightOffset;
+
+	device->SetTexture(0, fontTexture);
 
 	while (*str) {
 
@@ -951,6 +974,8 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 		str++;
 	}
 
+	device->SetTexture(0, NULL);
+
 	/*
 	if (pShader != NULL) {
 		pShader->Release();
@@ -976,6 +1001,8 @@ typedef struct ProfileInfo {
 	std::array<long long, 64> times; // past log of times, to make number smoother
 } ProfileInfo;
 std::map<const char*, ProfileInfo > profilerData;
+
+// the way im doing this is horrid. the amount of vtable lookups is not worth the code being "nice"
 
 void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side = false) {
 	
@@ -1366,6 +1393,18 @@ void drawHitboxes() {
 
 	i = static_cast<int>(BoxType::Origin);
 	HitboxBatchDraw(boxDataList[i], colors[i]);
+	
+	/*	
+	device->BeginScene();
+	for (int j = 0; j < boxDataList[i].size(); j++) {
+		//drawLine2(boxDataList[i][j].x * 1.3333, boxDataList[i][j].y, (boxDataList[i][j].x + boxDataList[i][j].w) * 1.3333, boxDataList[i][j].y + boxDataList[i][j].h, colors[i]);
+		drawLine2(boxDataList[i][j].x * 1.3333, boxDataList[i][j].y + boxDataList[i][j].h, (boxDataList[i][j].x + boxDataList[i][j].w) * 1.3333, boxDataList[i][j].y + boxDataList[i][j].h, colors[i]);
+		float tempX = (boxDataList[i][j].x * 1.3333) + (boxDataList[i][j].w * 1.3333 * 0.5);
+		drawLine2(tempX, boxDataList[i][j].y, tempX, boxDataList[i][j].y + boxDataList[i][j].h, colors[i]);
+
+	}
+	device->EndScene();
+	*/
 	boxDataList[i].clear();
 
 }
@@ -1409,6 +1448,13 @@ void drawProfiler() {
 
 			profileInfoY += 14;
 		}
+	}
+}
+
+void drawGeneralCalls() {
+	profileFunction();
+	for (const auto& drawCallInfo : drawCalls) {
+		drawCallInfo();
 	}
 }
 
@@ -1462,10 +1508,7 @@ void __stdcall _doDrawCalls() {
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
 	// i am unsure if stack alloced or heap allocing these things is better or worse
 	
-	for (const auto& drawCallInfo : drawCalls) {	
-		drawCallInfo();
-	}
-
+	drawGeneralCalls();
 
 	drawProfiler();
 
