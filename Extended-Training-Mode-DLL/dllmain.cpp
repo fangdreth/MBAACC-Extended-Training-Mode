@@ -1315,23 +1315,33 @@ void frameDoneCallback()
 		try
 		{
 			char pcFreezeKey[256];
-			char pcName1[19];
+			char pcName[19];
 			UINT scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedFreezeKey), MAPVK_VK_TO_VSC);
 			LONG lParamValue = (scanCode << 16);
-			GetKeyNameTextA(lParamValue, pcName1, 19);
-			snprintf(pcFreezeKey, sizeof(pcFreezeKey), "Freeze Key: %s", pcName1);
+			GetKeyNameTextA(lParamValue, pcName, 19);
+			snprintf(pcFreezeKey, sizeof(pcFreezeKey), "Freeze Key: %s", pcName);
 			TextDraw(3.5f, 115.5f, 21.0f, 0xFFFFFFFF, pcFreezeKey);
+		}
+		catch (...)
+		{
+			TextDraw(3.5f, 115.5f, 21.0f, 0xFFFFFFFF, "Freeze Key: <corrupt>");
+		}
 
+		try
+		{
 			char pcFrameStepKey[256];
-			char pcName2[19];
-			scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey), MAPVK_VK_TO_VSC);
-			lParamValue = (scanCode << 16);
-			GetKeyNameTextA(lParamValue, pcName2, 19);
-			snprintf(pcFrameStepKey, sizeof(pcFrameStepKey), "Frame Step Key: %s", pcName2);
+			char pcName[19];
+			UINT scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey), MAPVK_VK_TO_VSC);
+			LONG lParamValue = (scanCode << 16);
+			GetKeyNameTextA(lParamValue, pcName, 19);
+			snprintf(pcFrameStepKey, sizeof(pcFrameStepKey), "Frame Step Key: %s", pcName);
 			TextDraw(3.5f, 135.5f, 21.0f, 0xFFFFFFFF, pcFrameStepKey);
 		}
 		catch (...)
-		{ }	
+		{
+			TextDraw(3.5f, 115.5f, 21.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
+		}
+			
 	}
 
 	if (oFrameBarLeftScrollKey.keyHeld())
