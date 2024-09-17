@@ -1351,7 +1351,7 @@ void drawHitboxes() {
 
 	profileFunction();
 
-	constexpr DWORD colors[] = {
+	/*constexpr DWORD colors[] = {
 		0xFF111111, // None
 		0xFF42E5F4, // origin
 		0xFFD0D0D0, // collision
@@ -1360,6 +1360,16 @@ void drawHitboxes() {
 		0xFFFF0000, // clash
 		0xFF0000FF, // blue
 		0xFFF54298 // shield
+	};*/
+	constexpr DWORD colors[] = {
+		0xFF111111, // None
+		0xFF42E5F4, // origin
+		0xFFD0D0D0, // collision
+		0xFFff0000, // hitbox
+		0xFF0700f2, // hurtbox
+		0xFFfff000, // clash
+		0xFF1f3a42, // blue
+		0xFFb9e4b6 // shield
 	};
 
 	// i could have avoided a div stage, but ugh, another time
