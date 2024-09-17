@@ -663,12 +663,14 @@ void drawObject(DWORD objAddr, bool isProjectile)
 	float x1Cord, x2Cord, y1Cord, y2Cord;
 
 	uint32_t drawColor;
+	BoxType boxType = BoxType::None;
 
 	// -----
 
 	// origin?
 
 	drawColor = 0xFF42E5F4;
+	boxType = BoxType::Origin;
 
 	x1Cord = ((float)xCamTemp - (windowWidth / 640.0) * cameraZoom * 5.0);
 	x2Cord = ((windowWidth / 640.0) * cameraZoom * 5.0 + (float)xCamTemp);
@@ -681,7 +683,8 @@ void drawObject(DWORD objAddr, bool isProjectile)
 	y2Cord = floor((float)y2Cord * (480.0 / windowHeight));
 
 	if(!isProjectile) {
-		drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
+		//drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
+		DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), BoxType::Origin);
 	}
 
 	// current vibes say that the origin is in the bottom center of the above rectangle, needs more non vibe based confirmation though
@@ -705,19 +708,25 @@ void drawObject(DWORD objAddr, bool isProjectile)
 			switch (index) {
 				case 0x0:
 					drawColor = 0xFFD0D0D0;
+					boxType = BoxType::Collision;
 					break;
 				case 0x9:
 				case 0xA:
-					drawColor = 0xFFFF00FF;
+					//drawColor = 0xFFFF00FF;
+					drawColor = 0xFFF54298;
+					boxType = BoxType::Shield;
 					break;
 				case 0xB:
 					drawColor = 0xFFFFFF00;
+					boxType = BoxType::Clash; 
 					break;
 				default:
 					if (index < 0xC) {
 						drawColor = 0xFF00FF00;
+						boxType = BoxType::Hurtbox;
 					} else {
 						drawColor = 0xFF0000FF;
+						boxType = BoxType::Blue;
 					}
 					break;
 			}
@@ -742,13 +751,15 @@ void drawObject(DWORD objAddr, bool isProjectile)
 				scaleCords(xOrig, yOrig, x1Cord, y1Cord, x2Cord, y2Cord);
 			}
 			
-			drawBorderWithHighlight((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
+			//drawBorderWithHighlight((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
+			DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), boxType);
 		}
 	}
 
 	// hitboxes
 	if (*(DWORD*)(objFramePtr + 0x50) != 0) {
 		drawColor = 0xFFFF0000;
+		boxType = BoxType::Hitbox;
 		unsigned unknownLoopLimit = *(BYTE*)(objFramePtr + 0x43);
 		for (unsigned index = 0; index < unknownLoopLimit; index++) {
 			if (*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) == 0) {
@@ -773,7 +784,8 @@ void drawObject(DWORD objAddr, bool isProjectile)
 				scaleCords(xOrig, yOrig, x1Cord, y1Cord, x2Cord, y2Cord);
 			}
 
-			drawBorderWithHighlight((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
+			//drawBorderWithHighlight((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
+			DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), boxType);
 		}
 	}
 }

@@ -41,7 +41,7 @@ size_t fontBufferSize = 0;
 BYTE* fontBuffer = NULL; // this is purposefully not freed on evict btw
 IDirect3DTexture9* fontTexture = NULL;
 
-IDirect3DPixelShader9* createShader(const char* pixelShaderCode) {
+IDirect3DPixelShader9* createPixelShader(const char* pixelShaderCode) {
 
 	IDirect3DPixelShader9* res = NULL;
 	ID3DXBuffer* pShaderBuffer = NULL;
@@ -73,6 +73,47 @@ IDirect3DPixelShader9* createShader(const char* pixelShaderCode) {
 	}
 
 	hr = device->CreatePixelShader((DWORD*)pShaderBuffer->GetBufferPointer(), &res);
+
+	if (FAILED(hr)) {
+		log("createShader died");
+		return NULL;
+	}
+
+	pShaderBuffer->Release();
+
+	return res;
+}
+
+IDirect3DVertexShader9* createVertexShader(const char* shaderCode) {
+
+	IDirect3DVertexShader9* res = NULL;
+	ID3DXBuffer* pShaderBuffer = NULL;
+	ID3DXBuffer* pErrorBuffer = NULL;
+
+	HRESULT hr;
+
+	hr = D3DXCompileShader(
+		shaderCode,
+		strlen(shaderCode),
+		NULL,
+		NULL,
+		"main",
+		"vs_3_0",
+		0,
+		&pShaderBuffer,
+		&pErrorBuffer,
+		NULL
+	);
+
+	if (FAILED(hr)) {
+		if (pErrorBuffer) {
+			log((char*)pErrorBuffer->GetBufferPointer());
+			pErrorBuffer->Release();
+		}
+		return NULL;
+	}
+
+	hr = device->CreateVertexShader((DWORD*)pShaderBuffer->GetBufferPointer(), &res);
 
 	if (FAILED(hr)) {
 		log("createShader died");
@@ -513,18 +554,21 @@ void __stdcall drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR
 		{ D3DVECTOR(v3.x, v3.y, whatIsThis), col },
 	};
 
+	// how wasteful is this branch :(
+
 	scaleVertex(vertices[0].position);
 	scaleVertex(vertices[1].position);
 	scaleVertex(vertices[2].position);
 	
+
 	// todo, figure out why colors, dont
 
-	#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE)
+	const DWORD vertFormat = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 	
 	// Set up the vertex buffer and draw
 	// i dislike allocing and unallocing stuff like this.
 	LPDIRECT3DVERTEXBUFFER9 v_buffer;
-	if (SUCCEEDED(device->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX), 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_MANAGED, &v_buffer, NULL))) {
+	if (SUCCEEDED(device->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
 		VOID* pVoid;
 		
 		v_buffer->Lock(0, 0, (void**)&pVoid, 0);
@@ -532,7 +576,7 @@ void __stdcall drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR
 		v_buffer->Unlock();
 
 		device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
-		device->SetFVF(D3DFVF_CUSTOMVERTEX);
+		device->SetFVF(vertFormat);
 		device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
 
 		v_buffer->Release();
@@ -589,29 +633,11 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 	scaleVertex(vertices[2].position);
 	scaleVertex(vertices[3].position);
 
-	static IDirect3DPixelShader9* pShader = NULL;
-	if (pShader == NULL) {
-		pShader = createShader(R"(
-			sampler2D textureSampler : register(s0);
-			float4 texSize : register(c219);
-		
-			float4 main(float2 texCoord : TEXCOORD0) : COLOR {
 
-			
-					float4 texColor = tex2D(textureSampler, texCoord);
-
-					//texColor.r = 1.0 - texColor.r;
-
-					return float4(1.0, 1.0, 0.0, 0.5);
-			}
-
-		)");
-	}
-
-	D3DSURFACE_DESC desc;
-	fontTexture->GetLevelDesc(0, &desc); // Get the texture size
-	D3DXVECTOR4 textureSize((float)desc.Width, (float)desc.Height, 0.0, 0.0);
-	device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
+	//D3DSURFACE_DESC desc;
+	//fontTexture->GetLevelDesc(0, &desc); // Get the texture size
+	//D3DXVECTOR4 textureSize((float)desc.Width, (float)desc.Height, 0.0, 0.0);
+	//device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
 
 	// Set up the vertex buffer and draw
 	// i dislike allocing and unallocing stuff like this.
@@ -642,6 +668,55 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 	}
 }
 
+void __stdcall drawTextureRect(float x, float y, float w, float h) {
+
+	// in the future i could overload this for a color option
+
+	y = 1 - y;
+
+	D3DVECTOR v1 = { ((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v2 = { ((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v3 = { ((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v4 = { ((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
+	
+	//const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+	const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_TEX1);
+
+	struct CUSTOMVERTEX {
+		D3DVECTOR position;
+		D3DXVECTOR2 texCoord;
+	};
+
+	constexpr float whatIsThis = 0.5f; // what is this?
+
+	CUSTOMVERTEX vertices[] = { // why did this need a diffuse color. tbh i should use this to color all the boxes.
+		{ D3DVECTOR(v1.x, v1.y, whatIsThis), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DVECTOR(v2.x, v2.y, whatIsThis), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DVECTOR(v3.x, v3.y, whatIsThis), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DVECTOR(v4.x, v4.y, whatIsThis), D3DXVECTOR2(1.0f, 1.0f) }
+	};
+
+	scaleVertex(vertices[0].position);
+	scaleVertex(vertices[1].position);
+	scaleVertex(vertices[2].position);
+	scaleVertex(vertices[3].position);
+
+	LPDIRECT3DVERTEXBUFFER9 v_buffer;
+	if (SUCCEEDED(device->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
+		VOID* pVoid;
+
+		v_buffer->Lock(0, 0, (void**)&pVoid, 0);
+		memcpy(pVoid, vertices, sizeof(vertices));
+		v_buffer->Unlock();
+
+		device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+		device->SetFVF(vertFormat);
+		device->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
+
+		v_buffer->Release();
+	}
+}
+
 void __stdcall drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) { // top left is 0.0, bottom right is 1.0. 
 	
 	y = 1 - y;
@@ -653,6 +728,51 @@ void __stdcall drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042
 	
 	drawTri(v1, v2, v3, ARGB);
 	drawTri(v2, v3, v4, ARGB);
+}
+
+void __stdcall drawRectUnscaled(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+
+	const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_DIFFUSE);
+
+	struct CUSTOMVERTEX {
+		D3DVECTOR position;
+		D3DCOLOR color;
+	};
+
+	y = 1 - y;
+
+	D3DVECTOR v1 = { ((x + 0) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v2 = { ((x + w) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v3 = { ((x + 0) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
+	D3DVECTOR v4 = { ((x + w) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
+
+	constexpr float whatIsThis = 0.5f; // what is this?
+
+	CUSTOMVERTEX vertices[] = { // why did this need a diffuse color. tbh i should use this to color all the boxes.
+		{ D3DVECTOR(v1.x, v1.y, whatIsThis), ARGB },
+		{ D3DVECTOR(v2.x, v2.y, whatIsThis), ARGB },
+		{ D3DVECTOR(v3.x, v3.y, whatIsThis), ARGB },
+		{ D3DVECTOR(v4.x, v4.y, whatIsThis), ARGB }
+	};
+
+	LPDIRECT3DVERTEXBUFFER9 v_buffer;
+	if (SUCCEEDED(device->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
+		VOID* pVoid;
+
+		v_buffer->Lock(0, 0, (void**)&pVoid, 0);
+		memcpy(pVoid, vertices, sizeof(vertices));
+		v_buffer->Unlock();
+
+		device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+		device->SetFVF(vertFormat);
+		device->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
+
+		v_buffer->Release();
+
+		device->SetPixelShader(NULL);
+		device->SetTexture(0, NULL);
+	}
+
 }
 
 // this var may. need to be set dynamically based on resolution, but for now 0.005 works fine.
@@ -949,6 +1069,239 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	));
 }
 
+enum class BoxType {
+	None,
+	Origin, // 0xFF42E5F4
+	Collision, // grey
+	Hitbox, // red
+	Hurtbox, // green
+	Clash, // yellow
+	Blue, // what is this
+	Shield, // Purple, also like,,, vaki??
+
+	_Count, // dont use
+};
+
+typedef struct BoxData {
+	float x = 0.0f;
+	float y = 0.0f;
+	float w = 0.0f;
+	float h = 0.0f;
+} BoxData;
+
+std::array<std::vector<BoxData>, static_cast<int>(BoxType::_Count)> boxDataList;
+
+IDirect3DTexture9* renderTargetTex = NULL;
+void HitboxBatchDraw(const std::vector<BoxData>& boxData, DWORD ARGB) {
+	if (device == NULL) {
+		return;
+	}
+	
+	HRESULT hr;
+
+	static IDirect3DSurface9* renderTargetSurf = NULL;
+	static int width = 0;
+	static int height = 0;
+	static bool haveRenderTarget = false;
+	if (renderTargetTex == NULL) {
+
+		IDirect3DSwapChain9* pSwapChain = NULL;
+		D3DPRESENT_PARAMETERS presentParams;
+
+		hr = device->GetSwapChain(0, &pSwapChain);
+
+		if (pSwapChain != NULL) {
+
+			hr = pSwapChain->GetPresentParameters(&presentParams);
+
+			width = presentParams.BackBufferWidth;
+			height = presentParams.BackBufferHeight;
+
+			pSwapChain->Release();
+
+			//device->CreateRenderTarget(width, height, presentParams.BackBufferFormat, presentParams.MultiSampleType, presentParams.MultiSampleQuality, false, &renderTarget, NULL);
+			//device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &renderTargetTex, NULL);
+			device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT	, &renderTargetTex, NULL);
+
+			
+		}
+	}
+	
+	if (renderTargetTex == NULL) {
+		log("hitbox rendertarget null?");
+		return;
+	}
+	
+	
+	IDirect3DSurface9* prevRenderTarget = NULL;
+	device->GetRenderTarget(0, &prevRenderTarget);
+	
+	renderTargetTex->GetSurfaceLevel(0, &renderTargetSurf);
+	device->SetRenderTarget(0, renderTargetSurf);
+
+	// might need to do this?
+	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+
+
+	device->BeginScene();
+	device->SetTexture(0, NULL);
+	// i believe im in my weird 1.333, 1.0 coord system rn
+
+	// this thing,,, oh fuck, it doesnt want to be scaled by,, omfg
+	// i dont want this to get scaled by the screen's res
+
+	//drawRect2(0.1, 0.1, 0.1, 0.1, 0xFF00FFFF);
+
+	//drawRect2(0.1, 0.1, 0.8, 0.8, 0xFF00FF00);
+	//drawRect2(0.0, 0.0, 1.333, 1.0, 0xFF00FF00);
+	// drawing on this texture, causes issues. 
+	// confusing issues.
+	// does, drawing outside of a textures range leak memory?
+	//drawRect2(0.25, 0.25, 0.5, 0.5, 0xFF00FF00);
+	//drawRect2(0, 0, 0.75, 0.75, 0xFF00FF00);
+
+	//drawRectUnscaled(0.25, 0.25, 0.5, 0.5, 0xFF00FF00);
+	//drawRectUnscaled(0.6, 0.6, 0.25, 0.25, 0xFF00FF00);
+
+	for (int i = 0; i < boxData.size(); i++) {
+		drawRectUnscaled(boxData[i].y, boxData[i].x, boxData[i].h, boxData[i].w, ARGB);
+	}
+	
+	device->EndScene();
+
+	if (prevRenderTarget != NULL) {
+		device->SetRenderTarget(0, prevRenderTarget);
+		prevRenderTarget->Release();
+		prevRenderTarget = NULL;
+	} else {
+		device->SetRenderTarget(0, NULL);
+	}
+
+	if (renderTargetSurf != NULL) {
+		renderTargetSurf->Release();
+		renderTargetSurf = NULL;
+	}
+
+	static IDirect3DPixelShader9* pShader = NULL; // edge shader
+	if (pShader == NULL) {
+		pShader = createPixelShader(R"(
+			sampler2D textureSampler : register(s0);
+			float4 texSize : register(c219);
+
+			float4 main(float2 texCoord : TEXCOORD0) : COLOR {
+
+					float2 texOffset = 1.0 / texSize;
+					texOffset *= 2;
+					texOffset.y *= 0.6666666666666;
+	
+
+					float4 texColor = tex2D(textureSampler, texCoord);
+				
+					if(texColor.a < 0.1) {
+						return texColor;
+					}
+
+					float4 colorLeft =  tex2D(textureSampler, texCoord - float2(texOffset.x, 0));
+					float4 colorRight = tex2D(textureSampler, texCoord + float2(texOffset.x, 0));
+					float4 colorUp =    tex2D(textureSampler, texCoord - float2(0, texOffset.y));
+					float4 colorDown =  tex2D(textureSampler, texCoord + float2(0, texOffset.y));
+				
+					// check if colors are the same to do a cut as well. highlight P1 and P2 (and also p3/p4) shit slightly differently too?
+					// there has to be a better way of doing this
+					if(colorLeft.rgb != texColor.rgb) {
+						return float4(texColor.rgb, 1.0);
+					}
+
+					if(colorRight.rgb != texColor.rgb) {
+						return float4(texColor.rgb, 1.0);
+					}
+
+					if(colorUp.rgb != texColor.rgb) {
+						return float4(texColor.rgb, 1.0);
+					}
+
+					if(colorDown.rgb != texColor.rgb) {
+						return float4(texColor.rgb, 1.0);
+					}
+
+					float cutoff = 0.0;
+
+					if(colorLeft.a <= cutoff) {
+						return float4(texColor.rgb, 1.0);
+					}
+
+					if(colorRight.a <= cutoff) {
+						return float4(texColor.rgb, 1.0);
+					}
+
+					if(colorUp.a <= cutoff) {
+						return float4(texColor.rgb, 1.0);
+					}
+
+					if(colorDown.a <= cutoff) {
+						return float4(texColor.rgb, 1.0);
+					}
+
+					return float4(texColor.rgb, 0.25);
+			}
+
+		)");
+
+		// even with resizes, the texture size did not change
+
+		D3DXVECTOR4 textureSize((float)width, (float)height, 0.0, 0.0);
+		device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
+
+	}
+
+	// i have no fucking clue if im required to have a vertex shader or not.
+	// clue: yes
+	
+	static IDirect3DVertexShader9* vShader = NULL; 
+	if (vShader == NULL) {
+		vShader = createVertexShader(R"(
+			struct VS_INPUT
+			{
+			float4 position : POSITION;
+			float2 texCoord : TEXCOORD0;
+			};
+    
+			struct VS_OUTPUT
+			{
+			float4 position : POSITION;
+			float2 texCoord : TEXCOORD0;
+			};
+    
+			VS_OUTPUT main(VS_INPUT input)
+			{
+			VS_OUTPUT output;
+			output.position = input.position;
+			output.texCoord = input.texCoord;
+			return output;
+			}
+
+		)");
+	}
+
+	device->BeginScene();
+
+	// actually go and render what we just made to a real rendertarget
+
+	device->SetTexture(0, renderTargetTex);
+	device->SetPixelShader(pShader);
+	device->SetVertexShader(vShader);
+
+	drawTextureRect(0.0, 0.0, 1.333333, 1.0);
+
+	device->EndScene();
+
+	device->SetPixelShader(NULL);
+	device->SetVertexShader(NULL);
+	device->SetTexture(0, NULL);
+
+
+}
+
 // ----- horrid Profiler, as a treat 
 
 class Profiler {
@@ -982,17 +1335,35 @@ public:
 
 // -----
 
-enum class BoxType {
-	None,
-	Hitbox, // red
-	Hurtbox, // green
-	Clash, // yellow?
-
-
-};
+void DrawHitbox(float x, float y, float w, float h, BoxType type) {
+	boxDataList[static_cast<int>(type)].emplace_back(BoxData{x / 640.0f, y / 480.0f, w / 640.0f, h / 480.0f });
+}
 
 void drawHitboxes() {
 
+	constexpr DWORD colors[] = {
+		0xFF111111, // None
+		0xFF42E5F4, // origin
+		0xFFD0D0D0, // collision
+		0xFFFF0000, // hitbox
+		0xFF00FF00, // hurtbox
+		0xFFFF0000, // clash
+		0xFF0000FF, // blue
+		0xFFF54298 // shield
+	};
+
+	// i could have avoided a div stage, but ugh, another time
+
+	for (int i = 1; i < static_cast<int>(BoxType::_Count); i++) {
+
+		DWORD col = colors[i];
+
+		HitboxBatchDraw(boxDataList[i], col);
+
+		boxDataList[i].clear();
+	}
+
+	//HitboxBatchDraw(boxDataList[0], 0xFF00FF00);
 }
 
 void drawProfiler() {
@@ -1142,7 +1513,10 @@ void cleanForDirectXReset() {
 	Texture::_cleanForReset();
 
 	// fonttexture is managed, doesnt need release
-
+	if (renderTargetTex != NULL) {
+		renderTargetTex->Release();
+		renderTargetTex = NULL;
+	}
 }
 
 void reInitAfterDirectXReset() {
