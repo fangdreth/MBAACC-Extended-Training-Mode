@@ -1310,6 +1310,30 @@ void frameDoneCallback()
 		//HookDirectX();
 	}
 
+	if (bFreeze)
+	{
+		try
+		{
+			char pcFreezeKey[256];
+			char pcName1[19];
+			UINT scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedFreezeKey), MAPVK_VK_TO_VSC);
+			LONG lParamValue = (scanCode << 16);
+			GetKeyNameTextA(lParamValue, pcName1, 19);
+			snprintf(pcFreezeKey, sizeof(pcFreezeKey), "Freeze Key: %s", pcName1);
+			TextDraw(3.5f, 115.5f, 21.0f, 0xFFFFFFFF, pcFreezeKey);
+
+			char pcFrameStepKey[256];
+			char pcName2[19];
+			scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey), MAPVK_VK_TO_VSC);
+			lParamValue = (scanCode << 16);
+			GetKeyNameTextA(lParamValue, pcName2, 19);
+			snprintf(pcFrameStepKey, sizeof(pcFrameStepKey), "Frame Step Key: %s", pcName2);
+			TextDraw(3.5f, 135.5f, 21.0f, 0xFFFFFFFF, pcFrameStepKey);
+		}
+		catch (...)
+		{ }	
+	}
+
 	if (oFrameBarLeftScrollKey.keyHeld())
 		oFrameBarLeftScrollKey.nHeldKeyCounter++;
 	else
@@ -1362,10 +1386,10 @@ void frameDoneCallback()
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HIGHLIGHTS OFF");
 	}
 
-	if (oFreezeKey.keyDown())
-	{
-		bFreeze = !bFreeze;
-	}
+	//if (oFreezeKey.keyDown())
+	//{
+		//bFreeze = !bFreeze;
+	//}
 
 	if (oSaveStateKey.keyDown() && safeWrite())
 	{
@@ -1507,7 +1531,7 @@ void frameDoneCallback()
 		}*/
 		nDrawTextTimer--;
 	}
-	
+
 	// heres a lil example for the new draw funcs
 	// i can change the syntax up if desired
 	// also, i dont have any new text funcs yet, sry
@@ -1605,6 +1629,7 @@ void newPauseCallback2() {
 
 
 	if (oFreezeKey.keyDown()) {
+		bFreeze = !bFreeze;
 		_naked_newPauseCallback2_IsPaused = !_naked_newPauseCallback2_IsPaused;
 	}
 
