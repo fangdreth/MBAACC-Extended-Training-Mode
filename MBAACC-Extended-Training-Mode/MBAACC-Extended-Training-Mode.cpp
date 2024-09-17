@@ -134,10 +134,6 @@ int main(int argc, char* argv[])
         int nArmorHighlightSetting = NO_HIGHLIGHT;
         int nThrowProtectionHighlightSetting = NO_HIGHLIGHT;
 
-        Player P1{ 1, dwBaseAddress + adP1Base };
-        Player P2{ 2, dwBaseAddress + adP2Base };
-        Player P3{ 3, dwBaseAddress + adP3Base };
-        Player P4{ 4, dwBaseAddress + adP4Base };
 
         int nHitsTillBurst = TOO_HIGH_TO_BURST;
 
@@ -759,7 +755,7 @@ int main(int argc, char* argv[])
                                         }
                                         else
                                         {
-                                            SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
+                                            SaveState(hMBAAHandle, nSaveSlot);
 
                                             char pcMessageBuffer[32] = "CREATED SAVE";
                                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
@@ -780,7 +776,7 @@ int main(int argc, char* argv[])
                                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcTemp, 32, 0);
                                         }
                                         else
-                                            LoadStateFromFile(hMBAAHandle, dwBaseAddress, nSaveSlot);
+                                            LoadStateFromFile(hMBAAHandle, nSaveSlot);
                                     }
                                     else if (nEnemySettingsCursor == 6)
                                     {
@@ -795,7 +791,7 @@ int main(int argc, char* argv[])
                                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
                                         }
                                         else
-                                            SaveStateToFile(hMBAAHandle, dwBaseAddress, nSaveSlot);
+                                            SaveStateToFile(hMBAAHandle, nSaveSlot);
                                     }
                                     break;
                                 }

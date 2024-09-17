@@ -77,28 +77,29 @@ struct Save {
 
 Save Saves[MAX_SAVES];
 
-void CheckGameState(HANDLE hMBAAHandle, DWORD dwBaseAddress)
+void CheckGameState(HANDLE hMBAAHandle)
 {
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adGameState), &cGameState, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adGameState), &cGameState, 1, 0);
 }
 
-void UpdateGlobals(HANDLE hMBAAHandle, DWORD dwBaseAddress)
+void UpdateGlobals(HANDLE hMBAAHandle)
 {
 	nLastFrameCount = nFrameCount;
 	nLastTrueFrameCount = nTrueFrameCount;
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Freeze), &cP1Freeze, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Freeze), &cP2Freeze, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adFrameCount), &nFrameCount, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adTrueFrameCount), &nTrueFrameCount, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adGlobalFreeze), &cGlobalFreeze, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adDummyState), &cDummyState, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1FN2Input), &cP1FN2Input, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1Freeze), &cP1Freeze, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2Freeze), &cP2Freeze, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adFrameCount), &nFrameCount, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adTrueFrameCount), &nTrueFrameCount, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adGlobalFreeze), &cGlobalFreeze, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adDummyState), &cDummyState, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1FN2Input), &cP1FN2Input, 1, 0);
 }
 
 struct Player
 {
-	int nPlayerNumber = 0;
-	DWORD dwCharacterBaseAddress = 0x0;
+	char cPlayerNumber = 0;
+	DWORD adPlayerBase = 0x0;
+	DWORD adInactionable = 0x0;
 	char cExists = 0;
 	int nPattern = 0;
 	int nState = 0;
@@ -161,7 +162,7 @@ struct Player
 	std::string sBarString5;
 
 	int nActiveCounter = 0;
-	int nInactiveMemory = 0;
+	int nInactionableMemory = 0;
 	int nAdvantageCounter = 0;
 	int nLastFrameCount = 0;
 	int nActiveProjectileCount = 0;
@@ -169,20 +170,25 @@ struct Player
 	char cLastStance = 0;
 };
 
-void CheckProjectiles(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
+Player P1{ 0, adMBAABase + adP1Base, adMBAABase + adP1Inaction };
+Player P2{ 1, adMBAABase + adP2Base, adMBAABase + adP2Inaction };
+Player P3{ 2, adMBAABase + adP3Base, adMBAABase + adP1Inaction };
+Player P4{ 3, adMBAABase + adP4Base, adMBAABase + adP2Inaction };
+
+void CheckProjectiles(HANDLE hMBAAHandle, Player& P)
 {
 	char cCharacterNumber = 0;
 	char cMoon = 0;
 	int nCharacterID = 0;
-	if (P.nPlayerNumber % 2 == 1)
+	if (P.cPlayerNumber % 2 == 0)
 	{
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharNumber), &cCharacterNumber, 1, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharMoon), &cMoon, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP1CharNumber), &cCharacterNumber, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP1CharMoon), &cMoon, 1, 0);
 	}
 	else
 	{
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharNumber), &cCharacterNumber, 1, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharMoon), &cMoon, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP2CharNumber), &cCharacterNumber, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP2CharMoon), &cMoon, 1, 0);
 	}
 	nCharacterID = 10 * cCharacterNumber + cMoon;
 	std::map<std::string, int> CharacterMap = MBAACC_Map[nCharacterID];
@@ -196,15 +202,15 @@ void CheckProjectiles(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
 	int nCount = 0;
 	for (int i = 0; i < 100; i++)
 	{
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adEffectBase + dwEffectStructSize * i), &bProjectileExists, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i), &bProjectileExists, 1, 0);
 		if (bProjectileExists)
 		{
 			dwBlankEffectCount = 0;
-			ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adEffectBase + dwEffectStructSize * i + adEffectSource), &cProjectileSource, 1, 0);
-			if (cProjectileSource + 1 == P.nPlayerNumber)
+			ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adEffectSource), &cProjectileSource, 1, 0);
+			if (cProjectileSource == P.cPlayerNumber)
 			{
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adEffectBase + dwEffectStructSize * i + adPattern), &nProjectilePattern, 4, 0);
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adEffectBase + dwEffectStructSize * i + adAttackDataPointer), &dwProjectileAttackDataPointer, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adPattern), &nProjectilePattern, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adAttackDataPointer), &dwProjectileAttackDataPointer, 4, 0);
 				if (dwProjectileAttackDataPointer != 0 && nProjectilePattern >= 60)
 				{
 					bool bIncrement = true;
@@ -232,50 +238,50 @@ void CheckProjectiles(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
 	P.nActiveProjectileCount = nCount;
 }
 
-void UpdatePlayer(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P) {
+void UpdatePlayer(HANDLE hMBAAHandle, Player &P) {
 	P.nLastInactionableFrames = P.nInactionableFrames;
 	P.nLastFrameCount = P.nFrameCount;
 	P.bLastOnRight = P.bIsOnRight;
 	P.cLastStance = P.cState_Stance;
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress), &P.cExists, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase), &P.cExists, 1, 0);
 	if (!P.cExists)
 	{
 		return;
 	}
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adPattern), &P.nPattern, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adState), &P.nState, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adHealth), &P.nHealth, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adRedHealth), &P.nRedHealth, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adGuardGauge), &P.fGuardGauge, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adGuardQuality), &P.fGuardQuality, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adMagicCircuit), &P.nMagicCircuit, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adPlayerFrameCount), &P.nFrameCount, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adXPosition), &P.nXPosition, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adYPosition), &P.nYPosition, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adXSpeed), &P.nXSpeed, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adYSpeed), &P.nYSpeed, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adXAcceleration), &P.sXAcceleration, 2, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adYAcceleration), &P.sYAcceleration, 2, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adMomentum), &P.nMomentum, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adHitstop), &P.cHitstop, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adThrowFlag), &P.bThrowFlag, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adTagFlag), &P.bTagFlag, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adBlockstunFlag), &P.bBlockstunFlag, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adEFStrikeInvuln), &P.sGrantedStrikeInvuln, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adEFThrowInvuln), &P.sGrantedThrowInvuln, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adUntechTotal), &P.sUntechTotal, 2, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adUntechCounter), &P.sUntechCounter, 2, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adHitstunRemaining), &P.nHitstunRemaining, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adCounterHit), &P.cCounterHit, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adGravity), &P.fGravity, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adUntechPenalty), &P.sUntechPenalty, 2, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adAirDirectionalInput), &P.cAirDirectionalInput, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adRawDirectionalInput), &P.cRawDirectionalInput, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adButtonInput), &P.cButtonInput, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adMacroInput), &P.cMacroInput, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adOnRightFlag), &P.bIsOnRight, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adAnimationDataPointer), &P.dwAnimationDataPointer, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + P.dwCharacterBaseAddress + adAttackDataPointer), &P.dwAttackDataPointer, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adPattern), &P.nPattern, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adState), &P.nState, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adHealth), &P.nHealth, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adRedHealth), &P.nRedHealth, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adGuardGauge), &P.fGuardGauge, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adGuardQuality), &P.fGuardQuality, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adMagicCircuit), &P.nMagicCircuit, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adPlayerFrameCount), &P.nFrameCount, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adXPosition), &P.nXPosition, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adYPosition), &P.nYPosition, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adXSpeed), &P.nXSpeed, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adYSpeed), &P.nYSpeed, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adXAcceleration), &P.sXAcceleration, 2, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adYAcceleration), &P.sYAcceleration, 2, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adMomentum), &P.nMomentum, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adHitstop), &P.cHitstop, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adThrowFlag), &P.bThrowFlag, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adTagFlag), &P.bTagFlag, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adBlockstunFlag), &P.bBlockstunFlag, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adEFStrikeInvuln), &P.sGrantedStrikeInvuln, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adEFThrowInvuln), &P.sGrantedThrowInvuln, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adUntechTotal), &P.sUntechTotal, 2, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adUntechCounter), &P.sUntechCounter, 2, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adHitstunRemaining), &P.nHitstunRemaining, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adCounterHit), &P.cCounterHit, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adGravity), &P.fGravity, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adUntechPenalty), &P.sUntechPenalty, 2, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adAirDirectionalInput), &P.cAirDirectionalInput, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adRawDirectionalInput), &P.cRawDirectionalInput, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adButtonInput), &P.cButtonInput, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adMacroInput), &P.cMacroInput, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adOnRightFlag), &P.bIsOnRight, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adAnimationDataPointer), &P.dwAnimationDataPointer, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adAttackDataPointer), &P.dwAttackDataPointer, 4, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_StateDataPointer), &P.dwStateDataPointer, 4, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionCount), &P.cAnimation_ConditionCount, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_BoxIndex), &P.cAnimation_BoxIndex, 1, 0);
@@ -295,90 +301,85 @@ void UpdatePlayer(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P) {
 	{
 		P.dwCondition1Type = 0;
 	}
-	if (P.nPlayerNumber % 2 == 1)
-	{
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Inaction), &P.nInactionableFrames, 4, 0);
-	}
-	else if (P.nPlayerNumber % 2 == 0)
-	{
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Inaction), &P.nInactionableFrames, 4, 0);
-	}
-	CheckProjectiles(hMBAAHandle, dwBaseAddress, P);
+
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adInactionable), &P.nInactionableFrames, 4, 0);
+
+	CheckProjectiles(hMBAAHandle, P);
 }
 
-void SaveState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
+void SaveState(HANDLE hMBAAHandle, int nSaveSlot)
 {
 	if (nSaveSlot > 0)
 	{
 		Save &S = Saves[nSaveSlot - 1];
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveEffects), &S.dwaSaveEffects, SAVE_EFFECTS_SIZE, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveStopSituation), &S.dwaSaveStopSituation, SAVE_STOP_SITUATION_SIZE, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adGlobalFreeze), &S.dwSaveGlobalFreeze, 1, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo), &S.dwaSaveAttackDisplayInfo, SAVE_ATTACK_DISPLAY_INFO_SIZE, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo2), &S.dwaSaveAttackDisplayInfo2, SAVE_ATTACK_DISPLAY_INFO_2_SIZE, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveDestinationCamX), &S.dwSaveDestinationCamX, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamX), &S.dwSaveCurrentCamX, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamXCopy), &S.dwSaveCurrentCamXCopy, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveDestinationCamY), &S.dwSaveDestinationCamY, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamY), &S.dwSaveCurrentCamY, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamYCopy), &S.dwSaveCurrentCamYCopy, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamZoom), &S.dwSaveCurrentCamZoom, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveDestinationCamZoom), &S.dwSaveDestinationCamZoom, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &S.dwSaveP1ControlledCharacter, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1NextControlledCharacter), &S.dwSaveP1NextControlledCharacter, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &S.dwSaveP2ControlledCharacter, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2NextControlledCharacter), &S.dwSaveP2NextControlledCharacter, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveEffects), &S.dwaSaveEffects, SAVE_EFFECTS_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveStopSituation), &S.dwaSaveStopSituation, SAVE_STOP_SITUATION_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adGlobalFreeze), &S.dwSaveGlobalFreeze, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveAttackDisplayInfo), &S.dwaSaveAttackDisplayInfo, SAVE_ATTACK_DISPLAY_INFO_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveAttackDisplayInfo2), &S.dwaSaveAttackDisplayInfo2, SAVE_ATTACK_DISPLAY_INFO_2_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveDestinationCamX), &S.dwSaveDestinationCamX, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveCurrentCamX), &S.dwSaveCurrentCamX, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveCurrentCamXCopy), &S.dwSaveCurrentCamXCopy, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveDestinationCamY), &S.dwSaveDestinationCamY, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveCurrentCamY), &S.dwSaveCurrentCamY, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveCurrentCamYCopy), &S.dwSaveCurrentCamYCopy, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveCurrentCamZoom), &S.dwSaveCurrentCamZoom, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveDestinationCamZoom), &S.dwSaveDestinationCamZoom, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1ControlledCharacter), &S.dwSaveP1ControlledCharacter, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1NextControlledCharacter), &S.dwSaveP1NextControlledCharacter, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2ControlledCharacter), &S.dwSaveP2ControlledCharacter, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2NextControlledCharacter), &S.dwSaveP2NextControlledCharacter, 4, 0);
 
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adSave1Offset), &S.dwaSave1P1, SAVE_PLAYER_1_SIZE, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adSave2Offset), &S.dwaSave2P1, SAVE_PLAYER_2_SIZE, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Base + adSave1Offset), &S.dwaSave1P2, SAVE_PLAYER_1_SIZE, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Base + adSave2Offset), &S.dwaSave2P2, SAVE_PLAYER_2_SIZE, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adSave1Offset), &S.dwaSave1P3, SAVE_PLAYER_1_SIZE, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adSave2Offset), &S.dwaSave2P3, SAVE_PLAYER_2_SIZE, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave1Offset), &S.dwaSave1P4, SAVE_PLAYER_1_SIZE, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave2Offset), &S.dwaSave2P4, SAVE_PLAYER_2_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1Base + adSave1Offset), &S.dwaSave1P1, SAVE_PLAYER_1_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1Base + adSave2Offset), &S.dwaSave2P1, SAVE_PLAYER_2_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2Base + adSave1Offset), &S.dwaSave1P2, SAVE_PLAYER_1_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2Base + adSave2Offset), &S.dwaSave2P2, SAVE_PLAYER_2_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP3Base + adSave1Offset), &S.dwaSave1P3, SAVE_PLAYER_1_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP3Base + adSave2Offset), &S.dwaSave2P3, SAVE_PLAYER_2_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP4Base + adSave1Offset), &S.dwaSave1P4, SAVE_PLAYER_1_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP4Base + adSave2Offset), &S.dwaSave2P4, SAVE_PLAYER_2_SIZE, 0);
 		
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveRNG), &S.dwaSaveRNG, SAVE_RNG_SIZE, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveRNG), &S.dwaSaveRNG, SAVE_RNG_SIZE, 0);
 
 		S.bSaved = true;
 	}
 }
 
-void LoadState(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot, bool bLoadRNG = false)
+void LoadState(HANDLE hMBAAHandle, int nSaveSlot, bool bLoadRNG = false)
 {
 	if (nSaveSlot > 0)
 	{
 		Save& S = Saves[nSaveSlot - 1];
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveEffects), &S.dwaSaveEffects, SAVE_EFFECTS_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveStopSituation), &S.dwaSaveStopSituation, SAVE_STOP_SITUATION_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adGlobalFreeze), &S.dwSaveGlobalFreeze, 1, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo), &S.dwaSaveAttackDisplayInfo, SAVE_ATTACK_DISPLAY_INFO_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveAttackDisplayInfo2), &S.dwaSaveAttackDisplayInfo2, SAVE_ATTACK_DISPLAY_INFO_2_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveDestinationCamX), &S.dwSaveDestinationCamX, 4, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamX), &S.dwSaveCurrentCamX, 4, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamXCopy), &S.dwSaveCurrentCamXCopy, 4, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveDestinationCamY), &S.dwSaveDestinationCamY, 4, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamY), &S.dwSaveCurrentCamY, 4, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamYCopy), &S.dwSaveCurrentCamYCopy, 4, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveCurrentCamZoom), &S.dwSaveCurrentCamZoom, 4, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveDestinationCamZoom), &S.dwSaveDestinationCamZoom, 4, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &S.dwSaveP1ControlledCharacter, 4, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1NextControlledCharacter), &S.dwSaveP1NextControlledCharacter, 4, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &S.dwSaveP2ControlledCharacter, 4, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2NextControlledCharacter), &S.dwSaveP2NextControlledCharacter, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveEffects), &S.dwaSaveEffects, SAVE_EFFECTS_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveStopSituation), &S.dwaSaveStopSituation, SAVE_STOP_SITUATION_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adGlobalFreeze), &S.dwSaveGlobalFreeze, 1, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveAttackDisplayInfo), &S.dwaSaveAttackDisplayInfo, SAVE_ATTACK_DISPLAY_INFO_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveAttackDisplayInfo2), &S.dwaSaveAttackDisplayInfo2, SAVE_ATTACK_DISPLAY_INFO_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveDestinationCamX), &S.dwSaveDestinationCamX, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveCurrentCamX), &S.dwSaveCurrentCamX, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveCurrentCamXCopy), &S.dwSaveCurrentCamXCopy, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveDestinationCamY), &S.dwSaveDestinationCamY, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveCurrentCamY), &S.dwSaveCurrentCamY, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveCurrentCamYCopy), &S.dwSaveCurrentCamYCopy, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveCurrentCamZoom), &S.dwSaveCurrentCamZoom, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveDestinationCamZoom), &S.dwSaveDestinationCamZoom, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1ControlledCharacter), &S.dwSaveP1ControlledCharacter, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1NextControlledCharacter), &S.dwSaveP1NextControlledCharacter, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2ControlledCharacter), &S.dwSaveP2ControlledCharacter, 4, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2NextControlledCharacter), &S.dwSaveP2NextControlledCharacter, 4, 0);
 
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adSave1Offset), &S.dwaSave1P1, SAVE_PLAYER_1_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adSave2Offset), &S.dwaSave2P1, SAVE_PLAYER_2_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Base + adSave1Offset), &S.dwaSave1P2, SAVE_PLAYER_1_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2Base + adSave2Offset), &S.dwaSave2P2, SAVE_PLAYER_2_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adSave1Offset), &S.dwaSave1P3, SAVE_PLAYER_1_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3Base + adSave2Offset), &S.dwaSave2P3, SAVE_PLAYER_2_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave1Offset), &S.dwaSave1P4, SAVE_PLAYER_1_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP4Base + adSave2Offset), &S.dwaSave2P4, SAVE_PLAYER_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1Base + adSave1Offset), &S.dwaSave1P1, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1Base + adSave2Offset), &S.dwaSave2P1, SAVE_PLAYER_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2Base + adSave1Offset), &S.dwaSave1P2, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2Base + adSave2Offset), &S.dwaSave2P2, SAVE_PLAYER_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP3Base + adSave1Offset), &S.dwaSave1P3, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP3Base + adSave2Offset), &S.dwaSave2P3, SAVE_PLAYER_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP4Base + adSave1Offset), &S.dwaSave1P4, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP4Base + adSave2Offset), &S.dwaSave2P4, SAVE_PLAYER_2_SIZE, 0);
 
 		if (bLoadRNG)
 		{
-			WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSaveRNG), &S.dwaSaveRNG, SAVE_RNG_SIZE, 0);
+			WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveRNG), &S.dwaSaveRNG, SAVE_RNG_SIZE, 0);
 		}
 	}
 }
@@ -392,7 +393,7 @@ bool CheckSave(int nSaveSlot)
 	return false;
 }
 
-void SaveStateToFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
+void SaveStateToFile(HANDLE hMBAAHandle, int nSaveSlot)
 {
 	try
 	{
@@ -400,7 +401,7 @@ void SaveStateToFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 		{
 			Save& S = Saves[nSaveSlot - 1];
 			std::wstring wsFileName;
-			if (GetSaveSAVFileName(hMBAAHandle, dwBaseAddress, &wsFileName))
+			if (GetSaveSAVFileName(hMBAAHandle, adMBAABase, &wsFileName))
 			{
 				std::ofstream SaveOutFile;
 				SaveOutFile.open(wsFileName);
@@ -409,10 +410,10 @@ void SaveStateToFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 				int nP2CharacterNumber;
 				int nP1Moon;
 				int nP2Moon;
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharNumber), &nP1CharacterNumber, 4, 0);
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharNumber), &nP2CharacterNumber, 4, 0);
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharMoon), &nP1Moon, 4, 0);
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharMoon), &nP2Moon, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP1CharNumber), &nP1CharacterNumber, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP2CharNumber), &nP2CharacterNumber, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP1CharMoon), &nP1Moon, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP2CharMoon), &nP2Moon, 4, 0);
 
 				int nP1CharacterID = 10 * nP1CharacterNumber + nP1Moon;
 				int nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
@@ -496,7 +497,7 @@ void SaveStateToFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 	}
 }
 
-void LoadStateFromFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
+void LoadStateFromFile(HANDLE hMBAAHandle, int nSaveSlot)
 {
 	try
 	{
@@ -504,7 +505,7 @@ void LoadStateFromFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 		{
 			Save& S = Saves[nSaveSlot - 1];
 			std::wstring wsFileName;
-			if (GetOpenSAVFileName(hMBAAHandle, dwBaseAddress, &wsFileName))
+			if (GetOpenSAVFileName(hMBAAHandle, adMBAABase, &wsFileName))
 			{
 				std::ifstream SaveInFile;
 				SaveInFile.open(wsFileName);
@@ -513,10 +514,10 @@ void LoadStateFromFile(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nSaveSlot)
 				int nP2CharacterNumber;
 				int nP1Moon;
 				int nP2Moon;
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharNumber), &nP1CharacterNumber, 4, 0);
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharNumber), &nP2CharacterNumber, 4, 0);
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1CharMoon), &nP1Moon, 4, 0);
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2CharMoon), &nP2Moon, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP1CharNumber), &nP1CharacterNumber, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP2CharNumber), &nP2CharacterNumber, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP1CharMoon), &nP1Moon, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP2CharMoon), &nP2Moon, 4, 0);
 
 				int nP1CharacterID = 10 * nP1CharacterNumber + nP1Moon;
 				int nP1FileCharacterID;
@@ -678,7 +679,7 @@ void CalculateAdvantage(Player& P1, Player& P2)
 	}
 }
 
-void ResetBars(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
+void ResetBars(HANDLE hMBAAHandle, Player& P)
 {
 	bIsBarReset = true;
 	nBarCounter = 0;
@@ -694,7 +695,7 @@ void ResetBars(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P)
 		P.sBar4[i] = "";
 		P.sBar5[i] = "";
 	}
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedScrolling), &nBarScrolling, 2, 0);
 }
 
 void UpdateBars(Player& P, Player& Assist)
@@ -975,11 +976,11 @@ void HandleInactive(Player& P)
 {
 	if (P.nInactionableFrames != 0)
 	{
-		P.nInactiveMemory = P.nInactionableFrames;
+		P.nInactionableMemory = P.nInactionableFrames;
 	}
 }
 
-void BarHandling(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
+void BarHandling(HANDLE hMBAAHandle, Player &P1, Player &P2, Player& P1Assist, Player& P2Assist)
 {
 	CalculateAdvantage(P1, P2);
 
@@ -1020,10 +1021,10 @@ void BarHandling(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P1, Player &P2
 
 	if (bDoBarReset && bUpdateBar)
 	{
-		ResetBars(hMBAAHandle, dwBaseAddress, P1);
-		ResetBars(hMBAAHandle, dwBaseAddress, P2);
-		ResetBars(hMBAAHandle, dwBaseAddress, P1Assist);
-		ResetBars(hMBAAHandle, dwBaseAddress, P2Assist);
+		ResetBars(hMBAAHandle, P1);
+		ResetBars(hMBAAHandle, P2);
+		ResetBars(hMBAAHandle, P1Assist);
+		ResetBars(hMBAAHandle, P2Assist);
 	}
 
 	if (nBarIntervalCounter < nBarIntervalMax && !bIsBarReset)
@@ -1073,14 +1074,14 @@ void BarHandling(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P1, Player &P2
 
 	if (nTrueFrameCount == 0)
 	{
-		ResetBars(hMBAAHandle, dwBaseAddress, P1);
-		ResetBars(hMBAAHandle, dwBaseAddress, P2);
-		ResetBars(hMBAAHandle, dwBaseAddress, P1Assist);
-		ResetBars(hMBAAHandle, dwBaseAddress, P2Assist);
+		ResetBars(hMBAAHandle, P1);
+		ResetBars(hMBAAHandle, P2);
+		ResetBars(hMBAAHandle, P1Assist);
+		ResetBars(hMBAAHandle, P2Assist);
 	}
 }
 
-void PrintFrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P1, Player &P2, Player &P3, Player &P4)
+void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, Player &P4)
 {
 	std::string sColumnHeader = "\x1b[0;4m";
 	for (int i = 1; i <= nBarDisplayRange; i++)
@@ -1096,7 +1097,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P1, Play
 	}
 	sColumnHeader += "\x1b[0m\x1b[K\n";
 
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedScrolling), &nBarScrolling, 2, 0);
 	short sAdjustedScroll = min(min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange), nBarScrolling);
 
 	P1.sBarString1 = "";
@@ -1185,7 +1186,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P1, Play
 	if (bSimpleFrameInfo)
 	{
 		printf("\x1b[0m" "Total %3i / Advantage %3i / Distance %3i" "\n",
-			P1.nInactiveMemory, nPlayerAdvantage, nXPixelDistance);
+			P1.nInactionableMemory, nPlayerAdvantage, nXPixelDistance);
 	}
 
 	if (!bSimpleFrameInfo)
@@ -1193,22 +1194,18 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P1, Play
 		printf("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
 			"x-spd %5i" "\x1b[0m" "x-acc %5i" "\x1b[7m" "y-spd %5i" "\x1b[0m" "y-acc %5i" "\x1b[7m" "hp %5i" "\x1b[0m" "mc %5i" "\x1b[0m\x1b[K\n",
 			P1.nXPosition, P1.nYPosition, nP1XPixelPosition, nP1YPixelPosition, P1.nPattern, P1.nState,
-			P1.nXSpeed, P1.sXAcceleration, P1.nYSpeed, P1.sYAcceleration, P1.nHealth, P1.nMagicCircuit);
+			P1.nXSpeed + P1.nMomentum, P1.sXAcceleration, P1.nYSpeed, P1.sYAcceleration, P1.nHealth, P1.nMagicCircuit);
 
 		printf("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
 			"x-spd %5i" "\x1b[0m" "x-acc %5i" "\x1b[7m" "y-spd %5i" "\x1b[0m" "y-acc %5i" "\x1b[7m" "hp %5i" "\x1b[0m" "mc %5i" "\x1b[0m\x1b[K\n",
 			P2.nXPosition, P2.nYPosition, nP2XPixelPosition, nP2YPixelPosition, P2.nPattern, P2.nState,
-			P2.nXSpeed, P2.sXAcceleration, P2.nYSpeed, P2.sYAcceleration, P2.nHealth, P2.nMagicCircuit);
-	}
-	
-	if (!bSimpleFrameInfo)
-	{
+			P2.nXSpeed + P2.nMomentum, P2.sXAcceleration, P2.nYSpeed, P2.sYAcceleration, P2.nHealth, P2.nMagicCircuit);
+
 		printf("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "adv %3i" "\x1b[K\n",
 			nXDistance, nYDistance, nXPixelDistance, nYPixelDistance, nPlayerAdvantage);
 	}
 
 	std::cout << sColumnHeader;
-
 
 	std::cout << P1.sBarString1;
 	std::cout << P1.sBarString2;
@@ -1221,24 +1218,18 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P1, Play
 	if (!bSimpleFrameInfo)
 	{
 		printf("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i" "\x1b[0m\x1b[K\n",
-			cP1Freeze, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 10, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality, P1.nInactiveMemory % 1000);
+			cP1Freeze, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 10, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality, P1.nInactionableMemory % 1000);
 		printf("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i"  "\x1b[0m\x1b[K\n",
-			cP2Freeze, cP2CounterHit, P4.nPattern, P4.nState, nP2GravityHits, nP2Gravity % 10, P2.sUntechPenalty % 10, P2.nRedHealth, nP2GuardGauge, P2.fGuardQuality, P2.nInactiveMemory % 1000);
+			cP2Freeze, cP2CounterHit, P4.nPattern, P4.nState, nP2GravityHits, nP2Gravity % 10, P2.sUntechPenalty % 10, P2.nRedHealth, nP2GuardGauge, P2.fGuardQuality, P2.nInactionableMemory % 1000);
 	}
 
 	if (bDisplayInputs)
 	{
 		std::cout << sColumnHeader;
-	}
 
-	if (bDisplayInputs)
-	{
 		std::cout << P1.sBarString4;
 		std::cout << P1.sBarString5;
-	}
 
-	if (bDisplayInputs)
-	{
 		std::cout << P2.sBarString4;
 		std::cout << P2.sBarString5;
 	}
@@ -1248,7 +1239,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player &P1, Play
 
 void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P2, Player& P3, Player& P4)
 {
-	CheckGameState(hMBAAHandle, dwBaseAddress);
+	CheckGameState(hMBAAHandle);
 
 	if (cGameState != 1) //If not in game (any gamemode)
 	{
@@ -1261,27 +1252,27 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screenBufferInfo);
 	nBarDisplayRange = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left) / 2;
 
-	UpdateGlobals(hMBAAHandle, dwBaseAddress);
+	UpdateGlobals(hMBAAHandle);
 
 	bool bDoSave = false;
 	bool bDoClearSave = false;
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDoSave), &bDoSave, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDoClearSave), &bDoClearSave, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedDoSave), &bDoSave, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedDoClearSave), &bDoClearSave, 1, 0);
 	if (bDoSave)
 	{
-		SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
+		SaveState(hMBAAHandle, nSaveSlot);
 		char c5 = 5;
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adGlobalFreeze), &c5, 1, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adGlobalFreeze), &c5, 1, 0);
 
 		char c0 = 0;
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDoSave), &c0, 1, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedDoSave), &c0, 1, 0);
 	}
 	else if (bDoClearSave)
 	{
 		ClearSave(nSaveSlot);
 
 		char c0 = 0;
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDoClearSave), &c0, 1, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedDoClearSave), &c0, 1, 0);
 	}
 	else if (cP1FN2Input > 0 && bEnableFN2Load && !bInExtendedSettings)
 	{
@@ -1291,7 +1282,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 			if (cDummyState == 5 || cDummyState == -1)
 			{
 				char cFF = 0xFF;
-				WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + 0x15DEC3), &cFF, 1, 0);
+				WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + 0x15DEC3), &cFF, 1, 0);
 			}
 		}
 	}
@@ -1300,37 +1291,37 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 		bLockInput = false;
 	}
 
-	Player* Player1 = &P1;
-	Player* Player2 = &P2;
-	Player* Player3 = &P3;
-	Player* Player4 = &P4;
+	Player* Main1 = &P1;
+	Player* Main2 = &P2;
+	Player* Assist1 = &P3;
+	Player* Assist2 = &P4;
 	if (P1.bTagFlag)
 	{
-		Player1 = &P3;
-		Player3 = &P1;
+		Main1 = &P3;
+		Assist1 = &P1;
 	}
 	if (P2.bTagFlag)
 	{
-		Player2 = &P4;
-		Player4 = &P2;
+		Main2 = &P4;
+		Assist2 = &P2;
 	}
 
 	if (nLastTrueFrameCount != nTrueFrameCount)
 	{
-		UpdatePlayer(hMBAAHandle, dwBaseAddress, P1);
-		UpdatePlayer(hMBAAHandle, dwBaseAddress, P2);
-		UpdatePlayer(hMBAAHandle, dwBaseAddress, P3);
-		UpdatePlayer(hMBAAHandle, dwBaseAddress, P4);
+		UpdatePlayer(hMBAAHandle, P1);
+		UpdatePlayer(hMBAAHandle, P2);
+		UpdatePlayer(hMBAAHandle, P3);
+		UpdatePlayer(hMBAAHandle, P4);
 		
-		BarHandling(hMBAAHandle, dwBaseAddress, *Player1, *Player2, *Player3, *Player4);
+		BarHandling(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
 
 		if (nTrueFrameCount == 1 && CheckSave(nSaveSlot) && bEnableFN2Load)
 		{
-			ResetBars(hMBAAHandle, dwBaseAddress, P1);
-			ResetBars(hMBAAHandle, dwBaseAddress, P2);
-			ResetBars(hMBAAHandle, dwBaseAddress, P3);
-			ResetBars(hMBAAHandle, dwBaseAddress, P4);
-			LoadState(hMBAAHandle, dwBaseAddress, nSaveSlot, bLoadRNG);
+			ResetBars(hMBAAHandle, P1);
+			ResetBars(hMBAAHandle, P2);
+			ResetBars(hMBAAHandle, P3);
+			ResetBars(hMBAAHandle, P4);
+			LoadState(hMBAAHandle, nSaveSlot, bLoadRNG);
 		}
 	}
 
@@ -1342,6 +1333,6 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 	}
 	else
 	{
-		PrintFrameDisplay(hMBAAHandle, dwBaseAddress, *Player1, *Player2, *Player3, *Player4);
+		PrintFrameDisplay(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
 	}
 }

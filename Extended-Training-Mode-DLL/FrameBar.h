@@ -36,7 +36,7 @@ int nClearSaveTimer = 0;
 
 struct Player
 {
-	char Port = 0;
+	char cPlayerNumber = 0;
 
 	DWORD adPlayerBase = 0x0;
 	DWORD adInaction = 0x0;
@@ -49,7 +49,7 @@ struct Player
 	int nNumBar[BAR_MEMORY_SIZE][2]; //[0] = number, [1] = flag for keeping number
 
 	int nActiveCounter = 0;
-	int nInactiveMemory = 0;
+	int nInactionableMemory = 0;
 	int nAdvantageCounter = 0;
 	int nFirstActiveCounter = 0;
 	int nLastFrameCount = 0;
@@ -81,7 +81,7 @@ void GetProjectileInfo(Player& P)
 	P.bLastProjectileActive = P.bProjectileActive;
 	P.bProjectileActive = false;
 	int nCharacterID = 0;
-	if (P.Port % 2 == 0)
+	if (P.cPlayerNumber % 2 == 0)
 	{
 		nCharacterID = *(char*)(adMBAABase + dwP1CharNumber) * 10 + *(char*)(adMBAABase + dwP1CharMoon);
 	}
@@ -90,13 +90,12 @@ void GetProjectileInfo(Player& P)
 		nCharacterID = *(char*)(adMBAABase + dwP2CharNumber) * 10 + *(char*)(adMBAABase + dwP2CharMoon);
 	}
 	std::map<std::string, int> CharacterMap = MBAACC_Map[nCharacterID];
-	for (int i = 0; i < 1000; i++) //Check Projectiles for active
+	for (int i = 0; i < 200; i++) //Check Projectiles for active
 	{
 		bool validProj = true;
 		if (*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i) != 0 &&
 			*(DWORD*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adAttackDataPointer) != 0 &&
-			*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectSource) >= 0 &&
-			*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectOwner) == P.Port &&
+			*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectSource) == P.cPlayerNumber &&
 			*(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adPattern) >= 60)
 		{
 			for (auto const& [key, val] : CharacterMap)
@@ -120,10 +119,10 @@ Player P2{ 1, adMBAABase + adP2Base, adMBAABase + adP2Inaction };
 Player P3{ 2, adMBAABase + adP3Base, adMBAABase + adP1Inaction };
 Player P4{ 3, adMBAABase + adP4Base, adMBAABase + adP2Inaction };
 
-Player* Player1 = &P1;
-Player* Player2 = &P2;
-Player* Player3 = &P3;
-Player* Player4 = &P4;
+Player* Main1 = &P1;
+Player* Main2 = &P2;
+Player* Assist1 = &P3;
+Player* Assist2 = &P4;
 
 void CalculateAdvantage(Player& P1, Player& P2)
 {
@@ -308,7 +307,7 @@ void UpdateBars(Player& P, Player& Assist)
 		dwBar2Color0 = 0xFFF1E084;
 	}
 
-	if (P.bProjectileActive)
+	if (P.bProjectileActive || Assist.bProjectileActive)
 	{
 		dwBar2Color1 = 0xFFFF0000;
 		if (!P.bLastProjectileActive && !P.bAlreadyGotFirstActive)
@@ -404,7 +403,7 @@ void HandleInactive(Player& P)
 {
 	if (*(int*)(P.adInaction) != 0)
 	{
-		P.nInactiveMemory = *(int*)(P.adInaction);
+		P.nInactionableMemory = *(int*)(P.adInaction);
 	}
 }
 
@@ -481,11 +480,13 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 			nSharedHitstop > 1
 			);
 
+		IncrementFirstActive(P1);
+		IncrementFirstActive(P2);
+
 		if (bDisplayFreeze || !bIsFreeze)
 		{
 			IncrementActive(P1);
 			IncrementActive(P2);
-			
 			HandleInactive(P1);
 			HandleInactive(P2);
 			UpdateBars(P1, P1Assist);
@@ -511,31 +512,29 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 	bDisplayInputs = *(char*)(adMBAABase + adSharedDisplayInputs);
 	nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
 
-	Player1 = &P1;
-	Player2 = &P2;
-	Player3 = &P3;
-	Player4 = &P4;
+	Main1 = &P1;
+	Main2 = &P2;
+	Assist1 = &P3;
+	Assist2 = &P4;
 	if (*(char*)(P1.adPlayerBase + adTagFlag))
 	{
-		Player1 = &P3;
-		Player3 = &P1;
+		Main1 = &P3;
+		Assist1 = &P1;
 	}
 	if (*(char*)(P2.adPlayerBase + adTagFlag))
 	{
-		Player2 = &P4;
-		Player4 = &P2;
+		Main2 = &P4;
+		Assist2 = &P2;
 	}
 	
 	GetProjectileInfo(P1);
 	GetProjectileInfo(P2);
 	GetProjectileInfo(P3);
 	GetProjectileInfo(P4);
-	IncrementFirstActive(P1);
-	IncrementFirstActive(P2);
 
 	if (*(int*)(adMBAABase + adTrueFrameCount) != nLastTrueFrameCount)
 	{
-		BarHandling(*Player1, *Player2, *Player3, *Player4);
+		BarHandling(*Main1, *Main2, *Assist1, *Assist2);
 	}
 
 	if (*(int*)(adMBAABase + adTrueFrameCount) == 1)
