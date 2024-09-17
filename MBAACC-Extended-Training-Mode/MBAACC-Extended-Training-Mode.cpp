@@ -134,10 +134,6 @@ int main(int argc, char* argv[])
         int nArmorHighlightSetting = NO_HIGHLIGHT;
         int nThrowProtectionHighlightSetting = NO_HIGHLIGHT;
 
-        Player P1{ 1, dwBaseAddress + adP1Base };
-        Player P2{ 2, dwBaseAddress + adP2Base };
-        Player P3{ 3, dwBaseAddress + adP3Base };
-        Player P4{ 4, dwBaseAddress + adP4Base };
 
         int nHitsTillBurst = TOO_HIGH_TO_BURST;
 
@@ -759,7 +755,7 @@ int main(int argc, char* argv[])
                                         }
                                         else
                                         {
-                                            SaveState(hMBAAHandle, dwBaseAddress, nSaveSlot);
+                                            SaveState(hMBAAHandle, nSaveSlot);
 
                                             char pcMessageBuffer[32] = "CREATED SAVE";
                                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
@@ -780,7 +776,7 @@ int main(int argc, char* argv[])
                                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcTemp, 32, 0);
                                         }
                                         else
-                                            LoadStateFromFile(hMBAAHandle, dwBaseAddress, nSaveSlot);
+                                            LoadStateFromFile(hMBAAHandle, nSaveSlot);
                                     }
                                     else if (nEnemySettingsCursor == 6)
                                     {
@@ -795,7 +791,7 @@ int main(int argc, char* argv[])
                                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
                                         }
                                         else
-                                            SaveStateToFile(hMBAAHandle, dwBaseAddress, nSaveSlot);
+                                            SaveStateToFile(hMBAAHandle, nSaveSlot);
                                     }
                                     break;
                                 }
@@ -4390,13 +4386,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bFreezeKeySet)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nFreezeKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nFreezeKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionAString), &pcTemp, 19, 0);
@@ -4429,13 +4423,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bFrameStepKeySet)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nFrameStepKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nFrameStepKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 19, 0);
@@ -4468,13 +4460,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bHitboxDisplayKeySet)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nHitboxDisplayKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nHitboxDisplayKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 19, 0);
@@ -4507,13 +4497,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bFrameDataDisplayKeySet)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nFrameDataDisplayKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nFrameDataDisplayKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 19, 0);
@@ -4546,13 +4534,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bHighlightsOnKeySet)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nHighlightsOnKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nHighlightsOnKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 19, 0);
@@ -4601,13 +4587,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bSaveStateKeySet)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nSaveStateKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nSaveStateKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionAString), &pcTemp, 19, 0);
@@ -4640,13 +4624,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bPrevSaveSlotKey)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nPrevSaveSlotKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nPrevSaveSlotKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 19, 0);
@@ -4679,13 +4661,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bNextSaveSlotKey)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nNextSaveSlotKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nNextSaveSlotKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 19, 0);
@@ -4718,13 +4698,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bFrameBarScrollLeftKey)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nFrameBarScrollLeftKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nFrameBarScrollLeftKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 19, 0);
@@ -4757,13 +4735,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bFrameBarScrollRightKey)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nFrameBarScrollRightKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nFrameBarScrollRightKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 19, 0);
@@ -4811,13 +4787,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bRNGDecKey)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nRNGDecKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nRNGDecKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 19, 0);
@@ -4850,13 +4824,11 @@ int main(int argc, char* argv[])
                                 }
                                 if (bRNGIncKey)
                                 {
-                                    WCHAR wcName[19];
-                                    UINT scanCode = MapVirtualKeyW(nRNGIncKey, MAPVK_VK_TO_VSC);
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nRNGIncKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
-                                    int result = GetKeyNameTextW(lParamValue, wcName, 19);
-                                    std::wstring wsKeyName = wcName;
-                                    std::string sKeyName = std::string(wsKeyName.begin(), wsKeyName.end());
-                                    strcpy_s(pcTemp, sKeyName.c_str());
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
                                 }
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 19, 0);

@@ -824,39 +824,44 @@ void drawFrameBar()
 		{
 			j = i;
 		}
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 1, 7, 2, (*Player1).dwColorBar2[j][0]);
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 11, 7, 2, (*Player1).dwColorBar2[j][1]);
+		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 1, 7, 2, (*Main1).dwColorBar2[j][0]);
+		if ((*Main1).dwColorBar2[j][1] != 0)
+			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 11, 7, 2, (*Main1).dwColorBar2[j][1]);
 
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 14, 7, 2, (*Player2).dwColorBar2[j][0]);
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 24, 7, 2, (*Player2).dwColorBar2[j][1]);
+		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 14, 7, 2, (*Main2).dwColorBar2[j][0]);
+		if ((*Main2).dwColorBar2[j][1] != 0)
+			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 24, 7, 2, (*Main2).dwColorBar2[j][1]);
 
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 2, 4, 10, (*Player1).dwColorBar1[j][0]);
-		drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 2, 3, 10, (*Player1).dwColorBar1[j][1]);
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 15, 4, 10, (*Player2).dwColorBar1[j][0]);
-		drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 15, 3, 10, (*Player2).dwColorBar1[j][1]);
+		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 2, 4, 10, (*Main1).dwColorBar1[j][0]);
+		if ((*Main1).dwColorBar1[j][1] != 0)
+			drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 2, 3, 10, (*Main1).dwColorBar1[j][1]);
+
+		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 15, 4, 10, (*Main2).dwColorBar1[j][0]);
+		if ((*Main2).dwColorBar1[j][1] != 0)
+			drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 15, 3, 10, (*Main2).dwColorBar1[j][1]);
 
 		static char buffer[256];
 
-		if ((*Player1).nNumBar[j][0] >= 0)
+		if ((*Main1).nNumBar[j][0] >= 0)
 		{
-			int nLength = floor(log10((*Player1).nNumBar[j][0]));
-			snprintf(buffer, 256, "%i", (*Player1).nNumBar[j][0]);
-			drawTextWithBorder(20 + 8 * nBarDrawCounter - 7 * nLength, nFrameBarY + 3, 7, 10, buffer);
+			int nLength = floor(log10((*Main1).nNumBar[j][0]));
+			snprintf(buffer, 256, "%i", (*Main1).nNumBar[j][0]);
+			drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 3, 7, 10, buffer);
 		}
 
-		if ((*Player2).nNumBar[j][0] >= 0)
+		if ((*Main2).nNumBar[j][0] >= 0)
 		{
-			int nLength = floor(log10((*Player2).nNumBar[j][0]));
-			snprintf(buffer, 256, "%i", (*Player2).nNumBar[j][0]);
-			drawTextWithBorder(20 + 8 * nBarDrawCounter - 7 * nLength, nFrameBarY + 16, 7, 10, buffer);
+			int nLength = floor(log10((*Main2).nNumBar[j][0]));
+			snprintf(buffer, 256, "%i", (*Main2).nNumBar[j][0]);
+			drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 16, 7, 10, buffer);
 		}
 		nBarDrawCounter++;
 	}
 	static char buffer[256];
-	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Player1).nFirstActive % 1000, (*Player1).nInactiveMemory % 1000, nPlayerAdvantage % 1000);
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main1).nFirstActive % 1000, (*Main1).nInactionableMemory % 1000, nPlayerAdvantage % 1000);
 	drawTextWithBorder(20, nFrameBarY - 11, 7, 10, buffer);
 
-	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Player2).nFirstActive % 1000, (*Player2).nInactiveMemory % 1000, -nPlayerAdvantage % 1000);
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main2).nFirstActive % 1000, (*Main2).nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
 	drawTextWithBorder(20, nFrameBarY + 28, 7, 10, buffer);
 
 	drawRect(18, nFrameBarY, 602, 27, 0xFF000000); //Background
@@ -1322,6 +1327,40 @@ void frameDoneCallback()
 		//HookDirectX();
 	}
 
+	if (bFreeze)
+	{
+		try
+		{
+			char pcFreezeKey[256];
+			char pcName[19];
+			UINT scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedFreezeKey), MAPVK_VK_TO_VSC);
+			LONG lParamValue = (scanCode << 16);
+			GetKeyNameTextA(lParamValue, pcName, 19);
+			snprintf(pcFreezeKey, sizeof(pcFreezeKey), "Freeze Key: %s", pcName);
+			TextDraw(3.5f, 115.5f, 21.0f, 0xFFFFFFFF, pcFreezeKey);
+		}
+		catch (...)
+		{
+			TextDraw(3.5f, 115.5f, 21.0f, 0xFFFFFFFF, "Freeze Key: <corrupt>");
+		}
+
+		try
+		{
+			char pcFrameStepKey[256];
+			char pcName[19];
+			UINT scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey), MAPVK_VK_TO_VSC);
+			LONG lParamValue = (scanCode << 16);
+			GetKeyNameTextA(lParamValue, pcName, 19);
+			snprintf(pcFrameStepKey, sizeof(pcFrameStepKey), "Frame Step Key: %s", pcName);
+			TextDraw(3.5f, 135.5f, 21.0f, 0xFFFFFFFF, pcFrameStepKey);
+		}
+		catch (...)
+		{
+			TextDraw(3.5f, 115.5f, 21.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
+		}
+			
+	}
+
 	if (oFrameBarLeftScrollKey.keyHeld())
 		oFrameBarLeftScrollKey.nHeldKeyCounter++;
 	else
@@ -1374,10 +1413,10 @@ void frameDoneCallback()
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HIGHLIGHTS OFF");
 	}
 
-	if (oFreezeKey.keyDown())
-	{
-		bFreeze = !bFreeze;
-	}
+	//if (oFreezeKey.keyDown())
+	//{
+		//bFreeze = !bFreeze;
+	//}
 
 	if (oSaveStateKey.keyDown() && safeWrite())
 	{
@@ -1519,7 +1558,7 @@ void frameDoneCallback()
 		}*/
 		nDrawTextTimer--;
 	}
-	
+
 	// heres a lil example for the new draw funcs
 	// i can change the syntax up if desired
 	// also, i dont have any new text funcs yet, sry
@@ -1617,6 +1656,7 @@ void newPauseCallback2() {
 
 
 	if (oFreezeKey.keyDown()) {
+		bFreeze = !bFreeze;
 		_naked_newPauseCallback2_IsPaused = !_naked_newPauseCallback2_IsPaused;
 	}
 
