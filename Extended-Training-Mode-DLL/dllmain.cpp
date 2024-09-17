@@ -1804,39 +1804,39 @@ __declspec(naked) void _naked_updateEffectsPause() {
 	}
 }
 
-DWORD _updateEffectsPause2_Addr;
-DWORD _updateEffectsPause2_SkipEffect = 1;
-void updateEffectsPause2() {
+DWORD checkPauseEffect_Addr;
+DWORD checkPauseEffect_Skip = 0;
+void checkPauseEffect() {
 
 	if (!_naked_newPauseCallback2_IsPaused) {
-		_updateEffectsPause2_SkipEffect = 0;
 		return;
 	}
 
-
-	log("ugh: %08X", _updateEffectsPause2_Addr);
-
-	if (*(DWORD*)(_updateEffectsPause2_Addr - 0x9 + 0x20) == 0x00000101) {
-		_updateEffectsPause2_SkipEffect = 1;
+	if (*(DWORD*)(checkPauseEffect_Addr + 0x20) == 0x00000101) {
+		// this detects if something is a heat effect. heat effects are weird
+		// why 0x20? why 0x00000101? because when i was doing the effects coloring work, this worked
 		return;
 	}
 
-	_updateEffectsPause2_SkipEffect = 0;
+	checkPauseEffect_Skip = 1;
 }
 
-__declspec(naked) void _naked_updateEffectsPause2() {
+__declspec(naked) void _naked_updateEffectsPauseLoop1() {
 
 	__asm {
-		mov _updateEffectsPause2_Addr, ebp;
+		mov checkPauseEffect_Addr, ebp;
+		sub checkPauseEffect_Addr, 9; // first loop is offset by 9 from what im using
 	};
 
 	PUSH_ALL;
-	updateEffectsPause2();
+	checkPauseEffect();
 	POP_ALL;
 
 	__asm {
-		cmp _updateEffectsPause2_SkipEffect, 0;
+		cmp checkPauseEffect_Skip, 0;
 		JE _CONT;
+
+		mov checkPauseEffect_Skip, 0;
 
 		// skip this iteration
 		push 00453d45h;
@@ -1846,20 +1846,69 @@ __declspec(naked) void _naked_updateEffectsPause2() {
 	}
 
 
-	// overwritten bytes from 00453bb5
+	// overwritten bytes from 00453b92
 
-	__asm _emit 0x8d;
-	__asm _emit 0x5d;
-	__asm _emit 0xfb;
+	// cmp byte ptr [EBP + -0x9]
+	__asm _emit 0x80;
+	__asm _emit 0x7D;
+	__asm _emit 0xF7;
+	__asm _emit 0x00;
 
-	__asm _emit 0x8b;
-	__asm _emit 0xf3;
+	// not inlining the jz on purpose, its reljump
+	// i could align my jump func to 0xF but holy shit no 
+	__asm {
+		JZ _gotoNextLoop;
+
+		push 00453b9ch; // return exec to normal
+		ret;
+
+	_gotoNextLoop:
+		push 00453d45h;
+		ret;
+	}
+}
+
+__declspec(naked) void _naked_updateEffectsPauseLoop2() {
 
 	__asm {
-		push 00453bbah;
-		ret;
+		mov checkPauseEffect_Addr, ebp;
+		sub checkPauseEffect_Addr, 02F5h; // second loop is offset by 2F5 from what im using. PRAY that this sub actually works
 	};
 
+	PUSH_ALL;
+	checkPauseEffect();
+	POP_ALL;
+
+	__asm {
+		cmp checkPauseEffect_Skip, 0;
+		JE _CONT;
+
+		mov checkPauseEffect_Skip, 0;
+
+		// skip this iteration
+		push 00453f10h;
+		ret;
+
+	_CONT:
+	}
+
+
+	// overwritten bytes from 00453d60
+
+	// cmp byte ptr [fxCso->assetsIndex + 0xfffffd0b]
+	__asm _emit 0x80;
+	__asm _emit 0xBD;
+	__asm _emit 0x0B;
+	__asm _emit 0xFD;
+	__asm _emit 0xFF;
+	__asm _emit 0xFF;
+	__asm _emit 0x00;
+
+	// there were enough bytes in that above cmp for us to just ret
+	__asm {
+		push 00453d67h;
+		ret;
+	};
 }
 
 int nTempP1MeterGain = 0;
@@ -2181,8 +2230,9 @@ void initNewPauseCallback() {
 
 	patchJump(0x0044c7b0, _naked_trigPauseHook);
 
-	patchJump(0x00453d57, _naked_updateEffectsPause);
-	patchJump(0x00453bb5, _naked_updateEffectsPause2);
+	//patchJump(0x00453d57, _naked_updateEffectsPause);
+	patchJump(0x00453b92, _naked_updateEffectsPauseLoop1);
+	patchJump(0x00453d60, _naked_updateEffectsPauseLoop2	);
 
 }
 
