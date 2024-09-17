@@ -19,7 +19,7 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE = 2, HIGHLIGHT_PAGE = 3, POSITIONS_PAGE = 4, CHARACTER_SPECIFICS = 5, SAVE_STATE_PAGE = 6, FRAME_TOOL = 7, RNG_PAGE = 8, HOTKEYS_PAGE = 9 };
+enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE, HIGHLIGHT_PAGE, POSITIONS_PAGE, CHARACTER_SPECIFICS, HITBOXES_PAGE, SAVE_STATE_PAGE, FRAME_TOOL, RNG_PAGE, HOTKEYS_PAGE };
 enum eHotkeyPages { FRAME_TOOL_HOTKEYS_PAGE = 1, GENERIC_HOTKEYS_PAGE = 2, RNG_HOTKEYS_PAGE = 3 };
 enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
@@ -319,8 +319,9 @@ const ADDRESS adSharedRNGMode =						adShareBase + 0x9;	// 1 byte
 const ADDRESS adSharedRNGRate =						adShareBase + 0xA;	// 1 byte
 const ADDRESS adSharedRNGCustomSeed =				adShareBase + 0xB;	// 4 bytes
 const ADDRESS adSharedRNGCustomRN =					adShareBase + 0xF;	// 4 bytes
-const ADDRESS adSharedHitboxStyle =					adShareBase + 0x4;	// 1 byte
-const ADDRESS adSharedColorBlindMode =				adShareBase + 0x5;	// 1 byte
+const ADDRESS adSharedHitboxStyle =					adShareBase + 0x14;	// 1 byte
+const ADDRESS adSharedColorBlindMode =				adShareBase + 0x15;	// 1 byte
+const ADDRESS adSharedDisplayHitboxes	 =			adShareBase + 0x16;	// 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte
@@ -358,7 +359,7 @@ const std::vector<int> vGuardLevelLookupTable =
 const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
-const int MAX_SETTINGS_PAGES = 9;
+const int MAX_SETTINGS_PAGES = 10;
 const int MAX_HOTKEY_PAGES = 3;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
@@ -421,6 +422,11 @@ const char pcBlank_32[32] = "";
 const char pcBlank_64[64] = "";
 const char pcPressA_32[32] = "PRESS A";
 const char pcHoldA_32[32] = "HOLD A";
+const char pcDisplayHitboxes_17[17] = "DISPLAY HITBOXES";
+const char pcHitboxStyle_13[13] = "HITBOX STYLE";
+const char pcColorBlindMode_17[17] = "COLOR BLIND MODE";
+const char pcBlended_8[8] = "BLENDED";
+const char pcLayered_8[8] = "LAYERED";
 
 const std::vector<const char*> vHighlightNames = { "OFF",
 												"RED",

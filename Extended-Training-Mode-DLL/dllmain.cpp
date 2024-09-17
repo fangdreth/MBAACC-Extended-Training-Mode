@@ -1334,6 +1334,11 @@ void frameDoneCallback()
 		//HookDirectX();
 	}
 
+	if (*(bool*)(dwBaseAddress + adSharedDisplayHitboxes))
+		bHitboxesDisplay = true;
+	else
+		bHitboxesDisplay = false;
+
 	//drawTextWithBorder(300, 300, 36, 48	, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
 
 	if (bFreeze)
@@ -1394,7 +1399,8 @@ void frameDoneCallback()
 
 	if (oHitboxesDisplayKey.keyDown())
 	{
-		bHitboxesDisplay = !bHitboxesDisplay;
+		bHitboxesDisplay = !*(bool*)(dwBaseAddress + adSharedDisplayHitboxes);
+		*(bool*)(dwBaseAddress + adSharedDisplayHitboxes) = bHitboxesDisplay;
 		nDrawTextTimer = TEXT_TIMER;
 		if (bHitboxesDisplay)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HITBOXES ON");
