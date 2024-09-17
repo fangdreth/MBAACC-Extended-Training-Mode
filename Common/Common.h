@@ -26,6 +26,7 @@ enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
 enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, YELLOW_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT, PURPLE_HIGHLIGHT, BLACK_HIGHLIGHT };
 enum eRNGMode { RNG_OFF, RNG_SEED, RNG_RN };
 enum eRNGRate { RNG_EVERY_FRAME, RNG_EVERY_RESET };
+enum eHitboxStyle { HITBOX_DRAW_ALL, HITBOX_BLEND };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
@@ -318,6 +319,8 @@ const ADDRESS adSharedRNGMode =						adShareBase + 0x9;	// 1 byte
 const ADDRESS adSharedRNGRate =						adShareBase + 0xA;	// 1 byte
 const ADDRESS adSharedRNGCustomSeed =				adShareBase + 0xB;	// 4 bytes
 const ADDRESS adSharedRNGCustomRN =					adShareBase + 0xF;	// 4 bytes
+const ADDRESS adSharedHitboxStyle =					adShareBase + 0x4;	// 1 byte
+const ADDRESS adSharedColorBlindMode =				adShareBase + 0x5;	// 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte

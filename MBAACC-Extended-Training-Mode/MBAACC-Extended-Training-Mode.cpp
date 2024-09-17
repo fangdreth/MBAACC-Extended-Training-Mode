@@ -106,7 +106,8 @@ int main(int argc, char* argv[])
         uint32_t nCustomSeed = 0;
         uint32_t nCustomRN = 0;
 
-    
+        bool bColorBlindMode = false;
+        uint8_t nHitboxStyle = HITBOX_DRAW_ALL;
 
         int nSettingsPage = 1;
         int nHotkeyPage = 1;
@@ -359,6 +360,8 @@ int main(int argc, char* argv[])
                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGRate), &nRNGRate, 1, 0);
                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomSeed), &nCustomSeed, 1, 0);
                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomRN), &nCustomRN, 1, 0);
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxStyle), &nHitboxStyle, 1, 0);
+                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedColorBlindMode), &bColorBlindMode, 1, 0);
 
                 std::array<uint8_t, 4> arrTemp = CreateColorArray2(NO_HIGHLIGHT);
                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 4, 0);

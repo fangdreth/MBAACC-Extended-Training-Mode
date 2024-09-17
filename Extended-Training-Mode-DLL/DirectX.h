@@ -1351,58 +1351,64 @@ void drawHitboxes() {
 
 	profileFunction();
 
-	/*constexpr DWORD colors[] = {
+	constexpr DWORD arrNormalColors[] = {
 		0xFF111111, // None
 		0xFF42E5F4, // origin
 		0xFFD0D0D0, // collision
 		0xFFFF0000, // hitbox
 		0xFF00FF00, // hurtbox
 		0xFFFF0000, // clash
-		0xFF0000FF, // blue
+		0xFF0000FF, // projectile
 		0xFFF54298 // shield
-	};*/
-	constexpr DWORD colors[] = {
+	};
+	constexpr DWORD arrColorBlindColors[] = {
 		0xFF111111, // None
 		0xFF42E5F4, // origin
 		0xFFD0D0D0, // collision
-		0xFFff0000, // hitbox
-		0xFF0700f2, // hurtbox
-		0xFFfff000, // clash
-		0xFF1f3a42, // blue
-		0xFFb9e4b6 // shield
+		0xFFD55E00, // hitbox
+		0xFF009E73, // hurtbox
+		0xFFF0E442, // clash
+		0xFF0072B2, // projectile
+		0xFFCC79A7 // shield
 	};
 
 	// i could have avoided a div stage, but ugh, another time
 
+	const DWORD* arrColors;
+	if (*(uint8_t*)(dwBaseAddress + adSharedColorBlindMode))
+		arrColors = arrColorBlindColors;
+	else
+		arrColors = arrNormalColors;
+
 	int i;
 
 	i = static_cast<int>(BoxType::Hurtbox);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
+	HitboxBatchDraw(boxDataList[i], arrColors[i]);
 	boxDataList[i].clear();
 
 	i = static_cast<int>(BoxType::Hitbox);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
+	HitboxBatchDraw(boxDataList[i], arrColors[i]);
 	boxDataList[i].clear();
 
 	i = static_cast<int>(BoxType::Clash);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
+	HitboxBatchDraw(boxDataList[i], arrColors[i]);
 	boxDataList[i].clear();
 
 	i = static_cast<int>(BoxType::Blue);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
+	HitboxBatchDraw(boxDataList[i], arrColors[i]);
 	boxDataList[i].clear();
 
 	i = static_cast<int>(BoxType::Shield);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
+	HitboxBatchDraw(boxDataList[i], arrColors[i]);
 	boxDataList[i].clear();
 
 	// origin and collision never need to be overlaied. right? but tbh,, ugh i dont want more one off draw funcs
 	i = static_cast<int>(BoxType::Collision);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
+	HitboxBatchDraw(boxDataList[i], arrColors[i]);
 	boxDataList[i].clear();
 
 	i = static_cast<int>(BoxType::Origin);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
+	HitboxBatchDraw(boxDataList[i], arrColors[i]);
 	
 	/*	
 	device->BeginScene();
