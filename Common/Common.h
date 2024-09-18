@@ -322,7 +322,8 @@ const ADDRESS adSharedRNGCustomSeed =				adShareBase + 0xB;	// 4 bytes
 const ADDRESS adSharedRNGCustomRN =					adShareBase + 0xF;	// 4 bytes
 const ADDRESS adSharedHitboxStyle =					adShareBase + 0x14;	// 1 byte
 const ADDRESS adSharedColorBlindMode =				adShareBase + 0x15;	// 1 byte
-const ADDRESS adSharedDisplayHitboxes	 =			adShareBase + 0x16;	// 1 byte
+const ADDRESS adSharedDisplayHitboxes =				adShareBase + 0x16;	// 1 byte
+const ADDRESS adSharedExtendOrigins =				adShareBase + 0x17; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte
@@ -428,6 +429,9 @@ const char pcHitboxStyle_13[13] = "HITBOX STYLE";
 const char pcColorBlindMode_17[17] = "COLOR BLIND MODE";
 const char pcBlended_8[8] = "BLENDED";
 const char pcLayered_8[8] = "LAYERED";
+const char pcOriginStyle_13[13] = "ORIGIN STYLE";
+const char pcStandard_9[9] = "STANDARD";
+const char pcExtended_9[9] = "EXTENDED";
 
 const std::vector<const char*> vHighlightNames = { "OFF",
 												"RED",
