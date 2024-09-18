@@ -144,7 +144,8 @@ const int MAX_SAVES = 3;
 const int SAVE_RESET_TIME = 60; //Frames of holding Save State Hotkey before clearing that save
 const char TEXT_TIMER = 40; //How many frames Save State popup text stays on screen
 
-const int SAVE_EFFECTS_SIZE = 74576;
+const int SAVE_NUM_EFFECTS = 100;
+const int SAVE_EFFECTS_SIZE = 0x33c;
 const int SAVE_STOP_SITUATION_SIZE = 1632;
 const int SAVE_ATTACK_DISPLAY_INFO_SIZE = 52;
 const int SAVE_ATTACK_DISPLAY_INFO_2_SIZE = 1004;
@@ -283,7 +284,7 @@ const ADDRESS adSaveCurrentCamXCopy = 0x164B14;
 const ADDRESS adSaveCurrentCamYCopy = 0x164B18;
 
 const DWORD dwEffectStructSize = 0x33C;
-const ADDRESS adSaveEffects = 0x27BD70;
+const ADDRESS adSaveEffects = 0x27BDE8;
 const ADDRESS adEffectBase = 0x27BDE8;
 const ADDRESS adEffectSource = 0x8;
 
