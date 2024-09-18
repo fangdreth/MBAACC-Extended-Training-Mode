@@ -879,9 +879,7 @@ void __stdcall drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x80
 	drawLine2(x + lineWidth, y, x + w, y, ARGB, true);
 	drawLine2(x, y, x, y + h, ARGB, false);
 	drawLine2(x + w, y, x + w, y + h, ARGB, false);
-	drawLine2(x, y + h, x + w + lineWidth, y + h, ARGB, true);
-
-	
+	drawLine2(x, y + h, x + w + lineWidth, y + h, ARGB, false); // might need to be true 
 
 }
 
@@ -1341,7 +1339,85 @@ void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade = true) {
 	drawBorder2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, ARGB);
 }
 
-void HitboxBatchDraw(const BoxObjects* b) {
+constexpr DWORD arrNormalColors[] = {
+		0xFF42E5F4, // origin
+		0xFFD0D0D0, // collision
+		0xFFFF0000, // hitbox
+		0xFF00FF00, // hurtbox
+		0xFFFFFF00, // clash
+		0xFF0000FF, // projectile
+		0xFFF54298 // shield
+};
+
+constexpr DWORD arrColorBlindColors[] = {
+	0xFF42E5F4, // origin
+	0xFFD0D0D0, // collision
+	0xFFD55E00, // hitbox
+	0xFF009E73, // hurtbox
+	0xFFF0E442, // clash
+	0xFF0072B2, // projectile
+	0xFFCC79A7 // shield
+};
+
+void HitboxBatchDrawNoBlend(const BoxObjects* b) {
+
+	const DWORD* arrColors;
+	if (*(uint8_t*)(dwBaseAddress + adSharedColorBlindMode))
+		arrColors = arrColorBlindColors;
+	else
+		arrColors = arrNormalColors;
+
+	int i;
+
+
+	i = static_cast<int>(BoxType::Collision);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], arrColors[i], false);
+	}
+
+	i = static_cast<int>(BoxType::Hurtbox);
+	for (int j = 0; j < (*b)[i].size(); j++) {
+		drawSingleHitbox((*b)[i][j], arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Hitbox);
+	for (int j = 0; j < (*b)[i].size(); j++) {
+		drawSingleHitbox((*b)[i][j], arrColors[i]);
+		//BoxData box = (*b)[i][j];
+		//log("%6.3f %6.3f %6.3f %6.3f", box.x / 480.0f, box.y / 480.0f, (box.x / 480.0f) + (box.w / 480.0f), (box.y	 / 480.0f) + (box.h / 480.0f));
+	}
+	//log("-----");
+
+	i = static_cast<int>(BoxType::Blue);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Clash);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Shield);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Origin);
+	if ((*b)[i].size() == 1) {
+		if (*(uint8_t*)(dwBaseAddress + adSharedExtendOrigins)) {
+			drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
+		}
+		else {
+			drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+		}
+	}
+
+}
+
+void HitboxBatchDrawBlend(const BoxObjects* b) {
 
 	// attemmpt with CPU for box collisions
 
@@ -1358,24 +1434,7 @@ void HitboxBatchDraw(const BoxObjects* b) {
 	i can do multiple passes over the list for each box type, or like, have an array again
 
 	*/
-	constexpr DWORD arrNormalColors[] = {
-		0xFF42E5F4, // origin
-		0xFFD0D0D0, // collision
-		0xFFFF0000, // hitbox
-		0xFF00FF00, // hurtbox
-		0xFFFFFF00, // clash
-		0xFF0000FF, // projectile
-		0xFFF54298 // shield
-	};
-	constexpr DWORD arrColorBlindColors[] = {
-		0xFF42E5F4, // origin
-		0xFFD0D0D0, // collision
-		0xFFD55E00, // hitbox
-		0xFF009E73, // hurtbox
-		0xFFF0E442, // clash
-		0xFF0072B2, // projectile
-		0xFFCC79A7 // shield
-	};
+	
 
 	// i could have avoided a div stage, but ugh, another time
 
@@ -1435,8 +1494,13 @@ void HitboxBatchDraw(const BoxObjects* b) {
 
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
-		drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-		drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+		if (*(uint8_t*)(dwBaseAddress + adSharedExtendOrigins)) {
+			drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
+		} else {
+			drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+		}
 	}
 
 }
@@ -1510,10 +1574,21 @@ void _drawHitboxes() {
 		0xFFb9e4b6 // shield
 	};*/
 
-	for (int i = 0; i < boxObjectList.size(); i++) {
-		HitboxBatchDraw(boxObjectList[i]);
-		delete boxObjectList[i];
+	
+	
+	if (*(uint8_t*)(dwBaseAddress + adSharedHitboxStyle)) {
+		for (int i = 0; i < boxObjectList.size(); i++) {
+			HitboxBatchDrawBlend(boxObjectList[i]);
+			delete boxObjectList[i];
+		}
+	} else {
+		for (int i = 0; i < boxObjectList.size(); i++) {
+			HitboxBatchDrawNoBlend(boxObjectList[i]);
+			delete boxObjectList[i];
+		}
 	}
+
+	
 
 	boxObjectList.clear();
 

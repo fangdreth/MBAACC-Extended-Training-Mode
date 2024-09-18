@@ -657,7 +657,10 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 	int cameraY = *(int*)(0x0055dec8);
 	float cameraZoom = *(float*)(0x0054eb70);
 
+	// what is that 49.
 	float xCamTemp = ((((float)(xPos - cameraX) * cameraZoom) / 128.0f) * (windowWidth / 640.0f) + windowWidth / 2.0f);
+	//float xCamTemp = ((((float)(xPos - cameraX) * cameraZoom) / 128.0f - 49.0f) * (windowWidth / 640.0f) + windowWidth / 2.0f);
+	
 	float yCamTemp = ((((float)(yPos - cameraY) * cameraZoom) / 128.0f - 49.0f) * (windowHeight / 480.0f) + windowHeight);
 	
 	float tempFloat;
@@ -743,16 +746,17 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 					break;
 			}
 
-			tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
-			x1Cord = ((float)**(short**)(*(int*)(objFramePtr + 0x4c) + index * 4) * (tempFloat + tempFloat) + (float)xCamTemp);
+			short x1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 0);
+			short x2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 4) * 2;
+			short y1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 2) * 2;
+			short y2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 6) * 2;
 
 			tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
-			x2Cord = ((float)*(short*)(*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) + 4) * (tempFloat + tempFloat) + (float)xCamTemp);
+			x1Cord = ((float)x1) * (tempFloat + tempFloat) + (float)xCamTemp;
+			x2Cord = ((float)x2) * (float)isRight * (windowWidth / 640.0f) * cameraZoom + (float)xCamTemp;
 
-			y1Cord = ((float)((int)*(short*)(*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) + 2) << 1) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp);
-
-			tempFloat = (windowHeight / 480.0f) * cameraZoom;
-			y2Cord = ((float)*(short*)(*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) + 6) * (tempFloat + tempFloat) + (float)yCamTemp);
+			y1Cord = ((float)y1) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp;
+			y2Cord = ((float)y2) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp;
 
 			x1Cord = ((float)x1Cord * (640.0f / windowWidth));
 			x2Cord = ((float)x2Cord * (640.0f / windowWidth));
@@ -784,14 +788,20 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 				continue;
 			}
 
+			short x1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 0); 
+			short x2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 4) * 2;
+			short y1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 2) * 2;
+			short y2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 6) * 2;
+
 			tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
-			x1Cord = ((float)**(short**)(*(int*)(objFramePtr + 0x50) + index * 4) * (tempFloat + tempFloat) + (float)xCamTemp);
+			x1Cord = ((float)x1) * (tempFloat + tempFloat) + (float)xCamTemp;
+			x2Cord = ((float)x2) * (float)isRight * (windowWidth / 640.0f) * cameraZoom + (float)xCamTemp;
 
-			x2Cord = ((float)(*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 4) * 2 + -1) * (float)isRight * (windowWidth / 640.0f) * cameraZoom + (float)xCamTemp);
+			y1Cord = ((float)y1) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp;
+			y2Cord = ((float)y2) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp;
 
-			y1Cord = ((float)(*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 2) * 2 + 1) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp);
-
-			y2Cord = ((float)((int)*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 6) << 1) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp);
+			//log("%3d %3d %3d %3d", x1, y1, x2, y2);
+			//log("%6.3f %6.3f %6.3f %6.3f", x1Cord, y1Cord, x2Cord, y2Cord);
 
 			//x1Cord = ((float)x1Cord / windowWidth);
 			//x2Cord = ((float)x2Cord / windowWidth);
@@ -812,6 +822,7 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 			(*res)[static_cast<int>(boxType)].emplace_back(BoxData(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord)));
 		}
 	}
+	//log("-----");
 
 	DrawHitboxes(res);
 
