@@ -663,8 +663,8 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 	
 	float yCamTemp = ((((float)(yPos - cameraY) * cameraZoom) / 128.0f - 49.0f) * (windowHeight / 480.0f) + windowHeight);
 	
-	xCamTemp = round(xCamTemp);
-	yCamTemp = round(yCamTemp);
+	xCamTemp = floor(xCamTemp);
+	yCamTemp = floor(yCamTemp);
 
 	float tempFloat;
 
