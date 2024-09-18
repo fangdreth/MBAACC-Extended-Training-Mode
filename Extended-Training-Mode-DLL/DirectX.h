@@ -1406,6 +1406,7 @@ void HitboxBatchDrawNoBlend(const BoxObjects* b) {
 
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
+		log("%7.3f %7.3f %7.3f %7.3f", (*b)[i][0].x, (*b)[i][0].y, (*b)[i][0].w, (*b)[i][0].h);
 		if (*(uint8_t*)(dwBaseAddress + adSharedExtendOrigins)) {
 			drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
 			drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
