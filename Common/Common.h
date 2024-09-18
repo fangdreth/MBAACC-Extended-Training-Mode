@@ -19,13 +19,14 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE = 2, HIGHLIGHT_PAGE = 3, POSITIONS_PAGE = 4, CHARACTER_SPECIFICS = 5, SAVE_STATE_PAGE = 6, FRAME_TOOL = 7, RNG_PAGE = 8, HOTKEYS_PAGE = 9 };
+enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE, HIGHLIGHT_PAGE, POSITIONS_PAGE, CHARACTER_SPECIFICS, HITBOXES_PAGE, SAVE_STATE_PAGE, FRAME_TOOL, RNG_PAGE, HOTKEYS_PAGE };
 enum eHotkeyPages { FRAME_TOOL_HOTKEYS_PAGE = 1, GENERIC_HOTKEYS_PAGE = 2, RNG_HOTKEYS_PAGE = 3 };
 enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
 enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, YELLOW_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT, PURPLE_HIGHLIGHT, BLACK_HIGHLIGHT };
 enum eRNGMode { RNG_OFF, RNG_SEED, RNG_RN };
 enum eRNGRate { RNG_EVERY_FRAME, RNG_EVERY_RESET };
+enum eHitboxStyle { HITBOX_DRAW_ALL, HITBOX_BLEND };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
@@ -143,7 +144,8 @@ const int MAX_SAVES = 3;
 const int SAVE_RESET_TIME = 60; //Frames of holding Save State Hotkey before clearing that save
 const char TEXT_TIMER = 40; //How many frames Save State popup text stays on screen
 
-const int SAVE_EFFECTS_SIZE = 74576;
+const int SAVE_NUM_EFFECTS = 100;
+const int SAVE_EFFECTS_SIZE = 0x33c;
 const int SAVE_STOP_SITUATION_SIZE = 1632;
 const int SAVE_ATTACK_DISPLAY_INFO_SIZE = 52;
 const int SAVE_ATTACK_DISPLAY_INFO_2_SIZE = 1004;
@@ -282,7 +284,7 @@ const ADDRESS adSaveCurrentCamXCopy = 0x164B14;
 const ADDRESS adSaveCurrentCamYCopy = 0x164B18;
 
 const DWORD dwEffectStructSize = 0x33C;
-const ADDRESS adSaveEffects = 0x27BD70;
+const ADDRESS adSaveEffects = 0x27BDE8;
 const ADDRESS adEffectBase = 0x27BDE8;
 const ADDRESS adEffectSource = 0x8;
 
@@ -318,6 +320,10 @@ const ADDRESS adSharedRNGMode =						adShareBase + 0x9;	// 1 byte
 const ADDRESS adSharedRNGRate =						adShareBase + 0xA;	// 1 byte
 const ADDRESS adSharedRNGCustomSeed =				adShareBase + 0xB;	// 4 bytes
 const ADDRESS adSharedRNGCustomRN =					adShareBase + 0xF;	// 4 bytes
+const ADDRESS adSharedHitboxStyle =					adShareBase + 0x14;	// 1 byte
+const ADDRESS adSharedColorBlindMode =				adShareBase + 0x15;	// 1 byte
+const ADDRESS adSharedDisplayHitboxes =				adShareBase + 0x16;	// 1 byte
+const ADDRESS adSharedExtendOrigins =				adShareBase + 0x17; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte
@@ -355,7 +361,7 @@ const std::vector<int> vGuardLevelLookupTable =
 const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
-const int MAX_SETTINGS_PAGES = 9;
+const int MAX_SETTINGS_PAGES = 10;
 const int MAX_HOTKEY_PAGES = 3;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
@@ -418,6 +424,14 @@ const char pcBlank_32[32] = "";
 const char pcBlank_64[64] = "";
 const char pcPressA_32[32] = "PRESS A";
 const char pcHoldA_32[32] = "HOLD A";
+const char pcDisplayHitboxes_17[17] = "DISPLAY HITBOXES";
+const char pcHitboxStyle_13[13] = "HITBOX STYLE";
+const char pcColorBlindMode_17[17] = "COLOR BLIND MODE";
+const char pcBlended_8[8] = "BLENDED";
+const char pcLayered_8[8] = "LAYERED";
+const char pcOriginStyle_13[13] = "ORIGIN STYLE";
+const char pcStandard_9[9] = "STANDARD";
+const char pcExtended_9[9] = "EXTENDED";
 
 const std::vector<const char*> vHighlightNames = { "OFF",
 												"RED",

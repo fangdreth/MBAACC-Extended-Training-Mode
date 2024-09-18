@@ -46,7 +46,7 @@ int nSharedHitstop;
 struct Save {
 	bool bSaved = false;
 
-	DWORD dwaSaveEffects[ADJ_SAVE_EFFECTS_SIZE] = {}; //Effect and projectile data
+	DWORD dwaSaveEffects[SAVE_NUM_EFFECTS][ADJ_SAVE_EFFECTS_SIZE] = {}; //Effect and projectile data
 	DWORD dwaSaveStopSituation[ADJ_SAVE_STOP_SITUATION_SIZE] = {};
 	DWORD dwSaveGlobalFreeze = 0;
 	DWORD dwaSaveAttackDisplayInfo[ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE] = {}; //Ends just before Max Damage
@@ -203,37 +203,28 @@ void CheckProjectiles(HANDLE hMBAAHandle, Player& P)
 	for (int i = 0; i < 100; i++)
 	{
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i), &bProjectileExists, 1, 0);
-		if (bProjectileExists)
+		if (!bProjectileExists) continue;
+		dwBlankEffectCount = 0;
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adEffectSource), &cProjectileSource, 1, 0);
+		if (cProjectileSource != P.cPlayerNumber) continue;
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adPattern), &nProjectilePattern, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adAttackDataPointer), &dwProjectileAttackDataPointer, 4, 0);
+		if (!dwProjectileAttackDataPointer || nProjectilePattern < 60) continue;
+		bool bIncrement = true;
+		for (auto const& [key, val] : CharacterMap)
 		{
-			dwBlankEffectCount = 0;
-			ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adEffectSource), &cProjectileSource, 1, 0);
-			if (cProjectileSource == P.cPlayerNumber)
+			if (nProjectilePattern == val)
 			{
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adPattern), &nProjectilePattern, 4, 0);
-				ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adAttackDataPointer), &dwProjectileAttackDataPointer, 4, 0);
-				if (dwProjectileAttackDataPointer != 0 && nProjectilePattern >= 60)
-				{
-					bool bIncrement = true;
-					for (auto const& [key, val] : CharacterMap)
-					{
-						if (nProjectilePattern == val)
-						{
-							bIncrement = false;
-							break;
-						}
-					}
-					if (bIncrement)
-					{
-						nCount++;
-					}
-				}
-			}
-		} else {
-			dwBlankEffectCount++;
-			if (dwBlankEffectCount > 16) {
+				bIncrement = false;
 				break;
 			}
 		}
+		if (bIncrement)
+		{
+			nCount++;
+		}
+		dwBlankEffectCount++;
+		if (dwBlankEffectCount > 16) break;
 	}
 	P.nActiveProjectileCount = nCount;
 }
@@ -244,10 +235,7 @@ void UpdatePlayer(HANDLE hMBAAHandle, Player &P) {
 	P.bLastOnRight = P.bIsOnRight;
 	P.cLastStance = P.cState_Stance;
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase), &P.cExists, 1, 0);
-	if (!P.cExists)
-	{
-		return;
-	}
+	if (!P.cExists) return;
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adPattern), &P.nPattern, 4, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adState), &P.nState, 4, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adHealth), &P.nHealth, 4, 0);
@@ -312,7 +300,10 @@ void SaveState(HANDLE hMBAAHandle, int nSaveSlot)
 	if (nSaveSlot > 0)
 	{
 		Save &S = Saves[nSaveSlot - 1];
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveEffects), &S.dwaSaveEffects, SAVE_EFFECTS_SIZE, 0);
+		for (int i = 0; i < SAVE_NUM_EFFECTS; i++)
+		{
+			ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveEffects + 0x33C * i), &S.dwaSaveEffects[i], SAVE_EFFECTS_SIZE, 0);
+		}
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveStopSituation), &S.dwaSaveStopSituation, SAVE_STOP_SITUATION_SIZE, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adGlobalFreeze), &S.dwSaveGlobalFreeze, 1, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveAttackDisplayInfo), &S.dwaSaveAttackDisplayInfo, SAVE_ATTACK_DISPLAY_INFO_SIZE, 0);
@@ -350,7 +341,28 @@ void LoadState(HANDLE hMBAAHandle, int nSaveSlot, bool bLoadRNG = false)
 	if (nSaveSlot > 0)
 	{
 		Save& S = Saves[nSaveSlot - 1];
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveEffects), &S.dwaSaveEffects, SAVE_EFFECTS_SIZE, 0);
+		for (int i = 0; i < SAVE_NUM_EFFECTS; i++)
+		{
+			if (S.dwaSaveEffects[i][0])
+			{
+				if (!S.dwaSaveEffects[i][204]) continue;
+				DWORD dwPointerTemp = 0;
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(S.dwaSaveEffects[i][204]), &dwPointerTemp, 4, 0); //Manager
+				if (!dwPointerTemp) continue;
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwPointerTemp + 4), &dwPointerTemp, 4, 0); //Manager[1]
+				if (!dwPointerTemp) continue;
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwPointerTemp + 4), &dwPointerTemp, 4, 0); //Manager[1][1]
+				if (!dwPointerTemp) continue;
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwPointerTemp + 4 * S.dwaSaveEffects[i][4]), &dwPointerTemp, 4, 0); //Manager[1][1][Pattern]
+				if (!dwPointerTemp) continue;
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwPointerTemp + 4 * 13), &dwPointerTemp, 4, 0); //Manager[1][1][Pattern][13]
+				if (!dwPointerTemp) continue;
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(dwPointerTemp + 4), &dwPointerTemp, 4, 0); //Manager[1][1][Pattern][13][1]
+				DWORD dwAnimationDataPointer = dwPointerTemp + 0x54 * S.dwaSaveEffects[i][5]; //Manager[1][1][Pattern[13][1] + State * 0x54
+				S.dwaSaveEffects[i][200] = dwAnimationDataPointer;
+			}
+			WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveEffects + dwEffectStructSize * i), &S.dwaSaveEffects[i], SAVE_EFFECTS_SIZE, 0);
+		}
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveStopSituation), &S.dwaSaveStopSituation, SAVE_STOP_SITUATION_SIZE, 0);
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adGlobalFreeze), &S.dwSaveGlobalFreeze, 1, 0);
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSaveAttackDisplayInfo), &S.dwaSaveAttackDisplayInfo, SAVE_ATTACK_DISPLAY_INFO_SIZE, 0);
@@ -419,10 +431,12 @@ void SaveStateToFile(HANDLE hMBAAHandle, int nSaveSlot)
 				int nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
 				SaveOutFile << nP1CharacterID << std::endl;
 				SaveOutFile << nP2CharacterID << std::endl;
-
-				for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+				for (int i = 0; i < SAVE_NUM_EFFECTS; i++)
 				{
-					SaveOutFile << S.dwaSaveEffects[i] << std::endl;
+					for (int j = 0; j < ADJ_SAVE_EFFECTS_SIZE; j++)
+					{
+						SaveOutFile << S.dwaSaveEffects[i][j] << std::endl;
+					}
 				}
 				for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
 				{
@@ -534,9 +548,12 @@ void LoadStateFromFile(HANDLE hMBAAHandle, int nSaveSlot)
 					return;
 				}
 
-				for (int i = 0; i < ADJ_SAVE_EFFECTS_SIZE; i++)
+				for (int i = 0; i < SAVE_NUM_EFFECTS; i++)
 				{
-					SaveInFile >> S.dwaSaveEffects[i];
+					for (int j = 0; j < ADJ_SAVE_EFFECTS_SIZE; j++)
+					{
+						SaveInFile >> S.dwaSaveEffects[i][j];
+					}
 				}
 				for (int i = 0; i < ADJ_SAVE_STOP_SITUATION_SIZE; i++)
 				{
