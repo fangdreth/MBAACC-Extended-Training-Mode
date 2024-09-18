@@ -5536,7 +5536,7 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyStatus), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyStatusCopy), &nWriteBuffer, 4, 0);
                     }*/
-                    Sleep(4);
+                    Sleep(1);
                 }
             }
         }
