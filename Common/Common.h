@@ -1,12 +1,16 @@
 #pragma once
+#include <ws2tcpip.h>
+#include <winsock2.h>
+#include <Windows.h>
 #include <vector>
 #include <string>
-#include <Windows.h>
 #include <map>
 #include <unordered_map>
 #include <iostream>
 #include <cwctype>
 #include <algorithm>
+
+#pragma comment(lib, "ws2_32.lib") 
 
 typedef DWORD ADDRESS;
 
@@ -677,3 +681,4 @@ static bool GetSaveSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wst
 	}
 	return false;
 }
+

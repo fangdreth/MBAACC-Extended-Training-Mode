@@ -1,5 +1,5 @@
 #pragma once
-#include <Windows.h>
+#include "..\Common\Common.h"
 #include "tlhelp32.h"
 #include <stdio.h>
 #include <string.h>
@@ -17,7 +17,6 @@
 
 #include "json.hpp"
 
-#include "..\Common\Common.h"
 #include "..\Common\CharacterData.h"
 #include "PointerManager.h"
 #include "FrameDisplay.h"
@@ -667,4 +666,62 @@ uint32_t PromptForNumber(HANDLE hMBAAHandle, DWORD dwBaseAddress)
         return nDialogOutput;
     else
         return -1;
+}
+
+void __stdcall ___netlog(const char* msg)
+{
+    const char* ipAddress = "127.0.0.1";
+    unsigned short port = 17474;
+
+    int msgLen = strlen(msg);
+
+    const char* message = msg;
+
+    WSADATA wsaData;
+    int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (result != 0)
+    {
+        return;
+    }
+
+    SOCKET sendSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sendSocket == INVALID_SOCKET)
+    {
+        WSACleanup();
+        return;
+    }
+
+    sockaddr_in destAddr;
+    destAddr.sin_family = AF_INET;
+    destAddr.sin_port = htons(port);
+    if (inet_pton(AF_INET, ipAddress, &destAddr.sin_addr) <= 0)
+    {
+        closesocket(sendSocket);
+        WSACleanup();
+        return;
+    }
+
+    int sendResult = sendto(sendSocket, message, strlen(message), 0, (sockaddr*)&destAddr, sizeof(destAddr));
+    if (sendResult == SOCKET_ERROR)
+    {
+        closesocket(sendSocket);
+        WSACleanup();
+        return;
+    }
+
+    closesocket(sendSocket);
+    WSACleanup();
+}
+
+void __stdcall netlog(const char* format, ...) {
+    static char buffer[1024]; // no more random char buffers everywhere.
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, 1024, format, args);
+    ___netlog(buffer);
+    va_end(args);
+}
+
+long long getMicroSec() {
+    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 }

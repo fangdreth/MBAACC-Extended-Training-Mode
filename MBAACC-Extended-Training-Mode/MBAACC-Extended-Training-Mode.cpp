@@ -396,7 +396,20 @@ int main(int argc, char* argv[])
                 //LogInfo("MBAA is in training mode");
             }
 
+            long long start = getMicroSec();
+
             FrameDisplay(hMBAAHandle, dwBaseAddress, P1, P2, P3, P4);
+
+            long long totalTime = getMicroSec() - start;
+
+            if (totalTime > 16000) {
+                netlog(".\tconsole framedisplay took %3lld.%03lld ms this is critical", totalTime / 1000, totalTime % 1000);
+            } else if (totalTime > 8000) { // 8ms
+                netlog("console framedisplay took %3lld.%03lld ms this is not ideal", totalTime / 1000, totalTime % 1000);   
+            }
+
+            
+
 
             //nWriteBuffer = nPlayerAdvantage;
             //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwFPS), &nWriteBuffer, 4, 0);

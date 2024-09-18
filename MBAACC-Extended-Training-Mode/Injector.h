@@ -1,6 +1,8 @@
 #pragma once
+#include "..\Common\Common.h"
+#include "Logger.h"
 #include <iostream>
-#include <windows.h>
+//#include <windows.h>
 #include <psapi.h>
 #include <tlhelp32.h>
 #include <stdio.h>
@@ -10,7 +12,7 @@
 #include <iostream>
 #include <cstdio>
 
-#include "Logger.h"
+
 
 #define RED "\x1b[31;1m"
 #define GREEN "\x1b[32;1m"

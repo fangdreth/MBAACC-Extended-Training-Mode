@@ -1,7 +1,8 @@
 
-#include <ws2tcpip.h>
-#include <winsock2.h>
-#include <windows.h>
+#include "..\Common\Common.h"
+//#include <ws2tcpip.h>
+//#include <winsock2.h>
+//#include <windows.h>
 #include <cstring> 
 #include <cstdio>
 #include <psapi.h>
@@ -17,7 +18,9 @@
 #include <cstdarg>
 #include <chrono>
 
-#include "..\Common\Common.h"
+//#pragma comment(lib, "ws2_32.lib") 
+
+
 #include "..\Common\CharacterData.h"
 #include "FrameBar.h"
 
@@ -26,7 +29,7 @@
 #include <dxerr.h>
 #include <dsound.h>
 
-#pragma comment(lib, "ws2_32.lib") 
+
 #pragma comment(lib, "d3d9.lib") 
 #pragma comment(lib, "d3dx9.lib")
 #pragma comment(lib, "dxerr.lib")
@@ -209,17 +212,6 @@ void __stdcall log(const char* format, ...) {
 	va_end(args);
 }
 
-void __stdcall debugLogBytes(BYTE* p)
-{
-
-	static char buffer[256];
-
-	for (int i = 0; i < 16; i++) 
-	{
-		snprintf(buffer, 256, "%08X", *(BYTE*)p);
-		p++;
-	}
-}
 
 bool __stdcall safeWrite()
 {
