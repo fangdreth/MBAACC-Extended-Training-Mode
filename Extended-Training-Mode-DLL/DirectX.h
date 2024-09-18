@@ -798,7 +798,8 @@ void __stdcall drawRectUnscaled(float x, float y, float w, float h, DWORD ARGB =
 
 void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side=false) { // top left is (0.0, 0.0), bottom right is (1.3333, 0). 
 		
-	float lineWidth = 2.0f / vHeight;
+	// this is going to need to be changed at different resolutions
+	float lineWidth = 1.0f / vHeight;
 
 	// i am,,, i bit confused on how exactly to do this. 
 	// current vibes say,,, two very thin triangles.
@@ -871,7 +872,7 @@ void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x
 
 void __stdcall drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 
-	float lineWidth = 2.0f / vHeight;
+	float lineWidth = 1.0f / vHeight;
 
 	h -= lineWidth;
 	w -= lineWidth;
@@ -879,7 +880,7 @@ void __stdcall drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x80
 	drawLine2(x + lineWidth, y, x + w, y, ARGB, true);
 	drawLine2(x, y, x, y + h, ARGB, false);
 	drawLine2(x + w, y, x + w, y + h, ARGB, false);
-	drawLine2(x, y + h, x + w + lineWidth, y + h, ARGB, false); // might need to be true 
+	drawLine2(x, y + h, x + w + lineWidth, y + h, ARGB, true); // might need to be true 
 
 }
 
@@ -1155,7 +1156,7 @@ IDirect3DPixelShader9* getOutlinePixelShader() {
 					// are pixel's positions in the center of pixel or top left???
 					// they are top left.
 					
-					float2 texOffset = 2.0 / texSize;
+					float2 texOffset = 1.0 / texSize;
 	
 					// THIS LINE IS CORRECT. 
 					texOffset.y /= (4.0 / 3.0);
