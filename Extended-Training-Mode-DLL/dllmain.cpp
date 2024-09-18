@@ -663,6 +663,9 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 	
 	float yCamTemp = ((((float)(yPos - cameraY) * cameraZoom) / 128.0f - 49.0f) * (windowHeight / 480.0f) + windowHeight);
 	
+	xCamTemp = round(xCamTemp);
+	yCamTemp = round(yCamTemp);
+
 	float tempFloat;
 
 	float x1Cord, x2Cord, y1Cord, y2Cord;
@@ -756,8 +759,8 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 			}
 
 			short x1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 0);
-			short x2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 4) * 2 - 1;
-			short y1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 2) * 2 + 1;
+			short x2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 4) * 2;
+			short y1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 2) * 2;
 			short y2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 6) * 2;
 
 			tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
@@ -803,8 +806,8 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 			}
 
 			short x1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 0); 
-			short x2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 4) * 2 - 1;
-			short y1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 2) * 2 + 1;
+			short x2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 4) * 2;
+			short y1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 2) * 2;
 			short y2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 6) * 2;
 
 			tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
