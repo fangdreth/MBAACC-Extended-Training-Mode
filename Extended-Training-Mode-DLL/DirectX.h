@@ -513,14 +513,20 @@ void __stdcall restoreRenderState() {
 
 	_hasStateToRestore = false;
 
+	device->SetTexture(0, _textureBackup);
 	device->SetPixelShader(_pixelShaderBackup);
 	device->SetVertexShader(_vertexShaderBackup);
 	
 	if (_textureBackup != NULL) {
 		_textureBackup->Release();
 	}
-	
-	device->SetTexture(0, _textureBackup);
+
+	if (_pixelShaderBackup != NULL) {
+		_pixelShaderBackup->Release();
+	}
+	if (_vertexShaderBackup != NULL) {
+		_vertexShaderBackup->Release();
+	}
 
 	device->SetRenderState(D3DRS_BLENDOP, _D3DRS_BLENDOP);
 	device->SetRenderState(D3DRS_ALPHABLENDENABLE, _D3DRS_ALPHABLENDENABLE);
@@ -699,8 +705,8 @@ void __stdcall drawTextureRect(float x, float y, float w, float h) {
 
 	CUSTOMVERTEX vertices[] = { // why did this need a diffuse color. tbh i should use this to color all the boxes.
 		{ D3DVECTOR(v1.x, v1.y, whatIsThis), D3DXVECTOR2(0.0f, 0.0f) },
-		{ D3DVECTOR(v2.x, v2.y, whatIsThis), D3DXVECTOR2(0.0f, 1.0f) },
-		{ D3DVECTOR(v3.x, v3.y, whatIsThis), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DVECTOR(v2.x, v2.y, whatIsThis), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DVECTOR(v3.x, v3.y, whatIsThis), D3DXVECTOR2(0.0f, 1.0f) },
 		{ D3DVECTOR(v4.x, v4.y, whatIsThis), D3DXVECTOR2(1.0f, 1.0f) }
 	};
 
@@ -718,7 +724,6 @@ void __stdcall drawTextureRect(float x, float y, float w, float h) {
 		}
 	}
 
-	
 	VOID* pVoid;
 
 	v_buffer->Lock(0, 0, (void**)&pVoid, 0);
@@ -755,6 +760,7 @@ void __stdcall drawRectUnscaled(float x, float y, float w, float h, DWORD ARGB =
 
 	y = 1 - y;
 
+	// this is now like,, scalled. nice func name
 	D3DVECTOR v1 = { ((x + 0) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.0f };
 	D3DVECTOR v2 = { ((x + w) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.0f };
 	D3DVECTOR v3 = { ((x + 0) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
@@ -778,7 +784,6 @@ void __stdcall drawRectUnscaled(float x, float y, float w, float h, DWORD ARGB =
 		}
 	}
 
-	
 	VOID* pVoid;
 
 	v_buffer->Lock(0, 0, (void**)&pVoid, 0);
@@ -791,10 +796,10 @@ void __stdcall drawRectUnscaled(float x, float y, float w, float h, DWORD ARGB =
 
 }
 
-// this var may. need to be set dynamically based on resolution, but for now 0.005 works fine.
-const float lineWidth = 0.001;
 void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side=false) { // top left is (0.0, 0.0), bottom right is (1.3333, 0). 
-	
+		
+	float lineWidth = 2.0f / vHeight;
+
 	// i am,,, i bit confused on how exactly to do this. 
 	// current vibes say,,, two very thin triangles.
 
@@ -843,6 +848,8 @@ void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x
 	D3DVECTOR v3 = { (p3.x * 1.5f) - 1.0f, (p3.y * 2.0f) - 1.0f, 0.0f };
 	D3DVECTOR v4 = { (p4.x * 1.5f) - 1.0f, (p4.y * 2.0f) - 1.0f, 0.0f };
 
+	// D3DPT_LINESTRIP. please.
+
 	drawTri(v1, v2, v3, ARGB);
 	drawTri(v2, v3, v4, ARGB);
 
@@ -863,6 +870,8 @@ void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x
 }
 
 void __stdcall drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+
+	float lineWidth = 2.0f / vHeight;
 
 	h -= lineWidth;
 	w -= lineWidth;
@@ -1097,7 +1106,7 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 }
 
 enum class BoxType {
-	None,
+	//None,
 	Origin, // 0xFF42E5F4
 	Collision, // grey
 	Hitbox, // red
@@ -1105,36 +1114,136 @@ enum class BoxType {
 	Clash, // yellow
 	Blue, // what is this
 	Shield, // Purple, also like,,, vaki??
+	Reflect, // 
 
 	_Count, // dont use
 };
 
 typedef struct BoxData {
+	//BoxType type = BoxType::None;
 	float x = 0.0f;
 	float y = 0.0f;
 	float w = 0.0f;
 	float h = 0.0f;
-	int player = 0; // what player this is being drawn for. should i,,, have each projectile be a seperate color as well?
+	//int player = 0; // what player this is being drawn for. should i,,, have each projectile be a seperate color as well?
 } BoxData;
 
-std::array<std::vector<BoxData>, static_cast<int>(BoxType::_Count)> boxDataList;
+typedef std::vector<BoxData> BoxList;
+
+//typedef std::vector<BoxData> BoxObjects;
+typedef std::array<BoxList, static_cast<int>(BoxType::_Count)> BoxObjects; // 2d array, index is what type of box
+
+std::vector<BoxObjects*> boxObjectList;
+
+IDirect3DPixelShader9* getOutlinePixelShader() {
+	return createPixelShader(R"(
+			sampler2D textureSampler : register(s0);
+			float4 texSize : register(c219);
+
+			float4 main(float2 texCoordIn : TEXCOORD0) : COLOR {
+
+					//float4 tempCol = tex2D(textureSampler, texCoordIn);
+					//
+					//return float4(tempCol.rgb, tempCol.a * 0.25);
+
+					// for unknown reasons, this now doesnt mess with performance
+					// maybe bc the total number of draws on the texture is lower?
+
+					// while the rest of this shader worked, it fucks performance
+					// drawing the lines with their own tris is probs better than this.
+					// or maybe this is a more CPU problem rather than GPU.
+					// i do have all the coords for the rects. anyway
+	
+					// are pixel's positions in the center of pixel or top left???
+					// they are top left.
+					
+					float2 texOffset = 2.0 / texSize;
+	
+					// THIS LINE IS CORRECT. 
+					texOffset.y /= (4.0 / 3.0);
+
+					// move the tex coord into the "center" of the pixel, should it be plus or minus???
+					float2 texCoord = texCoordIn + (texOffset * 0.5);
+
+					
+					//texOffset *= 16.0;
+					
+					float4 texColor = tex2D(textureSampler, texCoord);
+				
+					if(texColor.a <= 0.0) {
+						return texColor;
+					}
+					
+					// should diags have a radic(2) instead of 1,1?
+	
+					float2 offsets[8] = {
+						texCoord + float2(-texOffset.x, -texOffset.y),
+						texCoord + float2(-texOffset.x, 0.0),
+						texCoord + float2(-texOffset.x, texOffset.y),
+						
+						texCoord + float2(0.0, -texOffset.y),
+						texCoord + float2(0.0, texOffset.y),
+						
+						texCoord + float2(texOffset.x, -texOffset.y),
+						texCoord + float2(texOffset.x, 0.0),
+						texCoord + float2(texOffset.x, texOffset.y)
+					};
+
+
+					float4 tempColor;
+					
+					// having to go through all 8 cases fucks perfomance
+					// ooooo 
+					[unroll(8)] for(int i=0; i<8; i++) {
+
+						tempColor = tex2D(textureSampler, offsets[i]);
+						if(tempColor.a == 0) {
+							return float4(texColor.rgb, 1.0);
+						}
+
+					}
+			
+					return float4(texColor.rgb, 0.25);
+			}
+
+		)");
+}
+
+IDirect3DVertexShader9* getOutlineVertexShader() {
+	return createVertexShader(R"(
+			struct VS_INPUT {
+				float4 position : POSITION;
+				float2 texCoord : TEXCOORD0;
+			};
+    
+			struct VS_OUTPUT {
+				float4 position : POSITION;
+				float2 texCoord : TEXCOORD0;
+			};
+    
+			VS_OUTPUT main(VS_INPUT input) {
+				VS_OUTPUT output;
+				output.position = input.position;
+				output.texCoord = input.texCoord;
+				return output;
+			}
+
+		)");
+}
 
 IDirect3DTexture9* renderTargetTex = NULL;
-void HitboxBatchDraw(const std::vector<BoxData>& boxData, DWORD ARGB) {
-	if (device == NULL) {
-		return;
-	}
-
-	if (boxData.size() == 0) {
-		return;
-	}
+void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	
-	HRESULT hr;
+	if (boxList.size() == 0) {
+		return;
+	}
 
-	static IDirect3DSurface9* renderTargetSurf = NULL;
+	// draws a set of hitboxes of ONE color for ONE object. 
+
+	HRESULT hr;
+	IDirect3DSurface9* renderTargetSurf = NULL;
 	static int width = 0;
 	static int height = 0;
-	static bool haveRenderTarget = false;
 	if (renderTargetTex == NULL) {
 
 		IDirect3DSwapChain9* pSwapChain = NULL;
@@ -1151,23 +1260,18 @@ void HitboxBatchDraw(const std::vector<BoxData>& boxData, DWORD ARGB) {
 
 			pSwapChain->Release();
 
-			//device->CreateRenderTarget(width, height, presentParams.BackBufferFormat, presentParams.MultiSampleType, presentParams.MultiSampleQuality, false, &renderTarget, NULL);
-			//device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &renderTargetTex, NULL);
-			device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT	, &renderTargetTex, NULL);
-
-			
+			device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &renderTargetTex, NULL);
 		}
 	}
-	
+
 	if (renderTargetTex == NULL) {
 		log("hitbox rendertarget null?");
 		return;
 	}
-	
-	
+
 	IDirect3DSurface9* prevRenderTarget = NULL;
 	device->GetRenderTarget(0, &prevRenderTarget);
-	
+
 	renderTargetTex->GetSurfaceLevel(0, &renderTargetSurf);
 	device->SetRenderTarget(0, renderTargetSurf);
 
@@ -1177,24 +1281,18 @@ void HitboxBatchDraw(const std::vector<BoxData>& boxData, DWORD ARGB) {
 	device->BeginScene();
 	device->SetTexture(0, NULL);
 
-	for (int i = 0; i < boxData.size(); i++) {
-
-		// by making the color we draw in different, i can, 
-		// wait hmm am i making a really stupid assumption here
-		// can green overlay green?
-		// yes. i no longer know what to do
-		// i need to figure out directx blend modes, blend based on COLOR ONLY, and then use that to see where things overlay.
-
-		drawRectUnscaled(boxData[i].y, boxData[i].x, boxData[i].h, boxData[i].w, ARGB);
+	for (int i = 0; i < boxList.size(); i++) {
+		drawRectUnscaled(boxList[i].x / 640.0f, boxList[i].y / 480.0f, boxList[i].w / 640.0f, boxList[i].h / 480.0f, ARGB);
 	}
-	
+
 	device->EndScene();
 
 	if (prevRenderTarget != NULL) {
 		device->SetRenderTarget(0, prevRenderTarget);
 		prevRenderTarget->Release();
 		prevRenderTarget = NULL;
-	} else {
+	}
+	else {
 		device->SetRenderTarget(0, NULL);
 	}
 
@@ -1203,92 +1301,20 @@ void HitboxBatchDraw(const std::vector<BoxData>& boxData, DWORD ARGB) {
 		renderTargetSurf = NULL;
 	}
 
+	// -----
+
 	static IDirect3DPixelShader9* pShader = NULL; // edge shader
+	static IDirect3DVertexShader9* vShader = NULL;
+
 	if (pShader == NULL) {
-		pShader = createPixelShader(R"(
-			sampler2D textureSampler : register(s0);
-			float4 texSize : register(c219);
-
-			float4 main(float2 texCoord : TEXCOORD0) : COLOR {
-
-					// are pixel's positions in the center of pixel or top left???
-
-					float2 texOffset = 1.0 / texSize;
-					texOffset *= 2;
-					texOffset.y *= 0.6666666666666;
-	
-
-					float4 texColor = tex2D(textureSampler, texCoord);
-				
-					if(texColor.a < 0.1) {
-						return texColor;
-					}
-					
-					float2 offsets[8] = {
-						texCoord + float2(-texOffset.x, -texOffset.y),
-						texCoord + float2(-texOffset.x, 0.0),
-						texCoord + float2(-texOffset.x, texOffset.y),
-						
-						texCoord + float2(0.0, -texOffset.y),
-						texCoord + float2(0.0, texOffset.y),
-						
-						texCoord + float2(texOffset.x, -texOffset.y),
-						texCoord + float2(texOffset.x, 0.0),
-						texCoord + float2(texOffset.x, texOffset.y)
-					};
-
-					
-
-					float4 tempColor;
-					// ooooo 
-					[unroll(8)] for(int i=0; i<8; i++) {
-
-						tempColor = tex2D(textureSampler, offsets[i]);
-						if(tempColor.a == 0) {
-							return float4(texColor.rgb, 1.0);
-						}
-
-					}
-			
-					return float4(texColor.rgb, 0.25);
-			}
-
-		)");
-
-		// even with resizes, the texture size did not change
-
-		D3DXVECTOR4 textureSize((float)width, (float)height, 0.0, 0.0);
+		pShader = getOutlinePixelShader();
+		//D3DXVECTOR4 textureSize((float)width, (float)height, 0.0, 0.0);
+		D3DXVECTOR4 textureSize((float)(height * 4.0f / 3.0f), (float)height, 0.0, 0.0);
 		device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
-
 	}
 
-	// i have no fucking clue if im required to have a vertex shader or not.
-	// clue: yes
-	
-	static IDirect3DVertexShader9* vShader = NULL; 
 	if (vShader == NULL) {
-		vShader = createVertexShader(R"(
-			struct VS_INPUT
-			{
-			float4 position : POSITION;
-			float2 texCoord : TEXCOORD0;
-			};
-    
-			struct VS_OUTPUT
-			{
-			float4 position : POSITION;
-			float2 texCoord : TEXCOORD0;
-			};
-    
-			VS_OUTPUT main(VS_INPUT input)
-			{
-			VS_OUTPUT output;
-			output.position = input.position;
-			output.texCoord = input.texCoord;
-			return output;
-			}
-
-		)");
+		vShader = getOutlineVertexShader();
 	}
 
 	device->BeginScene();
@@ -1306,7 +1332,105 @@ void HitboxBatchDraw(const std::vector<BoxData>& boxData, DWORD ARGB) {
 	device->SetPixelShader(NULL);
 	device->SetVertexShader(NULL);
 	device->SetTexture(0, NULL);
+}
 
+void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade = true) {
+	if (shade) {
+		drawRect2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, (ARGB & 0x00FFFFFF) | 0x40000000);
+	}
+	drawBorder2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, ARGB);
+}
+
+void HitboxBatchDraw(const BoxObjects* b) {
+
+	// attemmpt with CPU for box collisions
+
+	/*
+	
+	instead of checking rect collisions, check lines instead?
+	i could graph theory it as well? (might be overkill with memory alloc
+
+	altho, how many boxes on average am i getting per list (and per entity)
+	hell i could also use a tristrip(maybe just tris to not overcomplicate things) to draw each box at opacity and not need a pixel shader step
+	
+	my desire for optimization has instead left me with trash code
+
+	i can do multiple passes over the list for each box type, or like, have an array again
+
+	*/
+
+	constexpr DWORD colors[] = {
+	//0xFF111111, // None
+	0xFF42E5F4, // origin
+	0xFFD0D0D0, // collision
+	0xFFFF0000, // hitbox
+	0xFF00FF00, // hurtbox
+	0xFFFFFF00, // clash
+	0xFF0000FF, // blue
+	0xFFFF00FF // shield
+	};
+	/*constexpr DWORD colors[] = {
+	//	0xFF111111, // None
+		0xFF42E5F4, // origin
+		0xFFD0D0D0, // collision
+		0xFFff0000, // hitbox
+		0xFF0700f2, // hurtbox
+		0xFFfff000, // clash
+		0xFF1f3a42, // blue
+		0xFFb9e4b6 // shield
+	};*/
+
+	int i;
+
+	i = static_cast<int>(BoxType::Collision);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], colors[i], false);
+	}
+
+	i = static_cast<int>(BoxType::Hurtbox);
+	drawBatchHitboxes((*b)[i], colors[i]);
+
+	i = static_cast<int>(BoxType::Hitbox);
+	drawBatchHitboxes((*b)[i], colors[i]);
+
+	/*
+
+	check the switch statement on switch (index) in drawObject
+	we have guarentees of:
+	1 collision box
+	1 origin (well its not a box rlly)
+	1 clash
+
+	1?2? shield/reflector
+	and then well,,i need to look more into this
+
+	also, what would the best way to draw collision be, should i color it in?
+	i should probs make a texture for it actually
+
+	for now, im going to assume we only MAX have one blue/clash/shield/collision hitbox per obj
+
+	*/
+
+	i = static_cast<int>(BoxType::Blue);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], colors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Clash);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], colors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Shield);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], colors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Origin);
+	if ((*b)[i].size() == 1) {
+		drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, colors[i]);
+		drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, colors[i]);
+	}
 
 }
 
@@ -1337,21 +1461,28 @@ public:
 
 };
 
-
 #define profileFunction() \
     volatile Profiler profiler(__func__);
 
 // -----
 
-void DrawHitbox(float x, float y, float w, float h, BoxType type, int player) {
-	boxDataList[static_cast<int>(type)].emplace_back(BoxData{x / 640.0f, y / 480.0f, w / 640.0f, h / 480.0f, player });
+//void DrawHitbox(float x, float y, float w, float h, BoxType type, int player) {
+void DrawHitboxes(BoxObjects* b) { // didnt need to be a pointer, but i would rather know im not passing by copy. also the optimizer better inline this(who am i kiding, its def not)
+	//boxDataList[static_cast<int>(type)].emplace_back(BoxData{x / 640.0f, y / 480.0f, w / 640.0f, h / 480.0f, player });
+	//boxDataList[static_cast<int>(type)].emplace_back(BoxData{ x, y , w , h }); 
+	boxObjectList.emplace_back(b);
 }
 
-void drawHitboxes() {
+void _drawHitboxes() {
 
 	profileFunction();
+	
+	DWORD antiAliasBackup;
+	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
 
-	/*constexpr DWORD colors[] = {
+
+	constexpr DWORD colors[] = {
 		0xFF111111, // None
 		0xFF42E5F4, // origin
 		0xFFD0D0D0, // collision
@@ -1359,9 +1490,9 @@ void drawHitboxes() {
 		0xFF00FF00, // hurtbox
 		0xFFFF0000, // clash
 		0xFF0000FF, // blue
-		0xFFF54298 // shield
-	};*/
-	constexpr DWORD colors[] = {
+		0xFFFF00FF // shield
+	};
+	/*constexpr DWORD colors[] = {
 		0xFF111111, // None
 		0xFF42E5F4, // origin
 		0xFFD0D0D0, // collision
@@ -1370,56 +1501,20 @@ void drawHitboxes() {
 		0xFFfff000, // clash
 		0xFF1f3a42, // blue
 		0xFFb9e4b6 // shield
-	};
+	};*/
 
-	// i could have avoided a div stage, but ugh, another time
-
-	int i;
-
-	i = static_cast<int>(BoxType::Hurtbox);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
-	boxDataList[i].clear();
-
-	i = static_cast<int>(BoxType::Hitbox);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
-	boxDataList[i].clear();
-
-	i = static_cast<int>(BoxType::Clash);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
-	boxDataList[i].clear();
-
-	i = static_cast<int>(BoxType::Blue);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
-	boxDataList[i].clear();
-
-	i = static_cast<int>(BoxType::Shield);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
-	boxDataList[i].clear();
-
-	// origin and collision never need to be overlaied. right? but tbh,, ugh i dont want more one off draw funcs
-	i = static_cast<int>(BoxType::Collision);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
-	boxDataList[i].clear();
-
-	i = static_cast<int>(BoxType::Origin);
-	HitboxBatchDraw(boxDataList[i], colors[i]);
-	
-	/*	
-	device->BeginScene();
-	for (int j = 0; j < boxDataList[i].size(); j++) {
-		//drawLine2(boxDataList[i][j].x * 1.3333, boxDataList[i][j].y, (boxDataList[i][j].x + boxDataList[i][j].w) * 1.3333, boxDataList[i][j].y + boxDataList[i][j].h, colors[i]);
-		drawLine2(boxDataList[i][j].x * 1.3333, boxDataList[i][j].y + boxDataList[i][j].h, (boxDataList[i][j].x + boxDataList[i][j].w) * 1.3333, boxDataList[i][j].y + boxDataList[i][j].h, colors[i]);
-		float tempX = (boxDataList[i][j].x * 1.3333) + (boxDataList[i][j].w * 1.3333 * 0.5);
-		drawLine2(tempX, boxDataList[i][j].y, tempX, boxDataList[i][j].y + boxDataList[i][j].h, colors[i]);
-
+	for (int i = 0; i < boxObjectList.size(); i++) {
+		HitboxBatchDraw(boxObjectList[i]);
+		delete boxObjectList[i];
 	}
-	device->EndScene();
-	*/
-	boxDataList[i].clear();
+
+	boxObjectList.clear();
+
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
 
 }
 
-void drawProfiler() {
+void _drawProfiler() {
 	static char buffer[1024];
 	static bool drawDebug = false;
 	static KeyState F10Key(VK_F10);
@@ -1431,7 +1526,7 @@ void drawProfiler() {
 	if (drawDebug) {
 		// how slow is this,,, im not sure how expensive map lookups are, but the keys to it could be constexpr. ugh 
 		// i also have the pointer strat. might go do that tbh
-		float profileInfoY = 128;
+		float profileInfoY = 256;
 		for (auto& [name, info] : profilerData) {
 
 			info.times[info.index] = info.currentFrameTime;
@@ -1461,7 +1556,7 @@ void drawProfiler() {
 	}
 }
 
-void drawGeneralCalls() {
+void _drawGeneralCalls() {
 	profileFunction();
 	for (const auto& drawCallInfo : drawCalls) {
 		drawCallInfo();
@@ -1513,14 +1608,14 @@ void __stdcall _doDrawCalls() {
 	// and before we have an existing scene, since this has to do a lot of weird shit.
 	// hopefully it isnt too slow
 
-	drawHitboxes();
+	_drawHitboxes();
 
 	device->BeginScene(); // should i start a new scene per call, or is one thing enough
 	// i am unsure if stack alloced or heap allocing these things is better or worse
 	
-	drawGeneralCalls();
+	_drawGeneralCalls();
 
-	drawProfiler();
+	_drawProfiler();
 
 	device->EndScene();
 

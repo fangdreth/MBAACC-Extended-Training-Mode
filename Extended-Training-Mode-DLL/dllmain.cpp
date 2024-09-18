@@ -591,10 +591,10 @@ void drawBorderWithHighlight(int x, int y, int w, int h, DWORD ARGB = 0x8042e5f4
 
 void scaleCords(const float xOrig, const float yOrig, float& x1Cord, float& y1Cord, float& x2Cord, float& y2Cord)
 {
-	x1Cord = xOrig + (x1Cord - xOrig) * 0.5;
-	y1Cord = yOrig + (y1Cord - yOrig) * 0.5;
-	x2Cord = xOrig + (x2Cord - xOrig) * 0.5;
-	y2Cord = yOrig + (y2Cord - yOrig) * 0.5;
+	x1Cord = xOrig + (x1Cord - xOrig) * 0.5f;
+	y1Cord = yOrig + (y1Cord - yOrig) * 0.5f;
+	x2Cord = xOrig + (x2Cord - xOrig) * 0.5f;
+	y2Cord = yOrig + (y2Cord - yOrig) * 0.5f;
 }
 
 DWORD getObjFrameDataPointer(DWORD objAddr)
@@ -648,6 +648,8 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 		isRight = -1;
 	}
 
+	BoxObjects* res = new BoxObjects; // res is dealloced during the draw call! so dont worry about it.
+
 	float windowWidth = *(uint32_t*)0x0054d048;
 	float windowHeight = *(uint32_t*)0x0054d04c;
 
@@ -655,15 +657,15 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 	int cameraY = *(int*)(0x0055dec8);
 	float cameraZoom = *(float*)(0x0054eb70);
 
-	float xCamTemp = ((((float)(xPos - cameraX) * cameraZoom) / 128.0) * (windowWidth / 640.0) + windowWidth / 2.0);
-	float yCamTemp = ((((float)(yPos - cameraY) * cameraZoom) / 128.0 - 49.0) * (windowHeight / 480.0) + windowHeight);
+	float xCamTemp = ((((float)(xPos - cameraX) * cameraZoom) / 128.0f) * (windowWidth / 640.0f) + windowWidth / 2.0f);
+	float yCamTemp = ((((float)(yPos - cameraY) * cameraZoom) / 128.0f - 49.0f) * (windowHeight / 480.0f) + windowHeight);
 	
 	float tempFloat;
 
 	float x1Cord, x2Cord, y1Cord, y2Cord;
 
 	uint32_t drawColor;
-	BoxType boxType = BoxType::None;
+	BoxType boxType;// = BoxType::None;
 
 	// -----
 
@@ -672,23 +674,30 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 	drawColor = 0xFF42E5F4;
 	boxType = BoxType::Origin;
 
-	x1Cord = ((float)xCamTemp - (windowWidth / 640.0) * cameraZoom * 5.0);
-	x2Cord = ((windowWidth / 640.0) * cameraZoom * 5.0 + (float)xCamTemp);
-	y1Cord = ((float)yCamTemp - (windowWidth / 640.0) * cameraZoom * 5.0);
+	x1Cord = ((float)xCamTemp - (windowWidth / 640.0f) * cameraZoom * 5.0f);
+	x2Cord = ((windowWidth / 640.0f) * cameraZoom * 5.0f + (float)xCamTemp);
+	y1Cord = ((float)yCamTemp - (windowWidth / 640.0f) * cameraZoom * 5.0f);
 	y2Cord = yCamTemp;
 
-	x1Cord = floor((float)x1Cord * (640.0 / windowWidth));
-	x2Cord = floor((float)x2Cord * (640.0 / windowWidth));
-	y1Cord = floor((float)y1Cord * (480.0 / windowHeight));
-	y2Cord = floor((float)y2Cord * (480.0 / windowHeight));
+	//x1Cord = ((float)x1Cord / windowWidth);
+	//x2Cord = ((float)x2Cord / windowWidth);
+	//y1Cord = ((float)y1Cord / windowHeight);
+	//y2Cord = ((float)y2Cord / windowHeight);
+
+	x1Cord = ((float)x1Cord * (640.0f / windowWidth));
+	x2Cord = ((float)x2Cord * (640.0f / windowWidth));
+	y1Cord = ((float)y1Cord * (480.0f / windowHeight));
+	y2Cord = ((float)y2Cord * (480.0f / windowHeight));
+
 
 	if(!isProjectile) {
 		//drawBorder((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
-		DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), BoxType::Origin, playerIndex);
+		//DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), BoxType::Origin, playerIndex);
+		(*res)[static_cast<int>(boxType)].emplace_back(BoxData(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord)));
 	}
 
 	// current vibes say that the origin is in the bottom center of the above rectangle, needs more non vibe based confirmation though
-	float xOrig = x1Cord + ((x2Cord - x1Cord) / 2);
+	float xOrig = x1Cord + ((x2Cord - x1Cord) / 2.0f);
 	float yOrig = y2Cord;
 
 	// lots of stuff here seems to interact with 0x330. this is off of 0x320, is this an issue?
@@ -710,7 +719,10 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 					drawColor = 0xFFD0D0D0;
 					boxType = BoxType::Collision;
 					break;
-				case 0x9:
+				case 0x9: // what is this?
+					drawColor = 0xFFFFFFFF;
+					boxType = BoxType::Shield;
+					break;
 				case 0xA:
 					//drawColor = 0xFFFF00FF;
 					drawColor = 0xFFF54298;
@@ -731,28 +743,34 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 					break;
 			}
 
-			tempFloat = (float)isRight * (windowWidth / 640.0) * cameraZoom;
+			tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
 			x1Cord = ((float)**(short**)(*(int*)(objFramePtr + 0x4c) + index * 4) * (tempFloat + tempFloat) + (float)xCamTemp);
 
-			tempFloat = (float)isRight * (windowWidth / 640.0) * cameraZoom;
+			tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
 			x2Cord = ((float)*(short*)(*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) + 4) * (tempFloat + tempFloat) + (float)xCamTemp);
 
-			y1Cord = ((float)((int)*(short*)(*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) + 2) << 1) * (windowHeight / 480.0) * cameraZoom + (float)yCamTemp);
+			y1Cord = ((float)((int)*(short*)(*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) + 2) << 1) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp);
 
-			tempFloat = (windowHeight / 480.0) * cameraZoom;
+			tempFloat = (windowHeight / 480.0f) * cameraZoom;
 			y2Cord = ((float)*(short*)(*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) + 6) * (tempFloat + tempFloat) + (float)yCamTemp);
 
-			x1Cord = floor((float)x1Cord * (640.0 / windowWidth));
-			x2Cord = floor((float)x2Cord * (640.0 / windowWidth));
-			y1Cord = floor((float)y1Cord * (480.0 / windowHeight));
-			y2Cord = floor((float)y2Cord * (480.0 / windowHeight));
+			x1Cord = ((float)x1Cord * (640.0f / windowWidth));
+			x2Cord = ((float)x2Cord * (640.0f / windowWidth));
+			y1Cord = ((float)y1Cord * (480.0f / windowHeight));
+			y2Cord = ((float)y2Cord * (480.0f / windowHeight));
+
+			//x1Cord = ((float)x1Cord / windowWidth);
+			//x2Cord = ((float)x2Cord / windowWidth);
+			//y1Cord = ((float)y1Cord / windowHeight);
+			//y2Cord = ((float)y2Cord / windowHeight);
 
 			if (isPat) {
 				scaleCords(xOrig, yOrig, x1Cord, y1Cord, x2Cord, y2Cord);
 			}
 			
 			//drawBorderWithHighlight((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
-			DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), boxType, playerIndex);
+			//DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), boxType, playerIndex);
+			(*res)[static_cast<int>(boxType)].emplace_back(BoxData(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord)));
 		}
 	}
 
@@ -766,28 +784,36 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 				continue;
 			}
 
-			tempFloat = (float)isRight * (windowWidth / 640.0) * cameraZoom;
+			tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
 			x1Cord = ((float)**(short**)(*(int*)(objFramePtr + 0x50) + index * 4) * (tempFloat + tempFloat) + (float)xCamTemp);
 
-			x2Cord = ((float)(*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 4) * 2 + -1) * (float)isRight * (windowWidth / 640.0) * cameraZoom + (float)xCamTemp);
+			x2Cord = ((float)(*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 4) * 2 + -1) * (float)isRight * (windowWidth / 640.0f) * cameraZoom + (float)xCamTemp);
 
-			y1Cord = ((float)(*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 2) * 2 + 1) * (windowHeight / 480.0) * cameraZoom + (float)yCamTemp);
+			y1Cord = ((float)(*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 2) * 2 + 1) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp);
 
-			y2Cord = ((float)((int)*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 6) << 1) * (windowHeight / 480.0) * cameraZoom + (float)yCamTemp);
+			y2Cord = ((float)((int)*(short*)(*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) + 6) << 1) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp);
 
-			x1Cord = floor((float)x1Cord * (640.0 / windowWidth));
-			x2Cord = floor((float)x2Cord * (640.0 / windowWidth));
-			y1Cord = floor((float)y1Cord * (480.0 / windowHeight));
-			y2Cord = floor((float)y2Cord * (480.0 / windowHeight));
+			//x1Cord = ((float)x1Cord / windowWidth);
+			//x2Cord = ((float)x2Cord / windowWidth);
+			//y1Cord = ((float)y1Cord / windowHeight);
+			//y2Cord = ((float)y2Cord / windowHeight);
+
+			x1Cord = ((float)x1Cord * (640.0f / windowWidth));
+			x2Cord = ((float)x2Cord * (640.0f / windowWidth));
+			y1Cord = ((float)y1Cord * (480.0f / windowHeight));
+			y2Cord = ((float)y2Cord * (480.0f / windowHeight));
 
 			if (isPat) {
 				scaleCords(xOrig, yOrig, x1Cord, y1Cord, x2Cord, y2Cord);
 			}
 
 			//drawBorderWithHighlight((int)x1Cord, (int)y1Cord, (int)(x2Cord - x1Cord), (int)(y2Cord - y1Cord), drawColor);
-			DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), boxType, playerIndex);
+			//DrawHitbox(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord), boxType, playerIndex);
+			(*res)[static_cast<int>(boxType)].emplace_back(BoxData(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord)));
 		}
 	}
+
+	DrawHitboxes(res);
 
 	return true;
 }
