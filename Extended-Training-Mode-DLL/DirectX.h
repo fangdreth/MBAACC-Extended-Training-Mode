@@ -1354,10 +1354,10 @@ constexpr DWORD arrColorBlindColors[] = {
 	0xFF42E5F4, // origin
 	0xFFD0D0D0, // collision
 	0xFFFF0000, // hitbox
-	0xFF00FFCF, // hurtbox
+	0xFF1403ff, // hurtbox
 	0xFFFFFF00, // clash
-	0xFFFF00FF, // projectile
-	0xFFFF00FF // shield
+	0xFF00ffcf, // projectile
+	0xFFffffff // shield
 };
 
 void HitboxBatchDrawNoBlend(const BoxObjects* b) {
