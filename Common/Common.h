@@ -25,7 +25,7 @@ enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
 enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE, HIGHLIGHT_PAGE, POSITIONS_PAGE, CHARACTER_SPECIFICS, HITBOXES_PAGE, SAVE_STATE_PAGE, FRAME_TOOL, RNG_PAGE, HOTKEYS_PAGE };
 enum eHotkeyPages { FRAME_TOOL_HOTKEYS_PAGE = 1, GENERIC_HOTKEYS_PAGE = 2, RNG_HOTKEYS_PAGE = 3 };
-enum eReversalType { REVERSAL_NORMAL, REVERSAL_RANDOM, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
+enum eReversalType { REVERSAL_OFF, REVERSAL_NORMAL, REVERSAL_RANDOM, REVERSAL_SHIELD, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
 enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, YELLOW_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT, PURPLE_HIGHLIGHT, BLACK_HIGHLIGHT };
 enum eRNGMode { RNG_OFF, RNG_SEED, RNG_RN };
@@ -97,6 +97,10 @@ const DWORD dwP1DirectionInput = 0x371398;
 const DWORD dwPausedFlag = 0x162A64;
 const DWORD dwEnemyAction = 0x37C1EC;
 const DWORD dwLifeRecover = 0x37C1F8;
+const DWORD dwP1InputEvent = 0x15543C;
+const DWORD dwP2InputEvent = dwP1InputEvent + 0xAFC;
+const DWORD dwP1ShieldType = 0x1552A0;
+const DWORD dwP2ShieldType = dwP1ShieldType + 0xAFC;
 const DWORD dwP1HitstunRemaining = 0x1552DC;
 const DWORD dwP2HitstunRemaining = 0x1552DC + 0xAFC;
 const DWORD dwP1NotInCombo = 0x155194; //1:InCombo 0:NotInCombo
@@ -392,6 +396,7 @@ const char pcHitsUntilBurst_17[17] = "HITS UNTIL BURST";
 const char pcNormal_7[7] = "NORMAL";
 const char pcRepeat_7[7] = "REPEAT";
 const char pcRandom_7[7] = "RANDOM";
+const char pcShield_7[7] = "SHIELD";
 const char pcInfinite_10[10] = "INFINITE";
 const char pcOne_2[2] = "1";
 const char pcMain_5[5] = "MAIN";
