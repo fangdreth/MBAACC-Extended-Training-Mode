@@ -1341,13 +1341,13 @@ void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade = true) {
 }
 
 constexpr DWORD arrNormalColors[] = {
-		0xFF42E5F4, // origin
-		0xFFD0D0D0, // collision
-		0xFFFF0000, // hitbox
-		0xFF00FF00, // hurtbox
-		0xFFFFFF00, // clash
-		0xFF0000FF, // projectile
-		0xFFF54298 // shield
+	0xFF42E5F4, // origin
+	0xFFD0D0D0, // collision
+	0xFFFF0000, // hitbox
+	0xFF00FF00, // hurtbox
+	0xFFFFFF00, // clash
+	0xFF0000FF, // projectile
+	0xFFF54298 // shield
 };
 
 constexpr DWORD arrColorBlindColors[] = {
@@ -1546,6 +1546,15 @@ void DrawHitboxes(BoxObjects* b) { // didnt need to be a pointer, but i would ra
 	boxObjectList.emplace_back(b);
 }
 
+std::deque<char*> logHistory;
+//std::vector<char*> logHistory;
+void DrawLog(char* s) {
+	// will be alloced in the log func, and dealloced here.
+	logHistory.push_front(s);
+}
+
+// -----
+
 void _drawHitboxes() {
 
 	profileFunction();
@@ -1598,6 +1607,7 @@ void _drawHitboxes() {
 
 }
 
+
 void _drawProfiler() {
 	static char buffer[1024];
 	static bool drawDebug = false;
@@ -1623,11 +1633,11 @@ void _drawProfiler() {
 			}
 			totalTime >>= 6; // div 64
 
-			col = 0xFF00FFFF;
+			col = 0xFF000000;
 
-			if (totalTime > 1000) {
-				col = 0xFFFF0000;
-			}
+			col |= CLAMP(0xFF - ((totalTime) >> 1), 0, 0xFF);
+			col |= CLAMP(-(abs(totalTime - 500) >> 1) + 0xFF, 0, 0xFF) << 8;
+			col |= CLAMP(((totalTime) >> 1) - 0xFF, 0, 0xFF) << 16;
 
 			//TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
 			snprintf(buffer, 1024, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
@@ -1645,7 +1655,45 @@ void _drawProfiler() {
 
 			profileInfoY += 14;
 		}
+	} else {
+		for (auto& [name, info] : profilerData) {
+			info.currentFrameTime = 0;
+		}
 	}
+}
+
+void _drawLog() {
+
+	profileFunction();
+
+	static bool drawDebug = false;
+	static KeyState F11Key(VK_F11);
+
+	if (F11Key.keyDown()) {
+		drawDebug = !drawDebug;
+	}
+
+	if (!drawDebug) {
+		for (int i = 0; i < logHistory.size(); i++) {
+			free(logHistory[i]);
+		}
+		logHistory.clear();
+		return;
+	}
+
+	while (logHistory.size() > 30) {
+		free(logHistory.back());
+		logHistory.pop_back();
+	}
+
+	float y = 0.0f;
+	int index = 0;
+	for (; index < logHistory.size(); index++) {
+		drawText2(1.3333f, y, (float)10 / 480.0f, 0xFF42e5f4, logHistory[index]);
+		y += (10.0f / 480.0f);
+	}
+
+
 }
 
 void _drawGeneralCalls() {
@@ -1708,6 +1756,8 @@ void __stdcall _doDrawCalls() {
 	_drawGeneralCalls();
 
 	_drawProfiler();
+
+	_drawLog();
 
 	device->EndScene();
 
