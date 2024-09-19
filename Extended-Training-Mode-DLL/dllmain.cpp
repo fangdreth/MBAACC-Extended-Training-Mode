@@ -1402,11 +1402,11 @@ void frameDoneCallback()
 			LONG lParamValue = (scanCode << 16);
 			GetKeyNameTextA(lParamValue, pcName, 19);
 			snprintf(pcFreezeKey, sizeof(pcFreezeKey), "Freeze Key: %s", pcName);
-			TextDraw(3.5f, 115.5f, 21.0f, 0xFFFFFFFF, pcFreezeKey);
+			TextDraw(100.0f, 3.5f, 21.0f, 0xFFFFFFFF, pcFreezeKey);
 		}
 		catch (...)
 		{
-			TextDraw(3.5f, 115.5f, 21.0f, 0xFFFFFFFF, "Freeze Key: <corrupt>");
+			TextDraw(100.0f, 3.5f, 21.0f, 0xFFFFFFFF, "Freeze Key: <corrupt>");
 		}
 
 		try
@@ -1417,11 +1417,11 @@ void frameDoneCallback()
 			LONG lParamValue = (scanCode << 16);
 			GetKeyNameTextA(lParamValue, pcName, 19);
 			snprintf(pcFrameStepKey, sizeof(pcFrameStepKey), "Frame Step Key: %s", pcName);
-			TextDraw(3.5f, 135.5f, 21.0f, 0xFFFFFFFF, pcFrameStepKey);
+			TextDraw(375.0f, 3.5f, 21.0f, 0xFFFFFFFF, pcFrameStepKey);
 		}
 		catch (...)
 		{
-			TextDraw(3.5f, 115.5f, 21.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
+			TextDraw(375.0f, 3.5f, 21.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
 		}
 			
 	}
