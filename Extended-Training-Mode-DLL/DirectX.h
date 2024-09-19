@@ -30,10 +30,13 @@ private:
 
 };
 
+//const int fontTexWidth = 256;
+//const int fontTexHeight = 256;
+//int fontSize = 32;
 const int fontTexWidth = 512;
 const int fontTexHeight = 512;
 int fontSize = 64;
-int fontHeight = 64;
+int fontHeight = fontSize;
 int fontWidth = (((float)fontSize) / 2.0f) - 1; // 1 extra pixel is put between each char and the next. take this into account
 float fontRatio = ((float)fontWidth) / ((float)fontSize);
 
@@ -162,6 +165,10 @@ void _initFontFirstLoad() {
 	// for variable font sizing
 
 	//const int fontSize = 24;
+
+	DWORD antiAliasBackup;
+	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
 	
 	int fontSizePow2 = scaleNextPow2(fontSize);
 
@@ -171,6 +178,9 @@ void _initFontFirstLoad() {
 		fontWidth,  // width. this could be set to 0, but out of paranoia, i want it at a fixed value
 		//FW_NORMAL, // weight?
 		FW_BOLD, 
+		//FW_MEDIUM,
+		//FW_SEMIBOLD,
+		//FW_REGULAR,
 		1,  // mip? i should probs use these tbh
 		FALSE, // italicized
 		DEFAULT_CHARSET,
@@ -276,7 +286,7 @@ void _initFontFirstLoad() {
 	oldRenderTarget->Release();
 	surface->Release();
 
-	//hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
+	hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
 	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG	, texture, NULL);
 	texture->Release();
 	font->Release();
@@ -299,6 +309,7 @@ void _initFontFirstLoad() {
 	fontBufferSize = bufferSize;
 
 	log("loaded font BUFFER!!!");
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
 }
 
 void initFont() {
@@ -616,8 +627,12 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 
 	constexpr float whatIsThis = 0.5f; // what is this?
 
-	const float charWidth = ((float)(fontWidth + 1)) / ((float)fontTexWidth);
-	const float charHeight = ((float)(fontHeight + 0)) / ((float)fontTexHeight);
+	//const float charWidth = ((float)(fontWidth + 1)) / ((float)fontTexWidth);
+	//const float charWidth = ((float)(fontWidth + 0)) / ((float)fontTexWidth);
+	//const float charHeight = ((float)(fontHeight + 0)) / ((float)fontTexHeight);
+
+	const float charWidth = ((float)(fontSize >> 1)) / (float)fontTexWidth;
+	const float charHeight = ((float)fontSize) / (float)fontTexWidth;
 
 	D3DXVECTOR2 charTopLeft(charWidth * (c & 0xF), charHeight * ((c - 0x20) / 0x10));
 	
@@ -625,8 +640,8 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 	D3DXVECTOR2 charH(0.0, charHeight);
 
 	// when drawing a o, the underscore would be to low, and cut into the top of it, this fixes that?
-	charTopLeft.y += 0.0001f;
-	charH.y -= 0.0001f;
+	//charTopLeft.y += 0.0001f;
+	//charH.y -= 0.0001f;
 
 	// LOWERCASE LETTERS ALL HAVE ISSUES
 	//charTopLeft.x += 0.00050f;
@@ -646,19 +661,6 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 	scaleVertex(vertices[1].position);
 	scaleVertex(vertices[2].position);
 	scaleVertex(vertices[3].position);
-
-	// setting and unsetting the font texture is probs way to much here. 
-	// im going to assume that whatever caller is callling this will do it
-
-	//D3DSURFACE_DESC desc;
-	//fontTexture->GetLevelDesc(0, &desc); // Get the texture size
-	//D3DXVECTOR4 textureSize((float)desc.Width, (float)desc.Height, 0.0, 0.0);
-	//device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
-
-	// Set up the vertex buffer and draw
-	// i dislike allocing and unallocing stuff like this.
-	// ESPECIALLY HERE.
-	// if anythings going to lag the gpu, its this.
 
 	static LPDIRECT3DVERTEXBUFFER9 v_buffer = NULL; // not reallocing this buffer constantly was HUGE for performance!
 
@@ -887,6 +889,9 @@ void __stdcall drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x80
 void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* str) {
 	// pass things in as you would with printf, like printf("%d %.2f %s", 1, 1.23f, "abcdefg");
 	
+	// a question, is skipping spaces if i conv this to use a big trianglestrip worth it
+	// having to support colors, also may be annoying
+
 	// ideally, i would have all this as a tri strip. or would,, idk if tri strip is better or not when i wouldnt be able to skip spaces that way?
 	// how big would i have to have the vertex bufer?
 	// would it be worth it to instead do a block of say, 16 chars at a time?
@@ -895,7 +900,7 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 	DWORD TempARGB = ARGB;
 
 	if (str == NULL) {
-		log("str was null, not drawing text");
+		//log("str was null, not drawing text");
 		return;
 	}
 
@@ -904,10 +909,15 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 		return;
 	}
 
+	DWORD antiAliasBackup;
+	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
+
 	float origX = x;
 	float origY = y;
 	
 	float charWidthOffset = (fontRatio * size) * 1.01f; // this 1.01 might cause issues when aligning stuff, not sure
+	//float charWidthOffset = (fontRatio * size);
 	float charHeightOffset = size;
 
 	float w = charWidthOffset;
@@ -992,7 +1002,137 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 	*/
 
 	//device->SetPixelShader(NULL);
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
 	
+}
+
+void __stdcall drawText3(float x, float y, float size, DWORD ARGB, const char* str) {
+
+	// new solution, not supporting different colors in one string here.
+	
+	if (str == NULL) {
+		//log("str was null, not drawing text");
+		return;
+	}
+
+	if (*str == '\0') {
+		return;
+	}
+
+	if (fontTexture == NULL) {
+		log("fontTexture was null, im not drawing");
+		return;
+	}
+
+	const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_TEX1);
+
+	struct CUSTOMVERTEX { // color data is coming via pixel shader.
+		D3DVECTOR position;
+		D3DXVECTOR2 texCoord;
+	};
+
+	const int maxChar = 255;
+
+	//const int vertCount = 2 + (2 * maxChar); // 2 extra for the first char, 2 for each subsequent.
+	const int vertCount = 6 * maxChar; // 6 fucking verts per char is horrid! fix it! (somehow?)
+	static CUSTOMVERTEX vertices[vertCount];
+
+	// 4 coords is 1 char, and then 2 for each extra? so if i wanted 16 chars, i would need 34, ill make it 15 so i have a nice 32
+	// would rendering all these to a texture be better? i have no idea what im doing.
+	// ill have it have a 126 char limit. 
+	// this is going to have issues with colors too omfg
+	// i cant do a tri strip i would have to do individual tris. might still be faster tho
+	// this entire idea was dumb, i cant do tri strip, omfg	
+	// repeated tri strips,,, or like
+	// ugh idek
+	// i could render all text to a subtexture but that would still require 
+	// ugh, its going to have to be 6 verts per char.
+	// at least that lets me use colors.
+	// and newlines
+	// actually no, i dont want to include those things in the vertex data.
+	// regardless of using many more verts, this is magnitudes cheaper. keep that in mind going forward
+
+	static LPDIRECT3DVERTEXBUFFER9 v_buffer = NULL;
+	if (v_buffer == NULL) {
+		if (FAILED(device->CreateVertexBuffer(vertCount * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
+			v_buffer = NULL;
+			return;
+		}
+	}
+
+	float origX = x;
+	float origY = y;
+
+	float charWidthOffset = (fontRatio * size) * 1.01f; // this 1.01 might cause issues when aligning stuff, not sure
+	//float charWidthOffset = (fontRatio * size);
+	float charHeightOffset = size;
+
+	float w = charWidthOffset;
+	float h = charHeightOffset;
+
+	DWORD antiAliasBackup;
+	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
+	device->SetTexture(0, fontTexture);
+
+	unsigned vBufferIndex = 0;
+
+	const float charWidth = ((float)(fontSize >> 1)) / (float)fontTexWidth;
+	const float charHeight = ((float)fontSize) / (float)fontTexWidth;
+
+	D3DXVECTOR2 charTopLeft;
+
+	D3DXVECTOR2 charW(charWidth, 0.0);
+	D3DXVECTOR2 charH(0.0, charHeight);
+
+	y = 1 - origY;
+	const char* strStart = str;
+	while (*str) {
+
+		if (vBufferIndex + 2 >= vertCount) {
+			break;
+		}
+		
+		charTopLeft = D3DXVECTOR2(charWidth * (*str & 0xF), charHeight* ((*str - 0x20) / 0x10));	
+		
+
+		vertices[vBufferIndex + 0] = { D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), charTopLeft };
+		vertices[vBufferIndex + 1] = { D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), charTopLeft + charW };
+		vertices[vBufferIndex + 2] = { D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f), charTopLeft + charH };
+
+		// there has to be a better way than this.
+		vertices[vBufferIndex + 3] = { D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), charTopLeft + charW };
+		vertices[vBufferIndex + 4] = { D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f), charTopLeft + charH };
+		vertices[vBufferIndex + 5] = { D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f), charTopLeft + charW + charH };
+	
+		scaleVertex(vertices[vBufferIndex + 0].position);
+		scaleVertex(vertices[vBufferIndex + 1].position);
+		scaleVertex(vertices[vBufferIndex + 2].position);
+		scaleVertex(vertices[vBufferIndex + 3].position);
+		scaleVertex(vertices[vBufferIndex + 4].position);
+		scaleVertex(vertices[vBufferIndex + 5].position);
+
+		
+		vBufferIndex += 6;
+
+		x += charWidthOffset;
+		str++;
+	}
+
+	VOID* pVoid;
+
+	// avoid locking the whole thing	
+	v_buffer->Lock(0, vBufferIndex * sizeof(vertices[0]), (void**)&pVoid, 0);
+	memcpy(pVoid, vertices, vBufferIndex * sizeof(vertices[0]));
+	v_buffer->Unlock();
+
+	device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+	device->SetFVF(vertFormat);
+	device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, vBufferIndex / 3);
+
+
+	device->SetTexture(0, NULL);
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
 }
 
 // -----
@@ -1406,7 +1546,7 @@ void HitboxBatchDrawNoBlend(const BoxObjects* b) {
 
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
-		log("%7.3f %7.3f %7.3f %7.3f", (*b)[i][0].x, (*b)[i][0].y, (*b)[i][0].w, (*b)[i][0].h);
+		
 		if (*(uint8_t*)(dwBaseAddress + adSharedExtendOrigins)) {
 			drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
 			drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
@@ -1546,11 +1686,19 @@ void DrawHitboxes(BoxObjects* b) { // didnt need to be a pointer, but i would ra
 	boxObjectList.emplace_back(b);
 }
 
-std::deque<char*> logHistory;
+//std::deque<char*> logHistory;
 //std::vector<char*> logHistory;
+const int logHistorySize = 64;
+char* logHistory[logHistorySize] = { NULL };
+int logHistoryIndex = 0;
 void DrawLog(char* s) {
 	// will be alloced in the log func, and dealloced here.
-	logHistory.push_front(s);
+	//logHistory.push_front(s);
+	if (logHistory[logHistoryIndex] != NULL) {
+		free(logHistory[logHistoryIndex]);
+	}
+	logHistory[logHistoryIndex] = s;
+	logHistoryIndex = (logHistoryIndex + 1) % logHistorySize;
 }
 
 // -----
@@ -1606,7 +1754,6 @@ void _drawHitboxes() {
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
 
 }
-
 
 void _drawProfiler() {
 	static char buffer[1024];
@@ -1673,27 +1820,21 @@ void _drawLog() {
 		drawDebug = !drawDebug;
 	}
 
-	if (!drawDebug) {
-		for (int i = 0; i < logHistory.size(); i++) {
-			free(logHistory[i]);
+	if (drawDebug) {
+		float y = 0.0f;
+		
+		for (int i = 0; i < logHistorySize; i++) {
+			int index = (i + logHistoryIndex) % logHistorySize;
+			if (logHistory[index] == NULL) {
+				continue;
+			}
+			drawText3(1.3333f, y, (float)10 / 480.0f, 0xFF42e5f4, logHistory[index]);
+			y += (10.0f / 480.0f);
+			if (y > 1.0f) {
+				break;
+			}
 		}
-		logHistory.clear();
-		return;
 	}
-
-	while (logHistory.size() > 30) {
-		free(logHistory.back());
-		logHistory.pop_back();
-	}
-
-	float y = 0.0f;
-	int index = 0;
-	for (; index < logHistory.size(); index++) {
-		drawText2(1.3333f, y, (float)10 / 480.0f, 0xFF42e5f4, logHistory[index]);
-		y += (10.0f / 480.0f);
-	}
-
-
 }
 
 void _drawGeneralCalls() {
