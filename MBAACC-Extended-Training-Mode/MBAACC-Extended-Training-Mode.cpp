@@ -289,6 +289,7 @@ int main(int argc, char* argv[])
         
             // calling std::endl flushes to the console. doing that multiple times a frame causes slowdown.
 
+            
             SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
             std::cout << "===========================================================================\x1b[K" << "\n";
             std::cout << "|   Fang, gonp, and meepster99(Inana)'s Extended Training Mode Mod " << VERSION << "   |\x1b[K" << "\n";
@@ -299,6 +300,7 @@ int main(int argc, char* argv[])
             else
                 std::cout << "|                                                                         |\x1b[K" << "\n";
             std::cout << "===========================================================================\x1b[K" << "\n";
+            
 
             SetConsoleCursorPosition(hConsoleHandle, { 0, 6 });
             std::cout << "\x1b[K";
@@ -391,8 +393,10 @@ int main(int argc, char* argv[])
             }
             else
             {
-                SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
+                SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });               
                 std::cout << "Attached to MBAA.exe\x1b[K" << "\n\x1b[K\n";
+                
+                
                 //LogInfo("MBAA is in training mode");
             }
 
@@ -402,13 +406,9 @@ int main(int argc, char* argv[])
 
             long long totalTime = getMicroSec() - start;
 
-            if (totalTime > 16000) {
-                netlog("console framedisplay took %3lld.%03lld ms this is critical", totalTime / 1000, totalTime % 1000);
-            } else if (totalTime > 8000) { // 8ms
-                netlog("console framedisplay took %3lld.%03lld ms this is not ideal", totalTime / 1000, totalTime % 1000);   
+            if (totalTime > 8000) {
+                netlog("console framedisplay took %3lld.%03lld ms", totalTime / 1000, totalTime % 1000);
             }
-
-            
 
 
             //nWriteBuffer = nPlayerAdvantage;
