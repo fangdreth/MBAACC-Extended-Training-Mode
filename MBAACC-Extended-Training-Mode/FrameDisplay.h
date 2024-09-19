@@ -97,55 +97,78 @@ void UpdateGlobals(HANDLE hMBAAHandle)
 
 struct Player
 {
+	char cExists = 0; //0x0
+	char padding0[0xF];
+	int nPattern = 0; //0x10
+	int nState = 0; //0x14
+	char padding1[0xA4];
+	int nHealth = 0; //0xBC
+	int nRedHealth = 0; //0xC0
+	float fGuardGauge = 0.0f; //0xC4
+	char padding2[0x10];
+	float fGuardQuality = 0.0f; //0xD8
+	char padding3[0x4];
+	int nMagicCircuit = 0; //0xE0
+	char padding4[0xC];
+	int nFrameCount = 0; //0xF0
+	char padding5[0x14];
+	int nXPosition = 0; //0x108
+	int nYPosition = 0; //0x10C
+	char padding6[0xC];
+	int nXSpeed = 0; //0x11C
+	int nYSpeed = 0; //0x120
+	short sXAcceleration = 0; //0x124
+	short sYAcceleration = 0; //0x126
+	char padding7[0x10];
+	int nMomentum = 0; //0x138
+	char padding8[0x36];
+	char cHitstop = 0; //0x172
+	char padding9[0x3];
+	bool bThrowFlag = false; //0x176
+	char padding10[0x1];
+	bool bTagFlag = false; //0x178
+	char padding11[0x2];
+	bool bBlockstunFlag = false; //0x17B
+	char padding12[0x9];
+	char sStrikeInvuln = 0; //0x185
+	char sThrowInvuln = 0; //0x186
+	char padding13[0x7];
+	short sUntechTotal = 0; //0x18E
+	short sUntechCounter = 0; //0x190
+	char padding14[0x1A];
+	int nHitstunRemaining = 0; //0x1AC
+	char padding15[0x4A];
+	char cCounterHit = 0; //1FA
+	char padding16[0xE9];
+	float fGravity = 0.0f; //2E4
+	short sUntechPenalty = 0; //0x2E8
+	char cAirDirectionalInput = 0; //0x2EA
+	char cRawDirectionalInput = 0; //0x2EB
+	char padding17[0x1];
+	char cButtonInput = 0; //0x2ED
+	char cMacroInput = 0; //0x2EE
+	char padding18[0x26];
+	bool bIsOnRight = false; //0x315
+	char padding19[0xA];
+	DWORD dwAnimationDataPointer = 0x0; //0x320
+	DWORD dwAttackDataPointer = 0x0; //0x324
+
+	DWORD dwAnimation_StateDataPointer = 0x0; //0x320 : 0x38
+	char cState_Stance = 0; //0x320 : 0x38 : 0xC
+	char cState_Invuln = 0; //0x320 : 0x38 : 0xD
+	char cState_NormalCancel = 0; //0x320 : 0x38 : 0xE
+	char cState_SpecialCancel = 0; //0x320 : 0x38 : 0xF
+	int nState_Flagset2 = 0; //0x320 : 0x38 : 0x18
+
+	char cAnimation_ConditionCount = 0; //0x320 : 0x40
+	char cAnimation_BoxIndex = 0; //0x320 : 0x42
+	DWORD dwAnimation_ConditionsPointer = 0x0; //0x320 : 0x44
+	DWORD dwConditions_Condition1Pointer = 0x0; //0x320 : 0x44 : 0x0
+	DWORD dwCondition1_ConditionType = 0; //0x320 : 0x44 : 0x0 : 0x0
+
 	char cPlayerNumber = 0;
 	DWORD adPlayerBase = 0x0;
 	DWORD adInactionable = 0x0;
-	char cExists = 0;
-	int nPattern = 0;
-	int nState = 0;
-	int nHealth = 0;
-	int nRedHealth = 0;
-	float fGuardGauge = 0.0f;
-	float fGuardQuality = 0.0f;
-	int nMagicCircuit = 0;
-	int nFrameCount = 0;
-	int nXPosition = 0;
-	int nYPosition = 0;
-	int nXSpeed = 0;
-	int nYSpeed = 0;
-	short sXAcceleration = 0;
-	short sYAcceleration = 0;
-	int nMomentum = 0;
-	char cHitstop = 0;
-	bool bThrowFlag = false;
-	bool bTagFlag = false;
-	bool bBlockstunFlag = false;
-	char sGrantedStrikeInvuln = 0;
-	char sGrantedThrowInvuln = 0;
-	short sUntechTotal = 0;
-	short sUntechCounter = 0;
-	int nHitstunRemaining = 0;
-	char cCounterHit = 0;
-	float fGravity = 0.0f;
-	short sUntechPenalty = 0;
-	char cAirDirectionalInput = 0; //I think this is actually used to determine blocking but its accurate for inputs in the air
-	char cRawDirectionalInput = 0;
-	char cButtonInput = 0;
-	char cMacroInput = 0;
-	bool bIsOnRight = false;
-	DWORD dwAnimationDataPointer = 0x0;
-	DWORD dwStateDataPointer = 0x0;
-	char cAnimation_ConditionCount = 0;
-	char cAnimation_BoxIndex = 0;
-	DWORD dwConditionsPointer = 0x0;
-	DWORD dwCondition1Pointer = 0x0;
-	DWORD dwCondition1Type = 0;
-	DWORD dwAttackDataPointer = 0x0;
-	char cState_Stance = 0;
-	char cState_Invuln = 0;
-	char cState_NormalCancel = 0;
-	char cState_SpecialCancel = 0;
-	int nState_Flagset2 = 0;
 
 	int nInactionableFrames = 0;
 	int nLastInactionableFrames = 0;
@@ -170,10 +193,10 @@ struct Player
 	char cLastStance = 0;
 };
 
-Player P1{ 0, adMBAABase + adP1Base, adMBAABase + adP1Inaction };
-Player P2{ 1, adMBAABase + adP2Base, adMBAABase + adP2Inaction };
-Player P3{ 2, adMBAABase + adP3Base, adMBAABase + adP1Inaction };
-Player P4{ 3, adMBAABase + adP4Base, adMBAABase + adP2Inaction };
+Player P1{ .cPlayerNumber = 0, .adPlayerBase = adMBAABase + adP1Base, .adInactionable = adMBAABase + adP1Inaction };
+Player P2{ .cPlayerNumber = 1, .adPlayerBase = adMBAABase + adP2Base, .adInactionable = adMBAABase + adP2Inaction };
+Player P3{ .cPlayerNumber = 2, .adPlayerBase = adMBAABase + adP3Base, .adInactionable = adMBAABase + adP1Inaction };
+Player P4{ .cPlayerNumber = 3, .adPlayerBase = adMBAABase + adP4Base, .adInactionable = adMBAABase + adP2Inaction };
 
 void CheckProjectiles(HANDLE hMBAAHandle, Player& P)
 {
@@ -234,60 +257,27 @@ void UpdatePlayer(HANDLE hMBAAHandle, Player &P) {
 	P.nLastFrameCount = P.nFrameCount;
 	P.bLastOnRight = P.bIsOnRight;
 	P.cLastStance = P.cState_Stance;
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase), &P.cExists, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase), &P, 1, 0);
 	if (!P.cExists) return;
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adPattern), &P.nPattern, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adState), &P.nState, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adHealth), &P.nHealth, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adRedHealth), &P.nRedHealth, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adGuardGauge), &P.fGuardGauge, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adGuardQuality), &P.fGuardQuality, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adMagicCircuit), &P.nMagicCircuit, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adPlayerFrameCount), &P.nFrameCount, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adXPosition), &P.nXPosition, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adYPosition), &P.nYPosition, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adXSpeed), &P.nXSpeed, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adYSpeed), &P.nYSpeed, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adXAcceleration), &P.sXAcceleration, 2, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adYAcceleration), &P.sYAcceleration, 2, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adMomentum), &P.nMomentum, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adHitstop), &P.cHitstop, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adThrowFlag), &P.bThrowFlag, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adTagFlag), &P.bTagFlag, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adBlockstunFlag), &P.bBlockstunFlag, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adEFStrikeInvuln), &P.sGrantedStrikeInvuln, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adEFThrowInvuln), &P.sGrantedThrowInvuln, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adUntechTotal), &P.sUntechTotal, 2, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adUntechCounter), &P.sUntechCounter, 2, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adHitstunRemaining), &P.nHitstunRemaining, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adCounterHit), &P.cCounterHit, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adGravity), &P.fGravity, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adUntechPenalty), &P.sUntechPenalty, 2, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adAirDirectionalInput), &P.cAirDirectionalInput, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adRawDirectionalInput), &P.cRawDirectionalInput, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adButtonInput), &P.cButtonInput, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adMacroInput), &P.cMacroInput, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adOnRightFlag), &P.bIsOnRight, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adAnimationDataPointer), &P.dwAnimationDataPointer, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase + adAttackDataPointer), &P.dwAttackDataPointer, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_StateDataPointer), &P.dwStateDataPointer, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase), &P, 0x328, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_StateDataPointer), &P.dwAnimation_StateDataPointer, 4, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionCount), &P.cAnimation_ConditionCount, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_BoxIndex), &P.cAnimation_BoxIndex, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwStateDataPointer + adStateData_Stance), &P.cState_Stance, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwStateDataPointer + adStateData_Invuln), &P.cState_Invuln, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwStateDataPointer + adStateData_NormalCancel), &P.cState_NormalCancel, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwStateDataPointer + adStateData_SpecialCancel), &P.cState_SpecialCancel, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwStateDataPointer + adStateData_Flagset2), &P.nState_Flagset2, 4, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_Stance), &P.cState_Stance, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_Invuln), &P.cState_Invuln, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_NormalCancel), &P.cState_NormalCancel, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_SpecialCancel), &P.cState_SpecialCancel, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_Flagset2), &P.nState_Flagset2, 4, 0);
 	
 	if (P.cAnimation_ConditionCount > 0)
 	{
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionsPointer), &P.dwConditionsPointer, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwConditionsPointer + adConditions_Condition1Pointer), &P.dwCondition1Pointer, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwCondition1Pointer + adCondition_Type), &P.dwCondition1Type, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionsPointer), &P.dwAnimation_ConditionsPointer, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_ConditionsPointer + adConditions_Condition1Pointer), &P.dwConditions_Condition1Pointer, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwConditions_Condition1Pointer + adCondition_Type), &P.dwCondition1_ConditionType, 4, 0);
 	}
 	else
 	{
-		P.dwCondition1Type = 0;
+		P.dwCondition1_ConditionType = 0;
 	}
 
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adInactionable), &P.nInactionableFrames, 4, 0);
@@ -790,11 +780,11 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		sFont = FD_CLASH;
 	}
-	else if (P.dwCondition1Type == 51) //Shield
+	else if (P.dwCondition1_ConditionType == 51) //Shield
 	{
 		sFont = FD_SHIELD;
 	}
-	else if (P.cAnimation_BoxIndex <= 1 || P.sGrantedStrikeInvuln != 0 || P.cState_Invuln == 3) //Various forms of invuln
+	else if (P.cAnimation_BoxIndex <= 1 || P.sStrikeInvuln != 0 || P.cState_Invuln == 3) //Various forms of invuln
 	{
 		if (P.nInactionableFrames != 0) //Doing something with limited actionability
 		{
@@ -1200,55 +1190,43 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 	int nXPixelDistance = (int)abs(floor(P1.nXPosition / 128.0) - floor(P2.nXPosition / 128.0));
 	int nYPixelDistance = (int)abs(floor(P1.nYPosition / 128.0) - floor(P2.nYPosition / 128.0));
 
+	char caSimpleInfo[64] = {};
 	if (bSimpleFrameInfo)
 	{
-		printf("\x1b[0m" "Total %3i / Advantage %3i / Distance %3i" "\n",
+		snprintf(caSimpleInfo, 64, "\x1b[0m" "Total %3i / Advantage %3i / Distance %3i" "\n",
 			P1.nInactionableMemory, nPlayerAdvantage, nXPixelDistance);
 	}
 
+	char caAdvancedInfo[384] = {};
 	if (!bSimpleFrameInfo)
 	{
-		printf("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
-			"x-spd %5i" "\x1b[0m" "x-acc %5i" "\x1b[7m" "y-spd %5i" "\x1b[0m" "y-acc %5i" "\x1b[7m" "hp %5i" "\x1b[0m" "mc %5i" "\x1b[0m\x1b[K\n",
+		snprintf(caAdvancedInfo, 384, "\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
+			"x-spd %5i" "\x1b[0m" "x-acc %5i" "\x1b[7m" "y-spd %5i" "\x1b[0m" "y-acc %5i" "\x1b[7m" "hp %5i" "\x1b[0m" "mc %5i" "\x1b[0m\x1b[K\n"
+			"\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
+			"x-spd %5i" "\x1b[0m" "x-acc %5i" "\x1b[7m" "y-spd %5i" "\x1b[0m" "y-acc %5i" "\x1b[7m" "hp %5i" "\x1b[0m" "mc %5i" "\x1b[0m\x1b[K\n"
+			"\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "adv %3i" "\x1b[K\n",
 			P1.nXPosition, P1.nYPosition, nP1XPixelPosition, nP1YPixelPosition, P1.nPattern, P1.nState,
-			P1.nXSpeed + P1.nMomentum, P1.sXAcceleration, P1.nYSpeed, P1.sYAcceleration, P1.nHealth, P1.nMagicCircuit);
-
-		printf("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
-			"x-spd %5i" "\x1b[0m" "x-acc %5i" "\x1b[7m" "y-spd %5i" "\x1b[0m" "y-acc %5i" "\x1b[7m" "hp %5i" "\x1b[0m" "mc %5i" "\x1b[0m\x1b[K\n",
+			P1.nXSpeed + P1.nMomentum, P1.sXAcceleration, P1.nYSpeed, P1.sYAcceleration, P1.nHealth, P1.nMagicCircuit,
 			P2.nXPosition, P2.nYPosition, nP2XPixelPosition, nP2YPixelPosition, P2.nPattern, P2.nState,
-			P2.nXSpeed + P2.nMomentum, P2.sXAcceleration, P2.nYSpeed, P2.sYAcceleration, P2.nHealth, P2.nMagicCircuit);
-
-		printf("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "adv %3i" "\x1b[K\n",
+			P2.nXSpeed + P2.nMomentum, P2.sXAcceleration, P2.nYSpeed, P2.sYAcceleration, P2.nHealth, P2.nMagicCircuit,
 			nXDistance, nYDistance, nXPixelDistance, nYPixelDistance, nPlayerAdvantage);
 	}
 
-	std::cout << sColumnHeader;
+	std::cout << caSimpleInfo << caAdvancedInfo << sColumnHeader << P1.sBarString1 << P1.sBarString2 << P1.sBarString3 << P2.sBarString1 << P2.sBarString2 << P2.sBarString3;
 
-	std::cout << P1.sBarString1;
-	std::cout << P1.sBarString2;
-	std::cout << P1.sBarString3;
-
-	std::cout << P2.sBarString1;
-	std::cout << P2.sBarString2;
-	std::cout << P2.sBarString3;
-
+	char caAdvancedInfo2[256] = {};
 	if (!bSimpleFrameInfo)
 	{
-		printf("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i" "\x1b[0m\x1b[K\n",
-			cP1Freeze, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 10, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality, P1.nInactionableMemory % 1000);
-		printf("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i"  "\x1b[0m\x1b[K\n",
+		snprintf(caAdvancedInfo2, 256, "\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i" "\x1b[0m\x1b[K\n"
+			"\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i"  "\x1b[0m\x1b[K\n",
+			cP1Freeze, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 10, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality, P1.nInactionableMemory % 1000,
 			cP2Freeze, cP2CounterHit, P4.nPattern, P4.nState, nP2GravityHits, nP2Gravity % 10, P2.sUntechPenalty % 10, P2.nRedHealth, nP2GuardGauge, P2.fGuardQuality, P2.nInactionableMemory % 1000);
+
 	}
 
 	if (bDisplayInputs)
 	{
-		std::cout << sColumnHeader;
-
-		std::cout << P1.sBarString4;
-		std::cout << P1.sBarString5;
-
-		std::cout << P2.sBarString4;
-		std::cout << P2.sBarString5;
+		std::cout << sColumnHeader << P1.sBarString4 << P1.sBarString5 << P2.sBarString4 << P2.sBarString5;
 	}
 
 	std::cout << "\x1b[J";
