@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
         uint32_t nCustomRN = 0;
 
         bool bColorBlindMode = false;
-        uint8_t nHitboxStyle = HITBOX_BLEND;
+        uint8_t nHitboxStyle = HITBOX_DRAW_ALL;
         bool bDisplayHitboxes = false;
         bool bExtendOrigins = false;
 
