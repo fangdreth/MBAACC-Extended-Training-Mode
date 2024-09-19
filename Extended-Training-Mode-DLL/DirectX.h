@@ -1175,16 +1175,16 @@ IDirect3DPixelShader9* getOutlinePixelShader() {
 					
 					// should diags have a radic(2) instead of 1,1?
 	
-					float2 offsets[8] = {
-						texCoord + float2(-texOffset.x, -texOffset.y),
-						texCoord + float2(-texOffset.x, 0.0),
-						texCoord + float2(-texOffset.x, texOffset.y),
+					float2 offsets[8] = { // order is adjusted to check diags last. performance.
 						
+						texCoord + float2(-texOffset.x, 0.0),
 						texCoord + float2(0.0, -texOffset.y),
 						texCoord + float2(0.0, texOffset.y),
-						
+						texCoord + float2(texOffset.x, 0.0),						
+
 						texCoord + float2(texOffset.x, -texOffset.y),
-						texCoord + float2(texOffset.x, 0.0),
+						texCoord + float2(-texOffset.x, -texOffset.y),
+						texCoord + float2(-texOffset.x, texOffset.y),
 						texCoord + float2(texOffset.x, texOffset.y)
 					};
 
@@ -1197,7 +1197,7 @@ IDirect3DPixelShader9* getOutlinePixelShader() {
 
 						tempColor = tex2D(textureSampler, offsets[i]);
 						if(tempColor.a == 0) {
-							return float4(texColor.rgb, 1.0);
+							return float4(texColor.rgb, 0.7); // putting this alpha at 0.75 might be a bit whack, but will help with overlay
 						}
 
 					}
@@ -1337,7 +1337,7 @@ void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade = true) {
 	if (shade) {
 		drawRect2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, (ARGB & 0x00FFFFFF) | 0x40000000);
 	}
-	drawBorder2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, ARGB);
+	drawBorder2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, (ARGB & 0x00FFFFFF) | 0xC0000000);
 }
 
 constexpr DWORD arrNormalColors[] = {
@@ -1607,6 +1607,8 @@ void _drawProfiler() {
 		drawDebug = !drawDebug;
 	}
 
+	DWORD col = 0xFF00FFFF;
+
 	if (drawDebug) {
 		// how slow is this,,, im not sure how expensive map lookups are, but the keys to it could be constexpr. ugh 
 		// i also have the pointer strat. might go do that tbh
@@ -1621,9 +1623,15 @@ void _drawProfiler() {
 			}
 			totalTime >>= 6; // div 64
 
+			col = 0xFF00FFFF;
+
+			if (totalTime > 1000) {
+				col = 0xFFFF0000;
+			}
+
 			//TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
 			snprintf(buffer, 1024, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-			drawText2(-0.0f, (float)profileInfoY / 480.0f, (float)12 / 480.0f, 0xFF00FFFF, buffer);
+			drawText2(-0.0f, (float)profileInfoY / 480.0f, (float)12 / 480.0f, col, buffer);
 
 			//TextDraw(200, profileInfoY, 12, 0x7FFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
 
