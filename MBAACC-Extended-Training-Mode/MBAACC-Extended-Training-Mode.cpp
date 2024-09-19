@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
         int nTempReversalDelayFrames = 0;
         bool bDelayingReversal = false;
         bool bReversaled = false;
-        int nReversalType = REVERSAL_NORMAL;
+        int nReversalType = REVERSAL_OFF;
         int nReversalIndex1 = 0;
         int nReversalIndex2 = 0;
         int nReversalIndex3 = 0;
