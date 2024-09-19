@@ -26,6 +26,7 @@ short nBarScrolling = 0;
 int nBarIntervalCounter = 0;
 int nBarIntervalMax = 0;
 int nBarDisplayRange = 0;
+int nLastBarDisplayRange = 0;
 bool bIsBarReset = false;
 bool bDoBarReset = false;
 bool bUpdateBar = false;
@@ -41,13 +42,17 @@ static bool bDisplayFreeze = false; //Whether to show global ex flashes and fram
 static bool bDisplayInputs = false;
 static bool bPrintColorGuide = false;
 static bool bLoadRNG = false;
+char cDisplayOptions = 0;
+char cLastDisplayOptions = 0;
+
+std::string sColumnHeader = "";
 
 static uint8_t nSaveSlot = 0;
 
 static int nPlayerAdvantage;
 int nSharedHitstop;
 
-const int outBufferSize = 8192; // 8kb might be overkill, want to be safe though
+const int outBufferSize = 16384;
 int outBufferIndex = 0;
 char outBuffer[outBufferSize];
 void writeBuffer(const char* fmt, ...) {
@@ -1127,21 +1132,23 @@ void BarHandling(HANDLE hMBAAHandle, Player &P1, Player &P2, Player& P1Assist, P
 
 void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, Player &P4)
 {
-
-	std::string sColumnHeader = "\x1b[0;4m";
-	for (int i = 1; i <= nBarDisplayRange; i++)
+	if (nBarDisplayRange != nLastBarDisplayRange || sColumnHeader == "")
 	{
-		if (i % 10 != 0)
+		sColumnHeader = "\x1b[0;4m";
+		for (int i = 1; i <= nBarDisplayRange; i++)
 		{
-			sColumnHeader += std::format("{:2}", i % 10);
+			if (i % 10 != 0)
+			{
+				sColumnHeader += std::format("{:2}", i % 10);
+			}
+			else
+			{
+				sColumnHeader += std::format("\x1b[7;4m{:2}\x1b[0;4m", i % 100);
+			}
 		}
-		else
-		{
-			sColumnHeader += std::format("\x1b[7;4m{:2}\x1b[0;4m", i % 100);
-		}
+		sColumnHeader += "\x1b[0m\x1b[K\n";
 	}
-	sColumnHeader += "\x1b[0m\x1b[K\n";
-
+	
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedScrolling), &nBarScrolling, 2, 0);
 	short sAdjustedScroll = min(min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange), nBarScrolling);
 
@@ -1270,7 +1277,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 
 	//std::cout << caSimpleInfo << caAdvancedInfo << sColumnHeader << P1.sBarString1 << P1.sBarString2 << P1.sBarString3 << P2.sBarString1 << P2.sBarString2 << P2.sBarString3;
 
-	writeBuffer("%s%s%s%s%s%s%s", sColumnHeader.c_str(), P1.sBarString1.c_str(), P1.sBarString2.c_str(), P1.sBarString3.c_str(), P2.sBarString2.c_str(), P2.sBarString2.c_str(), P2.sBarString3.c_str());
+	writeBuffer("%s%s%s%s%s%s%s", sColumnHeader.c_str(), P1.sBarString1.c_str(), P1.sBarString2.c_str(), P1.sBarString3.c_str(), P2.sBarString1.c_str(), P2.sBarString2.c_str(), P2.sBarString3.c_str());
 
 	char caAdvancedInfo2[256] = {}; // does this get printed anywhere?
 	if (!bSimpleFrameInfo)
@@ -1313,9 +1320,14 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 		return;
 	}
 
+	nLastBarDisplayRange = nBarDisplayRange;
 	CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screenBufferInfo);
 	nBarDisplayRange = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left) / 2;
+	if (nBarDisplayRange != nLastBarDisplayRange)
+	{
+		system("cls");
+	}
 
 	UpdateGlobals(hMBAAHandle);
 
@@ -1388,16 +1400,31 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 			ResetBars(hMBAAHandle, P4);
 			LoadState(hMBAAHandle, nSaveSlot, bLoadRNG);
 		}
+
+		if (bPrintColorGuide)
+		{
+			PrintColorGuide();
+		}
+		else
+		{
+			PrintFrameDisplay(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
+		}
+	}
+
+	cLastDisplayOptions = cDisplayOptions;
+	cDisplayOptions = 8 * bSimpleFrameInfo + 4 * bDisplayFreeze + 2 * bDisplayInputs + 1 * bPrintColorGuide;
+	if (cDisplayOptions != cLastDisplayOptions)
+	{
+		if (bPrintColorGuide)
+		{
+			PrintColorGuide();
+		}
+		else
+		{
+			PrintFrameDisplay(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
+		}
 	}
 
 	nPlayerAdvantage = (P1.nAdvantageCounter - P2.nAdvantageCounter) % 100;
 
-	if (bPrintColorGuide)
-	{
-		PrintColorGuide();
-	}
-	else
-	{
-		PrintFrameDisplay(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
-	}
 }
