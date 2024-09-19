@@ -21373,6 +21373,14 @@ NOTE:Most things after this are probably char-specific.
               <Address>+8</Address>
             </CheatEntry>
             <CheatEntry>
+              <ID>22128</ID>
+              <Description>"+9 Idek"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>1</ShowAsSigned>
+              <VariableType>2 Bytes</VariableType>
+              <Address>+9</Address>
+            </CheatEntry>
+            <CheatEntry>
               <ID>7429</ID>
               <Description>"+10 Pattern"</Description>
               <ShowAsSigned>0</ShowAsSigned>
@@ -21399,6 +21407,14 @@ NOTE:Most things after this are probably char-specific.
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>+1C</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>22129</ID>
+              <Description>"+20 no clue"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>+20</Address>
             </CheatEntry>
             <CheatEntry>
               <ID>22124</ID>
@@ -21477,6 +21493,13 @@ NOTE:Most things after this are probably char-specific.
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>Byte</VariableType>
               <Address>+2F4</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>22127</ID>
+              <Description>"+2F5 no idea"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>+2F5</Address>
             </CheatEntry>
             <CheatEntry>
               <ID>14492</ID>
