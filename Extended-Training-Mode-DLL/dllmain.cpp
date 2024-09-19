@@ -1726,6 +1726,11 @@ void newPauseCallback2() {
 		_naked_newPauseCallback2_IsPaused = !_naked_newPauseCallback2_IsPaused;
 	}
 
+	if (!bFreeze && oFrameStepKey.keyDown()) {
+		bFreeze = true;
+		_naked_newPauseCallback2_IsPaused = true;
+	}
+
 	static bool needPause = false;
 
 	if (oFrameStepKey.keyDown() && _naked_newPauseCallback2_IsPaused) {
