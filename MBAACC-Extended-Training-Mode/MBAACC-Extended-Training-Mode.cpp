@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
         uint32_t nCustomRN = 0;
 
         bool bColorBlindMode = false;
-        uint8_t nHitboxStyle = HITBOX_DRAW_ALL;
+        uint8_t nHitboxStyle = HITBOX_BLEND;
         bool bDisplayHitboxes = false;
         bool bExtendOrigins = false;
 
@@ -403,7 +403,7 @@ int main(int argc, char* argv[])
             long long totalTime = getMicroSec() - start;
 
             if (totalTime > 16000) {
-                netlog(".\tconsole framedisplay took %3lld.%03lld ms this is critical", totalTime / 1000, totalTime % 1000);
+                netlog("console framedisplay took %3lld.%03lld ms this is critical", totalTime / 1000, totalTime % 1000);
             } else if (totalTime > 8000) { // 8ms
                 netlog("console framedisplay took %3lld.%03lld ms this is not ideal", totalTime / 1000, totalTime % 1000);   
             }
