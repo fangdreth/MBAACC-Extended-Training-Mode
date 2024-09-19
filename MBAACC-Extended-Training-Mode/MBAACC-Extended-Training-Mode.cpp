@@ -1841,19 +1841,39 @@ int main(int argc, char* argv[])
                             }
                             case RNG_PAGE:
                             {
-                                if (nOldEnemySettingsCursor == 3 && nEnemySettingsCursor == 5)
+                                if (nRNGMode != RNG_OFF)
                                 {
-                                    nWriteBuffer = 10;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                                    nEnemySettingsCursor = 10;
-                                    nOldEnemySettingsCursor = 10;
+                                    if (nOldEnemySettingsCursor == 3 && nEnemySettingsCursor == 5)
+                                    {
+                                        nWriteBuffer = 10;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                        nEnemySettingsCursor = 10;
+                                        nOldEnemySettingsCursor = 10;
+                                    }
+                                    else if (nEnemySettingsCursor > 3 && nEnemySettingsCursor < 10)
+                                    {
+                                        nWriteBuffer = 3;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                        nEnemySettingsCursor = 3;
+                                        nOldEnemySettingsCursor = 3;
+                                    }
                                 }
-                                else if (nEnemySettingsCursor > 3 && nEnemySettingsCursor < 10)
+                                else
                                 {
-                                    nWriteBuffer = 3;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                                    nEnemySettingsCursor = 3;
-                                    nOldEnemySettingsCursor = 3;
+                                    if (nOldEnemySettingsCursor == 0 && nEnemySettingsCursor == 2)
+                                    {
+                                        nWriteBuffer = 10;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                        nEnemySettingsCursor = 10;
+                                        nOldEnemySettingsCursor = 10;
+                                    }
+                                    else if (nEnemySettingsCursor > 0 && nEnemySettingsCursor < 10)
+                                    {
+                                        nWriteBuffer = 0;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                        nEnemySettingsCursor = 0;
+                                        nOldEnemySettingsCursor = 0;
+                                    }
                                 }
                                 
                                 break;
@@ -3920,6 +3940,11 @@ int main(int argc, char* argv[])
                             {
                                 nWriteBuffer = ONSCREEN_LOCATION;
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
+
+                                if (nRNGMode == RNG_OFF)
+                                    nWriteBuffer = OFFSCREEN_LOCATION;
+                                else
+                                    nWriteBuffer = ONSCREEN_LOCATION;
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
 
