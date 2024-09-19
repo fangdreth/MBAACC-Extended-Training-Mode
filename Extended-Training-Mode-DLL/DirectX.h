@@ -341,10 +341,135 @@ void initFont() {
 
 // -----
 
+// this could have been done without a class. i hope the overhead isnt stupid
+template <typename T>
+class VertexData {
+public:
+
+	const static DWORD vertexCount = 3 * 512; // is this overkill?
+
+	VertexData(DWORD vertexFormat_, IDirect3DTexture9* texture_ = NULL) {
+		vertexFormat = vertexFormat_;
+		texture = texture_;
+	}
+
+	void alloc() {
+		if (vertexBuffer == NULL) {
+			if (FAILED(device->CreateVertexBuffer(vertexCount * sizeof(T), 0, vertexFormat, D3DPOOL_MANAGED, &vertexBuffer, NULL))) {
+				log("failed to alloc a vertex buffer!");
+				vertexBuffer = NULL;
+			}
+		}
+	}
+
+	void add(T& v1, T& v2, T& v3) {
+
+		if (vertexIndex >= vertexCount) {
+			log("a vertex buffer overflowed. this is critical. increase the buffer size!");
+			return;
+		}
+
+		vertexData[vertexIndex++] = v1;
+		vertexData[vertexIndex++] = v2;
+		vertexData[vertexIndex++] = v3;
+
+	}
+
+	void draw() {
+
+		if (vertexBuffer == NULL) {
+			return;
+		}
+
+		if (vertexIndex == 0) {
+			return;
+		}
+
+		if(texture != NULL) {
+			device->SetTexture(texture);
+		}
+
+		VOID* pVoid;
+
+		vertexBuffer->Lock(0, vertexIndex * sizeof(T), (void**)&pVoid, 0);
+		memcpy(pVoid, vertexData, vertexIndex * sizeof(T));
+		vertexBuffer->Unlock();
+
+		device->SetStreamSource(0, vertexBuffer, 0, sizeof(T));
+		device->SetFVF(vertexFormat);
+		device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, vertexIndex / 3);
+
+		vertexIndex = 0;
+
+		if (texture != NULL) {
+			device->SetTexture(NULL);
+		}
+	}
+
+	DWORD vertexFormat = 0;
+	IDirect3DVertexBuffer9* vertexBuffer = NULL;
+	IDirect3DTexture9* texture = NULL;
+	T vertexData[vertexCount]; // i distrust vectors
+	unsigned vertexIndex = 0; // number of verts. i,, ugh. i should have written a const size vec class.
+
+};
+
+typedef struct PosColVert {
+	D3DVECTOR position;
+	D3DCOLOR color;
+} PosColVert;
+
+typedef struct PosTexVert {
+	D3DVECTOR position;
+	D3DXVECTOR2 texCoord;
+} PosTexVert;
+
+typedef struct PosColTexVert {
+	D3DVECTOR position;
+	D3DCOLOR color;
+	D3DXVECTOR2 texCoord;
+} PosColTexVert;
+
+VertexData<PosColVert> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+VertexData<PosTexVert> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1);
+VertexData<PosColTexVert> posTexColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+
+// -----
+
 typedef struct Point {
 	float x = 0.0;
 	float y = 0.0;
 } Point;
+
+enum class BoxType {
+	//None,
+	Origin, // 0xFF42E5F4
+	Collision, // grey
+	Hitbox, // red
+	Hurtbox, // green
+	Clash, // yellow
+	Blue, // what is this
+	Shield, // Purple, also like,,, vaki??
+	Reflect, // 
+
+	_Count, // dont use
+};
+
+typedef struct BoxData {
+	//BoxType type = BoxType::None;
+	float x = 0.0f;
+	float y = 0.0f;
+	float w = 0.0f;
+	float h = 0.0f;
+	//int player = 0; // what player this is being drawn for. should i,,, have each projectile be a seperate color as well?
+} BoxData;
+
+typedef std::vector<BoxData> BoxList;
+
+//typedef std::vector<BoxData> BoxObjects;
+typedef std::array<BoxList, static_cast<int>(BoxType::_Count)> BoxObjects; // 2d array, index is what type of box
+
+std::vector<BoxObjects*> boxObjectList;
 
 bool _hasStateToRestore = false;
 IDirect3DPixelShader9* _pixelShaderBackup;
@@ -549,7 +674,11 @@ void __stdcall restoreRenderState() {
 
 }
 
-void __stdcall drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR& v3, D3DCOLOR col) {
+// these funcs are depracated. please dont call
+
+void __stdcall _drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR& v3, D3DCOLOR col) {
+	return;
+	
 	if (device == NULL) return;
 
 	struct CUSTOMVERTEX {
@@ -605,7 +734,9 @@ void __stdcall drawTri(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR
 	
 }
 
-void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR& v3, const D3DVECTOR& v4, float size, D3DCOLOR col, char c) {
+void __stdcall _drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTOR& v3, const D3DVECTOR& v4, float size, D3DCOLOR col, char c) {
+
+	return;
 
 	// drawing the whole string as one tri strip is def better!!!
 
@@ -684,7 +815,9 @@ void __stdcall drawChar(const D3DVECTOR& v1, const D3DVECTOR& v2, const D3DVECTO
 	
 }
 
-void __stdcall drawTextureRect(float x, float y, float w, float h) {
+void __stdcall _drawTextureRect(float x, float y, float w, float h) {
+
+	return;
 
 	// in the future i could overload this for a color option
 
@@ -738,8 +871,10 @@ void __stdcall drawTextureRect(float x, float y, float w, float h) {
 	
 }
 
-void __stdcall drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) { // top left is 0.0, bottom right is 1.0. 
+void __stdcall _drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) { // top left is 0.0, bottom right is 1.0. 
 	
+	return;
+
 	y = 1 - y;
 	
 	D3DVECTOR v1 = { ((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.0f };
@@ -747,11 +882,13 @@ void __stdcall drawRect2(float x, float y, float w, float h, DWORD ARGB = 0x8042
 	D3DVECTOR v3 = { ((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
 	D3DVECTOR v4 = { ((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
 	
-	drawTri(v1, v2, v3, ARGB);
-	drawTri(v2, v3, v4, ARGB);
+	_drawTri(v1, v2, v3, ARGB);
+	_drawTri(v2, v3, v4, ARGB);
 }
 
-void __stdcall drawRectUnscaled(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+void __stdcall _drawRectUnscaled(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+
+	return;
 
 	const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_DIFFUSE);
 
@@ -798,8 +935,10 @@ void __stdcall drawRectUnscaled(float x, float y, float w, float h, DWORD ARGB =
 
 }
 
-void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side=false) { // top left is (0.0, 0.0), bottom right is (1.3333, 0). 
+void __stdcall _drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side=false) { // top left is (0.0, 0.0), bottom right is (1.3333, 0). 
 		
+	return;
+
 	// this is going to need to be changed at different resolutions
 	float lineWidth = 1.0f / vHeight;
 
@@ -853,8 +992,8 @@ void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x
 
 	// D3DPT_LINESTRIP. please.
 
-	drawTri(v1, v2, v3, ARGB);
-	drawTri(v2, v3, v4, ARGB);
+	_drawTri(v1, v2, v3, ARGB);
+	_drawTri(v2, v3, v4, ARGB);
 
 
 
@@ -872,23 +1011,27 @@ void __stdcall drawLine2(float x1, float y1, float x2, float y2, DWORD ARGB = 0x
 	*/
 }
 
-void __stdcall drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+void __stdcall _drawBorder2(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+
+	return;
 
 	float lineWidth = 1.0f / vHeight;
 
 	h -= lineWidth;
 	w -= lineWidth;
 
-	drawLine2(x + lineWidth, y, x + w, y, ARGB, true);
-	drawLine2(x, y, x, y + h, ARGB, false);
-	drawLine2(x + w, y, x + w, y + h, ARGB, false);
-	drawLine2(x, y + h, x + w + lineWidth, y + h, ARGB, true); // might need to be true 
+	_drawLine2(x + lineWidth, y, x + w, y, ARGB, true);
+	_drawLine2(x, y, x, y + h, ARGB, false);
+	_drawLine2(x + w, y, x + w, y + h, ARGB, false);
+	_drawLine2(x, y + h, x + w + lineWidth, y + h, ARGB, true); // might need to be true 
 
 }
 
-void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* str) {
+void __stdcall _drawText2(float x, float y, float size, DWORD ARGB, const char* str) {
 	// pass things in as you would with printf, like printf("%d %.2f %s", 1, 1.23f, "abcdefg");
 	
+	return;
+
 	// a question, is skipping spaces if i conv this to use a big trianglestrip worth it
 	// having to support colors, also may be annoying
 
@@ -986,7 +1129,7 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 		D3DVECTOR v3 = { ((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
 		D3DVECTOR v4 = { ((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.0f };
 
-		drawChar(v1, v2, v3, v4, size, TempARGB, *str);
+		_drawChar(v1, v2, v3, v4, size, TempARGB, *str);
 
 		x += charWidthOffset;
 		str++;
@@ -1006,7 +1149,9 @@ void __stdcall drawText2(float x, float y, float size, DWORD ARGB, const char* s
 	
 }
 
-void __stdcall drawText3(float x, float y, float size, DWORD ARGB, const char* str) {
+void __stdcall _drawText3(float x, float y, float size, DWORD ARGB, const char* str) {
+
+	return;
 
 	// new solution, not supporting different colors in one string here.
 	
@@ -1137,34 +1282,68 @@ void __stdcall drawText3(float x, float y, float size, DWORD ARGB, const char* s
 
 // -----
 
-// would a queue be better here?
-// look, i know i like lambdas too much, but i was getting annoyed
-// constantly allocing and deallocing lambdas is probs,,, bad.
-// i could just have them be, refs? idek
-std::vector<std::function<void(void)>> drawCalls;
-typedef struct ProfileInfo {
-	unsigned callCount = 0; // amount called this frame 
-	long long currentFrameTime = 0; // time spent here this frame
-	unsigned index = 0; // having a index for each value might be overkill
-	std::array<long long, 64> times; // past log of times, to make number smoother
-} ProfileInfo;
-std::map<const char*, ProfileInfo > profilerData;
-
-// the way im doing this is horrid. the amount of vtable lookups is not worth the code being "nice"
-
 void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side = false) {
 	
 	x1 /= 480.0f;
 	x2 /= 480.0f;
 	y1 /= 480.0f;
 	y1 /= 480.0f;
+
+	// this is going to need to be changed at different resolutions
+	float lineWidth = 1.0f / vHeight;
+
+	// i am,,, i bit confused on how exactly to do this. 
+	// current vibes say,,, two very thin triangles.
+
+	// i would like,,, diag lines please too.
+	// there are,,, angle issues with that tho
+
+	// feel free to play around with https://www.desmos.com/calculator/ppviwesili
+	// side chooses which "side" of the input line is actually drawn
+	// you will only really care about this,,, if you really care abt it?
+
+	Point p1 = { x1, y1 };
+	Point p2 = { x2, y2 };
+
+	float mx = p2.x - p1.x;
+	float my = p2.y - p1.y;
+	float m = my / mx;
+
+	float a = atan2(my, mx) + (3.1415926535f / 2.0f);
+
+	float m2 = tan(a);
+
+	Point p3 = { x1, y1 };
+	Point p4 = { x2, y2 };
+
+	Point offset = { lineWidth * cos(a), lineWidth * sin(a) };
+
+	if (side) {
+		p3.x += offset.x;
+		p3.y += offset.y;
+		p4.x += offset.x;
+		p4.y += offset.y;
+	}
+	else {
+		p3.x -= offset.x;
+		p3.y -= offset.y;
+		p4.x -= offset.x;
+		p4.y -= offset.y;
+	}
+
+	p1.y = 1 - p1.y;
+	p2.y = 1 - p2.y;
+	p3.y = 1 - p3.y;
+	p4.y = 1 - p4.y;
+
+	PosColVert v1 = { D3DVECTOR((p1.x * 1.5f) - 1.0f, (p1.y * 2.0f) - 1.0f, 0.5f), ARGB };
+	PosColVert v2 = { D3DVECTOR((p2.x * 1.5f) - 1.0f, (p2.y * 2.0f) - 1.0f, 0.5f), ARGB };
+	PosColVert v3 = { D3DVECTOR((p3.x * 1.5f) - 1.0f, (p3.y * 2.0f) - 1.0f, 0.5f), ARGB };
+	PosColVert v4 = { D3DVECTOR((p4.x * 1.5f) - 1.0f, (p4.y * 2.0f) - 1.0f, 0.5f), ARGB };
+
+	posColVertData.add(v1, v2, v3);
+	posColVertData.add(v2, v3, v4);
 	
-	drawCalls.emplace_back(
-		std::function<void(void)>(
-		[x1, y1, x2, y2, ARGB, side]() -> void {
-			drawLine2(x1, y1, x2, y2, ARGB, side);
-		}
-	));
 }
 
 void RectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
@@ -1174,47 +1353,46 @@ void RectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 	y /= 480.0f;
 	h /= 480.0f;
 	
-	drawCalls.emplace_back(
-		std::function<void(void)>(
-		[x, y, w, h, ARGB]() -> void {
-			drawRect2(x, y, w, h, ARGB);
-		}
-	));
+	y = 1 - y;
+
+	PosColVert v1 = { ((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f, ARGB };
+	PosColVert v2 = { ((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f, ARGB };
+	PosColVert v3 = { ((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f, ARGB };
+	PosColVert v4 = { ((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f, ARGB };
+
+	posColVertData.add(v1, v2, v3);
+	posColVertData.add(v2, v3, v4);
 }
 
 void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 	
-	x /= 480.0f;
-	w /= 480.0f;
-	y /= 480.0f;
-	h /= 480.0f;
+	//x /= 480.0f;
+	//w /= 480.0f;
+	//y /= 480.0f;
+	//h /= 480.0f;
 	
-	drawCalls.emplace_back(
-		std::function<void(void)>(
-		[x, y, w, h, ARGB]() -> void {
-			drawBorder2(x, y, w, h, ARGB);
-		}
-	));
+	// this mult occurs here because linedraw has a div. need to be sure this is ok
+	float lineWidth = 480.0f * (1.0f / vHeight);
+
+	h -= lineWidth;
+	w -= lineWidth;
+
+	LineDraw(x + lineWidth, y, x + w, y, ARGB, true);
+	LineDraw(x, y, x, y + h, ARGB, false);
+	LineDraw(x + w, y, x + w, y + h, ARGB, false);
+	LineDraw(x, y + h, x + w + lineWidth, y + h, ARGB, true);
 }
 
 void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 	
-	x /= 480.0f;
-	w /= 480.0f;
-	y /= 480.0f;
-	h /= 480.0f;	
-	
-	drawCalls.emplace_back(
-	std::function<void(void)>(
-		[x, y, w, h, ARGB]() -> void {
-			drawRect2(x, y, w, h, ARGB);
-			drawBorder2(x, y, w, h, ARGB | 0xFF000000);
-		}
-	));
+	RectDraw(x, y, w, h, ARGB);
+	BorderRectDraw(x, y, w, h, ARGB | 0xFF000000);
+
 }
 
 void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...) {
 	// i do hope that this allocing does not slow things down. i tried saving the va_args for when the actual print func was called, but it would not work
+	/*
 
 	x /= 480.0f;
 	y /= 480.0f;
@@ -1242,37 +1420,8 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 			}
 		}
 	));
+	*/
 }
-
-enum class BoxType {
-	//None,
-	Origin, // 0xFF42E5F4
-	Collision, // grey
-	Hitbox, // red
-	Hurtbox, // green
-	Clash, // yellow
-	Blue, // what is this
-	Shield, // Purple, also like,,, vaki??
-	Reflect, // 
-
-	_Count, // dont use
-};
-
-typedef struct BoxData {
-	//BoxType type = BoxType::None;
-	float x = 0.0f;
-	float y = 0.0f;
-	float w = 0.0f;
-	float h = 0.0f;
-	//int player = 0; // what player this is being drawn for. should i,,, have each projectile be a seperate color as well?
-} BoxData;
-
-typedef std::vector<BoxData> BoxList;
-
-//typedef std::vector<BoxData> BoxObjects;
-typedef std::array<BoxList, static_cast<int>(BoxType::_Count)> BoxObjects; // 2d array, index is what type of box
-
-std::vector<BoxObjects*> boxObjectList;
 
 IDirect3DPixelShader9* getOutlinePixelShader() {
 	return createPixelShader(R"(
@@ -1421,7 +1570,7 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	device->SetTexture(0, NULL);
 
 	for (int i = 0; i < boxList.size(); i++) {
-		drawRectUnscaled(boxList[i].x / 640.0f, boxList[i].y / 480.0f, boxList[i].w / 640.0f, boxList[i].h / 480.0f, ARGB);
+		_drawRectUnscaled(boxList[i].x / 640.0f, boxList[i].y / 480.0f, boxList[i].w / 640.0f, boxList[i].h / 480.0f, ARGB);
 	}
 
 	device->EndScene();
@@ -1464,7 +1613,7 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	device->SetPixelShader(pShader);
 	device->SetVertexShader(vShader);
 
-	drawTextureRect(0.0, 0.0, 1.333333, 1.0);
+	_drawTextureRect(0.0, 0.0, 1.333333, 1.0);
 
 	device->EndScene();
 
@@ -1475,9 +1624,9 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 
 void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade = true) {
 	if (shade) {
-		drawRect2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, (ARGB & 0x00FFFFFF) | 0x40000000);
+		_drawRect2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, (ARGB & 0x00FFFFFF) | 0x40000000);
 	}
-	drawBorder2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, (ARGB & 0x00FFFFFF) | 0xC0000000);
+	_drawBorder2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, (ARGB & 0x00FFFFFF) | 0xC0000000);
 }
 
 constexpr DWORD arrNormalColors[] = {
@@ -1548,12 +1697,12 @@ void HitboxBatchDrawNoBlend(const BoxObjects* b) {
 	if ((*b)[i].size() == 1) {
 		
 		if (*(uint8_t*)(dwBaseAddress + adSharedExtendOrigins)) {
-			drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
+			_drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
 		}
 		else {
-			drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			_drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
 		}
 	}
 
@@ -1587,6 +1736,7 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 		arrColors = arrNormalColors;
 
 	
+	// todo, consolidate all these calls! grouping prim draws is better.
 
 	int i;
 
@@ -1637,17 +1787,26 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
 		if (*(uint8_t*)(dwBaseAddress + adSharedExtendOrigins)) {
-			drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
+			_drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
 		} else {
-			drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			_drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
 		}
 	}
 
 }
 
 // ----- horrid Profiler, as a treat 
+
+std::vector<std::function<void(void)>> drawCalls;
+typedef struct ProfileInfo {
+	unsigned callCount = 0; // amount called this frame
+	long long currentFrameTime = 0; // time spent here this frame
+	unsigned index = 0; // having a index for each value might be overkill
+	std::array<long long, 64> times; // past log of times, to make number smoother
+} ProfileInfo;
+std::map<const char*, ProfileInfo > profilerData;
 
 class Profiler {
 public:
@@ -1788,7 +1947,7 @@ void _drawProfiler() {
 
 			//TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
 			snprintf(buffer, 1024, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-			drawText2(-0.0f, (float)profileInfoY / 480.0f, (float)12 / 480.0f, col, buffer);
+			_drawText2(-0.0f, (float)profileInfoY / 480.0f, (float)12 / 480.0f, col, buffer);
 
 			//TextDraw(200, profileInfoY, 12, 0x7FFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
 
@@ -1828,7 +1987,7 @@ void _drawLog() {
 			if (logHistory[index] == NULL) {
 				continue;
 			}
-			drawText3(1.3333f, y, (float)10 / 480.0f, 0xFF42e5f4, logHistory[index]);
+			_drawText3(1.3333f, y, (float)10 / 480.0f, 0xFF42e5f4, logHistory[index]);
 			y += (10.0f / 480.0f);
 			if (y > 1.0f) {
 				break;
@@ -1837,20 +1996,97 @@ void _drawLog() {
 	}
 }
 
+// -----
+
+void allocVertexBuffers() {
+	
+	posColVertData.alloc();
+	posTexVertData.alloc();
+	posTexColVertData.alloc();
+
+}
+
+void _drawUntextured() {
+
+	
+}
+
+void _drawTextMultiCol() {
+
+
+
+
+}
+
+void _drawTextFast() {
+
+
+
+
+}
+
 void _drawGeneralCalls() {
 	profileFunction();
-	for (const auto& drawCallInfo : drawCalls) {
-		drawCallInfo();
-	}
-}
+
+	allocVertexBuffers();
+
+	device->BeginScene();
+
+	posColVertData.draw();
+
+	_drawTextMultiCol();
+
+	_drawTextFast();
+
+	device->EndScene();
+} 
+
+// -----
 
 void __stdcall _doDrawCalls() {
 	
+	/*
+	todo, consolidate all drawprims into as little calls as possible
+	multiple for each rect with a prealloced vert buffer is good, one big call is better
+	i can either rewrite all my funcs, or go into each func, have them add tris to a list, and go from there
+	and,, ugh i hate both options.
+	also i wonder how much cpu time is taken up by stupid levels of division
+	plan: rewrite old funcs.
+	ill have,,, 
+	3 different,, actually 4 styles
 
-	//Sleep(1);
+	all fancy hitbox stuff (if enabled)
+
+	all non fancy blend hitbox colored tris, those require a 
+	all general text 
+	ill assume all text will be above rects
+	all debug text
+
+	i should put everything into one vert buffer, the format doesnt matter i set that with a seperate func
+	i understand now
 
 
-	//profileDrawCalls.clear();
+	draw order: 
+
+	BEGINSCENE 
+		vert format = (Pos, Col)
+		blended hitboxes (should i include non blended clash, etc here as well? most likely not)
+	ENDSCENE
+
+	BEGINSCENE 
+		vert format = (Pos, Col)
+		general untextured draws draws (rects, borders, lines)
+	
+		// having to use this format,,, causes issues with the size of the buffer i will be using
+		// but tbh the other call, just isnt as good except for when i need fast, bulk text (for example, the log)
+		vert format = (Pos, Col, Tex)
+		multicolor legacy text draws using the old format. 
+
+		vert format = (Pos, Tex)
+		new single color text draws via pixel shader
+	ENDSCENE
+
+	*/
 
 	profileFunction();
 
@@ -1876,37 +2112,23 @@ void __stdcall _doDrawCalls() {
 	}
 	res /= ((double)timeBufferLen);
 
-	//TextDraw(1.21, 0.0, 0.025, 0xFF00FFFF, "FPS: %5.2lf", res);
 	TextDraw(580, 0.0, 12, 0xFF00FFFF, "FPS: %5.2lf", res);
-
-	//TextDraw(1.11, 0.2, 0.050, 0xFF00FFFF, "FPS: %5.2lf", res);
 
 	startTime = endTime;
 
 	backupRenderState();
 
-	// im purposefully having these come before misc calls.
-	// and before we have an existing scene, since this has to do a lot of weird shit.
-	// hopefully it isnt too slow
-
 	_drawHitboxes();
 
-	device->BeginScene(); // should i start a new scene per call, or is one thing enough
-	// i am unsure if stack alloced or heap allocing these things is better or worse
+	//device->BeginScene();
 	
 	_drawGeneralCalls();
+	//_drawProfiler();
+	//_drawLog();
 
-	_drawProfiler();
-
-	_drawLog();
-
-	device->EndScene();
+	//device->EndScene();
 
 	restoreRenderState();
-
-	/*for (int i = 0; i < drawCalls.size(); i++) {
-		delete drawCalls[i];
-	}*/
 
 	drawCalls.clear();
 	

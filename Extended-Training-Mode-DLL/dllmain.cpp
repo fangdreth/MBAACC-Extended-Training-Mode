@@ -1368,7 +1368,7 @@ void frameStartCallback() {
 
 void frameDoneCallback()
 {
-	profileFunction();
+	//profileFunction();
 
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
 
