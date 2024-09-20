@@ -2360,7 +2360,7 @@ void initNewPauseCallback() {
 
 	//patchJump(0x00453d57, _naked_updateEffectsPause);
 	patchJump(0x00453b92, _naked_updateEffectsPauseLoop1);
-	patchJump(0x00453d60, _naked_updateEffectsPauseLoop2	);
+	patchJump(0x00453d60, _naked_updateEffectsPauseLoop2);
 
 }
 

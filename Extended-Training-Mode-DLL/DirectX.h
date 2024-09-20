@@ -341,6 +341,8 @@ void initFont() {
 
 // -----
 
+unsigned _vertexBytesTotal = 0;
+unsigned _vertexBytesTransferedThisFrame = 0;
 // this could have been done without a class. i hope the overhead isnt stupid
 template <typename T, size_t vertexCount>
 class VertexData {
@@ -357,14 +359,23 @@ public:
 				log("failed to alloc a vertex buffer!");
 				vertexBuffer = NULL;
 			}
+			_vertexBytesTotal += vertexCount * sizeof(T);
+		}
+	}
+
+	~VertexData() {
+		_vertexBytesTotal -= vertexCount * sizeof(T);
+		if (vertexBuffer != NULL) {
+			vertexBuffer->Release();
 		}
 	}
 
 	void add(T& v1, T& v2, T& v3) {
 
-		if (vertexIndex >= vertexCount) {
-			log("a vertex buffer overflowed. this is critical. increase the buffer size! current: %d", vertexCount);
-			exit(1);
+		if (vertexIndex >= vertexCount) {	
+			//log("a vertex buffer overflowed. this is critical. increase the buffer size! current: %d fmt: %08X", vertexCount, vertexFormat);
+			// this log call was getting called to often, and would fuck things up
+			return;
 		}
 
 		vertexData[vertexIndex++] = v1;
@@ -391,6 +402,8 @@ public:
 		// ideally i should be scaling the vertices in here, but is it worth it?
 
 		VOID* pVoid;
+
+		_vertexBytesTransferedThisFrame += vertexIndex * sizeof(T);
 
 		vertexBuffer->Lock(0, vertexIndex * sizeof(T), (void**)&pVoid, 0);
 		memcpy(pVoid, vertexData, vertexIndex * sizeof(T));
@@ -937,6 +950,85 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 
 }
 
+void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format, ...) {
+
+	if (format == NULL) {
+		return;
+	}
+
+
+	x /= 480.0f;
+	y /= 480.0f;
+	size /= 480.0f;
+
+	static char buffer[1024];
+
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, 1024, format, args);
+	va_end(args);
+
+
+	DWORD TempARGB = ARGB;
+
+	if (fontTexture == NULL) {
+		log("fontTexture was null, im not drawing");
+		return;
+	}
+
+	DWORD antiAliasBackup;
+
+	float origX = x;
+	float origY = y;
+
+	float charWidthOffset = (fontRatio * size) * 1.01f; // this 1.01 might cause issues when aligning stuff, not sure
+	float charHeightOffset = size;
+
+	float w = charWidthOffset;
+	float h = charHeightOffset;
+
+	char* str = buffer;
+
+	float maxX = 1.0f + ((wWidth - (wHeight * 4.0f / 3.0f)) / 2.0f) / wWidth;
+
+	while (*str) {
+
+		if (*str == ' ') {
+			x += charWidthOffset;
+			str++;
+			continue;
+		}
+
+		y = 1 - origY;
+
+		const float charWidth = ((float)(fontSize >> 1)) / (float)fontTexWidth;
+		const float charHeight = ((float)fontSize) / (float)fontTexWidth;
+
+		D3DXVECTOR2 charTopLeft(charWidth * (*str & 0xF), charHeight * ((*str - 0x20) / 0x10));
+
+		D3DXVECTOR2 charW(charWidth, 0.0);
+		D3DXVECTOR2 charH(0.0, charHeight);
+
+		PosTexVert v1{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f),  charTopLeft };
+		PosTexVert v2{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f),  charTopLeft + charW };
+		PosTexVert v3{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f),  charTopLeft + charH };
+		PosTexVert v4{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f),  charTopLeft + charW + charH };
+
+		scaleVertex(v1.position);
+		scaleVertex(v2.position);
+		scaleVertex(v3.position);
+		scaleVertex(v4.position);
+
+		if (v1.position.x < maxX) {
+			posTexVertData.add(v1, v2, v3);
+			posTexVertData.add(v2, v3, v4);
+		}
+
+		x += charWidthOffset;
+		str++;
+	}
+}
+
 IDirect3DPixelShader9* getOutlinePixelShader() {
 	return createPixelShader(R"(
 			sampler2D textureSampler : register(s0);
@@ -1463,7 +1555,7 @@ void DrawHitboxes(BoxObjects* b) { // didnt need to be a pointer, but i would ra
 
 //std::deque<char*> logHistory;
 //std::vector<char*> logHistory;
-const int logHistorySize = 64;
+const int logHistorySize = 32;
 char* logHistory[logHistorySize] = { NULL };
 int logHistoryIndex = 0;
 void DrawLog(char* s) {
@@ -1560,8 +1652,6 @@ void _drawProfiler() {
 
 void _drawLog() {
 
-	profileFunction();
-
 	static bool drawDebug = false;
 	static KeyState F11Key(VK_F11);
 
@@ -1569,21 +1659,63 @@ void _drawLog() {
 		drawDebug = !drawDebug;
 	}
 
-	if (drawDebug) {
-		float y = 0.0f;
+	if (!drawDebug) {
+		return;
+	}
+
+	float y = 0.0f;
 		
-		for (int i = 0; i < logHistorySize; i++) {
-			int index = (i + logHistoryIndex) % logHistorySize;
-			if (logHistory[index] == NULL) {
-				continue;
-			}
-			TextDraw(640.0f, y, 10.0f, 0xFF42e5f4, logHistory[index]);
-			y += 10.0f;
-			if (y > 480.0f) {
-				break;
-			}
+	for (int i = 0; i < logHistorySize; i++) {
+		int index = (i + logHistoryIndex) % logHistorySize;
+		if (logHistory[index] == NULL) {
+			continue;
+		}
+		TextDrawSimple(640.0f, y, 10.0f, 0xFF42e5f4, logHistory[index]);
+		y += 10.0f;
+		if (y > 480.0f) {
+			break;
 		}
 	}
+	
+}
+
+void _drawMiscInfo() {
+
+	static bool drawDebug = false;
+	static KeyState F12Key(VK_F12);
+
+	if (F12Key.keyDown()) {
+		drawDebug = !drawDebug;
+	}
+
+	if (!drawDebug) {
+		return;
+	}
+
+	// reversing these transforms as i am doing feels gross.
+	float x = -((wWidth - (wHeight * 4.0f / 3.0f)) / 2.0f) / wWidth;
+
+	if (wWidth < (wHeight * 4.0f / 3.0f)) {
+		x = 0.0f;
+	}
+
+	x *= (wWidth / (wHeight * 4.0f / 3.0f));
+	x *= 640.0f;
+
+	float y = 0.0f;
+
+	unsigned availMem = device->GetAvailableTextureMem();
+
+	TextDrawSimple(x, y, 10.0f, 0xFF42e5f4, "VRAM AVAIL: %.2f GB", ((float)availMem) / ((float)(1 << 30)));
+	y += 10.0f;
+
+	TextDrawSimple(x, y, 10.0f, 0xFF42e5f4, "vertex bytes total: %.2f KB", ((float)_vertexBytesTotal) / ((float)(1 << 10)));
+	y += 10.0f;
+
+	TextDrawSimple(x, y, 10.0f, 0xFF42e5f4, "vertex bytes transfered: %.2f KB", ((float)_vertexBytesTransferedThisFrame) / ((float)(1 << 10)));
+	y += 10.0f;
+	_vertexBytesTransferedThisFrame = 0;
+	
 }
 
 // -----
@@ -1688,6 +1820,7 @@ void __stdcall _doDrawCalls() {
 	// predraw stuff goes here.
 	_drawProfiler();
 	_drawLog();
+	_drawMiscInfo();
 
 	// -- ACTUAL RENDERING --
 	backupRenderState();
@@ -1957,5 +2090,6 @@ bool HookDirectX() {
 	_naked_InitDirectXHooks();
 
 	log("directX hooked");
+	log("<3");
 	return true;
 }
