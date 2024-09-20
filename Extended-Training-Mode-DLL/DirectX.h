@@ -1035,8 +1035,9 @@ IDirect3DVertexShader9* getOutlineVertexShader() {
 
 IDirect3DPixelShader9* getColorPixelShader() {
 	return createPixelShader(R"(
-			float4 main(float2 texCoordIn : TEXCOORD0) : COLOR {
-				return float4(1.0, 0.0, 0.0, 1.0);
+			float4 shadeColor : register(c218);
+			float4 main() : COLOR {
+				return shadeColor;
 			}
 	)");
 }
@@ -1098,8 +1099,8 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 		return;
 	}
 
-	//static VertexData<PosVert, 3 * 512> vertData(D3DFVF_XYZ);
-	static VertexData<PosColVert, 3 * 2 * 256> vertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	static VertexData<PosVert, 3 * 2 * 256> vertData(D3DFVF_XYZ);
+	//static VertexData<PosColVert, 3 * 2 * 256> vertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 	vertData.alloc();
 
 	IDirect3DSurface9* prevRenderTarget = NULL;
@@ -1133,10 +1134,10 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 		float w = boxList[i].w / 640.0f;
 		float h = boxList[i].h / 480.0f;
 
-		PosColVert v1 = { ((x + 0) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f , ARGB };
-		PosColVert v2 = { ((x + w) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f , ARGB };
-		PosColVert v3 = { ((x + 0) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f , ARGB };
-		PosColVert v4 = { ((x + w) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f , ARGB };
+		PosVert v1 = { ((x + 0) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f};
+		PosVert v2 = { ((x + w) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f};
+		PosVert v3 = { ((x + 0) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f};
+		PosVert v4 = { ((x + w) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f};
 
 		vertData.add(v1, v2, v3);
 		vertData.add(v2, v3, v4);
@@ -1144,9 +1145,16 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 
 	device->BeginScene();
 	device->SetTexture(0, NULL);
+	device->SetPixelShader(pColorShader);
+	device->SetVertexShader(vColorShader);
 
-	//device->SetPixelShader(pColorShader);
-	//device->SetVertexShader(vColorShader);
+	D3DXVECTOR4 rectColor;
+	rectColor.x = (float)((ARGB & 0x00FF0000) >> 16) / 255.0f;
+	rectColor.y = (float)((ARGB & 0x0000FF00) >> 8) / 255.0f;
+	rectColor.z = (float)((ARGB & 0x000000FF) >> 0) / 255.0f;
+	rectColor.w = 1.0f;
+
+	device->SetPixelShaderConstantF(218, (float*)&rectColor, 1);
 
 	vertData.draw();
 
@@ -1173,7 +1181,6 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 
 	if (pOutlineShader == NULL) {
 		pOutlineShader = getOutlinePixelShader();
-		//D3DXVECTOR4 textureSize((float)width, (float)height, 0.0, 0.0);
 		D3DXVECTOR4 textureSize((float)(height * 4.0f / 3.0f), (float)height, 0.0, 0.0);
 		device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
 	}
