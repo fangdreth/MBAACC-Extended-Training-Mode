@@ -268,6 +268,7 @@ void _initFontFirstLoad() {
 	}
 
 	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	//device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0x00, 0xFF, 0xFF, 0xFF), 1.0f, 0);
 
 	hr = device->BeginScene();
 	if (SUCCEEDED(hr)) {
@@ -286,7 +287,7 @@ void _initFontFirstLoad() {
 	oldRenderTarget->Release();
 	surface->Release();
 
-	hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
+	//hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
 	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG	, texture, NULL);
 	texture->Release();
 	font->Release();
@@ -501,6 +502,9 @@ DWORD _D3DRS_SEPARATEALPHABLENDENABLE;
 DWORD _D3DRS_SRCBLENDALPHA;
 DWORD _D3DRS_DESTBLENDALPHA;
 DWORD _D3DRS_MULTISAMPLEANTIALIAS;
+DWORD _D3DRS_ALPHATESTENABLE;
+DWORD _D3DRS_ALPHAREF;
+DWORD _D3DRS_ALPHAFUNC;
 
 float vWidth = 640;
 float vHeight = 480;
@@ -540,6 +544,10 @@ void __stdcall backupRenderState() {
 
 	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &_D3DRS_MULTISAMPLEANTIALIAS);
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
+
+	device->GetRenderState(D3DRS_ALPHATESTENABLE, &_D3DRS_ALPHATESTENABLE);
+	device->GetRenderState(D3DRS_ALPHAREF, &_D3DRS_ALPHAREF);
+	device->GetRenderState(D3DRS_ALPHAFUNC, &_D3DRS_ALPHAFUNC);
 
 	// 1 1 5 6 1 5 2
 
@@ -695,6 +703,10 @@ void __stdcall restoreRenderState() {
 	device->SetRenderState(D3DRS_DESTBLENDALPHA, _D3DRS_DESTBLENDALPHA);
 
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, _D3DRS_MULTISAMPLEANTIALIAS);
+
+	device->SetRenderState(D3DRS_ALPHATESTENABLE, _D3DRS_ALPHATESTENABLE);
+	device->SetRenderState(D3DRS_ALPHAREF, _D3DRS_ALPHAREF);
+	device->SetRenderState(D3DRS_ALPHAFUNC, _D3DRS_ALPHAFUNC);
 
 }
 
@@ -1736,8 +1748,21 @@ void _drawGeneralCalls() {
 	device->BeginScene();
 
 	posColVertData.draw();
-	posTexVertData.draw();
 	posColTexVertData.draw();
+
+	
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTCOLOR);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+	
+	//device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
+	//device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
+	
+	device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+	device->SetRenderState(D3DRS_ALPHAREF, 0);
+	device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);
+
+	posTexVertData.draw();
+	
 
 	device->EndScene();
 } 

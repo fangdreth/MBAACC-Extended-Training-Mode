@@ -407,7 +407,7 @@ int main(int argc, char* argv[])
             long long totalTime = getMicroSec() - start;
 
             if (totalTime > 8000) {
-                //netlog("console framedisplay took %3lld.%03lld ms", totalTime / 1000, totalTime % 1000);
+                netlog("console framedisplay took %3lld.%03lld ms", totalTime / 1000, totalTime % 1000);
             }
 
 
