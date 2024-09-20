@@ -767,9 +767,10 @@ void UpdateBars(Player& P, Player& Assist)
 	std::string sRightFont = FD_CLEAR;
 	std::string sRightValue = " ";
 	bool bIsButtonPressed = P.cButtonInput != 0 || P.cMacroInput != 0;
+	bool bHasInvuln = P.cAnimation_BoxIndex <= 1 || P.sStrikeInvuln != 0 || P.cState_Invuln == 3;
 
 	//Bar 1 - General action information
-	sBarValue = std::format("{:2}", P.nInactionableFrames % 100);
+	sBarValue = P.nInactionableFrames >= 100 ? std::format("{:02}", P.nInactionableFrames % 100) : std::format("{:2}", P.nInactionableFrames);
 	if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0) //Screen is frozen
 	{
 		sFont = FD_FREEZE;
@@ -786,17 +787,6 @@ void UpdateBars(Player& P, Player& Assist)
 	else if (P.dwCondition1_ConditionType == 51) //Shield
 	{
 		sFont = FD_SHIELD;
-	}
-	else if (P.cAnimation_BoxIndex <= 1 || P.sStrikeInvuln != 0 || P.cState_Invuln == 3) //Various forms of invuln
-	{
-		if (P.nInactionableFrames != 0) //Doing something with limited actionability
-		{
-			sFont = FD_INACTIONABLE_INVULN;
-		}
-		else //Fully actionable
-		{
-			sFont = FD_ACTIONABLE_INVULN;
-		}
 	}
 	else if (P.cHitstop != 0) //in hitstop
 	{
@@ -828,6 +818,10 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			sFont = FD_BLOCKSTUN;
 		}
+		else if (bHasInvuln)
+		{
+			sFont = FD_INACTIONABLE_INVULN;
+		}
 		else
 		{
 			sFont = FD_INACTIONABLE;
@@ -844,18 +838,23 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			sFont = FD_NEUTRAL;
 		}
-		else if (bDoAdvantage) //Has advantage
+		else if (bHasInvuln)
 		{
-			sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
-			if (P.nAdvantageCounter != 0)
-			{
-				sFont = FD_ADVANTAGE;
-			}
+			sFont = FD_ACTIONABLE_INVULN;
 		}
 		else
 		{
 			sFont = FD_ACTIONABLE;
-		}	
+		}
+		if (bDoAdvantage) //Has advantage
+		{
+			sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
+			sFont = FD_ADVANTAGE;
+			if (bHasInvuln)
+			{
+				sFont = FD_ACTIONABLE_INVULN;
+			}
+		}
 	}
 
 	P.sBar1[nBarCounter % BAR_MEMORY_SIZE][1] = sFont;
@@ -885,6 +884,7 @@ void UpdateBars(Player& P, Player& Assist)
 	}
 	else if (P.cState_Stance == 1)
 	{
+		sFont = FD_CLEAR;
 		sBarValue = " ^";
 	}
 	else
@@ -1306,34 +1306,13 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 	int nXPixelDistance = (int)abs(floor(P1.nXPosition / 128.0) - floor(P2.nXPosition / 128.0));
 	int nYPixelDistance = (int)abs(floor(P1.nYPosition / 128.0) - floor(P2.nYPosition / 128.0));
 
-	char caSimpleInfo[64] = {};
 	if (bSimpleFrameInfo)
 	{
-		/*
-		snprintf(caSimpleInfo, 64, "\x1b[0m" "Total %3i / Advantage %3i / Distance %3i" "\n",
-			P1.nInactionableMemory, nPlayerAdvantage, nXPixelDistance);
-		*/
-
 		writeBuffer("\x1b[0m" "Total %3i / Advantage %3i / Distance %3i" "\n", P1.nInactionableMemory, nPlayerAdvantage, nXPixelDistance);
-
 	}
 
-	char caAdvancedInfo[384] = {};
 	if (!bSimpleFrameInfo)
 	{
-		/*
-		snprintf(caAdvancedInfo, 384, "\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
-			"x-spd %5i" "\x1b[0m" "x-acc %5i" "\x1b[7m" "y-spd %5i" "\x1b[0m" "y-acc %5i" "\x1b[7m" "hp %5i" "\x1b[0m" "mc %5i" "\x1b[0m\x1b[K\n"
-			"\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
-			"x-spd %5i" "\x1b[0m" "x-acc %5i" "\x1b[7m" "y-spd %5i" "\x1b[0m" "y-acc %5i" "\x1b[7m" "hp %5i" "\x1b[0m" "mc %5i" "\x1b[0m\x1b[K\n"
-			"\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "adv %3i" "\x1b[K\n",
-			P1.nXPosition, P1.nYPosition, nP1XPixelPosition, nP1YPixelPosition, P1.nPattern, P1.nState,
-			P1.nXSpeed + P1.nMomentum, P1.sXAcceleration, P1.nYSpeed, P1.sYAcceleration, P1.nHealth, P1.nMagicCircuit,
-			P2.nXPosition, P2.nYPosition, nP2XPixelPosition, nP2YPixelPosition, P2.nPattern, P2.nState,
-			P2.nXSpeed + P2.nMomentum, P2.sXAcceleration, P2.nYSpeed, P2.sYAcceleration, P2.nHealth, P2.nMagicCircuit,
-			nXDistance, nYDistance, nXPixelDistance, nYPixelDistance, nPlayerAdvantage);
-		*/
-
 		writeBuffer("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
 			"x-spd %5i" "\x1b[0m" "x-acc %5i" "\x1b[7m" "y-spd %5i" "\x1b[0m" "y-acc %5i" "\x1b[7m" "hp %5i" "\x1b[0m" "mc %5i" "\x1b[0m\x1b[K\n"
 			"\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
@@ -1346,36 +1325,20 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 			nXDistance, nYDistance, nXPixelDistance, nYPixelDistance, nPlayerAdvantage);
 	}
 
-	//std::cout << caSimpleInfo << caAdvancedInfo << sColumnHeader << P1.sBarString1 << P1.sBarString2 << P1.sBarString3 << P2.sBarString1 << P2.sBarString2 << P2.sBarString3;
-
 	writeBuffer("%s%s%s%s%s%s%s", sColumnHeader.c_str(), P1.sBarString1.c_str(), P1.sBarString2.c_str(), P1.sBarString3.c_str(), P2.sBarString1.c_str(), P2.sBarString2.c_str(), P2.sBarString3.c_str());
 
-	char caAdvancedInfo2[256] = {}; // does this get printed anywhere?
 	if (!bSimpleFrameInfo)
 	{
-		/*
-		snprintf(caAdvancedInfo2, 256, "\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i" "\x1b[0m\x1b[K\n"
-			"\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i"  "\x1b[0m\x1b[K\n",
-			cP1Freeze, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 10, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality, P1.nInactionableMemory % 1000,
-			cP2Freeze, cP2CounterHit, P4.nPattern, P4.nState, nP2GravityHits, nP2Gravity % 10, P2.sUntechPenalty % 10, P2.nRedHealth, nP2GuardGauge, P2.fGuardQuality, P2.nInactionableMemory % 1000);
-		*/
-
-		
 		writeBuffer("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i" "\x1b[0m\x1b[K\n"
 			"\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i"  "\x1b[0m\x1b[K\n",
 			cP1Freeze, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 10, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality, P1.nInactionableMemory % 1000,
 			cP2Freeze, cP2CounterHit, P4.nPattern, P4.nState, nP2GravityHits, nP2Gravity % 10, P2.sUntechPenalty % 10, P2.nRedHealth, nP2GuardGauge, P2.fGuardQuality, P2.nInactionableMemory % 1000);
-		
 	}
 
 	if (bDisplayInputs)
 	{
-		//std::cout << sColumnHeader << P1.sBarString4 << P1.sBarString5 << P2.sBarString4 << P2.sBarString5;
 		writeBuffer("%s%s%s%s%s", sColumnHeader.c_str(), P1.sBarString4.c_str(), P1.sBarString5.c_str(), P2.sBarString4.c_str(), P2.sBarString5.c_str());
 	}
-
-	//std::cout << "\x1b[J";
-	//writeBuffer("\x1b[J");
 
 	displayBuffer();
 }
@@ -1397,7 +1360,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 	nBarDisplayRange = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left) / 2;
 	if (nBarDisplayRange != nLastBarDisplayRange)
 	{
-		system("cls");
+		std::cout << "\x1b[J";
 	}
 
 	UpdateGlobals(hMBAAHandle);
@@ -1484,7 +1447,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 
 	cLastDisplayOptions = cDisplayOptions;
 	cDisplayOptions = 8 * bSimpleFrameInfo + 4 * bDisplayFreeze + 2 * bDisplayInputs + 1 * bPrintColorGuide;
-	if (cDisplayOptions != cLastDisplayOptions || nBarScrolling != nLastBarScrolling)
+	if (cDisplayOptions != cLastDisplayOptions || nBarScrolling != nLastBarScrolling || nBarDisplayRange != nLastBarDisplayRange)
 	{
 		if (bPrintColorGuide)
 		{
