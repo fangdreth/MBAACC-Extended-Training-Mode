@@ -342,11 +342,9 @@ void initFont() {
 // -----
 
 // this could have been done without a class. i hope the overhead isnt stupid
-template <typename T>
+template <typename T, size_t vertexCount>
 class VertexData {
 public:
-
-	const static DWORD vertexCount = 3 * 2048; // is this overkill?
 
 	VertexData(DWORD vertexFormat_, IDirect3DTexture9** texture_ = NULL) {
 		vertexFormat = vertexFormat_;
@@ -378,7 +376,8 @@ public:
 	void draw() {
 
 		if (vertexBuffer == NULL) {
-			return;
+			log("a vertex data buffer was null? how.");
+			exit(1);
 		}
 
 		if (vertexIndex == 0) {
@@ -416,6 +415,10 @@ public:
 
 };
 
+typedef struct PosVert {
+	D3DVECTOR position;
+} PosVert;
+
 typedef struct PosColVert {
 	D3DVECTOR position;
 	D3DCOLOR color;
@@ -432,9 +435,9 @@ typedef struct PosColTexVert {
 	D3DXVECTOR2 texCoord;
 } PosColTexVert;
 
-VertexData<PosColVert> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-VertexData<PosTexVert> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
-VertexData<PosColTexVert> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTexture);
+VertexData<PosColVert, 3 * 2048> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
+VertexData<PosColTexVert, 3 * 2048> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTexture);
 
 // -----
 
@@ -484,6 +487,7 @@ DWORD _D3DRS_DESTBLEND;
 DWORD _D3DRS_SEPARATEALPHABLENDENABLE;
 DWORD _D3DRS_SRCBLENDALPHA;
 DWORD _D3DRS_DESTBLENDALPHA;
+DWORD _D3DRS_MULTISAMPLEANTIALIAS;
 
 float vWidth = 640;
 float vHeight = 480;
@@ -520,6 +524,9 @@ void __stdcall backupRenderState() {
 	device->GetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, &_D3DRS_SEPARATEALPHABLENDENABLE);
 	device->GetRenderState(D3DRS_SRCBLENDALPHA, &_D3DRS_SRCBLENDALPHA);
 	device->GetRenderState(D3DRS_DESTBLENDALPHA, &_D3DRS_DESTBLENDALPHA);
+
+	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &_D3DRS_MULTISAMPLEANTIALIAS);
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
 
 	// 1 1 5 6 1 5 2
 
@@ -673,6 +680,8 @@ void __stdcall restoreRenderState() {
 	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, _D3DRS_SEPARATEALPHABLENDENABLE);
 	device->SetRenderState(D3DRS_SRCBLENDALPHA, _D3DRS_SRCBLENDALPHA);
 	device->SetRenderState(D3DRS_DESTBLENDALPHA, _D3DRS_DESTBLENDALPHA);
+
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, _D3DRS_MULTISAMPLEANTIALIAS);
 
 }
 
@@ -1054,9 +1063,9 @@ void __stdcall _drawText2(float x, float y, float size, DWORD ARGB, const char* 
 		return;
 	}
 
-	DWORD antiAliasBackup;
-	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
-	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
+	//DWORD antiAliasBackup;
+	//device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
+	//device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
 
 	float origX = x;
 	float origY = y;
@@ -1147,7 +1156,7 @@ void __stdcall _drawText2(float x, float y, float size, DWORD ARGB, const char* 
 	*/
 
 	//device->SetPixelShader(NULL);
-	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
+	//device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
 	
 }
 
@@ -1218,9 +1227,9 @@ void __stdcall _drawText3(float x, float y, float size, DWORD ARGB, const char* 
 	float h = charHeightOffset;
 
 	DWORD antiAliasBackup;
-	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
-	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
-	device->SetTexture(0, fontTexture);
+	//device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
+	//device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
+	//device->SetTexture(0, fontTexture);
 
 	unsigned vBufferIndex = 0;
 
@@ -1279,7 +1288,7 @@ void __stdcall _drawText3(float x, float y, float size, DWORD ARGB, const char* 
 
 
 	device->SetTexture(0, NULL);
-	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
+	//device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
 }
 
 // -----
@@ -1430,8 +1439,8 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	}
 
 	DWORD antiAliasBackup;
-	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
-	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
+	//device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
+	//device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
 
 	float origX = x;
 	float origY = y;
@@ -1443,7 +1452,7 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	float w = charWidthOffset;
 	float h = charHeightOffset;
 
-	device->SetTexture(0, fontTexture);
+	//device->SetTexture(0, fontTexture);
 
 	char* str = buffer;
 
@@ -1528,9 +1537,9 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 		str++;
 	}
 
-	device->SetTexture(0, NULL);
-
-	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
+	//device->SetTexture(0, NULL);
+	
+	//device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
 
 }
 
@@ -1630,6 +1639,33 @@ IDirect3DVertexShader9* getOutlineVertexShader() {
 		)");
 }
 
+IDirect3DPixelShader9* getColorPixelShader() {
+	return createPixelShader(R"(
+			float4 main(float2 texCoordIn : TEXCOORD0) : COLOR {
+				return float4(1.0, 0.0, 0.0, 1.0);
+			}
+	)");
+}
+
+IDirect3DVertexShader9* getColorVertexShader() {
+	return createVertexShader(R"(
+			struct VS_INPUT {
+				float4 position : POSITION;
+			};
+    
+			struct VS_OUTPUT {
+				float4 position : POSITION;
+			};
+    
+			VS_OUTPUT main(VS_INPUT input) {
+				VS_OUTPUT output;
+				output.position = input.position;
+				return output;
+			}
+
+		)");
+}
+
 IDirect3DTexture9* renderTargetTex = NULL;
 void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	
@@ -1668,6 +1704,10 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 		return;
 	}
 
+	//static VertexData<PosVert, 3 * 512> vertData(D3DFVF_XYZ);
+	static VertexData<PosColVert, 3 * 2 * 256> vertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	vertData.alloc();
+
 	IDirect3DSurface9* prevRenderTarget = NULL;
 	device->GetRenderTarget(0, &prevRenderTarget);
 
@@ -1677,12 +1717,44 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	// might need to do this?
 	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
+	static IDirect3DPixelShader9* pColorShader = NULL; 
+	static IDirect3DVertexShader9* vColorShader = NULL;
+
+	if (pColorShader == NULL) {
+		pColorShader = getColorPixelShader();
+	}
+
+	if (vColorShader == NULL) {
+		vColorShader = getColorVertexShader();
+	}
+
+	// this can and maybe should be done with a pixel shader
+
+	for (int i = 0; i < boxList.size(); i++) {
+		//_drawRectUnscaled(boxList[i].x / 640.0f, boxList[i].y / 480.0f, boxList[i].w / 640.0f, boxList[i].h / 480.0f, ARGB);
+
+		float x = boxList[i].x / 640.0f;
+		float y = 1 - (boxList[i].y / 480.0f);
+
+		float w = boxList[i].w / 640.0f;
+		float h = boxList[i].h / 480.0f;
+
+		PosColVert v1 = { ((x + 0) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f , ARGB };
+		PosColVert v2 = { ((x + w) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f , ARGB };
+		PosColVert v3 = { ((x + 0) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f , ARGB };
+		PosColVert v4 = { ((x + w) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f , ARGB };
+
+		vertData.add(v1, v2, v3);
+		vertData.add(v2, v3, v4);
+	}
+
 	device->BeginScene();
 	device->SetTexture(0, NULL);
 
-	for (int i = 0; i < boxList.size(); i++) {
-		_drawRectUnscaled(boxList[i].x / 640.0f, boxList[i].y / 480.0f, boxList[i].w / 640.0f, boxList[i].h / 480.0f, ARGB);
-	}
+	//device->SetPixelShader(pColorShader);
+	//device->SetVertexShader(vColorShader);
+
+	vertData.draw();
 
 	device->EndScene();
 
@@ -1702,29 +1774,71 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 
 	// -----
 
-	static IDirect3DPixelShader9* pShader = NULL; // edge shader
-	static IDirect3DVertexShader9* vShader = NULL;
+	static IDirect3DPixelShader9* pOutlineShader = NULL; // edge shader
+	static IDirect3DVertexShader9* vOutlineShader = NULL;
 
-	if (pShader == NULL) {
-		pShader = getOutlinePixelShader();
+	if (pOutlineShader == NULL) {
+		pOutlineShader = getOutlinePixelShader();
 		//D3DXVECTOR4 textureSize((float)width, (float)height, 0.0, 0.0);
 		D3DXVECTOR4 textureSize((float)(height * 4.0f / 3.0f), (float)height, 0.0, 0.0);
 		device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
 	}
 
-	if (vShader == NULL) {
-		vShader = getOutlineVertexShader();
+	if (vOutlineShader == NULL) {
+		vOutlineShader = getOutlineVertexShader();
 	}
 
 	device->BeginScene();
 
 	// actually go and render what we just made to a real rendertarget
+	// depressingly expensive.
 
 	device->SetTexture(0, renderTargetTex);
-	device->SetPixelShader(pShader);
-	device->SetVertexShader(vShader);
+	device->SetPixelShader(pOutlineShader);
+	device->SetVertexShader(vOutlineShader);
 
-	_drawTextureRect(0.0, 0.0, 1.333333, 1.0);
+	// actually draw that texture to the screen now
+
+	const DWORD vertFormat = (D3DFVF_XYZ | D3DFVF_TEX1);
+
+	struct CUSTOMVERTEX {
+		D3DVECTOR position;
+		D3DXVECTOR2 texCoord;
+	};
+
+	constexpr float whatIsThis = 0.5f; // what is this?
+
+		
+	CUSTOMVERTEX vertices[] = { 
+		{ D3DVECTOR(-1.0f, 1.0f, 0.5f), D3DXVECTOR2(0.0f, 0.0f) },
+		{ D3DVECTOR(1.0f, 1.0f, 0.5f), D3DXVECTOR2(1.0f, 0.0f) },
+		{ D3DVECTOR(-1.0f, -1.0f, 0.5f), D3DXVECTOR2(0.0f, 1.0f) },
+		{ D3DVECTOR(1.0f, -1.0f, 0.5f), D3DXVECTOR2(1.0f, 1.0f) }
+	};
+
+	scaleVertex(vertices[0].position);
+	scaleVertex(vertices[1].position);
+	scaleVertex(vertices[2].position);
+	scaleVertex(vertices[3].position);
+
+	static LPDIRECT3DVERTEXBUFFER9 v_buffer = NULL; // not reallocing this buffer constantly was HUGE for performance!
+
+	if (v_buffer == NULL) {
+		if (FAILED(device->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
+			v_buffer = NULL;
+			return;
+		}
+	}
+
+	VOID* pVoid;
+
+	v_buffer->Lock(0, 0, (void**)&pVoid, 0);
+	memcpy(pVoid, vertices, sizeof(vertices));
+	v_buffer->Unlock();
+
+	device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+	device->SetFVF(vertFormat);
+	device->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
 
 	device->EndScene();
 
@@ -1735,14 +1849,14 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 
 void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade = true) {
 	if (shade) {
-		_drawRect2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, (ARGB & 0x00FFFFFF) | 0x40000000);
+		RectDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0x40000000);
 	}
-	_drawBorder2(box.x / 480.0f, box.y / 480.0f, box.w / 480.0f, box.h / 480.0f, (ARGB & 0x00FFFFFF) | 0xC0000000);
+	BorderDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0xC0000000);
 }
 
 constexpr DWORD arrNormalColors[] = {
 	0xFF42E5F4, // origin
-	0xFFD0D0D0, // collision
+	0xA0D0D0D0, // collision
 	0xFFFF0000, // hitbox
 	0xFF00FF00, // hurtbox
 	0xFFFFFF00, // clash
@@ -1752,7 +1866,7 @@ constexpr DWORD arrNormalColors[] = {
 
 constexpr DWORD arrColorBlindColors[] = {
 	0xFF42E5F4, // origin
-	0xFFD0D0D0, // collision
+	0xA0D0D0D0, // collision
 	0xFFFF0000, // hitbox
 	0xFF1403ff, // hurtbox
 	0xFFFFFF00, // clash
@@ -1808,12 +1922,16 @@ void HitboxBatchDrawNoBlend(const BoxObjects* b) {
 	if ((*b)[i].size() == 1) {
 		
 		if (*(uint8_t*)(dwBaseAddress + adSharedExtendOrigins)) {
-			_drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
+			//_drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			//_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
+			LineDraw(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+			LineDraw(((*b)[i][0].x + (*b)[i][0].w / 2.0f) , 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
 		}
 		else {
-			_drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			//_drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			//_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			LineDraw((*b)[i][0].x, ((*b)[i][0].y + (*b)[i][0].h) , ((*b)[i][0].x + (*b)[i][0].w) , ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+			LineDraw(((*b)[i][0].x + (*b)[i][0].w / 2.0f), (*b)[i][0].y , ((*b)[i][0].x + (*b)[i][0].w / 2.0f) , ((*b)[i][0].y + (*b)[i][0].h) , arrColors[i]);
 		}
 	}
 
@@ -1862,24 +1980,6 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 	i = static_cast<int>(BoxType::Hitbox);
 	drawBatchHitboxes((*b)[i], arrColors[i]);
 
-	/*
-
-	check the switch statement on switch (index) in drawObject
-	we have guarentees of:
-	1 collision box
-	1 origin (well its not a box rlly)
-	1 clash
-
-	1?2? shield/reflector
-	and then well,,i need to look more into this
-
-	also, what would the best way to draw collision be, should i color it in?
-	i should probs make a texture for it actually
-
-	for now, im going to assume we only MAX have one blue/clash/shield/collision hitbox per obj
-
-	*/
-
 	i = static_cast<int>(BoxType::Blue);
 	if ((*b)[i].size() == 1) {
 		drawSingleHitbox((*b)[i][0], arrColors[i]);
@@ -1898,11 +1998,15 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
 		if (*(uint8_t*)(dwBaseAddress + adSharedExtendOrigins)) {
-			_drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
+			//_drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			//_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
+			LineDraw(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+			LineDraw(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
 		} else {
-			_drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			//_drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			//_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
+			LineDraw((*b)[i][0].x, ((*b)[i][0].y + (*b)[i][0].h), ((*b)[i][0].x + (*b)[i][0].w), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+			LineDraw(((*b)[i][0].x + (*b)[i][0].w / 2.0f), (*b)[i][0].y, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
 		}
 	}
 
@@ -1981,30 +2085,6 @@ void _drawHitboxes() {
 	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
 
-
-	constexpr DWORD colors[] = {
-		0xFF111111, // None
-		0xFF42E5F4, // origin
-		0xFFD0D0D0, // collision
-		0xFFFF0000, // hitbox
-		0xFF00FF00, // hurtbox
-		0xFFFF0000, // clash
-		0xFF0000FF, // blue
-		0xFFFF00FF // shield
-	};
-	/*constexpr DWORD colors[] = {
-		0xFF111111, // None
-		0xFF42E5F4, // origin
-		0xFFD0D0D0, // collision
-		0xFFff0000, // hitbox
-		0xFF0700f2, // hurtbox
-		0xFFfff000, // clash
-		0xFF1f3a42, // blue
-		0xFFb9e4b6 // shield
-	};*/
-
-	
-	
 	if (*(uint8_t*)(dwBaseAddress + adSharedHitboxStyle)) {
 		for (int i = 0; i < boxObjectList.size(); i++) {
 			HitboxBatchDrawBlend(boxObjectList[i]);
@@ -2016,8 +2096,6 @@ void _drawHitboxes() {
 			delete boxObjectList[i];
 		}
 	}
-
-	
 
 	boxObjectList.clear();
 
@@ -2121,8 +2199,6 @@ void _drawGeneralCalls() {
 	profileFunction();
 
 	allocVertexBuffers();
-
-	BorderRectDraw(320.0f, 240.0f, 100.0f, 100.0f, 0x80FF0000);
 
 	device->BeginScene();
 
