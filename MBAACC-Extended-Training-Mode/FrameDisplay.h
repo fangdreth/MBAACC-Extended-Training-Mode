@@ -23,6 +23,7 @@ char cDummyState = 0; // Same as Common.h "Enemy Status" except -1 for recording
 
 int nBarCounter = 0;
 short nBarScrolling = 0;
+short nLastBarScrolling = 0;
 int nBarIntervalCounter = 0;
 int nBarIntervalMax = 0;
 int nBarDisplayRange = 0;
@@ -1149,6 +1150,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 		sColumnHeader += "\x1b[0m\x1b[K\n";
 	}
 	
+	nLastBarScrolling = nBarScrolling;
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedScrolling), &nBarScrolling, 2, 0);
 	short sAdjustedScroll = min(min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange), nBarScrolling);
 
@@ -1413,7 +1415,7 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 
 	cLastDisplayOptions = cDisplayOptions;
 	cDisplayOptions = 8 * bSimpleFrameInfo + 4 * bDisplayFreeze + 2 * bDisplayInputs + 1 * bPrintColorGuide;
-	if (cDisplayOptions != cLastDisplayOptions)
+	if (cDisplayOptions != cLastDisplayOptions || nBarScrolling != nLastBarScrolling)
 	{
 		if (bPrintColorGuide)
 		{
