@@ -214,11 +214,11 @@ struct Player
 	int nInactionableFrames = 0;
 	int nLastInactionableFrames = 0;
 
-	std::string sBar1[BAR_MEMORY_SIZE];
-	std::string sBar2[BAR_MEMORY_SIZE];
-	std::string sBar3[BAR_MEMORY_SIZE];
-	std::string sBar4[BAR_MEMORY_SIZE];
-	std::string sBar5[BAR_MEMORY_SIZE];
+	std::string sBar1[BAR_MEMORY_SIZE][2];
+	std::string sBar2[BAR_MEMORY_SIZE][2];
+	std::string sBar3[BAR_MEMORY_SIZE][2];
+	std::string sBar4[BAR_MEMORY_SIZE][4];
+	std::string sBar5[BAR_MEMORY_SIZE][4];
 	std::string sBarString1;
 	std::string sBarString2;
 	std::string sBarString3;
@@ -739,11 +739,20 @@ void ResetBars(HANDLE hMBAAHandle, Player& P)
 	nBarIntervalMax = nBarDisplayRange;
 	for (int i = 0; i < BAR_MEMORY_SIZE; i++)
 	{
-		P.sBar1[i] = "";
-		P.sBar2[i] = "";
-		P.sBar3[i] = "";
-		P.sBar4[i] = "";
-		P.sBar5[i] = "";
+		P.sBar1[i][1] = "";
+		P.sBar1[i][2] = "";
+		P.sBar2[i][1] = "";
+		P.sBar2[i][2] = "";
+		P.sBar3[i][1] = "";
+		P.sBar3[i][2] = "";
+		P.sBar4[i][1] = "";
+		P.sBar4[i][2] = "";
+		P.sBar4[i][3] = "";
+		P.sBar4[i][4] = "";
+		P.sBar5[i][1] = "";
+		P.sBar5[i][2] = "";
+		P.sBar5[i][3] = "";
+		P.sBar5[i][4] = "";
 	}
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedScrolling), &nBarScrolling, 2, 0);
 }
@@ -756,15 +765,45 @@ void UpdateBars(Player& P, Player& Assist)
 	std::string sBarValue = "  ";
 	std::string sLeftFont = FD_CLEAR;
 	std::string sRightFont = FD_CLEAR;
-	std::string sLeftValue = " ";
 	std::string sRightValue = " ";
 	bool bIsButtonPressed = P.cButtonInput != 0 || P.cMacroInput != 0;
 
 	//Bar 1 - General action information
-	if (P.nInactionableFrames != 0) //Doing something with limited actionability
+	sBarValue = std::format("{:2}", P.nInactionableFrames % 100);
+	if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0) //Screen is frozen
 	{
-		sFont = FD_INACTIONABLE;
-		sBarValue = std::format("{:2}", P.nInactionableFrames % 100);
+		sFont = FD_FREEZE;
+	}
+	else if (P.bThrowFlag != 0) //Being thrown
+	{
+		sFont = FD_THROWN;
+		sBarValue = " t";
+	}
+	else if (P.cAnimation_BoxIndex == 12) //Clash
+	{
+		sFont = FD_CLASH;
+	}
+	else if (P.dwCondition1_ConditionType == 51) //Shield
+	{
+		sFont = FD_SHIELD;
+	}
+	else if (P.cAnimation_BoxIndex <= 1 || P.sStrikeInvuln != 0 || P.cState_Invuln == 3) //Various forms of invuln
+	{
+		if (P.nInactionableFrames != 0) //Doing something with limited actionability
+		{
+			sFont = FD_INACTIONABLE_INVULN;
+		}
+		else //Fully actionable
+		{
+			sFont = FD_ACTIONABLE_INVULN;
+		}
+	}
+	else if (P.cHitstop != 0) //in hitstop
+	{
+		sFont = FD_HITSTOP;
+	}
+	else if (P.nInactionableFrames != 0) //Doing something with limited actionability
+	{
 		if (P.nPattern >= 35 && P.nPattern <= 37) //Jump Startup
 		{
 			sFont = FD_JUMP;
@@ -789,21 +828,14 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			sFont = FD_BLOCKSTUN;
 		}
+		else
+		{
+			sFont = FD_INACTIONABLE;
+		}
 	}
 	else //Fully actionable
 	{
-		sFont = FD_ACTIONABLE;
 		sBarValue = std::format("{:2}", P.nPattern % 100);
-
-		if (bDoAdvantage) //Has advantage
-		{
-			sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
-			if (P.nAdvantageCounter != 0)
-			{
-				sFont = FD_ADVANTAGE;
-			}
-		}
-			
 		if (P.nLastInactionableFrames != 0) //Neutral frame
 		{
 			sFont = FD_NEUTRAL;
@@ -812,54 +844,24 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			sFont = FD_NEUTRAL;
 		}
-	}
-
-	if (P.bThrowFlag != 0) //Being thrown
-	{
-		sFont = FD_THROWN;
-		sBarValue = " t";
-	}
-	else if (P.cAnimation_BoxIndex == 12) //Clash
-	{
-		sFont = FD_CLASH;
-	}
-	else if (P.dwCondition1_ConditionType == 51) //Shield
-	{
-		sFont = FD_SHIELD;
-	}
-	else if (P.cAnimation_BoxIndex <= 1 || P.sStrikeInvuln != 0 || P.cState_Invuln == 3) //Various forms of invuln
-	{
-		if (P.nInactionableFrames != 0) //Doing something with limited actionability
+		else if (bDoAdvantage) //Has advantage
 		{
-			sFont = FD_INACTIONABLE_INVULN;
+			sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
+			if (P.nAdvantageCounter != 0)
+			{
+				sFont = FD_ADVANTAGE;
+			}
 		}
-		else //Fully actionable
+		else
 		{
-			sFont = FD_ACTIONABLE_INVULN;
-		}
-
+			sFont = FD_ACTIONABLE;
+		}	
 	}
 
-	if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0) //Screen is frozen
-	{
-		sFont = FD_FREEZE;
-	}
-	else if (P.cHitstop != 0) //in hitstop
-	{
-		sFont = FD_HITSTOP;
-	}
-
-	P.sBar1[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + FD_CLEAR;
-
-	sFont = FD_CLEAR;
-	sBarValue = "  ";
+	P.sBar1[nBarCounter % BAR_MEMORY_SIZE][1] = sFont;
+	P.sBar1[nBarCounter % BAR_MEMORY_SIZE][2] = sBarValue;
 
 	//Bar 2 - Active frames
-	if (P.cState_Stance == 1)
-	{
-		sBarValue = " ^";
-	}
-
 	if (P.dwAttackDataPointer != 0)
 	{
 		sBarValue = std::format("{:2}", P.nActiveCounter % 100);
@@ -881,22 +883,23 @@ void UpdateBars(Player& P, Player& Assist)
 			sFont += FD_UNDERLINE;
 		}
 	}
-
-	P.sBar2[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + FD_CLEAR;
-
-	sFont = "";
-	sBarValue = "  ";
-
-	//Bar 3 - Projectile and assist active frames
-	if (P.nActiveProjectileCount != 0 || Assist.nActiveProjectileCount != 0)
+	else if (P.cState_Stance == 1)
 	{
-		sFont = FD_ACTIVE;
-		sBarValue = std::format("{:2}", (P.nActiveProjectileCount + Assist.nActiveProjectileCount) % 100);
+		sBarValue = " ^";
+	}
+	else
+	{
+		sFont = FD_CLEAR;
+		sBarValue = "  ";
 	}
 
+	P.sBar2[nBarCounter % BAR_MEMORY_SIZE][1] = sFont;
+	P.sBar2[nBarCounter % BAR_MEMORY_SIZE][2] = sBarValue;
+
+	//Bar 3 - Projectile and assist active frames
 	if (Assist.dwAttackDataPointer != 0)
 	{
-		sBarValue = std::format("{:2}", Assist.nActiveCounter  % 100);
+		sBarValue = std::format("{:2}", Assist.nActiveCounter % 100);
 		if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0)
 		{
 			sFont = FD_FREEZE;
@@ -915,11 +918,19 @@ void UpdateBars(Player& P, Player& Assist)
 			sFont += FD_UNDERLINE;
 		}
 	}
+	else if (P.nActiveProjectileCount != 0 || Assist.nActiveProjectileCount != 0)
+	{
+		sFont = FD_ACTIVE;
+		sBarValue = std::format("{:2}", (P.nActiveProjectileCount + Assist.nActiveProjectileCount) % 100);
+	}
+	else
+	{
+		sFont = FD_CLEAR;
+		sBarValue = "  ";
+	}
 
-	P.sBar3[nBarCounter % BAR_MEMORY_SIZE] = sFont + sBarValue + FD_CLEAR;
-
-	sFont = "";
-	sBarValue = "  ";
+	P.sBar3[nBarCounter % BAR_MEMORY_SIZE][1] = sFont;
+	P.sBar3[nBarCounter % BAR_MEMORY_SIZE][2] = sBarValue;
 
 	if (bDisplayInputs)
 	{
@@ -941,6 +952,10 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			sLeftFont = FD_BUTTON_PRESSED;
 		}
+		else
+		{
+			sLeftFont = FD_CLEAR;
+		}
 
 		if (P.cButtonInput & 0x20)
 		{
@@ -950,6 +965,10 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			sRightFont = FD_BUTTON_PRESSED;
 		}
+		else
+		{
+			sRightFont = FD_CLEAR;
+		}
 
 		if (P.bLastOnRight != P.bIsOnRight)
 		{
@@ -957,12 +976,10 @@ void UpdateBars(Player& P, Player& Assist)
 			sRightFont += FD_UNDERLINE;
 		}
 
-		P.sBar4[nBarCounter % BAR_MEMORY_SIZE] = sLeftFont + sLeftValue + sRightFont + sRightValue + FD_CLEAR;
-
-		sLeftFont = FD_CLEAR;
-		sRightFont = FD_CLEAR;
-		sLeftValue = " ";
-		sRightValue = " ";
+		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][1] = sLeftFont;
+		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][2] = " ";
+		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][3] = sRightFont;
+		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][4] = sRightValue;
 
 		//Bar 5
 		if (P.cRawDirectionalInput == 0)
@@ -990,6 +1007,10 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			sLeftFont = FD_BUTTON_PRESSED;
 		}
+		else
+		{
+			sLeftFont = FD_CLEAR;
+		}
 
 		if (P.cButtonInput & 0x80)
 		{
@@ -999,6 +1020,10 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			sRightFont = FD_BUTTON_PRESSED;
 		}
+		else
+		{
+			sRightFont = FD_CLEAR;
+		}
 
 		if (P.bLastOnRight != P.bIsOnRight)
 		{
@@ -1006,7 +1031,10 @@ void UpdateBars(Player& P, Player& Assist)
 			sRightFont += FD_UNDERLINE;
 		}
 
-		P.sBar5[nBarCounter % BAR_MEMORY_SIZE] = sLeftFont + sLeftValue + sRightFont + sRightValue + "\x1b[0m";
+		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][1] = sLeftFont;
+		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][2] = " ";
+		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][3] = sRightFont;
+		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][4] = sRightValue;
 	}
 }
 
@@ -1154,65 +1182,106 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedScrolling), &nBarScrolling, 2, 0);
 	short sAdjustedScroll = min(min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange), nBarScrolling);
 
+	std::string sLastFont1 = "";
+	std::string sLastFont2 = "";
+	std::string sLastFont3 = "";
+	std::string sLastFont4Left = "";
+	std::string sLastFont4Right = "";
+	std::string sLastFont5Left = "";
+	std::string sLastFont5Right = "";
+
 	P1.sBarString1 = "";
 	P1.sBarString2 = "";
 	P1.sBarString3 = "";
 	P1.sBarString4 = "";
 	P1.sBarString5 = "";
+	P2.sBarString1 = "";
+	P2.sBarString2 = "";
+	P2.sBarString3 = "";
+	P2.sBarString4 = "";
+	P2.sBarString5 = "";
+	bool bFirstFrameInDisplay = true;
 	for (int i = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - sAdjustedScroll; i < (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll; i++)
 	{
-		if (i < 0)
+		int c = i < 0 ? i + BAR_MEMORY_SIZE : i;
+		int l = i - 1 < 0 ? i - 1 + BAR_MEMORY_SIZE : i - 1;
+		if (bFirstFrameInDisplay)
 		{
-			P1.sBarString1 += P1.sBar1[i + BAR_MEMORY_SIZE];
-			P1.sBarString2 += P1.sBar2[i + BAR_MEMORY_SIZE];
-			P1.sBarString3 += P1.sBar3[i + BAR_MEMORY_SIZE];
-			P1.sBarString4 += P1.sBar4[i + BAR_MEMORY_SIZE];
-			P1.sBarString5 += P1.sBar5[i + BAR_MEMORY_SIZE];
+			P1.sBarString1 += P1.sBar1[c][1];
+			P1.sBarString1 += P1.sBar1[c][2];
+			P1.sBarString2 += P1.sBar2[c][1];
+			P1.sBarString2 += P1.sBar2[c][2];
+			P1.sBarString3 += P1.sBar3[c][1];
+			P1.sBarString3 += P1.sBar3[c][2];
+			P1.sBarString4 += P1.sBar4[c][1];
+			P1.sBarString4 += P1.sBar4[c][2];
+			if (P1.sBar4[c][3] != P1.sBar4[c][1]) P1.sBarString4 += P1.sBar4[c][3];
+			P1.sBarString4 += P1.sBar4[c][4];
+			P1.sBarString5 += P1.sBar5[c][1];
+			P1.sBarString5 += P1.sBar5[c][2];
+			if (P1.sBar5[c][3] != P1.sBar5[c][1]) P1.sBarString5 += P1.sBar5[c][3];
+			P1.sBarString5 += P1.sBar5[c][4];
+
+			P2.sBarString1 += P2.sBar1[c][1];
+			P2.sBarString1 += P2.sBar1[c][2];
+			P2.sBarString2 += P2.sBar2[c][1];
+			P2.sBarString2 += P2.sBar2[c][2];
+			P2.sBarString3 += P2.sBar3[c][1];
+			P2.sBarString3 += P2.sBar3[c][2];
+			P2.sBarString4 += P2.sBar4[c][1];
+			P2.sBarString4 += P2.sBar4[c][2];
+			if (P2.sBar4[c][3] != P2.sBar4[c][1]) P2.sBarString4 += P2.sBar4[c][3];
+			P2.sBarString4 += P2.sBar4[c][4];
+			P2.sBarString5 += P2.sBar5[c][1];
+			P2.sBarString5 += P2.sBar5[c][2];
+			if (P2.sBar5[c][3] != P2.sBar5[c][1]) P2.sBarString5 += P2.sBar5[c][3];
+			P2.sBarString5 += P2.sBar5[c][4];
 		}
 		else
 		{
-			P1.sBarString1 += P1.sBar1[i];
-			P1.sBarString2 += P1.sBar2[i];
-			P1.sBarString3 += P1.sBar3[i];
-			P1.sBarString4 += P1.sBar4[i];
-			P1.sBarString5 += P1.sBar5[i];
+			if (P1.sBar1[c][1] != P1.sBar1[l][1]) P1.sBarString1 += P1.sBar1[c][1];
+			P1.sBarString1 += P1.sBar1[c][2];
+			if (P1.sBar2[c][1] != P1.sBar2[l][1]) P1.sBarString2 += P1.sBar2[c][1];
+			P1.sBarString2 += P1.sBar2[c][2];
+			if (P1.sBar3[c][1] != P1.sBar3[l][1]) P1.sBarString3 += P1.sBar3[c][1];
+			P1.sBarString3 += P1.sBar3[c][2];
+			if (P1.sBar4[c][1] != P1.sBar4[l][3]) P1.sBarString4 += P1.sBar4[c][1];
+			P1.sBarString4 += P1.sBar4[c][2];
+			if (P1.sBar4[c][3] != P1.sBar4[c][1]) P1.sBarString4 += P1.sBar4[c][3];
+			P1.sBarString4 += P1.sBar4[c][4];
+			if (P1.sBar5[c][1] != P1.sBar4[l][3]) P1.sBarString5 += P1.sBar5[c][1];
+			P1.sBarString5 += P1.sBar5[c][2];
+			if (P1.sBar5[c][3] != P1.sBar5[c][1]) P1.sBarString5 += P1.sBar5[c][3];
+			P1.sBarString5 += P1.sBar5[c][4];
+
+			if (P2.sBar1[c][1] != P2.sBar1[l][1]) P2.sBarString1 += P2.sBar1[c][1];
+			P2.sBarString1 += P2.sBar1[c][2];
+			if (P2.sBar2[c][1] != P2.sBar2[l][1]) P2.sBarString2 += P2.sBar2[c][1];
+			P2.sBarString2 += P2.sBar2[c][2];
+			if (P2.sBar3[c][1] != P2.sBar3[l][1]) P2.sBarString3 += P2.sBar3[c][1];
+			P2.sBarString3 += P2.sBar3[c][2];
+			if (P2.sBar4[c][1] != P2.sBar4[l][3]) P2.sBarString4 += P2.sBar4[c][1];
+			P2.sBarString4 += P2.sBar4[c][2];
+			if (P2.sBar4[c][3] != P2.sBar4[c][1]) P2.sBarString4 += P2.sBar4[c][3];
+			P2.sBarString4 += P2.sBar4[c][4];
+			if (P2.sBar5[c][1] != P2.sBar4[l][3]) P2.sBarString5 += P2.sBar5[c][1];
+			P2.sBarString5 += P2.sBar5[c][2];
+			if (P2.sBar5[c][3] != P2.sBar5[c][1]) P2.sBarString5 += P2.sBar5[c][3];
+			P2.sBarString5 += P2.sBar5[c][4];
 		}
+		bFirstFrameInDisplay = false;
 	}
 	P1.sBarString1 += "\x1b[0m\x1b[K\n";
 	P1.sBarString2 += "\x1b[0m\x1b[K\n";
 	P1.sBarString3 += "\x1b[0m\x1b[K\n";
 	P1.sBarString4 += "\x1b[0m\x1b[K\n";
 	P1.sBarString5 += "\x1b[0m\x1b[K\n";
-
-	P2.sBarString1 = "";
-	P2.sBarString2 = "";
-	P2.sBarString3 = "";
-	P2.sBarString4 = "";
-	P2.sBarString5 = "";
-	for (int i = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - sAdjustedScroll; i < (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll; i++)
-	{
-		if (i < 0)
-		{
-			P2.sBarString1 += P2.sBar1[i + BAR_MEMORY_SIZE];
-			P2.sBarString2 += P2.sBar2[i + BAR_MEMORY_SIZE];
-			P2.sBarString3 += P2.sBar3[i + BAR_MEMORY_SIZE];
-			P2.sBarString4 += P2.sBar4[i + BAR_MEMORY_SIZE];
-			P2.sBarString5 += P2.sBar5[i + BAR_MEMORY_SIZE];
-		}
-		else
-		{
-			P2.sBarString1 += P2.sBar1[i];
-			P2.sBarString2 += P2.sBar2[i];
-			P2.sBarString3 += P2.sBar3[i];
-			P2.sBarString4 += P2.sBar4[i];
-			P2.sBarString5 += P2.sBar5[i];
-		}
-	}
 	P2.sBarString1 += "\x1b[0m\x1b[K\n";
 	P2.sBarString2 += "\x1b[0m\x1b[K\n";
 	P2.sBarString3 += "\x1b[0m\x1b[K\n";
 	P2.sBarString4 += "\x1b[0m\x1b[K\n";
 	P2.sBarString5 += "\x1b[0m\x1b[K\n";
+	
 
 	int nP1XPixelPosition = (int)floor(P1.nXPosition / 128.0);
 	int nP1YPixelPosition = (int)floor(P1.nYPosition / 128.0);
