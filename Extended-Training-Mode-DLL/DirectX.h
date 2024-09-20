@@ -346,9 +346,9 @@ template <typename T>
 class VertexData {
 public:
 
-	const static DWORD vertexCount = 3 * 512; // is this overkill?
+	const static DWORD vertexCount = 3 * 2048; // is this overkill?
 
-	VertexData(DWORD vertexFormat_, IDirect3DTexture9* texture_ = NULL) {
+	VertexData(DWORD vertexFormat_, IDirect3DTexture9** texture_ = NULL) {
 		vertexFormat = vertexFormat_;
 		texture = texture_;
 	}
@@ -365,8 +365,8 @@ public:
 	void add(T& v1, T& v2, T& v3) {
 
 		if (vertexIndex >= vertexCount) {
-			log("a vertex buffer overflowed. this is critical. increase the buffer size!");
-			return;
+			log("a vertex buffer overflowed. this is critical. increase the buffer size! current: %d", vertexCount);
+			exit(1);
 		}
 
 		vertexData[vertexIndex++] = v1;
@@ -385,9 +385,11 @@ public:
 			return;
 		}
 
-		if(texture != NULL) {
-			device->SetTexture(texture);
+		if(texture != NULL && *texture != NULL) {
+			device->SetTexture(0, *texture);
 		}
+
+		// ideally i should be scaling the vertices in here, but is it worth it?
 
 		VOID* pVoid;
 
@@ -401,14 +403,14 @@ public:
 
 		vertexIndex = 0;
 
-		if (texture != NULL) {
-			device->SetTexture(NULL);
+		if (texture != NULL && *texture != NULL) {
+			device->SetTexture(0, NULL);
 		}
 	}
 
 	DWORD vertexFormat = 0;
 	IDirect3DVertexBuffer9* vertexBuffer = NULL;
-	IDirect3DTexture9* texture = NULL;
+	IDirect3DTexture9** texture = NULL;
 	T vertexData[vertexCount]; // i distrust vectors
 	unsigned vertexIndex = 0; // number of verts. i,, ugh. i should have written a const size vec class.
 
@@ -431,8 +433,8 @@ typedef struct PosColTexVert {
 } PosColTexVert;
 
 VertexData<PosColVert> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-VertexData<PosTexVert> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1);
-VertexData<PosColTexVert> posTexColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+VertexData<PosTexVert> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
+VertexData<PosColTexVert> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTexture);
 
 // -----
 
@@ -1287,7 +1289,7 @@ void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, b
 	x1 /= 480.0f;
 	x2 /= 480.0f;
 	y1 /= 480.0f;
-	y1 /= 480.0f;
+	y2 /= 480.0f;
 
 	// this is going to need to be changed at different resolutions
 	float lineWidth = 1.0f / vHeight;
@@ -1341,6 +1343,11 @@ void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, b
 	PosColVert v3 = { D3DVECTOR((p3.x * 1.5f) - 1.0f, (p3.y * 2.0f) - 1.0f, 0.5f), ARGB };
 	PosColVert v4 = { D3DVECTOR((p4.x * 1.5f) - 1.0f, (p4.y * 2.0f) - 1.0f, 0.5f), ARGB };
 
+	scaleVertex(v1.position);
+	scaleVertex(v2.position);
+	scaleVertex(v3.position);
+	scaleVertex(v4.position);
+
 	posColVertData.add(v1, v2, v3);
 	posColVertData.add(v2, v3, v4);
 	
@@ -1359,6 +1366,11 @@ void RectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 	PosColVert v2 = { ((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f, ARGB };
 	PosColVert v3 = { ((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f, ARGB };
 	PosColVert v4 = { ((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f, ARGB };
+
+	scaleVertex(v1.position);
+	scaleVertex(v2.position);
+	scaleVertex(v3.position);
+	scaleVertex(v4.position);
 
 	posColVertData.add(v1, v2, v3);
 	posColVertData.add(v2, v3, v4);
@@ -1386,41 +1398,140 @@ void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 	
 	RectDraw(x, y, w, h, ARGB);
-	BorderRectDraw(x, y, w, h, ARGB | 0xFF000000);
+	BorderDraw(x, y, w, h, ARGB | 0xFF000000);
 
 }
 
 void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...) {
 	// i do hope that this allocing does not slow things down. i tried saving the va_args for when the actual print func was called, but it would not work
-	/*
+
+	if (format == NULL) {
+		return;
+	}
+
 
 	x /= 480.0f;
 	y /= 480.0f;
 	size /= 480.0f;
 
-	char* buffer = (char*)malloc(1024);
-
-	if (buffer == NULL) {
-		log("textdraw malloc somehow failed???");
-		return;
-	}
+	static char buffer[1024];
 
 	va_list args;
 	va_start(args, format);
 	vsnprintf(buffer, 1024, format, args);
 	va_end(args);
 
-	drawCalls.emplace_back(
-		std::function<void(void)>(
-		[x, y, size, ARGB, buffer]() mutable -> void {
-			drawText2(x, y, size, ARGB, buffer);
-			if (buffer != NULL) {
-				free(buffer);
-				buffer = NULL;
+
+	DWORD TempARGB = ARGB;
+
+	if (fontTexture == NULL) {
+		log("fontTexture was null, im not drawing");
+		return;
+	}
+
+	DWORD antiAliasBackup;
+	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
+
+	float origX = x;
+	float origY = y;
+
+	float charWidthOffset = (fontRatio * size) * 1.01f; // this 1.01 might cause issues when aligning stuff, not sure
+	//float charWidthOffset = (fontRatio * size);
+	float charHeightOffset = size;
+
+	float w = charWidthOffset;
+	float h = charHeightOffset;
+
+	device->SetTexture(0, fontTexture);
+
+	char* str = buffer;
+
+	while (*str) {
+
+		switch (*str) {
+		case '\r':
+		case '\n':
+			x = origX;
+			origY += charHeightOffset;
+			str++;
+			continue;
+		case ' ':
+			x += charWidthOffset;
+			str++;
+			continue;
+		case '\t': // please dont use tabs. please
+			str++;
+			continue;
+		case '{': // blue
+			TempARGB = 0xFF8F8FFF;
+			str++;
+			continue;
+		case '~': // red
+			TempARGB = 0xFFFF8F8F;
+			str++;
+			continue;
+		case '@': // green 
+			TempARGB = 0xFF8FFF8F;
+			str++;
+			continue;
+		case '`': // yellow
+			TempARGB = 0xFFFFFF8F;
+			str++;
+			continue;
+		case '^': // purple
+			TempARGB = 0xFFFF8FFF;
+			str++;
+			continue;
+		case '*': // black
+			TempARGB = 0xFF8F8F8F;
+			str++;
+			continue;
+		case '}': // reset 
+			TempARGB = ARGB;
+			str++;
+			continue;
+		case '\\': // in case you want to print one of the above chars, you can escape them
+			str++;
+			if (*str == '\0') {
+				return;
 			}
+			break;
+		default:
+			break;
 		}
-	));
-	*/
+
+		y = 1 - origY;
+
+		const float charWidth = ((float)(fontSize >> 1)) / (float)fontTexWidth;
+		const float charHeight = ((float)fontSize) / (float)fontTexWidth;
+
+		D3DXVECTOR2 charTopLeft(charWidth * (*str & 0xF), charHeight * ((*str - 0x20) / 0x10));
+
+		D3DXVECTOR2 charW(charWidth, 0.0);
+		D3DXVECTOR2 charH(0.0, charHeight);
+
+		PosColTexVert v1{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft };
+		PosColTexVert v2{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft + charW };
+		PosColTexVert v3{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft + charH };
+		PosColTexVert v4{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft + charW + charH };
+
+		scaleVertex(v1.position);
+		scaleVertex(v2.position);
+		scaleVertex(v3.position);
+		scaleVertex(v4.position);
+
+		posColTexVertData.add(v1, v2, v3);
+		posColTexVertData.add(v2, v3, v4);
+
+		x += charWidthOffset;
+		str++;
+	}
+
+	device->SetTexture(0, NULL);
+
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
+
 }
 
 IDirect3DPixelShader9* getOutlinePixelShader() {
@@ -1947,7 +2058,7 @@ void _drawProfiler() {
 
 			//TextDraw(0, profileInfoY, 12, 0xFFFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
 			snprintf(buffer, 1024, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
-			_drawText2(-0.0f, (float)profileInfoY / 480.0f, (float)12 / 480.0f, col, buffer);
+			TextDraw(-0.0f, (float)profileInfoY, 12.0f, col, buffer);
 
 			//TextDraw(200, profileInfoY, 12, 0x7FFFFFFF, "%3lld.%03lld %5d %.32s", totalTime / 1000, totalTime % 1000, info.callCount, name == NULL ? "NULL" : name);
 
@@ -1987,9 +2098,9 @@ void _drawLog() {
 			if (logHistory[index] == NULL) {
 				continue;
 			}
-			_drawText3(1.3333f, y, (float)10 / 480.0f, 0xFF42e5f4, logHistory[index]);
-			y += (10.0f / 480.0f);
-			if (y > 1.0f) {
+			TextDraw(640.0f, y, 10.0f, 0xFF42e5f4, logHistory[index]);
+			y += 10.0f;
+			if (y > 480.0f) {
 				break;
 			}
 		}
@@ -2002,26 +2113,7 @@ void allocVertexBuffers() {
 	
 	posColVertData.alloc();
 	posTexVertData.alloc();
-	posTexColVertData.alloc();
-
-}
-
-void _drawUntextured() {
-
-	
-}
-
-void _drawTextMultiCol() {
-
-
-
-
-}
-
-void _drawTextFast() {
-
-
-
+	posColTexVertData.alloc();
 
 }
 
@@ -2030,13 +2122,13 @@ void _drawGeneralCalls() {
 
 	allocVertexBuffers();
 
+	BorderRectDraw(320.0f, 240.0f, 100.0f, 100.0f, 0x80FF0000);
+
 	device->BeginScene();
 
 	posColVertData.draw();
-
-	_drawTextMultiCol();
-
-	_drawTextFast();
+	posTexVertData.draw();
+	posColTexVertData.draw();
 
 	device->EndScene();
 } 
@@ -2116,19 +2208,20 @@ void __stdcall _doDrawCalls() {
 
 	startTime = endTime;
 
+	// predraw stuff goes here.
+	_drawProfiler();
+	_drawLog();
+
+	// -- ACTUAL RENDERING --
 	backupRenderState();
 
 	_drawHitboxes();
 
-	//device->BeginScene();
-	
 	_drawGeneralCalls();
-	//_drawProfiler();
-	//_drawLog();
-
-	//device->EndScene();
 
 	restoreRenderState();
+
+	// -- END ACTUAL RENDERING --
 
 	drawCalls.clear();
 	
