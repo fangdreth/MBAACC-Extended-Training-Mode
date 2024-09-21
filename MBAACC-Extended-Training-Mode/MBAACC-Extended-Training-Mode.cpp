@@ -125,6 +125,7 @@ int main(int argc, char* argv[])
         bool bP4Exists = false;
 
         bool bJustUnpaused = false;
+        bool bInjected = false;
 
         uint8_t nFrameData = FRAMEDISPLAY_NORMAL;
         //bool bSaveStates = false;
@@ -314,6 +315,7 @@ int main(int argc, char* argv[])
                 // though it's for sure a kludge.
                 Sleep(100);
 
+                bInjected = false;
                 hMBAAHandle = 0x0;
 
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
@@ -338,47 +340,6 @@ int main(int argc, char* argv[])
                 Sleep(100);
                 dwBaseAddress = GetBaseAddressByName(hMBAAHandle, L"MBAA.exe");
                 LogInfo("Got BaseAddressByName");
-
-                DWORD dwPID = GetProcessPID(L"MBAA.exe");
-                InjectIntoMBAA(dwPID, sDLLPath);
-                // it is ok if it fails.  write it to the log and move on.
-                // it will be obvious in-game if it didn't inject correctly.
-
-                // Set some initial stuff
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeKey), &nFreezeKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameStepKey), &nFrameStepKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxesDisplayKey), &nHitboxDisplayKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplayKey), &nFrameDataDisplayKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlightsOnKey), &nHighlightsOnKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveStateKey), &nSaveStateKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevSaveSlotKey), &nPrevSaveSlotKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedNextSaveSlotKey), &nNextSaveSlotKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollLeftKey), &nFrameBarScrollLeftKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollRightKey), &nFrameBarScrollRightKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGIncKey), &nRNGIncKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGDecKey), &nRNGDecKey, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayFreeze), &bDisplayFreeze, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayInputs), &bDisplayInputs, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGMode), &nRNGMode, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGRate), &nRNGRate, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomSeed), &nCustomSeed, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomRN), &nCustomRN, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxStyle), &nHitboxStyle, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedColorBlindMode), &bColorBlindMode, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayHitboxes), &bDisplayHitboxes, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedExtendOrigins), &bExtendOrigins, 1, 0);
-
-                std::array<uint8_t, 4> arrTemp = CreateColorArray2(NO_HIGHLIGHT);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 4, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTemp, 4, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 4, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 4, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 4, 0);
-
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedOnExtendedSettings), &bOnSettingsMenu, 1, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
-                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcBlank_64, 64, 0);
             }
 
             // check this to prevent attaching to netplay
@@ -396,8 +357,50 @@ int main(int argc, char* argv[])
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });               
                 std::cout << "Attached to MBAA.exe\x1b[K" << "\n\x1b[K\n";
                 
-                
-                //LogInfo("MBAA is in training mode");
+                if (!bInjected)
+                {
+                    DWORD dwPID = GetProcessPID(L"MBAA.exe");
+                    if (InjectIntoMBAA(dwPID, sDLLPath) != 0)
+                    {
+                        bInjected = true;
+
+                        // Set some initial stuff
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeKey), &nFreezeKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameStepKey), &nFrameStepKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxesDisplayKey), &nHitboxDisplayKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplayKey), &nFrameDataDisplayKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlightsOnKey), &nHighlightsOnKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveStateKey), &nSaveStateKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevSaveSlotKey), &nPrevSaveSlotKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedNextSaveSlotKey), &nNextSaveSlotKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollLeftKey), &nFrameBarScrollLeftKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollRightKey), &nFrameBarScrollRightKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGIncKey), &nRNGIncKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGDecKey), &nRNGDecKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayFreeze), &bDisplayFreeze, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayInputs), &bDisplayInputs, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGMode), &nRNGMode, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGRate), &nRNGRate, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomSeed), &nCustomSeed, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomRN), &nCustomRN, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxStyle), &nHitboxStyle, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedColorBlindMode), &bColorBlindMode, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayHitboxes), &bDisplayHitboxes, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedExtendOrigins), &bExtendOrigins, 1, 0);
+
+                        std::array<uint8_t, 4> arrTemp = CreateColorArray2(NO_HIGHLIGHT);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTemp, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 4, 0);
+
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedOnExtendedSettings), &bOnSettingsMenu, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcBlank_64, 64, 0);
+                    }
+                }
             }
 
             long long start = getMicroSec();
