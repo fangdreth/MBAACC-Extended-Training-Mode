@@ -2057,12 +2057,12 @@ int main(int argc, char* argv[])
                                     nOldEnemyDefenseIndex = nEnemyDefenseIndex;
                                 else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                                 {
-                                    nP1X = max(MIN_X, nP1X - (bAPressed ? 1 : 1000));
+                                    nP1X = max(MIN_X, nP1X - (bAPressed ? 128 : 1280));
                                     SetP1X(hMBAAHandle, dwBaseAddress, nP1X);
                                 }
                                 else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                                 {
-                                    nP1X = min(MAX_X, nP1X + (bAPressed ? 1 : 1000));
+                                    nP1X = min(MAX_X, nP1X + (bAPressed ? 128 : 1280));
                                     SetP1X(hMBAAHandle, dwBaseAddress, nP1X);
                                 }
 
@@ -2070,12 +2070,12 @@ int main(int argc, char* argv[])
                                     nOldEnemyDefenseTypeIndex = nEnemyDefenseTypeIndex;
                                 else if (nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex)// left
                                 {
-                                    nP3X = max(MIN_X, nP3X - (bAPressed ? 1 : 1000));
+                                    nP3X = max(MIN_X, nP3X - (bAPressed ? 128 : 1280));
                                     SetP3X(hMBAAHandle, dwBaseAddress, nP3X);
                                 }
                                 else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
                                 {
-                                    nP3X = min(MAX_X, nP3X + (bAPressed ? 1 : 1000));
+                                    nP3X = min(MAX_X, nP3X + (bAPressed ? 128 : 1280));
                                     SetP3X(hMBAAHandle, dwBaseAddress, nP3X);
                                 }
 
@@ -2083,12 +2083,12 @@ int main(int argc, char* argv[])
                                     nOldAirRecoveryIndex = nAirRecoveryIndex;
                                 else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
                                 {
-                                    nP2X = max(MIN_X, nP2X - (bAPressed ? 1 : 1000));
+                                    nP2X = max(MIN_X, nP2X - (bAPressed ? 128 : 1280));
                                     SetP2X(hMBAAHandle, dwBaseAddress, nP2X);
                                 }
                                 else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
                                 {
-                                    nP2X = min(MAX_X, nP2X + (bAPressed ? 1 : 1000));
+                                    nP2X = min(MAX_X, nP2X + (bAPressed ? 128 : 1280));
                                     SetP2X(hMBAAHandle, dwBaseAddress, nP2X);
                                 }
 
@@ -2096,12 +2096,12 @@ int main(int argc, char* argv[])
                                     nOldDownRecoveryIndex = nDownRecoveryIndex;
                                 else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
                                 {
-                                    nP4X = max(MIN_X, nP4X - (bAPressed ? 1 : 1000));
+                                    nP4X = max(MIN_X, nP4X - (bAPressed ? 128 : 1280));
                                     SetP4X(hMBAAHandle, dwBaseAddress, nP4X);
                                 }
                                 else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                                 {
-                                    nP4X = min(MAX_X, nP4X + (bAPressed ? 1 : 1000));
+                                    nP4X = min(MAX_X, nP4X + (bAPressed ? 128 : 1280));
                                     SetP4X(hMBAAHandle, dwBaseAddress, nP4X);
                                 }
                                 break;
