@@ -38,6 +38,7 @@ uint8_t nFrameBarScrollLeftKey = nDefaultFrameBarScrollLeftKey;
 uint8_t nFrameBarScrollRightKey = nDefaultFrameBarScrollRightKey;
 uint8_t nRNGIncKey = nDefaultRNGIncKey;
 uint8_t nRNGDecKey = nDefaultRNGIncKey;
+uint8_t nReversalKey = nDefaultReversalKey;
 
 bool bFreezeKeySet = false;
 bool bFrameStepKeySet = false;
@@ -45,12 +46,13 @@ bool bHitboxDisplayKeySet = false;
 bool bFrameDataDisplayKeySet = false;
 bool bHighlightsOnKeySet = false;
 bool bSaveStateKeySet = false;
-bool bPrevSaveSlotKey = false;
-bool bNextSaveSlotKey = false;
-bool bFrameBarScrollLeftKey = false;
-bool bFrameBarScrollRightKey = false;
-bool bRNGIncKey = false;
-bool bRNGDecKey = false;
+bool bPrevSaveSlotKeySet = false;
+bool bNextSaveSlotKeySet = false;
+bool bFrameBarScrollLeftKeySet = false;
+bool bFrameBarScrollRightKeySet = false;
+bool bRNGIncKeySet = false;
+bool bRNGDecKeySet = false;
+bool bReversalKeySet = false;
 
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;
@@ -477,44 +479,50 @@ void ReplaceKey(uint8_t nKey, int nKeyNameEnum)
     else if (nPrevSaveSlotKey == nKey && nKeyNameEnum != KEY_PREVSAVE)
     {
         nPrevSaveSlotKey = nDefaultPrevSaveSlotKey;
-        bPrevSaveSlotKey = false;
+        bPrevSaveSlotKeySet = false;
         SetRegistryValue(L"PrevSaveSlotKey", nPrevSaveSlotKey);
         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevSaveSlotKey), &nPrevSaveSlotKey, 1, 0);
     }
     else if (nNextSaveSlotKey == nKey && nKeyNameEnum != KEY_NEXTSAVE)
     {
         nNextSaveSlotKey = nDefaultNextSaveSlotKey;
-        bNextSaveSlotKey = false;
+        bNextSaveSlotKeySet = false;
         SetRegistryValue(L"NextSaveSlotKey", nNextSaveSlotKey);
         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedNextSaveSlotKey), &nNextSaveSlotKey, 1, 0);
     }
     else if (nFrameBarScrollLeftKey == nKey && nKeyNameEnum != KEY_FRAMEBARLEFT)
     {
         nFrameBarScrollLeftKey = nDefaultFrameBarScrollLeftKey;
-        bFrameBarScrollLeftKey = false;
+        bFrameBarScrollLeftKeySet = false;
         SetRegistryValue(L"FrameBarScrollLeftKey", nFrameBarScrollLeftKey);
         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollLeftKey), &nFrameBarScrollLeftKey, 1, 0);
     }
     else if (nFrameBarScrollRightKey == nKey && nKeyNameEnum != KEY_FRAMEBARRIGHT)
     {
         nFrameBarScrollRightKey = nDefaultFrameBarScrollRightKey;
-        bFrameBarScrollRightKey = false;
+        bFrameBarScrollRightKeySet = false;
         SetRegistryValue(L"FrameBarScrollRightKey", nFrameBarScrollRightKey);
         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollRightKey), &nFrameBarScrollRightKey, 1, 0);
     }
     else if (nRNGIncKey == nKey && nKeyNameEnum != KEY_RNGINC)
     {
         nRNGIncKey = nDefaultRNGIncKey;
-        bRNGIncKey = false;
+        bRNGIncKeySet = false;
         SetRegistryValue(L"RNGIncKey", nRNGIncKey);
         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGIncKey), &nRNGIncKey, 1, 0);
     }
     else if (nRNGDecKey == nKey && nKeyNameEnum != KEY_RNGDEC)
     {
         nRNGDecKey = nDefaultRNGDecKey;
-        bRNGDecKey = false;
+        bRNGDecKeySet = false;
         SetRegistryValue(L"RNGDecKey", nRNGDecKey);
         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGDecKey), &nRNGDecKey, 1, 0);
+    }
+    else if (nReversalKey == nKey && nKeyNameEnum != KEY_REVERSAL)
+    {
+        nReversalKey = nDefaultReversalKey;
+        bReversalKeySet = false;
+        SetRegistryValue(L"ReversalKey", nReversalKey);
     }
 }
 

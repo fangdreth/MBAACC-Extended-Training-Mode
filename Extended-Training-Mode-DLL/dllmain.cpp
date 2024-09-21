@@ -190,6 +190,7 @@ static KeyState oFrameBarLeftScrollKey;
 static KeyState oFrameBarRightScrollKey;
 static KeyState oDecRNG;
 static KeyState oIncRNG;
+static KeyState oReversalKey;
 void setAllKeys()
 {
 	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
@@ -205,6 +206,7 @@ void setAllKeys()
 	oFrameBarRightScrollKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameBarScrollRightKey));
 	oIncRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGIncKey));
 	oDecRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGDecKey));
+	oReversalKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedReversalKey));
 }
 
 // patch funcs
@@ -1484,10 +1486,10 @@ void frameDoneCallback()
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HIGHLIGHTS OFF");
 	}
 
-	//if (oFreezeKey.keyDown())
-	//{
-		//bFreeze = !bFreeze;
-	//}
+	if (oReversalKey.keyHeld())
+		*(bool*)(dwBaseAddress + adSharedReversalKeyHeld) = true;
+	else
+		*(bool*)(dwBaseAddress + adSharedReversalKeyHeld) = false;
 
 	if (oSaveStateKey.keyDown() && safeWrite())
 	{

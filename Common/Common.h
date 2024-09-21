@@ -332,6 +332,7 @@ const ADDRESS adSharedHitboxStyle =					adShareBase + 0x14;	// 1 byte
 const ADDRESS adSharedColorBlindMode =				adShareBase + 0x15;	// 1 byte
 const ADDRESS adSharedDisplayHitboxes =				adShareBase + 0x16;	// 1 byte
 const ADDRESS adSharedExtendOrigins =				adShareBase + 0x17; // 1 byte
+const ADDRESS adSharedReversalKeyHeld =				adShareBase + 0x18; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte
@@ -345,6 +346,7 @@ const ADDRESS adSharedFrameBarScrollLeftKey =		adShareBase + 0x28;	// 1 byte
 const ADDRESS adSharedFrameBarScrollRightKey =		adShareBase + 0x29;	// 1 byte
 const ADDRESS adSharedRNGIncKey =					adShareBase + 0x2A; // 1 byte
 const ADDRESS adSharedRNGDecKey =					adShareBase + 0x2B; // 1 byte
+const ADDRESS adSharedReversalKey =					adShareBase + 0x2C; // 1 byte
 
 const ADDRESS adSharedIdleHighlight =				adShareBase + 0x40; // 4 bytes
 const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x44; // 4 bytes
@@ -441,6 +443,7 @@ const char pcLayered_8[8] = "LAYERED";
 const char pcOriginStyle_13[13] = "ORIGIN STYLE";
 const char pcStandard_9[9] = "STANDARD";
 const char pcExtended_9[9] = "EXTENDED";
+const char pcReversal_9[9] = "REVERSAL";
 
 const std::vector<const char*> vHighlightNames = { "OFF",
 												"RED",
@@ -550,7 +553,7 @@ const char pcPrevRNG_13[13] = "PREV RNG KEY";
 #define VK_KEY_Y 0x59
 #define VK_KEY_Z 0x5A
 
-enum eKeyNames { KEY_FREEZE, KEY_FRAMESTEP, KEY_HITBOX, KEY_FRAMEDATA, KEY_HIGHLIGHT, KEY_SAVESTATE, KEY_PREVSAVE, KEY_NEXTSAVE, KEY_FRAMEBARLEFT, KEY_FRAMEBARRIGHT, KEY_RNGINC, KEY_RNGDEC };
+enum eKeyNames { KEY_FREEZE, KEY_FRAMESTEP, KEY_HITBOX, KEY_FRAMEDATA, KEY_HIGHLIGHT, KEY_SAVESTATE, KEY_PREVSAVE, KEY_NEXTSAVE, KEY_FRAMEBARLEFT, KEY_FRAMEBARRIGHT, KEY_RNGINC, KEY_RNGDEC, KEY_REVERSAL };
 
 const uint8_t nDefaultFreezeKey = VK_KEY_UNSET;
 const uint8_t nDefaultFrameStepKey = VK_KEY_UNSET;
@@ -564,6 +567,7 @@ const uint8_t nDefaultFrameBarScrollLeftKey = VK_KEY_UNSET;
 const uint8_t nDefaultFrameBarScrollRightKey = VK_KEY_UNSET;
 const uint8_t nDefaultRNGIncKey = VK_KEY_UNSET;
 const uint8_t nDefaultRNGDecKey = VK_KEY_UNSET;
+const uint8_t nDefaultReversalKey = VK_KEY_UNSET;
 
 class KeyState
 {
@@ -595,9 +599,7 @@ public:
 
 	bool isFocused()
 	{
-		HWND hActiveWindow = GetActiveWindow();
-		HWND hForegroundWindow = GetForegroundWindow();
-		return hActiveWindow == hForegroundWindow;
+		return GetActiveWindow() == GetForegroundWindow();
 	}
 
 	bool keyHeld()
@@ -607,17 +609,21 @@ public:
 
 	bool keyDown()
 	{
-		bool tempState = (GetAsyncKeyState(nKey) & 0x8000) ? true : false;
-		bool res = false;
-		if (prevState != tempState && tempState)
-		{
-			res = true;
-		}
-		prevState = tempState;
-
 		if (nKey == 0x0 || !isFocused()) {
 			return false;
 		}
+
+		tempState = false;
+		if (GetAsyncKeyState(nKey) & 0x8000)
+			tempState = true;
+
+		bool res = false;
+		if (!prevState && tempState)
+		{
+			res = true;
+		}
+
+		prevState = tempState;
 
 		return res;
 	}
@@ -626,6 +632,7 @@ public:
 private:
 	uint8_t nKey;
 	bool prevState = false;
+	bool tempState = false;
 };
 
 static bool GetOpenSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wstring* pwsFileName)
