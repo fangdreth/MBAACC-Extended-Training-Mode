@@ -1375,6 +1375,31 @@ void frameDoneCallback()
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
 
 	setAllKeys();
+	
+	bool ok = true;
+	MSG msg;
+	while (*(uint8_t*)(dwBaseAddress + adSharedFreezeOverride))
+	{
+		Sleep(1);
+
+		while (ok = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			if (!ok) {
+				PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+				return;
+			}
+
+			switch (msg.message) {
+			case WM_QUIT:
+			case WM_DESTROY:
+				PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+				return;
+			}
+
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
 
 	// this hooks directx
 	static bool deviceInit = false;
