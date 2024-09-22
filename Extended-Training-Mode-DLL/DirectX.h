@@ -30,6 +30,124 @@ private:
 
 };
 
+// -----
+
+unsigned _vertexBytesTotal = 0;
+unsigned _vertexBytesTransferedThisFrame = 0;
+// this could have been done without a class. i hope the overhead isnt stupid
+template <typename T, size_t vertexCount>
+class VertexData {
+public:
+
+	VertexData(DWORD vertexFormat_, IDirect3DTexture9** texture_ = NULL) {
+		vertexFormat = vertexFormat_;
+		texture = texture_;
+	}
+
+	void alloc() {
+		if (vertexBuffer == NULL) {
+			if (FAILED(device->CreateVertexBuffer(vertexCount * sizeof(T), 0, vertexFormat, D3DPOOL_MANAGED, &vertexBuffer, NULL))) {
+				log("failed to alloc a vertex buffer!");
+				vertexBuffer = NULL;
+			}
+			_vertexBytesTotal += vertexCount * sizeof(T);
+		}
+	}
+
+	~VertexData() {
+		_vertexBytesTotal -= vertexCount * sizeof(T);
+		if (vertexBuffer != NULL) {
+			vertexBuffer->Release();
+		}
+	}
+
+	void add(T& v1, T& v2, T& v3) {
+
+		if (vertexIndex >= vertexCount) {
+			//log("a vertex buffer overflowed. this is critical. increase the buffer size! current: %d fmt: %08X", vertexCount, vertexFormat);
+			// this log call was getting called to often, and would fuck things up
+			return;
+		}
+
+		vertexData[vertexIndex++] = v1;
+		vertexData[vertexIndex++] = v2;
+		vertexData[vertexIndex++] = v3;
+
+	}
+
+	void draw() {
+
+		if (vertexBuffer == NULL) {
+			log("a vertex data buffer was null? how.");
+			exit(1);
+		}
+
+		if (vertexIndex == 0) {
+			return;
+		}
+
+		if (texture != NULL && *texture != NULL) {
+			device->SetTexture(0, *texture);
+		}
+
+		// ideally i should be scaling the vertices in here, but is it worth it?
+
+		VOID* pVoid;
+
+		_vertexBytesTransferedThisFrame += vertexIndex * sizeof(T);
+
+		vertexBuffer->Lock(0, vertexIndex * sizeof(T), (void**)&pVoid, 0);
+		memcpy(pVoid, vertexData, vertexIndex * sizeof(T));
+		vertexBuffer->Unlock();
+
+		device->SetStreamSource(0, vertexBuffer, 0, sizeof(T));
+		device->SetFVF(vertexFormat);
+		device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, vertexIndex / 3);
+
+		vertexIndex = 0;
+
+		if (texture != NULL && *texture != NULL) {
+			device->SetTexture(0, NULL);
+		}
+	}
+
+	DWORD vertexFormat = 0;
+	IDirect3DVertexBuffer9* vertexBuffer = NULL;
+	IDirect3DTexture9** texture = NULL;
+	T vertexData[vertexCount]; // i distrust vectors
+	unsigned vertexIndex = 0; // number of verts. i,, ugh. i should have written a const size vec class.
+
+};
+
+typedef struct PosVert {
+	D3DVECTOR position;
+} PosVert;
+
+typedef struct PosColVert {
+	D3DVECTOR position;
+	D3DCOLOR color;
+} PosColVert;
+
+typedef struct PosTexVert {
+	D3DVECTOR position;
+	D3DXVECTOR2 texCoord;
+} PosTexVert;
+
+typedef struct PosColTexVert {
+	D3DVECTOR position;
+	D3DCOLOR color;
+	D3DXVECTOR2 texCoord;
+} PosColTexVert;
+
+IDirect3DTexture9* fontTexture = NULL;
+IDirect3DTexture9* fontTextureWithOutline = NULL;
+
+VertexData<PosColVert, 3 * 2048> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
+VertexData<PosColTexVert, 3 * 2048> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTexture);
+
+// ----
+
 //const int fontTexWidth = 256;
 //const int fontTexHeight = 256;
 //int fontSize = 32;
@@ -42,7 +160,10 @@ float fontRatio = ((float)fontWidth) / ((float)fontSize);
 
 size_t fontBufferSize = 0;
 BYTE* fontBuffer = NULL; // this is purposefully not freed on evict btw
-IDirect3DTexture9* fontTexture = NULL;
+
+size_t fontBufferSizeWithOutline = 0;
+BYTE* fontBufferWithOutline = NULL; 
+
 
 IDirect3DPixelShader9* createPixelShader(const char* pixelShaderCode) {
 
@@ -161,6 +282,11 @@ void _initFontFirstLoad() {
 	ID3DXBuffer* buffer = NULL;
 	IDirect3DTexture9* texture = NULL;
 
+	IDirect3DTexture9* textureWithOutline = NULL;
+	ID3DXBuffer* bufferWithOutline = NULL;
+	IDirect3DSurface9* surfaceWithOutline = NULL;
+
+
 	// i still do not know what the hell MIP levels are. but it seems that they would be,, needed/a good idea
 	// for variable font sizing
 
@@ -235,6 +361,23 @@ void _initFontFirstLoad() {
 		return;
 	}
 
+	hr = device->CreateTexture(fontTexWidth, fontTexHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &textureWithOutline, NULL);
+	if (FAILED(hr)) {
+		font->Release();
+		log("font createtexture failed");
+		return;
+	}
+
+	hr = textureWithOutline->GetSurfaceLevel(0, &surfaceWithOutline);
+	if (FAILED(hr)) {
+		texture->Release();
+		texture = NULL;
+		font->Release();
+		log("font getsurfacelevel failed");
+		return;
+	}
+
+
 	D3DVIEWPORT9 viewport;
 
 	viewport.X = 0;
@@ -283,13 +426,131 @@ void _initFontFirstLoad() {
 		log("beginscene failed?????");
 	}
 
+	//hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
+	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG	, texture, NULL);
+
+	// -- above saves default font
+
+	IDirect3DPixelShader9* textOutlinePixelShader = NULL;
+	IDirect3DVertexShader9* textOutlineVertexShader = NULL;
+
+	textOutlinePixelShader = createPixelShader(R"(
+			sampler2D textureSampler : register(s0);
+			float4 texSize : register(c219);
+
+			float4 main(float2 texCoordIn : TEXCOORD0) : COLOR {
+									
+					float2 texOffset = 4.0 / texSize;
+	
+					//texOffset.y /= (4.0 / 3.0);
+
+					float2 texCoord = texCoordIn + (texOffset * 0.5);
+
+					float4 texColor = tex2D(textureSampler, texCoord);
+				
+					// this outline needs to be a bit different, since im trying to have it be outside the bounds of the drawn color.
+
+					if(texColor.a > 0.0) {
+						return float4(texColor.rgb, 1.0);
+					}
+	
+					float2 offsets[8] = { // order is adjusted to check diags last. performance.
+						
+						texCoord + float2(-texOffset.x, 0.0),
+						texCoord + float2(0.0, -texOffset.y),
+						texCoord + float2(0.0, texOffset.y),
+						texCoord + float2(texOffset.x, 0.0),						
+
+						texCoord + float2(texOffset.x, -texOffset.y),
+						texCoord + float2(-texOffset.x, -texOffset.y),
+						texCoord + float2(-texOffset.x, texOffset.y),
+						texCoord + float2(texOffset.x, texOffset.y)
+					};
+
+
+					float4 tempColor;
+
+					[unroll(8)] for(int i=0; i<8; i++) {
+
+						tempColor = tex2D(textureSampler, offsets[i]);
+						if(tempColor.a > 0) {
+							return float4(0.0, 0.0, 0.0, 1.0);
+						}
+
+					}
+			
+					return float4(0.0, 0.0, 0.0, 0.0);
+
+			}
+
+	)");
+
+	D3DXVECTOR4 textureSize((float)fontTexWidth, (float)fontTexHeight, 0.0, 0.0);
+	device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
+
+	textOutlineVertexShader = createVertexShader(R"(
+			struct VS_INPUT {
+				float4 position : POSITION;
+				float2 texCoord : TEXCOORD0;
+			};
+    
+			struct VS_OUTPUT {
+				float4 position : POSITION;
+				float2 texCoord : TEXCOORD0;
+			};
+    
+			VS_OUTPUT main(VS_INPUT input) {
+				VS_OUTPUT output;
+				output.position = input.position;
+				output.texCoord = input.texCoord;
+				return output;
+			}
+
+	)");
+
+	device->SetPixelShader(textOutlinePixelShader);
+	device->SetVertexShader(textOutlineVertexShader);
+
+	device->SetRenderTarget(0, surfaceWithOutline);
+
+	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	// i cannot believe i am using this class here, but its honestly the easiest way.
+	VertexData<PosTexVert, 3 * 2> tempVertData(D3DFVF_XYZ | D3DFVF_TEX1, &texture); // the deconstructor should handle this.	
+	tempVertData.alloc();
+
+
+	PosTexVert v1 = { D3DVECTOR(-1.0f, 1.0f, 0.5f), D3DXVECTOR2(0.0f, 0.0f) };
+	PosTexVert v2 = { D3DVECTOR(1.0f, 1.0f, 0.5f), D3DXVECTOR2(1.0f, 0.0f) };
+	PosTexVert v3 = { D3DVECTOR(-1.0f, -1.0f, 0.5f), D3DXVECTOR2(0.0f, 1.0f) };
+	PosTexVert v4 = { D3DVECTOR(1.0f, -1.0f, 0.5f), D3DXVECTOR2(1.0f, 1.0f) };
+
+	tempVertData.add(v1, v2, v3);
+	tempVertData.add(v2, v3, v4);
+
+	tempVertData.draw();
+
+
+	device->SetPixelShader(NULL);
+	if (textOutlinePixelShader != NULL) {
+		textOutlinePixelShader->Release();
+		textOutlinePixelShader = NULL;
+	}
+
+	device->SetVertexShader(NULL);
+	if (textOutlineVertexShader != NULL) {
+		textOutlineVertexShader->Release();
+		textOutlineVertexShader = NULL;
+	}
+
+	hr = D3DXSaveTextureToFileA("fontTestWithOutline.png", D3DXIFF_PNG, textureWithOutline, NULL);
+	hr = D3DXSaveTextureToFileInMemory(&bufferWithOutline, D3DXIFF_PNG, textureWithOutline, NULL);
+
 	device->SetRenderTarget(0, oldRenderTarget);
 	oldRenderTarget->Release();
 	surface->Release();
-
-	//hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
-	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG	, texture, NULL);
 	texture->Release();
+	textureWithOutline->Release();
+	surfaceWithOutline->Release();
 	font->Release();
 
 	if (FAILED(hr)) {
@@ -309,6 +570,20 @@ void _initFontFirstLoad() {
 	memcpy(fontBuffer, bufferPtr, bufferSize);
 	fontBufferSize = bufferSize;
 
+	// -----
+
+	bufferPtr = (BYTE*)bufferWithOutline->GetBufferPointer();
+	bufferSize = bufferWithOutline->GetBufferSize();
+
+	fontBufferWithOutline = (BYTE*)malloc(bufferSize);
+	if (fontBufferWithOutline == NULL) {
+		log("font malloc failed, what are you doing");
+		return;
+	}
+
+	memcpy(fontBufferWithOutline, bufferPtr, bufferSize);
+	fontBufferSizeWithOutline = bufferSize;
+
 	log("loaded font BUFFER!!!");
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
 }
@@ -327,9 +602,20 @@ void initFont() {
 		fontTexture = NULL;
 	}
 
+	if (fontTextureWithOutline != NULL) {
+		fontTextureWithOutline->Release();
+		fontTextureWithOutline = NULL;
+	}
+
 	HRESULT hr;
 
 	hr = D3DXCreateTextureFromFileInMemory(device, fontBuffer, fontBufferSize, &fontTexture); // this texture is D3DPOOL_MANAGED, and so doesnt need a reset on every reset call! yipee
+	if (FAILED(hr)) {
+		log("font createtexfromfileinmem failed??");
+		return;
+	}
+
+	hr = D3DXCreateTextureFromFileInMemory(device, fontBufferWithOutline, fontBufferSizeWithOutline, &fontTextureWithOutline); // this texture is D3DPOOL_MANAGED, and so doesnt need a reset on every reset call! yipee
 	if (FAILED(hr)) {
 		log("font createtexfromfileinmem failed??");
 		return;
@@ -339,119 +625,6 @@ void initFont() {
 
 	log("FONT TEXTURE LOADED");
 }
-
-// -----
-
-unsigned _vertexBytesTotal = 0;
-unsigned _vertexBytesTransferedThisFrame = 0;
-// this could have been done without a class. i hope the overhead isnt stupid
-template <typename T, size_t vertexCount>
-class VertexData {
-public:
-
-	VertexData(DWORD vertexFormat_, IDirect3DTexture9** texture_ = NULL) {
-		vertexFormat = vertexFormat_;
-		texture = texture_;
-	}
-
-	void alloc() {
-		if (vertexBuffer == NULL) {
-			if (FAILED(device->CreateVertexBuffer(vertexCount * sizeof(T), 0, vertexFormat, D3DPOOL_MANAGED, &vertexBuffer, NULL))) {
-				log("failed to alloc a vertex buffer!");
-				vertexBuffer = NULL;
-			}
-			_vertexBytesTotal += vertexCount * sizeof(T);
-		}
-	}
-
-	~VertexData() {
-		_vertexBytesTotal -= vertexCount * sizeof(T);
-		if (vertexBuffer != NULL) {
-			vertexBuffer->Release();
-		}
-	}
-
-	void add(T& v1, T& v2, T& v3) {
-
-		if (vertexIndex >= vertexCount) {	
-			//log("a vertex buffer overflowed. this is critical. increase the buffer size! current: %d fmt: %08X", vertexCount, vertexFormat);
-			// this log call was getting called to often, and would fuck things up
-			return;
-		}
-
-		vertexData[vertexIndex++] = v1;
-		vertexData[vertexIndex++] = v2;
-		vertexData[vertexIndex++] = v3;
-
-	}
-
-	void draw() {
-
-		if (vertexBuffer == NULL) {
-			log("a vertex data buffer was null? how.");
-			exit(1);
-		}
-
-		if (vertexIndex == 0) {
-			return;
-		}
-
-		if(texture != NULL && *texture != NULL) {
-			device->SetTexture(0, *texture);
-		}
-
-		// ideally i should be scaling the vertices in here, but is it worth it?
-
-		VOID* pVoid;
-
-		_vertexBytesTransferedThisFrame += vertexIndex * sizeof(T);
-
-		vertexBuffer->Lock(0, vertexIndex * sizeof(T), (void**)&pVoid, 0);
-		memcpy(pVoid, vertexData, vertexIndex * sizeof(T));
-		vertexBuffer->Unlock();
-
-		device->SetStreamSource(0, vertexBuffer, 0, sizeof(T));
-		device->SetFVF(vertexFormat);
-		device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, vertexIndex / 3);
-
-		vertexIndex = 0;
-
-		if (texture != NULL && *texture != NULL) {
-			device->SetTexture(0, NULL);
-		}
-	}
-
-	DWORD vertexFormat = 0;
-	IDirect3DVertexBuffer9* vertexBuffer = NULL;
-	IDirect3DTexture9** texture = NULL;
-	T vertexData[vertexCount]; // i distrust vectors
-	unsigned vertexIndex = 0; // number of verts. i,, ugh. i should have written a const size vec class.
-
-};
-
-typedef struct PosVert {
-	D3DVECTOR position;
-} PosVert;
-
-typedef struct PosColVert {
-	D3DVECTOR position;
-	D3DCOLOR color;
-} PosColVert;
-
-typedef struct PosTexVert {
-	D3DVECTOR position;
-	D3DXVECTOR2 texCoord;
-} PosTexVert;
-
-typedef struct PosColTexVert {
-	D3DVECTOR position;
-	D3DCOLOR color;
-	D3DXVECTOR2 texCoord;
-} PosColTexVert;
-
-VertexData<PosColVert, 3 * 2048> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
-VertexData<PosColTexVert, 3 * 2048> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTexture);
 
 // -----
 
@@ -1714,7 +1887,7 @@ void _drawMiscInfo() {
 	x *= (wWidth / (wHeight * 4.0f / 3.0f));
 	x *= 640.0f;
 
-	float y = 0.0f;
+	float y = 0.2f * 480.0f;
 
 	unsigned availMem = device->GetAvailableTextureMem();
 
