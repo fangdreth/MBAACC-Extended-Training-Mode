@@ -62,15 +62,19 @@ static int inject(unsigned long procID, char* dllPath)
 	}
 }
 
-static void InjectIntoMBAA(unsigned long nPID, std::string sDLLPath) 
+static bool InjectIntoMBAA(unsigned long nPID, std::string sDLLPath) 
 {
+	int nReturn;
 	try
 	{
-		if (inject(nPID, sDLLPath.data()))
+		nReturn = inject(nPID, sDLLPath.data());
+		if (nReturn)
 			LogError("Failure during injection");
 	}
 	catch (...)
 	{
 		LogError("Failure during injection");
 	}
+
+	return nReturn;
 }
