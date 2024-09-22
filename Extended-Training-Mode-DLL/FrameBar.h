@@ -80,33 +80,27 @@ void GetProjectileInfo(Player& P)
 {
 	P.bLastProjectileActive = P.bProjectileActive;
 	P.bProjectileActive = false;
-	int nCharacterID = 0;
+	short sCharacterID = 0;
+	char cBlankEffectCount = 0;
 	if (P.cPlayerNumber % 2 == 0)
 	{
-		nCharacterID = *(char*)(adMBAABase + dwP1CharNumber) * 10 + *(char*)(adMBAABase + dwP1CharMoon);
+		sCharacterID = *(char*)(adMBAABase + dwP1CharNumber) * 10 + *(char*)(adMBAABase + dwP1CharMoon);
 	}
 	else
 	{
-		nCharacterID = *(char*)(adMBAABase + dwP2CharNumber) * 10 + *(char*)(adMBAABase + dwP2CharMoon);
+		sCharacterID = *(char*)(adMBAABase + dwP2CharNumber) * 10 + *(char*)(adMBAABase + dwP2CharMoon);
 	}
-	std::map<std::string, int> CharacterMap = MBAACC_Map[nCharacterID];
 	for (int i = 0; i < 200; i++) //Check Projectiles for active
 	{
-		bool validProj = true;
+		if (cBlankEffectCount > 16) break;
+		cBlankEffectCount++;
 		if (*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i) != 0 &&
 			*(DWORD*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adAttackDataPointer) != 0 &&
 			*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectSource) == P.cPlayerNumber &&
 			*(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adPattern) >= 60)
 		{
-			for (auto const& [key, val] : CharacterMap)
-			{
-				if (*(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adPattern) == val)
-				{
-					validProj = false;
-					break;
-				}
-			}
-			if (validProj)
+			cBlankEffectCount = 0;
+			if (!IsCharacterPattern(sCharacterID, *(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adPattern)))
 			{
 				P.bProjectileActive = true;
 			}

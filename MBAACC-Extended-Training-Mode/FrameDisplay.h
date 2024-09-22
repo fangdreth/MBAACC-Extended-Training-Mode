@@ -243,7 +243,7 @@ void CheckProjectiles(HANDLE hMBAAHandle, Player& P)
 {
 	char cCharacterNumber = 0;
 	char cMoon = 0;
-	int nCharacterID = 0;
+	short sCharacterID = 0;
 	if (P.cPlayerNumber % 2 == 0)
 	{
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP1CharNumber), &cCharacterNumber, 1, 0);
@@ -254,41 +254,30 @@ void CheckProjectiles(HANDLE hMBAAHandle, Player& P)
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP2CharNumber), &cCharacterNumber, 1, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP2CharMoon), &cMoon, 1, 0);
 	}
-	nCharacterID = 10 * cCharacterNumber + cMoon;
-	std::map<std::string, int> CharacterMap = MBAACC_Map[nCharacterID];
+	sCharacterID = 10 * cCharacterNumber + cMoon;
 
-
-	DWORD dwBlankEffectCount = 0;
+	char cBlankEffectCount = 0;
 	bool bProjectileExists = 0;
 	char cProjectileSource = 0;
 	int nProjectilePattern = 0;
 	DWORD dwProjectileAttackDataPointer = 0;
 	int nCount = 0;
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 200; i++)
 	{
+		if (cBlankEffectCount > 16) break;
+		cBlankEffectCount++;
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i), &bProjectileExists, 1, 0);
 		if (!bProjectileExists) continue;
-		dwBlankEffectCount = 0;
+		cBlankEffectCount = 0;
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adEffectSource), &cProjectileSource, 1, 0);
 		if (cProjectileSource != P.cPlayerNumber) continue;
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adPattern), &nProjectilePattern, 4, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adAttackDataPointer), &dwProjectileAttackDataPointer, 4, 0);
 		if (!dwProjectileAttackDataPointer || nProjectilePattern < 60) continue;
-		bool bIncrement = true;
-		for (auto const& [key, val] : CharacterMap)
-		{
-			if (nProjectilePattern == val)
-			{
-				bIncrement = false;
-				break;
-			}
-		}
-		if (bIncrement)
+		if (!IsCharacterPattern(sCharacterID, nProjectilePattern))
 		{
 			nCount++;
 		}
-		dwBlankEffectCount++;
-		if (dwBlankEffectCount > 16) break;
 	}
 	P.nActiveProjectileCount = nCount;
 }

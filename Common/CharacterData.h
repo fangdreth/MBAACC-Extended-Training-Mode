@@ -75,6 +75,7 @@ static std::map<std::string, int> CharacterValues_Map =
 };
 
 static std::map<int, std::map<std::string, int>> MBAACC_Map = { {} };
+static std::map<short, std::map<short, bool>> MBAACC_PatternMap = { {} };
 
 static std::vector<std::string> vEveryPatternName =
 {
@@ -198,10 +199,113 @@ static void InitializeCharacterMaps()
 	MBAACC_Map[eCharacterValues::FNECO] = FNECO_Map;
 }
 
+static void InitializeCharacterPatternMaps()
+{
+	MBAACC_PatternMap[eCharacterValues::UNIVERSAL] = Universal_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CAOKO] = CAOKO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FAOKO] = FAOKO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HAOKO] = HAOKO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CTOHNO] = CTOHNO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FTOHNO] = FTOHNO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HTOHNO] = HTOHNO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CHIME] = CHIME_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HHIME] = HHIME_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FHIME] = FHIME_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CNANAYA] = CNANAYA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HNANAYA] = HNANAYA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FNANAYA] = FNANAYA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CKOUMA] = CKOUMA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HKOUMA] = HKOUMA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FKOUMA] = FKOUMA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CMIYAKO] = CMIYAKO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HMIYAKO] = HMIYAKO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FMIYAKO] = FMIYAKO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CCIEL] = CCIEL_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HCIEL] = HCIEL_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FCIEL] = FCIEL_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CSION] = CSION_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HSION] = HSION_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FSION] = FSION_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CRIES] = CRIES_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HRIES] = HRIES_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FRIES] = FRIES_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CVSION] = CVSION_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HVSION] = HVSION_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FVSION] = FVSION_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CWARA] = CWARA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HWARA] = HWARA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FWARA] = FWARA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CROA] = CROA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HROA] = HROA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FROA] = FROA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CMAIDS] = CMAIDS_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HMAIDS] = HMAIDS_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FMAIDS] = FMAIDS_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CAKIHA] = CAKIHA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HAKIHA] = HAKIHA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FAKIHA] = FAKIHA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CARC] = CARC_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HARC] = HARC_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FARC] = FARC_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CPCIEL] = CPCIEL_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HPCIEL] = HPCIEL_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FPCIEL] = FPCIEL_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CWARC] = CWARC_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HWARC] = HWARC_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FWARC] = FWARC_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CVAKIHA] = CVAKIHA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HVAKIHA] = HVAKIHA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FVAKIHA] = FVAKIHA_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CMECH] = CMECH_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HMECH] = HMECH_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FMECH] = FMECH_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CSEIFUKU] = CSEIFUKU_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HSEIFUKU] = HSEIFUKU_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FSEIFUKU] = FSEIFUKU_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CSATSUKI] = CSATSUKI_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HSATSUKI] = HSATSUKI_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FSATSUKI] = FSATSUKI_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CLEN] = CLEN_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HLEN] = HLEN_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FLEN] = FLEN_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CRYOUGI] = CRYOUGI_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HRYOUGI] = HRYOUGI_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FRYOUGI] = FRYOUGI_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CWLEN] = CWLEN_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HWLEN] = HWLEN_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FWLEN] = FWLEN_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CNERO] = CNERO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HNERO] = HNERO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FNERO] = FNERO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CNAC] = CNAC_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HNAC] = HNAC_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FNAC] = FNAC_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CKOHAMECH] = CKOHAMECH_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HKOHAMECH] = HKOHAMECH_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FKOHAMECH] = FKOHAMECH_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CHISUI] = CHISUI_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HHISUI] = HHISUI_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FHISUI] = FHISUI_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CKOHAKU] = CKOHAKU_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HKOHAKU] = HKOHAKU_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FKOHAKU] = FKOHAKU_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CNECOMECH] = CNECOMECH_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HNECOMECH] = HNECOMECH_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FNECOMECH] = FNECOMECH_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::CNECO] = CNECO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::HNECO] = HNECO_PatternMap;
+	MBAACC_PatternMap[eCharacterValues::FNECO] = FNECO_PatternMap;
+}
+
 static int GetPattern(int nCharacterID, std::string sPatternName)
 {
 	// All patterns are positive integers.  If a pattern is not in a map, it is a 0
 	return max(MBAACC_Map[eCharacterValues::UNIVERSAL][sPatternName], MBAACC_Map[nCharacterID][sPatternName]);
+}
+
+static bool IsCharacterPattern(short sCharacterID, short sPatternNumber)
+{
+	return MBAACC_PatternMap[eCharacterValues::UNIVERSAL][sPatternNumber] || MBAACC_PatternMap[sCharacterID][sPatternNumber];
 }
 
 static std::string GetCharacterNameFromID(int nCharacterID)
