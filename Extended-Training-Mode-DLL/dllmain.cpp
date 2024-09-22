@@ -18,6 +18,7 @@
 #include <cstdarg>
 #include <chrono>
 #include <deque>
+#include "resource.h"
 
 //#pragma comment(lib, "ws2_32.lib") 
 
@@ -35,6 +36,7 @@
 #pragma comment(lib, "d3dx9.lib")
 #pragma comment(lib, "dxerr.lib")
 #pragma comment(lib, "dsound.lib")
+#pragma comment(lib, "legacy_stdio_definitions.lib")
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 

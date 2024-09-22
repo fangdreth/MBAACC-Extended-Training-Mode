@@ -1,6 +1,15 @@
 #pragma once
 
+#include "resource.h"
+
 void _naked_InitDirectXHooks();
+
+void printDirectXError(HRESULT hr) {
+	const WCHAR* errorStr = DXGetErrorString(hr);
+	const WCHAR* errorDesc = DXGetErrorDescription(hr);
+
+	log("err: %s\n    %s", errorStr, errorDesc);
+}
 
 class Texture {
 public:
@@ -139,12 +148,21 @@ typedef struct PosColTexVert {
 	D3DXVECTOR2 texCoord;
 } PosColTexVert;
 
+size_t fontBufferSize = 0;
+BYTE* fontBuffer = NULL; // this is purposefully not freed on evict btw
 IDirect3DTexture9* fontTexture = NULL;
+
+size_t fontBufferSizeWithOutline = 0;
+BYTE* fontBufferWithOutline = NULL;
 IDirect3DTexture9* fontTextureWithOutline = NULL;
+
+BYTE* fontBufferMelty = NULL;
+size_t fontBufferMeltySize = 0;
+IDirect3DTexture9* fontTextureMelty = NULL;
 
 VertexData<PosColVert, 3 * 2048> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
-VertexData<PosColTexVert, 3 * 2048> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTexture);
+VertexData<PosColTexVert, 3 * 2048> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 
 // ----
 
@@ -157,13 +175,6 @@ int fontSize = 64;
 int fontHeight = fontSize;
 int fontWidth = (((float)fontSize) / 2.0f) - 1; // 1 extra pixel is put between each char and the next. take this into account
 float fontRatio = ((float)fontWidth) / ((float)fontSize);
-
-size_t fontBufferSize = 0;
-BYTE* fontBuffer = NULL; // this is purposefully not freed on evict btw
-
-size_t fontBufferSizeWithOutline = 0;
-BYTE* fontBufferWithOutline = NULL; 
-
 
 IDirect3DPixelShader9* createPixelShader(const char* pixelShaderCode) {
 
@@ -260,42 +271,49 @@ unsigned scaleNextPow2(unsigned v) {
 	return v;
 }
 
-void _initFontFirstLoad() {
-	// i dont know why.
-	// i dont know how.
-	// but SOMEHOW
-	// calling DrawTextA overwrites my hooks, and completely fucks EVERYTHING up.
-	// i could rehook after it, but holy shit im already rehooking caster hooks, and rehooking beginstate hooks? i think that rehooking 3 times is to many hooks.
-	// im going to need to render the font manually.
-	// orrr,,, i could,,, try rehooking again? as a treat?
-	// no, no treat, you are going to have to do this painfully.
-	// never call this func more than once, or while hooked.
+bool loadResource(int id, BYTE*& buffer, unsigned& bufferSize) {
 
-	static bool hasRan = false;
-	if (hasRan) {
-		return;
+	HMODULE hModule = GetModuleHandle(TEXT("Extended-Training-Mode-DLL.dll"));
+
+	HRSRC hResource = FindResource(hModule, MAKEINTRESOURCE(id), L"PNG");
+	if (!hResource) {
+		log("couldnt find embedded resource?");
+		return false;
 	}
-	hasRan = true;
+
+	bufferSize = SizeofResource(hModule, hResource);
+	if (!bufferSize) {
+		log("getting resource size failed");
+		return false;
+	}
+	
+	HGLOBAL hMemory = LoadResource(hModule, hResource);
+	if (!hMemory) {
+		log("Failed to load resource");
+		return false;
+	}
+	
+	buffer = (BYTE*)LockResource(hMemory); // for some reason, this lock never has to be unlocked.
+	if (!buffer) {
+		log("Failed to lock resource");
+		return false;
+	}
+
+	log("loaded resource %d successfully", id);
+
+	return true;
+}
+
+void _initDefaultFont(IDirect3DTexture9*& resTexture) {
+
+	resTexture = NULL;
 
 	ID3DXFont* font = NULL;
+
 	IDirect3DSurface9* surface = NULL;
 	ID3DXBuffer* buffer = NULL;
 	IDirect3DTexture9* texture = NULL;
 
-	IDirect3DTexture9* textureWithOutline = NULL;
-	ID3DXBuffer* bufferWithOutline = NULL;
-	IDirect3DSurface9* surfaceWithOutline = NULL;
-
-
-	// i still do not know what the hell MIP levels are. but it seems that they would be,, needed/a good idea
-	// for variable font sizing
-
-	//const int fontSize = 24;
-
-	DWORD antiAliasBackup;
-	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
-	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
-	
 	int fontSizePow2 = scaleNextPow2(fontSize);
 
 	HRESULT hr = D3DXCreateFontA(
@@ -303,7 +321,7 @@ void _initFontFirstLoad() {
 		fontSize, // height 
 		fontWidth,  // width. this could be set to 0, but out of paranoia, i want it at a fixed value
 		//FW_NORMAL, // weight?
-		FW_BOLD, 
+		FW_BOLD,
 		//FW_MEDIUM,
 		//FW_SEMIBOLD,
 		//FW_REGULAR,
@@ -319,7 +337,6 @@ void _initFontFirstLoad() {
 
 	if (FAILED(hr)) {
 		log("failed to create font?");
-		font = NULL;
 		return;
 	}
 
@@ -328,7 +345,6 @@ void _initFontFirstLoad() {
 	size_t charCount = 0;
 
 	for (char c = ' '; c <= '~'; c++) {
-
 		if (((int)c & 0xF) == 0 && c != ' ') {
 			dispChars += "\n";
 		}
@@ -340,44 +356,6 @@ void _initFontFirstLoad() {
 	int texWidth = scaleNextPow2(charCount * fontSize);
 	int texHeight = fontSizePow2 * 16;
 
-	//texWidth = 512;
-	//texHeight = 512;
-
-	log("attempting to load a font, reallllly attempting w: %d h: %d", fontTexWidth, fontTexHeight);
-
-	hr = device->CreateTexture(fontTexWidth, fontTexHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
-	if (FAILED(hr)) {
-		font->Release();
-		log("font createtexture failed");
-		return;
-	}
-
-	hr = texture->GetSurfaceLevel(0, &surface);
-	if (FAILED(hr)) {
-		texture->Release();
-		texture = NULL;
-		font->Release();
-		log("font getsurfacelevel failed");
-		return;
-	}
-
-	hr = device->CreateTexture(fontTexWidth, fontTexHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &textureWithOutline, NULL);
-	if (FAILED(hr)) {
-		font->Release();
-		log("font createtexture failed");
-		return;
-	}
-
-	hr = textureWithOutline->GetSurfaceLevel(0, &surfaceWithOutline);
-	if (FAILED(hr)) {
-		texture->Release();
-		texture = NULL;
-		font->Release();
-		log("font getsurfacelevel failed");
-		return;
-	}
-
-
 	D3DVIEWPORT9 viewport;
 
 	viewport.X = 0;
@@ -388,24 +366,27 @@ void _initFontFirstLoad() {
 	viewport.MaxZ = 1.0f;
 	device->SetViewport(&viewport);
 
+	hr = device->CreateTexture(fontTexWidth, fontTexHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
+	if (FAILED(hr)) {
+		log("font createtexture failed");
+		return;
+	}
+
 	IDirect3DSurface9* oldRenderTarget = nullptr;
 	hr = device->GetRenderTarget(0, &oldRenderTarget);
 	if (FAILED(hr)) {
-		surface->Release();
-		texture->Release();
-		texture = NULL;
-		font->Release();
 		log("font getrendertarget failed");
+		return;
+	}
+
+	hr = texture->GetSurfaceLevel(0, &surface);
+	if (FAILED(hr)) {
+		log("font getsurfacelevel failed");
 		return;
 	}
 
 	hr = device->SetRenderTarget(0, surface);
 	if (FAILED(hr)) {
-		oldRenderTarget->Release();
-		surface->Release();
-		texture->Release();
-		texture = NULL;
-		font->Release();
 		log("font setrendertarget failed");
 		return;
 	}
@@ -415,7 +396,7 @@ void _initFontFirstLoad() {
 
 	hr = device->BeginScene();
 	if (SUCCEEDED(hr)) {
-		
+
 		RECT rect = { 0, 0, texWidth, texHeight };
 		font->DrawTextA(NULL, dispChars.c_str(), -1, &rect, DT_LEFT | DT_TOP, D3DCOLOR_XRGB(255, 255, 255)); // gross horrid disgusting hook removing call
 
@@ -424,17 +405,36 @@ void _initFontFirstLoad() {
 	}
 	else {
 		log("beginscene failed?????");
+		return;
 	}
 
 	//hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
-	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG	, texture, NULL);
+	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG, texture, NULL);
 
-	// -- above saves default font
+	BYTE* bufferPtr = (BYTE*)buffer->GetBufferPointer();
+	size_t bufferSize = buffer->GetBufferSize();
 
-	IDirect3DPixelShader9* textOutlinePixelShader = NULL;
-	IDirect3DVertexShader9* textOutlineVertexShader = NULL;
+	fontBuffer = (BYTE*)malloc(bufferSize);
+	if (fontBuffer == NULL) {
+		log("font malloc failed, what are you doing");
+		return;
+	}
 
-	textOutlinePixelShader = createPixelShader(R"(
+	memcpy(fontBuffer, bufferPtr, bufferSize);
+	fontBufferSize = bufferSize;
+
+	device->SetRenderTarget(0, oldRenderTarget);
+	oldRenderTarget->Release();
+	font->Release();
+	//texture->Release();
+	surface->Release();
+	buffer->Release();
+
+	resTexture = texture;
+}
+
+IDirect3DPixelShader9* getFontOutlinePixelShader() {
+	return createPixelShader(R"(
 			sampler2D textureSampler : register(s0);
 			float4 texSize : register(c219);
 
@@ -484,11 +484,10 @@ void _initFontFirstLoad() {
 			}
 
 	)");
+}
 
-	D3DXVECTOR4 textureSize((float)fontTexWidth, (float)fontTexHeight, 0.0, 0.0);
-	device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
-
-	textOutlineVertexShader = createVertexShader(R"(
+IDirect3DVertexShader9* getFontOutlineVertexShader() {
+	return createVertexShader(R"(
 			struct VS_INPUT {
 				float4 position : POSITION;
 				float2 texCoord : TEXCOORD0;
@@ -507,17 +506,57 @@ void _initFontFirstLoad() {
 			}
 
 	)");
+}
+
+void _initDefaultFontOutline(IDirect3DTexture9*& fontTex) {
+
+	IDirect3DSurface9* surface = NULL;
+	ID3DXBuffer* buffer = NULL;
+	IDirect3DTexture9* texture = NULL;
+
+	HRESULT hr;
+
+	hr = device->CreateTexture(fontTexWidth, fontTexHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
+	if (FAILED(hr)) {
+		log("font createtexture failed");
+		return;
+	}
+
+	IDirect3DSurface9* oldRenderTarget = nullptr;
+	hr = device->GetRenderTarget(0, &oldRenderTarget);
+	if (FAILED(hr)) {
+		log("font getrendertarget failed");
+		return;
+	}
+
+	hr = texture->GetSurfaceLevel(0, &surface);
+	if (FAILED(hr)) {
+		log("font getsurfacelevel failed");
+		return;
+	}
+
+	hr = device->SetRenderTarget(0, surface);
+	if (FAILED(hr)) {
+		log("font setrendertarget failed");
+		return;
+	}
+
+	IDirect3DPixelShader9* textOutlinePixelShader = getFontOutlinePixelShader();
+	IDirect3DVertexShader9* textOutlineVertexShader = getFontOutlineVertexShader();
+
 
 	device->SetPixelShader(textOutlinePixelShader);
 	device->SetVertexShader(textOutlineVertexShader);
 
-	device->SetRenderTarget(0, surfaceWithOutline);
+	D3DXVECTOR4 textureSize((float)fontTexWidth, (float)fontTexHeight, 0.0, 0.0);
+	device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
 
 	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-	// i cannot believe i am using this class here, but its honestly the easiest way.
-	VertexData<PosTexVert, 3 * 2> tempVertData(D3DFVF_XYZ | D3DFVF_TEX1, &texture); // the deconstructor should handle this.	
-	tempVertData.alloc();
+	
+	
 
+	VertexData<PosTexVert, 3 * 2> tempVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTex); // the deconstructor should handle this.	
+	tempVertData.alloc();
 
 	PosTexVert v1 = { D3DVECTOR(-1.0f, 1.0f, 0.5f), D3DXVECTOR2(0.0f, 0.0f) };
 	PosTexVert v2 = { D3DVECTOR(1.0f, 1.0f, 0.5f), D3DXVECTOR2(1.0f, 0.0f) };
@@ -527,53 +566,17 @@ void _initFontFirstLoad() {
 	tempVertData.add(v1, v2, v3);
 	tempVertData.add(v2, v3, v4);
 
+	device->BeginScene();
+
 	tempVertData.draw();
 
+	device->EndScene();
 
-	device->SetPixelShader(NULL);
-	if (textOutlinePixelShader != NULL) {
-		textOutlinePixelShader->Release();
-		textOutlinePixelShader = NULL;
-	}
-
-	device->SetVertexShader(NULL);
-	if (textOutlineVertexShader != NULL) {
-		textOutlineVertexShader->Release();
-		textOutlineVertexShader = NULL;
-	}
-
-	hr = D3DXSaveTextureToFileA("fontTestWithOutline.png", D3DXIFF_PNG, textureWithOutline, NULL);
-	hr = D3DXSaveTextureToFileInMemory(&bufferWithOutline, D3DXIFF_PNG, textureWithOutline, NULL);
-
-	device->SetRenderTarget(0, oldRenderTarget);
-	oldRenderTarget->Release();
-	surface->Release();
-	texture->Release();
-	textureWithOutline->Release();
-	surfaceWithOutline->Release();
-	font->Release();
-
-	if (FAILED(hr)) {
-		log("savetextomem failed??");
-		return;
-	}
+	//hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
+	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG, texture, NULL);
 
 	BYTE* bufferPtr = (BYTE*)buffer->GetBufferPointer();
 	size_t bufferSize = buffer->GetBufferSize();
-
-	fontBuffer = (BYTE*)malloc(bufferSize);
-	if (fontBuffer == NULL) {
-		log("font malloc failed, what are you doing");
-		return;
-	}
-
-	memcpy(fontBuffer, bufferPtr, bufferSize);
-	fontBufferSize = bufferSize;
-
-	// -----
-
-	bufferPtr = (BYTE*)bufferWithOutline->GetBufferPointer();
-	bufferSize = bufferWithOutline->GetBufferSize();
 
 	fontBufferWithOutline = (BYTE*)malloc(bufferSize);
 	if (fontBufferWithOutline == NULL) {
@@ -583,6 +586,163 @@ void _initFontFirstLoad() {
 
 	memcpy(fontBufferWithOutline, bufferPtr, bufferSize);
 	fontBufferSizeWithOutline = bufferSize;
+
+	device->SetRenderTarget(0, oldRenderTarget);
+
+	device->SetPixelShader(NULL);
+	device->SetVertexShader(NULL);
+
+	oldRenderTarget->Release();
+	surface->Release();
+	buffer->Release();
+	texture->Release();
+
+	textOutlinePixelShader->Release();
+	textOutlineVertexShader->Release();
+}
+
+void _initMeltyFont(IDirect3DTexture9*& fontTex) {
+
+	IDirect3DSurface9* surface = NULL;
+	ID3DXBuffer* buffer = NULL;
+	IDirect3DTexture9* texture = NULL;
+
+	HRESULT hr;
+
+	BYTE* pngBuffer = NULL;
+	unsigned pngSize = 0;
+	bool res = loadResource(IDB_PNG1, pngBuffer, pngSize);
+
+	IDirect3DTexture9* meltyTex = NULL;
+
+	hr = D3DXCreateTextureFromFileInMemory(device, pngBuffer, pngSize, &meltyTex);
+	if (FAILED(hr)) {
+		log("font createtexfromfileinmem failed??");
+		return;
+	}
+
+	if (!res) {
+		log("failed to load melty font resource");
+		return;
+	}
+
+	hr = device->CreateTexture(fontTexWidth, fontTexHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
+	if (FAILED(hr)) {
+		log("font createtexture failed");
+		return;
+	}
+
+	IDirect3DSurface9* oldRenderTarget = nullptr;
+	hr = device->GetRenderTarget(0, &oldRenderTarget);
+	if (FAILED(hr)) {
+		log("font getrendertarget failed");
+		return;
+	}
+
+	hr = texture->GetSurfaceLevel(0, &surface);
+	if (FAILED(hr)) {
+		log("font getsurfacelevel failed");
+		return;
+	}
+
+	hr = device->SetRenderTarget(0, surface);
+	if (FAILED(hr)) {
+		log("font setrendertarget failed");
+		return;
+	}
+
+	IDirect3DPixelShader9* textOutlinePixelShader = getFontOutlinePixelShader();
+	IDirect3DVertexShader9* textOutlineVertexShader = getFontOutlineVertexShader();
+
+	//device->SetPixelShader(textOutlinePixelShader);
+	//device->SetVertexShader(textOutlineVertexShader);
+
+	D3DXVECTOR4 textureSize((float)fontTexWidth, (float)fontTexHeight, 0.0, 0.0);
+	device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
+
+	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	//device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0xFF, 0, 0, 0xFF), 1.0f, 0);
+
+	VertexData<PosTexVert, 3 * 2> tempVertData(D3DFVF_XYZ | D3DFVF_TEX1, &meltyTex); // the deconstructor should handle this.	
+	tempVertData.alloc();
+
+	PosTexVert v1 = { D3DVECTOR(-1.0f, 1.0f, 0.5f), D3DXVECTOR2(0.0f, 0.0f) };
+	PosTexVert v2 = { D3DVECTOR(1.0f, 1.0f, 0.5f), D3DXVECTOR2(1.0f, 0.0f) };
+	PosTexVert v3 = { D3DVECTOR(-1.0f, -1.0f, 0.5f), D3DXVECTOR2(0.0f, 1.0f) };
+	PosTexVert v4 = { D3DVECTOR(1.0f, -1.0f, 0.5f), D3DXVECTOR2(1.0f, 1.0f) };
+
+	tempVertData.add(v1, v2, v3);
+	tempVertData.add(v2, v3, v4);
+
+	device->BeginScene();
+
+	tempVertData.draw();
+
+	device->EndScene();
+
+	hr = D3DXSaveTextureToFileA("meltyFontTest.png", D3DXIFF_PNG, texture, NULL);
+	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG, texture, NULL);
+
+	BYTE* bufferPtr = (BYTE*)buffer->GetBufferPointer();
+	size_t bufferSize = buffer->GetBufferSize();
+
+	fontBufferMelty = (BYTE*)malloc(bufferSize);
+	if (fontBufferMelty == NULL) {
+		log("font malloc failed, what are you doing");
+		return;
+	}
+
+	memcpy(fontBufferMelty, bufferPtr, bufferSize);
+	fontBufferMeltySize = bufferSize;
+
+	device->SetRenderTarget(0, oldRenderTarget);
+
+	device->SetPixelShader(NULL);
+	device->SetVertexShader(NULL);
+
+	oldRenderTarget->Release();
+	surface->Release();
+	buffer->Release();
+	texture->Release();
+
+	textOutlinePixelShader->Release();
+	textOutlineVertexShader->Release();
+
+	meltyTex->Release();
+
+}
+
+void _initFontFirstLoad() {
+	// i dont know why.
+	// i dont know how.
+	// but SOMEHOW
+	// calling DrawTextA overwrites my hooks, and completely fucks EVERYTHING up.
+	// i could rehook after it, but holy shit im already rehooking caster hooks, and rehooking beginstate hooks? i think that rehooking 3 times is to many hooks.
+	// im going to need to render the font manually.
+	// orrr,,, i could,,, try rehooking again? as a treat?
+	// no, no treat, you are going to have to do this painfully.
+	// never call this func more than once, or while hooked.
+
+	static bool hasRan = false;
+	if (hasRan) {
+		return;
+	}
+	hasRan = true;
+
+	DWORD antiAliasBackup;
+	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
+	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
+
+	IDirect3DTexture9* fontTex = NULL;
+	_initDefaultFont(fontTex);
+	if (fontTex == NULL) {
+		return;
+	}
+
+	_initDefaultFontOutline(fontTex);
+	_initMeltyFont(fontTex);
+
+	fontTex->Release();
 
 	log("loaded font BUFFER!!!");
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
@@ -607,15 +767,28 @@ void initFont() {
 		fontTextureWithOutline = NULL;
 	}
 
+	if (fontTextureMelty != NULL) {
+		fontTextureMelty->Release();
+		fontTextureMelty = NULL;
+	}
+
 	HRESULT hr;
 
-	hr = D3DXCreateTextureFromFileInMemory(device, fontBuffer, fontBufferSize, &fontTexture); // this texture is D3DPOOL_MANAGED, and so doesnt need a reset on every reset call! yipee
+	// this texture is D3DPOOL_MANAGED, and so doesnt need a reset on every reset call! yipee
+	// going to be real tho, what guarentee do i have that it is????
+	hr = D3DXCreateTextureFromFileInMemory(device, fontBuffer, fontBufferSize, &fontTexture);
 	if (FAILED(hr)) {
 		log("font createtexfromfileinmem failed??");
 		return;
 	}
 
 	hr = D3DXCreateTextureFromFileInMemory(device, fontBufferWithOutline, fontBufferSizeWithOutline, &fontTextureWithOutline); // this texture is D3DPOOL_MANAGED, and so doesnt need a reset on every reset call! yipee
+	if (FAILED(hr)) {
+		log("font createtexfromfileinmem failed??");
+		return;
+	}
+
+	hr = D3DXCreateTextureFromFileInMemory(device, fontBufferMelty, fontBufferMeltySize, &fontTextureMelty); 
 	if (FAILED(hr)) {
 		log("font createtexfromfileinmem failed??");
 		return;
@@ -1037,9 +1210,8 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	float origX = x;
 	float origY = y;
 
-	float charWidthOffset = (fontRatio * size) * 1.01f; // this 1.01 might cause issues when aligning stuff, not sure
-	//float charWidthOffset = (fontRatio * size);
-	float charHeightOffset = size;
+	float charWidthOffset = (fontRatio * size) * 1.0f; 
+	float charHeightOffset = size / 1.875f; // melty font is weird
 
 	float w = charWidthOffset;
 	float h = charHeightOffset;
@@ -1105,7 +1277,7 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 		y = 1 - origY;
 
 		const float charWidth = ((float)(fontSize >> 1)) / (float)fontTexWidth;
-		const float charHeight = ((float)fontSize) / (float)fontTexWidth;
+		const float charHeight = (((float)fontSize) / (float)fontTexWidth) / 2.0f;
 
 		D3DXVECTOR2 charTopLeft(charWidth * (*str & 0xF), charHeight * ((*str - 0x20) / 0x10));
 
@@ -2011,7 +2183,7 @@ void __stdcall _doDrawCalls() {
 	}
 	res /= ((double)timeBufferLen);
 
-	TextDraw(580, 0.0, 12, 0xFF00FFFF, "FPS: %5.2lf", res);
+	TextDraw(580, 0.0, 20, 0xFF00FFFF, "FPS: %5.2lf", res);
 
 	startTime = endTime;
 

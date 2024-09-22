@@ -174,6 +174,7 @@
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="FrameBar.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -186,6 +187,12 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ml.exe /c /Fo"$(IntDir)/DLLAsmFuncs.obj" DLLAsmFuncs.asm</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/DLLAsmFuncs.obj</Outputs>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Extended-Training-Mode-DLL.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Common\DBGFNT02.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
