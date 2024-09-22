@@ -1183,6 +1183,7 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 		return;
 	}
 
+	size *= 2.0f;
 
 	x /= 480.0f;
 	y /= 480.0f;
@@ -1211,10 +1212,12 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	float origY = y;
 
 	float charWidthOffset = (fontRatio * size) * 1.0f; 
-	float charHeightOffset = size / 1.875f; // melty font is weird
+	float charHeightOffset = size / 2.0; // melty font is weird
 
 	float w = charWidthOffset;
 	float h = charHeightOffset;
+
+	charWidthOffset *= 0.75;
 
 	//device->SetTexture(0, fontTexture);
 
@@ -2183,7 +2186,7 @@ void __stdcall _doDrawCalls() {
 	}
 	res /= ((double)timeBufferLen);
 
-	TextDraw(580, 0.0, 20, 0xFF00FFFF, "FPS: %5.2lf", res);
+	TextDraw(565, 0.0, 10, 0xFF00FFFF, "FPS: %5.2lf", res);
 
 	startTime = endTime;
 
