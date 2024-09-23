@@ -62,61 +62,61 @@ struct Player
 	bool bLastProjectileActive = false;
 };
 
-void UpdatePlayer(Player& P) //Called after bar handling
+Player P1{ 0, adMBAABase + adP1Base, adMBAABase + adP1Inaction };
+Player P2{ 1, adMBAABase + adP2Base, adMBAABase + adP2Inaction };
+Player P3{ 2, adMBAABase + adP3Base, adMBAABase + adP1Inaction };
+Player P4{ 3, adMBAABase + adP4Base, adMBAABase + adP2Inaction };
+
+Player* paPlayerArray[4] = { &P1, &P2, &P3, &P4 };
+
+Player* Main1 = &P1;
+Player* Main2 = &P2;
+Player* Assist1 = &P3;
+Player* Assist2 = &P4;
+
+void UpdatePlayers() //Called after bar handling
 {
-	P.nLastInactionableFrames = *(int*)(P.adInaction);
-	P.nLastFrameCount = *(int*)(P.adPlayerBase + adPlayerFrameCount);
-	P.bLastOnRight = *(int*)(P.adPlayerBase + adOnRightFlag);
-	P.dwLastActivePointer = *(DWORD*)(P.adPlayerBase + adAttackDataPointer);
-	P.cLastHitstop = *(char*)(P.adPlayerBase + adHitstop);
-	if (*(short*)(P.adPlayerBase + adInputEvent) != -1)
+	for (int i = 0; i < 4; i++)
 	{
-		P.bAlreadyGotFirstActive = false;
-		P.nFirstActiveCounter = 0;
+		Player& P = *paPlayerArray[i];
+		P.nLastInactionableFrames = *(int*)(P.adInaction);
+		P.nLastFrameCount = *(int*)(P.adPlayerBase + adPlayerFrameCount);
+		P.bLastOnRight = *(int*)(P.adPlayerBase + adOnRightFlag);
+		P.dwLastActivePointer = *(DWORD*)(P.adPlayerBase + adAttackDataPointer);
+		P.cLastHitstop = *(char*)(P.adPlayerBase + adHitstop);
+		if (*(short*)(P.adPlayerBase + adInputEvent) != -1)
+		{
+			P.bAlreadyGotFirstActive = false;
+			P.nFirstActiveCounter = 0;
+		}
 	}
 }
 
-void GetProjectileInfo(Player& P)
+void CheckProjectiles()
 {
-	P.bLastProjectileActive = P.bProjectileActive;
-	P.bProjectileActive = false;
-	short sCharacterID = 0;
+	P1.bLastProjectileActive = P1.bProjectileActive;
+	P1.bProjectileActive = false;
+	P2.bLastProjectileActive = P2.bProjectileActive;
+	P2.bProjectileActive = false;
+	P3.bLastProjectileActive = P3.bProjectileActive;
+	P3.bProjectileActive = false;
+	P4.bLastProjectileActive = P4.bProjectileActive;
+	P4.bProjectileActive = false;
 	char cBlankEffectCount = 0;
-	if (P.cPlayerNumber % 2 == 0)
-	{
-		sCharacterID = *(char*)(adMBAABase + dwP1CharNumber) * 10 + *(char*)(adMBAABase + dwP1CharMoon);
-	}
-	else
-	{
-		sCharacterID = *(char*)(adMBAABase + dwP2CharNumber) * 10 + *(char*)(adMBAABase + dwP2CharMoon);
-	}
 	for (int i = 0; i < 200; i++) //Check Projectiles for active
 	{
 		if (cBlankEffectCount > 16) break;
 		cBlankEffectCount++;
 		if (*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i) != 0 &&
 			*(DWORD*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adAttackDataPointer) != 0 &&
-			*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectSource) == P.cPlayerNumber &&
-			*(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adPattern) >= 60)
+			*(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectStatus) == 0xFF)
 		{
 			cBlankEffectCount = 0;
-			if (!IsCharacterPattern(sCharacterID, *(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adPattern)))
-			{
-				P.bProjectileActive = true;
-			}
+			Player& P = *paPlayerArray[*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectSource)];
+			P.bProjectileActive = true;
 		}
 	}
 }
-
-Player P1{ 0, adMBAABase + adP1Base, adMBAABase + adP1Inaction };
-Player P2{ 1, adMBAABase + adP2Base, adMBAABase + adP2Inaction };
-Player P3{ 2, adMBAABase + adP3Base, adMBAABase + adP1Inaction };
-Player P4{ 3, adMBAABase + adP4Base, adMBAABase + adP2Inaction };
-
-Player* Main1 = &P1;
-Player* Main2 = &P2;
-Player* Assist1 = &P3;
-Player* Assist2 = &P4;
 
 void CalculateAdvantage(Player& P1, Player& P2)
 {
@@ -144,26 +144,29 @@ void CalculateAdvantage(Player& P1, Player& P2)
 	}
 }
 
-void ResetBars(Player& P)
+void ResetBars()
 {
-	bIsBarReset = true;
-	nBarCounter = 0;
-	nBarIntervalCounter = 0;
-	nBarScrolling = 0;
-	bDoBarReset = false;
-	nBarIntervalMax = DISPLAY_RANGE;
-	for (int i = 0; i < BAR_MEMORY_SIZE; i++)
+	for (int i = 0; i < 4; i++)
 	{
-		P.dwColorBar1[i][0] = 0x00000000;
-		P.dwColorBar1[i][1] = 0x00000000;
-		P.dwColorBar2[i][0] = 0x00000000;
-		P.dwColorBar2[i][1] = 0x00000000;
+		Player& P = *paPlayerArray[i];
+		bIsBarReset = true;
+		nBarCounter = 0;
+		nBarIntervalCounter = 0;
+		nBarScrolling = 0;
+		bDoBarReset = false;
+		nBarIntervalMax = DISPLAY_RANGE;
+		for (int i = 0; i < BAR_MEMORY_SIZE; i++)
+		{
+			P.dwColorBar1[i][0] = 0x00000000;
+			P.dwColorBar1[i][1] = 0x00000000;
+			P.dwColorBar2[i][0] = 0x00000000;
+			P.dwColorBar2[i][1] = 0x00000000;
 
-		P.nNumBar[i][0] = -1;
-		P.nNumBar[i][1] = 0;
+			P.nNumBar[i][0] = -1;
+			P.nNumBar[i][1] = 0;
+		}
+		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(adBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
 	}
-
-	WriteProcessMemory(GetCurrentProcess(), (LPVOID)(adBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
 }
 
 void UpdateBars(Player& P, Player& Assist)
@@ -235,41 +238,30 @@ void UpdateBars(Player& P, Player& Assist)
 	}
 
 	char cCondition1Type = 0;
+	char cCondition2Type = 0;
 	if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_ConditionCount) > 0)
 	{
 		DWORD dwPointer = *(DWORD*)(P.adPlayerBase + adAnimationDataPointer);
-		if (dwPointer > 0)
+		if (dwPointer != 0)
 		{
 			dwPointer = *(DWORD*)(dwPointer + adAnimationData_ConditionsPointer);
-			if (dwPointer > 0)
+			if (dwPointer != 0)
 			{
-				dwPointer = *(DWORD*)(dwPointer + adConditions_Condition1Pointer);
-				if (dwPointer > 0)
+				DWORD dwC1Pointer = *(DWORD*)(dwPointer + adConditions_Condition1Pointer);
+				if (dwC1Pointer != 0)
 				{
-					cCondition1Type = *(char*)(dwPointer + adCondition_Type);
+					cCondition1Type = *(char*)(dwC1Pointer + adCondition_Type);
+				}
+				if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_ConditionCount) > 1)
+				{
+					DWORD dwC2Pointer = *(DWORD*)(dwPointer + adConditions_Condition2Pointer);
+					if (dwC2Pointer != 0)
+					{
+						cCondition2Type = *(char*)(dwC2Pointer + adCondition_Type);
+					}
 				}
 			}
 		}
-	}
-
-	if (*(char*)(P.adPlayerBase + adThrowFlag) != 0) //Being thrown
-	{
-		dwColor = 0xFF6E6E6E;
-	}
-	else if (cCondition1Type == 51) //Shield
-	{
-		dwColor = 0xFF91C2FF;
-	}
-
-	if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_BoxIndex) == 12) //Clash
-	{
-		dwColor2 = 0xFFE1B800;
-	}
-	else if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_BoxIndex) <= 1 || //Various forms of invuln
-		*(char*)(P.adPlayerBase + adEFStrikeInvuln) != 0 ||
-		*(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Invuln) == 3)
-	{
-		dwColor2 = 0xFFFFFFFF;
 	}
 
 	if (*(char*)(adMBAABase + adGlobalFreeze) != 0 || //Screen is frozen
@@ -281,6 +273,10 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			dwColor = 0xFFFF8080;
 		}
+	}
+	else if (*(char*)(P.adPlayerBase + adThrowFlag) != 0) //Being thrown
+	{
+		dwColor = 0xFF6E6E6E;
 	}
 	else if (*(char*)(P.adPlayerBase + adHitstop) != 0) //in hitstop
 	{
@@ -294,6 +290,30 @@ void UpdateBars(Player& P, Player& Assist)
 			nNumFlag = 3;
 			nNumber = -1;
 		}
+	}
+	else if (cCondition1Type == 51) //Shield
+	{
+		dwColor = 0xFF91C2FF;
+	}
+	else if (cCondition1Type == 52 || cCondition2Type == 52) //Throw
+	{
+		if (!P.bAlreadyGotFirstActive)
+		{
+			P.nFirstActive = P.nFirstActiveCounter;
+			P.bAlreadyGotFirstActive = true;
+		}
+		dwColor = 0xFFC00080;
+	}
+
+	if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_BoxIndex) == 12) //Clash
+	{
+		dwColor2 = 0xFFE1B800;
+	}
+	else if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_BoxIndex) <= 1 || //Various forms of invuln
+		*(char*)(P.adPlayerBase + adEFStrikeInvuln) != 0 ||
+		*(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Invuln) == 3)
+	{
+		dwColor2 = 0xFFFFFFFF;
 	}
 
 	if (*(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Stance) == 1) //Airborne
@@ -324,14 +344,7 @@ void UpdateBars(Player& P, Player& Assist)
 	}
 
 	P.dwColorBar1[nBarCounter % BAR_MEMORY_SIZE][0] = dwColor;
-	if (dwColor2 != 0x0)
-	{
-		P.dwColorBar1[nBarCounter % BAR_MEMORY_SIZE][1] = dwColor2;
-	}
-	else
-	{
-		P.dwColorBar1[nBarCounter % BAR_MEMORY_SIZE][1] = dwColor;
-	}
+	P.dwColorBar1[nBarCounter % BAR_MEMORY_SIZE][1] = dwColor2;
 
 	P.dwColorBar2[nBarCounter % BAR_MEMORY_SIZE][0] = dwBar2Color0;
 	P.dwColorBar2[nBarCounter % BAR_MEMORY_SIZE][1] = dwBar2Color1;
@@ -446,10 +459,7 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 
 	if (bDoBarReset && bUpdateBar)
 	{
-		ResetBars(P1);
-		ResetBars(P2);
-		ResetBars(P1Assist);
-		ResetBars(P2Assist);
+		ResetBars();
 	}
 
 	if (nBarIntervalCounter < nBarIntervalMax && !bIsBarReset)
@@ -521,10 +531,7 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 		Assist2 = &P2;
 	}
 	
-	GetProjectileInfo(P1);
-	GetProjectileInfo(P2);
-	GetProjectileInfo(P3);
-	GetProjectileInfo(P4);
+	CheckProjectiles();
 
 	if (*(int*)(adMBAABase + adTrueFrameCount) != nLastTrueFrameCount)
 	{
@@ -533,18 +540,12 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 
 	if (*(int*)(adMBAABase + adTrueFrameCount) == 1)
 	{
-		ResetBars(P1);
-		ResetBars(P2);
-		ResetBars(P3);
-		ResetBars(P4);
+		ResetBars();
 	}
 
 	nPlayerAdvantage = (P1.nAdvantageCounter - P2.nAdvantageCounter) % 100;
 
-	UpdatePlayer(P1);
-	UpdatePlayer(P2);
-	UpdatePlayer(P3);
-	UpdatePlayer(P4);
+	UpdatePlayers();
 
 	nLastFrameCount = *(int*)(adMBAABase + adFrameCount);
 	nLastTrueFrameCount = *(int*)(adMBAABase + adTrueFrameCount);

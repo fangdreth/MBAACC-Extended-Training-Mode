@@ -205,7 +205,9 @@ struct Player
 	char cAnimation_BoxIndex = 0; //0x320 : 0x42
 	DWORD dwAnimation_ConditionsPointer = 0x0; //0x320 : 0x44
 	DWORD dwConditions_Condition1Pointer = 0x0; //0x320 : 0x44 : 0x0
+	DWORD dwConditions_Condition2Pointer = 0x0; //0x320 : 0x44 : 0x4
 	DWORD dwCondition1_ConditionType = 0; //0x320 : 0x44 : 0x0 : 0x0
+	DWORD dwCondition2_ConditionType = 0; //0x320 : 0x44 : 0x4 : 0x0
 
 	char cPlayerNumber = 0;
 	DWORD adPlayerBase = 0x0;
@@ -239,29 +241,25 @@ Player P2{ .cPlayerNumber = 1, .adPlayerBase = adMBAABase + adP2Base, .adInactio
 Player P3{ .cPlayerNumber = 2, .adPlayerBase = adMBAABase + adP3Base, .adInactionable = adMBAABase + adP1Inaction };
 Player P4{ .cPlayerNumber = 3, .adPlayerBase = adMBAABase + adP4Base, .adInactionable = adMBAABase + adP2Inaction };
 
-void CheckProjectiles(HANDLE hMBAAHandle, Player& P)
-{
-	char cCharacterNumber = 0;
-	char cMoon = 0;
-	short sCharacterID = 0;
-	if (P.cPlayerNumber % 2 == 0)
-	{
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP1CharNumber), &cCharacterNumber, 1, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP1CharMoon), &cMoon, 1, 0);
-	}
-	else
-	{
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP2CharNumber), &cCharacterNumber, 1, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + dwP2CharMoon), &cMoon, 1, 0);
-	}
-	sCharacterID = 10 * cCharacterNumber + cMoon;
+Player* paPlayerArray[4] = { &P1, &P2, &P3, &P4 };
 
+Player* Main1 = &P1;
+Player* Main2 = &P2;
+Player* Assist1 = &P3;
+Player* Assist2 = &P4;
+
+void CheckProjectiles(HANDLE hMBAAHandle)
+{
 	char cBlankEffectCount = 0;
 	bool bProjectileExists = 0;
+	uint8_t cProjectileStatus = 0;
 	char cProjectileSource = 0;
 	int nProjectilePattern = 0;
 	DWORD dwProjectileAttackDataPointer = 0;
-	int nCount = 0;
+	P1.nActiveProjectileCount = 0;
+	P2.nActiveProjectileCount = 0;
+	P3.nActiveProjectileCount = 0;
+	P4.nActiveProjectileCount = 0;
 	for (int i = 0; i < 200; i++)
 	{
 		if (cBlankEffectCount > 16) break;
@@ -269,50 +267,56 @@ void CheckProjectiles(HANDLE hMBAAHandle, Player& P)
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i), &bProjectileExists, 1, 0);
 		if (!bProjectileExists) continue;
 		cBlankEffectCount = 0;
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adEffectStatus), &cProjectileStatus, 1, 0);
+		if (cProjectileStatus != 0xFF) continue;
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adEffectSource), &cProjectileSource, 1, 0);
-		if (cProjectileSource != P.cPlayerNumber) continue;
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adPattern), &nProjectilePattern, 4, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adAttackDataPointer), &dwProjectileAttackDataPointer, 4, 0);
-		if (!dwProjectileAttackDataPointer || nProjectilePattern < 60) continue;
-		if (!IsCharacterPattern(sCharacterID, nProjectilePattern))
-		{
-			nCount++;
-		}
+		if (dwProjectileAttackDataPointer) (*paPlayerArray[cProjectileSource]).nActiveProjectileCount++;
 	}
-	P.nActiveProjectileCount = nCount;
 }
 
-void UpdatePlayer(HANDLE hMBAAHandle, Player &P) {
-	P.nLastInactionableFrames = P.nInactionableFrames;
-	P.nLastFrameCount = P.nFrameCount;
-	P.bLastOnRight = P.bIsOnRight;
-	P.cLastStance = P.cState_Stance;
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase), &P, 1, 0);
-	if (!P.cExists) return;
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase), &P, 0x328, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_StateDataPointer), &P.dwAnimation_StateDataPointer, 4, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionCount), &P.cAnimation_ConditionCount, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_BoxIndex), &P.cAnimation_BoxIndex, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_Stance), &P.cState_Stance, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_Invuln), &P.cState_Invuln, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_NormalCancel), &P.cState_NormalCancel, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_SpecialCancel), &P.cState_SpecialCancel, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_Flagset2), &P.nState_Flagset2, 4, 0);
-	
-	if (P.cAnimation_ConditionCount > 0)
+void UpdatePlayers(HANDLE hMBAAHandle)
+{
+	for (int i = 0; i < 4; i++)
 	{
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionsPointer), &P.dwAnimation_ConditionsPointer, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_ConditionsPointer + adConditions_Condition1Pointer), &P.dwConditions_Condition1Pointer, 4, 0);
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwConditions_Condition1Pointer + adCondition_Type), &P.dwCondition1_ConditionType, 4, 0);
+		Player& P = *paPlayerArray[i];
+		P.nLastInactionableFrames = P.nInactionableFrames;
+		P.nLastFrameCount = P.nFrameCount;
+		P.bLastOnRight = P.bIsOnRight;
+		P.cLastStance = P.cState_Stance;
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase), &P, 1, 0);
+		if (!P.cExists) return;
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase), &P, 0x328, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_StateDataPointer), &P.dwAnimation_StateDataPointer, 4, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionCount), &P.cAnimation_ConditionCount, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_BoxIndex), &P.cAnimation_BoxIndex, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_Stance), &P.cState_Stance, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_Invuln), &P.cState_Invuln, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_NormalCancel), &P.cState_NormalCancel, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_SpecialCancel), &P.cState_SpecialCancel, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_Flagset2), &P.nState_Flagset2, 4, 0);
+		if (P.cAnimation_ConditionCount > 0)
+		{
+			ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionsPointer), &P.dwAnimation_ConditionsPointer, 4, 0);
+			ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_ConditionsPointer + adConditions_Condition1Pointer), &P.dwConditions_Condition1Pointer, 4, 0);
+			ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwConditions_Condition1Pointer + adCondition_Type), &P.dwCondition1_ConditionType, 4, 0);
+			if (P.cAnimation_ConditionCount > 1)
+			{
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_ConditionsPointer + adConditions_Condition2Pointer), &P.dwConditions_Condition2Pointer, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwConditions_Condition2Pointer + adCondition_Type), &P.dwCondition2_ConditionType, 4, 0);
+			}
+			else
+			{
+				P.dwCondition2_ConditionType = 0;
+			}
+		}
+		else
+		{
+			P.dwCondition1_ConditionType = 0;
+			P.dwCondition2_ConditionType = 0;
+		}
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adInactionable), &P.nInactionableFrames, 4, 0);
 	}
-	else
-	{
-		P.dwCondition1_ConditionType = 0;
-	}
-
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adInactionable), &P.nInactionableFrames, 4, 0);
-
-	CheckProjectiles(hMBAAHandle, P);
 }
 
 void SaveState(HANDLE hMBAAHandle, int nSaveSlot)
@@ -684,6 +688,7 @@ void PrintColorGuide()
 	std::cout << FD_HITSTOP << "00" << FD_CLEAR << " HITSTOP\n";
 	std::cout << FD_ACTIVE << "00" << FD_CLEAR << " ACTIVE FRAMES\t\t";
 	std::cout << FD_ASSIST_ACTIVE << "00" << FD_CLEAR << " ASSIST ACTIVE FRAMES\n";
+	std::cout << FD_THROW_ACTIVE << "00" << FD_CLEAR << " THROW ACTIVE FRAME\t\t";
 	std::cout << FD_BUTTON_PRESSED << "00" << FD_CLEAR << " BUTTON PRESSED\n";
 	std::cout << FD_A_PRESSED << "00" << FD_CLEAR << " A PRESSED\t\t\t";
 	std::cout << FD_B_PRESSED << "00" << FD_CLEAR << " B PRESSED\n";
@@ -718,7 +723,7 @@ void CalculateAdvantage(Player& P1, Player& P2)
 	}
 }
 
-void ResetBars(HANDLE hMBAAHandle, Player& P)
+void ResetBars(HANDLE hMBAAHandle)
 {
 	bIsBarReset = true;
 	nBarCounter = 0;
@@ -726,22 +731,26 @@ void ResetBars(HANDLE hMBAAHandle, Player& P)
 	nBarScrolling = 0;
 	bDoBarReset = false;
 	nBarIntervalMax = nBarDisplayRange;
-	for (int i = 0; i < BAR_MEMORY_SIZE; i++)
+	for (int i = 0; i < 4; i++)
 	{
-		P.sBar1[i][1] = "";
-		P.sBar1[i][2] = "";
-		P.sBar2[i][1] = "";
-		P.sBar2[i][2] = "";
-		P.sBar3[i][1] = "";
-		P.sBar3[i][2] = "";
-		P.sBar4[i][1] = "";
-		P.sBar4[i][2] = "";
-		P.sBar4[i][3] = "";
-		P.sBar4[i][4] = "";
-		P.sBar5[i][1] = "";
-		P.sBar5[i][2] = "";
-		P.sBar5[i][3] = "";
-		P.sBar5[i][4] = "";
+		Player& P = *paPlayerArray[i];
+		for (int j = 0; j < BAR_MEMORY_SIZE; j++)
+		{
+			P.sBar1[j][1] = "";
+			P.sBar1[j][2] = "";
+			P.sBar2[j][1] = "";
+			P.sBar2[j][2] = "";
+			P.sBar3[j][1] = "";
+			P.sBar3[j][2] = "";
+			P.sBar4[j][1] = "";
+			P.sBar4[j][2] = "";
+			P.sBar4[j][3] = "";
+			P.sBar4[j][4] = "";
+			P.sBar5[j][1] = "";
+			P.sBar5[j][2] = "";
+			P.sBar5[j][3] = "";
+			P.sBar5[j][4] = "";
+		}
 	}
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedScrolling), &nBarScrolling, 2, 0);
 	std::cout << "\x1b[J";
@@ -749,8 +758,6 @@ void ResetBars(HANDLE hMBAAHandle, Player& P)
 
 void UpdateBars(Player& P, Player& Assist)
 {
-	// Foreground color -> \x1b[38;2;R;G;Bm
-	// Background color -> \x1b[48;2;R;G;Bm
 	std::string sFont = FD_CLEAR;
 	std::string sBarValue = "  ";
 	std::string sLeftFont = FD_CLEAR;
@@ -780,7 +787,7 @@ void UpdateBars(Player& P, Player& Assist)
 			else //Grounded
 			{
 				if (P.nHitstunRemaining > 1) //Still has hitstun remaining
-					sBarValue = std::format("{:2}", P.nHitstunRemaining - 1 % 100);
+					sBarValue = std::format("{:2}", (P.nHitstunRemaining - 1) % 100);
 			}
 		}
 		else if (P.bBlockstunFlag) //Blockstun
@@ -798,31 +805,20 @@ void UpdateBars(Player& P, Player& Assist)
 	}
 	else //Fully actionable
 	{
+		sFont = FD_ACTIONABLE;
 		sBarValue = std::format("{:2}", P.nPattern % 100);
-		if (P.nLastInactionableFrames != 0) //Neutral frame
+		if (bDoAdvantage) //Has advantage
 		{
-			sFont = FD_NEUTRAL;
+			sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
+			sFont = FD_ADVANTAGE;
 		}
-		else if (P.cLastStance == 1 && P.cState_Stance != 1)
+		if (P.nLastInactionableFrames != 0 || (P.cLastStance == 1 && P.cState_Stance != 1)) //Neutral frame
 		{
 			sFont = FD_NEUTRAL;
 		}
 		else if (bHasInvuln)
 		{
 			sFont = FD_ACTIONABLE_INVULN;
-		}
-		else
-		{
-			sFont = FD_ACTIONABLE;
-		}
-		if (bDoAdvantage) //Has advantage
-		{
-			sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
-			sFont = FD_ADVANTAGE;
-			if (bHasInvuln)
-			{
-				sFont = FD_ACTIONABLE_INVULN;
-			}
 		}
 	}
 
@@ -835,6 +831,10 @@ void UpdateBars(Player& P, Player& Assist)
 		sFont = FD_THROWN;
 		sBarValue = " t";
 	}
+	else if (P.cHitstop != 0) //in hitstop
+	{
+		sFont = FD_HITSTOP;
+	}
 	else if (P.cAnimation_BoxIndex == 12) //Clash
 	{
 		sFont = FD_CLASH;
@@ -843,9 +843,9 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		sFont = FD_SHIELD;
 	}
-	else if (P.cHitstop != 0) //in hitstop
+	else if (P.dwCondition1_ConditionType == 52 || P.dwCondition2_ConditionType == 52)
 	{
-		sFont = FD_HITSTOP;
+		sFont = FD_THROW_ACTIVE;
 	}
 
 	P.sBar1[nBarCounter % BAR_MEMORY_SIZE][0] = sFont;
@@ -1090,10 +1090,7 @@ void BarHandling(HANDLE hMBAAHandle, Player &P1, Player &P2, Player& P1Assist, P
 
 	if (bDoBarReset && bUpdateBar)
 	{
-		ResetBars(hMBAAHandle, P1);
-		ResetBars(hMBAAHandle, P2);
-		ResetBars(hMBAAHandle, P1Assist);
-		ResetBars(hMBAAHandle, P2Assist);
+		ResetBars(hMBAAHandle);
 	}
 
 	if (nBarIntervalCounter < nBarIntervalMax && !bIsBarReset)
@@ -1143,10 +1140,7 @@ void BarHandling(HANDLE hMBAAHandle, Player &P1, Player &P2, Player& P1Assist, P
 
 	if (nTrueFrameCount == 0)
 	{
-		ResetBars(hMBAAHandle, P1);
-		ResetBars(hMBAAHandle, P2);
-		ResetBars(hMBAAHandle, P1Assist);
-		ResetBars(hMBAAHandle, P2Assist);
+		ResetBars(hMBAAHandle);
 	}
 }
 
@@ -1393,10 +1387,10 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 		bLockInput = false;
 	}
 
-	Player* Main1 = &P1;
-	Player* Main2 = &P2;
-	Player* Assist1 = &P3;
-	Player* Assist2 = &P4;
+	Main1 = &P1;
+	Main2 = &P2;
+	Assist1 = &P3;
+	Assist2 = &P4;
 	if (P1.bTagFlag)
 	{
 		Main1 = &P3;
@@ -1410,19 +1404,14 @@ void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P
 
 	if (nLastTrueFrameCount != nTrueFrameCount)
 	{
-		UpdatePlayer(hMBAAHandle, P1);
-		UpdatePlayer(hMBAAHandle, P2);
-		UpdatePlayer(hMBAAHandle, P3);
-		UpdatePlayer(hMBAAHandle, P4);
+		UpdatePlayers(hMBAAHandle);
+		CheckProjectiles(hMBAAHandle);
 		
 		BarHandling(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
 
 		if (nTrueFrameCount == 1 && CheckSave(nSaveSlot) && bEnableFN2Load)
 		{
-			ResetBars(hMBAAHandle, P1);
-			ResetBars(hMBAAHandle, P2);
-			ResetBars(hMBAAHandle, P3);
-			ResetBars(hMBAAHandle, P4);
+			ResetBars(hMBAAHandle);
 			LoadState(hMBAAHandle, nSaveSlot, bLoadRNG);
 		}
 

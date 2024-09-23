@@ -172,7 +172,6 @@ int main(int argc, char* argv[])
         }
     
         InitializeCharacterMaps();
-        InitializeCharacterPatternMaps();
 
         try
         {

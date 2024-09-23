@@ -172,6 +172,8 @@ const int ADJ_SAVE_RNG_SIZE = SAVE_RNG_SIZE / 4;
 const char REVERSE_INPUT_MAP[10] = { 0, 3, 2, 1, 6, 0, 4, 9, 8, 7 };
 const char CH_MAP[3] = { ' ', 'H', 'L' };
 
+// Foreground color -> \x1b[38;2;R;G;Bm
+// Background color -> \x1b[48;2;R;G;Bm
 const std::string FD_CLEAR = "\x1b[0m";
 const std::string FD_UNDERLINE = "\x1b[4m";
 const std::string FD_INACTIONABLE = "\x1b[38;2;255;255;255m\x1b[48;2;65;200;0m";
@@ -181,6 +183,7 @@ const std::string FD_BLOCKSTUN = "\x1b[38;2;255;255;255m\x1b[48;2;180;180;180m";
 const std::string FD_ACTIONABLE = "\x1b[38;2;92;92;92m\x1b[48;2;0;0;0m";
 const std::string FD_ADVANTAGE = "\x1b[38;2;255;255;255m\x1b[48;2;0;0;0m";
 const std::string FD_NEUTRAL = "\x1b[38;2;255;255;255m\x1b[48;2;32;90;0m";
+const std::string FD_THROW_ACTIVE = "\x1b[38;2;255;255;255m\x1b[48;2;192;0;128m";
 const std::string FD_THROWN = "\x1b[38;2;255;255;255m\x1b[48;2;110;110;110m";
 const std::string FD_CLASH = "\x1b[38;2;255;255;255m\x1b[48;2;225;184;0m";
 const std::string FD_SHIELD = "\x1b[38;2;255;255;255m\x1b[48;2;145;194;255m";
@@ -195,6 +198,8 @@ const std::string FD_A_PRESSED = "\x1b[38;2;255;143;169m\x1b[48;2;170;27;58m";
 const std::string FD_B_PRESSED = "\x1b[38;2;255;255;137m\x1b[48;2;169;91;7m";
 const std::string FD_C_PRESSED = "\x1b[38;2;143;255;195m\x1b[48;2;18;132;62m";
 const std::string FD_D_PRESSED = "\x1b[38;2;137;255;255m\x1b[48;2;21;66;161m";
+
+const ADDRESS adMBAABase = 0x400000;
 
 const ADDRESS adSaveCurrentCamZoom = 0x14EB70;
 const ADDRESS adSaveDestinationCamZoom = 0x14EB74;
@@ -258,6 +263,7 @@ const ADDRESS adStateData_NormalCancel = 0xE;
 const ADDRESS adStateData_SpecialCancel = 0xF;
 const ADDRESS adStateData_Flagset2 = 0x18;
 const ADDRESS adConditions_Condition1Pointer = 0x0;
+const ADDRESS adConditions_Condition2Pointer = 0x4;
 const ADDRESS adCondition_Type = 0x0;
 
 const ADDRESS adP1TagFlag = 0x155130 + 0x178; //0x1552A8
@@ -295,6 +301,7 @@ const DWORD dwEffectStructSize = 0x33C;
 const ADDRESS adSaveEffects = 0x27BDE8;
 const ADDRESS adEffectBase = 0x27BDE8;
 const ADDRESS adEffectSource = 0x8;
+const ADDRESS adEffectStatus = 0x9;
 
 const ADDRESS adDummyState = 0x34D7F8;
 const ADDRESS adP1FN1Input = 0x37144C;
@@ -303,7 +310,6 @@ const ADDRESS adP1FN2Input = 0x37144D;
 //FrameBar Constants
 const int DISPLAY_RANGE = 75;
 
-const ADDRESS adMBAABase = 0x400000;
 const ADDRESS adNotInCombo = 0x64;
 const ADDRESS adEffectOwner = 0x2F4;
 
