@@ -908,23 +908,28 @@ void drawFrameBar()
 		{
 			int nLength = floor(log10((*Main1).nNumBar[j][0]));
 			snprintf(buffer, 256, "%i", (*Main1).nNumBar[j][0]);
-			drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 3, 7, 10, buffer);
+			//drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 3, 7, 10, buffer);
+			TextDraw(18 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 2, 10, 0xFFFFFFFF, buffer);
 		}
 
 		if ((*Main2).nNumBar[j][0] >= 0)
 		{
 			int nLength = floor(log10((*Main2).nNumBar[j][0]));
 			snprintf(buffer, 256, "%i", (*Main2).nNumBar[j][0]);
-			drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 16, 7, 10, buffer);
+			//drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 16, 7, 10, buffer);
+			TextDraw(18 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 15, 10, 0xFFFFFFFF, buffer);
 		}
 		nBarDrawCounter++;
 	}
 	static char buffer[256];
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main1).nFirstActive % 1000, (*Main1).nInactionableMemory % 1000, nPlayerAdvantage % 1000);
-	drawTextWithBorder(20, nFrameBarY - 11, 7, 10, buffer);
+	//drawTextWithBorder(20, nFrameBarY - 11, 7, 10, buffer);
+	TextDraw(20, nFrameBarY - 11, 10, 0xFFFFFFFF, buffer);
+
 
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main2).nFirstActive % 1000, (*Main2).nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
-	drawTextWithBorder(20, nFrameBarY + 28, 7, 10, buffer);
+	//drawTextWithBorder(20, nFrameBarY + 28, 7, 10, buffer);
+	TextDraw(20, nFrameBarY + 28, 10, 0xFFFFFFFF, buffer);
 
 	drawRect(18, nFrameBarY, 602, 27, 0xFF000000); //Background
 

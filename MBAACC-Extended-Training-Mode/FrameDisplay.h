@@ -744,6 +744,7 @@ void ResetBars(HANDLE hMBAAHandle, Player& P)
 		P.sBar5[i][4] = "";
 	}
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedScrolling), &nBarScrolling, 2, 0);
+	std::cout << "\x1b[J";
 }
 
 void UpdateBars(Player& P, Player& Assist)
@@ -760,28 +761,7 @@ void UpdateBars(Player& P, Player& Assist)
 
 	//Bar 1 - General action information
 	sBarValue = P.nInactionableFrames >= 100 ? std::format("{:02}", P.nInactionableFrames % 100) : std::format("{:2}", P.nInactionableFrames);
-	if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0) //Screen is frozen
-	{
-		sFont = FD_FREEZE;
-	}
-	else if (P.bThrowFlag != 0) //Being thrown
-	{
-		sFont = FD_THROWN;
-		sBarValue = " t";
-	}
-	else if (P.cAnimation_BoxIndex == 12) //Clash
-	{
-		sFont = FD_CLASH;
-	}
-	else if (P.dwCondition1_ConditionType == 51) //Shield
-	{
-		sFont = FD_SHIELD;
-	}
-	else if (P.cHitstop != 0) //in hitstop
-	{
-		sFont = FD_HITSTOP;
-	}
-	else if (P.nInactionableFrames != 0) //Doing something with limited actionability
+	if (P.nInactionableFrames != 0) //Doing something with limited actionability
 	{
 		if (P.nPattern >= 35 && P.nPattern <= 37) //Jump Startup
 		{
@@ -846,8 +826,30 @@ void UpdateBars(Player& P, Player& Assist)
 		}
 	}
 
-	P.sBar1[nBarCounter % BAR_MEMORY_SIZE][1] = sFont;
-	P.sBar1[nBarCounter % BAR_MEMORY_SIZE][2] = sBarValue;
+	if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0) //Screen is frozen
+	{
+		sFont = FD_FREEZE;
+	}
+	else if (P.bThrowFlag != 0) //Being thrown
+	{
+		sFont = FD_THROWN;
+		sBarValue = " t";
+	}
+	else if (P.cAnimation_BoxIndex == 12) //Clash
+	{
+		sFont = FD_CLASH;
+	}
+	else if (P.dwCondition1_ConditionType == 51) //Shield
+	{
+		sFont = FD_SHIELD;
+	}
+	else if (P.cHitstop != 0) //in hitstop
+	{
+		sFont = FD_HITSTOP;
+	}
+
+	P.sBar1[nBarCounter % BAR_MEMORY_SIZE][0] = sFont;
+	P.sBar1[nBarCounter % BAR_MEMORY_SIZE][1] = sBarValue;
 
 	//Bar 2 - Active frames
 	if (P.dwAttackDataPointer != 0)
@@ -882,8 +884,8 @@ void UpdateBars(Player& P, Player& Assist)
 		sBarValue = "  ";
 	}
 
-	P.sBar2[nBarCounter % BAR_MEMORY_SIZE][1] = sFont;
-	P.sBar2[nBarCounter % BAR_MEMORY_SIZE][2] = sBarValue;
+	P.sBar2[nBarCounter % BAR_MEMORY_SIZE][0] = sFont;
+	P.sBar2[nBarCounter % BAR_MEMORY_SIZE][1] = sBarValue;
 
 	//Bar 3 - Projectile and assist active frames
 	if (Assist.dwAttackDataPointer != 0)
@@ -918,8 +920,8 @@ void UpdateBars(Player& P, Player& Assist)
 		sBarValue = "  ";
 	}
 
-	P.sBar3[nBarCounter % BAR_MEMORY_SIZE][1] = sFont;
-	P.sBar3[nBarCounter % BAR_MEMORY_SIZE][2] = sBarValue;
+	P.sBar3[nBarCounter % BAR_MEMORY_SIZE][0] = sFont;
+	P.sBar3[nBarCounter % BAR_MEMORY_SIZE][1] = sBarValue;
 
 	if (bDisplayInputs)
 	{
@@ -965,10 +967,10 @@ void UpdateBars(Player& P, Player& Assist)
 			sRightFont += FD_UNDERLINE;
 		}
 
-		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][1] = sLeftFont;
-		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][2] = " ";
-		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][3] = sRightFont;
-		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][4] = sRightValue;
+		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][0] = sLeftFont;
+		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][1] = " ";
+		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][2] = sRightFont;
+		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][3] = sRightValue;
 
 		//Bar 5
 		if (P.cRawDirectionalInput == 0)
@@ -1020,10 +1022,10 @@ void UpdateBars(Player& P, Player& Assist)
 			sRightFont += FD_UNDERLINE;
 		}
 
-		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][1] = sLeftFont;
-		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][2] = " ";
-		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][3] = sRightFont;
-		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][4] = sRightValue;
+		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][0] = sLeftFont;
+		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][1] = " ";
+		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][2] = sRightFont;
+		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][3] = sRightValue;
 	}
 }
 
@@ -1196,67 +1198,67 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 		int l = i - 1 < 0 ? i - 1 + BAR_MEMORY_SIZE : i - 1;
 		if (bFirstFrameInDisplay)
 		{
+			P1.sBarString1 += P1.sBar1[c][0];
 			P1.sBarString1 += P1.sBar1[c][1];
-			P1.sBarString1 += P1.sBar1[c][2];
+			P1.sBarString2 += P1.sBar2[c][0];
 			P1.sBarString2 += P1.sBar2[c][1];
-			P1.sBarString2 += P1.sBar2[c][2];
+			P1.sBarString3 += P1.sBar3[c][0];
 			P1.sBarString3 += P1.sBar3[c][1];
-			P1.sBarString3 += P1.sBar3[c][2];
+			P1.sBarString4 += P1.sBar4[c][0];
 			P1.sBarString4 += P1.sBar4[c][1];
-			P1.sBarString4 += P1.sBar4[c][2];
-			if (P1.sBar4[c][3] != P1.sBar4[c][1]) P1.sBarString4 += P1.sBar4[c][3];
-			P1.sBarString4 += P1.sBar4[c][4];
+			if (P1.sBar4[c][2] != P1.sBar4[c][0]) P1.sBarString4 += P1.sBar4[c][2];
+			P1.sBarString4 += P1.sBar4[c][3];
+			P1.sBarString5 += P1.sBar5[c][0];
 			P1.sBarString5 += P1.sBar5[c][1];
-			P1.sBarString5 += P1.sBar5[c][2];
-			if (P1.sBar5[c][3] != P1.sBar5[c][1]) P1.sBarString5 += P1.sBar5[c][3];
-			P1.sBarString5 += P1.sBar5[c][4];
+			if (P1.sBar5[c][2] != P1.sBar5[c][0]) P1.sBarString5 += P1.sBar5[c][2];
+			P1.sBarString5 += P1.sBar5[c][3];
 
+			P2.sBarString1 += P2.sBar1[c][0];
 			P2.sBarString1 += P2.sBar1[c][1];
-			P2.sBarString1 += P2.sBar1[c][2];
+			P2.sBarString2 += P2.sBar2[c][0];
 			P2.sBarString2 += P2.sBar2[c][1];
-			P2.sBarString2 += P2.sBar2[c][2];
+			P2.sBarString3 += P2.sBar3[c][0];
 			P2.sBarString3 += P2.sBar3[c][1];
-			P2.sBarString3 += P2.sBar3[c][2];
+			P2.sBarString4 += P2.sBar4[c][0];
 			P2.sBarString4 += P2.sBar4[c][1];
-			P2.sBarString4 += P2.sBar4[c][2];
-			if (P2.sBar4[c][3] != P2.sBar4[c][1]) P2.sBarString4 += P2.sBar4[c][3];
-			P2.sBarString4 += P2.sBar4[c][4];
+			if (P2.sBar4[c][2] != P2.sBar4[c][0]) P2.sBarString4 += P2.sBar4[c][2];
+			P2.sBarString4 += P2.sBar4[c][3];
+			P2.sBarString5 += P2.sBar5[c][0];
 			P2.sBarString5 += P2.sBar5[c][1];
-			P2.sBarString5 += P2.sBar5[c][2];
-			if (P2.sBar5[c][3] != P2.sBar5[c][1]) P2.sBarString5 += P2.sBar5[c][3];
-			P2.sBarString5 += P2.sBar5[c][4];
+			if (P2.sBar5[c][2] != P2.sBar5[c][0]) P2.sBarString5 += P2.sBar5[c][2];
+			P2.sBarString5 += P2.sBar5[c][3];
 		}
 		else
 		{
-			if (P1.sBar1[c][1] != P1.sBar1[l][1]) P1.sBarString1 += P1.sBar1[c][1];
-			P1.sBarString1 += P1.sBar1[c][2];
-			if (P1.sBar2[c][1] != P1.sBar2[l][1]) P1.sBarString2 += P1.sBar2[c][1];
-			P1.sBarString2 += P1.sBar2[c][2];
-			if (P1.sBar3[c][1] != P1.sBar3[l][1]) P1.sBarString3 += P1.sBar3[c][1];
-			P1.sBarString3 += P1.sBar3[c][2];
-			if (P1.sBar4[c][1] != P1.sBar4[l][3]) P1.sBarString4 += P1.sBar4[c][1];
-			P1.sBarString4 += P1.sBar4[c][2];
-			if (P1.sBar4[c][3] != P1.sBar4[c][1]) P1.sBarString4 += P1.sBar4[c][3];
-			P1.sBarString4 += P1.sBar4[c][4];
-			if (P1.sBar5[c][1] != P1.sBar4[l][3]) P1.sBarString5 += P1.sBar5[c][1];
-			P1.sBarString5 += P1.sBar5[c][2];
-			if (P1.sBar5[c][3] != P1.sBar5[c][1]) P1.sBarString5 += P1.sBar5[c][3];
-			P1.sBarString5 += P1.sBar5[c][4];
+			if (P1.sBar1[c][0] != P1.sBar1[l][0]) P1.sBarString1 += P1.sBar1[c][0];
+			P1.sBarString1 += P1.sBar1[c][1];
+			if (P1.sBar2[c][0] != P1.sBar2[l][0]) P1.sBarString2 += P1.sBar2[c][0];
+			P1.sBarString2 += P1.sBar2[c][1];
+			if (P1.sBar3[c][0] != P1.sBar3[l][0]) P1.sBarString3 += P1.sBar3[c][0];
+			P1.sBarString3 += P1.sBar3[c][1];
+			if (P1.sBar4[c][0] != P1.sBar4[l][2]) P1.sBarString4 += P1.sBar4[c][0];
+			P1.sBarString4 += P1.sBar4[c][1];
+			if (P1.sBar4[c][2] != P1.sBar4[c][0]) P1.sBarString4 += P1.sBar4[c][2];
+			P1.sBarString4 += P1.sBar4[c][3];
+			if (P1.sBar5[c][0] != P1.sBar5[l][2]) P1.sBarString5 += P1.sBar5[c][0];
+			P1.sBarString5 += P1.sBar5[c][1];
+			if (P1.sBar5[c][2] != P1.sBar5[c][0]) P1.sBarString5 += P1.sBar5[c][2];
+			P1.sBarString5 += P1.sBar5[c][3];
 
-			if (P2.sBar1[c][1] != P2.sBar1[l][1]) P2.sBarString1 += P2.sBar1[c][1];
-			P2.sBarString1 += P2.sBar1[c][2];
-			if (P2.sBar2[c][1] != P2.sBar2[l][1]) P2.sBarString2 += P2.sBar2[c][1];
-			P2.sBarString2 += P2.sBar2[c][2];
-			if (P2.sBar3[c][1] != P2.sBar3[l][1]) P2.sBarString3 += P2.sBar3[c][1];
-			P2.sBarString3 += P2.sBar3[c][2];
-			if (P2.sBar4[c][1] != P2.sBar4[l][3]) P2.sBarString4 += P2.sBar4[c][1];
-			P2.sBarString4 += P2.sBar4[c][2];
-			if (P2.sBar4[c][3] != P2.sBar4[c][1]) P2.sBarString4 += P2.sBar4[c][3];
-			P2.sBarString4 += P2.sBar4[c][4];
-			if (P2.sBar5[c][1] != P2.sBar4[l][3]) P2.sBarString5 += P2.sBar5[c][1];
-			P2.sBarString5 += P2.sBar5[c][2];
-			if (P2.sBar5[c][3] != P2.sBar5[c][1]) P2.sBarString5 += P2.sBar5[c][3];
-			P2.sBarString5 += P2.sBar5[c][4];
+			if (P2.sBar1[c][0] != P2.sBar1[l][0]) P2.sBarString1 += P2.sBar1[c][0];
+			P2.sBarString1 += P2.sBar1[c][1];
+			if (P2.sBar2[c][0] != P2.sBar2[l][0]) P2.sBarString2 += P2.sBar2[c][0];
+			P2.sBarString2 += P2.sBar2[c][1];
+			if (P2.sBar3[c][0] != P2.sBar3[l][0]) P2.sBarString3 += P2.sBar3[c][0];
+			P2.sBarString3 += P2.sBar3[c][1];
+			if (P2.sBar4[c][0] != P2.sBar4[l][2]) P2.sBarString4 += P2.sBar4[c][0];
+			P2.sBarString4 += P2.sBar4[c][1];
+			if (P2.sBar4[c][2] != P2.sBar4[c][0]) P2.sBarString4 += P2.sBar4[c][2];
+			P2.sBarString4 += P2.sBar4[c][3];
+			if (P2.sBar5[c][0] != P2.sBar5[l][2]) P2.sBarString5 += P2.sBar5[c][0];
+			P2.sBarString5 += P2.sBar5[c][1];
+			if (P2.sBar5[c][2] != P2.sBar5[c][0]) P2.sBarString5 += P2.sBar5[c][2];
+			P2.sBarString5 += P2.sBar5[c][3];
 		}
 		bFirstFrameInDisplay = false;
 	}
