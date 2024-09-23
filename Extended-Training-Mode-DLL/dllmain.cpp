@@ -953,10 +953,12 @@ void drawStats()
 	else
 		nP1RedHealthX = 20.0f + (1.0f - (float)nP1RedHealth / 11400.0f) * (230.0f - 20.0f);
 	snprintf(buffer, 256, "%5d", nP1RedHealth);
-	drawTextWithBorder(nP1RedHealthX - nResetOffset, 40, 10, 10, buffer);
+	//drawTextWithBorder(nP1RedHealthX - nResetOffset, 40, 10, 10, buffer);
+	TextDraw(nP1RedHealthX - nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
 	snprintf(buffer, 256, "%5d", *(int*)(dwBaseAddress + dwP1Health));
-	drawTextWithBorder(230 - nResetOffset, 40, 10, 10, buffer);
+	//drawTextWithBorder(230 - nResetOffset, 40, 10, 10, buffer);
+	TextDraw(235 - nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
 	int nP2RedHealth = *(int*)(dwBaseAddress + dwP2RedHealth);
 	int nP2RedHealthX;
@@ -967,21 +969,27 @@ void drawStats()
 	else
 		nP2RedHealthX = 575.0f - (1.0f - (float)nP2RedHealth / 11400.0f) * (575.0f - 366.0f);
 	snprintf(buffer, 256, "%5d", nP2RedHealth);
-	drawTextWithBorder(nP2RedHealthX + nResetOffset, 40, 10, 10, buffer);
+	//drawTextWithBorder(nP2RedHealthX + nResetOffset, 40, 10, 10, buffer);
+	TextDraw(5 + nP2RedHealthX + nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
 	snprintf(buffer, 256, "%5d", *(int*)(dwBaseAddress + dwP2Health));
-	drawTextWithBorder(366 + nResetOffset, 40, 10, 10, buffer);
+	//drawTextWithBorder(366 + nResetOffset, 40, 10, 10, buffer);
+	TextDraw(365 + nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
 
 	snprintf(buffer, 256, "%5.0f", *(float*)(dwBaseAddress + dwP1GuardAmount));
-	drawTextWithBorder(234 - nResetOffset, 58, 8, 9, buffer);
+	//drawTextWithBorder(234 - nResetOffset, 58, 8, 9, buffer);
+	TextDraw(242 - nResetOffset, 58, 8, 0xFFFFFFFF, buffer);
 	snprintf(buffer, 256, "%1.3f", *(float*)(dwBaseAddress + dwP1GuardQuality));
-	drawTextWithBorder(244 - nResetOffset, 67, 6, 9, buffer);
+	//drawTextWithBorder(244 - nResetOffset, 67, 6, 9, buffer);
+	TextDraw(249 - nResetOffset, 67, 6, 0xFFFFFFFF, buffer);
 
 	snprintf(buffer, 256, "%5.0f", *(float*)(dwBaseAddress + dwP2GuardAmount));
-	drawTextWithBorder(368 + nResetOffset, 58, 8, 9, buffer);
+	//drawTextWithBorder(368 + nResetOffset, 58, 8, 9, buffer);
+	TextDraw(361 + nResetOffset, 58, 8, 0xFFFFFFFF, buffer);
 	snprintf(buffer, 256, "%1.3f", *(float*)(dwBaseAddress + dwP2GuardQuality));
-	drawTextWithBorder(369 + nResetOffset, 67, 6, 9, buffer);
+	//drawTextWithBorder(369 + nResetOffset, 67, 6, 9, buffer);
+	TextDraw(367 + nResetOffset, 67, 6, 0xFFFFFFFF, buffer);
 }
 
 void drawFrameData()
@@ -1441,11 +1449,11 @@ void frameDoneCallback()
 			LONG lParamValue = (scanCode << 16);
 			GetKeyNameTextA(lParamValue, pcName, 19);
 			snprintf(pcFreezeKey, sizeof(pcFreezeKey), "Freeze Key: %s", pcName);
-			TextDraw(100.0f, 3.5f, 21.0f, 0xFFFFFFFF, pcFreezeKey);
+			TextDraw(100.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcFreezeKey);
 		}
 		catch (...)
 		{
-			TextDraw(100.0f, 3.5f, 21.0f, 0xFFFFFFFF, "Freeze Key: <corrupt>");
+			TextDraw(100.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Freeze Key: <corrupt>");
 		}
 
 		try
@@ -1456,11 +1464,11 @@ void frameDoneCallback()
 			LONG lParamValue = (scanCode << 16);
 			GetKeyNameTextA(lParamValue, pcName, 19);
 			snprintf(pcFrameStepKey, sizeof(pcFrameStepKey), "Frame Step Key: %s", pcName);
-			TextDraw(375.0f, 3.5f, 21.0f, 0xFFFFFFFF, pcFrameStepKey);
+			TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcFrameStepKey);
 		}
 		catch (...)
 		{
-			TextDraw(375.0f, 3.5f, 21.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
+			TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
 		}
 			
 	}

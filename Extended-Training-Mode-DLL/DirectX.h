@@ -875,6 +875,12 @@ void __stdcall backupRenderState() {
 
 	_hasStateToRestore = true;
 
+	//IDirect3DSurface9* prevRenderTarget = NULL;
+	//device->GetRenderTarget(0, &prevRenderTarget);
+	//log("rendertarget: %08X", prevRenderTarget);
+	//prevRenderTarget->Release();
+
+
 	// store state
 	device->GetPixelShader(&_pixelShaderBackup);
 	device->GetVertexShader(&_vertexShaderBackup);
