@@ -875,6 +875,12 @@ void __stdcall backupRenderState() {
 
 	_hasStateToRestore = true;
 
+	//IDirect3DSurface9* prevRenderTarget = NULL;
+	//device->GetRenderTarget(0, &prevRenderTarget);
+	//log("rendertarget: %08X", prevRenderTarget);
+	//prevRenderTarget->Release();
+
+
 	// store state
 	device->GetPixelShader(&_pixelShaderBackup);
 	device->GetVertexShader(&_vertexShaderBackup);
@@ -1452,12 +1458,12 @@ IDirect3DPixelShader9* getOutlinePixelShader() {
 
 						tempColor = tex2D(textureSampler, offsets[i]);
 						if(tempColor.a == 0) {
-							return float4(texColor.rgb, 0.7); // putting this alpha at 0.75 might be a bit whack, but will help with overlay
+							return float4(texColor.rgb, 0.875); // putting this alpha at 0.75 might be a bit whack, but will help with overlay
 						}
 
 					}
 			
-					return float4(texColor.rgb, 0.25);
+					return float4(texColor.rgb, 0.1875);
 			}
 
 		)");
@@ -1702,9 +1708,9 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 
 void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade = true) {
 	if (shade) {
-		RectDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0x40000000);
+		RectDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0x30000000); // make sure to sync these alpha values with the ones in the outline shader
 	}
-	BorderDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0xC0000000);
+	BorderDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0xE0000000);
 }
 
 constexpr DWORD arrNormalColors[] = {

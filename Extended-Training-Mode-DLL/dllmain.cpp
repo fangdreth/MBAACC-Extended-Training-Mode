@@ -92,6 +92,7 @@ bool bFreeze = false;
 bool bFrameDataDisplay = false;
 bool bHitboxesDisplay = false;
 bool bHighlightsOn = true;
+DWORD shouldDrawBackground = 1;
 
 uint8_t nRNGMode = RNG_OFF;
 uint8_t nRNGRate = RNG_EVERY_FRAME;
@@ -545,18 +546,18 @@ void drawTextWithBorder(int x, int y, int w, int h, const char* text)
 
 extern "C" int asmDrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
 
-void drawRect(int x, int y, int w, int h, BYTE r, BYTE g, BYTE b, BYTE a, int layer = 0x2cc)
+void __stdcall drawRect(int x, int y, int w, int h, BYTE r, BYTE g, BYTE b, BYTE a, int layer = 0x2cc)
 {
 	int colVal = (a << 24) | (r << 16) | (g << 8) | (b << 0);
 	asmDrawRect(x, y, w, h, colVal, colVal, colVal, colVal, layer);
 }
 
-void drawRect(int x, int y, int w, int h, DWORD colVal, int layer = 0x2cc)
+void __stdcall drawRect(int x, int y, int w, int h, DWORD colVal, int layer = 0x2cc)
 {
 	asmDrawRect(x, y, w, h, colVal, colVal, colVal, colVal, layer);
 }
 
-void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4)
+void __stdcall drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4)
 {
 	// there must be a better way of doing this than using 4 rects
 	// framestop draws less intrusive rects. figure out how
@@ -577,7 +578,7 @@ void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4)
 	drawRect(x, y + h - 1, w, lineWidth, ARGB);
 }
 
-void drawBorderWithHighlight(int x, int y, int w, int h, DWORD ARGB = 0x8042e5f4)
+void __stdcall drawBorderWithHighlight(int x, int y, int w, int h, DWORD ARGB = 0x8042e5f4)
 {
 	drawBorder(x, y, w, h, ARGB);
 
@@ -875,32 +876,25 @@ void drawFrameBar()
 		nForEnd = DISPLAY_RANGE;
 	}
 
+	RectDraw(18, nFrameBarY, 602, 27, 0xFF000000); //Background
+
 	int j = 0;
 	for (int i = nForStart; i < nForEnd; i++)
 	{
-		if (i < 0)
-		{
-			j = i + BAR_MEMORY_SIZE;
-		}
-		else
-		{
-			j = i;
-		}
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 1, 7, 2, (*Main1).dwColorBar2[j][0]);
-		if ((*Main1).dwColorBar2[j][1] != 0)
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 11, 7, 2, (*Main1).dwColorBar2[j][1]);
+		j = i < 0 ? i + BAR_MEMORY_SIZE : i;
 
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 14, 7, 2, (*Main2).dwColorBar2[j][0]);
-		if ((*Main2).dwColorBar2[j][1] != 0)
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 24, 7, 2, (*Main2).dwColorBar2[j][1]);
-
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 2, 4, 10, (*Main1).dwColorBar1[j][0]);
+		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 2, 7, 10, (*Main1).dwColorBar1[j][0]);
 		if ((*Main1).dwColorBar1[j][1] != 0)
-			drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 2, 3, 10, (*Main1).dwColorBar1[j][1]);
-
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 15, 4, 10, (*Main2).dwColorBar1[j][0]);
+			RectDraw(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 2, 3, 10, (*Main1).dwColorBar1[j][1]);
+		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 15, 7, 10, (*Main2).dwColorBar1[j][0]);
 		if ((*Main2).dwColorBar1[j][1] != 0)
-			drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 15, 3, 10, (*Main2).dwColorBar1[j][1]);
+			RectDraw(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 15, 3, 10, (*Main2).dwColorBar1[j][1]);
+		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 1, 7, 2, (*Main1).dwColorBar2[j][0]);
+		if ((*Main1).dwColorBar2[j][1] != 0)
+			RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 11, 7, 2, (*Main1).dwColorBar2[j][1]);
+		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 14, 7, 2, (*Main2).dwColorBar2[j][0]);
+		if ((*Main2).dwColorBar2[j][1] != 0)
+			RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 24, 7, 2, (*Main2).dwColorBar2[j][1]);
 
 		static char buffer[256];
 
@@ -908,30 +902,24 @@ void drawFrameBar()
 		{
 			int nLength = floor(log10((*Main1).nNumBar[j][0]));
 			snprintf(buffer, 256, "%i", (*Main1).nNumBar[j][0]);
-			//drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 3, 7, 10, buffer);
-			TextDraw(18 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 2, 10, 0xFFFFFFFF, buffer);
+			TextDraw(19 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 2, 10, 0xFFFFFFFF, buffer);
 		}
 
 		if ((*Main2).nNumBar[j][0] >= 0)
 		{
 			int nLength = floor(log10((*Main2).nNumBar[j][0]));
 			snprintf(buffer, 256, "%i", (*Main2).nNumBar[j][0]);
-			//drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 16, 7, 10, buffer);
-			TextDraw(18 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 15, 10, 0xFFFFFFFF, buffer);
+			TextDraw(19 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 15, 10, 0xFFFFFFFF, buffer);
 		}
 		nBarDrawCounter++;
 	}
 	static char buffer[256];
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main1).nFirstActive % 1000, (*Main1).nInactionableMemory % 1000, nPlayerAdvantage % 1000);
-	//drawTextWithBorder(20, nFrameBarY - 11, 7, 10, buffer);
 	TextDraw(20, nFrameBarY - 11, 10, 0xFFFFFFFF, buffer);
 
 
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main2).nFirstActive % 1000, (*Main2).nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
-	//drawTextWithBorder(20, nFrameBarY + 28, 7, 10, buffer);
 	TextDraw(20, nFrameBarY + 28, 10, 0xFFFFFFFF, buffer);
-
-	drawRect(18, nFrameBarY, 602, 27, 0xFF000000); //Background
 
 }
 
@@ -953,10 +941,12 @@ void drawStats()
 	else
 		nP1RedHealthX = 20.0f + (1.0f - (float)nP1RedHealth / 11400.0f) * (230.0f - 20.0f);
 	snprintf(buffer, 256, "%5d", nP1RedHealth);
-	drawTextWithBorder(nP1RedHealthX - nResetOffset, 40, 10, 10, buffer);
+	//drawTextWithBorder(nP1RedHealthX - nResetOffset, 40, 10, 10, buffer);
+	TextDraw(nP1RedHealthX - nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
 	snprintf(buffer, 256, "%5d", *(int*)(dwBaseAddress + dwP1Health));
-	drawTextWithBorder(230 - nResetOffset, 40, 10, 10, buffer);
+	//drawTextWithBorder(230 - nResetOffset, 40, 10, 10, buffer);
+	TextDraw(235 - nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
 	int nP2RedHealth = *(int*)(dwBaseAddress + dwP2RedHealth);
 	int nP2RedHealthX;
@@ -967,21 +957,27 @@ void drawStats()
 	else
 		nP2RedHealthX = 575.0f - (1.0f - (float)nP2RedHealth / 11400.0f) * (575.0f - 366.0f);
 	snprintf(buffer, 256, "%5d", nP2RedHealth);
-	drawTextWithBorder(nP2RedHealthX + nResetOffset, 40, 10, 10, buffer);
+	//drawTextWithBorder(nP2RedHealthX + nResetOffset, 40, 10, 10, buffer);
+	TextDraw(5 + nP2RedHealthX + nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
 	snprintf(buffer, 256, "%5d", *(int*)(dwBaseAddress + dwP2Health));
-	drawTextWithBorder(366 + nResetOffset, 40, 10, 10, buffer);
+	//drawTextWithBorder(366 + nResetOffset, 40, 10, 10, buffer);
+	TextDraw(365 + nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
 
 	snprintf(buffer, 256, "%5.0f", *(float*)(dwBaseAddress + dwP1GuardAmount));
-	drawTextWithBorder(234 - nResetOffset, 58, 8, 9, buffer);
+	//drawTextWithBorder(234 - nResetOffset, 58, 8, 9, buffer);
+	TextDraw(242 - nResetOffset, 58, 8, 0xFFFFFFFF, buffer);
 	snprintf(buffer, 256, "%1.3f", *(float*)(dwBaseAddress + dwP1GuardQuality));
-	drawTextWithBorder(244 - nResetOffset, 67, 6, 9, buffer);
+	//drawTextWithBorder(244 - nResetOffset, 67, 6, 9, buffer);
+	TextDraw(249 - nResetOffset, 67, 6, 0xFFFFFFFF, buffer);
 
 	snprintf(buffer, 256, "%5.0f", *(float*)(dwBaseAddress + dwP2GuardAmount));
-	drawTextWithBorder(368 + nResetOffset, 58, 8, 9, buffer);
+	//drawTextWithBorder(368 + nResetOffset, 58, 8, 9, buffer);
+	TextDraw(361 + nResetOffset, 58, 8, 0xFFFFFFFF, buffer);
 	snprintf(buffer, 256, "%1.3f", *(float*)(dwBaseAddress + dwP2GuardQuality));
-	drawTextWithBorder(369 + nResetOffset, 67, 6, 9, buffer);
+	//drawTextWithBorder(369 + nResetOffset, 67, 6, 9, buffer);
+	TextDraw(367 + nResetOffset, 67, 6, 0xFFFFFFFF, buffer);
 }
 
 void drawFrameData()
@@ -1382,6 +1378,12 @@ void frameDoneCallback()
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
 
 	setAllKeys();
+
+	static KeyState F9Key(VK_F9);
+	if (F9Key.keyDown()) {
+		shouldDrawBackground = !shouldDrawBackground;
+	}
+	
 	
 	bool ok = true;
 	MSG msg;
@@ -1441,11 +1443,11 @@ void frameDoneCallback()
 			LONG lParamValue = (scanCode << 16);
 			GetKeyNameTextA(lParamValue, pcName, 19);
 			snprintf(pcFreezeKey, sizeof(pcFreezeKey), "Freeze Key: %s", pcName);
-			TextDraw(100.0f, 3.5f, 21.0f, 0xFFFFFFFF, pcFreezeKey);
+			TextDraw(100.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcFreezeKey);
 		}
 		catch (...)
 		{
-			TextDraw(100.0f, 3.5f, 21.0f, 0xFFFFFFFF, "Freeze Key: <corrupt>");
+			TextDraw(100.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Freeze Key: <corrupt>");
 		}
 
 		try
@@ -1456,11 +1458,11 @@ void frameDoneCallback()
 			LONG lParamValue = (scanCode << 16);
 			GetKeyNameTextA(lParamValue, pcName, 19);
 			snprintf(pcFrameStepKey, sizeof(pcFrameStepKey), "Frame Step Key: %s", pcName);
-			TextDraw(375.0f, 3.5f, 21.0f, 0xFFFFFFFF, pcFrameStepKey);
+			TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcFrameStepKey);
 		}
 		catch (...)
 		{
-			TextDraw(375.0f, 3.5f, 21.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
+			TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
 		}
 			
 	}
@@ -1741,8 +1743,8 @@ void frameDoneCallback()
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcMainInfoText, 64, 0);
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcSubInfoText, 64, 0);
 		RectDraw(-0.5f, 382.5f, 640.0f, 70.0f, 0xFF101010);
-		TextDraw(47.5f, 393.5f, 21.0f, 0xFFFFFFFF, pcMainInfoText);
-		TextDraw(66.5f, 420.5f, 21.0f, 0xFFFFFFFF, pcSubInfoText);
+		TextDraw(47.5f, 393.5f, 16.0f, 0xFFFFFFFF, pcMainInfoText);
+		TextDraw(66.5f, 420.5f, 16.0f, 0xFFFFFFFF, pcSubInfoText);
 	}
 }
 
@@ -2073,6 +2075,31 @@ __declspec(naked) void _naked_updateEffectsPauseLoop2() {
 	};
 }
 
+
+DWORD _naked_DrawBackground_FuncAddr = 0x004b9540;
+__declspec(naked) void _naked_DrawBackground() {
+
+	__asm {
+
+		cmp shouldDrawBackground, 0;
+		JE _SKIP;
+
+		call[_naked_DrawBackground_FuncAddr];
+
+		push 004238c5h;
+		ret;
+
+	_SKIP:
+	}
+
+	drawRect(0, 0, 640, 480, 0xFFFFFFFF, 0x10a);
+
+	__asm {
+		push 004238c5h
+		ret;
+	}
+}
+
 int nTempP1MeterGain = 0;
 int nTempP2MeterGain = 0;
 int nP1MeterGain = 0;
@@ -2135,7 +2162,6 @@ void animHookFunc()
 	// perform coloring code
 	highlightStates();
 }
-
 
 DWORD _meterGainHook_CharacterAddr;
 DWORD _meterGainHook_MeterAmount;
@@ -2398,6 +2424,10 @@ void initNewPauseCallback() {
 
 }
 
+void initDrawBackground() {
+	patchJump(0x004238c0, _naked_DrawBackground);
+}
+
 void threadFunc() 
 {
 	srand(time(NULL));
@@ -2421,7 +2451,6 @@ void threadFunc()
 	initFrameDoneCallback();
 	initAnimHook();
 	InitializeCharacterMaps();
-	InitializeCharacterPatternMaps();
 	// when running with caster, the prints to this area are disabled
 	// when not running with caster, they arent even there, so this is fine to run regardless of caster 
 	initAttackMeterDisplay();
@@ -2429,6 +2458,7 @@ void threadFunc()
 	initBattleResetCallback();
 
 	initNewPauseCallback();
+	initDrawBackground();
 
 	
 	while (true) 
