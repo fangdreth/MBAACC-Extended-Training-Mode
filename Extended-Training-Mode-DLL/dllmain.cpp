@@ -92,6 +92,7 @@ bool bFreeze = false;
 bool bFrameDataDisplay = false;
 bool bHitboxesDisplay = false;
 bool bHighlightsOn = true;
+DWORD shouldDrawBackground = 1;
 
 uint8_t nRNGMode = RNG_OFF;
 uint8_t nRNGRate = RNG_EVERY_FRAME;
@@ -545,18 +546,18 @@ void drawTextWithBorder(int x, int y, int w, int h, const char* text)
 
 extern "C" int asmDrawRect(int screenXAddr, int screenYAddr, int width, int height, int A, int B, int C, int D, int layer);
 
-void drawRect(int x, int y, int w, int h, BYTE r, BYTE g, BYTE b, BYTE a, int layer = 0x2cc)
+void __stdcall drawRect(int x, int y, int w, int h, BYTE r, BYTE g, BYTE b, BYTE a, int layer = 0x2cc)
 {
 	int colVal = (a << 24) | (r << 16) | (g << 8) | (b << 0);
 	asmDrawRect(x, y, w, h, colVal, colVal, colVal, colVal, layer);
 }
 
-void drawRect(int x, int y, int w, int h, DWORD colVal, int layer = 0x2cc)
+void __stdcall drawRect(int x, int y, int w, int h, DWORD colVal, int layer = 0x2cc)
 {
 	asmDrawRect(x, y, w, h, colVal, colVal, colVal, colVal, layer);
 }
 
-void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4)
+void __stdcall drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4)
 {
 	// there must be a better way of doing this than using 4 rects
 	// framestop draws less intrusive rects. figure out how
@@ -577,7 +578,7 @@ void drawBorder(int x, int y, int w, int h, DWORD ARGB=0x8042e5f4)
 	drawRect(x, y + h - 1, w, lineWidth, ARGB);
 }
 
-void drawBorderWithHighlight(int x, int y, int w, int h, DWORD ARGB = 0x8042e5f4)
+void __stdcall drawBorderWithHighlight(int x, int y, int w, int h, DWORD ARGB = 0x8042e5f4)
 {
 	drawBorder(x, y, w, h, ARGB);
 
@@ -1377,6 +1378,12 @@ void frameDoneCallback()
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
 
 	setAllKeys();
+
+	static KeyState F9Key(VK_F9);
+	if (F9Key.keyDown()) {
+		shouldDrawBackground = !shouldDrawBackground;
+	}
+	
 	
 	bool ok = true;
 	MSG msg;
@@ -2068,6 +2075,31 @@ __declspec(naked) void _naked_updateEffectsPauseLoop2() {
 	};
 }
 
+
+DWORD _naked_DrawBackground_FuncAddr = 0x004b9540;
+__declspec(naked) void _naked_DrawBackground() {
+
+	__asm {
+
+		cmp shouldDrawBackground, 0;
+		JE _SKIP;
+
+		call[_naked_DrawBackground_FuncAddr];
+
+		push 004238c5h;
+		ret;
+
+	_SKIP:
+	}
+
+	drawRect(0, 0, 640, 480, 0xFFFFFFFF, 0x10a);
+
+	__asm {
+		push 004238c5h
+		ret;
+	}
+}
+
 int nTempP1MeterGain = 0;
 int nTempP2MeterGain = 0;
 int nP1MeterGain = 0;
@@ -2130,7 +2162,6 @@ void animHookFunc()
 	// perform coloring code
 	highlightStates();
 }
-
 
 DWORD _meterGainHook_CharacterAddr;
 DWORD _meterGainHook_MeterAmount;
@@ -2393,6 +2424,10 @@ void initNewPauseCallback() {
 
 }
 
+void initDrawBackground() {
+	patchJump(0x004238c0, _naked_DrawBackground);
+}
+
 void threadFunc() 
 {
 	srand(time(NULL));
@@ -2423,6 +2458,7 @@ void threadFunc()
 	initBattleResetCallback();
 
 	initNewPauseCallback();
+	initDrawBackground();
 
 	
 	while (true) 
