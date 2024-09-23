@@ -94,6 +94,7 @@ bool bHitboxesDisplay = false;
 bool bHighlightsOn = true;
 DWORD shouldDrawBackground = 1;
 DWORD shouldDrawHud = 1;
+DWORD shouldDrawGroundLine = 0;
 DWORD backgroundColor = 0xFFFFFFFF;
 
 uint8_t nRNGMode = RNG_OFF;
@@ -1395,6 +1396,11 @@ void frameDoneCallback()
 	if (F8Key.keyDown()) {
 		shouldDrawHud= !shouldDrawHud;
 	}
+
+	static KeyState F7Key(VK_F7);
+	if (F7Key.keyDown()) {
+		shouldDrawGroundLine = !shouldDrawGroundLine;
+	}
 	
 	bool ok = true;
 	MSG msg;
@@ -2086,6 +2092,42 @@ __declspec(naked) void _naked_updateEffectsPauseLoop2() {
 	};
 }
 
+void DrawBackground() {
+	drawRect(0, 0, 640, 480, backgroundColor, 0x10a);
+	if (shouldDrawGroundLine) {
+		float windowWidth = *(uint32_t*)0x0054d048;
+		float windowHeight = *(uint32_t*)0x0054d04c;
+
+		int cameraX = *(int*)(0x0055dec4);
+		int cameraY = *(int*)(0x0055dec8);
+		float cameraZoom = *(float*)(0x0054eb70);
+
+		int xPos = 0;
+		int yPos = 0;
+
+		float xCamTemp = ((((float)(xPos - cameraX) * cameraZoom) / 128.0f) * (windowWidth / 640.0f) + windowWidth / 2.0f);
+		float yCamTemp = ((((float)(yPos - cameraY) * cameraZoom) / 128.0f - 49.0f) * (windowHeight / 480.0f) + windowHeight);
+
+		xCamTemp = floor(xCamTemp);
+		yCamTemp = floor(yCamTemp);
+
+		float tempFloat;
+
+		float x1Cord, x2Cord, y1Cord, y2Cord;
+
+		x1Cord = ((float)xCamTemp - (windowWidth / 640.0f) * cameraZoom * 5.0f);
+		x2Cord = ((windowWidth / 640.0f) * cameraZoom * 5.0f + (float)xCamTemp);
+		y1Cord = ((float)yCamTemp - (windowWidth / 640.0f) * cameraZoom * 5.0f);
+		y2Cord = yCamTemp;
+
+		x1Cord = ((float)x1Cord * (640.0f / windowWidth));
+		x2Cord = ((float)x2Cord * (640.0f / windowWidth));
+		y1Cord = ((float)y1Cord * (480.0f / windowHeight));
+		y2Cord = ((float)y2Cord * (480.0f / windowHeight));
+
+		drawRect(0, (int)y2Cord, 640, 1, 0xFF42e5f4, 0x10C);
+	}
+}
 
 DWORD _naked_DrawBackground_FuncAddr = 0x004b9540;
 __declspec(naked) void _naked_DrawBackground() {
@@ -2104,7 +2146,7 @@ __declspec(naked) void _naked_DrawBackground() {
 	}
 
 	PUSH_ALL;
-	drawRect(0, 0, 640, 480, backgroundColor, 0x10a);
+	DrawBackground();
 	POP_ALL;
 
 	__asm {
