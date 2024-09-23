@@ -116,6 +116,7 @@ const DWORD dwP1ArmorTimer = 0x1552C8; // 0:no armor >0:armor
 const DWORD dwP2ArmorTimer = 0x1552C8 + 0xAFC;
 const DWORD dwP2RecievedHitstop = 0x155DD0;
 const DWORD dwGameMode = 0x162A74; // 16:training
+const DWORD dwDrawFPS = 0x154128; // 0:off 1:on
 const DWORD dwFPS = 0x374A70;
 const DWORD dwP1Color = 0x34D83C;
 const DWORD dwP2Color = 0x34D868;

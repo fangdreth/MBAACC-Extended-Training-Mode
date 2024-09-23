@@ -406,6 +406,9 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedOnExtendedSettings), &bOnSettingsMenu, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcBlank_64, 64, 0);
+
+                        uint8_t nZero = 0;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwDrawFPS), &nZero, 1, 0);
                     }
                 }
             }
