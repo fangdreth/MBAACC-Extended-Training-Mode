@@ -2192,7 +2192,10 @@ void __stdcall _doDrawCalls() {
 	}
 	res /= ((double)timeBufferLen);
 
-	TextDraw(565, 0.0, 10, 0xFF00FFFF, "FPS: %5.2lf", res);
+	if (shouldDrawHud) {
+		TextDraw(0.0, 0.0, 10, 0xFF00FFFF, "%5.2lf", res);
+	}
+	
 
 	startTime = endTime;
 
@@ -2444,7 +2447,9 @@ bool HookDirectX() {
 	if (device == NULL) {
 		return false;
 	}
-	
+
+	// disable their fps counter
+	patchByte(0x00554128, 0x00);
 
 	// this specifically checks if our hooks were overwritten, and then rehooks
 	patchJump(0x004be3c4, _naked_RehookDirectX);

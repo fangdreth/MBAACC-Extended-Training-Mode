@@ -93,6 +93,8 @@ bool bFrameDataDisplay = false;
 bool bHitboxesDisplay = false;
 bool bHighlightsOn = true;
 DWORD shouldDrawBackground = 1;
+DWORD shouldDrawHud = 1;
+DWORD backgroundColor = 0xFFFFFFFF;
 
 uint8_t nRNGMode = RNG_OFF;
 uint8_t nRNGRate = RNG_EVERY_FRAME;
@@ -925,6 +927,11 @@ void drawFrameBar()
 
 void drawStats()
 {
+
+	if (!shouldDrawHud) {
+		return;
+	}
+
 	int nFrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
 	int nResetOffset = 0;
 	if (nFrameTimer < 20)
@@ -1383,7 +1390,11 @@ void frameDoneCallback()
 	if (F9Key.keyDown()) {
 		shouldDrawBackground = !shouldDrawBackground;
 	}
-	
+
+	static KeyState F8Key(VK_F8);
+	if (F8Key.keyDown()) {
+		shouldDrawHud= !shouldDrawHud;
+	}
 	
 	bool ok = true;
 	MSG msg;
@@ -1433,7 +1444,7 @@ void frameDoneCallback()
 
 	//drawTextWithBorder(300, 300, 36, 48	, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
 
-	if (bFreeze)
+	if (bFreeze && shouldDrawHud)
 	{
 		try
 		{
@@ -2092,10 +2103,47 @@ __declspec(naked) void _naked_DrawBackground() {
 	_SKIP:
 	}
 
-	drawRect(0, 0, 640, 480, 0xFFFFFFFF, 0x10a);
+	PUSH_ALL;
+	drawRect(0, 0, 640, 480, backgroundColor, 0x10a);
+	POP_ALL;
 
 	__asm {
 		push 004238c5h
+		ret;
+	}
+}
+
+DWORD _naked_DrawHudText_FuncAddr = 0x00476c70;
+__declspec(naked) void _naked_DrawHudText() {
+	__asm {
+		cmp shouldDrawHud, 0;
+		JE _SKIP;
+
+		call[_naked_DrawHudText_FuncAddr];
+
+	_SKIP:
+
+		push 004238a1h;
+		ret;
+	}
+}
+
+DWORD _naked_DrawHud_FuncAddr = 0x00424100;
+__declspec(naked) void _naked_DrawHud() {
+	__asm {
+		cmp shouldDrawHud, 0;
+		JE _SKIP;
+
+		call[_naked_DrawHud_FuncAddr];
+
+		push 004238abh;
+		ret;
+
+	_SKIP:
+
+		add esp, 04h; // clean up the stack
+
+		push 004238abh;
 		ret;
 	}
 }
@@ -2426,6 +2474,8 @@ void initNewPauseCallback() {
 
 void initDrawBackground() {
 	patchJump(0x004238c0, _naked_DrawBackground);
+	patchJump(0x0042389c, _naked_DrawHudText);
+	patchJump(0x004238a6, _naked_DrawHud);
 }
 
 void threadFunc() 
