@@ -1520,9 +1520,22 @@ IDirect3DVertexShader9* getColorVertexShader() {
 }
 
 IDirect3DTexture9* renderTargetTex = NULL;
+
+void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade = true) {
+	if (shade) {
+		RectDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0x30000000); // make sure to sync these alpha values with the ones in the outline shader
+	}
+	BorderDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0xE0000000);
+}
+
 void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
-	
+
 	if (boxList.size() == 0) {
+		return;
+	}
+
+	if (boxList.size() == 1) { 
+		drawSingleHitbox(boxList[0], ARGB);
 		return;
 	}
 
@@ -1570,7 +1583,7 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	// might need to do this?
 	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
-	static IDirect3DPixelShader9* pColorShader = NULL; 
+	static IDirect3DPixelShader9* pColorShader = NULL;
 	static IDirect3DVertexShader9* vColorShader = NULL;
 
 	if (pColorShader == NULL) {
@@ -1592,10 +1605,10 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 		float w = boxList[i].w / 640.0f;
 		float h = boxList[i].h / 480.0f;
 
-		PosVert v1 = { ((x + 0) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f};
-		PosVert v2 = { ((x + w) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f};
-		PosVert v3 = { ((x + 0) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f};
-		PosVert v4 = { ((x + w) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f};
+		PosVert v1 = { ((x + 0) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f };
+		PosVert v2 = { ((x + w) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f };
+		PosVert v3 = { ((x + 0) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f };
+		PosVert v4 = { ((x + w) * 2.0f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f };
 
 		vertData.add(v1, v2, v3);
 		vertData.add(v2, v3, v4);
@@ -1667,8 +1680,8 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 
 	constexpr float whatIsThis = 0.5f; // what is this?
 
-		
-	CUSTOMVERTEX vertices[] = { 
+
+	CUSTOMVERTEX vertices[] = {
 		{ D3DVECTOR(-1.0f, 1.0f, 0.5f), D3DXVECTOR2(0.0f, 0.0f) },
 		{ D3DVECTOR(1.0f, 1.0f, 0.5f), D3DXVECTOR2(1.0f, 0.0f) },
 		{ D3DVECTOR(-1.0f, -1.0f, 0.5f), D3DXVECTOR2(0.0f, 1.0f) },
@@ -1706,12 +1719,6 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	device->SetTexture(0, NULL);
 }
 
-void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade = true) {
-	if (shade) {
-		RectDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0x30000000); // make sure to sync these alpha values with the ones in the outline shader
-	}
-	BorderDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0xE0000000);
-}
 
 constexpr DWORD arrNormalColors[] = {
 	0xFF42E5F4, // origin
@@ -2193,7 +2200,7 @@ void __stdcall _doDrawCalls() {
 	res /= ((double)timeBufferLen);
 
 	if (shouldDrawHud) {
-		TextDraw(0.0, 0.0, 10, 0xFF00FFFF, "%5.2lf", res);
+		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "%5.2lf", res);
 	}
 	
 
