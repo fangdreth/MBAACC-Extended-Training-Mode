@@ -875,32 +875,25 @@ void drawFrameBar()
 		nForEnd = DISPLAY_RANGE;
 	}
 
+	RectDraw(18, nFrameBarY, 602, 27, 0xFF000000); //Background
+
 	int j = 0;
 	for (int i = nForStart; i < nForEnd; i++)
 	{
-		if (i < 0)
-		{
-			j = i + BAR_MEMORY_SIZE;
-		}
-		else
-		{
-			j = i;
-		}
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 1, 7, 2, (*Main1).dwColorBar2[j][0]);
-		if ((*Main1).dwColorBar2[j][1] != 0)
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 11, 7, 2, (*Main1).dwColorBar2[j][1]);
+		j = i < 0 ? i + BAR_MEMORY_SIZE : i;
 
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 14, 7, 2, (*Main2).dwColorBar2[j][0]);
-		if ((*Main2).dwColorBar2[j][1] != 0)
-			drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 24, 7, 2, (*Main2).dwColorBar2[j][1]);
-
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 2, 4, 10, (*Main1).dwColorBar1[j][0]);
+		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 2, 7, 10, (*Main1).dwColorBar1[j][0]);
 		if ((*Main1).dwColorBar1[j][1] != 0)
-			drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 2, 3, 10, (*Main1).dwColorBar1[j][1]);
-
-		drawRect(20 + 8 * nBarDrawCounter, nFrameBarY + 15, 4, 10, (*Main2).dwColorBar1[j][0]);
+			RectDraw(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 2, 3, 10, (*Main1).dwColorBar1[j][1]);
+		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 15, 7, 10, (*Main2).dwColorBar1[j][0]);
 		if ((*Main2).dwColorBar1[j][1] != 0)
-			drawRect(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 15, 3, 10, (*Main2).dwColorBar1[j][1]);
+			RectDraw(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 15, 3, 10, (*Main2).dwColorBar1[j][1]);
+		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 1, 7, 2, (*Main1).dwColorBar2[j][0]);
+		if ((*Main1).dwColorBar2[j][1] != 0)
+			RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 11, 7, 2, (*Main1).dwColorBar2[j][1]);
+		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 14, 7, 2, (*Main2).dwColorBar2[j][0]);
+		if ((*Main2).dwColorBar2[j][1] != 0)
+			RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 24, 7, 2, (*Main2).dwColorBar2[j][1]);
 
 		static char buffer[256];
 
@@ -908,30 +901,24 @@ void drawFrameBar()
 		{
 			int nLength = floor(log10((*Main1).nNumBar[j][0]));
 			snprintf(buffer, 256, "%i", (*Main1).nNumBar[j][0]);
-			//drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 3, 7, 10, buffer);
-			TextDraw(18 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 2, 10, 0xFFFFFFFF, buffer);
+			TextDraw(19 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 2, 10, 0xFFFFFFFF, buffer);
 		}
 
 		if ((*Main2).nNumBar[j][0] >= 0)
 		{
 			int nLength = floor(log10((*Main2).nNumBar[j][0]));
 			snprintf(buffer, 256, "%i", (*Main2).nNumBar[j][0]);
-			//drawTextWithBorder(20 + 8 * nBarDrawCounter - 6 * nLength, nFrameBarY + 16, 7, 10, buffer);
-			TextDraw(18 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 15, 10, 0xFFFFFFFF, buffer);
+			TextDraw(19 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 15, 10, 0xFFFFFFFF, buffer);
 		}
 		nBarDrawCounter++;
 	}
 	static char buffer[256];
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main1).nFirstActive % 1000, (*Main1).nInactionableMemory % 1000, nPlayerAdvantage % 1000);
-	//drawTextWithBorder(20, nFrameBarY - 11, 7, 10, buffer);
 	TextDraw(20, nFrameBarY - 11, 10, 0xFFFFFFFF, buffer);
 
 
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main2).nFirstActive % 1000, (*Main2).nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
-	//drawTextWithBorder(20, nFrameBarY + 28, 7, 10, buffer);
 	TextDraw(20, nFrameBarY + 28, 10, 0xFFFFFFFF, buffer);
-
-	drawRect(18, nFrameBarY, 602, 27, 0xFF000000); //Background
 
 }
 
@@ -2421,7 +2408,6 @@ void threadFunc()
 	initFrameDoneCallback();
 	initAnimHook();
 	InitializeCharacterMaps();
-	InitializeCharacterPatternMaps();
 	// when running with caster, the prints to this area are disabled
 	// when not running with caster, they arent even there, so this is fine to run regardless of caster 
 	initAttackMeterDisplay();
