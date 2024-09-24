@@ -1,5 +1,6 @@
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Images/Extended%20Training%20Mode%20v2.0%20Corner.png?raw=true)
 
+#
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/Features.png?raw=true)
 
 + New "EXTENDED SETTINGS" menu
@@ -56,11 +57,12 @@
 	+ Shadows can be disabled
 	+ The HUD can be disabled
 
-# Discord
+#
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/Discord.png?raw=true)
 We have a Discord [https://discord.gg/6QUpZcThg7] where you can report bugs, get help, request features, or just discuss the mod.  If you do not want to join a discord, you can ping or message Fang___ instead.
 
-# How do I get the mod?
-
+#
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/Get.png?raw=true)
 - [Download the latest .EXE and .DLL from this link.](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases)  
 
 - The first time you run the .EXE, your anti-virus might warn you it is dangerous.  You can safely dismiss this message.  If you are curious, you see this because the training mod has code which modifies memory directly, which sets off the anti-virus.
@@ -69,11 +71,12 @@ We have a Discord [https://discord.gg/6QUpZcThg7] where you can report bugs, get
 
 - It is not necessary to put the executable in the same directory as MBAA.exe.
 
-# Building the mod yourself
-
+#
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/build.png?raw=true)
 Right now there isn't a CMAKE file, so if you want to build the mod yourself, get the [latest version of Visual Studio](https://visualstudio.microsoft.com/vs/), [DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812), and be sure to target x86.
 
-# v2.0 Changelog
+#
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/changelog.png?raw=true)
 + Uses DLL injection now in addition to the old external EXE
 
 + Frame data improved
