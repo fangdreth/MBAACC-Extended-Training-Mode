@@ -1387,21 +1387,56 @@ void frameDoneCallback()
 
 	setAllKeys();
 
-	static KeyState F9Key(VK_F9);
-	if (F9Key.keyDown()) {
-		shouldDrawBackground = !shouldDrawBackground;
-	}
+	/*DWORD shouldDrawBackground = 1;
+	DWORD shouldDrawHud = 1;
+	DWORD shouldDrawGroundLine = 0;
+	DWORD backgroundColor = 0xFFFFFFFF;*/
 
-	static KeyState F8Key(VK_F8);
-	if (F8Key.keyDown()) {
-		shouldDrawHud= !shouldDrawHud;
-	}
-
-	static KeyState F7Key(VK_F7);
-	if (F7Key.keyDown()) {
-		shouldDrawGroundLine = !shouldDrawGroundLine;
-	}
+	shouldDrawBackground = *(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle) == BG_NORMAL;
+	shouldDrawHud = !*(bool*)(dwBaseAddress + adSharedDisableHUD);
+	shouldDrawGroundLine = *(bool*)(dwBaseAddress + adSharedDrawGround);
 	
+	switch (*(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle))
+	{
+	case BG_NORMAL:
+		shouldDrawBackground = true;
+		break;
+	case BG_RED:
+		shouldDrawBackground = false;
+		backgroundColor = 0xFFFF0000;
+		break;
+	case BG_GREEN:
+		shouldDrawBackground = false;
+		backgroundColor = 0xFF00FF00;
+		break;
+	case BG_BLUE:
+		shouldDrawBackground = false;
+		backgroundColor = 0xFF0000FF;
+		break;
+	case BG_WHITE:
+		shouldDrawBackground = false;
+		backgroundColor = 0xFFFFFFFF;
+		break;
+	case BG_BLACK:
+		shouldDrawBackground = false;
+		backgroundColor = 0xFF000000;
+		break;
+	case BG_GRAY:
+		shouldDrawBackground = false;
+		backgroundColor = 0xFF888888;
+		break;
+	case BG_YELLOW:
+		shouldDrawBackground = false;
+		backgroundColor = 0xFFFFFF00;
+		break;
+	case BG_PURPLE:
+		shouldDrawBackground = false;
+		backgroundColor = 0xFFFF00FF;
+		break;
+	default:
+		break;
+	}
+
 	bool ok = true;
 	MSG msg;
 	while (*(uint8_t*)(dwBaseAddress + adSharedFreezeOverride))

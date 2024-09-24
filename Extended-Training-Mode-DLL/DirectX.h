@@ -1269,6 +1269,10 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 			TempARGB = 0xFF8F8F8F;
 			str++;
 			continue;
+		case '$': // gray
+			TempARGB = 0xFF888888;
+			str++;
+			continue;
 		case '}': // reset 
 			TempARGB = ARGB;
 			str++;

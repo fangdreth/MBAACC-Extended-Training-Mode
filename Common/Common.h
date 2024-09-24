@@ -23,7 +23,7 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE, HIGHLIGHT_PAGE, POSITIONS_PAGE, CHARACTER_SPECIFICS, HITBOXES_PAGE, SAVE_STATE_PAGE, FRAME_TOOL, RNG_PAGE, HOTKEYS_PAGE };
+enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE, HIGHLIGHT_PAGE, POSITIONS_PAGE, CHARACTER_SPECIFICS, HITBOXES_PAGE, SAVE_STATE_PAGE, FRAME_TOOL, RNG_PAGE, SYSTEM_PAGE };
 enum eHotkeyPages { GENERIC_HOTKEYS_PAGE = 1, FRAME_TOOL_HOTKEYS_PAGE, RNG_HOTKEYS_PAGE };
 enum eReversalType { REVERSAL_OFF, REVERSAL_NORMAL, REVERSAL_RANDOM, REVERSAL_SHIELD, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
@@ -31,6 +31,7 @@ enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, YELLOW_HIGHLIGHT, GREEN_H
 enum eRNGMode { RNG_OFF, RNG_SEED, RNG_RN };
 enum eRNGRate { RNG_EVERY_FRAME, RNG_EVERY_RESET };
 enum eHitboxStyle { HITBOX_DRAW_ALL, HITBOX_BLEND };
+enum eBackground { BG_NORMAL, BG_WHITE, BG_GRAY, BG_BLACK, BG_RED, BG_GREEN, BG_BLUE, BG_PURPLE, BG_YELLOW };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
@@ -340,6 +341,9 @@ const ADDRESS adSharedColorBlindMode =				adShareBase + 0x15;	// 1 byte
 const ADDRESS adSharedDisplayHitboxes =				adShareBase + 0x16;	// 1 byte
 const ADDRESS adSharedExtendOrigins =				adShareBase + 0x17; // 1 byte
 const ADDRESS adSharedReversalKeyHeld =				adShareBase + 0x18; // 1 byte
+const ADDRESS adSharedBackgroundStyle =				adShareBase + 0x19; // 1 byte
+const ADDRESS adSharedDisableHUD =					adShareBase + 0x1A; // 1 byte
+const ADDRESS adSharedDrawGround =					adShareBase + 0x1B; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte
@@ -452,20 +456,41 @@ const char pcStandard_9[9] = "STANDARD";
 const char pcExtended_9[9] = "EXTENDED";
 const char pcReversal_9[9] = "REVERSAL";
 
-const std::vector<const char*> vHighlightNames = { "OFF",
-												"RED",
-												"YELLOW",
-												"GREEN",
-												"BLUE",
-												"PURPLE",
-												"BLACK" };
-const std::vector<const char*> vHighlightNamesWithFormatting = { "OFF",
-												"~RED",
-												"`YELLOW",
-												"@GREEN",
-												"{BLUE",
-												"^PURPLE",
-												"*BLACK" };
+const std::vector<const char*> vHighlightNames = {	"OFF",
+													"RED",
+													"YELLOW",
+													"GREEN",
+													"BLUE",
+													"PURPLE",
+													"BLACK" };
+const std::vector<const char*> vHighlightNamesWithFormatting = {	"OFF",
+																	"~RED",
+																	"`YELLOW",
+																	"@GREEN",
+																	"{BLUE",
+																	"^PURPLE",
+																	"*BLACK" };
+const std::vector<const char*> vBackgroundNames = { "NORMAL",
+													"WHITE",
+													"GRAY",
+													"BLACK",
+													"RED",
+													"GREEN",
+													"BLUE",
+													"PURPLE",
+													"YELLOW"
+};
+
+const std::vector<const char*> vBackgroundNamesWithFormatting = { "NORMAL",
+																	"WHITE",
+																	"$GRAY",
+																	"*BLACK",
+																	"~RED",
+																	"@GREEN",
+																	"{BLUE",
+																	"^PURPLE",
+																	"`YELLOW"
+};
 
 const char pcEnemyReversal_15[15] = "ENEMY REVERSAL";
 
@@ -506,6 +531,12 @@ const char pcThrowProtection_17[17] = "THROW PROTECTION";
 const char pcRed_4[4] = "RED";
 const char pcGreen_6[6] = "GREEN";
 const char pcBlue_5[5] = "BLUE";
+const char pcGray_5[5] = "GRAY";
+const char pcWhite_6[6] = "WHITE";
+
+const char pcHideHUD_9[9] = "HIDE HUD";
+const char pcBackground_11[11] = "BACKGROUND";
+const char pcDrawGround_12[12] = "DRAW GROUND";
 
 const char pcFreeze_11[11] = "FREEZE KEY";
 const char pcNextStep_14[14] = "NEXT STEP KEY";
