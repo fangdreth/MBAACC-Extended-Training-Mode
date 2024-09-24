@@ -57,7 +57,7 @@
 	+ The HUD can be disabled
 
 # Discord
-We have a [https://discord.gg/6QUpZcThg7](Discord) where you can report bugs, get help, request features, or just discuss the mod.  If you do not want to join a discord, you can ping or message Fang___ instead.
+We have a Discord [https://discord.gg/6QUpZcThg7] where you can report bugs, get help, request features, or just discuss the mod.  If you do not want to join a discord, you can ping or message Fang___ instead.
 
 # How do I get the mod?
 
