@@ -1,6 +1,6 @@
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Images/Extended%20Training%20Mode%20v2.0%20Corner.png?raw=true)
 
-### Features
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Images/Features.png?raw=true)
 
 + New "EXTENDED SETTINGS" menu
 + Reversals
