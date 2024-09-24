@@ -114,6 +114,7 @@ int main(int argc, char* argv[])
         bool bDisableHud = false;
         uint8_t nBackgroundStyle = false;
         bool bDrawGround = false;
+        bool bDisableShadow = false;
 
         int nSettingsPage = 1;
         int nHotkeyPage = 1;
@@ -417,6 +418,7 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisableHUD), &bDisableHud, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBackgroundStyle), &nBackgroundStyle, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDrawGround), &bDrawGround, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisableShadow), &bDisableShadow, 1, 0);
                     }
                 }
             }
@@ -1025,7 +1027,7 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcHotkeys_8, 8, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcHideHUD_9, 9, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcBackground_11, 11, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcBlank_1, 1, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcHideShadow_13, 13, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
 
@@ -1687,6 +1689,13 @@ int main(int argc, char* argv[])
                                 }
                                 case 5:
                                 {
+                                    char pcTemp64[64] = "Toggle whether {shadows} are drawn.";
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
+                                    if (bDisableShadow)
+                                        strcpy_s(pcTemp64, std::string(">Shadows {will not be drawn.").c_str());
+                                    else
+                                        strcpy_s(pcTemp64, std::string(">Shadows {will be drawn.").c_str());
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
                                 case 6:
@@ -1930,19 +1939,19 @@ int main(int argc, char* argv[])
                             }
                             case SYSTEM_PAGE:
                             {
-                                if (nOldEnemySettingsCursor == 3 && nEnemySettingsCursor == 5)
+                                if (nOldEnemySettingsCursor == 5 && nEnemySettingsCursor == 6)
                                 {
                                     nWriteBuffer = 10;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
                                     nEnemySettingsCursor = 10;
                                     nOldEnemySettingsCursor = 10;
                                 }
-                                else if (nEnemySettingsCursor > 3 && nEnemySettingsCursor < 10)
+                                else if (nEnemySettingsCursor > 5 && nEnemySettingsCursor < 10)
                                 {
-                                    nWriteBuffer = 3;
+                                    nWriteBuffer = 5;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
-                                    nEnemySettingsCursor = 3;
-                                    nOldEnemySettingsCursor = 3;
+                                    nEnemySettingsCursor = 5;
+                                    nOldEnemySettingsCursor = 5;
                                 }
                                 break;
                             }
@@ -2608,6 +2617,19 @@ int main(int argc, char* argv[])
                                 {
                                     nBackgroundStyle = min(BG_YELLOW, nBackgroundStyle + 1);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBackgroundStyle), &nBackgroundStyle, 1, 0);
+                                }
+
+                                if (nOldAirRecoveryIndex == -1)
+                                    nOldAirRecoveryIndex = nAirRecoveryIndex;
+                                else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
+                                {
+                                    bDisableShadow = false;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisableShadow), &bDisableShadow, 1, 0);
+                                }
+                                else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
+                                {
+                                    bDisableShadow = true;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisableShadow), &bDisableShadow, 1, 0);
                                 }
 
                                 break;
@@ -4142,12 +4164,12 @@ int main(int argc, char* argv[])
                             case SYSTEM_PAGE:
                             {
                                 nWriteBuffer = OFFSCREEN_LOCATION;
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
 
                                 nWriteBuffer = ONSCREEN_LOCATION;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
 
@@ -4203,6 +4225,25 @@ int main(int argc, char* argv[])
                                     nWriteBuffer = 1;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
                                     nEnemyDefenseTypeIndex = 1;
+                                }
+
+                                if (!bDisableShadow)
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOffString), &pcOff_4, 4, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcOff_4, 4, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 0;
+                                }
+                                else
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom1String), &pcOn_3, 3, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom2String), &pcOn_3, 3, 0);
+
+                                    nWriteBuffer = 5;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nAirRecoveryIndex = 5;
                                 }
 
                                 break;

@@ -96,6 +96,7 @@ DWORD shouldDrawBackground = 1;
 DWORD shouldDrawHud = 1;
 DWORD shouldDrawGroundLine = 0;
 DWORD backgroundColor = 0xFFFFFFFF;
+DWORD shouldDrawShadow = 0;
 
 uint8_t nRNGMode = RNG_OFF;
 uint8_t nRNGRate = RNG_EVERY_FRAME;
@@ -1395,6 +1396,7 @@ void frameDoneCallback()
 	shouldDrawBackground = *(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle) == BG_NORMAL;
 	shouldDrawHud = !*(bool*)(dwBaseAddress + adSharedDisableHUD);
 	shouldDrawGroundLine = *(bool*)(dwBaseAddress + adSharedDrawGround);
+	shouldDrawShadow = !*(bool*)(dwBaseAddress + adSharedDisableShadow);
 	
 	switch (*(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle))
 	{
@@ -2229,7 +2231,8 @@ DWORD _naked_DisableShadows_FuncAddr = 0x0041a390;
 __declspec(naked) void _naked_DisableShadows() {
 	__asm {
 
-		cmp shouldDrawBackground, 0;
+		//cmp shouldDrawBackground, 0;
+		cmp shouldDrawShadow, 0;
 		JE _SKIP;
 
 		call[_naked_DisableShadows_FuncAddr];

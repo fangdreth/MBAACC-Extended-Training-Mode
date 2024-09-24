@@ -344,6 +344,7 @@ const ADDRESS adSharedReversalKeyHeld =				adShareBase + 0x18; // 1 byte
 const ADDRESS adSharedBackgroundStyle =				adShareBase + 0x19; // 1 byte
 const ADDRESS adSharedDisableHUD =					adShareBase + 0x1A; // 1 byte
 const ADDRESS adSharedDrawGround =					adShareBase + 0x1B; // 1 byte
+const ADDRESS adSharedDisableShadow =				adShareBase + 0x1C; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte
@@ -548,6 +549,7 @@ const char pcGray_5[5] = "GRAY";
 const char pcWhite_6[6] = "WHITE";
 
 const char pcHideHUD_9[9] = "HIDE HUD";
+const char pcHideShadow_13[13] = "HIDE SHADOWS";
 const char pcBackground_11[11] = "BACKGROUND";
 const char pcDrawGround_12[12] = "DRAW GROUND";
 
