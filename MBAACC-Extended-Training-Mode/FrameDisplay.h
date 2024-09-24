@@ -1148,7 +1148,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 {
 	if (nBarDisplayRange != nLastBarDisplayRange || sColumnHeader == "")
 	{
-		sColumnHeader = "\x1b[0;4m";
+		sColumnHeader = "\x1b[0m\x1b[4m";
 		for (int i = 1; i <= nBarDisplayRange; i++)
 		{
 			if (i % 10 != 0)
@@ -1157,7 +1157,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 			}
 			else
 			{
-				sColumnHeader += std::format("\x1b[7;4m{:2}\x1b[0;4m", i % 100);
+				sColumnHeader += std::format("\x1b[7m\x1b[4m{:2}\x1b[0m\x1b[4m", i % 100);
 			}
 		}
 		sColumnHeader += "\x1b[0m\x1b[K\n";
