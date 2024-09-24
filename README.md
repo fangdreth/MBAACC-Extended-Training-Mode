@@ -59,10 +59,12 @@
 
 #
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/Discord.png?raw=true)
+
 We have a Discord [https://discord.gg/6QUpZcThg7] where you can report bugs, get help, request features, or just discuss the mod.  If you do not want to join a discord, you can ping or message Fang___ instead.
 
 #
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/Get.png?raw=true)
+
 - [Download the latest .EXE and .DLL from this link.](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases)  
 
 - The first time you run the .EXE, your anti-virus might warn you it is dangerous.  You can safely dismiss this message.  If you are curious, you see this because the training mod has code which modifies memory directly, which sets off the anti-virus.
@@ -73,10 +75,12 @@ We have a Discord [https://discord.gg/6QUpZcThg7] where you can report bugs, get
 
 #
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/build.png?raw=true)
+
 Right now there isn't a CMAKE file, so if you want to build the mod yourself, get the [latest version of Visual Studio](https://visualstudio.microsoft.com/vs/), [DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812), and be sure to target x86.
 
 #
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/changelog.png?raw=true)
+
 + Uses DLL injection now in addition to the old external EXE
 
 + Frame data improved
@@ -133,7 +137,8 @@ Right now there isn't a CMAKE file, so if you want to build the mod yourself, ge
   + Frame advantage is not shown with the FPS counter anymore
   + Removed random tripping 
 
-# FAQ
+#
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/faq.png?raw=true)
 
 ### Is it compatible with the Steam release?
 At the moment, no.  You must use the latest version of the [https://play.meltyblood.club/](community edition).
