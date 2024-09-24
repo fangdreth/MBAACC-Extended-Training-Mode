@@ -1564,14 +1564,6 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 		return;
 	}
 
-	static KeyState F6Key(VK_F6);
-	if (F6Key.keyDown()) {
-		if (renderTargetTex != NULL) {
-			renderTargetTex->Release();
-			renderTargetTex = NULL;
-		}
-	}
-
 	// draws a set of hitboxes of ONE color for ONE object. 
 
 	
@@ -2111,12 +2103,72 @@ void _drawMiscInfo() {
 		drawDebug = !drawDebug;
 	}
 
+	static bool drawIdk = false;
+	static KeyState F9Key(VK_F9);
+
+	float x;
+
+	if (F9Key.keyDown()) {
+		drawIdk = !drawIdk;
+	}
+	
+	if (drawIdk) {
+
+
+		PosColVert v1 = { D3DVECTOR(0.0,       0.0, 0.5f), 0xFFfefa79 };
+		PosColVert v2 = { D3DVECTOR(0.471,   0.463, 0.5f), 0xFFfefa79 };
+		PosColVert v3 = { D3DVECTOR(0.3,       0.2, 0.5f), 0xFFfefa79 };
+		PosColVert v4 = { D3DVECTOR(0.0,       0.8, 0.5f), 0xFFfefa79 };
+		PosColVert v5 = { D3DVECTOR(0.23,    0.889, 0.5f), 0xFFfefa79 };
+		PosColVert v6 = { D3DVECTOR(0.112,   0.872, 0.5f), 0xFFfefa79 };
+		PosColVert v7 = { D3DVECTOR(0.38,     0.86, 0.5f), 0xFFfefa79 };
+		PosColVert v8 = { D3DVECTOR(0.48,     0.74, 0.5f), 0xFFfefa79 };
+
+		PosColVert* data[8] = { &v1, &v2, &v3, &v4, &v5, &v6, &v7, &v8 };
+
+		#define _drawIdkDefine(c) for(int i=0; i<8; i++) { c; }
+
+		_drawIdkDefine(data[i]->position.x /= 16.0f);
+		_drawIdkDefine(data[i]->position.y /= 16.0f);
+		_drawIdkDefine(data[i]->position.x /= 1.3333f);
+
+		scaleVertex(v1.position);
+		scaleVertex(v2.position);
+		scaleVertex(v3.position);
+		scaleVertex(v4.position);
+		scaleVertex(v5.position);
+		scaleVertex(v6.position);
+		scaleVertex(v7.position);
+		scaleVertex(v8.position);
+
+		_drawIdkDefine(data[i]->position.x += 0.95f);
+		_drawIdkDefine(data[i]->position.y -= 0.95f);
+
+		posColVertData.add(v1, v2, v3);
+		posColVertData.add(v1, v2, v4);
+		posColVertData.add(v2, v4, v5);
+		posColVertData.add(v2, v5, v7);
+		posColVertData.add(v2, v7, v8);
+		posColVertData.add(v4, v5, v6);
+
+		_drawIdkDefine(data[i]->position.x *= -1.0f);
+		_drawIdkDefine(data[i]->position.x += 1.9f);
+		
+		posColVertData.add(v1, v2, v3);
+		posColVertData.add(v1, v2, v4);
+		posColVertData.add(v2, v4, v5);
+		posColVertData.add(v2, v5, v7);
+		posColVertData.add(v2, v7, v8);
+		posColVertData.add(v4, v5, v6);
+
+	}
+
 	if (!drawDebug) {
 		return;
 	}
 
 	// reversing these transforms as i am doing feels gross.
-	float x = -((wWidth - (wHeight * 4.0f / 3.0f)) / 2.0f) / wWidth;
+	x = -((wWidth - (wHeight * 4.0f / 3.0f)) / 2.0f) / wWidth;
 
 	if (wWidth < (wHeight * 4.0f / 3.0f)) {
 		x = 0.0f;
@@ -2162,15 +2214,11 @@ void _drawGeneralCalls() {
 	posColTexVertData.draw();
 
 	
-	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTCOLOR);
-	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
-	
-	//device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
-	//device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
-	
-	device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-	device->SetRenderState(D3DRS_ALPHAREF, 0);
-	device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);
+	//device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTCOLOR);
+	//device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+	//device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+	//device->SetRenderState(D3DRS_ALPHAREF, 0);
+	//device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);
 
 	posTexVertData.draw();
 	
