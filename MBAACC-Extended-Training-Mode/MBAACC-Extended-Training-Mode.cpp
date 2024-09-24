@@ -625,7 +625,7 @@ int main(int argc, char* argv[])
                         DWORD dwEnemyDefenseTypeComboStringAddress = GetEnemyDefenseTypeComboStringAddress(hMBAAHandle, dwBaseAddress);
                         DWORD dwEnemyDefenseTypeRandomStringAddress = GetEnemyDefenseTypeRandomStringAddress(hMBAAHandle, dwBaseAddress);
 
-                        DWORD dwEnemyActionInfoStringAddress = GetEnemyActionInfoStringAddress(hMBAAHandle, dwBaseAddress);
+                        //DWORD dwEnemyActionInfoStringAddress = GetEnemyActionInfoStringAddress(hMBAAHandle, dwBaseAddress);
 
                         DWORD dwEnemyDefenseOffString = GetEnemyDefenseOffStringAddress(hMBAAHandle, dwBaseAddress);
                         DWORD dwEnemyDefenseAllGuardString = GetEnemyDefenseAllGuardStringAddress(hMBAAHandle, dwBaseAddress);
@@ -876,14 +876,15 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHoveringScroll), &bIsHoveringScroll, 1, 0);
 
                             // Replace static menu fields
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionInfoStringAddress), &pcTrainingPreset_17, 17, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcExtendedSettings_18, 18, 0);
+                            //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionInfoStringAddress), &pcTrainingPreset_17, 17, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageString), &pcBlank_1, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDefaultString), &pcBlank_1, 1, 0);
                             switch (nSettingsPage)
                             {
                             case REVERSALS_PAGE:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcReversals_10, 10, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcReversalType_14, 14, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcReversalSlot1_16, 16, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcReversalSlot2_16, 16, 0);
@@ -895,6 +896,8 @@ int main(int argc, char* argv[])
                             }
                             case STATS_PAGE:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcTraining_9, 9, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcBlank_1, 1, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcExGuard_9, 9, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcGuardBar_10, 10, 0);
@@ -906,6 +909,8 @@ int main(int argc, char* argv[])
                             }
                             case POSITIONS_PAGE:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcPositions_10, 10, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcBlank_1, 1, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcP1XLoc_11, 11, 0);
                                 if (bP3Exists)
@@ -931,6 +936,8 @@ int main(int argc, char* argv[])
                             }
                             case FRAME_TOOL:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcFrameData_11, 11, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcFrameData_11, 11, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcDisplayFreeze_16, 16, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcDisplayInputs_15, 15, 0);
@@ -942,6 +949,8 @@ int main(int argc, char* argv[])
                             }
                             case SAVE_STATE_PAGE:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcSaveStates_12, 12, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcSaveStateSlot_16, 16, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcSaveState_11, 11, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcClearAllSaves_16, 16, 0);
@@ -953,6 +962,8 @@ int main(int argc, char* argv[])
                             }
                             case CHARACTER_SPECIFICS:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcCharacter_10, 10, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcSionBullets_13, 13, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcRoaVisibleCharge_19, 19, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcRoaHiddenCharge_19, 19, 0);
@@ -967,6 +978,8 @@ int main(int argc, char* argv[])
                             }
                             case HITBOXES_PAGE:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcHitboxes_9, 9, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcDisplayHitboxes_17, 17, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcHitboxStyle_13, 13, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcColorBlindMode_17, 17, 0);
@@ -978,6 +991,8 @@ int main(int argc, char* argv[])
                             }
                             case HIGHLIGHT_PAGE:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcHighlights_11, 11, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcIdle_5, 5, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcBlock_6, 6, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcHit_4, 4, 0);
@@ -989,6 +1004,8 @@ int main(int argc, char* argv[])
                             }
                             case RNG_PAGE:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcRNG_4, 4, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcCustomRNG_11, 11, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcRate_5, 5, 0);
                                 if (nRNGMode == RNG_RN)
@@ -1003,6 +1020,8 @@ int main(int argc, char* argv[])
                             }
                             case SYSTEM_PAGE:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcSystem_8, 8, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcHotkeys_8, 8, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcHideHUD_9, 9, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcBackground_11, 11, 0);
@@ -1918,7 +1937,7 @@ int main(int argc, char* argv[])
                                     nEnemySettingsCursor = 10;
                                     nOldEnemySettingsCursor = 10;
                                 }
-                                else if (nEnemySettingsCursor > 5 && nEnemySettingsCursor < 10)
+                                else if (nEnemySettingsCursor > 3 && nEnemySettingsCursor < 10)
                                 {
                                     nWriteBuffer = 3;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
@@ -4354,7 +4373,7 @@ int main(int argc, char* argv[])
                             }
 
                             // Replace static menu fields
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionInfoStringAddress), &pcTrainingPreset_17, 17, 0);
+                            //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionInfoStringAddress), &pcTrainingPreset_17, 17, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcExtendedSettings_18, 18, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwReduceDamageString), &pcBlank_1, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDefaultString), &pcBlank_1, 1, 0);
@@ -4362,6 +4381,8 @@ int main(int argc, char* argv[])
                             {
                             case GENERIC_HOTKEYS_PAGE:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcGeneralHotkeys_16, 16, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcFreeze_11, 11, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcNextStep_14, 14, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcHitboxes_13, 13, 0);
@@ -4372,6 +4393,8 @@ int main(int argc, char* argv[])
                             }
                             case FRAME_TOOL_HOTKEYS_PAGE:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcFrameDataHotkeys_19, 19, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcSaveState_15, 15, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcPrevSaveSlot_19, 19, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcNextSaveSlot_19, 19, 0);
@@ -4382,6 +4405,8 @@ int main(int argc, char* argv[])
                             }
                             case RNG_HOTKEYS_PAGE:
                             {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcRNGHotkeys_12, 16, 0);
+
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcBlank_1, 1, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcPrevRNG_13, 13, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcPrevRNG_13, 13, 0);
@@ -5344,8 +5369,8 @@ int main(int argc, char* argv[])
                                 continue;
 
                             // enemy action.
-                            char pcEnemyActionInfo[16] = "enemy reversal.";
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionInfoStringAddress), &pcEnemyActionInfo, 16, 0);
+                            //char pcEnemyActionInfo[16] = "enemy reversal.";
+                            //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionInfoStringAddress), &pcEnemyActionInfo, 16, 0);
 
                             // ENEMY ACTION
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcBlank_1, 1, 0);

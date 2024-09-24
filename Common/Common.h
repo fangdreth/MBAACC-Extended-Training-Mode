@@ -456,6 +456,19 @@ const char pcStandard_9[9] = "STANDARD";
 const char pcExtended_9[9] = "EXTENDED";
 const char pcReversal_9[9] = "REVERSAL";
 
+const char pcReversals_10[10] = "REVERSALS";
+const char pcTraining_9[9] = "TRAINING";
+const char pcPositions_10[10] = "POSITIONS";
+const char pcSaveStates_12[12] = "SAVE STATES";
+const char pcCharacter_10[10] = "CHARACTER";
+const char pcHitboxes_9[9] = "HITBOXES";
+const char pcHighlights_11[11] = "HIGHLIGHTS";
+const char pcRNG_4[4] = "RNG";
+const char pcSystem_8[8] = "SYSTEM";
+const char pcGeneralHotkeys_16[16] = "GENERAL HOTKEYS";
+const char pcFrameDataHotkeys_19[19] = "FRAME DATA HOTKEYS";
+const char pcRNGHotkeys_12[12] = "RNG HOTKEYS";
+
 const std::vector<const char*> vHighlightNames = {	"OFF",
 													"RED",
 													"YELLOW",
