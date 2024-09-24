@@ -2225,6 +2225,22 @@ __declspec(naked) void _naked_DrawHud() {
 	}
 }
 
+DWORD _naked_DisableShadows_FuncAddr = 0x0041a390;
+__declspec(naked) void _naked_DisableShadows() {
+	__asm {
+
+		cmp shouldDrawBackground, 0;
+		JE _SKIP;
+
+		call[_naked_DisableShadows_FuncAddr];
+	
+	_SKIP:
+
+		push 0041b481h;
+		ret;
+	}
+}
+
 int nTempP1MeterGain = 0;
 int nTempP2MeterGain = 0;
 int nP1MeterGain = 0;
@@ -2553,6 +2569,7 @@ void initDrawBackground() {
 	patchJump(0x004238c0, _naked_DrawBackground);
 	patchJump(0x0042389c, _naked_DrawHudText);
 	patchJump(0x004238a6, _naked_DrawHud);
+	patchJump(0x0041b47c, _naked_DisableShadows);
 }
 
 void threadFunc() 
