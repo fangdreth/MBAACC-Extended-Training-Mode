@@ -5,8 +5,8 @@
 void _naked_InitDirectXHooks();
 
 void printDirectXError(HRESULT hr) {
-	const WCHAR* errorStr = DXGetErrorString(hr);
-	const WCHAR* errorDesc = DXGetErrorDescription(hr);
+	const char* errorStr = DXGetErrorStringA(hr);
+	const char* errorDesc = DXGetErrorDescriptionA(hr);
 
 	log("err: %s\n    %s", errorStr, errorDesc);
 }
@@ -1529,6 +1529,27 @@ void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade = true) {
 }
 
 void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
+	HRESULT hr;
+
+	/*
+	static HRESULT prevhr = 0xFFFFFFFF;
+	hr = device->TestCooperativeLevel();
+
+	if (prevhr != hr) {
+		log("hresult: %08X", hr);
+		printDirectXError(hr);
+		prevhr = hr;
+	}
+
+	
+	if (hr == D3DERR_DEVICELOST ) { // this is critical, and should probs be put at the start of every directx func
+		if (renderTargetTex != NULL) {
+			renderTargetTex->Release();
+			renderTargetTex = NULL;
+		}
+		return; 
+	}
+	*/
 
 	if (boxList.size() == 0) {
 		return;
@@ -1539,9 +1560,17 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 		return;
 	}
 
+	static KeyState F6Key(VK_F6);
+	if (F6Key.keyDown()) {
+		if (renderTargetTex != NULL) {
+			renderTargetTex->Release();
+			renderTargetTex = NULL;
+		}
+	}
+
 	// draws a set of hitboxes of ONE color for ONE object. 
 
-	HRESULT hr;
+	
 	IDirect3DSurface9* renderTargetSurf = NULL;
 	static int width = 0;
 	static int height = 0;
@@ -1552,6 +1581,11 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 
 		hr = device->GetSwapChain(0, &pSwapChain);
 
+		if (FAILED(hr)) {
+			log("get swap chain failed?");
+			printDirectXError(hr);
+		}
+
 		if (pSwapChain != NULL) {
 
 			hr = pSwapChain->GetPresentParameters(&presentParams);
@@ -1559,9 +1593,22 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 			width = presentParams.BackBufferWidth;
 			height = presentParams.BackBufferHeight;
 
+			//log("creating texture with %d %d", width, height);
+
 			pSwapChain->Release();
 
 			device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &renderTargetTex, NULL);
+		
+			// shader registers are RESET on device loss!
+			// i should have been a farmer.
+			// it gets traumatic after a while.
+			D3DXVECTOR4 textureSize((float)(height * 4.0f / 3.0f), (float)height, 0.0, 0.0);
+			device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
+			
+			//hr = device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &renderTargetTex, NULL);
+			if (FAILED(hr)) {
+				printDirectXError(hr);
+			}
 		}
 	}
 
@@ -1652,8 +1699,6 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 
 	if (pOutlineShader == NULL) {
 		pOutlineShader = getOutlinePixelShader();
-		D3DXVECTOR4 textureSize((float)(height * 4.0f / 3.0f), (float)height, 0.0, 0.0);
-		device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
 	}
 
 	if (vOutlineShader == NULL) {
@@ -1698,6 +1743,7 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	if (v_buffer == NULL) {
 		if (FAILED(device->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX), 0, vertFormat, D3DPOOL_MANAGED, &v_buffer, NULL))) {
 			v_buffer = NULL;
+			log("drawBatchHitboxes createvertbuffer failed");
 			return;
 		}
 	}
@@ -2177,6 +2223,14 @@ void __stdcall _doDrawCalls() {
 
 	profileFunction();
 
+	HRESULT hr = device->TestCooperativeLevel();
+
+	if (hr != S_OK) {
+		//log("skipping doDrawCalls");
+		//printDirectXError(hr);
+		return;
+	}
+
 	// on my machine at least, i swear we are having some slowdown
 	// lots of the areas that are hooked occur,,, between when the 60fps timing checks are done?
 	// id appreciate it if we kept this on until release
@@ -2260,6 +2314,18 @@ void cleanForDirectXReset() {
 	// all textures need to be reset here this occurs during the transition to and from fullscreen
 	// i should make a class to manage all of them, make it easier for ppl
 	Texture::_cleanForReset();
+
+	HRESULT hr = device->TestCooperativeLevel();
+	//log("RESET HR VAL");
+	//printDirectXError(hr);
+
+	if (hr == D3DERR_DEVICELOST) {
+		return;
+	}
+
+	// for unknown reasons, after pressing caster f4, if you alt tab/fullscreen unfull screen, it fixes it
+
+	log("reset resources");
 
 	// fonttexture is managed, doesnt need release
 	if (renderTargetTex != NULL) {
