@@ -162,7 +162,7 @@ std::array<uint8_t, 4> arrHitHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrArmorHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrThrowProtectionHighlightSetting({ 255, 255, 255, 0 });
 
-long long getMicroSec() {
+inline long long getMicroSec() {
 	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 }
 
@@ -359,13 +359,13 @@ void __stdcall log(const char* format, ...) {
 
 extern "C" int asmDrawText(int w, int h, int x, int y, const char* text, int alpha, int shade, int layer, void* addr, int spacing, int idek, char* out);
 
-void drawText(int x, int y, int w, int h, const char* text, int alpha, int shade, int layer = 0x2cc, void* font = (void*)adFont2)
+void __stdcall drawText(int x, int y, int w, int h, const char* text, int alpha, int shade, int layer = 0x2cc, void* font = (void*)adFont2)
 {
 	// text was initially just char*, i made it const, is that going to be ok?
 	asmDrawText(w, h, x, y, text, alpha, shade, layer, font, 0, 0, 0);
 }
 
-void drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = adFont1)
+void __stdcall drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = adFont1)
 {
 
 	static_assert(sizeof(font) == 4, "Type must be 4 bytes");
@@ -506,7 +506,7 @@ void drawText(int x, int y, const char* text, int textSize = 16, ADDRESS font = 
 	//drawText(x, y, (int)tempWidth, textSize, text, 0xFF, 0xFF, 0x02CC, (void*)font);
 }
 
-void drawTextWithBorder(int x, int y, int w, int h, const char* text)
+void __stdcall drawTextWithBorder(int x, int y, int w, int h, const char* text)
 {
 	// i am not proud of this.
 

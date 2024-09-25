@@ -857,14 +857,35 @@ float vHeight = 480;
 float wWidth = 640;
 float wHeight = 480;
 bool isWide = false;
-float factor = 1.0f;
+//float factor = 1.0f;
+D3DVECTOR factor = { 1.0f, 1.0f, 1.0f };
 
-void scaleVertex(D3DVECTOR& v) {	
+inline void scaleVertex(D3DVECTOR& v) {
+	/*
 	if (isWide) {
 		v.x /= factor;
 	} else {
 		v.y /= factor;
-	}
+	}*/
+	// branchless, and with multiplication is faster
+	v.x *= factor.x;
+	v.y *= factor.y;
+	/*
+	mov		eax,	[esp + 4];
+    movaps	xmm0,	dword ptr [eax];
+    movaps	xmm1,	dword ptr [factor];
+    mulps	xmm0,	xmm1;
+    movaps	[eax],	xmm0;
+
+    ret;
+
+	might be faster, 
+	but would require the struct to be alignas(16) 
+	at the very least, it is not slower, despite doing 
+	2x mults.
+	very weird
+	
+	*/
 }
 
 void __stdcall backupRenderState() {
@@ -992,10 +1013,13 @@ void __stdcall backupRenderState() {
 
 	isWide = wWidth / wHeight > ratio;
 
+	factor.x = 1.0f;
+	factor.y = 1.0f;
+
 	if (isWide) {
-		factor = wWidth / (wHeight * ratio);
+		factor.x = (wHeight * ratio) / wWidth;
 	} else {
-		factor = wHeight / (wWidth / ratio);
+		factor.y = (wWidth / ratio) / wHeight;
 	}
 
 	//device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
@@ -1760,7 +1784,6 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	device->SetVertexShader(NULL);
 	device->SetTexture(0, NULL);
 }
-
 
 constexpr DWORD arrNormalColors[] = {
 	0xFF42E5F4, // origin
