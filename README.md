@@ -156,7 +156,7 @@ This means your VC++ redistributable is missing or needs repaired.  There are st
 This is most likely because you are using the HITS UNTIL BURST option.  This setting requires MANUAL for the dummy and INFINITE for the meter, and turning HITS UNTIL BURST on automatically changes these.
 
 ### The hitboxes are being glitchy
-More than likely this is because you opened the F4 menu at some point.  This is a known issue and requires you to re-open Melty to fix.
+More than likely this is because you opened the F4 menu at some point.  This is a known issue and can be easily fixed by switching in/out of fullscreen (alt+enter).
 
 ### Can I make my own version?
 Yes.
