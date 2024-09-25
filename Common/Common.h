@@ -345,6 +345,7 @@ const ADDRESS adSharedBackgroundStyle =				adShareBase + 0x19; // 1 byte
 const ADDRESS adSharedDisableHUD =					adShareBase + 0x1A; // 1 byte
 const ADDRESS adSharedDrawGround =					adShareBase + 0x1B; // 1 byte
 const ADDRESS adSharedDisableShadow =				adShareBase + 0x1C; // 1 byte
+const ADDRESS adSharedFastReversePenalty =			adShareBase + 0x1D; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte
@@ -430,6 +431,8 @@ const char pcReversalSlot2_16[16] = "REVERSAL SLOT 2";
 const char pcReversalSlot3_16[16] = "REVERSAL SLOT 3";
 const char pcReversalSlot4_16[16] = "REVERSAL SLOT 4";
 const char pcReversalType_14[14] = "REVERSAL TYPE";
+const char pcPenaltyReset_14[14] = "PENALTY RESET";
+const char pcInstant_8[8] = "INSTANT";
 const char pcExGuard_9[9] = "EX GUARD";
 const char pcReversalDelay_15[15] = "REVERSAL DELAY";
 const char pcMeter_6[6] = "METER";

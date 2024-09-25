@@ -97,6 +97,7 @@ DWORD shouldDrawHud = 1;
 DWORD shouldDrawGroundLine = 0;
 DWORD backgroundColor = 0xFFFFFFFF;
 DWORD shouldDrawShadow = 0;
+DWORD fastReversePenalty = 0;
 
 uint8_t nRNGMode = RNG_OFF;
 uint8_t nRNGRate = RNG_EVERY_FRAME;
@@ -1397,6 +1398,7 @@ void frameDoneCallback()
 	shouldDrawHud = !*(bool*)(dwBaseAddress + adSharedDisableHUD);
 	shouldDrawGroundLine = *(bool*)(dwBaseAddress + adSharedDrawGround);
 	shouldDrawShadow = !*(bool*)(dwBaseAddress + adSharedDisableShadow);
+	fastReversePenalty = *(bool*)(dwBaseAddress + adSharedFastReversePenalty);
 	
 	switch (*(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle))
 	{
