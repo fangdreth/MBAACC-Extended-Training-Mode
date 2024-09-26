@@ -2231,6 +2231,11 @@ __declspec(naked) void _naked_DrawBackground() {
 	}
 }
 
+DWORD _naked_DrawResourcesHud_FuncAddr;
+__declspec(naked) void _naked_DrawResourcesHud() {
+	//0042485b
+}
+
 DWORD _naked_DrawHudText_FuncAddr = 0x00476c70;
 __declspec(naked) void _naked_DrawHudText() {
 	__asm {
@@ -2248,9 +2253,27 @@ __declspec(naked) void _naked_DrawHudText() {
 
 DWORD _naked_DrawHud_FuncAddr = 0x00424100;
 __declspec(naked) void _naked_DrawHud() {
+
+	// i despise msvc
+	
 	__asm {
-		cmp shouldDrawHud, 0;
-		JE _SKIP;
+		push eax;
+		push ebx;
+
+		mov ebx, shouldDrawHud;
+		xor ebx, 1;
+
+		mov eax, 5545F1h;
+		mov byte ptr[eax], bl;
+
+		pop ebx;
+		pop eax;
+	}
+	
+
+	__asm {
+		//cmp shouldDrawHud, 0;
+		//JE _SKIP;
 
 		call[_naked_DrawHud_FuncAddr];
 
@@ -2291,22 +2314,6 @@ DWORD prevComboPtr = 0;
 void attackMeterDisplayCallback()
 {
 
-	int iVar2 = (*(BYTE*)0x0055df0f) * 0x20c;
-	int iVar1 = *(int*)(0x00557e20 + iVar2);
-
-	DWORD comboPtr = (0x00557e28 + iVar1 * 0x18 + iVar2);
-
-	if (prevComboPtr != comboPtr) {
-		nP1MeterGain = 0;
-		nP2MeterGain = 0;
-		prevComboPtr = comboPtr;
-	}
-
-	nP1MeterGain += nTempP1MeterGain;
-	nP2MeterGain += nTempP2MeterGain;
-
-	nTempP1MeterGain = 0;
-	nTempP2MeterGain = 0;
 
 	/*
 	static char buffer[256];
@@ -2486,6 +2493,24 @@ void newAttackDisplay() {
 
 	unsigned correctionValue = *(DWORD*)(local_154 + 0x20);
 	float reversePenalty = (*(short*)(local_150 + 0x1E6) * 55.0f) / 10000.0f;
+
+	// taken back from attackMeterDisplayCallback
+	int iVar2 = (*(BYTE*)0x0055df0f) * 0x20c;
+	int iVar1 = *(int*)(0x00557e20 + iVar2);
+
+	DWORD comboPtr = (0x00557e28 + iVar1 * 0x18 + iVar2);
+
+	if (prevComboPtr != comboPtr) {
+		nP1MeterGain = 0;
+		nP2MeterGain = 0;
+		prevComboPtr = comboPtr;
+	}
+
+	nP1MeterGain += nTempP1MeterGain;
+	nP2MeterGain += nTempP2MeterGain;
+
+	nTempP1MeterGain = 0;
+	nTempP2MeterGain = 0;
 
 	if (correctionValue == 0) {
 		correctionValue = 100;
@@ -2677,7 +2702,7 @@ void initNewPauseCallback() {
 
 void initDrawBackground() {
 	patchJump(0x004238c0, _naked_DrawBackground);
-	patchJump(0x0042389c, _naked_DrawHudText);
+	//patchJump(0x0042389c, _naked_DrawHudText);
 	patchJump(0x004238a6, _naked_DrawHud);
 	patchJump(0x0041b47c, _naked_DisableShadows);
 }
