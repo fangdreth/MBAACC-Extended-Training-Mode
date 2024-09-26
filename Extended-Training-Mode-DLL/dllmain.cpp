@@ -2065,6 +2065,11 @@ void checkPauseEffect() {
 		return;
 	}
 
+	if (*(BYTE*)(checkPauseEffect_Addr + 0x8) == 0xFE) { // 0xFE is -2 in this case
+		// this was for croa 236A, but it effects all other -2 source things
+		return;
+	}
+
 	checkPauseEffect_Skip = 1;
 }
 
