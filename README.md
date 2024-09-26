@@ -146,7 +146,7 @@ Right now there isn't a CMAKE file, so if you want to build the mod yourself, ge
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/faq.png?raw=true)
 
 ### Is it compatible with the Steam release?
-At the moment, no.  You must use the latest version of the [https://play.meltyblood.club/](community) edition).
+At the moment, no.  You must use the latest version of the [https://play.meltyblood.club](community) edition).
 
 ### Is it compatible with Concerto?
 Yes.  Concerto is just an external program for CCCaster, so it will work just fine.
