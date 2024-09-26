@@ -148,6 +148,11 @@ typedef struct PosColTexVert {
 	D3DXVECTOR2 texCoord;
 } PosColTexVert;
 
+typedef struct MeltyTestVert {
+	float x, y, z, rhw;
+	D3DCOLOR color;
+} MeltyTestVert;
+
 size_t fontBufferSize = 0;
 BYTE* fontBuffer = NULL; // this is purposefully not freed on evict btw
 IDirect3DTexture9* fontTexture = NULL;
@@ -164,6 +169,8 @@ VertexData<PosColVert, 3 * 2048> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
 // need to rework font rendering, 4096 is just horrid
 VertexData<PosColTexVert, 3 * 4096> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
+
+VertexData<MeltyTestVert, 3 * 4096> meltyTestVertData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
 
 // ----
 
@@ -2224,6 +2231,7 @@ void allocVertexBuffers() {
 	posColVertData.alloc();
 	posTexVertData.alloc();
 	posColTexVertData.alloc();
+	meltyTestVertData.alloc();
 
 }
 
@@ -2233,6 +2241,8 @@ void _drawGeneralCalls() {
 	allocVertexBuffers();
 
 	device->BeginScene();
+
+	meltyTestVertData.draw();
 
 	posColVertData.draw();
 	posColTexVertData.draw();
