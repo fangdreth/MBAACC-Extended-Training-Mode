@@ -2466,6 +2466,7 @@ void battleResetCallback()
 	prevComboPtr = 0;
 }
 
+DWORD newAttackDisplay_local_14c;
 void newAttackDisplay() {
 
 	// recreate local_154
@@ -2474,30 +2475,32 @@ void newAttackDisplay() {
 	local_154 *= 0x20C; // 00478be7
 	local_154 += 0x00557db8; // 00478bed
 
+	// recreate local_150
+	DWORD local_150 = 0x00555134 + ((*(DWORD*)(local_154)) * 0xAFC);
 
-	const float xVal = 200.0f; // 320.0f;
+	unsigned invalidComboVal = *(DWORD*)(newAttackDisplay_local_14c + 0);
+	unsigned validComboVal = *(DWORD*)(newAttackDisplay_local_14c + 4);
 
-	unsigned invalidComboVal = 0;
-	unsigned validComboVal = 0;
+	unsigned scaledDamageVal = *(DWORD*)(newAttackDisplay_local_14c + 8);
+	unsigned unscaledDamageVal = *(DWORD*)(newAttackDisplay_local_14c + 12);
 
-	unsigned scaledDamageVal = 0;
-	unsigned unscaledDamageVal = 0;
+	unsigned correctionValue = *(DWORD*)(local_154 + 0x20);
+	float reversePenalty = (*(short*)(local_150 + 0x1E6) * 55.0f) / 10000.0f;
 
-	unsigned correctionValue = 0;
-	unsigned reversePenalty = 0;
+	if (correctionValue == 0) {
+		correctionValue = 100;
+	}
 
-	unsigned P1MeterGain = 0;
-	unsigned P2MeterGain = 0;
+	const float xVal = 440.0f;
 
-
-	TextDraw(xVal, 122,      14, 0xFFFFFFFF, "COMBO%16s%5d(%5d)", "", invalidComboVal, validComboVal);
-	TextDraw(xVal, 122 + 14, 14, 0xFFFFFFFF, "DAMAGE%16s%5d(%5d)", "", scaledDamageVal, unscaledDamageVal);
+	TextDraw(xVal, 122,      12, 0xFFFFFFFF, "COMBO%9d(%5d)", invalidComboVal, validComboVal);
+	TextDraw(xVal, 122 + 12, 12, 0xFFFFFFFF, "DAMAGE%8d(%5d)", scaledDamageVal, unscaledDamageVal);
 			 
-	TextDraw(xVal, 154,      14, 0xFFFFFFFF, "CORRECTION VALUE%16s%5d%%", "", correctionValue);
-	TextDraw(xVal, 154 + 14, 14, 0xFFFFFFFF, "REVERSE PENALTY%16s%5d.%2d%%", "", reversePenalty);
+	TextDraw(xVal, 152,      12, 0xFFFFFFFF, "CORRECTION VALUE%4d%%", correctionValue);
+	TextDraw(xVal, 152 + 12, 12, 0xFFFFFFFF, "REVERSE PENALTY%5.1f%%", reversePenalty);
 			 
-	TextDraw(xVal, 186,      14, 0xFFFFFFFF, "P1 METER GAIN%16s%5d.%2d%%", "", nP1MeterGain / 100, nP1MeterGain % 100);
-	TextDraw(xVal, 186 + 14, 14, 0xFFFFFFFF, "P2 METER GAIN%16s%5d.%2d%%", "", nP2MeterGain / 100, nP2MeterGain % 100);
+	TextDraw(xVal, 182,      12, 0xFFFFFFFF, "P1 METER GAIN%4d.%02d%%", nP1MeterGain / 100, nP1MeterGain % 100);
+	TextDraw(xVal, 182 + 12, 12, 0xFFFFFFFF, "P2 METER GAIN%4d.%02d%%", nP2MeterGain / 100, nP2MeterGain % 100);
 
 }
 
@@ -2508,19 +2511,8 @@ __declspec(naked) void _naked_newAttackDisplay() {
 	// and while i am aware, that i could trust the assembler to do it for me, i dont, so its raw bytes again (maybe);
 	
 	__asm {
-		// iVar2
-		imul eax, eax, 0x20C;
-
-		// iVar1
-		mov ecx, dword ptr[eax + 00557e20h];
-
-		// local_14C setup
-		lea ecx, [ecx + ecx * 02h];
-		lea esi, [eax + ecx * 08h + 00557e28h];
-
-		// dword ptr [ESP + local_14c],ESI
-		mov [esp + 72], esi;
-
+		add esp, 014h; // cleanup the prev stack
+		mov newAttackDisplay_local_14c, esi;
 	}
 
 	PUSH_ALL;
@@ -2692,7 +2684,7 @@ void initDrawBackground() {
 
 void initNewAttackDisplay() {
 
-	patchJump(0x00478c38, _naked_newAttackDisplay);
+	patchJump(0x00478c74, _naked_newAttackDisplay);
 
 }
 
