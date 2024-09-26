@@ -1273,6 +1273,31 @@ void enemyReversal()
 }
 #endif
 
+void doFastReversePenalty() {
+
+	if (fastReversePenalty == 0) {
+		return;
+	}
+
+	static DWORD prevComboStates[4];
+
+	for (int i = 0; i < 4; i++) {
+		DWORD temp = *(DWORD*)(0x00555130 + 0x64 + (i * 0xAFC));
+		if (temp == 1 && prevComboStates[i] == 0) {
+			// reset reverse penalty to 0 on all chars
+			// a DWORD is used to reset both the counter and the actual value
+			if (i & 1) { // P2, reset P1
+				*(DWORD*)(0x0055531A + (0 * 0xAFC)) = 0;
+				*(DWORD*)(0x0055531A + (2 * 0xAFC)) = 0;
+			} else { // P1, reset P2
+				*(DWORD*)(0x0055531A + (1 * 0xAFC)) = 0;
+				*(DWORD*)(0x0055531A + (3 * 0xAFC)) = 0;
+			}
+		}
+		prevComboStates[i] = temp;
+	}
+}
+
 void frameStartCallback() {
 
 	// this is called right after directx present displays a new frame
@@ -1487,6 +1512,8 @@ void frameDoneCallback()
 	else
 		bHitboxesDisplay = false;
 
+	doFastReversePenalty();
+	
 	//drawTextWithBorder(300, 300, 36, 48	, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
 
 	if (bFreeze && shouldDrawHud)
@@ -2281,6 +2308,7 @@ void attackMeterDisplayCallback()
 	nTempP1MeterGain = 0;
 	nTempP2MeterGain = 0;
 
+	/*
 	static char buffer[256];
 
 	drawTextWithBorder(420, 186, 10, 14, "P1 METER GAIN");
@@ -2290,6 +2318,7 @@ void attackMeterDisplayCallback()
 	drawTextWithBorder(420, 186 + 14, 10, 14, "P2 METER GAIN");
 	snprintf(buffer, 256, "%4d.%02d%%", nP2MeterGain / 100, nP2MeterGain % 100);
 	drawTextWithBorder(420 + 130, 186 + 14, 10, 14, buffer);
+	*/
 }
 
 // hook funcs
@@ -2435,6 +2464,80 @@ void battleResetCallback()
 	nP1MeterGain = 0;
 	nP2MeterGain = 0;
 	prevComboPtr = 0;
+}
+
+void newAttackDisplay() {
+
+	// recreate local_154
+	DWORD local_154 = 0;
+	local_154 = *(BYTE*)0x0055df0f; // 00478bda
+	local_154 *= 0x20C; // 00478be7
+	local_154 += 0x00557db8; // 00478bed
+
+
+	const float xVal = 200.0f; // 320.0f;
+
+	unsigned invalidComboVal = 0;
+	unsigned validComboVal = 0;
+
+	unsigned scaledDamageVal = 0;
+	unsigned unscaledDamageVal = 0;
+
+	unsigned correctionValue = 0;
+	unsigned reversePenalty = 0;
+
+	unsigned P1MeterGain = 0;
+	unsigned P2MeterGain = 0;
+
+
+	TextDraw(xVal, 122,      14, 0xFFFFFFFF, "COMBO%16s%5d(%5d)", "", invalidComboVal, validComboVal);
+	TextDraw(xVal, 122 + 14, 14, 0xFFFFFFFF, "DAMAGE%16s%5d(%5d)", "", scaledDamageVal, unscaledDamageVal);
+			 
+	TextDraw(xVal, 154,      14, 0xFFFFFFFF, "CORRECTION VALUE%16s%5d%%", "", correctionValue);
+	TextDraw(xVal, 154 + 14, 14, 0xFFFFFFFF, "REVERSE PENALTY%16s%5d.%2d%%", "", reversePenalty);
+			 
+	TextDraw(xVal, 186,      14, 0xFFFFFFFF, "P1 METER GAIN%16s%5d.%2d%%", "", nP1MeterGain / 100, nP1MeterGain % 100);
+	TextDraw(xVal, 186 + 14, 14, 0xFFFFFFFF, "P2 METER GAIN%16s%5d.%2d%%", "", nP2MeterGain / 100, nP2MeterGain % 100);
+
+}
+
+__declspec(naked) void _naked_newAttackDisplay() {
+	// there are some last minute things that need to be done here before we can move on to draw code
+	// for reasons unknown, they are also interlaied with random pushes for the next call. why? idek 
+	// recreating the code without the pushes here
+	// and while i am aware, that i could trust the assembler to do it for me, i dont, so its raw bytes again (maybe);
+	
+	__asm {
+		// iVar2
+		imul eax, eax, 0x20C;
+
+		// iVar1
+		mov ecx, dword ptr[eax + 00557e20h];
+
+		// local_14C setup
+		lea ecx, [ecx + ecx * 02h];
+		lea esi, [eax + ecx * 08h + 00557e28h];
+
+		// dword ptr [ESP + local_14c],ESI
+		mov [esp + 72], esi;
+
+	}
+
+	PUSH_ALL;
+	newAttackDisplay();
+	POP_ALL;
+
+	// overwritten code
+	/*
+	
+	*/
+
+	__asm {
+		//push 00478c3eh;
+		push 00478fcfh;
+		ret;
+	}
+
 }
 
 // init funcs
@@ -2587,6 +2690,12 @@ void initDrawBackground() {
 	patchJump(0x0041b47c, _naked_DisableShadows);
 }
 
+void initNewAttackDisplay() {
+
+	patchJump(0x00478c38, _naked_newAttackDisplay);
+
+}
+
 void threadFunc() 
 {
 	srand(time(NULL));
@@ -2615,9 +2724,12 @@ void threadFunc()
 	initAttackMeterDisplay();
 	initMeterGainHook();
 	initBattleResetCallback();
+	initNewAttackDisplay();
 
 	initNewPauseCallback();
 	initDrawBackground();
+
+	
 
 	
 	while (true) 
