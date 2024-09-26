@@ -62,7 +62,7 @@
 #
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/Discord.png?raw=true)
 
-We have a Discord [https://discord.gg/6QUpZcThg7] where you can report bugs, get help, request features, or just discuss the mod.  If you do not want to join a discord, you can ping or message Fang___ instead.
+We have a [Discord](https://discord.gg/6QUpZcThg7) where you can report bugs, get help, request features, or just discuss the mod.  If you do not want to join a discord, you can ping or message Fang___ instead.
 
 #
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/Get.png?raw=true)
@@ -79,6 +79,30 @@ We have a Discord [https://discord.gg/6QUpZcThg7] where you can report bugs, get
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/build.png?raw=true)
 
 Right now there isn't a CMAKE file, so if you want to build the mod yourself, get the [latest version of Visual Studio](https://visualstudio.microsoft.com/vs/), [DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812), and be sure to target x86.
+
+#
+![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/faq.png?raw=true)
+
+### Is it compatible with the Steam release?
+At the moment, no.  You must use the latest version of the [community edition](https://play.meltyblood.club/).
+
+### Is it compatible with Concerto?
+Yes.  Concerto is just an external program for CCCaster, so it will work just fine.
+
+### "Looking for MBAA.exe..." when MBAA.exe is already open
+Check Task Manager too see if you have a zombie MBAA.exe process running.  You may have to restart your computer to kill this program.
+
+### "VCRUNTIME140.dll" was not found
+This means your VC++ redistributable is missing or needs repaired.  There are step-by-step instructions on Google, so you're best off searching this error to find the best way to fix it.
+
+### Some of my settings change on their own
+This is most likely because you are using the HITS UNTIL BURST option.  This setting requires MANUAL for the dummy and INFINITE for the meter, and turning HITS UNTIL BURST on automatically changes these.
+
+### The hitboxes are being glitchy
+More than likely this is because you opened the F4 menu at some point.  This is a known issue and can be easily fixed by switching in/out of fullscreen (alt+enter).
+
+### Can I make my own version?
+Yes.
 
 #
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/changelog.png?raw=true)
@@ -141,30 +165,6 @@ Right now there isn't a CMAKE file, so if you want to build the mod yourself, ge
   + Moved several menus around
   + Frame advantage is not shown with the FPS counter anymore
   + Removed random tripping 
-
-#
-![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/faq.png?raw=true)
-
-### Is it compatible with the Steam release?
-At the moment, no.  You must use the latest version of the [https://play.meltyblood.club](community) edition).
-
-### Is it compatible with Concerto?
-Yes.  Concerto is just an external program for CCCaster, so it will work just fine.
-
-### "Looking for MBAA.exe..." when MBAA.exe is already open
-Check Task Manager too see if you have a zombie MBAA.exe process running.  You may have to restart your computer to kill this program.
-
-### "VCRUNTIME140.dll" was not found
-This means your VC++ redistributable is missing or needs repaired.  There are step-by-step instructions on Google, so you're best off searching this error to find the best way to fix it.
-
-### Some of my settings change on their own
-This is most likely because you are using the HITS UNTIL BURST option.  This setting requires MANUAL for the dummy and INFINITE for the meter, and turning HITS UNTIL BURST on automatically changes these.
-
-### The hitboxes are being glitchy
-More than likely this is because you opened the F4 menu at some point.  This is a known issue and can be easily fixed by switching in/out of fullscreen (alt+enter).
-
-### Can I make my own version?
-Yes.
 
 # License
 
