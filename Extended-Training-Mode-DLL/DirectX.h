@@ -162,7 +162,8 @@ IDirect3DTexture9* fontTextureMelty = NULL;
 
 VertexData<PosColVert, 3 * 2048> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
-VertexData<PosColTexVert, 3 * 2048> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
+// need to rework font rendering, 4096 is just horrid
+VertexData<PosColTexVert, 3 * 4096> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 
 // ----
 
@@ -2251,6 +2252,8 @@ void _drawGeneralCalls() {
 
 // -----
 
+void _drawDebugMenu();
+
 void __stdcall _doDrawCalls() {
 	
 	/*
@@ -2339,6 +2342,7 @@ void __stdcall _doDrawCalls() {
 	_drawProfiler();
 	_drawLog();
 	_drawMiscInfo();
+	_drawDebugMenu();
 
 	// -- ACTUAL RENDERING --
 	backupRenderState();

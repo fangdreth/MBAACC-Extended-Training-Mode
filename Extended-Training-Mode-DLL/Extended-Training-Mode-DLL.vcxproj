@@ -177,6 +177,7 @@
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="FrameBar.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="RendererModifications.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

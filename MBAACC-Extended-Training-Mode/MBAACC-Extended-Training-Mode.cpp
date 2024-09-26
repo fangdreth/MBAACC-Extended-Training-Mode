@@ -2,6 +2,7 @@
 
 int main(int argc, char* argv[])
 {
+    timeBeginPeriod(1);
     try
     {
         DWORD dwExitCode = 0;
@@ -5591,6 +5592,8 @@ int main(int argc, char* argv[])
                         // put stuff here
                     }
 
+                    long long testStartTime = getMicroSec();
+
                     // want to reset these for a clean setup next time the game is paused
                     bOnSettingsMenu = false;
                     bInExtendedSettings = false;
@@ -5889,7 +5892,9 @@ int main(int argc, char* argv[])
                                 nTempReversalDelayFrames--;
                         }
                     }
-    
+                    
+                  
+                      
                     /*bSwitchToCrouch = false;
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
                     if (bSwitchToCrouch && nReadResult == eEnemyStance::STANDGUARDING)
@@ -5898,7 +5903,18 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyStatus), &nWriteBuffer, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyStatusCopy), &nWriteBuffer, 4, 0);
                     }*/
-                    Sleep(1);
+                    //Sleep(1);
+
+                    ///long long testSleepTime = getMicroSec();
+
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+                    //long long endTestTime = getMicroSec();
+
+                    //long long testTime = endTestTime - testStartTime;
+                    //long long testSleepTimeEnd = endTestTime - testSleepTime;
+
+                    //netlog("test time took %3lld.%03lld ms sleep: %3lld.%03lld ms", testTime / 1000, testTime % 1000, testSleepTimeEnd / 1000, testSleepTimeEnd % 1000);
                 }
             }
         }
@@ -5911,5 +5927,6 @@ int main(int argc, char* argv[])
 
     CloseLogger();
     CloseHandle(hMBAAHandle);
+    timeEndPeriod(1);
     return 0;
 }

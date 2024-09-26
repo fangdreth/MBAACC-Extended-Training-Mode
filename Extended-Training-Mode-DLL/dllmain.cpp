@@ -299,6 +299,7 @@ void __stdcall ___log(const char* msg);
 void __stdcall log(const char* format, ...);
 
 #include "DirectX.h"
+#include "RendererModifications.h"
 
 void __stdcall ___log(const char* msg)
 {
@@ -1184,6 +1185,10 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 		isDirectXHooked = HookDirectX();
 	}
 	
+	static bool isRendererHooked = false;
+	if (!isRendererHooked && isDirectXHooked) {
+		isRendererHooked = initRenderModifications();
+	}
 	
 	
 	
@@ -1733,7 +1738,8 @@ void frameDoneCallback()
 	{
 		static char buffer[256];
 
-		drawTextWithBorder(243, 460, 15, 15, pcTextToDisplay);
+		//drawTextWithBorder(243, 460, 15, 15, pcTextToDisplay);
+		TextDraw(243, 460, 15, 0xFFFFFFFF, pcTextToDisplay);
 
 		/*if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
 		{
@@ -2059,6 +2065,8 @@ void checkPauseEffect() {
 		return;
 	}
 
+	DWORD pattern = *(DWORD*)(checkPauseEffect_Addr + 0x10);
+
 	if (*(DWORD*)(checkPauseEffect_Addr + 0x20) == 0x00000101) {
 		// this detects if something is a heat effect. heat effects are weird
 		// why 0x20? why 0x00000101? because when i was doing the effects coloring work, this worked
@@ -2067,7 +2075,24 @@ void checkPauseEffect() {
 
 	if (*(BYTE*)(checkPauseEffect_Addr + 0x8) == 0xFE) { // 0xFE is -2 in this case
 		// this was for croa 236A, but it effects all other -2 source things
-		return;
+		// the meter bar flash is,, source -2, and then has 0x00FF at +9?
+		// ill just check the pattern
+		// also 177
+		// i wish i knew where the data for all the -2 sources was
+		// actually, effect.txt!!!!!!
+		// this also has the effects for the bars, and well,, everything
+		// perhaps preventing whatever spawns the new effects is a better approach here
+		switch (pattern) {
+		case 177: // roa lightning
+		case 178:
+		case 179:
+			return;
+		default:
+			break;
+		}
+
+		// the meter flash seems to be,, pattern 108 or 104?
+		
 	}
 
 	checkPauseEffect_Skip = 1;
@@ -2164,6 +2189,10 @@ __declspec(naked) void _naked_updateEffectsPauseLoop2() {
 }
 
 void drawSolidBackground() {
+
+	if (backgroundColor == 0xFF000000) {
+		return;
+	}
 
 	drawRect(0, 0, 640, 480, backgroundColor, 0x10a);
 

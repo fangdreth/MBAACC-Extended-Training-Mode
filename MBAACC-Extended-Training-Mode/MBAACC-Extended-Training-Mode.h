@@ -14,6 +14,10 @@
 #include <algorithm>
 #include <format>
 #include <regex>
+#include <chrono>
+#include <thread>
+#include <timeapi.h>
+#pragma comment(lib, "winmm.lib")
 
 #include "json.hpp"
 
