@@ -25,6 +25,8 @@
 	+ Control both players and assist positions
 	+ LOCK positions for custom reset positions
 + Burst After X Hits
++ More accurate meter built during a combo in Training Display
++ Option to reset the Reverse Penalty instantly after a combo or blockstring
 + Character Specific Resources
 	+ Roa visible and hidden charges
 	+ Sion bullets
@@ -129,7 +131,10 @@ Right now there isn't a CMAKE file, so if you want to build the mod yourself, ge
   + FMaids Hearts
   + Ryougi Knife
 
-+ Etcetera
++ Training Display
+	+ Improved the accuracy of meter built during a combo
+
++ Et cetera
   + Helper text has been added to everything in the Extended Settings menu
   + Fixed a few incorrect moves in Reversals
   + Improved inputs being dropped in the menu performance
