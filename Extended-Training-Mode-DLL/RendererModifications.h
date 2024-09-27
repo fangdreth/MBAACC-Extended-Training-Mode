@@ -192,7 +192,7 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 			DWORD pattern = *(DWORD*)(listAppendHook_objAddr + 0x0);
 			DWORD state = *(DWORD*)(listAppendHook_objAddr + 0x4);
 
-			if (source == -2) {
+			if (source == -2 && !shouldDrawHud) {
 				// check effects.txt
 				switch (pattern) {
 					case 100:
