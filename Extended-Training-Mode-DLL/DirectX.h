@@ -11,6 +11,13 @@ void printDirectXError(HRESULT hr) {
 	log("err: %s\n    %s", errorStr, errorDesc);
 }
 
+void logMatrix(const D3DMATRIX& matrix) {
+	for (int i = 0; i < 4; i++) {
+		log("%7.3f %7.3f %7.3f %7.3f", matrix.m[i][0], matrix.m[i][1], matrix.m[i][2], matrix.m[i][3]);
+	}
+	log("-----");
+}
+
 class Texture {
 public:
 
@@ -44,7 +51,7 @@ private:
 unsigned _vertexBytesTotal = 0;
 unsigned _vertexBytesTransferedThisFrame = 0;
 // this could have been done without a class. i hope the overhead isnt stupid
-template <typename T, size_t vertexCount>
+template <typename T, size_t vertexCount, D3DPRIMITIVETYPE primType = D3DPT_TRIANGLELIST>
 class VertexData {
 public:
 
@@ -68,6 +75,19 @@ public:
 		if (vertexBuffer != NULL) {
 			vertexBuffer->Release();
 		}
+	}
+
+	void add(T& v1, T& v2) {
+
+		if (vertexIndex >= vertexCount) {
+			//log("a vertex buffer overflowed. this is critical. increase the buffer size! current: %d fmt: %08X", vertexCount, vertexFormat);
+			// this log call was getting called to often, and would fuck things up
+			return;
+		}
+
+		vertexData[vertexIndex++] = v1;
+		vertexData[vertexIndex++] = v2;
+
 	}
 
 	void add(T& v1, T& v2, T& v3) {
@@ -109,9 +129,21 @@ public:
 		memcpy(pVoid, vertexData, vertexIndex * sizeof(T));
 		vertexBuffer->Unlock();
 
+		DWORD primCount = vertexIndex;
+
+		if constexpr (primType == D3DPT_TRIANGLELIST) {
+			primCount /= 3;
+		} else if constexpr (primType == D3DPT_LINELIST) {
+			primCount /= 2;
+		}
+
 		device->SetStreamSource(0, vertexBuffer, 0, sizeof(T));
 		device->SetFVF(vertexFormat);
-		device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, vertexIndex / 3);
+		device->DrawPrimitive(primType, 0, primCount);
+
+		// i could use DrawIndexedPrimitive here? check if faster.
+		// would be super nice, esp for text drawing at the minimum
+		// wait no, they, they still share tex stuff??
 
 		vertexIndex = 0;
 
@@ -127,6 +159,8 @@ public:
 	unsigned vertexIndex = 0; // number of verts. i,, ugh. i should have written a const size vec class.
 
 };
+
+// -----
 
 typedef struct PosVert {
 	D3DVECTOR position;
@@ -149,7 +183,8 @@ typedef struct PosColTexVert {
 } PosColTexVert;
 
 typedef struct MeltyTestVert {
-	float x, y, z, rhw;
+	D3DVECTOR position;
+	float rhw;
 	D3DCOLOR color;
 } MeltyTestVert;
 
@@ -171,6 +206,7 @@ VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontT
 VertexData<PosColTexVert, 3 * 4096> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 
 VertexData<MeltyTestVert, 3 * 4096> meltyTestVertData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
+VertexData<MeltyTestVert, 2 * 1024, D3DPT_LINELIST> meltyLineData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
 
 // ----
 
@@ -867,6 +903,8 @@ float wHeight = 480;
 bool isWide = false;
 //float factor = 1.0f;
 D3DVECTOR factor = { 1.0f, 1.0f, 1.0f };
+D3DVECTOR renderModificationFactor = { 1.0f, 1.0f, 1.0f };
+D3DVECTOR renderModificationOffset = { 1.0f, 1.0f, 1.0f };
 
 inline void scaleVertex(D3DVECTOR& v) {
 	/*
@@ -1029,6 +1067,25 @@ void __stdcall backupRenderState() {
 	} else {
 		factor.y = (wWidth / ratio) / wHeight;
 	}
+
+	// caster messes with the world projection and perspective, and idek view port matrix stuff
+	// check https://learn.microsoft.com/en-us/windows/win32/api/d3d9/nf-d3d9-idirect3ddevice9-gettransform, fix it
+
+	renderModificationFactor.x = (wHeight * ratio) / 640.0f;
+	//renderModificationFactor.y = renderModificationFactor.x;
+	renderModificationFactor.y = (wWidth / ratio) / 480.0f;
+
+	renderModificationOffset.x = 1.0f;// / factor.x;
+	renderModificationOffset.y = 1.0f;// / factor.y;
+
+	if (isWide) {
+
+	} else {
+
+	}
+
+	
+
 
 	//device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 	//device->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
@@ -2125,6 +2182,7 @@ void _drawLog() {
 	
 }
 
+bool debugMode = false;
 void _drawMiscInfo() {
 
 	static bool drawDebug = false;
@@ -2134,16 +2192,15 @@ void _drawMiscInfo() {
 		drawDebug = !drawDebug;
 	}
 
-	static bool drawIdk = false;
 	static KeyState F9Key(VK_F9);
 
 	float x;
 
 	if (F9Key.keyDown()) {
-		drawIdk = !drawIdk;
+		debugMode = !debugMode;
 	}
 	
-	if (drawIdk) {
+	if (debugMode) {
 
 
 		PosColVert v1 = { D3DVECTOR(0.0,       0.0, 0.5f), 0xFFfefa79 };
@@ -2232,7 +2289,7 @@ void allocVertexBuffers() {
 	posTexVertData.alloc();
 	posColTexVertData.alloc();
 	meltyTestVertData.alloc();
-
+	meltyLineData.alloc();
 }
 
 void _drawGeneralCalls() {
@@ -2243,6 +2300,7 @@ void _drawGeneralCalls() {
 	device->BeginScene();
 
 	meltyTestVertData.draw();
+	meltyLineData.draw();
 
 	posColVertData.draw();
 	posColTexVertData.draw();

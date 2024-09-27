@@ -7,7 +7,8 @@
 // 0x004			0x040				0x080			0x100
 // D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1
 typedef struct MeltyVertex {
-	float x, y, z, rhw; 
+	float x, y, z;
+	float rhw; 
 	DWORD diffuse;      
 	DWORD specular;     
 	float u, v;
@@ -24,6 +25,12 @@ void _drawDebugMenu() {
 
 }
 
+// key is mystery texture addr, val is its obj offset
+typedef struct LinkedListData {
+	DWORD object = 0;
+	DWORD caller = 0;
+} LinkedListData;
+std::map<DWORD, LinkedListData> textureToObject;
 
 std::set<DWORD> textureAddrs;
 
@@ -33,11 +40,21 @@ void renderModificationsFrameDone() {
 
 // actual funcs
 
-DWORD _naked_drawCallHook_eax;
+DWORD listAppendHook_effectRetAddr = 0;
+DWORD listAppendHook_objAddr = 0;
+DWORD listAppendHook_texAddr = 0;
+
+DWORD listAppendHook_effectRetAddr_pat = 0;
+DWORD listAppendHook_objAddr_pat = 0;
+
+DWORD listAppendHook_callerAddr = 0;
+
 DWORD _naked_drawCallHook_ebx;
-DWORD _naked_drawCallHook_ecx;
-DWORD _naked_drawCallHook_edx;
 void drawLoopHook() {
+
+	if (!debugMode) {
+		return;
+	}
 	
 	/*
 	BYTE resourceType = *(BYTE*)(_naked_drawLoopHook_esi + 0x4);
@@ -100,7 +117,6 @@ void drawLoopHook() {
 		}
 	}
 	
-
 	pIndexData = *(DWORD*)(_naked_drawCallHook_ebx + 0x14);
 	pIndexData = *(DWORD*)(pIndexData + 0xC);
 	DWORD* ptrIndexData = (DWORD*)(pIndexData);
@@ -117,35 +133,84 @@ void drawLoopHook() {
 	MeltyTestVert outVerts[4];
 
 	if (vertFormat != 0x1C4 && vertFormat != 0) {
-		log("vertFormat %08X", vertFormat);
+		//log("vertFormat %08X", vertFormat);
 	}
 
 	if(vertFormat == 0x1C4 && PrimitiveCountTestVar == 4) {
 
 		if (NumVertices % 4 != 0) {
-			log("ohno");
+			//log("ohno");
 		}
+
+		// ugh
+		D3DVIEWPORT9 view;
+
+		device->GetViewport(&view);
+
+		DWORD X = view.X;
+		DWORD Y = view.Y;
+		DWORD Width = view.Width;
+		DWORD Height = view.Height;
+		float MinZ = view.MinZ;
+		float MaxZ = view.MaxZ;
+
+		log("%6d %5d %5d %5d %5d %7.3f %7.3f", __frameDoneCount, view.X, view.Y, view.Width, view.Height, view.MinZ, view.MaxZ);
+
 
 		DWORD index = 0;
 
 		for (int j = 0; j < NumVertices; j += 3) {
 			for (int i = 0; i < 3; i++) {
 
-
 				DWORD tempIndex = ptrIndexData[i + j];
 				MeltyVertex v = ptrVertexStreamZeroData[tempIndex];
 
-				outVerts[i].x = v.x;
-				outVerts[i].y = v.y;
-				outVerts[i].z = v.z;
+				outVerts[i].position.x = v.x;
+				outVerts[i].position.y = v.y;
+				outVerts[i].position.z = v.z;
 				outVerts[i].rhw = v.rhw;
 
-				outVerts[i].color = 0x3000FF00;
+				outVerts[i].color = 0x0000FF00 | 0xFF000000;
+
+				//outVerts[i].position.x = (renderModificationFactor.x * (outVerts[i].position.x + renderModificationOffset.x)) - renderModificationOffset.x;
+				//outVerts[i].position.y = (renderModificationFactor.y * (outVerts[i].position.y + renderModificationOffset.y)) - renderModificationOffset.y;
+
+				//outVerts[i].position.x = (outVerts[i].position.x + 1) * (Width / 2) + X;
+				//outVerts[i].position.y = (1 - outVerts[i].position.y) * (Height/ 2) + Y;
+
+				//outVerts[i].position.x /= Width;
+				//outVerts[i].position.y /= Height;
+
+				//scaleVertex(outVerts[i].position);
 
 			}
 
-			meltyTestVertData.add(outVerts[0], outVerts[1], outVerts[2]);
+			//meltyTestVertData.add(outVerts[0], outVerts[1], outVerts[2]);
+			meltyLineData.add(outVerts[0], outVerts[1]);
+			meltyLineData.add(outVerts[0], outVerts[2]);
+			meltyLineData.add(outVerts[1], outVerts[2]);
+
+
 		}
+
+		
+
+		/*
+		D3DMATRIX matrix;
+		
+		device->GetTransform(D3DTS_VIEW, &matrix);
+		log("view:");
+		logMatrix(matrix);
+
+		device->GetTransform(D3DTS_PROJECTION, &matrix);
+		log("proj:");
+		logMatrix(matrix);
+
+		device->GetTransform(D3DTS_WORLD, &matrix);
+		log("world:");
+		logMatrix(matrix);
+		*/
+
 	}
 
 	// VertexStreamZeroStride might not be accurate?
@@ -153,22 +218,62 @@ void drawLoopHook() {
 
 	//TextDraw(0, drawY, 6, 0xFFFFFFFF, "%4d %08X %08X %08X %08X %08X", linkedListLength, _naked_drawCallHook_ebx, unknown1, unknown2, unknown3, unknown4);
 
-	TextDraw(0, drawY, 6, 0xFFFFFFFF, "%4d %08X %08X %08X %08X %08X %08X", linkedListLength, PrimitiveType, NumVertices, PrimitiveCount, pIndexData, pVertexStreamZeroData, VertexStreamZeroStride);
+	LinkedListData info;
+
+	DWORD unknownTexAddr;
+	unknownTexAddr = *(DWORD*)(_naked_drawCallHook_ebx + 0x54);
+	unknownTexAddr = *(DWORD*)(unknownTexAddr + 0xC);
+
+	if (textureToObject.find(unknownTexAddr) != textureToObject.end()) {
+		info = textureToObject[unknownTexAddr];
+	}
+
+	const char* infoString = "NULL";
+	switch (info.caller) {
+	case 0:
+		break;
+	default:
+		log("unknown ret %08X", info.caller);
+		break;
+	case 0x00415448:
+		infoString = "FUN_004153b0";
+		break;
+	case 0x00415572:
+		infoString = "DrawMenuCursor";
+		break;
+	case 0x004159f0:
+		infoString = "DrawEffectsTopUIandCharaSelect";
+		break;
+	case 0x00415b8d:
+		infoString = "DrawHitEffect";
+		break;
+	case 0x00415cd6:
+		infoString = "DrawBlur";
+		break;
+	case 0x00415ee5:
+		infoString = "DrawCharacterSelectBackground";
+		break;
+	case 0x0041619f:
+		infoString = "DrawCharactersAndBackground";
+		break;
+	case 0x0041621f:
+		infoString = "FUN_004161b0";
+		break;
+	case 0x00416583:
+		infoString = "RenderOnScreen";
+		break;
+	}
+
+
+	TextDraw(0, drawY, 6, 0xFFFFFFFF, "%4d %08X %08X %08X %08X %08X %08X %08X %08X %s", linkedListLength, PrimitiveType, NumVertices, PrimitiveCount, pIndexData, pVertexStreamZeroData, VertexStreamZeroStride, unknownTexAddr, info.object, infoString);
 
 	drawY += 6.0f;
-
 
 
 	linkedListLength++;
 
 }
 
-DWORD listAppendHook_effectRetAddr = 0;
-DWORD listAppendHook_objAddr = 0;
-DWORD listAppendHook_texAddr = 0;
-
-DWORD listAppendHook_effectRetAddr_pat = 0;
-DWORD listAppendHook_objAddr_pat = 0;
 void listAppendHook() { // for the life of me, why didnt i just not append this thing to the list??? i feel like that would have been better
 
 	if (listAppendHook_effectRetAddr == 0x0045410F || listAppendHook_effectRetAddr_pat == 0x0045410F) {
@@ -176,6 +281,8 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 		if (listAppendHook_effectRetAddr_pat == 0x0045410F) {
 			listAppendHook_objAddr = listAppendHook_objAddr_pat;
 		}
+
+		textureToObject.insert({ listAppendHook_texAddr, {listAppendHook_objAddr, listAppendHook_callerAddr } });
 
 		if (listAppendHook_objAddr >= 0x0067BDE8) { // effect
 			
@@ -209,8 +316,9 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 			} else {
 				return;
 			}
-
+			
 			textureAddrs.insert(listAppendHook_texAddr);
+
 		}
 	}
 }
@@ -222,6 +330,7 @@ void drawPrimHook() {
 
 	if (leadToDrawPrimHook_ret != 0x004331D9) {
 		textureAddrs.clear(); // calling this repeatedly is wasteful!
+		textureToObject.clear();
 		return;
 	}
 
@@ -259,10 +368,7 @@ DWORD _naked_drawCallHook_Func = 0x004be290;
 __declspec(naked) void _naked_drawCallHook() {
 
 	__asm {
-		mov _naked_drawCallHook_eax, eax;
 		mov _naked_drawCallHook_ebx, ebx;
-		mov _naked_drawCallHook_ecx, ecx;
-		mov _naked_drawCallHook_edx, edx;
 	}
 
 	PUSH_ALL;
@@ -280,6 +386,7 @@ __declspec(naked) void _naked_drawCallHook() {
 
 }
 
+DWORD _naked_listAppendHook_reg;
 __declspec(naked) void _naked_listAppendHook() {
 
 	__asm {
@@ -297,9 +404,26 @@ __declspec(naked) void _naked_listAppendHook() {
 
 		mov eax, [esp + 500h];
 		mov listAppendHook_effectRetAddr_pat, eax;
+		
+		// i should also add in things for,,, drawing the chars??
+		// and other things i dont know the addrs for
+
 
 		mov eax, listAppendHook_texAddr;
 	};
+
+	// sorta smarter approach here
+	// checking the direct caller of the func 
+	__asm {
+
+		mov _naked_listAppendHook_reg, eax;
+
+		mov eax, [esp + 4h]; // there is one push at the start of the func that needs to be bypassed
+		mov listAppendHook_callerAddr, eax;
+
+		mov eax, _naked_listAppendHook_reg;
+
+	}
 
 	// mov ecx, dword ptr [eax]
 	__asm _emit 0x8B;
@@ -381,6 +505,8 @@ __declspec(naked) void _naked_leadToDrawPrimHook() {
 
 }
 
+// objectDrawLogger
+
 // init 
 
 void initDrawCallHook() {
@@ -401,13 +527,9 @@ void initEffectSelector() {
 
 bool initRenderModifications() {
 
+	initDrawIndexPrimHook();
 	
-	
-	
-	//initDrawIndexPrimHook();
 	initEffectSelector();
-
-
 
 	return true;
 }
