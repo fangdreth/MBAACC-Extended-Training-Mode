@@ -125,8 +125,10 @@ const DWORD dwP1Struct = 0x155130;
 const DWORD dwP2Struct = dwP1Struct + 0xAFC;
 const DWORD dwP1RyougiKnife = 0x1552E8; //0=knife 1=no knife
 const DWORD dwP2RyougiKnife = 0x1552E8 + 0xAFC; //0=knife 1=no knife
-const DWORD dwP1FMaidsHearts = 0x1552FC; //0=full 5=empty
-const DWORD dwP2FMaidsHearts = 0x1552FC + 0xAFC; //0=full 5=empty
+const DWORD dwP1FMaidsHisuiLeadHearts = 0x1552FC; //0=full 5=empty
+const DWORD dwP1FMaidsKohaLeadHearts = 0x1568F6; //0=full 5=empty
+const DWORD dwP2FMaidsHisuiLeadHearts = 0x1552FC + 0xAFC; //0=full 5=empty
+const DWORD dwP2FMaidsKohaLeadHearts = 0x1568F6 + 0xAFC; //0=full 5=empty
 const DWORD dwP1Blocking = 0x1552AB;
 const DWORD dwP2Blocking = dwP1Blocking + 0xAFC;
 const DWORD dwGlobalExFlash = 0x162A48;
