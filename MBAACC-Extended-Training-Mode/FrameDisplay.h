@@ -1328,7 +1328,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 	displayBuffer();
 }
 
-void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P2, Player& P3, Player& P4)
+void FrameDisplay(HANDLE hMBAAHandle)
 {
 	CheckGameState(hMBAAHandle);
 

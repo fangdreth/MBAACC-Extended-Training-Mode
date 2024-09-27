@@ -430,7 +430,7 @@ int main(int argc, char* argv[])
 
             long long start = getMicroSec();
 
-            FrameDisplay(hMBAAHandle, dwBaseAddress, P1, P2, P3, P4);
+            FrameDisplay(hMBAAHandle);
 
             long long totalTime = getMicroSec() - start;
 
@@ -491,6 +491,13 @@ int main(int argc, char* argv[])
                     nP3X = nReadResult;
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP4X), &nReadResult, 4, 0);
                     nP4X = nReadResult;
+                }
+
+                if (bP3Exists && nFrameCount > 1)
+                {
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &nP1ControlledCharacter, 4, 0);
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1TagFlag), &nP1TagFlag, 1, 0);
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3TagFlag), &nP3TagFlag, 1, 0);
                 }
 
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwPausedFlag), &nReadResult, 4, 0);
@@ -3681,7 +3688,6 @@ int main(int argc, char* argv[])
                                     nEnemyDefenseTypeIndex = 1;
                                 }
 
-                                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &nP1ControlledCharacter, 4, 0);
                                 if (bP3Exists)
                                 {
                                     if (nP1ControlledCharacter == 0)
@@ -5784,7 +5790,7 @@ int main(int argc, char* argv[])
                         //reset character specifics
                         if (nFrameCounter == 1 && bP3Exists)
                         {
-                            WriteProcessMemory(hMBAAHandle, (LPVOID) (dwBaseAddress + adP1ControlledCharacter), &nP1ControlledCharacter, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &nP1ControlledCharacter, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1TagFlag), &nP1TagFlag, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3TagFlag), &nP3TagFlag, 1, 0);
                         }
