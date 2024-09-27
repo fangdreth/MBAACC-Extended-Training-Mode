@@ -373,8 +373,10 @@ void SetFMaidsHearts(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nHearts)
         nHearts = 0;
     else
         nHearts = 5 - min(nHearts, MAX_HEARTS);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1FMaidsHearts), &nHearts, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2FMaidsHearts), &nHearts, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1FMaidsHisuiLeadHearts), &nHearts, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2FMaidsHisuiLeadHearts), &nHearts, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1FMaidsKohaLeadHearts), &nHearts, 4, 0);
+    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2FMaidsKohaLeadHearts), &nHearts, 4, 0);
 }
 
 void SetRyougiKnife(HANDLE hMBAAHandle, DWORD dwBaseAddress, bool bInfinite)
