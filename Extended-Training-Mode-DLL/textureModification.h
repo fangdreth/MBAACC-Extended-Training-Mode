@@ -1135,7 +1135,7 @@ DWORD listAppendHook_texAddr = 0;
 DWORD listAppendHook_effectRetAddr_pat = 0;
 DWORD listAppendHook_objAddr_pat = 0;
 
-void listAppendHook() {
+void listAppendHook() { // for the life of me, why didnt i just not append this thing to the list??? i feel like that would have been better
 	//log("listAppendHook: %08X  objAddr: %08X retAddr: %08X", listAppendHook_texAddr, listAppendHook_objAddr, listAppendHook_effectRetAddr);
 
 	if (listAppendHook_effectRetAddr == 0x0045410F || listAppendHook_effectRetAddr_pat == 0x0045410F) {

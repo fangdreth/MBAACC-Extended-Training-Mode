@@ -21381,6 +21381,22 @@ NOTE:Most things after this are probably char-specific.
               <Address>+9</Address>
             </CheatEntry>
             <CheatEntry>
+              <ID>22130</ID>
+              <Description>"+B Idek"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>1</ShowAsSigned>
+              <VariableType>2 Bytes</VariableType>
+              <Address>+B</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>22131</ID>
+              <Description>"+D Idek"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>1</ShowAsSigned>
+              <VariableType>2 Bytes</VariableType>
+              <Address>+D</Address>
+            </CheatEntry>
+            <CheatEntry>
               <ID>7429</ID>
               <Description>"+10 Pattern"</Description>
               <ShowAsSigned>0</ShowAsSigned>
