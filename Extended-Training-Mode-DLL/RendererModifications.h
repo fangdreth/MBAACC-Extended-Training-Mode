@@ -1,4 +1,5 @@
 #pragma once
+#include <set>
 
 // contains things which modify melty's rendering system internally.
 
@@ -21,6 +22,13 @@ void _drawDebugMenu() {
 
 	drawY = 0.0f;
 
+}
+
+
+std::set<DWORD> textureAddrs;
+
+void renderModificationsFrameDone() {
+	//textureAddrs.clear();
 }
 
 // actual funcs
@@ -164,6 +172,66 @@ void drawLoopHook() {
 
 }
 
+DWORD listAppendHook_effectRetAddr = 0;
+DWORD listAppendHook_objAddr = 0;
+DWORD listAppendHook_texAddr = 0;
+
+DWORD listAppendHook_effectRetAddr_pat = 0;
+DWORD listAppendHook_objAddr_pat = 0;
+void listAppendHook() { // for the life of me, why didnt i just not append this thing to the list??? i feel like that would have been better
+
+	if (listAppendHook_effectRetAddr == 0x0045410F || listAppendHook_effectRetAddr_pat == 0x0045410F) {
+
+		if (listAppendHook_effectRetAddr_pat == 0x0045410F) {
+			listAppendHook_objAddr = listAppendHook_objAddr_pat;
+		}
+
+		if (listAppendHook_objAddr >= 0x0067BDE8) { // effect
+			
+			char source = *(char*)(listAppendHook_objAddr - 8);
+			DWORD pattern = *(DWORD*)(listAppendHook_objAddr + 0x0);
+			DWORD state = *(DWORD*)(listAppendHook_objAddr + 0x4);
+
+			if (source == -2) {
+				// check effects.txt
+				switch (pattern) {
+					case 100:
+					case 101:
+					case 102:
+					case 104:
+					case 105:
+					case 106:
+					case 107:
+					case 108:
+						break;
+					default:
+						return;
+				}
+			} else {
+				return;
+			}
+
+			textureAddrs.insert(listAppendHook_texAddr);
+		}
+	}
+}
+
+DWORD leadToDrawPrimHook_ret = 0;
+DWORD drawPrimHook_texAddr = 0;
+DWORD skipTextureDraw = 0;
+void drawPrimHook() {
+
+	if (leadToDrawPrimHook_ret != 0x004331D9) {
+		textureAddrs.clear(); // calling this repeatedly is wasteful!
+		return;
+	}
+
+	if (textureAddrs.contains(drawPrimHook_texAddr)) {
+		skipTextureDraw = 1;
+	}
+}
+
+
 // naked funcs
 
 __declspec(naked) void _naked_drawIndexPrimHook() {
@@ -214,6 +282,107 @@ __declspec(naked) void _naked_drawCallHook() {
 
 }
 
+__declspec(naked) void _naked_listAppendHook() {
+
+	__asm {
+		mov listAppendHook_texAddr, eax;
+
+		mov eax, [esp + 350h];
+		mov listAppendHook_objAddr, eax;
+
+		mov eax, [esp + 3E0h];
+		mov listAppendHook_effectRetAddr, eax;
+
+		// this testing is for .pat effects
+		mov eax, [esp + 470h];
+		mov listAppendHook_objAddr_pat, eax;
+
+		mov eax, [esp + 500h];
+		mov listAppendHook_effectRetAddr_pat, eax;
+
+		mov eax, listAppendHook_texAddr;
+	};
+
+	// mov ecx, dword ptr [eax]
+	__asm _emit 0x8B;
+	__asm _emit 0x08;
+
+	// mov edx, dword ptr [ecx + 4]
+	__asm _emit 0x8B;
+	__asm _emit 0x51;
+	__asm _emit 0x04;
+
+	// push eax 
+	__asm _emit 0x50;
+
+	PUSH_ALL;
+	listAppendHook();
+	POP_ALL;
+
+	__asm {
+		push 004c0273h;
+	};
+
+	// jmp edx
+	__asm _emit 0xFF;
+	__asm _emit 0xE2;
+
+}
+
+DWORD _naked_drawPrimHook_reg;
+DWORD _naked_drawPrimHook_jmp = 0x004be296;
+__declspec(naked) void _naked_drawPrimHook() {
+	__asm {
+		mov _naked_drawPrimHook_reg, eax;
+
+		mov eax, dword ptr[ebx + 54h];
+		mov eax, dword ptr[eax + 0Ch];
+
+		mov drawPrimHook_texAddr, eax;
+
+		mov eax, _naked_drawPrimHook_reg;
+	};
+	PUSH_ALL;
+	drawPrimHook();
+	POP_ALL;
+	__asm {
+
+		cmp skipTextureDraw, 0;
+		JE _CONT;
+
+		mov skipTextureDraw, 0;
+
+		// skip this texture
+		ret;
+
+	_CONT:
+		sub esp, 8h;
+		mov ecx, dword ptr[ebx + 54h];
+		
+		push 004be296h;
+		ret;
+	}
+}
+
+__declspec(naked) void _naked_leadToDrawPrimHook() {
+	__asm {
+		mov eax, [esp + 8h];
+		mov leadToDrawPrimHook_ret, eax;
+	}
+
+	__asm _emit 0xA1;
+	__asm _emit 0xC8;
+	__asm _emit 0xE7;
+	__asm _emit 0x76;
+	__asm _emit 0x00;
+
+	__asm {
+		push 004c0385h;
+		ret;
+	}
+
+}
+
 // init 
 
 void initDrawCallHook() {
@@ -224,13 +393,21 @@ void initDrawIndexPrimHook() {
 	patchJump(0x004be46e, _naked_drawIndexPrimHook);
 }
 
+void initEffectSelector() {
+
+	patchJump(0x004c026b, _naked_listAppendHook);
+	patchJump(0x004be290, _naked_drawPrimHook);
+	patchJump(0x004c0380, _naked_leadToDrawPrimHook);
+
+}
+
 bool initRenderModifications() {
 
 	
 	
 	
 	//initDrawIndexPrimHook();
-
+	initEffectSelector();
 
 
 

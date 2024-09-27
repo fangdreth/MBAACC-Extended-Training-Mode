@@ -1417,6 +1417,8 @@ void frameDoneCallback()
 
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
 
+	renderModificationsFrameDone();
+
 	setAllKeys();
 
 	/*DWORD shouldDrawBackground = 1;
