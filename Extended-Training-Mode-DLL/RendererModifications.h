@@ -145,16 +145,7 @@ void drawLoopHook() {
 			}
 
 			meltyTestVertData.add(outVerts[0], outVerts[1], outVerts[2]);
-			//meltyTestVertData.add(outVerts[1], outVerts[2], outVerts[3]);
 		}
-
-		
-
-		
-		
-		//*(DWORD*)(*(DWORD*)(_naked_drawCallHook_ebx + 0x14)) = 3;
-		//*(DWORD*)(*(DWORD*)(_naked_drawCallHook_ebx + 0x14)) = 3;
-
 	}
 
 	// VertexStreamZeroStride might not be accurate?
@@ -203,6 +194,14 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 					case 106:
 					case 107:
 					case 108:
+					case 300:
+					case 301:
+					case 302:
+					case 304:
+					case 305:
+					case 306:
+					case 307:
+					case 308:
 						break;
 					default:
 						return;
@@ -230,7 +229,6 @@ void drawPrimHook() {
 		skipTextureDraw = 1;
 	}
 }
-
 
 // naked funcs
 
