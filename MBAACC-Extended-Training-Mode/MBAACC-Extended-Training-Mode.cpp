@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
         uint32_t nCustomRN = 0;
 
         bool bColorBlindMode = false;
-        uint8_t nHitboxStyle = HITBOX_BLEND;
+        uint8_t nHitboxStyle = HITBOX_DRAW_ALL;
         bool bDisplayHitboxes = false;
         bool bExtendOrigins = false;
 
@@ -279,6 +279,7 @@ int main(int argc, char* argv[])
         }
         ReadFromRegistry(L"DisplayFreeze", &bDisplayFreeze);
         ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
+        ReadFromRegistry(L"HitboxStyle", &nHitboxStyle);
 
         char pcModPath[MAX_PATH];
         GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
@@ -2467,11 +2468,13 @@ int main(int argc, char* argv[])
                                 else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                                 {
                                     nHitboxStyle = max(HITBOX_DRAW_ALL, nHitboxStyle - 1);
+                                    SetRegistryValue(L"HitboxStyle", nHitboxStyle);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxStyle), &nHitboxStyle, 1, 0);
                                 }
                                 else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                                 {
                                     nHitboxStyle = min(HITBOX_BLEND, nHitboxStyle + 1);
+                                    SetRegistryValue(L"HitboxStyle", nHitboxStyle);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxStyle), &nHitboxStyle, 1, 0);
                                 }
 
