@@ -112,7 +112,7 @@ void CheckProjectiles()
 			*(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectStatus) == 0xFF)
 		{
 			cBlankEffectCount = 0;
-			Player& P = *paPlayerArray[*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectSource)];
+			Player& P = *paPlayerArray[*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectOwner)];
 			P.bProjectileActive = true;
 		}
 	}
