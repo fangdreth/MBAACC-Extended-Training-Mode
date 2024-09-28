@@ -151,7 +151,7 @@ void drawLoopHook() {
 	float MinZ = view.MinZ;
 	float MaxZ = view.MaxZ;
 
-	if(vertFormat == 0x1C4 && PrimitiveCountTestVar == 4 && !(Height != 512 || Width != 1024)) {
+	if (vertFormat == 0x1C4 && PrimitiveCountTestVar == 4 && !(Height != 512 || Width != 1024)) {
 
 		if (NumVertices % 4 != 0) {
 			//log("ohno");
@@ -169,6 +169,7 @@ void drawLoopHook() {
 
 		DWORD index = 0;
 
+		/*
 		for (int j = 0; j < NumVertices; j += 3) {
 			for (int i = 0; i < 3; i++) {
 
@@ -181,28 +182,87 @@ void drawLoopHook() {
 				outVerts[i].rhw = v.rhw;
 
 				outVerts[i].color = 0x0000FF00 | 0xFF000000;
-				
+
 				outVerts[i].position.x += topLeftPos.x;
 				outVerts[i].position.y += topLeftPos.y;
-				
+
 				outVerts[i].position.x *= renderModificationFactor.x;
 				outVerts[i].position.y *= renderModificationFactor.y;
-				
-				if (outVerts[i].rhw != 0.0f || outVerts[i].position.z != 0.0f) {
-					//log("%7.3f %7.3f %7.3f %7.3f", outVerts[i].position.x, outVerts[i].position.y, outVerts[i].position.z, outVerts[i].rhw);
-				}
 			}
 
-			
-			//meltyTestVertData.add(outVerts[0], outVerts[1], outVerts[2]);
 			meltyLineData.add(outVerts[0], outVerts[1]);
 			meltyLineData.add(outVerts[0], outVerts[2]);
 			meltyLineData.add(outVerts[1], outVerts[2]);
+		}
+		*/
 
+		for (int j = 0; j < PrimitiveCount; j++) { // the fact i didnt use this sooner is abysmal on my part
+			for (int i = 0; i < 3; i++) {
+
+				DWORD tempIndex = ptrIndexData[i + (j *3)];
+				MeltyVertex v = ptrVertexStreamZeroData[tempIndex];
+
+				outVerts[i].position.x = v.x;
+				outVerts[i].position.y = v.y;
+				outVerts[i].position.z = v.z;
+				outVerts[i].rhw = v.rhw;
+
+				outVerts[i].color = 0x0000FF00 | 0xFF000000;
+
+				outVerts[i].position.x += topLeftPos.x;
+				outVerts[i].position.y += topLeftPos.y;
+
+				outVerts[i].position.x *= renderModificationFactor.x;
+				outVerts[i].position.y *= renderModificationFactor.y;
+			}
+
+			meltyLineData.add(outVerts[0], outVerts[1]);
+			meltyLineData.add(outVerts[0], outVerts[2]);
+			meltyLineData.add(outVerts[1], outVerts[2]);
+			
+			//meltyLineData.add(outVerts[1], outVerts[2]);
+			//meltyLineData.add(outVerts[1], outVerts[3]);
+			//meltyLineData.add(outVerts[2], outVerts[3]);
 
 		}
 
-		col = 0xFF00FFFF;
+		/*
+		MeltyTestVert prev;
+		MeltyTestVert curr;
+
+
+		for (int j = 0; j < NumVertices; j++) {
+
+			curr.position.x = ptrVertexStreamZeroData[ptrIndexData[j]].x;
+			curr.position.y = ptrVertexStreamZeroData[ptrIndexData[j]].y;
+			curr.position.z = ptrVertexStreamZeroData[ptrIndexData[j]].z;
+			curr.rhw = ptrVertexStreamZeroData[ptrIndexData[j]].rhw;
+			curr.color = 0x0000FF00 | 0xFF000000;
+
+			curr.position.x += topLeftPos.x;
+			curr.position.y += topLeftPos.y;
+
+			curr.position.x *= renderModificationFactor.x;
+			curr.position.y *= renderModificationFactor.y;
+
+			// this makes the code cleaner. the optimizer BETTER, or else ill do a funky define
+			if (j == 0) {
+				prev = curr;
+				continue;
+			}
+
+			meltyLineData.add(prev, curr);
+			prev = curr;
+
+		}
+
+		*/
+
+		if (PrimitiveCountTestVar == 4) {
+			col = 0xFF00FFFF;
+		} else {
+			col = 0xFFFFFF00;
+		}
 
 		/*
 		D3DMATRIX matrix;
