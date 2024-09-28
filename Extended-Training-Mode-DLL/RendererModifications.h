@@ -1,5 +1,6 @@
 #pragma once
 #include <set>
+#include <map>
 
 // contains things which modify melty's rendering system internally.
 
@@ -136,26 +137,35 @@ void drawLoopHook() {
 		//log("vertFormat %08X", vertFormat);
 	}
 
-	if(vertFormat == 0x1C4 && PrimitiveCountTestVar == 4) {
+	DWORD col = 0xFFFFFFFF;
+
+	// ugh
+	D3DVIEWPORT9 view;
+
+	device->GetViewport(&view);
+
+	DWORD X = view.X;
+	DWORD Y = view.Y;
+	DWORD Width = view.Width;
+	DWORD Height = view.Height;
+	float MinZ = view.MinZ;
+	float MaxZ = view.MaxZ;
+
+	if(vertFormat == 0x1C4 && PrimitiveCountTestVar == 4 && !(Height != 512 || Width != 1024)) {
 
 		if (NumVertices % 4 != 0) {
 			//log("ohno");
 		}
 
-		// ugh
-		D3DVIEWPORT9 view;
+		// hacky not ideal solution
+		if (Height != 512 || Width != 1024) {
+			return;
+		}
 
-		device->GetViewport(&view);
+		//log("%6d %5d %5d %5d %5d %7.3f %7.3f", __frameDoneCount, view.X, view.Y, view.Width, view.Height, view.MinZ, view.MaxZ);
 
-		DWORD X = view.X;
-		DWORD Y = view.Y;
-		DWORD Width = view.Width;
-		DWORD Height = view.Height;
-		float MinZ = view.MinZ;
-		float MaxZ = view.MaxZ;
-
-		log("%6d %5d %5d %5d %5d %7.3f %7.3f", __frameDoneCount, view.X, view.Y, view.Width, view.Height, view.MinZ, view.MaxZ);
-
+		DWORD w = Width - X;
+		DWORD h = Height - Y;
 
 		DWORD index = 0;
 
@@ -171,20 +181,19 @@ void drawLoopHook() {
 				outVerts[i].rhw = v.rhw;
 
 				outVerts[i].color = 0x0000FF00 | 0xFF000000;
-
-				//outVerts[i].position.x = (renderModificationFactor.x * (outVerts[i].position.x + renderModificationOffset.x)) - renderModificationOffset.x;
-				//outVerts[i].position.y = (renderModificationFactor.y * (outVerts[i].position.y + renderModificationOffset.y)) - renderModificationOffset.y;
-
-				//outVerts[i].position.x = (outVerts[i].position.x + 1) * (Width / 2) + X;
-				//outVerts[i].position.y = (1 - outVerts[i].position.y) * (Height/ 2) + Y;
-
-				//outVerts[i].position.x /= Width;
-				//outVerts[i].position.y /= Height;
-
-				//scaleVertex(outVerts[i].position);
-
+				
+				outVerts[i].position.x += topLeftPos.x;
+				outVerts[i].position.y += topLeftPos.y;
+				
+				outVerts[i].position.x *= renderModificationFactor.x;
+				outVerts[i].position.y *= renderModificationFactor.y;
+				
+				if (outVerts[i].rhw != 0.0f || outVerts[i].position.z != 0.0f) {
+					//log("%7.3f %7.3f %7.3f %7.3f", outVerts[i].position.x, outVerts[i].position.y, outVerts[i].position.z, outVerts[i].rhw);
+				}
 			}
 
+			
 			//meltyTestVertData.add(outVerts[0], outVerts[1], outVerts[2]);
 			meltyLineData.add(outVerts[0], outVerts[1]);
 			meltyLineData.add(outVerts[0], outVerts[2]);
@@ -193,7 +202,7 @@ void drawLoopHook() {
 
 		}
 
-		
+		col = 0xFF00FFFF;
 
 		/*
 		D3DMATRIX matrix;
@@ -264,8 +273,9 @@ void drawLoopHook() {
 		break;
 	}
 
-
-	TextDraw(0, drawY, 6, 0xFFFFFFFF, "%4d %08X %08X %08X %08X %08X %08X %08X %08X %s", linkedListLength, PrimitiveType, NumVertices, PrimitiveCount, pIndexData, pVertexStreamZeroData, VertexStreamZeroStride, unknownTexAddr, info.object, infoString);
+	if (verboseMode) {
+		TextDraw(0, drawY, 6, col, "%4d %08X %08X %08X %08X %08X %08X %08X %08X %s", linkedListLength, PrimitiveType, NumVertices, PrimitiveCount, pIndexData, pVertexStreamZeroData, VertexStreamZeroStride, unknownTexAddr, info.object, infoString);
+	}
 
 	drawY += 6.0f;
 
@@ -276,13 +286,13 @@ void drawLoopHook() {
 
 void listAppendHook() { // for the life of me, why didnt i just not append this thing to the list??? i feel like that would have been better
 
+	if (listAppendHook_effectRetAddr_pat == 0x0045410F) {
+		listAppendHook_objAddr = listAppendHook_objAddr_pat;
+	}
+
+	textureToObject.insert({ listAppendHook_texAddr, {listAppendHook_objAddr, listAppendHook_callerAddr } });
+
 	if (listAppendHook_effectRetAddr == 0x0045410F || listAppendHook_effectRetAddr_pat == 0x0045410F) {
-
-		if (listAppendHook_effectRetAddr_pat == 0x0045410F) {
-			listAppendHook_objAddr = listAppendHook_objAddr_pat;
-		}
-
-		textureToObject.insert({ listAppendHook_texAddr, {listAppendHook_objAddr, listAppendHook_callerAddr } });
 
 		if (listAppendHook_objAddr >= 0x0067BDE8) { // effect
 			

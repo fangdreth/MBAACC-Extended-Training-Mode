@@ -662,6 +662,10 @@ public:
 
 	bool keyHeld()
 	{
+		if (!isFocused()) {
+			return false;
+		}
+
 		return nKey != 0x0 && GetAsyncKeyState(nKey) & 0x8000;
 	}
 

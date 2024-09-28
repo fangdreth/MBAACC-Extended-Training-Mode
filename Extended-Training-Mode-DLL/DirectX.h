@@ -4,6 +4,8 @@
 
 void _naked_InitDirectXHooks();
 
+void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...);
+
 void printDirectXError(HRESULT hr) {
 	const char* errorStr = DXGetErrorStringA(hr);
 	const char* errorDesc = DXGetErrorDescriptionA(hr);
@@ -16,6 +18,30 @@ void logMatrix(const D3DMATRIX& matrix) {
 		log("%7.3f %7.3f %7.3f %7.3f", matrix.m[i][0], matrix.m[i][1], matrix.m[i][2], matrix.m[i][3]);
 	}
 	log("-----");
+}
+
+void writeClipboard(const std::string& text) {
+	// Open the clipboard, check if successful
+	if (!OpenClipboard(nullptr)) {
+		return;
+	}
+
+	// Empty the clipboard
+	EmptyClipboard();
+
+	// Allocate global memory for the text
+	HGLOBAL hGlob = GlobalAlloc(GMEM_MOVEABLE, text.size() + 1);
+	if (hGlob) {
+		// Lock the memory and copy the text into it
+		memcpy(GlobalLock(hGlob), text.c_str(), text.size() + 1);
+		GlobalUnlock(hGlob);
+
+		// Set the clipboard data to our text
+		SetClipboardData(CF_TEXT, hGlob);
+	}
+
+	// Close the clipboard
+	CloseClipboard();
 }
 
 class Texture {
@@ -203,10 +229,10 @@ IDirect3DTexture9* fontTextureMelty = NULL;
 VertexData<PosColVert, 3 * 2048> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
 // need to rework font rendering, 4096 is just horrid
-VertexData<PosColTexVert, 3 * 4096> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
+VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 
 VertexData<MeltyTestVert, 3 * 4096> meltyTestVertData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
-VertexData<MeltyTestVert, 2 * 1024, D3DPT_LINELIST> meltyLineData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
+VertexData<MeltyTestVert, 2 * 16384 / 2, D3DPT_LINELIST> meltyLineData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE); // 8192 is overkill
 
 // ----
 
@@ -903,8 +929,9 @@ float wHeight = 480;
 bool isWide = false;
 //float factor = 1.0f;
 D3DVECTOR factor = { 1.0f, 1.0f, 1.0f };
+D3DVECTOR topLeftPos = { 0.0f, 0.0f, 0.0f }; // top left of the screen, in pixel coords. maybe should be in directx space but idk
 D3DVECTOR renderModificationFactor = { 1.0f, 1.0f, 1.0f };
-D3DVECTOR renderModificationOffset = { 1.0f, 1.0f, 1.0f };
+//D3DVECTOR renderModificationOffset = { 1.0f, 1.0f, 1.0f };
 
 inline void scaleVertex(D3DVECTOR& v) {
 	/*
@@ -1071,19 +1098,128 @@ void __stdcall backupRenderState() {
 	// caster messes with the world projection and perspective, and idek view port matrix stuff
 	// check https://learn.microsoft.com/en-us/windows/win32/api/d3d9/nf-d3d9-idirect3ddevice9-gettransform, fix it
 
-	renderModificationFactor.x = (wHeight * ratio) / 640.0f;
-	//renderModificationFactor.y = renderModificationFactor.x;
-	renderModificationFactor.y = (wWidth / ratio) / 480.0f;
+	
 
-	renderModificationOffset.x = 1.0f;// / factor.x;
-	renderModificationOffset.y = 1.0f;// / factor.y;
+	renderModificationFactor.x = 1.0f;
+	renderModificationFactor.y = 1.0f;
 
+	renderModificationFactor.x = (vHeight * (4.0f / 3.0f)) / 640.0f;
+	renderModificationFactor.y = (vWidth / (4.0f / 3.0f)) / 480.0f;
+	
+	//renderModificationFactor.x = (vHeight * (4.0f / 3.0f)) / (vWidth);
+	//renderModificationFactor.y = (vWidth / (4.0f / 3.0f)) / (vHeight);
+
+	renderModificationFactor.x *= factor.x;
+	renderModificationFactor.y *= factor.y;
+
+	// figureing all this out has taken way to long due to my "just fuck with the numbers it will work eventually" attitude
+	/*
 	if (isWide) {
-
+		renderModificationFactor.x = (vHeight * (4.0f / 3.0f)) / (vWidth);
 	} else {
+		renderModificationFactor.y = (vWidth / (4.0f / 3.0f)) / (vHeight);
+	}
+	*/
+	//renderModificationFactor.x = (vHeight * (4.0f / 3.0f)) / (vWidth * 640.0f);
+	//renderModificationFactor.y = (vWidth / (4.0f / 3.0f))  / (vHeight * 480.0f);	
 
+
+	topLeftPos.x = 0.0f;
+	topLeftPos.y = 0.0f;
+
+	// the texture that melty uses internally for rendering the fucking game is 1024 by 512 due to directx fuckery.
+	// i surrender. this will only work in 4/3, but its debug so who cares
+	// nvm
+	// im brute forcing it
+	// ugh
+	/*
+	
+	all done booting in 4/3 1440 1050
+	
+
+	
+	130.000000,0.710195,1.000000,1455.000000,775.000000,1400.000000,1050.000000
+	394.000000,0.447149,1.000000,1479.000000,496.000000,1400.000000,1050.000000
+	248.000000,0.562412,1.000000,1183.000000,499.000000,1400.000000,1050.000000
+	81.000000,0.795480,1.000000,1180.000000,704.000000,1400.000000,1050.000000
+	68.000000,0.824839,1.000000,1138.000000,704.000000,1400.000000,1050.000000
+	404.000000,0.441711,1.000000,1138.000000,377.000000,1400.000000,1050.000000
+	637.000000,0.334665,1.000000,1502.000000,377.000000,1400.000000,1050.000000
+	60.000000,0.842432,1.000000,1502.000000,949.000000,1400.000000,1050.000000
+	25.000000,0.925628,1.000000,1367.000000,949.000000,1400.000000,1050.000000
+	1001.000000,0.241892,1.000000,1367.000000,248.000000,1400.000000,1050.000000
+	1265.000000,0.201902,1.000000,1367.000000,207.000000,1400.000000,1050.000000
+	1576.000000,0.168739,1.000000,1367.000000,173.000000,1400.000000,1050.000000
+
+
+	1547.000000,0.410632,1.000000,1367.000000,421.000000,1400.000000,1050.000000
+	-10.000000,0.410632,1.000000,1367.000000,421.000000,1400.000000,1050.000000
+
+	this one also went to -10. ???
+	848.000000,0.741283,1.000000,1367.000000,760.000000,1400.000000,1050.000000
+
+
+	1178.000000,0.537430,1.000000,1367.000000,551.000000,1400.000000,1050.000000
+
+	*/
+
+	/*
+	static KeyState upKey(VK_UP);
+	static KeyState downKey(VK_DOWN);
+	static KeyState writeKey(VK_RCONTROL);
+
+	static float idkX = 0.0;
+
+	if (upKey.keyHeld()) {
+		idkX += 1.0f;
 	}
 
+	if (downKey.keyHeld()) {
+		idkX -= 1.0f;
+	}
+
+	static char buffer[256];
+
+	TextDraw(0, 0, 24, 0xFFFFFFFF, "%7.3f", idkX);
+
+	if (writeKey.keyDown()) {
+		snprintf(buffer, 256, "%f,%f,%f,%f,%f,%f,%f", idkX, factor.x, factor.y, wWidth, wHeight, vWidth, vHeight);
+	
+		writeClipboard(std::string(buffer));
+	}
+	*/
+
+	if (isWide) {
+		//topLeftPos.x = (wWidth - (wHeight * ratio)) / 1.0f;
+		//topLeftPos.x = 0.0f;
+		//topLeftPos.x = (wWidth - (wHeight * ratio)) / 2.0f;
+		//topLeftPos.x = (vWidth - ((wWidth / wHeight) * vHeight)) / 2.0f;
+		
+		
+		//topLeftPos.x = idkX;
+
+		// how does this work? why does this work? ask your gods. they wont answer
+		topLeftPos.x = 640.0f / factor.x;	
+		topLeftPos.x *= (wWidth - (wHeight * ratio)) / (2.0f * wWidth);
+
+	} else {
+		//topLeftPos.y = (wHeight - (wWidth / ratio)) / 2.0f;
+		//topLeftPos.y *= 1.5f;
+		//topLeftPos.y /= wHeight;
+		//topLeftPos.y *= 480.0f;
+
+		//topLeftPos.y /= (vWidth / wWidth);
+		//topLeftPos.y = wHeight / 4.0f;
+
+		//topLeftPos.y /= factor.y;
+		//topLeftPos.y /= 2.0f;
+
+
+		topLeftPos.y = 480.0f / factor.y;
+		topLeftPos.y *= (wHeight - (wWidth / ratio)) / (2.0f * wHeight);
+	}
+
+	//log("%7.3f %7.3f %5.2f %5.2f %5.2f %5.2f", topLeftPos.x, topLeftPos.y, vWidth, vHeight, wWidth, wHeight);
 	
 
 
@@ -2183,6 +2319,7 @@ void _drawLog() {
 }
 
 bool debugMode = false;
+bool verboseMode = false;
 void _drawMiscInfo() {
 
 	static bool drawDebug = false;
@@ -2193,11 +2330,16 @@ void _drawMiscInfo() {
 	}
 
 	static KeyState F9Key(VK_F9);
+	static KeyState F8Key(VK_F8);
 
 	float x;
 
 	if (F9Key.keyDown()) {
 		debugMode = !debugMode;
+	}
+
+	if (F8Key.keyDown()) {
+		verboseMode = !verboseMode;
 	}
 	
 	if (debugMode) {
@@ -2403,8 +2545,24 @@ void __stdcall _doDrawCalls() {
 		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "%5.2lf", res);
 	}
 	
-
 	startTime = endTime;
+	
+	// ??? what coord space do these lines use?
+	// or wait was rhw the only thing i needed to draw on the screen?? none of the stupid bs i have been doing this entire time
+	// omfg
+	
+	/*
+	MeltyTestVert a = {-100.0f, 200.0f, 0.0f, 1.0f, 0xFF0000FF};
+	MeltyTestVert b = { 100.0f, 200.0f, 0.0f, 1.0f, 0xFF0000FF };
+	
+	meltyLineData.add(a, b);
+	meltyLineData.add(a, b);
+	meltyLineData.add(a, b);
+
+	MeltyTestVert temp = meltyLineData.vertexData[0];
+
+	log("%f %f %f %f %08X", temp.position.x, temp.position.y, temp.position.z, temp.rhw, temp.color);
+	*/
 
 	// predraw stuff goes here.
 	_drawProfiler();
