@@ -253,7 +253,7 @@ void CheckProjectiles(HANDLE hMBAAHandle)
 	char cBlankEffectCount = 0;
 	bool bProjectileExists = 0;
 	uint8_t cProjectileStatus = 0;
-	char cProjectileSource = 0;
+	char cProjectileOwner = 0;
 	int nProjectilePattern = 0;
 	DWORD dwProjectileAttackDataPointer = 0;
 	P1.nActiveProjectileCount = 0;
@@ -269,9 +269,9 @@ void CheckProjectiles(HANDLE hMBAAHandle)
 		cBlankEffectCount = 0;
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adEffectStatus), &cProjectileStatus, 1, 0);
 		if (cProjectileStatus != 0xFF) continue;
-		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adEffectSource), &cProjectileSource, 1, 0);
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adEffectOwner), &cProjectileOwner, 1, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + adAttackDataPointer), &dwProjectileAttackDataPointer, 4, 0);
-		if (dwProjectileAttackDataPointer) (*paPlayerArray[cProjectileSource]).nActiveProjectileCount++;
+		if (dwProjectileAttackDataPointer) (*paPlayerArray[cProjectileOwner]).nActiveProjectileCount++;
 	}
 }
 
@@ -1328,7 +1328,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 	displayBuffer();
 }
 
-void FrameDisplay(HANDLE hMBAAHandle, DWORD dwBaseAddress, Player& P1, Player& P2, Player& P3, Player& P4)
+void FrameDisplay(HANDLE hMBAAHandle)
 {
 	CheckGameState(hMBAAHandle);
 

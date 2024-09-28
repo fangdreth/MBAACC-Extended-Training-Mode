@@ -430,7 +430,7 @@ int main(int argc, char* argv[])
 
             long long start = getMicroSec();
 
-            FrameDisplay(hMBAAHandle, dwBaseAddress, P1, P2, P3, P4);
+            FrameDisplay(hMBAAHandle);
 
             long long totalTime = getMicroSec() - start;
 
@@ -491,6 +491,13 @@ int main(int argc, char* argv[])
                     nP3X = nReadResult;
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP4X), &nReadResult, 4, 0);
                     nP4X = nReadResult;
+                }
+
+                if (bP3Exists && nFrameCount > 1)
+                {
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &nP1ControlledCharacter, 4, 0);
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1TagFlag), &nP1TagFlag, 1, 0);
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3TagFlag), &nP3TagFlag, 1, 0);
                 }
 
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwPausedFlag), &nReadResult, 4, 0);
@@ -1199,7 +1206,7 @@ int main(int argc, char* argv[])
                                 {
                                 case 0:
                                 {
-                                    char pcTemp64[64] = "Highlight when a character {is not performing actions.";
+                                    char pcTemp64[64] = "Highlight when a character {is not doing nothing.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (nIdleHighlightSetting == NO_HIGHLIGHT)
                                         strcpy_s(pcTemp64, ">Do not highlight.");
@@ -1267,7 +1274,7 @@ int main(int argc, char* argv[])
                                 {
                                 case 0:
                                 {
-                                    char pcTemp64[64] = "Lock the characters' positions during a training reset.";
+                                    char pcTemp64[64] = "Lock the characters' positions during a reset.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (bPositionsLocked)
                                         strcpy_s(pcTemp64, ">Positions are {locked.");
@@ -1549,7 +1556,7 @@ int main(int argc, char* argv[])
                                 {
                                 case 0:
                                 {
-                                    char pcTemp64[64] = "Level of detail to show in the {frame data display.";
+                                    char pcTemp64[64] = "Level of detail to show in the {frame display.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (nFrameData == FRAMEDISPLAY_NORMAL)
                                         strcpy_s(pcTemp64, ">Display {the basics.");
@@ -1560,7 +1567,7 @@ int main(int argc, char* argv[])
                                 }
                                 case 2:
                                 {
-                                    char pcTemp64[64] = "Display {freeze frames} in the frame data display.";
+                                    char pcTemp64[64] = "Display {freeze frames} in the frame display.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (bDisplayFreeze)
                                         strcpy_s(pcTemp64, ">Freeze frames {will be displayed.");
@@ -1571,7 +1578,7 @@ int main(int argc, char* argv[])
                                 }
                                 case 3:
                                 {
-                                    char pcTemp64[64] = "Display {controller inputs} in the frame data display.";
+                                    char pcTemp64[64] = "Display {controller inputs} in the frame display.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (bDisplayInputs)
                                         strcpy_s(pcTemp64, ">Controller inputs {will be displayed.");
@@ -1582,15 +1589,15 @@ int main(int argc, char* argv[])
                                 }
                                 case 5:
                                 {
-                                    char pcTemp64[64] = "Control the scroll on the frame data display.";
+                                    char pcTemp64[64] = "Control the scroll on the frame display.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    strcpy_s(pcTemp64, ">{Press Left} and {Right} to move the frame data display.");
+                                    strcpy_s(pcTemp64, ">{Press Left} and {Right} to move the frame display.");
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
                                 case 6:
                                 {
-                                    char pcTemp64[64] = "Display a color guide for the data in the frame display.";
+                                    char pcTemp64[64] = "Display a color guide for the frame display.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     strcpy_s(pcTemp64, ">{Press A} to show the color guide.");
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
@@ -3681,7 +3688,6 @@ int main(int argc, char* argv[])
                                     nEnemyDefenseTypeIndex = 1;
                                 }
 
-                                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &nP1ControlledCharacter, 4, 0);
                                 if (bP3Exists)
                                 {
                                     if (nP1ControlledCharacter == 0)
@@ -5784,7 +5790,7 @@ int main(int argc, char* argv[])
                         //reset character specifics
                         if (nFrameCounter == 1 && bP3Exists)
                         {
-                            WriteProcessMemory(hMBAAHandle, (LPVOID) (dwBaseAddress + adP1ControlledCharacter), &nP1ControlledCharacter, 4, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &nP1ControlledCharacter, 4, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1TagFlag), &nP1TagFlag, 1, 0);
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP3TagFlag), &nP3TagFlag, 1, 0);
                         }
