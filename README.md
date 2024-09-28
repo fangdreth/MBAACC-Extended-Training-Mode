@@ -34,8 +34,9 @@
 	+ Ryougi knife refill
 	+ Normal, auto-refill, and infinite options
 	+ Take Control of Assist Characters
+	+ Control Kohaku as C-Maids through resets
 + Frame Data Display
-	+ Displayed in the mod window or on the screen with the Frame Data hotkey
+	+ Displayed in the mod window or on the screen
 	+ Startup, Total, and Advantage clearly displayed
 	+ The display in the mod window can be configured to display significantly more detail
 + Save States
@@ -69,7 +70,7 @@ We have a [Discord](https://discord.gg/6QUpZcThg7) where you can report bugs, ge
 
 - [Download the latest .EXE and .DLL from this link.](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases)  
 
-- The first time you run the .EXE, your anti-virus might warn you it is dangerous.  You can safely dismiss this message.  If you are curious, you see this because the training mod has code which modifies memory directly, which sets off the anti-virus.
+- The first time you run the .EXE, your anti-virus might warn you it is dangerous.  You can safely dismiss this message.  If you are curious why, it says this because the training mod has code which modifies memory directly, which sets off the anti-virus.
 
 - Run the .EXE while you have Melty Blood open.
 
@@ -88,6 +89,9 @@ At the moment, no.  You must use the latest version of the [community edition](h
 
 ### Is it compatible with Concerto?
 Yes.  Concerto is just an external program for CCCaster, so it will work just fine.
+
+### I found a bug, how do I report it?
+You can join our Discord linked above, or send a message to Fang___
 
 ### "Looking for MBAA.exe..." when MBAA.exe is already open
 Check Task Manager too see if you have a zombie MBAA.exe process running.  You may have to restart your computer to kill this program.
