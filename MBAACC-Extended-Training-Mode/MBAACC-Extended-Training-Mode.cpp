@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
         int nTempReversalDelayFrames = 0;
         bool bDelayingReversal = false;
         bool bReversaled = false;
-        int nReversalType = REVERSAL_OFF;
+        int nReversalType = REVERSAL_NORMAL;
         int nReversalIndex1 = 0;
         int nReversalIndex2 = 0;
         int nReversalIndex3 = 0;
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
         uint32_t nCustomRN = 0;
 
         bool bColorBlindMode = false;
-        uint8_t nHitboxStyle = HITBOX_BLEND;
+        uint8_t nHitboxStyle = HITBOX_DRAW_ALL;
         bool bDisplayHitboxes = false;
         bool bExtendOrigins = false;
 
@@ -1596,8 +1596,18 @@ int main(int argc, char* argv[])
                                 }
                                 case 5:
                                 {
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcBlank_64, 64, 0);
+                                    if (bFrameDataDisplay)
+                                    {
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcBlank_64, 64, 0);
+                                    }
+                                    else
+                                    {
+                                        char pcTemp64[64] = "Scroll through the frame display.";
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
+                                        strcpy_s(pcTemp64, ">{DRAW ON SCREEN} is turned off.");
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
+                                    }
                                     break;
                                 }
                                 case 6:

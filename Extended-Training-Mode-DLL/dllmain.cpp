@@ -1832,7 +1832,7 @@ void frameDoneCallback()
 		char pcSubInfoText[64];
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcMainInfoText, 64, 0);
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcSubInfoText, 64, 0);
-		RectDraw(-0.5f, 382.5f, 640.0f, 70.0f, 0xFF101010);
+		RectDraw(-0.5f, 382.5f, 640.5f, 70.0f, 0xFF101010);
 		TextDraw(47.5f, 393.5f, 16.0f, 0xFFFFFFFF, pcMainInfoText);
 		TextDraw(66.5f, 420.5f, 16.0f, 0xFFFFFFFF, pcSubInfoText);
 	}
