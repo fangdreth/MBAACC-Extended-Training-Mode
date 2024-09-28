@@ -478,7 +478,8 @@ void _initDefaultFont(IDirect3DTexture9*& resTexture) {
 		return;
 	}
 
-	//hr = D3DXSaveTextureToFileA("fontTest.png", D3DXIFF_PNG, texture, NULL);
+	// i could, and maybe should, include this png raw.
+	//hr = D3DXSaveTextureToFileA("defaultFont.png", D3DXIFF_PNG, texture, NULL);
 	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG, texture, NULL);
 
 	BYTE* bufferPtr = (BYTE*)buffer->GetBufferPointer();
@@ -671,7 +672,7 @@ void _initDefaultFontOutline(IDirect3DTexture9*& fontTex) {
 	textOutlineVertexShader->Release();
 }
 
-void _initMeltyFont(IDirect3DTexture9*& fontTex) {
+void _initMeltyFont() {
 
 	IDirect3DSurface9* surface = NULL;
 	ID3DXBuffer* buffer = NULL;
@@ -750,7 +751,7 @@ void _initMeltyFont(IDirect3DTexture9*& fontTex) {
 
 	device->EndScene();
 
-	hr = D3DXSaveTextureToFileA("meltyFontTest.png", D3DXIFF_PNG, texture, NULL);
+	//hr = D3DXSaveTextureToFileA("meltyFontTest.png", D3DXIFF_PNG, texture, NULL);
 	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG, texture, NULL);
 
 	BYTE* bufferPtr = (BYTE*)buffer->GetBufferPointer();
@@ -809,8 +810,8 @@ void _initFontFirstLoad() {
 		return;
 	}
 
-	_initDefaultFontOutline(fontTex);
-	_initMeltyFont(fontTex);
+	//_initDefaultFontOutline(fontTex);
+	_initMeltyFont();
 
 	fontTex->Release();
 
@@ -848,19 +849,21 @@ void initFont() {
 	// going to be real tho, what guarentee do i have that it is????
 	hr = D3DXCreateTextureFromFileInMemory(device, fontBuffer, fontBufferSize, &fontTexture);
 	if (FAILED(hr)) {
-		log("font createtexfromfileinmem failed??");
+		log("default font createtexfromfileinmem failed??");
 		return;
 	}
-
+	
+	/*
 	hr = D3DXCreateTextureFromFileInMemory(device, fontBufferWithOutline, fontBufferSizeWithOutline, &fontTextureWithOutline); // this texture is D3DPOOL_MANAGED, and so doesnt need a reset on every reset call! yipee
 	if (FAILED(hr)) {
-		log("font createtexfromfileinmem failed??");
+		log("default outline font createtexfromfileinmem failed??");
 		return;
 	}
+	*/
 
 	hr = D3DXCreateTextureFromFileInMemory(device, fontBufferMelty, fontBufferMeltySize, &fontTextureMelty); 
 	if (FAILED(hr)) {
-		log("font createtexfromfileinmem failed??");
+		log("melty font createtexfromfileinmem failed??");
 		return;
 	}
 
