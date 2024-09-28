@@ -1421,17 +1421,13 @@ void frameDoneCallback()
 
 	setAllKeys();
 
-	/*DWORD shouldDrawBackground = 1;
-	DWORD shouldDrawHud = 1;
-	DWORD shouldDrawGroundLine = 0;
-	DWORD backgroundColor = 0xFFFFFFFF;*/
-
 	shouldDrawBackground = *(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle) == BG_NORMAL;
 	shouldDrawHud = !*(bool*)(dwBaseAddress + adSharedDisableHUD);
 	shouldDrawGroundLine = *(bool*)(dwBaseAddress + adSharedDrawGround);
 	shouldDrawShadow = !*(bool*)(dwBaseAddress + adSharedDisableShadow);
 	fastReversePenalty = *(bool*)(dwBaseAddress + adSharedFastReversePenalty);
-	
+	bFrameDataDisplay = *(bool*)(dwBaseAddress + adSharedFrameDataDisplay);
+
 	switch (*(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle))
 	{
 	case BG_NORMAL:
@@ -1593,6 +1589,7 @@ void frameDoneCallback()
 	if (oFrameDataDisplayKey.keyDown())
 	{
 		bFrameDataDisplay = !bFrameDataDisplay;
+		*(bool*)(dwBaseAddress + adSharedFrameDataDisplay) = bFrameDataDisplay;
 		nDrawTextTimer = TEXT_TIMER;
 		if (bFrameDataDisplay)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "FRAME DATA ON");
@@ -1800,15 +1797,17 @@ void frameDoneCallback()
 	DWORD nSubMenuPointer = *reinterpret_cast<DWORD*>(dwBaseAddress + dwBasePointer) + 0x84;
 	//int nSubMenu;
 	//ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
-	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12)) {
-		if (*(bool*)(dwBaseAddress + adSharedHoveringScroll))
+	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12) || *(bool*)(dwBaseAddress + adSharedHoveringScroll)) {
+		if (bFrameDataDisplay)
 			drawFrameBar();
 		
 		if (bHitboxesDisplay)
 			drawFrameData();
 		
-		if (bFrameDataDisplay)
+		/*if (bFrameDataDisplay)
+		{
 			drawFrameBar();
+		}*/	
 
 		drawStats();
 	}

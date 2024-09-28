@@ -348,6 +348,7 @@ const ADDRESS adSharedDisableHUD =					adShareBase + 0x1A; // 1 byte
 const ADDRESS adSharedDrawGround =					adShareBase + 0x1B; // 1 byte
 const ADDRESS adSharedDisableShadow =				adShareBase + 0x1C; // 1 byte
 const ADDRESS adSharedFastReversePenalty =			adShareBase + 0x1D; // 1 byte
+const ADDRESS adSharedFrameDataDisplay =					adShareBase + 0x1E; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte
@@ -461,6 +462,7 @@ const char pcOriginStyle_13[13] = "ORIGIN STYLE";
 const char pcStandard_9[9] = "STANDARD";
 const char pcExtended_9[9] = "EXTENDED";
 const char pcReversal_9[9] = "REVERSAL";
+const char pcDrawOnScreen_15[15] = "DRAW ON SCREEN";
 
 const char pcReversals_10[10] = "REVERSALS";
 const char pcTraining_9[9] = "TRAINING";
