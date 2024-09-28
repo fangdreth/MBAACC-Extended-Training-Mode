@@ -82,6 +82,7 @@ const DWORD dwP3Exists = 0x155130 + 0xAFC * 2;
 const DWORD dwP4Exists = 0x155130 + 0xAFC * 3;
 const DWORD dwP2PatternSet = 0x155F38;
 const DWORD dwP1PatternRead = 0x155140;
+const DWORD dwP4PatternSet = 0x157234;
 const DWORD dwP2PatternRead = dwP1PatternRead + 0xAFC;
 const DWORD dwCSSFlag = 0x155130;
 const DWORD dwP2CharNumber = 0x34D91C;

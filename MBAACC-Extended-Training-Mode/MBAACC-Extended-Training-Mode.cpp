@@ -505,6 +505,11 @@ int main(int argc, char* argv[])
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwPausedFlag), &nReadResult, 4, 0);
                 bPaused = (nReadResult == 1 ? true : false);
 
+                uint8_t nP1Controlled;
+                uint8_t nP2Controlled;
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &nP1Controlled, 1, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &nP2Controlled, 1, 0);
+
                 // This is the big if-else
                 if (bPaused)
                 {
@@ -2099,12 +2104,12 @@ int main(int argc, char* argv[])
                                 else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
                                 {
                                     nCustomMeter = max(0, nCustomMeter - (bAPressed ? 10 : 1000));
-                                    SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
+                                    SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon, nP1Controlled, nP2Controlled);
                                 }
                                 else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
                                 {
                                     nCustomMeter = min(nCustomMeter + (bAPressed ? 10 : 1000), MAX_METER);
-                                    SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
+                                    SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon, nP1Controlled, nP2Controlled);
                                 }
 
                                 if (nOldDownRecoveryIndex == -1)
@@ -2112,12 +2117,12 @@ int main(int argc, char* argv[])
                                 else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
                                 {
                                     nCustomHealth = max(0, nCustomHealth - (bAPressed ? 1 : 100));
-                                    SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth);
+                                    SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth, nP1Controlled, nP2Controlled);
                                 }
                                 else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                                 {
                                     nCustomHealth = min(nCustomHealth + (bAPressed ? 1 : 100), MAX_HEALTH);
-                                    SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth);
+                                    SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth, nP1Controlled, nP2Controlled);
                                 }
 
                                 if (nOldThrowRecoveryIndex == -1)
@@ -5648,7 +5653,9 @@ int main(int argc, char* argv[])
                     nWriteBuffer = 1;
                     if (nExGuardSetting == eEnemyOffOnRandom::ON || (rand() % 2 == 0 && nExGuardSetting == eEnemyOffOnRandom::RANDOM))
                         nWriteBuffer = 10;
-                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2ExGuard), &nWriteBuffer, 4, 0);
+                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2ExGuard), &nWriteBuffer, 4, 0);
+                    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nP1Controlled);
+                    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nP2Controlled);
 
                     // Disable built-in health recovery
                     nWriteBuffer = 4;
@@ -5699,18 +5706,15 @@ int main(int argc, char* argv[])
                     // burst a combo
                     if (nHitsTillBurst != TOO_HIGH_TO_BURST)
                     {
-                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwComboCount), &nReadResult, 4, 0);
-                        int nComboCount = nReadResult;
-                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstopRemaining), &nReadResult, 1, 0);
-                        int nHitstopRemaining = nReadResult;
-                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstunRemaining), &nReadResult, 4, 0);
-                        int nHitstunRemaining = nReadResult;
+                        int nComboCount, nHitstopRemaining, nHitstunRemaining;
+                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwComboCount), &nComboCount, 4, 0);
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstopRemaining, &nHitstopRemaining, 4, nP2Controlled);
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 4, nP2Controlled);
                         if (nComboCount >= nHitsTillBurst && nHitstopRemaining == 0 && nHitstunRemaining != 0)
                         {
                             while (true)
                             {
-                                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstunRemaining), &nReadResult, 4, 0);
-                                nHitstunRemaining = nReadResult;
+                                ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 4, nP2Controlled);
                                 if (nHitstunRemaining == 0)
                                 {
                                     Sleep(16);  //need to wait 1 frame
@@ -5722,7 +5726,6 @@ int main(int argc, char* argv[])
                                 // mash the hell out of E
                                 nWriteBuffer = 1;
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2E), &nWriteBuffer, 1, 0);
-
                             }
                         }
                     }
@@ -5732,9 +5735,9 @@ int main(int argc, char* argv[])
                     nCustomGuard = nReadResult;
                     if (nFrameCounter == 1 && !CheckSave(nSaveSlot))
                     {
-                        SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon);
-                        SetGuard(hMBAAHandle, dwBaseAddress, nCustomGuard, nP1Moon, nP2Moon);
-                        SetGuard(hMBAAHandle, dwBaseAddress, 0, nP1Moon, nP2Moon);
+                        SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon, nP1Controlled, nP2Controlled);
+                        SetGuard(hMBAAHandle, dwBaseAddress, nCustomGuard, nP1Moon, nP2Moon, nP1Controlled, nP2Controlled);
+                        SetGuard(hMBAAHandle, dwBaseAddress, 0, nP1Moon, nP2Moon, nP1Controlled, nP2Controlled);
 
                         if (bPositionsLocked)
                         {
@@ -5751,16 +5754,19 @@ int main(int argc, char* argv[])
 
                     // infinite guard bar
                     if (bInfGuard)
-                        SetGuard(hMBAAHandle, dwBaseAddress, 0, nP1Moon, nP2Moon);
+                        SetGuard(hMBAAHandle, dwBaseAddress, 0, nP1Moon, nP2Moon, nP1Controlled, nP2Controlled);
 
                     // increase the counter every frame p2 is standing idle to delay regenerating health and char specifics
                     // taking an extra step to cap these at 20 to avoid any unexpected behavior if tmode is left running forever
                     //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstunRemaining), &nReadResult, 4, 0);
+                    /*ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstunRemaining), &nReadResult, 4, 0);
                     int nHitstunRemaining = nReadResult;
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-                    int nP2Pattern = nReadResult;
-                    //if (nReadResult == 0 || nReadResult == 13)
+                    int nP2Pattern = nReadResult;*/
+                    int nHitstunRemaining, nP2Pattern;
+                    ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 4, nP2Controlled);
+                    ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1PatternRead, &nP2Pattern, 4, nP2Controlled);
+
                     if (nHitstunRemaining == 0 && nP2Pattern != 350)
                     {
                         nHealthRefillTimer = 1;
@@ -5790,7 +5796,7 @@ int main(int argc, char* argv[])
                     // refill health if training mode is reset or long enough time has passed
                     if ((nFrameCounter == 1 && !CheckSave(nSaveSlot)) || (nHealthRefillTimer == 1 && bLifeRecover))
                     {
-                        SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth);
+                        SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth, nP1Controlled, nP2Controlled);
                         nHealthRefillTimer = 0;
                     }
 
@@ -5839,7 +5845,8 @@ int main(int argc, char* argv[])
                     if (nReversalType == REVERSAL_SHIELD && !bReversalKeyHeld)
                     {
                         nReadResult = 0;
-                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2ShieldType), &nReadResult, 1, 0);
+                        //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2ShieldType), &nReadResult, 1, 0);
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ShieldType, &nReadResult, 1, nP2Controlled);
                         if (nReadResult != 0)
                         {
                             std::vector<int> vValidReversals = (nP2Y == 0 ? vGroundReversals : vAirReversals);
@@ -5853,7 +5860,8 @@ int main(int argc, char* argv[])
                                         break;
                                 }
                                 nWriteBuffer = vValidReversals[nTempReversalIndex];
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2InputEvent), &nWriteBuffer, 4, 0);
+                                //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2InputEvent), &nWriteBuffer, 4, 0);
+                                WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1InputEvent, &nWriteBuffer, 4, nP2Controlled);
                             }
                             
                         }
@@ -5862,17 +5870,24 @@ int main(int argc, char* argv[])
                     {
                         // convoluted reversal pattern logic
                         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwBurstCooldown), &nReadResult, 1, 0);
+                        //ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwBurstCooldown - 0xAFC, &nBurstCooldown, 1, nP2Controlled);
                         nBurstCooldown = nReadResult;
 
-                        nReadResult = 0;
-                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstunRemaining), &nReadResult, 1, 0);
-                        int nHitstun = nReadResult;
+                        //nReadResult = 0;
+                        //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2HitstunRemaining), &nReadResult, 1, 0);
+                        //int nHitstun = nReadResult;
+                        uint8_t nHitstun;
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstun, 1, nP2Controlled);
 
-                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Y), &nReadResult, 4, 0);
+                        /*ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Y), &nReadResult, 4, 0);
                         nP2Y = nReadResult;
                         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMot), &nReadResult, 4, 0);
                         nOldMot = nMot;
-                        nMot = nReadResult;
+                        nMot = nReadResult;*/
+                        nOldMot = nMot;
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1Y, &nP2Y, 4, nP2Controlled);
+                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMot), &nMot, 4, 0);
+
                         if (nFrameCounter == 0)
                             bReversaled = true;
                         if (nFrameCounter == 2)
@@ -5925,7 +5940,10 @@ int main(int argc, char* argv[])
                                                 break;
                                         }
                                         nWriteBuffer = vValidReversals[nTempReversalIndex];
-                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternSet), &nWriteBuffer, 4, 0);
+                                        if (nP2Controlled == 1)
+                                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternSet), &nWriteBuffer, 4, 0);
+                                        else
+                                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP4PatternSet), &nWriteBuffer, 4, 0);
                                         nTempReversalDelayFrames = nReversalDelayFrames;
                                     }
                                 }
