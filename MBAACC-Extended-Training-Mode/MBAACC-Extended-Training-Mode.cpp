@@ -146,6 +146,7 @@ int main(int argc, char* argv[])
         int nArmorHighlightSetting = NO_HIGHLIGHT;
         int nThrowProtectionHighlightSetting = NO_HIGHLIGHT;
 
+        bool bFrameDataDisplay = false;
 
         int nHitsTillBurst = TOO_HIGH_TO_BURST;
 
@@ -423,6 +424,7 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDrawGround), &bDrawGround, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisableShadow), &bDisableShadow, 1, 0);
 
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplay), &bFrameDataDisplay, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFastReversePenalty), &bFastReversePenalty, 1, 0);
                     }
                 }
@@ -883,7 +885,7 @@ int main(int argc, char* argv[])
                             }
 
                             bool bIsHoveringScroll = false;
-                            if (nSettingsPage == FRAME_TOOL && nEnemySettingsCursor == 8)
+                            if (nSettingsPage == FRAME_TOOL && nEnemySettingsCursor == 5)
                             {
                                 bIsHoveringScroll = true;
                             }
@@ -957,7 +959,7 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcDisplayInputs_15, 15, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcScrollDisplay_15, 15, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcColorGuide_12, 12, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcDrawOnScreen_15, 15, 0);
 
                                 break;
                             }
@@ -1589,10 +1591,8 @@ int main(int argc, char* argv[])
                                 }
                                 case 5:
                                 {
-                                    char pcTemp64[64] = "Control the scroll on the frame display.";
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    strcpy_s(pcTemp64, ">{Press Left} and {Right} to move the frame display.");
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcBlank_64, 64, 0);
                                     break;
                                 }
                                 case 6:
@@ -1605,6 +1605,13 @@ int main(int argc, char* argv[])
                                 }
                                 case 8:
                                 {
+                                    char pcTemp64[64] = "Display game data on screen.";
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
+                                    if (bFrameDataDisplay)
+                                        strcpy_s(pcTemp64, ">Game data {will be displayed.");
+                                    else
+                                        strcpy_s(pcTemp64, ">Game data {will not be displayed");
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
                                 default:
@@ -1824,7 +1831,7 @@ int main(int argc, char* argv[])
                             }
                             case FRAME_TOOL:
                             {
-                                if (nOldEnemySettingsCursor == 6 && nEnemySettingsCursor == 8)
+                                /*if (nOldEnemySettingsCursor == 6 && nEnemySettingsCursor == 8)
                                 {
                                     nWriteBuffer = 10;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
@@ -1837,7 +1844,7 @@ int main(int argc, char* argv[])
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
                                     nEnemySettingsCursor = 6;
                                     nOldEnemySettingsCursor = 6;
-                                }
+                                }*/
                                 break;
                             }
                             case SAVE_STATE_PAGE:
@@ -2267,6 +2274,19 @@ int main(int argc, char* argv[])
                                         nBarScrolling--;
                                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
                                     }
+                                }
+
+                                if (nOldThrowRecoveryIndex == -1)
+                                    nOldThrowRecoveryIndex = nThrowRecoveryIndex;
+                                else if (nOldThrowRecoveryIndex > nThrowRecoveryIndex)// left
+                                {
+                                    bFrameDataDisplay = true;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplay), &bFrameDataDisplay, 1, 0);
+                                }
+                                else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
+                                {
+                                    bFrameDataDisplay = false;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplay), &bFrameDataDisplay, 1, 0);
                                 }
 
                                 break;
@@ -3332,8 +3352,6 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
-
-                                nWriteBuffer = OFFSCREEN_LOCATION;
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
 
@@ -3429,6 +3447,26 @@ int main(int argc, char* argv[])
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
                                     nAirRecoveryIndex = 2;
                                 }
+
+                                if (bFrameDataDisplay)
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryNormalString), &pcOn_3, 3, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcOn_3, 3, 0);
+
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nThrowRecoveryIndex = 0;
+                                }
+                                else
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomLateString), &pcOff_4, 4, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomRandomString), &pcOff_4, 4, 0);
+
+                                    nWriteBuffer = 6;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                    nThrowRecoveryIndex = 6;
+                                }
+
                                 break;
                             }
                             case SAVE_STATE_PAGE:
