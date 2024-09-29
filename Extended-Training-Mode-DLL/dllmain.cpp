@@ -1864,10 +1864,25 @@ void newPauseCallback2() {
 
 	static bool needPause = false;
 
-	if (oFrameStepKey.keyDown() && _naked_newPauseCallback2_IsPaused) {
+	/*if (oFrameStepKey.keyDown() && _naked_newPauseCallback2_IsPaused) {
 		needPause = true;
 		_naked_newPauseCallback2_IsPaused = false;
 	} else if (needPause) {
+		needPause = false;
+		_naked_newPauseCallback2_IsPaused = true;
+	}*/
+
+	if (oFrameStepKey.keyHeld())
+		oFrameStepKey.nHeldKeyCounter++;
+	else
+		oFrameStepKey.nHeldKeyCounter = 0;
+	if (_naked_newPauseCallback2_IsPaused && oFrameStepKey.keyDown() || oFrameStepKey.nHeldKeyCounter >= 20)
+	{
+		needPause = true;
+		_naked_newPauseCallback2_IsPaused = false;
+	}
+	else if (needPause)
+	{
 		needPause = false;
 		_naked_newPauseCallback2_IsPaused = true;
 	}
