@@ -2344,6 +2344,7 @@ void _drawLog() {
 
 bool debugMode = false;
 bool verboseMode = false;
+bool overkillVerboseMode = false;
 void _drawMiscInfo() {
 
 	static bool drawDebug = false;
@@ -2355,6 +2356,7 @@ void _drawMiscInfo() {
 
 	static KeyState F9Key(VK_F9);
 	static KeyState F8Key(VK_F8);
+	static KeyState F7Key(VK_F7);
 
 	float x;
 
@@ -2364,6 +2366,10 @@ void _drawMiscInfo() {
 
 	if (F8Key.keyDown()) {
 		verboseMode = !verboseMode;
+	}
+
+	if (F7Key.keyDown()) {
+		overkillVerboseMode = !overkillVerboseMode;
 	}
 	
 	if (debugMode) {

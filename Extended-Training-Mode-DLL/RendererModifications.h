@@ -39,6 +39,64 @@ void renderModificationsFrameDone() {
 	//textureAddrs.clear();
 }
 
+void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
+
+	
+
+	// -1 in this case means "not that type of object"
+	int playerIndex = -1;
+	int effectIndex = -1; 
+
+	
+
+	switch (info.object) {
+		case 0x00555140:
+			playerIndex = 0;
+			break;
+		case 0x00555C3C:
+			playerIndex = 1;
+			break;
+		case 0x00556738:
+			playerIndex = 2;
+			break;
+		case 0x00557234:
+			playerIndex = 3;
+			break;
+		default:
+			break;
+	}
+
+	if (playerIndex == -1 && info.object > 0x0067BDE8) { // check if this thing is an effect. remember that they start +0x10 from where they are in cheat table
+
+		if ((info.object - 0x0067BDF8) % 0x33C == 0) {
+			effectIndex = (info.object - 0x0067BDF8) / 0x33C;
+		}
+	}
+
+	if (playerIndex != -1) {
+
+		DWORD pattern = *(DWORD*)(info.object + 0x0);
+		DWORD state = *(DWORD*)(info.object + 0x4);
+
+		snprintf(buffer, buflen, "PLAYER%d\nP:%d\nS:%d", playerIndex, pattern, state);
+		return;
+	}
+
+	if (effectIndex != -1) {
+
+		DWORD pattern = *(DWORD*)(info.object + 0x0);
+		DWORD state = *(DWORD*)(info.object + 0x4);
+
+		snprintf(buffer, buflen, "EFFECT: %d\nP:%d\nS:%d", effectIndex, pattern, state);
+		return;
+	}
+
+
+	// default we dont know what this is case
+	snprintf(buffer, buflen, "???: %08X ", info.object);
+
+}
+
 // actual funcs
 
 DWORD listAppendHook_effectRetAddr = 0;
@@ -55,6 +113,63 @@ void drawLoopHook() {
 
 	if (!debugMode) {
 		return;
+	}
+
+
+	// before we setup all the stupid vertex shit, lets figure out what we are actually drawing here
+	DWORD lineCol = 0xFFFFFFFF;
+	LinkedListData info;
+
+	DWORD unknownTexAddr;
+	unknownTexAddr = *(DWORD*)(_naked_drawCallHook_ebx + 0x54);
+	unknownTexAddr = *(DWORD*)(unknownTexAddr + 0xC);
+
+	if (textureToObject.find(unknownTexAddr) != textureToObject.end()) {
+		info = textureToObject[unknownTexAddr];
+	}
+
+	bool hasExtraDetail = false;
+	static char extraDetail[512];
+
+	const char* infoString = "NULL";
+	switch (info.caller) {
+	case 0:
+		break;
+	default:
+		log("unknown ret %08X", info.caller);
+		break;
+	case 0x00415448:
+		infoString = "FUN_004153b0";
+		break;
+	case 0x00415572:
+		infoString = "DrawMenuCursor";
+		lineCol = 0xFFbd1a0b;
+		break;
+	case 0x004159f0:
+		infoString = "DrawEffectsTopUIandCharaSelect";
+		lineCol = 0xFF00FF00;
+		break;
+	case 0x00415b8d:
+		infoString = "DrawHitEffect";
+		break;
+	case 0x00415cd6:
+		infoString = "DrawBlur";
+		break;
+	case 0x00415ee5:
+		infoString = "DrawCharacterSelectBackground";
+		break;
+	case 0x0041619f:
+		infoString = "DrawCharactersAndBackground";
+		lineCol = 0xFF42e5f4;
+		hasExtraDetail = true;
+		describeObject(extraDetail, 512, info);
+		break;
+	case 0x0041621f:
+		infoString = "FUN_004161b0";
+		break;
+	case 0x00416583:
+		infoString = "RenderOnScreen";
+		break;
 	}
 	
 	/*
@@ -132,6 +247,13 @@ void drawLoopHook() {
 	VertexStreamZeroStride = *(DWORD*)(pVertexStreamZeroData + 0x10);
 
 	MeltyTestVert outVerts[4];
+	MeltyVertex firstOutVert;
+
+	if (ptrVertexStreamZeroData[ptrIndexData[0]].x > ptrVertexStreamZeroData[ptrIndexData[1]].x) {
+		firstOutVert = ptrVertexStreamZeroData[ptrIndexData[1]];
+	} else {
+		firstOutVert = ptrVertexStreamZeroData[ptrIndexData[0]];
+	}
 
 	if (vertFormat != 0x1C4 && vertFormat != 0) {
 		//log("vertFormat %08X", vertFormat);
@@ -207,7 +329,8 @@ void drawLoopHook() {
 				outVerts[i].position.z = v.z;
 				outVerts[i].rhw = v.rhw;
 
-				outVerts[i].color = 0x0000FF00 | 0xFF000000;
+				//outVerts[i].color = 0x0000FF00 | 0xFF000000;
+				outVerts[i].color = lineCol;
 
 				outVerts[i].position.x += topLeftPos.x;
 				outVerts[i].position.y += topLeftPos.y;
@@ -259,7 +382,7 @@ void drawLoopHook() {
 		*/
 
 		if (PrimitiveCountTestVar == 4) {
-			col = 0xFF00FFFF;
+			col = 0xFF42e5f4;
 		} else {
 			col = 0xFFFFFF00;
 		}
@@ -287,55 +410,17 @@ void drawLoopHook() {
 
 	//TextDraw(0, drawY, 6, 0xFFFFFFFF, "%4d %08X %08X %08X %08X %08X", linkedListLength, _naked_drawCallHook_ebx, unknown1, unknown2, unknown3, unknown4);
 
-	LinkedListData info;
+	
 
-	DWORD unknownTexAddr;
-	unknownTexAddr = *(DWORD*)(_naked_drawCallHook_ebx + 0x54);
-	unknownTexAddr = *(DWORD*)(unknownTexAddr + 0xC);
-
-	if (textureToObject.find(unknownTexAddr) != textureToObject.end()) {
-		info = textureToObject[unknownTexAddr];
+	if (hasExtraDetail && verboseMode) {
+		TextDraw(firstOutVert.x, firstOutVert.y, 6, lineCol, extraDetail);
 	}
 
-	const char* infoString = "NULL";
-	switch (info.caller) {
-	case 0:
-		break;
-	default:
-		log("unknown ret %08X", info.caller);
-		break;
-	case 0x00415448:
-		infoString = "FUN_004153b0";
-		break;
-	case 0x00415572:
-		infoString = "DrawMenuCursor";
-		break;
-	case 0x004159f0:
-		infoString = "DrawEffectsTopUIandCharaSelect";
-		break;
-	case 0x00415b8d:
-		infoString = "DrawHitEffect";
-		break;
-	case 0x00415cd6:
-		infoString = "DrawBlur";
-		break;
-	case 0x00415ee5:
-		infoString = "DrawCharacterSelectBackground";
-		break;
-	case 0x0041619f:
-		infoString = "DrawCharactersAndBackground";
-		break;
-	case 0x0041621f:
-		infoString = "FUN_004161b0";
-		break;
-	case 0x00416583:
-		infoString = "RenderOnScreen";
-		break;
+	if (overkillVerboseMode) {
+		//TextDraw(0, drawY, 6, col, "%4d %08X %08X %08X %08X %08X %08X %08X %08X %s", linkedListLength, PrimitiveType, NumVertices, PrimitiveCount, pIndexData, pVertexStreamZeroData, VertexStreamZeroStride, unknownTexAddr, info.object, infoString);
+		TextDraw(0, drawY, 6, lineCol, "%4d %08X %08X %s", linkedListLength, unknownTexAddr, info.object, infoString);
 	}
 
-	if (verboseMode) {
-		TextDraw(0, drawY, 6, col, "%4d %08X %08X %08X %08X %08X %08X %08X %08X %s", linkedListLength, PrimitiveType, NumVertices, PrimitiveCount, pIndexData, pVertexStreamZeroData, VertexStreamZeroStride, unknownTexAddr, info.object, infoString);
-	}
 
 	drawY += 6.0f;
 
@@ -350,7 +435,12 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 		listAppendHook_objAddr = listAppendHook_objAddr_pat;
 	}
 
-	textureToObject.insert({ listAppendHook_texAddr, {listAppendHook_objAddr, listAppendHook_callerAddr } });
+	/*
+	while (textureToObject.find(listAppendHook_texAddr) != textureToObject.end()) {
+		listAppendHook_texAddr++; // super janky, super weird
+	}*/
+
+	textureToObject.insert({ listAppendHook_texAddr, { listAppendHook_objAddr, listAppendHook_callerAddr } });
 
 	if (listAppendHook_effectRetAddr == 0x0045410F || listAppendHook_effectRetAddr_pat == 0x0045410F) {
 
