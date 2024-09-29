@@ -5968,6 +5968,18 @@ int main(int argc, char* argv[])
                         }
                     }
                     
+                    short sBlockHelper = 0;
+                    char cEnemyDefense = 0;
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyDefense), &cEnemyDefense, 1, 0);
+                    if (cEnemyDefense == 1 || cEnemyDefense == 2)
+                    {
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + adP1Base + adBlockHelper, &sBlockHelper, 2, nP2Controlled);
+                        if (sBlockHelper)
+                        {
+                            char c0 = 0;
+                            WriteCharacterMemory(hMBAAHandle, dwBaseAddress + adP1Base + adWillBlock, &c0, 1, nP2Controlled);
+                        }
+                    }
                   
                       
                     /*bSwitchToCrouch = false;
