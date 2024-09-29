@@ -232,7 +232,7 @@ VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontT
 VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 
 VertexData<MeltyTestVert, 3 * 4096> meltyTestVertData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
-VertexData<MeltyTestVert, 2 * 16384 / 2, D3DPT_LINELIST> meltyLineData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE); // 8192 is overkill
+VertexData<MeltyTestVert, 2 * 16384, D3DPT_LINELIST> meltyLineData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE); // 8192 is overkill
 
 // ----
 
@@ -374,6 +374,7 @@ bool loadResource(int id, BYTE*& buffer, unsigned& bufferSize) {
 	return true;
 }
 
+/*
 void _initDefaultFont(IDirect3DTexture9*& resTexture) {
 
 	resTexture = NULL;
@@ -502,6 +503,24 @@ void _initDefaultFont(IDirect3DTexture9*& resTexture) {
 	buffer->Release();
 
 	resTexture = texture;
+}
+*/
+
+void _initDefaultFont(IDirect3DTexture9*& resTexture) {
+	
+	HRESULT hr;
+
+	BYTE* pngBuffer = NULL;
+	unsigned pngSize = 0;
+	bool res = loadResource(IDB_PNG2, pngBuffer, pngSize);
+
+	hr = D3DXCreateTextureFromFileInMemory(device, pngBuffer, pngSize, &resTexture);
+	if (FAILED(hr)) {
+		log("font createtexfromfileinmem failed??");
+		resTexture = NULL;
+		return;
+	}
+
 }
 
 IDirect3DPixelShader9* getFontOutlinePixelShader() {
@@ -804,16 +823,16 @@ void _initFontFirstLoad() {
 	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
 
-	IDirect3DTexture9* fontTex = NULL;
-	_initDefaultFont(fontTex);
-	if (fontTex == NULL) {
+	//IDirect3DTexture9* fontTex = NULL;
+	_initDefaultFont(fontTexture);
+	if (fontTexture == NULL) {
 		return;
 	}
 
 	//_initDefaultFontOutline(fontTex);
 	_initMeltyFont();
 
-	fontTex->Release();
+	//fontTex->Release();
 
 	log("loaded font BUFFER!!!");
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
@@ -823,6 +842,7 @@ void initFont() {
 
 	_initFontFirstLoad();
 
+	/*
 	if (fontBuffer == NULL) {
 		log("initfont font buffer was null, dipping");
 		return;
@@ -832,6 +852,7 @@ void initFont() {
 		fontTexture->Release();
 		fontTexture = NULL;
 	}
+	*/
 
 	if (fontTextureWithOutline != NULL) {
 		fontTextureWithOutline->Release();
@@ -847,11 +868,11 @@ void initFont() {
 
 	// this texture is D3DPOOL_MANAGED, and so doesnt need a reset on every reset call! yipee
 	// going to be real tho, what guarentee do i have that it is????
-	hr = D3DXCreateTextureFromFileInMemory(device, fontBuffer, fontBufferSize, &fontTexture);
+	/*hr = D3DXCreateTextureFromFileInMemory(device, fontBuffer, fontBufferSize, &fontTexture);
 	if (FAILED(hr)) {
 		log("default font createtexfromfileinmem failed??");
 		return;
-	}
+	}*/
 	
 	/*
 	hr = D3DXCreateTextureFromFileInMemory(device, fontBufferWithOutline, fontBufferSizeWithOutline, &fontTextureWithOutline); // this texture is D3DPOOL_MANAGED, and so doesnt need a reset on every reset call! yipee
@@ -2545,6 +2566,11 @@ void __stdcall _doDrawCalls() {
 	res /= ((double)timeBufferLen);
 
 	if (shouldDrawHud) {
+		#ifdef NDEBUG 
+		//TextDraw(631, 0.0, 9, 0xFF42e5f4, "REL", res);
+		#else
+		TextDraw(500, 0.0, 9, 0xFFbd1a0b, "THIS IS A DEBUG BUILD", res);
+		#endif
 		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "%5.2lf", res);
 	}
 	

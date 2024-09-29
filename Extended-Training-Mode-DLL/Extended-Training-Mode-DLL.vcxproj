@@ -197,6 +197,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Common\DBGFNT02.png" />
+    <Image Include="..\Common\defaultFont.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

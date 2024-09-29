@@ -53,7 +53,7 @@ static uint8_t nSaveSlot = 0;
 static int nPlayerAdvantage;
 int nSharedHitstop;
 
-const int outBufferSize = 16384;
+const int outBufferSize = 16384 * 2;
 int outBufferIndex = 0;
 char outBuffer[outBufferSize];
 void writeBuffer(const char* fmt, ...) {
@@ -61,7 +61,7 @@ void writeBuffer(const char* fmt, ...) {
 	// combining all prints into one is very helpful in this case
 	
 	if (outBufferIndex > outBufferSize) {
-		netlog("writeBuffer size was not large enough???");
+		//netlog("writeBuffer size was not large enough???");
 		return;
 	}
 
