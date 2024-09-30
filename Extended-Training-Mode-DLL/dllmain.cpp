@@ -89,6 +89,7 @@ int nHighlightsOnKey;
 int nSaveStateKey;
 
 bool bFreeze = false;
+bool bSlow = false;
 bool bFrameDataDisplay = false;
 bool bHitboxesDisplay = false;
 bool bHighlightsOn = true;
@@ -199,6 +200,7 @@ static KeyState oFrameBarRightScrollKey;
 static KeyState oDecRNG;
 static KeyState oIncRNG;
 static KeyState oReversalKey;
+static KeyState oSlowKey;
 void setAllKeys()
 {
 	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
@@ -215,6 +217,7 @@ void setAllKeys()
 	oIncRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGIncKey));
 	oDecRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGDecKey));
 	oReversalKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedReversalKey));
+	oSlowKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSlowKey));
 }
 
 // patch funcs
@@ -1849,25 +1852,58 @@ __declspec(naked) void nakedFrameDoneCallback()
 }
 
 DWORD _naked_newPauseCallback2_IsPaused = 0;
-void newPauseCallback2() {
-
-
-	if (oFreezeKey.keyDown()) {
-		bFreeze = !bFreeze;
-		_naked_newPauseCallback2_IsPaused = !_naked_newPauseCallback2_IsPaused;
-	}
-
-	if (!bFreeze && oFrameStepKey.keyDown()) {
-		bFreeze = true;
-		_naked_newPauseCallback2_IsPaused = true;
-	}
+void newPauseCallback2()
+{
 
 	static bool needPause = false;
 
-	if (oFrameStepKey.keyDown() && _naked_newPauseCallback2_IsPaused) {
+	if (oFreezeKey.keyDown()) {
+		bFreeze = !bFreeze;
+		if (bFreeze)
+		{
+			bSlow = false;
+			_naked_newPauseCallback2_IsPaused = true;
+		}
+		else
+			_naked_newPauseCallback2_IsPaused = false;
+	}
+
+	else if (!bFreeze && oFrameStepKey.keyDown())
+	{
+		bFreeze = true;
+		bSlow = false;
+		_naked_newPauseCallback2_IsPaused = true;
+	}
+
+	if (!bFreeze)
+	{
+		if (*(uint8_t*)(dwBaseAddress + adSharedSlowSpeed))
+		{
+			bSlow = true;
+			_naked_newPauseCallback2_IsPaused = true;
+		}
+		else
+		{
+			bSlow = false;
+			needPause = false;
+			_naked_newPauseCallback2_IsPaused = false;
+		}
+	}
+	
+	static uint8_t nFrameNumber = 0;
+	nFrameNumber++;
+
+	if (oFrameStepKey.keyHeld())
+		oFrameStepKey.nHeldKeyCounter++;
+	else
+		oFrameStepKey.nHeldKeyCounter = 0;
+	if (_naked_newPauseCallback2_IsPaused && (oFrameStepKey.keyDown() || oFrameStepKey.nHeldKeyCounter >= 20 || (bSlow && nFrameNumber % 4 < *(uint8_t*)(dwBaseAddress + adSharedSlowSpeed))))
+	{
 		needPause = true;
 		_naked_newPauseCallback2_IsPaused = false;
-	} else if (needPause) {
+	}
+	else if (needPause)
+	{
 		needPause = false;
 		_naked_newPauseCallback2_IsPaused = true;
 	}
