@@ -1655,31 +1655,11 @@ IDirect3DPixelShader9* getOutlinePixelShader() {
 
 			float4 main(float2 texCoordIn : TEXCOORD0) : COLOR {
 
-					//float4 tempCol = tex2D(textureSampler, texCoordIn);
-					//
-					//return float4(tempCol.rgb, tempCol.a * 0.25);
-
-					// for unknown reasons, this now doesnt mess with performance
-					// maybe bc the total number of draws on the texture is lower?
-
-					// while the rest of this shader worked, it fucks performance
-					// drawing the lines with their own tris is probs better than this.
-					// or maybe this is a more CPU problem rather than GPU.
-					// i do have all the coords for the rects. anyway
-	
-					// are pixel's positions in the center of pixel or top left???
-					// they are top left.
-					
 					float2 texOffset = 1.0 / texSize;
-	
-					// THIS LINE IS CORRECT. 
-					texOffset.y /= (4.0 / 3.0);
 
-					// move the tex coord into the "center" of the pixel, should it be plus or minus???
-					float2 texCoord = texCoordIn + (texOffset * 0.5);
+					texOffset.y /= (4.0 / 3.0); // THIS LINE IS CORRECT. 
 
-					
-					//texOffset *= 16.0;
+					float2 texCoord = texCoordIn + (texOffset * 0.5); // move the tex coord into the "center" of the pixel, should it be plus or minus???
 					
 					float4 texColor = tex2D(textureSampler, texCoord);
 				
@@ -1873,7 +1853,24 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	device->SetRenderTarget(0, renderTargetSurf);
 
 	// might need to do this?
-	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	//device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	// one could save, possibly time, but only clearing what needs to be cleared.
+	// but is it worth?
+
+	//device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	
+	/*
+	static D3DRECT needClearRects[32];
+	static unsigned needClearRectsIndex = 0;
+	if (needClearRectsIndex != 0) {
+		device->Clear(needClearRectsIndex, &needClearRects[0], D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+		needClearRectsIndex = 0;
+	}*/
+
+	static D3DRECT clearRect = { 0, 0, width, height };
+	device->Clear(1, &clearRect, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	
+	clearRect = { width, height, 0, 0 }; // these are the hypothetical opposite max/min values each could have
 
 	static IDirect3DPixelShader9* pColorShader = NULL;
 	static IDirect3DVertexShader9* vColorShader = NULL;
@@ -1896,6 +1893,19 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 
 		float w = boxList[i].w / 640.0f;
 		float h = boxList[i].h / 480.0f;
+
+		clearRect.x1 = MIN(clearRect.x1, floor(x * width));
+		clearRect.y1 = MIN(clearRect.y1, floor( (1 - y) * height));
+		clearRect.x2 = MAX(clearRect.x2, ceil(width * (x + w)));
+		clearRect.y2 = MAX(clearRect.y2, ceil(height * ((1 - y) + h)));
+
+		/*
+		needClearRects[needClearRectsIndex].x1 = floor(x * width);
+		needClearRects[needClearRectsIndex].y1 = floor( (1 - y)* height);
+		needClearRects[needClearRectsIndex].x2 = ceil(width * (x + w));
+		needClearRects[needClearRectsIndex].y2 = ceil(height * ((1 - y) + h));
+		needClearRectsIndex++;
+		*/
 
 		PosVert v1 = { ((x + 0) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f };
 		PosVert v2 = { ((x + w) * 2.0f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f };

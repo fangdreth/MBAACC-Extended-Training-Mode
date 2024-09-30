@@ -2325,6 +2325,7 @@ void drawBackgroundLine() {
 	y1Cord = ((float)y1Cord * (480.0f / windowHeight));
 	y2Cord = ((float)y2Cord * (480.0f / windowHeight));
 
+	// this is one of the only justified uses of this func
 	drawRect(0, (int)y2Cord, 640, 1, 0xFF42e5f4, 0x10C);
 
 }
