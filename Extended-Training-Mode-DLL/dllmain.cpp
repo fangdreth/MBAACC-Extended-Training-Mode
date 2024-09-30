@@ -1868,8 +1868,10 @@ void newPauseCallback2()
 			_naked_newPauseCallback2_IsPaused = false;
 	}
 
-	else if (!bFreeze && oFrameStepKey.keyDown()) {
+	else if (!bFreeze && oFrameStepKey.keyDown())
+	{
 		bFreeze = true;
+		bSlow = false;
 		_naked_newPauseCallback2_IsPaused = true;
 	}
 
