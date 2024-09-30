@@ -43,6 +43,7 @@ uint8_t nFrameBarScrollRightKey = nDefaultFrameBarScrollRightKey;
 uint8_t nRNGIncKey = nDefaultRNGIncKey;
 uint8_t nRNGDecKey = nDefaultRNGIncKey;
 uint8_t nReversalKey = nDefaultReversalKey;
+uint8_t nSlowKey = nSlowKey;
 
 bool bFreezeKeySet = false;
 bool bFrameStepKeySet = false;
@@ -57,6 +58,7 @@ bool bFrameBarScrollRightKeySet = false;
 bool bRNGIncKeySet = false;
 bool bRNGDecKeySet = false;
 bool bReversalKeySet = false;
+bool bSlowKeySet = false;
 
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;

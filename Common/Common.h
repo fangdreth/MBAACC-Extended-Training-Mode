@@ -32,6 +32,7 @@ enum eRNGMode { RNG_OFF, RNG_SEED, RNG_RN };
 enum eRNGRate { RNG_EVERY_FRAME, RNG_EVERY_RESET };
 enum eHitboxStyle { HITBOX_DRAW_ALL, HITBOX_BLEND };
 enum eBackground { BG_NORMAL, BG_WHITE, BG_GRAY, BG_BLACK, BG_RED, BG_GREEN, BG_BLUE, BG_PURPLE, BG_YELLOW };
+enum eSlow { SLOW_THREE_FOURTHS = 3, SLOW_ONE_HALF = 2, SLOW_ONE_FOURTH = 1 };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
@@ -351,27 +352,29 @@ const ADDRESS adSharedDisableHUD =					adShareBase + 0x1A; // 1 byte
 const ADDRESS adSharedDrawGround =					adShareBase + 0x1B; // 1 byte
 const ADDRESS adSharedDisableShadow =				adShareBase + 0x1C; // 1 byte
 const ADDRESS adSharedFastReversePenalty =			adShareBase + 0x1D; // 1 byte
-const ADDRESS adSharedFrameDataDisplay =					adShareBase + 0x1E; // 1 byte
+const ADDRESS adSharedFrameDataDisplay =			adShareBase + 0x1E; // 1 byte
+const ADDRESS adSharedSlowSpeed =					adShareBase + 0x1F; // 1 byte
 
-const ADDRESS adSharedFreezeKey =					adShareBase + 0x20;	// 1 byte
-const ADDRESS adSharedFrameStepKey =				adShareBase + 0x21;	// 1 byte
-const ADDRESS adSharedHitboxesDisplayKey =			adShareBase + 0x22;	// 1 byte
-const ADDRESS adSharedFrameDataDisplayKey =			adShareBase + 0x23;	// 1 byte
-const ADDRESS adSharedHighlightsOnKey =				adShareBase + 0x24;	// 1 byte
-const ADDRESS adSharedSaveStateKey =				adShareBase + 0x25;	// 1 byte
-const ADDRESS adSharedPrevSaveSlotKey =				adShareBase + 0x26;	// 1 byte
-const ADDRESS adSharedNextSaveSlotKey =				adShareBase + 0x27;	// 1 byte
-const ADDRESS adSharedFrameBarScrollLeftKey =		adShareBase + 0x28;	// 1 byte
-const ADDRESS adSharedFrameBarScrollRightKey =		adShareBase + 0x29;	// 1 byte
-const ADDRESS adSharedRNGIncKey =					adShareBase + 0x2A; // 1 byte
-const ADDRESS adSharedRNGDecKey =					adShareBase + 0x2B; // 1 byte
-const ADDRESS adSharedReversalKey =					adShareBase + 0x2C; // 1 byte
+const ADDRESS adSharedFreezeKey =					adShareBase + 0x30;	// 1 byte
+const ADDRESS adSharedFrameStepKey =				adShareBase + 0x31;	// 1 byte
+const ADDRESS adSharedHitboxesDisplayKey =			adShareBase + 0x32;	// 1 byte
+const ADDRESS adSharedFrameDataDisplayKey =			adShareBase + 0x33;	// 1 byte
+const ADDRESS adSharedHighlightsOnKey =				adShareBase + 0x34;	// 1 byte
+const ADDRESS adSharedSaveStateKey =				adShareBase + 0x35;	// 1 byte
+const ADDRESS adSharedPrevSaveSlotKey =				adShareBase + 0x36;	// 1 byte
+const ADDRESS adSharedNextSaveSlotKey =				adShareBase + 0x37;	// 1 byte
+const ADDRESS adSharedFrameBarScrollLeftKey =		adShareBase + 0x38;	// 1 byte
+const ADDRESS adSharedFrameBarScrollRightKey =		adShareBase + 0x39;	// 1 byte
+const ADDRESS adSharedRNGIncKey =					adShareBase + 0x3A; // 1 byte
+const ADDRESS adSharedRNGDecKey =					adShareBase + 0x3B; // 1 byte
+const ADDRESS adSharedReversalKey =					adShareBase + 0x3C; // 1 byte
+const ADDRESS adSharedSlowKey =						adShareBase + 0x3D; // 1 byte
 
-const ADDRESS adSharedIdleHighlight =				adShareBase + 0x40; // 4 bytes
-const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x44; // 4 bytes
-const ADDRESS adSharedHitHighlight =				adShareBase + 0x48; // 4 bytes
-const ADDRESS adSharedArmorHighlight =				adShareBase + 0x4C; // 4 bytes
-const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x50; // 4 bytes
+const ADDRESS adSharedIdleHighlight =				adShareBase + 0x50; // 4 bytes
+const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x54; // 4 bytes
+const ADDRESS adSharedHitHighlight =				adShareBase + 0x58; // 4 bytes
+const ADDRESS adSharedArmorHighlight =				adShareBase + 0x5C; // 4 bytes
+const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x60; // 4 bytes
 
 const ADDRESS adSharedMessageBuffer =				adShareBase + 0x100; // 32 bytes
 const ADDRESS adSharedOnExtendedSettings =			adShareBase + 0x120; // 1 byte
@@ -466,6 +469,10 @@ const char pcStandard_9[9] = "STANDARD";
 const char pcExtended_9[9] = "EXTENDED";
 const char pcReversal_9[9] = "REVERSAL";
 const char pcDrawOnScreen_15[15] = "DRAW ON SCREEN";
+const char pcSlowMotion_12[12] = "SLOW MOTION";
+const char pcThreeFourths_4[4] = "3/4";
+const char pcOneHalf_4[4] = "1/2";
+const char pcOneFourth_4[4] = "1/4";
 
 const char pcReversals_10[10] = "REVERSALS";
 const char pcTraining_9[9] = "TRAINING";
@@ -631,6 +638,7 @@ const uint8_t nDefaultFrameBarScrollRightKey = VK_KEY_UNSET;
 const uint8_t nDefaultRNGIncKey = VK_KEY_UNSET;
 const uint8_t nDefaultRNGDecKey = VK_KEY_UNSET;
 const uint8_t nDefaultReversalKey = VK_KEY_UNSET;
+const uint8_t nDefaultSlowKey = VK_KEY_UNSET;
 
 class KeyState
 {
