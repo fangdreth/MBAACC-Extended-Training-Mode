@@ -2189,6 +2189,64 @@ __declspec(naked) void _naked_updateEffectsPauseLoop2() {
 	};
 }
 
+DWORD _naked_pauseHitEffectsHook_pauseVal = 0;
+__declspec(naked) void _naked_pauseHitEffectsHook() {
+
+	__asm {
+		// backup the game's pause state
+		push eax;
+
+		//mov al, byte ptr [0055d203h]; // generates mov al, 03. how???
+		mov al, ds: [0055d203h];
+		mov _naked_pauseHitEffectsHook_pauseVal, eax;
+		
+		pop eax;
+	}
+
+	__asm {
+		// overwritten asm
+		push ebp;
+		mov ebp, esp;
+		and esp, 0fffffff8h;
+
+		cmp _naked_newPauseCallback2_IsPaused, 0;
+		JE _SKIP;
+
+		// we are paused. make the game think so.
+		//push eax;
+		//mov eax, 1;
+		//mov ds:[0055d203h], al; // i despise masm. shoutout to a random stackoverflow post that said "oh yea the assembler will be sane if you ds:" for some reason
+		mov ds:[0055d203h], 1;
+		//pop eax;
+
+	_SKIP: // act right
+		push 00458e86h;
+		ret;
+	}
+}
+
+__declspec(naked) void _naked_pauseHitEffectsCallback() {
+	
+	
+	// restore the game's pause state
+	__asm {
+		push eax;
+
+		mov eax, _naked_pauseHitEffectsHook_pauseVal;
+		mov	ds:[0055d203h], al;
+
+		pop eax;
+	}
+	
+
+	__asm { // overwritten code at 0045ca27
+		pop ebx;
+		mov esp, ebp;
+		pop ebp;
+		ret;
+	}
+}
+
 void drawSolidBackground() {
 
 	if (backgroundColor == 0xFF000000) {
@@ -2732,6 +2790,10 @@ void initNewPauseCallback() {
 	//patchJump(0x00453d57, _naked_updateEffectsPause);
 	patchJump(0x00453b92, _naked_updateEffectsPauseLoop1);
 	patchJump(0x00453d60, _naked_updateEffectsPauseLoop2);
+
+	// IT IS CRITICAL THAT WE HOOK THE START, AND NOT OVERWRITE THE CALL OF THIS FUNC, IN ORDER TO PRESERVE RET ADDRS PROPERLY!
+	patchJump(0x00458e80, _naked_pauseHitEffectsHook);
+	patchJump(0x0045ca27, _naked_pauseHitEffectsCallback);
 
 }
 

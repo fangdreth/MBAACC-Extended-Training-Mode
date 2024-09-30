@@ -106,6 +106,9 @@ DWORD listAppendHook_texAddr = 0;
 DWORD listAppendHook_effectRetAddr_pat = 0;
 DWORD listAppendHook_objAddr_pat = 0;
 
+DWORD listAppendHook_hitEffectRetAddr = 0;
+DWORD listAppendHook_objAddr_hit = 0;
+
 DWORD listAppendHook_callerAddr = 0;
 
 DWORD _naked_drawCallHook_ebx;
@@ -151,6 +154,7 @@ void drawLoopHook() {
 		break;
 	case 0x00415b8d:
 		infoString = "DrawHitEffect";
+		lineCol = 0xFFF4AA42;
 		break;
 	case 0x00415cd6:
 		infoString = "DrawBlur";
@@ -435,6 +439,30 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 		listAppendHook_objAddr = listAppendHook_objAddr_pat;
 	}
 
+	if (listAppendHook_hitEffectRetAddr == 0x0042389C) {
+		listAppendHook_objAddr = 0x0061E170 + (listAppendHook_objAddr_hit * 0x60);
+	}
+
+	/*
+	
+	0061e230
+	0061e290
+	0061e2F0
+
+	check out 00415b88 in ghidra. 
+	there is most definitely a format for hit effects. figure it out!
+	whats the base addr for the array?
+	0061E170? (almost def it)
+
+	size is,, 0x60, i think
+	array length is,,, 4000?
+	0x0061E170 + (0x60 * 4000) = 0x67bd70, below the start addr for effects at ~ 0x67BDE8
+	oh god i dont know if this is the actual base offset for this thing or if its +-0x10
+
+	
+
+	*/
+
 	/*
 	while (textureToObject.find(listAppendHook_texAddr) != textureToObject.end()) {
 		listAppendHook_texAddr++; // super janky, super weird
@@ -478,7 +506,6 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 			}
 			
 			textureAddrs.insert(listAppendHook_texAddr);
-
 		}
 	}
 }
@@ -547,7 +574,7 @@ __declspec(naked) void _naked_drawCallHook() {
 }
 
 DWORD _naked_listAppendHook_reg;
-__declspec(naked) void _naked_listAppendHook() {
+__declspec(naked) void _naked_listAppendHook() { // at 0x004c026b
 
 	__asm {
 		mov listAppendHook_texAddr, eax;
@@ -564,10 +591,15 @@ __declspec(naked) void _naked_listAppendHook() {
 
 		mov eax, [esp + 500h];
 		mov listAppendHook_effectRetAddr_pat, eax;
-		
-		// i should also add in things for,,, drawing the chars??
-		// and other things i dont know the addrs for
 
+		// this is for hit effects, 0042389C
+		// i could also use +C0 for 0045a77a drawhiteffectwrapper?
+		mov eax, [esp + 30Ch];
+		mov listAppendHook_hitEffectRetAddr, eax;
+		// as for, how im getting the actual drawn hit. im not sure if its addr is on the stack. im going to just get the loop index
+		mov eax, [esp + 1ECh];
+		mov listAppendHook_objAddr_hit, eax;
+		
 
 		mov eax, listAppendHook_texAddr;
 	};
