@@ -1875,21 +1875,6 @@ void newPauseCallback2()
 		_naked_newPauseCallback2_IsPaused = true;
 	}
 
-	/*else if (oSlowKey.keyDown())
-	{
-		bSlow = !bSlow;
-		
-		if (bSlow)
-		{
-			bFreeze = false;
-			_naked_newPauseCallback2_IsPaused = true;
-		}
-		else
-		{
-			_naked_newPauseCallback2_IsPaused = false;
-			needPause = false;
-		}
-	}*/
 	if (!bFreeze)
 	{
 		if (*(uint8_t*)(dwBaseAddress + adSharedSlowSpeed))
