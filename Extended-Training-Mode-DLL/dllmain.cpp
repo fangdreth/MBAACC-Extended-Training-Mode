@@ -157,6 +157,33 @@ __asm pop ebp		   \
 __asm pop esp		   \
 }
 
+// this was needed due to the preprocessor being a bitch and not accepting multiple emits on the same line
+// i have had so many issues with the way this compiler works
+#define emitByte(b) __asm _emit b;
+#define emitWord(b) \
+    __asm { _emit b & 0xFF } \
+    __asm { _emit b >> 8 } 
+#define emitDword(b) \
+    __asm { _emit b & 0xFF } \
+    __asm { _emit (b & 0xFF00) >> 8 } \
+    __asm { _emit (b & 0xFF0000) >> 16 } \
+    __asm { _emit (b & 0xFF000000) >> 24 } 
+// if i wanted to make tolerable jump things that didnt use a variable, i would have to use a dummy call, and read the EIP from there, just to do one fucking call
+// wait. i can only jump from reads from addresses, not addresses. 
+// can i use eip as a addr?
+// or tbh, i can just use pushes and be real weird about it
+// ugh 
+
+#define emitCall(addr) \
+    __asm { push omfg__LINE__ } \
+	__asm { push addr } \
+    __asm { ret } \
+    __asm { omfg__LINE__: }
+
+#define emitJump(addr) \
+	__asm { push addr } \
+    __asm { ret }
+
 std::array<uint8_t, 4> arrDefaultHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrIdleHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrBlockingHighlightSetting({ 255, 255, 255, 0 });
@@ -2283,6 +2310,21 @@ __declspec(naked) void _naked_pauseHitEffectsCallback() {
 	}
 }
 
+__declspec(naked) void _naked_preventPauseReset() {
+	__asm {
+
+		cmp _naked_newPauseCallback2_IsPaused, 1;
+		JE _SKIP;
+
+		emitCall(0x00478590);
+
+	_SKIP:
+
+		emitJump(0x00477eb8);
+	}
+
+}
+
 void drawSolidBackground() {
 
 	if (backgroundColor == 0xFF000000) {
@@ -2823,6 +2865,8 @@ void initNewPauseCallback() {
 	patchJump(0x0044c48e, _naked_pauseMenuProcessInput2);
 
 	patchJump(0x0044c7b0, _naked_trigPauseHook);
+
+	//patchJump(0x00477eb3, _naked_preventPauseReset);
 
 	//patchJump(0x00453d57, _naked_updateEffectsPause);
 	patchJump(0x00453b92, _naked_updateEffectsPauseLoop1);
