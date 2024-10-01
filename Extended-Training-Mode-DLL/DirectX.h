@@ -98,6 +98,7 @@ public:
 
 	~VertexData() {
 		_vertexBytesTotal -= vertexCount * sizeof(T);
+
 		if (vertexBuffer != NULL) {
 			vertexBuffer->Release();
 		}
@@ -152,7 +153,7 @@ public:
 		_vertexBytesTransferedThisFrame += vertexIndex * sizeof(T);
 
 		vertexBuffer->Lock(0, vertexIndex * sizeof(T), (void**)&pVoid, 0);
-		memcpy(pVoid, vertexData, vertexIndex * sizeof(T));
+		memcpy(pVoid, &vertexData[0], vertexIndex * sizeof(T));
 		vertexBuffer->Unlock();
 
 		DWORD primCount = vertexIndex;
@@ -945,6 +946,7 @@ DWORD _D3DRS_MULTISAMPLEANTIALIAS;
 DWORD _D3DRS_ALPHATESTENABLE;
 DWORD _D3DRS_ALPHAREF;
 DWORD _D3DRS_ALPHAFUNC;
+D3DMATRIX _D3DTS_VIEW;
 
 float vWidth = 640;
 float vHeight = 480;
@@ -1019,77 +1021,9 @@ void __stdcall backupRenderState() {
 	device->GetRenderState(D3DRS_ALPHAREF, &_D3DRS_ALPHAREF);
 	device->GetRenderState(D3DRS_ALPHAFUNC, &_D3DRS_ALPHAFUNC);
 
-	// 1 1 5 6 1 5 2
-
-	//log("%d %d %d %d %d %d %d", _D3DRS_BLENDOP, _D3DRS_ALPHABLENDENABLE, _D3DRS_SRCBLEND, _D3DRS_DESTBLEND, _D3DRS_SEPARATEALPHABLENDENABLE, _D3DRS_SRCBLENDALPHA, _D3DRS_DESTBLENDALPHA);
-
-
-	
-	
-	// good
-	
-	/*
-	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-
-	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
-	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_SRCALPHA);
-	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ONE);
-	*/
-	
-	/*
-	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-	//device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_SUBTRACT);
-	//device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT);
-
-	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	//device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA); // mult the input by the source alpha 
-	//device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA); // in the event that there is 0 alpha black, invsrcalpha will make it such taht it instead uses the dest color
-
-	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR);
-	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
-
-	device->SetRenderState(D3DRS_BLENDOPALPHA, D3DBLENDOP_ADD);
-
-	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
-	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
-	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
-	*/
-	
-
-
-	/*
-	device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-
-	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
-
-	device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
-	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
-	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
-	*/
-
-	//device->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	
-
-	//device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTSS_COLORARG1);
-	//device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-
-	// set state to "normal"
-	// these are just directx defaults. i have no idea if they are the best case.
 	device->SetPixelShader(NULL);
 	device->SetVertexShader(NULL);
 	device->SetTexture(0, NULL);
-
-	// this should be done with a matrix transform!
-	// D3DXMatrixOrthoLH(
-	// D3DXMatrixPerspectiveFovLH
-	// device->SetTransform(
-	// this works well enough tho
 
 	D3DVIEWPORT9 viewport;
 	device->GetViewport(&viewport);
@@ -1119,156 +1053,39 @@ void __stdcall backupRenderState() {
 		factor.y = (wWidth / ratio) / wHeight;
 	}
 
-	// caster messes with the world projection and perspective, and idek view port matrix stuff
-	// check https://learn.microsoft.com/en-us/windows/win32/api/d3d9/nf-d3d9-idirect3ddevice9-gettransform, fix it
-
-	
-
 	renderModificationFactor.x = 1.0f;
 	renderModificationFactor.y = 1.0f;
 
 	renderModificationFactor.x = (vHeight * (4.0f / 3.0f)) / 640.0f;
 	renderModificationFactor.y = (vWidth / (4.0f / 3.0f)) / 480.0f;
-	
-	//renderModificationFactor.x = (vHeight * (4.0f / 3.0f)) / (vWidth);
-	//renderModificationFactor.y = (vWidth / (4.0f / 3.0f)) / (vHeight);
 
 	renderModificationFactor.x *= factor.x;
 	renderModificationFactor.y *= factor.y;
 
-	// figureing all this out has taken way to long due to my "just fuck with the numbers it will work eventually" attitude
-	/*
-	if (isWide) {
-		renderModificationFactor.x = (vHeight * (4.0f / 3.0f)) / (vWidth);
-	} else {
-		renderModificationFactor.y = (vWidth / (4.0f / 3.0f)) / (vHeight);
-	}
-	*/
-	//renderModificationFactor.x = (vHeight * (4.0f / 3.0f)) / (vWidth * 640.0f);
-	//renderModificationFactor.y = (vWidth / (4.0f / 3.0f))  / (vHeight * 480.0f);	
-
-
 	topLeftPos.x = 0.0f;
 	topLeftPos.y = 0.0f;
 
-	// the texture that melty uses internally for rendering the fucking game is 1024 by 512 due to directx fuckery.
-	// i surrender. this will only work in 4/3, but its debug so who cares
-	// nvm
-	// im brute forcing it
-	// ugh
-	/*
-	
-	all done booting in 4/3 1440 1050
-	
-
-	
-	130.000000,0.710195,1.000000,1455.000000,775.000000,1400.000000,1050.000000
-	394.000000,0.447149,1.000000,1479.000000,496.000000,1400.000000,1050.000000
-	248.000000,0.562412,1.000000,1183.000000,499.000000,1400.000000,1050.000000
-	81.000000,0.795480,1.000000,1180.000000,704.000000,1400.000000,1050.000000
-	68.000000,0.824839,1.000000,1138.000000,704.000000,1400.000000,1050.000000
-	404.000000,0.441711,1.000000,1138.000000,377.000000,1400.000000,1050.000000
-	637.000000,0.334665,1.000000,1502.000000,377.000000,1400.000000,1050.000000
-	60.000000,0.842432,1.000000,1502.000000,949.000000,1400.000000,1050.000000
-	25.000000,0.925628,1.000000,1367.000000,949.000000,1400.000000,1050.000000
-	1001.000000,0.241892,1.000000,1367.000000,248.000000,1400.000000,1050.000000
-	1265.000000,0.201902,1.000000,1367.000000,207.000000,1400.000000,1050.000000
-	1576.000000,0.168739,1.000000,1367.000000,173.000000,1400.000000,1050.000000
-
-
-	1547.000000,0.410632,1.000000,1367.000000,421.000000,1400.000000,1050.000000
-	-10.000000,0.410632,1.000000,1367.000000,421.000000,1400.000000,1050.000000
-
-	this one also went to -10. ???
-	848.000000,0.741283,1.000000,1367.000000,760.000000,1400.000000,1050.000000
-
-
-	1178.000000,0.537430,1.000000,1367.000000,551.000000,1400.000000,1050.000000
-
-	*/
-
-	/*
-	static KeyState upKey(VK_UP);
-	static KeyState downKey(VK_DOWN);
-	static KeyState writeKey(VK_RCONTROL);
-
-	static float idkX = 0.0;
-
-	if (upKey.keyHeld()) {
-		idkX += 1.0f;
-	}
-
-	if (downKey.keyHeld()) {
-		idkX -= 1.0f;
-	}
-
-	static char buffer[256];
-
-	TextDraw(0, 0, 24, 0xFFFFFFFF, "%7.3f", idkX);
-
-	if (writeKey.keyDown()) {
-		snprintf(buffer, 256, "%f,%f,%f,%f,%f,%f,%f", idkX, factor.x, factor.y, wWidth, wHeight, vWidth, vHeight);
-	
-		writeClipboard(std::string(buffer));
-	}
-	*/
-
 	if (isWide) {
-		//topLeftPos.x = (wWidth - (wHeight * ratio)) / 1.0f;
-		//topLeftPos.x = 0.0f;
-		//topLeftPos.x = (wWidth - (wHeight * ratio)) / 2.0f;
-		//topLeftPos.x = (vWidth - ((wWidth / wHeight) * vHeight)) / 2.0f;
-		
-		
-		//topLeftPos.x = idkX;
-
-		// how does this work? why does this work? ask your gods. they wont answer
 		topLeftPos.x = 640.0f / factor.x;	
 		topLeftPos.x *= (wWidth - (wHeight * ratio)) / (2.0f * wWidth);
 
 	} else {
-		//topLeftPos.y = (wHeight - (wWidth / ratio)) / 2.0f;
-		//topLeftPos.y *= 1.5f;
-		//topLeftPos.y /= wHeight;
-		//topLeftPos.y *= 480.0f;
-
-		//topLeftPos.y /= (vWidth / wWidth);
-		//topLeftPos.y = wHeight / 4.0f;
-
-		//topLeftPos.y /= factor.y;
-		//topLeftPos.y /= 2.0f;
-
-
 		topLeftPos.y = 480.0f / factor.y;
 		topLeftPos.y *= (wHeight - (wWidth / ratio)) / (2.0f * wHeight);
 	}
 
-	//log("%7.3f %7.3f %5.2f %5.2f %5.2f %5.2f", topLeftPos.x, topLeftPos.y, vWidth, vHeight, wWidth, wHeight);
-	
+	// this deals with caster setting the transform matrices. they only seem to use the view matrix? but it would maybe be good to do the others
+	device->GetTransform(D3DTS_VIEW, &_D3DTS_VIEW);
 
+	const D3DMATRIX defaultViewMatrix = {
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	};
 
-	//device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-	//device->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-	//device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-	//device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
-	//device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, true);
-	///device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
-	//device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
+	device->SetTransform(D3DTS_VIEW, &defaultViewMatrix);
 
-	/*
-	device->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-
-	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-	device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);  
-	device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ZERO);
-
-	device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTSS_COLORARG1);
-	device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-	*/
-	//device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTSS_COLORARG1);
-	//device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
 
 }
 	
@@ -1308,6 +1125,8 @@ void __stdcall restoreRenderState() {
 	device->SetRenderState(D3DRS_ALPHATESTENABLE, _D3DRS_ALPHATESTENABLE);
 	device->SetRenderState(D3DRS_ALPHAREF, _D3DRS_ALPHAREF);
 	device->SetRenderState(D3DRS_ALPHAFUNC, _D3DRS_ALPHAFUNC);
+
+	device->SetTransform(D3DTS_VIEW, &_D3DTS_VIEW);
 
 }
 
