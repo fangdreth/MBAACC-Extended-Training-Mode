@@ -2812,9 +2812,9 @@ public:
 			int index = (i + inputIndex) % 24;
 
 			TextDrawSimple(xVal, yVal, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
-			TextDraw(xVal + 40, yVal, 13, 0xFFFFFFFF, "%3d", inputs[index].length);
+			TextDraw(xVal + 55, yVal, 13, 0xFFFFFFFF, "%3d", inputs[index].length);
 
-			RectDraw(xVal, yVal, 75, 12, 0xA0000000);
+			RectDraw(xVal, yVal, 90, 12, 0x40000000);
 			yVal += 13;
 		}
 
@@ -2834,7 +2834,7 @@ public:
 };
 
 InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f);
-InputColumn P2InputBar(0x00555C30 + 0x02E7, 550.0f);
+InputColumn P2InputBar(0x00555C30 + 0x02E7, 545.0f);
 
 void dualInputDisplay() {
 
