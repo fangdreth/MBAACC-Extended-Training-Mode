@@ -56,6 +56,7 @@ typedef uint32_t uint;
 void enemyReversal();
 void frameStartCallback();
 void dualInputDisplayReset();
+void doFastReversePenalty();
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
@@ -392,7 +393,7 @@ void __stdcall log(const char* format, ...) {
 	DrawLog(buffer);
 }
 
-// actual functions 
+// legacy melty draw funcs
 
 extern "C" int asmDrawText(int w, int h, int x, int y, const char* text, int alpha, int shade, int layer, void* addr, int spacing, int idek, char* out);
 
@@ -630,7 +631,7 @@ void __stdcall drawBorderWithHighlight(int x, int y, int w, int h, DWORD ARGB = 
 	drawRect(x, y, w, h, r, g, b, 0x38);
 }
 
-// -----
+// hitbox draw funcs
 
 void scaleCords(const float xOrig, const float yOrig, float& x1Cord, float& y1Cord, float& x2Cord, float& y2Cord)
 {
@@ -895,6 +896,7 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 }
 
 //In-game frame bar
+
 void drawFrameBar()
 {
 	profileFunction();
@@ -1063,6 +1065,8 @@ void drawFrameData()
 	}
 }
 
+// highlight states
+
 void highlightStates()
 {
 	static int nP1ThrowProtectionTimer = 0;
@@ -1173,6 +1177,33 @@ void highlightStates()
 	}
 }
 
+BYTE arrAnimHookBytesOrig[10];
+BYTE arrAnimHookBytesMod[10];
+void highlightHookFunc()
+{
+	// does this func get called for both chars individually? 
+	void* funcAddress = (void*)0x0045f650;
+	// restore func to original state
+	patchMemcpy(funcAddress, arrAnimHookBytesOrig, 10);
+	/*
+
+	x86 asm does not allow for direct calls to an intermediate addr, only relative
+	UNLESS, a register is used as a jump point
+
+	*/
+	// execute original func
+	__asm {
+		mov eax, funcAddress;
+		call eax;
+	};
+	// patch hook back into func
+	patchMemcpy(funcAddress, arrAnimHookBytesMod, 10);
+	// perform coloring code
+	highlightStates();
+}
+
+// RNG manip
+
 void SetSeed(uint32_t nSeed)
 {
 	*(uint32_t*)(dwBaseAddress + adRNGIndex) = 55;
@@ -1207,11 +1238,12 @@ void SetRN(uint32_t nRN)
 	}
 }
 
-// windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
-void __stdcall pauseCallback(DWORD dwMilliseconds)
+void __stdcall legacyPauseCallback(DWORD dwMilliseconds)
 {
-	
-	
+
+	// windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
+	// this func is legacy, but it seems like the best place for me to init my hooks, for some reason
+
 	// i am unsure if doing this here is the best location, but it has been working
 	// and weird things happen if i call it right after i grab the device
 	// please never move this
@@ -1219,124 +1251,17 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	if (!isDirectXHooked) {
 		isDirectXHooked = HookDirectX();
 	}
-	
+
 	static bool isRendererHooked = false;
 	if (!isRendererHooked && isDirectXHooked) {
 		isRendererHooked = initRenderModifications();
 	}
-	
-	
-	
-	
+
 	Sleep(dwMilliseconds);
 }
 
-int nOldMot;
-int nMot = 0;
-bool bReversaled = false;
-bool bDelayingReversal = false;
-int nTempReversalDelayFrames = 0;
-int nReversalIndex1 = 0;
-int nReversalIndex2 = 0;
-int nReversalIndex3 = 0;
-int nReversalIndex4 = 0;
-int nReversalDelayFrames = 0;
-int nReversalType = REVERSAL_NORMAL;
-std::vector<std::string> vPatternNames = GetEmptyPatternList();
-std::vector<int> vAirReversals;
-std::vector<int> vGroundReversals;
-#ifdef not_working
-void enemyReversal()
-{
-	BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
-	if (PauseFlag == 1)
-		return;
 
-	nOldMot = nMot;
-	int nMot = *reinterpret_cast<int*>(dwBaseAddress + dwMot);
-	int nHitstun = *reinterpret_cast<int*>(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset);
-	int nP2Y = *reinterpret_cast<int*>(dwBaseAddress + dwP2Y);
-	int nFrameCounter = *reinterpret_cast<int*>(dwBaseAddress + dwRoundTime);
-	int nP2CharacterNumber = *reinterpret_cast<int*>(dwBaseAddress + dwP2CharNumber);
-	int nP2Moon = *reinterpret_cast<int*>(dwBaseAddress + dwP2CharMoon);
-	int nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
-	vPatternNames = GetPatternList(nP2CharacterID);
-	PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames, nReversalIndex1, nReversalIndex2, nReversalIndex3, nReversalIndex4);
-
-	char arrTextBuffer[256];
-	snprintf(arrTextBuffer, 256, "%3d", nHitstun);
-	drawText(230, 420 + (16 * 0), arrTextBuffer, 64);
-
-	if (nFrameCounter == 0)
-		bReversaled = true;
-	if (nFrameCounter == 2)
-		bReversaled = false;
-
-	if (nHitstun != 0)
-	{
-		//int x = 3;
-		//patchMemcpy(dwBaseAddress + dwP2PatternSet, &x, 4);
-	}
-	return;
-	
-	// if training was not just reset and if at least one move was selected
-	if (nFrameCounter != 0 && GetPattern(nP2CharacterID, vPatternNames[nReversalIndex1]) != 0)
-	{
-		if ((nHitstun != 0) && (nMot != nOldMot))
-		{
-			if (bReversaled)
-				bReversaled = false;
-		}
-		else if (!bReversaled)
-		{
-			bReversaled = true;
-			if (nReversalType != REVERSAL_RANDOM || rand() % 2 == 0)
-			{
-				std::vector<int> vValidReversals = (nP2Y == 0 ? vGroundReversals : vAirReversals);
-				if (vValidReversals.size() != 0)
-				{
-					int nTempReversalIndex = 0;
-					while (1)
-					{
-						nTempReversalIndex = rand() % vValidReversals.size();
-						if (vValidReversals[nTempReversalIndex] != 0)
-							break;
-					}
-					int nWriteBuffer = vValidReversals[nTempReversalIndex];
-					nWriteBuffer = 1;
-					patchMemcpy(dwBaseAddress + dwP2PatternSet, &nWriteBuffer, 4);
-					nTempReversalDelayFrames = nReversalDelayFrames;
-				}
-			}
-		}
-	}
-}
-#endif
-
-void doFastReversePenalty() {
-
-	if (fastReversePenalty == 0) {
-		return;
-	}
-
-	static DWORD prevComboStates[4];
-
-	for (int i = 0; i < 4; i++) {
-		DWORD temp = *(DWORD*)(0x00555130 + 0x64 + (i * 0xAFC));
-		if (temp == 1 && prevComboStates[i] == 0) {
-			// reset reverse penalty to 0 on all chars
-			// a DWORD is used to reset both the counter and the actual value
-			if (i & 1) { // P2, reset P1
-				*(DWORD*)(0x0055531A + (0 * 0xAFC)) = 0;
-				*(DWORD*)(0x0055531A + (2 * 0xAFC)) = 0;
-			} else { // P1, reset P2
-				*(DWORD*)(0x0055531A + (1 * 0xAFC)) = 0;
-				*(DWORD*)(0x0055531A + (3 * 0xAFC)) = 0;
-			}
-		}
-		prevComboStates[i] = temp;
-	}
-}
+// frame start/done callbacks
 
 void frameStartCallback() {
 
@@ -1883,6 +1808,8 @@ __declspec(naked) void nakedFrameDoneCallback()
 	};
 }
 
+// pause funcs
+
 DWORD _naked_newPauseCallback2_IsPaused = 0;
 void newPauseCallback2()
 {
@@ -2330,6 +2257,8 @@ __declspec(naked) void _naked_preventPauseReset() {
 
 }
 
+// draw modification funcs
+
 void drawSolidBackground() {
 
 	if (backgroundColor == 0xFF000000) {
@@ -2483,6 +2412,34 @@ __declspec(naked) void _naked_DisableShadows() {
 	}
 }
 
+// attack display funcs
+
+void doFastReversePenalty() {
+
+	if (fastReversePenalty == 0) {
+		return;
+	}
+
+	static DWORD prevComboStates[4];
+
+	for (int i = 0; i < 4; i++) {
+		DWORD temp = *(DWORD*)(0x00555130 + 0x64 + (i * 0xAFC));
+		if (temp == 1 && prevComboStates[i] == 0) {
+			// reset reverse penalty to 0 on all chars
+			// a DWORD is used to reset both the counter and the actual value
+			if (i & 1) { // P2, reset P1
+				*(DWORD*)(0x0055531A + (0 * 0xAFC)) = 0;
+				*(DWORD*)(0x0055531A + (2 * 0xAFC)) = 0;
+			}
+			else { // P1, reset P2
+				*(DWORD*)(0x0055531A + (1 * 0xAFC)) = 0;
+				*(DWORD*)(0x0055531A + (3 * 0xAFC)) = 0;
+			}
+		}
+		prevComboStates[i] = temp;
+	}
+}
+
 int nTempP1MeterGain = 0;
 int nTempP2MeterGain = 0;
 int nP1MeterGain = 0;
@@ -2503,33 +2460,6 @@ void attackMeterDisplayCallback()
 	snprintf(buffer, 256, "%4d.%02d%%", nP2MeterGain / 100, nP2MeterGain % 100);
 	drawTextWithBorder(420 + 130, 186 + 14, 10, 14, buffer);
 	*/
-}
-
-// hook funcs
-
-BYTE arrAnimHookBytesOrig[10];
-BYTE arrAnimHookBytesMod[10];
-void animHookFunc() 
-{
-	// does this func get called for both chars individually? 
-	void* funcAddress = (void*)0x0045f650;
-	// restore func to original state
-	patchMemcpy(funcAddress, arrAnimHookBytesOrig, 10);
-	/*
-
-	x86 asm does not allow for direct calls to an intermediate addr, only relative
-	UNLESS, a register is used as a jump point
-
-	*/
-	// execute original func
-	__asm {
-		mov eax, funcAddress;
-		call eax;
-	};
-	// patch hook back into func
-	patchMemcpy(funcAddress, arrAnimHookBytesMod, 10);
-	// perform coloring code
-	highlightStates();
 }
 
 DWORD _meterGainHook_CharacterAddr;
@@ -2641,19 +2571,6 @@ __declspec(naked) void _naked_meterGainHook()
 	}
 }
 
-void battleResetCallback()
-{
-	nTempP1MeterGain = 0;
-	nTempP2MeterGain = 0;
-	nP1MeterGain = 0;
-	nP2MeterGain = 0;
-	prevComboPtr = 0;
-
-	PUSH_ALL;
-	dualInputDisplayReset();
-	POP_ALL;
-}
-
 DWORD newAttackDisplay_local_14c;
 void newAttackDisplay() {
 
@@ -2697,7 +2614,11 @@ void newAttackDisplay() {
 		correctionValue = 100;
 	}
 
-	const float xVal = 440.0f;
+	float xVal = 440.0f;
+
+	if (*(BYTE*)(0x05585f8)) { // input display is active
+		xVal -= 100.0f;
+	}
 
 	TextDraw(xVal, 122,      12, 0xFFFFFFFF, "COMBO%9d(%5d)", invalidComboVal, validComboVal);
 	TextDraw(xVal, 122 + 12, 12, 0xFFFFFFFF, "DAMAGE%8d(%5d)", scaledDamageVal, unscaledDamageVal);
@@ -2737,6 +2658,8 @@ __declspec(naked) void _naked_newAttackDisplay() {
 	}
 
 }
+
+// input display funcs
 
 typedef struct InputData {
 	DWORD rawInput = 0;
@@ -2868,6 +2791,21 @@ __declspec(naked) void _naked_dualInputDisplay() {
 	emitJump(0x00477f25);
 }
 
+// reset funcs
+
+void battleResetCallback()
+{
+	nTempP1MeterGain = 0;
+	nTempP2MeterGain = 0;
+	nP1MeterGain = 0;
+	nP2MeterGain = 0;
+	prevComboPtr = 0;
+
+	PUSH_ALL;
+	dualInputDisplayReset();
+	POP_ALL;
+}
+
 // init funcs
 
 void initFrameDoneCallback()
@@ -2890,13 +2828,13 @@ void initFrameDoneCallback()
 
 }
 
-void initAnimHook() 
+void initHighlightHook() 
 {
 	void* funcAddress = (void*)0x0045f650;
 	// backup
 	patchMemcpy(arrAnimHookBytesOrig, funcAddress, 10);
 	// new bytes
-	patchFunction(funcAddress, animHookFunc);
+	patchFunction(funcAddress, highlightHookFunc);
 	// ret
 	patchByte(((BYTE*)funcAddress) + 5, 0xC3);
 	// backup modded bytes 
@@ -2988,7 +2926,7 @@ void initPauseCallback()
 	*/
 	void* addr = (void*)0x0041fe05;
 
-	patchFunction(addr, pauseCallback);
+	patchFunction(addr, legacyPauseCallback);
 
 	// the call being patched is 6 bytes long, patch the extra byte with a nop
 	patchByte((BYTE*)addr + 5, 0x90);
@@ -3057,7 +2995,7 @@ void threadFunc()
 
 	initPauseCallback();
 	initFrameDoneCallback();
-	initAnimHook();
+	initHighlightHook();
 	InitializeCharacterMaps();
 	// when running with caster, the prints to this area are disabled
 	// when not running with caster, they arent even there, so this is fine to run regardless of caster 
