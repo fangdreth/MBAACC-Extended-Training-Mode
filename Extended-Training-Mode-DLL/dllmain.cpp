@@ -55,6 +55,7 @@ typedef uint32_t uint;
 
 void enemyReversal();
 void frameStartCallback();
+void dualInputDisplayReset();
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
@@ -174,11 +175,15 @@ __asm pop esp		   \
 // or tbh, i can just use pushes and be real weird about it
 // ugh 
 
+#define CONCATENATE_DETAIL(x, y) x##y
+#define CONCATENATE(x, y) CONCATENATE_DETAIL(x, y)
+#define LINE_NAME CONCATENATE(LINE, __LINE__)
+
 #define emitCall(addr) \
-    __asm { push omfg__LINE__ } \
+    __asm { push LINE_NAME } \
 	__asm { push addr } \
     __asm { ret } \
-    __asm { omfg__LINE__: }
+    __asm { LINE_NAME: }
 
 #define emitJump(addr) \
 	__asm { push addr } \
@@ -2643,6 +2648,10 @@ void battleResetCallback()
 	nP1MeterGain = 0;
 	nP2MeterGain = 0;
 	prevComboPtr = 0;
+
+	PUSH_ALL;
+	dualInputDisplayReset();
+	POP_ALL;
 }
 
 DWORD newAttackDisplay_local_14c;
@@ -2727,6 +2736,136 @@ __declspec(naked) void _naked_newAttackDisplay() {
 		ret;
 	}
 
+}
+
+typedef struct InputData {
+	DWORD rawInput = 0;
+	BYTE direction = ' ';
+	BYTE buttons = 0;
+	BYTE buttonString[5] = { ' ', ' ', ' ', ' ', '\0' };
+	int length = 0;
+} InputData;
+
+class InputColumn {
+public:
+
+	InputColumn(unsigned addr_, float xVal_) {
+		addr = addr_;
+		xVal = xVal_;
+	}
+
+	void update() {
+		DWORD inputVal = *(DWORD*)(addr);
+
+		BYTE buttons = (inputVal & 0xF00000) >> 20;
+		BYTE direction = 0x80 + (inputVal & 0xF);
+
+		//if (inputs[inputIndex].rawInput == inputVal) {
+		if (inputs[inputIndex].buttons == buttons && inputs[inputIndex].direction == direction) {
+			inputs[inputIndex].length++;
+			if (inputs[inputIndex].length > 999) {
+				inputs[inputIndex].length = 999;
+			}
+			return;
+		}
+		
+		inputIndex--;
+		if (inputIndex < 0) {
+			inputIndex = 23;
+		}
+
+		inputs[inputIndex].direction = direction;
+		inputs[inputIndex].rawInput = inputVal;
+		inputs[inputIndex].buttons = buttons;
+
+		BYTE* buf = inputs[inputIndex].buttonString;
+		if (buttons & 0x1) {
+			*buf = BUTTON_A;
+			buf++;
+		}
+
+		if (buttons & 0x2) {
+			*buf = BUTTON_B;
+			buf++;
+		}
+
+		if (buttons & 0x4) {
+			*buf = BUTTON_C;
+			buf++;
+		}
+
+		if (buttons & 0x8) {
+			*buf = BUTTON_D;
+			buf++;
+		}
+		
+		*buf = '\0';
+
+		inputs[inputIndex].length = 1;
+	}
+
+	void draw() {
+
+		float yVal = 124;
+		for (int i = 0; i < 24; i++) {
+
+			int index = (i + inputIndex) % 24;
+
+			TextDrawSimple(xVal, yVal, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
+			TextDraw(xVal + 40, yVal, 13, 0xFFFFFFFF, "%3d", inputs[index].length);
+
+			RectDraw(xVal, yVal, 75, 12, 0xA0000000);
+			yVal += 13;
+		}
+
+	}
+
+	void reset() {
+		inputIndex = 0;
+		for (int i = 0; i < 24; i++) {
+			inputs[i] = InputData();
+		}
+	}
+
+	unsigned addr;
+	float xVal;
+	InputData inputs[24];
+	int inputIndex = 0;
+};
+
+InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f);
+InputColumn P2InputBar(0x00555C30 + 0x02E7, 550.0f);
+
+void dualInputDisplay() {
+
+	// font size 13
+	// 24 rows are displayed
+
+	if (!_naked_newPauseCallback2_IsPaused) {
+		P1InputBar.update();
+		P2InputBar.update();
+	}
+
+	P1InputBar.draw();
+	P2InputBar.draw();
+
+	//TextDrawSimple(150, 300, 13, 0xFFFFFFFF, "hi: %c %c %c", 0x80, 0x81, 0x82);
+
+}
+
+void dualInputDisplayReset() {
+	P1InputBar.reset();
+	P2InputBar.reset();
+}
+
+__declspec(naked) void _naked_dualInputDisplay() {
+
+
+	PUSH_ALL;
+	dualInputDisplay();
+	POP_ALL;
+
+	emitJump(0x00477f25);
 }
 
 // init funcs
@@ -2891,6 +3030,12 @@ void initNewAttackDisplay() {
 
 }
 
+void initDualInputDisplay() {
+
+	patchJump(0x00477f20, _naked_dualInputDisplay);
+
+}
+
 void threadFunc() 
 {
 	srand(time(NULL));
@@ -2924,7 +3069,7 @@ void threadFunc()
 	initNewPauseCallback();
 	initDrawBackground();
 
-	
+	initDualInputDisplay();
 
 	
 	while (true) 

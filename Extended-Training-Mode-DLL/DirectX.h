@@ -3,6 +3,7 @@
 #include "resource.h"
 
 void _naked_InitDirectXHooks();
+void dualInputDisplay();
 
 void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...);
 
@@ -1388,6 +1389,21 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 
 }
 
+constexpr BYTE ARROW_1 (0x80 + 0x01);
+constexpr BYTE ARROW_2 (0x80 + 0x02);
+constexpr BYTE ARROW_3 (0x80 + 0x03);
+constexpr BYTE ARROW_4 (0x80 + 0x04);
+constexpr BYTE ARROW_5 (0x80 + 0x05);
+constexpr BYTE ARROW_6 (0x80 + 0x06);
+constexpr BYTE ARROW_7 (0x80 + 0x07);
+constexpr BYTE ARROW_8 (0x80 + 0x08);
+constexpr BYTE ARROW_9 (0x80 + 0x09);
+
+constexpr BYTE BUTTON_A(0x90 + 0x00);
+constexpr BYTE BUTTON_B(0x90 + 0x01);
+constexpr BYTE BUTTON_C(0x90 + 0x02);
+constexpr BYTE BUTTON_D(0x90 + 0x03);
+
 void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format, ...) {
 
 	if (format == NULL) {
@@ -1429,28 +1445,71 @@ void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format
 
 	float maxX = 1.0f + ((wWidth - (wHeight * 4.0f / 3.0f)) / 2.0f) / wWidth;
 
+	const float charWidth = ((float)(fontSize >> 1)) / (float)fontTexWidth;
+	const float charHeight = ((float)fontSize) / (float)fontTexWidth;
+
+	const float symbolWidth = charWidth;
+	const float symbolHeight = charHeight / 2.0f;
+
+	BYTE c;
+	bool needDoubleWidth = false;
+
+	D3DXVECTOR2 charTopLeft;
+
+	D3DXVECTOR2 charW;
+	D3DXVECTOR2 charH;
+
 	while (*str) {
 
-		if (*str == ' ') {
-			x += charWidthOffset;
-			str++;
-			continue;
-		}
+		c = *str;
 
 		y = 1 - origY;
 
-		const float charWidth = ((float)(fontSize >> 1)) / (float)fontTexWidth;
-		const float charHeight = ((float)fontSize) / (float)fontTexWidth;
+		switch(c) {
+		case ' ':
+			x += charWidthOffset;
+			str++;
+			continue; 
+		case 0x80: // technically arrow_0, but thats bs
+		case ARROW_5:
+			x += charWidthOffset;
+			x += charWidthOffset;
+			str++;
+			continue;
+		case ARROW_1:
+		case ARROW_2:
+		case ARROW_3:
+		case ARROW_4:
+		case ARROW_6:
+		case ARROW_7:
+		case ARROW_8:
+		case ARROW_9:
+		case BUTTON_A:
+		case BUTTON_B:
+		case BUTTON_C:
+		case BUTTON_D:
 
-		D3DXVECTOR2 charTopLeft(charWidth * (*str & 0xF), charHeight * ((*str - 0x20) / 0x10));
+			charTopLeft.x = charWidth * (*str & 0xF);
+			charTopLeft.y = (charHeight * 0x6) + (symbolHeight * ((c - 0x80) / 0x10));
 
-		D3DXVECTOR2 charW(charWidth, 0.0);
-		D3DXVECTOR2 charH(0.0, charHeight);
+			charW = D3DXVECTOR2(symbolWidth, 0.0);
+			charH = D3DXVECTOR2(0.0, symbolHeight);
 
-		PosTexVert v1{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f),  charTopLeft };
-		PosTexVert v2{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f),  charTopLeft + charW };
-		PosTexVert v3{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f),  charTopLeft + charH };
-		PosTexVert v4{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f),  charTopLeft + charW + charH };
+			needDoubleWidth = true;
+			w *= 2.0f;
+
+			break;
+		default:
+			charTopLeft = D3DXVECTOR2(charWidth * (c & 0xF), charHeight * ((c - 0x20) / 0x10));
+			charW = D3DXVECTOR2(charWidth, 0.0);
+			charH = D3DXVECTOR2(0.0, charHeight);
+			break;
+		}
+
+		PosTexVert v1{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), charTopLeft };
+		PosTexVert v2{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), charTopLeft + charW };
+		PosTexVert v3{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f), charTopLeft + charH };
+		PosTexVert v4{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f), charTopLeft + charW + charH };
 
 		scaleVertex(v1.position);
 		scaleVertex(v2.position);
@@ -1463,6 +1522,12 @@ void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format
 		}
 
 		x += charWidthOffset;
+		if (needDoubleWidth) {
+			needDoubleWidth = false;
+			x += charWidthOffset;
+			w /= 2.0f;
+		}
+
 		str++;
 	}
 }
@@ -2367,6 +2432,8 @@ void __stdcall _doDrawCalls() {
 	ENDSCENE
 
 	*/
+
+	//dualInputDisplay();
 
 	profileFunction();
 
