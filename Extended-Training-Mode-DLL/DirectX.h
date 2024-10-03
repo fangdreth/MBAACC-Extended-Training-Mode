@@ -129,7 +129,7 @@ public:
 		v4.color = col;
 	}
 
-	union {
+	union { // this use of unions here is one of my fave things in c++
 		T verts[4];
 		struct {
 			T v1;

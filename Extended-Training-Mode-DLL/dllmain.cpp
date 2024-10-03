@@ -104,6 +104,8 @@ uint8_t nRNGRate = RNG_EVERY_FRAME;
 uint32_t nCustomSeed = 0;
 uint32_t nCustomRN = 0;
 
+DWORD _naked_newPauseCallback2_IsPaused = 0;
+
 #define PUSH_CALLEE __asm \
 {                         \
    __asm push ebx   \
@@ -1826,7 +1828,6 @@ __declspec(naked) void nakedFrameDoneCallback()
 
 // pause funcs
 
-DWORD _naked_newPauseCallback2_IsPaused = 0;
 void newPauseCallback2()
 {
 

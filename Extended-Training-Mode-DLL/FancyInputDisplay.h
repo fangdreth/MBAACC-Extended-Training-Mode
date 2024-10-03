@@ -71,15 +71,41 @@ public:
 
 	void draw() {
 
+		float x;
+
+		if (wWidth < (wHeight * 4.0f / 3.0f)) {
+			x = xVal;
+		} else {
+			if (xVal < 300.0f) {
+				x = -((wWidth - (wHeight * 4.0f / 3.0f)) / 2.0f) / wWidth;
+
+				x *= (wWidth / (wHeight * 4.0f / 3.0f));
+				x *= 640.0f;
+
+				x += xVal;
+			} else {
+				x = ((wWidth - (wHeight * 4.0f / 3.0f)) / 2.0f) / wWidth;
+
+				x *= (wWidth / (wHeight * 4.0f / 3.0f));
+				x *= 640.0f;
+
+				x = 640.0 + x - 100.0f;
+			}
+		}
+	
+		
+
+		float y = 0.2f * 480.0f;
+
 		float yVal = 124;
 		for (int i = 0; i < 24; i++) {
 
 			int index = (i + inputIndex) % 24;
 
-			TextDrawSimple(xVal, yVal, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
-			TextDraw(xVal + 55, yVal, 13, 0xFFFFFFFF, "%3d", inputs[index].length);
+			TextDrawSimple(x, yVal, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
+			TextDraw(x + 55, yVal, 13, 0xFFFFFFFF, "%3d", inputs[index].length);
 
-			RectDraw(xVal, yVal, 90, 12, 0x40000000);
+			RectDraw(x, yVal, 90, 12, 0x40000000);
 			yVal += 13;
 		}
 
@@ -112,11 +138,14 @@ InputColumn P2InputBar(0x00555C30 + 0x02E7, 545.0f);
 class InputDisplay {
 public:
 
+	typedef struct JoyLog {
+		int dir;
+		unsigned frame;
+	} JoyLog;
+
 	InputDisplay(float xPos_, float yPos_, float scale_, float cornerScale_, InputColumn* inputColumn_) : xPos(xPos_), yPos(yPos_), scale(scale_), cornerScale(cornerScale_), inputColumn(inputColumn_) { }
 
-	void drawPoint(float x, float y) {
-
-		const float size = 4.0f;
+	void drawPoint(float x, float y, DWORD col = 0xFFD0D0D0, float size = 4.0f) {
 
 		x -= (size / 2.0f);
 		y -= (size / 2.0f);
@@ -130,7 +159,7 @@ public:
 			MeltyVert(x + size, y + 0, lineTopLeft + lineWidth),
 			MeltyVert(x + 0, y + size, lineTopLeft + lineHeight),
 			MeltyVert(x + size, y + size, lineTopLeft + lineWidth + lineHeight),
-			0xFFD0D0D0
+			col
 		);
 
 		meltyVertData.add(test);
@@ -186,12 +215,6 @@ public:
 			return;
 		}
 
-		if (a > b) {
-			int temp = b;
-			b = a;
-			a = temp;
-		}
-
 		D3DXVECTOR2 start;
 		D3DXVECTOR2 end;
 
@@ -203,32 +226,54 @@ public:
 		D3DXVECTOR2 sizeX = D3DXVECTOR2(size / 2.0f, 0.0f);
 		D3DXVECTOR2 sizeY = D3DXVECTOR2(0.0f, size / 2.0f);
 
-		//start -= (size / 2.0f);
-		//end -= (size / 2.0f);
+		float mx = end.x - start.x;
+		float my = end.y - start.y;
 
+		float angle = atan2(my, mx) + (3.1415926535f / 2.0f);
+
+		float lineBaseWidth = 6.0f;
+
+		D3DXVECTOR2 offset(lineBaseWidth * cos(angle), lineBaseWidth * sin(angle));
+		
 		//const D3DXVECTOR2 lineTopLeft(9.0f / 16.0f, 7.0f / 16.0);
 		//const D3DXVECTOR2 lineWidth(3.0f / 16.0f, 0.0f / 16.0f);
-
-		MeltyVert v1(start.x, start.y, colA);
-		MeltyVert v2(end.x, end.y, colB);
-
-		meltyLineData.addScale(v1, v2);
-
-		/*
 		const D3DXVECTOR2 lineTopLeft(10.0f / 16.0f, 7.0f / 16.0);
 		const D3DXVECTOR2 lineWidth(1.0f / 16.0f, 0.0f / 16.0f);
 		const D3DXVECTOR2 lineHeight(0.0f / 16.0f, 1.0f / 16.0f);
 
-		const Quad<MeltyVert> test(
-			MeltyVert(start.x, start.y, lineTopLeft, 0xFF0000FF),
-			MeltyVert(end.x,   start.y, lineTopLeft + lineWidth, 0xFFFF0000),
-			MeltyVert(start.x,   end.y, lineTopLeft + lineHeight, 0xFF0000FF),
-			MeltyVert(end.x,     end.y, lineTopLeft + lineWidth + lineHeight, 0xFFFF0000)
+		// this should probs be done with 3 quads, 1 for each ball, 1 for line
+
+		const Quad<MeltyVert> line(
+			MeltyVert(start.x + offset.x, start.y + offset.y, lineTopLeft, colA),
+			MeltyVert(start.x - offset.x, start.y - offset.y, lineTopLeft + lineHeight, colA),
+			MeltyVert(end.x   + offset.x,   end.y + offset.y, lineTopLeft + lineWidth, colB),
+			MeltyVert(end.x   - offset.x,   end.y - offset.y, lineTopLeft + lineWidth + lineHeight, colB)
 		);
 
-		meltyVertData.add(test);
+		meltyVertData.add(line);
+
+		/*
+		const Quad<MeltyVert> point1(
+			MeltyVert(start.x + offset.x, start.y + offset.y, lineTopLeft, colA),
+			MeltyVert(start.x - offset.x, start.y - offset.y, lineTopLeft + lineHeight, colA),
+			MeltyVert(end.x + offset.x, end.y + offset.y, lineTopLeft + lineWidth, colA),
+			MeltyVert(end.x - offset.x, end.y - offset.y, lineTopLeft + lineWidth + lineHeight, colA)
+		);
+
+		meltyVertData.add(point1);
+
+		const Quad<MeltyVert> point2(
+			MeltyVert(start.x + offset.x, start.y + offset.y, lineTopLeft, colB),
+			MeltyVert(start.x - offset.x, start.y - offset.y, lineTopLeft + lineHeight, colB),
+			MeltyVert(end.x + offset.x, end.y + offset.y, lineTopLeft + lineWidth, colB),
+			MeltyVert(end.x - offset.x, end.y - offset.y, lineTopLeft + lineWidth + lineHeight, colB)
+		);
+
+		meltyVertData.add(point2);
 		*/
-		
+
+		drawPoint(start.x, start.y, colA, 8.0f);
+		drawPoint(end.x, end.y, colB, 8.0f);
 	}
 
 	void drawBounds() {
@@ -329,16 +374,31 @@ public:
 
 		DWORD colStart;
 		DWORD colEnd;
+		float t1;
+		float t2;
+	
+		
 
-		for (int i = 0; i < 60 - 30; i++) {
+		for (int i = 0; i < 60 - 2; i++) {
 
 			int index1 = (i + joyLogIndex) % 60;
 			int index2 = (i + joyLogIndex + 1) % 60;
 
-			colStart = 0xFF000000 | ((BYTE)(255.0f * (((float)i) / 60.0)) << 16) | ((BYTE)(255.0f * (((float)(60 - i)) / 60.0)));
-			colEnd   = 0xFF000000 | ((BYTE)(255.0f * (((float)i+1) / 60.0)) << 16) | ((BYTE)(255.0f * (((float)(60 - i+1)) / 60.0)));
+			// break the loop if the time is over a certain value
+			t1 = frame - joyLog[index1].frame;
+			if (t1 > 30.0f) {
+				break;
+			}
+			t2 = frame - joyLog[index2].frame;
 
-			drawLine(joyLog[index1], joyLog[index2], colStart, colEnd);
+			if (t2 > 30.0f) {
+				t2 = 30.0f;
+			}
+
+			colStart = 0xFF000000 | ((BYTE)(fabs(-16.0f * t1 + 255.0f)) << 16) | ((BYTE)(-fabs(-16.0f * t1 + 255.0f) + 255.0f));
+			colEnd   = 0xFF000000 | ((BYTE)(fabs(-16.0f * t2 + 255.0f)) << 16) | ((BYTE)(-fabs(-16.0f * t2 + 255.0f) + 255.0f));
+
+			drawLine(joyLog[index1].dir, joyLog[index2].dir, colStart, colEnd);
 		}
 	}
 
@@ -403,13 +463,19 @@ public:
 
 		TextDraw(joyX, joyY, 16, 0xFFFFFFFF, "%c", JOYSTICK);
 		
-		joyLogIndex--;
-		if (joyLogIndex < 0) {
-			joyLogIndex = 60 - 1;
+		if (_naked_newPauseCallback2_IsPaused) {
+			return;
 		}
-		//joyLogIndex = (joyLogIndex + 1) % 60;
-		joyLog[joyLogIndex] = direction;
-		
+
+		if (joyLog[joyLogIndex].dir != direction) {
+			joyLogIndex--;
+			if (joyLogIndex < 0) {
+				joyLogIndex = 60 - 1;
+			}
+			//joyLogIndex = (joyLogIndex + 1) % 60;
+			joyLog[joyLogIndex].dir = direction;
+			joyLog[joyLogIndex].frame = frame;
+		}
 	}
 
 	void drawButtons() {
@@ -479,6 +545,11 @@ public:
 		drawLines();
 		drawJoystick();
 		drawButtons();
+		//drawLine(1, 9, 0xFFFF0000, 0xFF0000FF);
+		if (_naked_newPauseCallback2_IsPaused) {
+			return;
+		}
+		frame++;
 	}
 
 	const float xPos = 300;
@@ -496,8 +567,9 @@ public:
 	float prevJoyX = xPos - 8;
 	float prevJoyY = yPos - 8;
 
-	int joyLog[60];
+	JoyLog joyLog[60];
 	int joyLogIndex = 0;
+	unsigned frame = 0;
 
 	InputColumn* inputColumn = NULL;
 
