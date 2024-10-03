@@ -536,6 +536,9 @@ public:
 	}
 
 	void draw() {
+		if (!safeWrite() || isPaused()) {
+			return;
+		}
 		drawBounds();
 		drawBase();
 		drawLines();
