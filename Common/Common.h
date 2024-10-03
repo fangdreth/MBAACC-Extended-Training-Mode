@@ -354,6 +354,7 @@ const ADDRESS adSharedDisableShadow =				adShareBase + 0x1C; // 1 byte
 const ADDRESS adSharedFastReversePenalty =			adShareBase + 0x1D; // 1 byte
 const ADDRESS adSharedFrameDataDisplay =			adShareBase + 0x1E; // 1 byte
 const ADDRESS adSharedSlowSpeed =					adShareBase + 0x1F; // 1 byte
+const ADDRESS adSharedFrameBarY =					adShareBase + 0x20; // 4 bytes
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x30;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x31;	// 1 byte
@@ -486,6 +487,7 @@ const char pcSystem_8[8] = "SYSTEM";
 const char pcGeneralHotkeys_16[16] = "GENERAL HOTKEYS";
 const char pcFrameDataHotkeys_19[19] = "FRAME DATA HOTKEYS";
 const char pcRNGHotkeys_12[12] = "RNG HOTKEYS";
+const char pcFrameDisplayY_16[16] = "FRAME DISPLAY Y";
 
 const std::vector<const char*> vHighlightNames = {	"OFF",
 													"RED",

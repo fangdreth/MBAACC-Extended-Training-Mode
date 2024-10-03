@@ -901,6 +901,8 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 void drawFrameBar()
 {
 
+	nFrameBarY = *(int*)(dwBaseAddress + adSharedFrameBarY);
+
 	if (!safeWrite())
 		return;
 
@@ -1757,7 +1759,7 @@ void frameDoneCallback()
 	//int nSubMenu;
 	//ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
 	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12) || *(bool*)(dwBaseAddress + adSharedHoveringScroll)) {
-		if (bFrameDataDisplay)
+		if (bFrameDataDisplay || *(bool*)(dwBaseAddress + adSharedHoveringScroll))
 			drawFrameBar();
 		
 		if (bHitboxesDisplay)

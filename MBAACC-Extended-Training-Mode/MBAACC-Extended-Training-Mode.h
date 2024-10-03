@@ -256,6 +256,33 @@ LONG ReadFromRegistry(std::wstring sKey, uint8_t* nValue)
     return openResult;
 }
 
+LONG ReadFromRegistry(std::wstring sKey, int* nValue)
+{
+    LONG openResult = -1;
+
+    try
+    {
+        DWORD dwValue = NULL;
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+        DWORD dwType = REG_DWORD;
+        DWORD dwSize = sizeof(nValue);
+
+        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+        if (openResult == 0)
+            openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
+        if (openResult == 0)
+            *nValue = (int)dwValue;
+
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
+
+    return openResult;
+}
+
 LONG SetRegistryValue(std::wstring sKey, int nValue)
 {
     LONG openResult = -1;
