@@ -1101,6 +1101,9 @@ D3DVECTOR factor = { 1.0f, 1.0f, 1.0f };
 D3DVECTOR topLeftPos = { 0.0f, 0.0f, 0.0f }; // top left of the screen, in pixel coords. maybe should be in directx space but idk
 D3DVECTOR renderModificationFactor = { 1.0f, 1.0f, 1.0f };
 //D3DVECTOR renderModificationOffset = { 1.0f, 1.0f, 1.0f };
+D3DXVECTOR2 mouseTopLeft;
+D3DXVECTOR2 mouseBottomRight;
+D3DXVECTOR2 mouseFactor;
 
 inline void scaleVertex(D3DVECTOR& v) {
 	/*
@@ -1225,6 +1228,27 @@ void __stdcall backupRenderState() {
 		topLeftPos.y *= (wHeight - (wWidth / ratio)) / (2.0f * wHeight);
 	}
 
+	mouseTopLeft.x = 0.0f;
+	mouseTopLeft.y = 0.0f;
+
+	// the border on top of the window is taken into account with this. 
+	if (isWide) {
+		mouseTopLeft.x = (wWidth - (wHeight * (4.0f / 3.0f))) / 2.0f;
+	} else {
+		mouseTopLeft.y = (wHeight - (wWidth / (4.0f / 3.0f))) / 2.0f;
+	}
+
+	mouseBottomRight.x = mouseTopLeft.x + (wHeight * (4.0f / 3.0f));
+	mouseBottomRight.y = mouseTopLeft.y + (wWidth / (4.0f / 3.0f));
+	
+	if (isWide) {
+		mouseFactor.x = 640.0f /(wHeight * (4.0f / 3.0f));
+		mouseFactor.y = 480.0f / wHeight;
+	} else {
+		mouseFactor.x = 640.0f / wWidth;
+		mouseFactor.y = 480.0f / (wWidth / (4.0f / 3.0f));
+	}
+
 	// this deals with caster setting the transform matrices. they only seem to use the view matrix? but it would maybe be good to do the others
 	device->GetTransform(D3DTS_VIEW, &_D3DTS_VIEW);
 
@@ -1279,6 +1303,41 @@ void __stdcall restoreRenderState() {
 
 	device->SetTransform(D3DTS_VIEW, &_D3DTS_VIEW);
 
+}
+
+D3DXVECTOR2 getMousePos() {
+
+	POINT mousePos;
+	RECT clientRect;
+	if (GetCursorPos(&mousePos)) {
+		HWND hwnd = (HWND) * (DWORD*)(0x0074dfac);
+		ScreenToClient(hwnd, &mousePos);
+
+		GetClientRect(hwnd, &clientRect);
+		if (mousePos.x >= clientRect.left && mousePos.x < clientRect.right &&
+			mousePos.y >= clientRect.top && mousePos.y < clientRect.bottom) {
+
+			if (mousePos.x < mouseTopLeft.x ||
+				mousePos.y < mouseTopLeft.y ||
+				mousePos.x > mouseBottomRight.x ||
+				mousePos.y > mouseBottomRight.y
+				) {
+				return { -1.0f, -1.0f };
+			}
+
+			D3DXVECTOR2 res( (float)mousePos.x, (float)mousePos.y );
+
+			res.x -= mouseTopLeft.x;
+			res.y -= mouseTopLeft.y;
+
+			res.x *= mouseFactor.x;
+			res.y *= mouseFactor.y;
+
+			return res;
+		}
+	}
+
+	return { -1.0f, -1.0f };
 }
 
 // -----
@@ -1400,6 +1459,127 @@ void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4)
 	BorderDraw(x, y, w, h, ARGB | 0xFF000000);
 
 }
+
+// -----
+
+void LineDrawBlend(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, bool side = false) {
+
+
+	MeltyVert v1 = { x1, y1, ARGB };
+	MeltyVert v2 = { x2, y2, ARGB };
+
+	scaleVertex(v1);
+	scaleVertex(v2);
+
+	//meltyVertData
+	meltyLineData.add(v1, v2);
+
+	return;
+
+	/*
+	x1 /= 480.0f;
+	x2 /= 480.0f;
+	y1 /= 480.0f;
+	y2 /= 480.0f;
+
+	// this is going to need to be changed at different resolutions
+	float lineWidth = 1.0f / vHeight;
+
+	// i am,,, i bit confused on how exactly to do this. 
+	// current vibes say,,, two very thin triangles.
+
+	// i would like,,, diag lines please too.
+	// there are,,, angle issues with that tho
+
+	// feel free to play around with https://www.desmos.com/calculator/ppviwesili
+	// side chooses which "side" of the input line is actually drawn
+	// you will only really care about this,,, if you really care abt it?
+
+	Point p1 = { x1, y1 };
+	Point p2 = { x2, y2 };
+
+	float mx = p2.x - p1.x;
+	float my = p2.y - p1.y;
+	float m = my / mx;
+
+	float a = atan2(my, mx) + (3.1415926535f / 2.0f);
+
+	float m2 = tan(a);
+
+	Point p3 = { x1, y1 };
+	Point p4 = { x2, y2 };
+
+	Point offset = { lineWidth * cos(a), lineWidth * sin(a) };
+
+	if (side) {
+		p3.x += offset.x;
+		p3.y += offset.y;
+		p4.x += offset.x;
+		p4.y += offset.y;
+	}
+	else {
+		p3.x -= offset.x;
+		p3.y -= offset.y;
+		p4.x -= offset.x;
+		p4.y -= offset.y;
+	}
+
+	p1.y = 1 - p1.y;
+	p2.y = 1 - p2.y;
+	p3.y = 1 - p3.y;
+	p4.y = 1 - p4.y;
+
+	PosColVert v1 = { D3DVECTOR((p1.x * 1.5f) - 1.0f, (p1.y * 2.0f) - 1.0f, 0.5f), ARGB };
+	PosColVert v2 = { D3DVECTOR((p2.x * 1.5f) - 1.0f, (p2.y * 2.0f) - 1.0f, 0.5f), ARGB };
+	PosColVert v3 = { D3DVECTOR((p3.x * 1.5f) - 1.0f, (p3.y * 2.0f) - 1.0f, 0.5f), ARGB };
+	PosColVert v4 = { D3DVECTOR((p4.x * 1.5f) - 1.0f, (p4.y * 2.0f) - 1.0f, 0.5f), ARGB };
+
+	scaleVertex(v1.position);
+	scaleVertex(v2.position);
+	scaleVertex(v3.position);
+	scaleVertex(v4.position);
+
+	posColVertData.add(v1, v2, v3);
+	posColVertData.add(v2, v3, v4);
+	*/
+
+}
+
+void RectDrawBlend(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+
+	MeltyVert v1 = { x,     y,     ARGB };
+	MeltyVert v2 = { x + w, y,     ARGB };
+	MeltyVert v3 = { x,     y + h, ARGB };
+	MeltyVert v4 = { x + w, y + h, ARGB };
+
+	scaleVertex(v1);
+	scaleVertex(v2);
+	scaleVertex(v3);
+	scaleVertex(v4);
+
+	meltyVertData.add(v1, v2, v3);
+	meltyVertData.add(v2, v3, v4);
+}
+
+void BorderDrawBlend(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+
+	float lineWidth = 480.0f * (1.0f / vHeight);
+
+	h -= lineWidth;
+	w -= lineWidth;
+
+	LineDrawBlend(x + lineWidth, y, x + w, y, ARGB, true);
+	LineDrawBlend(x, y, x, y + h, ARGB, false);
+	LineDrawBlend(x + w, y, x + w, y + h, ARGB, false);
+	LineDrawBlend(x, y + h, x + w + lineWidth, y + h, ARGB, true);
+}
+
+void BorderRectDrawBlend(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+	RectDrawBlend(x, y, w, h, ARGB);
+	BorderDrawBlend(x, y, w, h, ARGB | 0xFF000000);
+}
+
+// -----
 
 constexpr BYTE ARROW_0(0x80 + 0x00);
 constexpr BYTE ARROW_1(0x80 + 0x01);
@@ -1836,6 +2016,13 @@ void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade = true) {
 	BorderDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0xE0000000);
 }
 
+void drawSingleHitboxBlend(const BoxData& box, DWORD ARGB, bool shade = true) {
+	if (shade) {
+		RectDrawBlend(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0x30000000); // make sure to sync these alpha values with the ones in the outline shader
+	}
+	BorderDrawBlend(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0xE0000000);
+}
+
 void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	HRESULT hr;
 
@@ -1864,7 +2051,7 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	}
 
 	if (boxList.size() == 1) { 
-		drawSingleHitbox(boxList[0], ARGB);
+		drawSingleHitboxBlend(boxList[0], ARGB);
 		return;
 	}
 
@@ -2212,7 +2399,7 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 
 	i = static_cast<int>(BoxType::Collision);
 	if ((*b)[i].size() == 1) {
-		drawSingleHitbox((*b)[i][0], arrColors[i], false);
+		drawSingleHitboxBlend((*b)[i][0], arrColors[i], false);
 	}
 
 	i = static_cast<int>(BoxType::Hurtbox);
@@ -2223,31 +2410,31 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 
 	i = static_cast<int>(BoxType::Blue);
 	if ((*b)[i].size() == 1) {
-		drawSingleHitbox((*b)[i][0], arrColors[i]);
+		drawSingleHitboxBlend((*b)[i][0], arrColors[i]);
 	}
 
 	i = static_cast<int>(BoxType::Clash);
 	if ((*b)[i].size() == 1) {
-		drawSingleHitbox((*b)[i][0], arrColors[i]);
+		drawSingleHitboxBlend((*b)[i][0], arrColors[i]);
 	}
 
 	i = static_cast<int>(BoxType::Shield);
 	if ((*b)[i].size() == 1) {
-		drawSingleHitbox((*b)[i][0], arrColors[i]);
+		drawSingleHitboxBlend((*b)[i][0], arrColors[i]);
 	}
 
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
 		if (*(uint8_t*)(dwBaseAddress + adSharedExtendOrigins)) {
-			//_drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			//_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
-			LineDraw(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
-			LineDraw(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
+			//LineDrawBlend(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+			//LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
+			LineDrawBlend(0.0f,                                 ((*b)[i][0].y + (*b)[i][0].h), 640.0f,                               ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+			LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f,                          ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f,                        arrColors[i]);
 		} else {
-			//_drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			//_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			LineDraw((*b)[i][0].x, ((*b)[i][0].y + (*b)[i][0].h), ((*b)[i][0].x + (*b)[i][0].w), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
-			LineDraw(((*b)[i][0].x + (*b)[i][0].w / 2.0f), (*b)[i][0].y, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+			//LineDrawBlend((*b)[i][0].x, ((*b)[i][0].y + (*b)[i][0].h), ((*b)[i][0].x + (*b)[i][0].w), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+			//LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), (*b)[i][0].y, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+			LineDrawBlend((*b)[i][0].x,                         ((*b)[i][0].y + (*b)[i][0].h), ((*b)[i][0].x + (*b)[i][0].w),        ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+			LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), (*b)[i][0].y,                  ((*b)[i][0].x + (*b)[i][0].w / 2.0f), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
 		}
 	}
 
@@ -2560,11 +2747,18 @@ void _drawGeneralCalls() {
 
 	device->BeginScene();
 
+
+	posColVertData.draw();
+	
+	_drawHitboxes();
+
+	
 	meltyVertData.draw();
 	meltyLineData.draw();
 
-	posColVertData.draw();
 	posColTexVertData.draw();
+	
+
 
 	
 	//device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTCOLOR);
@@ -2629,8 +2823,10 @@ void __stdcall _doDrawCalls() {
 	*/
 
 	
-	//POINT mousePos = getMousePos();
-	//TextDraw(300, 300, 16, 0xFFFFFFFF, "%ld %ld", mousePos.x, mousePos.y);
+	D3DXVECTOR2 mousePos = getMousePos();
+	//TextDraw(300, 300, 16, 0xFFFFFFFF, "%7.2f %7.2f", mousePos.x, mousePos.y);
+
+	TextDraw(mousePos.x - 8.0f, mousePos.y - 8.0f, 16, 0xFFFFFFFF, "%c", JOYSTICK);
 
 	//dualInputDisplay();
 
@@ -2703,8 +2899,6 @@ void __stdcall _doDrawCalls() {
 
 	// -- ACTUAL RENDERING --
 	backupRenderState();
-
-	_drawHitboxes();
 
 	_drawGeneralCalls();
 

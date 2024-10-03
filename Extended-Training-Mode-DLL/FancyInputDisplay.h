@@ -1,5 +1,43 @@
 #pragma once
 
+template <typename T, int size>
+class CircularBuffer {
+public:
+
+	CircularBuffer() {}
+
+	T get(int i) {
+		while (i < 0) {
+			i += size;
+		}
+		i += index;
+		return data[i % size];
+	}
+
+	void pushHead(const T& v) {
+		index++;
+		if (index >= size) {
+			index = 0;
+		}
+		data[index] = v;
+	}
+
+	void pushTail(const T& v) {
+		index--;
+		if (index < 0) {
+			index = size - 1;
+		}
+		data[index] = v;
+	}
+
+	T front() {
+		return data[index];
+	}
+
+	T data[size];
+	int index = 0; // index will be the head, index-1 will be the tail
+};
+
 typedef struct InputData {
 	DWORD rawInput = 0;
 	BYTE direction = ' ';
@@ -11,9 +49,12 @@ typedef struct InputData {
 class InputColumn {
 public:
 
-	InputColumn(unsigned addr_, float xVal_) {
+	InputColumn(unsigned addr_, float xVal_, int inputMaxLen_) {
 		addr = addr_;
 		xVal = xVal_;
+		inputMaxLen = inputMaxLen_;
+
+		inputs = std::vector<InputData>(60);
 	}
 
 	void update() {
@@ -36,7 +77,7 @@ public:
 
 		inputIndex--;
 		if (inputIndex < 0) {
-			inputIndex = 23;
+			inputIndex = inputMaxLen - 1;
 		}
 
 		inputs[inputIndex].direction = direction;
@@ -98,9 +139,9 @@ public:
 		float y = 0.2f * 480.0f;
 
 		float yVal = 124;
-		for (int i = 0; i < 24; i++) {
+		for (int i = 0; i < inputMaxLen; i++) {
 
-			int index = (i + inputIndex) % 24;
+			int index = (i + inputIndex) % inputMaxLen;
 
 			TextDrawSimple(x, yVal, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
 			TextDraw(x + 55, yVal, 13, 0xFFFFFFFF, "%3d", inputs[index].length);
@@ -113,7 +154,7 @@ public:
 
 	void reset() {
 		inputIndex = 0;
-		for (int i = 0; i < 24; i++) {
+		for (int i = 0; i < inputMaxLen; i++) {
 			inputs[i] = InputData();
 		}
 
@@ -125,15 +166,17 @@ public:
 
 	unsigned addr;
 	float xVal;
-	InputData inputs[24];
+	int inputMaxLen;
+	//InputData inputs[inputMaxLen];
+	std::vector<InputData> inputs;
 	int inputIndex = 0;
 	
 	DWORD rawInputData[60]; // store the last second of inputs for the input display. should it be more than this? maybe? 
 	int rawInputIndex = 0;
 };
 
-InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f);
-InputColumn P2InputBar(0x00555C30 + 0x02E7, 545.0f);
+InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f , 20);
+InputColumn P2InputBar(0x00555C30 + 0x02E7, 545.0f, 20);
 
 class InputDisplay {
 public:
@@ -373,29 +416,25 @@ public:
 		float t1;
 		float t2;
 	
-		
+		for (int i = -60; i <= 0; i++) {
 
-		//for (int i = 0; i < 60 - 2; i++) {
-		for (int i = 60 - 2; i > 0; i--) {
+			JoyLog curr = joyLog.get(i);
+			JoyLog next = joyLog.get(i - 1);
 
-			int index1 = (i + joyLogIndex) % 60;
-			int index2 = (i + joyLogIndex - 1) % 60;
-
-			// break the loop if the time is over a certain value
-			t1 = frame - joyLog[index1].frame;
+			t1 = frame - curr.frame;
 			if (t1 > 30.0f) {
 				continue;
 			}
-			t2 = frame - joyLog[index2].frame;
+			t2 = frame - next.frame;
 
 			if (t2 > 30.0f) {
 				t2 = 30.0f;
 			}
 
 			colStart = 0xFF000000 | ((BYTE)(fabs(-16.0f * t1 + 255.0f)) << 16) | ((BYTE)(-fabs(-16.0f * t1 + 255.0f) + 255.0f));
-			colEnd   = 0xFF000000 | ((BYTE)(fabs(-16.0f * t2 + 255.0f)) << 16) | ((BYTE)(-fabs(-16.0f * t2 + 255.0f) + 255.0f));
+			colEnd = 0xFF000000 | ((BYTE)(fabs(-16.0f * t2 + 255.0f)) << 16) | ((BYTE)(-fabs(-16.0f * t2 + 255.0f) + 255.0f));
 
-			drawLine(joyLog[index1].dir, joyLog[index2].dir, colStart, colEnd);
+			drawLine(curr.dir, next.dir, colStart, colEnd);
 		}
 	}
 
@@ -464,14 +503,16 @@ public:
 			return;
 		}
 
-		if (joyLog[joyLogIndex].dir != direction) {
-			joyLogIndex--;
-			if (joyLogIndex < 0) {
-				joyLogIndex = 60 - 1;
-			}
-			//joyLogIndex = (joyLogIndex + 1) % 60;
-			joyLog[joyLogIndex].dir = direction;
-			joyLog[joyLogIndex].frame = frame;
+		if (joyLog.front().dir != direction) {
+			//joyLog[joyLogIndex].dir = prevDir;
+			//joyLog[joyLogIndex].frame = frame - 1;
+
+			
+			joyLog.pushHead(JoyLog(direction, frame));
+			
+
+			prevDir = direction;
+
 		}
 	}
 
@@ -566,17 +607,22 @@ public:
 
 	float prevJoyX = xPos - 8;
 	float prevJoyY = yPos - 8;
+	int prevDir = 0;
 
-	JoyLog joyLog[60];
-	int joyLogIndex = 0;
+	//JoyLog joyLog[60];
+	//int joyLogIndex = 0;
+	CircularBuffer<JoyLog, 60> joyLog;
 	unsigned frame = 0;
 
 	InputColumn* inputColumn = NULL;
 
 };
 
-InputDisplay P1InputDisplay(200.0f, 400.0f, 25.0f, 25.0f * 1.2f, &P1InputBar);
-InputDisplay P2InputDisplay(378.0f, 400.0f, 25.0f, 25.0f * 1.2f, &P2InputBar);
+//200.0f, 400.0f
+//378.0f, 400.0f
+
+InputDisplay P1InputDisplay(200.0f - 0.0f, 112.0f, 25.0f, 25.0f * 1.2f, &P1InputBar);
+InputDisplay P2InputDisplay(378.0f + 0.0f, 112.0f, 25.0f, 25.0f * 1.2f, &P2InputBar);
 
 void drawFancyInputDisplay() {
 

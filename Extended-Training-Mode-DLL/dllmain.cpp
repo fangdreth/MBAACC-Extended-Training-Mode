@@ -219,6 +219,10 @@ bool __stdcall isPaused()
 	return *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
 }
 
+void __stdcall ___log(const char* msg);
+
+void __stdcall log(const char* format, ...);
+
 static KeyState oSaveStateKey;
 static KeyState oPrevSaveSlotKey;
 static KeyState oNextSaveSlotKey;
@@ -250,24 +254,6 @@ void setAllKeys()
 	oDecRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGDecKey));
 	oReversalKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedReversalKey));
 	oSlowKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSlowKey));
-}
-
-POINT getMousePos() {
-	
-	POINT mousePos;
-	RECT clientRect;
-	if (GetCursorPos(&mousePos)) {
-		HWND hwnd = (HWND) * (DWORD*)(0x0074dfac);
-		ScreenToClient(hwnd, &mousePos);
-
-		GetClientRect(hwnd, &clientRect);
-		if (mousePos.x >= clientRect.left && mousePos.x < clientRect.right &&
-			mousePos.y >= clientRect.top && mousePos.y < clientRect.bottom) {
-			return mousePos;
-		}
-	}
-
-	return { -1, -1 };
 }
 
 // patch funcs
@@ -346,10 +332,6 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 
 	patchMemcpy(addr, temp, 1);
 }
-
-void __stdcall ___log(const char* msg);
-
-void __stdcall log(const char* format, ...);
 
 // -----
 
@@ -918,7 +900,6 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 
 void drawFrameBar()
 {
-	profileFunction();
 
 	if (!safeWrite())
 		return;
