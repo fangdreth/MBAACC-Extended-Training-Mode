@@ -2237,19 +2237,30 @@ __declspec(naked) void _naked_pauseHitEffectsHook() {
 	}
 }
 
+void pauseHitEffectsCallbackSaftey() {
+	// to prevent fire from overflowing and crashing the game, i need to either:
+	// reverse the hit effects thing, we have a release in a week, no
+	// do this
+
+	//memset((void*)(0x0061e170 + (3000 * 0x60)), 0x00, 50 * 0x60);
+}
+
 __declspec(naked) void _naked_pauseHitEffectsCallback() {
-	
-	
+
+
 	// restore the game's pause state
 	__asm {
 		push eax;
 
 		mov eax, _naked_pauseHitEffectsHook_pauseVal;
-		mov	ds:[0055d203h], al;
+		mov	ds : [0055d203h] , al;
 
 		pop eax;
 	}
-	
+
+	//PUSH_ALL;
+	//pauseHitEffectsCallbackSaftey();
+	//POP_ALL;
 
 	__asm { // overwritten code at 0045ca27
 		pop ebx;
@@ -2868,8 +2879,8 @@ void initNewPauseCallback() {
 	patchJump(0x00453d60, _naked_updateEffectsPauseLoop2);
 
 	// IT IS CRITICAL THAT WE HOOK THE START, AND NOT OVERWRITE THE CALL OF THIS FUNC, IN ORDER TO PRESERVE RET ADDRS PROPERLY!
-	patchJump(0x00458e80, _naked_pauseHitEffectsHook);
-	patchJump(0x0045ca27, _naked_pauseHitEffectsCallback);
+	//patchJump(0x00458e80, _naked_pauseHitEffectsHook);
+	//patchJump(0x0045ca27, _naked_pauseHitEffectsCallback);
 
 }
 

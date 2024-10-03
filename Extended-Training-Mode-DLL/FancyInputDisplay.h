@@ -207,7 +207,7 @@ public:
 
 	}
 
-	void drawLine(int a, int b, DWORD colA, DWORD colB) {
+	void drawLine(int a, int b, DWORD colA, DWORD colB, float lineBaseWidth = 6.0f, float size = 8.0f) {
 		// a and b are numpad directions. 
 		// good luck
 
@@ -221,17 +221,12 @@ public:
 		numpadToCoords(a, start);
 		numpadToCoords(b, end);
 
-		const float size = 4.0f;
-
-		D3DXVECTOR2 sizeX = D3DXVECTOR2(size / 2.0f, 0.0f);
-		D3DXVECTOR2 sizeY = D3DXVECTOR2(0.0f, size / 2.0f);
-
 		float mx = end.x - start.x;
 		float my = end.y - start.y;
 
 		float angle = atan2(my, mx) + (3.1415926535f / 2.0f);
 
-		float lineBaseWidth = 6.0f;
+		//float lineBaseWidth = 6.0f;
 
 		D3DXVECTOR2 offset(lineBaseWidth * cos(angle), lineBaseWidth * sin(angle));
 		
@@ -272,8 +267,8 @@ public:
 		meltyVertData.add(point2);
 		*/
 
-		drawPoint(start.x, start.y, colA, 8.0f);
-		drawPoint(end.x, end.y, colB, 8.0f);
+		drawPoint(start.x, start.y, colA, size);
+		drawPoint(end.x, end.y, colB, size);
 	}
 
 	void drawBounds() {
@@ -341,6 +336,15 @@ public:
 
 		drawPoint(xPos, yPos);
 
+		drawLine(1, 2, 0xFFA0A0A0, 0xFFA0A0A0, 2.0f, 4.0f);
+		drawLine(2, 3, 0xFFA0A0A0, 0xFFA0A0A0, 2.0f, 4.0f);
+		drawLine(3, 6, 0xFFA0A0A0, 0xFFA0A0A0, 2.0f, 4.0f);
+		drawLine(6, 9, 0xFFA0A0A0, 0xFFA0A0A0, 2.0f, 4.0f);
+		drawLine(9, 8, 0xFFA0A0A0, 0xFFA0A0A0, 2.0f, 4.0f);
+		drawLine(8, 7, 0xFFA0A0A0, 0xFFA0A0A0, 2.0f, 4.0f);
+		drawLine(7, 4, 0xFFA0A0A0, 0xFFA0A0A0, 2.0f, 4.0f);
+		drawLine(4, 1, 0xFFA0A0A0, 0xFFA0A0A0, 2.0f, 4.0f);
+
 		drawPoint(xPos - cornerScale, yPos);
 		drawPoint(xPos + cornerScale, yPos);
 		drawPoint(xPos, yPos - cornerScale);
@@ -351,14 +355,6 @@ public:
 		drawPoint(xPos + scale, yPos - scale);
 		drawPoint(xPos + scale, yPos + scale);
 
-		//drawLine(1, 2);
-		//drawLine(2, 3);
-		//drawLine(3, 6);
-		//drawLine(6, 9);
-		//drawLine(9, 8);
-		//drawLine(8, 7);
-		//drawLine(7, 4);
-		//drawLine(4, 1);
 	}
 
 	void drawLines() {
