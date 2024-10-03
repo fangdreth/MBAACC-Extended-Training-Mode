@@ -898,13 +898,16 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 
 //In-game frame bar
 
-void drawFrameBar()
+void drawFrameBar(int nYOverride = -1)
 {
-
-	nFrameBarY = *(int*)(dwBaseAddress + adSharedFrameBarY);
-
 	if (!safeWrite())
 		return;
+
+	nFrameBarY = *(int*)(dwBaseAddress + adSharedFrameBarY);
+	if (nYOverride != -1)
+	{
+		nFrameBarY = nYOverride;
+	}
 
 	FrameBar(P1, P2, P3, P4);
 
@@ -1758,8 +1761,8 @@ void frameDoneCallback()
 	DWORD nSubMenuPointer = *reinterpret_cast<DWORD*>(dwBaseAddress + dwBasePointer) + 0x84;
 	//int nSubMenu;
 	//ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
-	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12) || *(bool*)(dwBaseAddress + adSharedHoveringScroll)) {
-		if (bFrameDataDisplay || *(bool*)(dwBaseAddress + adSharedHoveringScroll))
+	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12)) {
+		if (bFrameDataDisplay)
 			drawFrameBar();
 		
 		if (bHitboxesDisplay)
@@ -1771,6 +1774,10 @@ void frameDoneCallback()
 		}*/	
 
 		drawStats();
+	}
+	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll))
+	{
+		drawFrameBar(325);
 	}
 
 	int nFrameTimer = *(int*)(dwBaseAddress + dwFrameTimer);
