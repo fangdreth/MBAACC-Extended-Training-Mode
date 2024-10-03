@@ -22,26 +22,21 @@ void logMatrix(const D3DMATRIX& matrix) {
 }
 
 void writeClipboard(const std::string& text) {
-	// Open the clipboard, check if successful
+
 	if (!OpenClipboard(nullptr)) {
 		return;
 	}
 
-	// Empty the clipboard
 	EmptyClipboard();
 
-	// Allocate global memory for the text
 	HGLOBAL hGlob = GlobalAlloc(GMEM_MOVEABLE, text.size() + 1);
 	if (hGlob) {
-		// Lock the memory and copy the text into it
 		memcpy(GlobalLock(hGlob), text.c_str(), text.size() + 1);
 		GlobalUnlock(hGlob);
 
-		// Set the clipboard data to our text
 		SetClipboardData(CF_TEXT, hGlob);
 	}
 
-	// Close the clipboard
 	CloseClipboard();
 }
 
@@ -75,6 +70,76 @@ private:
 
 // -----
 
+// why have i not abstracted this yet omfg
+// also, tbh, i think im reserving these for use only with MeltyTestVert. maybe. might make drawing easier? or i could just pass this to draw func. i dont want to have different vers for scaled and unscaled tho
+template <typename T>
+class Tri {
+public:
+
+	Tri() {}
+
+	Tri(const T& v1_, const T& v2_, const T& v3_) {
+		v1 = v1_;
+		v2 = v2_;
+		v3 = v3_;
+	}
+
+	Tri(const T& v1_, const T& v2_, const T& v3_, DWORD col) {
+		v1 = v1_;
+		v2 = v2_;
+		v3 = v3_;
+
+		v1.color = col;
+		v2.color = col;
+		v3.color = col;
+	}
+
+	union {
+		T verts[3];
+		struct {
+			T v1;
+			T v2;
+			T v3;
+		};
+	};
+};
+
+template <typename T>
+class Quad {
+public:
+
+	Quad() {}
+
+	Quad(const T& v1_, const T& v2_, const T& v3_, const T& v4_) {
+		v1 = v1_;
+		v2 = v2_;
+		v3 = v3_;
+		v4 = v4_;
+	}
+
+	Quad(const T& v1_, const T& v2_, const T& v3_, const T& v4_, DWORD col) {
+		v1 = v1_;
+		v2 = v2_;
+		v3 = v3_;
+		v4 = v4_;
+
+		v1.color = col;
+		v2.color = col;
+		v3.color = col;
+		v4.color = col;
+	}
+
+	union {
+		T verts[4];
+		struct {
+			T v1;
+			T v2;
+			T v3;
+			T v4;
+		};
+	};
+};
+
 unsigned _vertexBytesTotal = 0;
 unsigned _vertexBytesTransferedThisFrame = 0;
 // this could have been done without a class. i hope the overhead isnt stupid
@@ -105,7 +170,7 @@ public:
 		}
 	}
 
-	void add(T& v1, T& v2) {
+	void add(const T& v1, const T& v2) {
 
 		if (vertexIndex >= vertexCount) {
 			//log("a vertex buffer overflowed. this is critical. increase the buffer size! current: %d fmt: %08X", vertexCount, vertexFormat);
@@ -118,7 +183,7 @@ public:
 
 	}
 
-	void add(T& v1, T& v2, T& v3) {
+	void add(const T& v1, const T& v2, const T& v3) {
 
 		if (vertexIndex >= vertexCount) {
 			//log("a vertex buffer overflowed. this is critical. increase the buffer size! current: %d fmt: %08X", vertexCount, vertexFormat);
@@ -130,6 +195,47 @@ public:
 		vertexData[vertexIndex++] = v2;
 		vertexData[vertexIndex++] = v3;
 
+	}
+
+	void addScale(const T& v1, const T& v2) {
+
+		if (vertexIndex >= vertexCount) {
+			//log("a vertex buffer overflowed. this is critical. increase the buffer size! current: %d fmt: %08X", vertexCount, vertexFormat);
+			// this log call was getting called to often, and would fuck things up
+			return;
+		}
+
+		vertexData[vertexIndex++] = v1;
+		vertexData[vertexIndex++] = v2;
+
+		scaleVertex(vertexData[vertexIndex - 2]);
+		scaleVertex(vertexData[vertexIndex - 1]);
+	}
+
+	void addScale(const T& v1, const T& v2, const T& v3) {
+
+		if (vertexIndex >= vertexCount) {
+			//log("a vertex buffer overflowed. this is critical. increase the buffer size! current: %d fmt: %08X", vertexCount, vertexFormat);
+			// this log call was getting called to often, and would fuck things up
+			return;
+		}
+		
+		vertexData[vertexIndex++] = v1;
+		vertexData[vertexIndex++] = v2;
+		vertexData[vertexIndex++] = v3;
+
+		scaleVertex(vertexData[vertexIndex - 3]);
+		scaleVertex(vertexData[vertexIndex - 2]);
+		scaleVertex(vertexData[vertexIndex - 1]);
+	}
+
+	void add(const Tri<T>& tri) {
+		addScale(tri.v1, tri.v2, tri.v3);
+	}
+
+	void add(const Quad<T>& quad) {
+		addScale(quad.v1, quad.v2, quad.v3);
+		addScale(quad.v2, quad.v3, quad.v4);
 	}
 
 	void draw() {
@@ -210,11 +316,47 @@ typedef struct PosColTexVert {
 	D3DXVECTOR2 texCoord;
 } PosColTexVert;
 
-typedef struct MeltyTestVert {
-	D3DVECTOR position;
-	float rhw;
-	D3DCOLOR color;
-} MeltyTestVert;
+typedef struct MeltyVert { // if having all these initializers causes slowdown, ill cry
+	
+	union {
+		D3DVECTOR position = D3DVECTOR(0.0f, 0.0f, 0.0f);
+		struct {
+			float x;
+			float y;
+			float z;
+		};
+	};
+	float rhw = 1.0f;
+	D3DCOLOR color = 0xFFFFFFFF;
+	union {
+		D3DXVECTOR2 uv = D3DXVECTOR2(0.0f, 0.0f); // might not be the smartest idea, but it works
+		struct {
+			float u;
+			float v;
+		};
+	};
+	
+	MeltyVert() {}
+
+	MeltyVert(float x, float y, D3DXVECTOR2 uv_, DWORD col = 0xFFFFFFFF) {
+		position.x = x;
+		position.y = y;
+		position.z = 0.0f;
+		rhw = 1.0f;
+		color = col;
+		uv.x = uv_.x;
+		uv.y = uv_.y;
+	}
+
+	MeltyVert(float x, float y, DWORD col = 0xFFFFFFFF) {
+		position.x = x;
+		position.y = y;
+		position.z = 0.0f;
+		rhw = 1.0f;
+		color = col;
+	}
+
+} MeltyVert;
 
 size_t fontBufferSize = 0;
 BYTE* fontBuffer = NULL; // this is purposefully not freed on evict btw
@@ -233,8 +375,8 @@ VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontT
 // need to rework font rendering, 4096 is just horrid
 VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 
-VertexData<MeltyTestVert, 3 * 4096> meltyTestVertData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
-VertexData<MeltyTestVert, 2 * 16384, D3DPT_LINELIST> meltyLineData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE); // 8192 is overkill
+VertexData<MeltyVert, 3 * 4096 * 2> meltyVertData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
+VertexData<MeltyVert, 2 * 16384, D3DPT_LINELIST> meltyLineData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty); // 8192 is overkill
 
 // ----
 
@@ -988,6 +1130,14 @@ inline void scaleVertex(D3DVECTOR& v) {
 	*/
 }
 
+inline void scaleVertex(MeltyVert& v) {
+	v.position.x += topLeftPos.x;
+	v.position.y += topLeftPos.y;
+	
+	v.position.x *= renderModificationFactor.x;
+	v.position.y *= renderModificationFactor.y;
+}
+
 void __stdcall backupRenderState() {
 
 	if (_hasStateToRestore) {
@@ -1251,6 +1401,33 @@ void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4)
 
 }
 
+constexpr BYTE ARROW_0(0x80 + 0x00);
+constexpr BYTE ARROW_1(0x80 + 0x01);
+constexpr BYTE ARROW_2(0x80 + 0x02);
+constexpr BYTE ARROW_3(0x80 + 0x03);
+constexpr BYTE ARROW_4(0x80 + 0x04);
+constexpr BYTE ARROW_5(0x80 + 0x05);
+constexpr BYTE ARROW_6(0x80 + 0x06);
+constexpr BYTE ARROW_7(0x80 + 0x07);
+constexpr BYTE ARROW_8(0x80 + 0x08);
+constexpr BYTE ARROW_9(0x80 + 0x09);
+
+constexpr BYTE BUTTON_A(0x90 + 0x00);
+constexpr BYTE BUTTON_B(0x90 + 0x01);
+constexpr BYTE BUTTON_C(0x90 + 0x02);
+constexpr BYTE BUTTON_D(0x90 + 0x03);
+constexpr BYTE BUTTON_E(0x90 + 0x04);
+constexpr BYTE BUTTON_DASH(0x90 + 0x05);
+
+constexpr BYTE BUTTON_A_GRAY(0xA0 + 0x00);
+constexpr BYTE BUTTON_B_GRAY(0xA0 + 0x01);
+constexpr BYTE BUTTON_C_GRAY(0xA0 + 0x02);
+constexpr BYTE BUTTON_D_GRAY(0xA0 + 0x03);
+constexpr BYTE BUTTON_E_GRAY(0xA0 + 0x04);
+constexpr BYTE BUTTON_DASH_GRAY(0xA0 + 0x05);
+
+constexpr BYTE JOYSTICK(0x90 + 0x07); // double size
+
 void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...) {
 	// i do hope that this allocing does not slow things down. i tried saving the va_args for when the actual print func was called, but it would not work
 
@@ -1292,15 +1469,23 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	float w = charWidthOffset;
 	float h = charHeightOffset;
 
-	charWidthOffset *= 0.75;
-
-	//device->SetTexture(0, fontTexture);
+	float charWidth = ((float)(fontSize >> 1)) / (float)fontTexWidth;
+	float charHeight = (((float)fontSize) / (float)fontTexWidth) / 2.0f;
 
 	char* str = buffer;
 
 	while (*str) {
 
-		switch (*str) {
+		BYTE c = *str;
+
+		charWidthOffset = w * 0.75;
+
+		D3DXVECTOR2 charTopLeft(charWidth * (c & 0xF), charHeight * ((c - 0x20) / 0x10));
+
+		D3DXVECTOR2 charW(charWidth, 0.0);
+		D3DXVECTOR2 charH(0.0, charHeight);
+
+		switch (c) {
 		case '\r':
 		case '\n':
 			x = origX;
@@ -1348,9 +1533,36 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 			continue;
 		case '\\': // in case you want to print one of the above chars, you can escape them
 			str++;
-			if (*str == '\0') {
+			if (c == '\0') {
 				return;
 			}
+			break;
+		case ARROW_1:
+		case ARROW_2:
+		case ARROW_3:
+		case ARROW_4:
+		case ARROW_6:
+		case ARROW_7:
+		case ARROW_8:
+		case ARROW_9:
+		case BUTTON_A:
+		case BUTTON_B:
+		case BUTTON_C:
+		case BUTTON_D:
+		case BUTTON_A_GRAY:
+		case BUTTON_B_GRAY:
+		case BUTTON_C_GRAY:
+		case BUTTON_D_GRAY:
+			charWidthOffset = w;
+			break;
+		case ARROW_0:
+		case ARROW_5:
+			charWidthOffset = w;
+			break;
+		case JOYSTICK:
+			charWidthOffset = w;
+			charW = D3DXVECTOR2(charWidth * 2.0f, 0.0);
+			charH = D3DXVECTOR2(0.0, charHeight * 2.0f);
 			break;
 		default:
 			break;
@@ -1358,13 +1570,7 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 
 		y = 1 - origY;
 
-		const float charWidth = ((float)(fontSize >> 1)) / (float)fontTexWidth;
-		const float charHeight = (((float)fontSize) / (float)fontTexWidth) / 2.0f;
-
-		D3DXVECTOR2 charTopLeft(charWidth * (*str & 0xF), charHeight * ((*str - 0x20) / 0x10));
-
-		D3DXVECTOR2 charW(charWidth, 0.0);
-		D3DXVECTOR2 charH(0.0, charHeight);
+	
 
 		PosColTexVert v1{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft };
 		PosColTexVert v2{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft + charW };
@@ -1388,21 +1594,6 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	//device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
 
 }
-
-constexpr BYTE ARROW_1 (0x80 + 0x01);
-constexpr BYTE ARROW_2 (0x80 + 0x02);
-constexpr BYTE ARROW_3 (0x80 + 0x03);
-constexpr BYTE ARROW_4 (0x80 + 0x04);
-constexpr BYTE ARROW_5 (0x80 + 0x05);
-constexpr BYTE ARROW_6 (0x80 + 0x06);
-constexpr BYTE ARROW_7 (0x80 + 0x07);
-constexpr BYTE ARROW_8 (0x80 + 0x08);
-constexpr BYTE ARROW_9 (0x80 + 0x09);
-
-constexpr BYTE BUTTON_A(0x90 + 0x00);
-constexpr BYTE BUTTON_B(0x90 + 0x01);
-constexpr BYTE BUTTON_C(0x90 + 0x02);
-constexpr BYTE BUTTON_D(0x90 + 0x03);
 
 void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format, ...) {
 
@@ -1470,7 +1661,7 @@ void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format
 			x += charWidthOffset;
 			str++;
 			continue; 
-		case 0x80: // technically arrow_0, but thats bs
+		case ARROW_0:
 		case ARROW_5:
 			x += charWidthOffset;
 			x += charWidthOffset;
@@ -2127,6 +2318,10 @@ void DrawLog(char* s) {
 
 // -----
 
+#include "FancyInputDisplay.h" // really need to switch the program over to proper .cpp files
+
+// -----
+
 void _drawHitboxes() {
 
 	profileFunction();
@@ -2354,7 +2549,7 @@ void allocVertexBuffers() {
 	posColVertData.alloc();
 	posTexVertData.alloc();
 	posColTexVertData.alloc();
-	meltyTestVertData.alloc();
+	meltyVertData.alloc();
 	meltyLineData.alloc();
 }
 
@@ -2365,7 +2560,7 @@ void _drawGeneralCalls() {
 
 	device->BeginScene();
 
-	meltyTestVertData.draw();
+	meltyVertData.draw();
 	meltyLineData.draw();
 
 	posColVertData.draw();
@@ -2433,6 +2628,10 @@ void __stdcall _doDrawCalls() {
 
 	*/
 
+	
+	//POINT mousePos = getMousePos();
+	//TextDraw(300, 300, 16, 0xFFFFFFFF, "%ld %ld", mousePos.x, mousePos.y);
+
 	//dualInputDisplay();
 
 	profileFunction();
@@ -2496,6 +2695,7 @@ void __stdcall _doDrawCalls() {
 	*/
 
 	// predraw stuff goes here.
+	drawFancyInputDisplay();
 	_drawProfiler();
 	_drawLog();
 	_drawMiscInfo();

@@ -7,13 +7,13 @@
 // 0x1C4 000111000100
 // 0x004			0x040				0x080			0x100
 // D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1
-typedef struct MeltyVertex {
+typedef struct MeltyVertexOrig {
 	float x, y, z;
 	float rhw; 
 	DWORD diffuse;      
 	DWORD specular;     
 	float u, v;
-} MeltyVertex;
+} MeltyVertexOrig;
 
 // general (non patching) funcs
 DWORD linkedListLength = 0;
@@ -41,13 +41,9 @@ void renderModificationsFrameDone() {
 
 void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
 
-	
-
 	// -1 in this case means "not that type of object"
 	int playerIndex = -1;
 	int effectIndex = -1; 
-
-	
 
 	switch (info.object) {
 		case 0x00555140:
@@ -245,13 +241,13 @@ void drawLoopHook() {
 
 	pVertexStreamZeroData = *(DWORD*)(_naked_drawCallHook_ebx + 0x14);
 	pVertexStreamZeroData = *(DWORD*)(pVertexStreamZeroData + 0x4);
-	MeltyVertex* ptrVertexStreamZeroData = (MeltyVertex*)(pVertexStreamZeroData);
+	MeltyVertexOrig* ptrVertexStreamZeroData = (MeltyVertexOrig*)(pVertexStreamZeroData);
 
 	VertexStreamZeroStride = *(DWORD*)(_naked_drawCallHook_ebx + 0x14);
 	VertexStreamZeroStride = *(DWORD*)(pVertexStreamZeroData + 0x10);
 
-	MeltyTestVert outVerts[4];
-	MeltyVertex firstOutVert;
+	MeltyVert outVerts[4];
+	MeltyVertexOrig firstOutVert;
 
 	if (ptrVertexStreamZeroData[ptrIndexData[0]].x > ptrVertexStreamZeroData[ptrIndexData[1]].x) {
 		firstOutVert = ptrVertexStreamZeroData[ptrIndexData[1]];
@@ -326,7 +322,7 @@ void drawLoopHook() {
 			for (int i = 0; i < 3; i++) {
 
 				DWORD tempIndex = ptrIndexData[i + (j *3)];
-				MeltyVertex v = ptrVertexStreamZeroData[tempIndex];
+				MeltyVertexOrig v = ptrVertexStreamZeroData[tempIndex];
 
 				outVerts[i].position.x = v.x;
 				outVerts[i].position.y = v.y;
@@ -696,8 +692,6 @@ __declspec(naked) void _naked_leadToDrawPrimHook() {
 	}
 
 }
-
-// objectDrawLogger
 
 // init 
 

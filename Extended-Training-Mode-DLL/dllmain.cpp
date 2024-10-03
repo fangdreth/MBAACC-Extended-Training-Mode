@@ -20,9 +20,6 @@
 #include <deque>
 #include "resource.h"
 
-//#pragma comment(lib, "ws2_32.lib") 
-
-
 #include "..\Common\CharacterData.h"
 #include "FrameBar.h"
 
@@ -253,6 +250,24 @@ void setAllKeys()
 	oSlowKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSlowKey));
 }
 
+POINT getMousePos() {
+	
+	POINT mousePos;
+	RECT clientRect;
+	if (GetCursorPos(&mousePos)) {
+		HWND hwnd = (HWND) * (DWORD*)(0x0074dfac);
+		ScreenToClient(hwnd, &mousePos);
+
+		GetClientRect(hwnd, &clientRect);
+		if (mousePos.x >= clientRect.left && mousePos.x < clientRect.right &&
+			mousePos.y >= clientRect.top && mousePos.y < clientRect.bottom) {
+			return mousePos;
+		}
+	}
+
+	return { -1, -1 };
+}
+
 // patch funcs
 void __stdcall patchMemcpy(auto dst, auto src, size_t n)
 {
@@ -334,6 +349,8 @@ void __stdcall ___log(const char* msg);
 
 void __stdcall log(const char* format, ...);
 
+// -----
+
 #include "DirectX.h"
 #include "RendererModifications.h"
 
@@ -393,7 +410,7 @@ void __stdcall log(const char* format, ...) {
 	DrawLog(buffer);
 }
 
-// legacy melty draw funcs
+// legacy melty draw funcs. please use the funcs in directx.h instead of these
 
 extern "C" int asmDrawText(int w, int h, int x, int y, const char* text, int alpha, int shade, int layer, void* addr, int spacing, int idek, char* out);
 
@@ -1259,7 +1276,6 @@ void __stdcall legacyPauseCallback(DWORD dwMilliseconds)
 
 	Sleep(dwMilliseconds);
 }
-
 
 // frame start/done callbacks
 
@@ -2661,104 +2677,6 @@ __declspec(naked) void _naked_newAttackDisplay() {
 
 // input display funcs
 
-typedef struct InputData {
-	DWORD rawInput = 0;
-	BYTE direction = ' ';
-	BYTE buttons = 0;
-	BYTE buttonString[5] = { ' ', ' ', ' ', ' ', '\0' };
-	int length = 0;
-} InputData;
-
-class InputColumn {
-public:
-
-	InputColumn(unsigned addr_, float xVal_) {
-		addr = addr_;
-		xVal = xVal_;
-	}
-
-	void update() {
-		DWORD inputVal = *(DWORD*)(addr);
-
-		BYTE buttons = (inputVal & 0xF00000) >> 20;
-		BYTE direction = 0x80 + (inputVal & 0xF);
-
-		//if (inputs[inputIndex].rawInput == inputVal) {
-		if (inputs[inputIndex].buttons == buttons && inputs[inputIndex].direction == direction) {
-			inputs[inputIndex].length++;
-			if (inputs[inputIndex].length > 999) {
-				inputs[inputIndex].length = 999;
-			}
-			return;
-		}
-		
-		inputIndex--;
-		if (inputIndex < 0) {
-			inputIndex = 23;
-		}
-
-		inputs[inputIndex].direction = direction;
-		inputs[inputIndex].rawInput = inputVal;
-		inputs[inputIndex].buttons = buttons;
-
-		BYTE* buf = inputs[inputIndex].buttonString;
-		if (buttons & 0x1) {
-			*buf = BUTTON_A;
-			buf++;
-		}
-
-		if (buttons & 0x2) {
-			*buf = BUTTON_B;
-			buf++;
-		}
-
-		if (buttons & 0x4) {
-			*buf = BUTTON_C;
-			buf++;
-		}
-
-		if (buttons & 0x8) {
-			*buf = BUTTON_D;
-			buf++;
-		}
-		
-		*buf = '\0';
-
-		inputs[inputIndex].length = 1;
-	}
-
-	void draw() {
-
-		float yVal = 124;
-		for (int i = 0; i < 24; i++) {
-
-			int index = (i + inputIndex) % 24;
-
-			TextDrawSimple(xVal, yVal, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
-			TextDraw(xVal + 55, yVal, 13, 0xFFFFFFFF, "%3d", inputs[index].length);
-
-			RectDraw(xVal, yVal, 90, 12, 0x40000000);
-			yVal += 13;
-		}
-
-	}
-
-	void reset() {
-		inputIndex = 0;
-		for (int i = 0; i < 24; i++) {
-			inputs[i] = InputData();
-		}
-	}
-
-	unsigned addr;
-	float xVal;
-	InputData inputs[24];
-	int inputIndex = 0;
-};
-
-InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f);
-InputColumn P2InputBar(0x00555C30 + 0x02E7, 545.0f);
-
 void dualInputDisplay() {
 
 	// font size 13
@@ -2769,11 +2687,11 @@ void dualInputDisplay() {
 		P2InputBar.update();
 	}
 
-	P1InputBar.draw();
-	P2InputBar.draw();
-
-	//TextDrawSimple(150, 300, 13, 0xFFFFFFFF, "hi: %c %c %c", 0x80, 0x81, 0x82);
-
+	if (*(BYTE*)(0x05585f8)) {
+		P1InputBar.draw();
+		P2InputBar.draw();
+	}
+	
 }
 
 void dualInputDisplayReset() {
@@ -2782,7 +2700,6 @@ void dualInputDisplayReset() {
 }
 
 __declspec(naked) void _naked_dualInputDisplay() {
-
 
 	PUSH_ALL;
 	dualInputDisplay();
@@ -2970,8 +2887,8 @@ void initNewAttackDisplay() {
 
 void initDualInputDisplay() {
 
-	patchJump(0x00477f20, _naked_dualInputDisplay);
-
+	patchJump(0x00477f17, _naked_dualInputDisplay);
+	patchMemset(0x00477f20, 0x90, 5); 
 }
 
 void threadFunc() 

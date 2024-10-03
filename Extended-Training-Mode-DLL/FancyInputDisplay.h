@@ -1,0 +1,514 @@
+#pragma once
+
+typedef struct InputData {
+	DWORD rawInput = 0;
+	BYTE direction = ' ';
+	BYTE buttons = 0;
+	BYTE buttonString[5] = { ' ', ' ', ' ', ' ', '\0' };
+	int length = 0;
+} InputData;
+
+class InputColumn {
+public:
+
+	InputColumn(unsigned addr_, float xVal_) {
+		addr = addr_;
+		xVal = xVal_;
+	}
+
+	void update() {
+		DWORD inputVal = *(DWORD*)(addr);
+
+		BYTE buttons = (inputVal & 0xF00000) >> 20;
+		BYTE direction = 0x80 + (inputVal & 0xF);
+
+		rawInputIndex = (rawInputIndex + 1) % 60;
+		rawInputData[rawInputIndex] = inputVal;
+		
+		//if (inputs[inputIndex].rawInput == inputVal) {
+		if (inputs[inputIndex].buttons == buttons && inputs[inputIndex].direction == direction) {
+			inputs[inputIndex].length++;
+			if (inputs[inputIndex].length > 999) {
+				inputs[inputIndex].length = 999;
+			}
+			return;
+		}
+
+		inputIndex--;
+		if (inputIndex < 0) {
+			inputIndex = 23;
+		}
+
+		inputs[inputIndex].direction = direction;
+		inputs[inputIndex].rawInput = inputVal;
+		inputs[inputIndex].buttons = buttons;
+
+		BYTE* buf = inputs[inputIndex].buttonString;
+		if (buttons & 0x1) {
+			*buf = BUTTON_A;
+			buf++;
+		}
+
+		if (buttons & 0x2) {
+			*buf = BUTTON_B;
+			buf++;
+		}
+
+		if (buttons & 0x4) {
+			*buf = BUTTON_C;
+			buf++;
+		}
+
+		if (buttons & 0x8) {
+			*buf = BUTTON_D;
+			buf++;
+		}
+
+		*buf = '\0';
+
+		inputs[inputIndex].length = 1;
+	}
+
+	void draw() {
+
+		float yVal = 124;
+		for (int i = 0; i < 24; i++) {
+
+			int index = (i + inputIndex) % 24;
+
+			TextDrawSimple(xVal, yVal, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
+			TextDraw(xVal + 55, yVal, 13, 0xFFFFFFFF, "%3d", inputs[index].length);
+
+			RectDraw(xVal, yVal, 90, 12, 0x40000000);
+			yVal += 13;
+		}
+
+	}
+
+	void reset() {
+		inputIndex = 0;
+		for (int i = 0; i < 24; i++) {
+			inputs[i] = InputData();
+		}
+
+		rawInputIndex = 0;
+		for (int i = 0; i < 60; i++) {
+			rawInputData[i] = 0;
+		}
+	}
+
+	unsigned addr;
+	float xVal;
+	InputData inputs[24];
+	int inputIndex = 0;
+	
+	DWORD rawInputData[60]; // store the last second of inputs for the input display. should it be more than this? maybe? 
+	int rawInputIndex = 0;
+};
+
+InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f);
+InputColumn P2InputBar(0x00555C30 + 0x02E7, 545.0f);
+
+class InputDisplay {
+public:
+
+	InputDisplay(float xPos_, float yPos_, float scale_, float cornerScale_, InputColumn* inputColumn_) : xPos(xPos_), yPos(yPos_), scale(scale_), cornerScale(cornerScale_), inputColumn(inputColumn_) { }
+
+	void drawPoint(float x, float y) {
+
+		const float size = 4.0f;
+
+		x -= (size / 2.0f);
+		y -= (size / 2.0f);
+
+		const D3DXVECTOR2 lineTopLeft(9.0f / 16.0f, 7.0f / 16.0);
+		const D3DXVECTOR2 lineWidth(1.0f / 16.0f, 0.0f / 16.0f);
+		const D3DXVECTOR2 lineHeight(0.0f / 16.0f, 1.0f / 16.0f);
+
+		const Quad<MeltyVert> test(
+			MeltyVert(x + 0, y + 0, lineTopLeft),
+			MeltyVert(x + size, y + 0, lineTopLeft + lineWidth),
+			MeltyVert(x + 0, y + size, lineTopLeft + lineHeight),
+			MeltyVert(x + size, y + size, lineTopLeft + lineWidth + lineHeight),
+			0xFFD0D0D0
+		);
+
+		meltyVertData.add(test);
+	}
+
+	void numpadToCoords(int v, D3DXVECTOR2& out) {
+
+		out.x = xPos;
+		out.y = yPos;
+
+		switch (v) {
+		default:
+		case 0:
+		case 5:
+			break;
+		case 1:
+			out.x -= scale;
+			out.y += scale;
+			break;
+		case 2:
+			out.y += cornerScale;
+			break;
+		case 3:
+			out.x += scale;
+			out.y += scale;
+			break;
+		case 4:
+			out.x -= cornerScale;
+			break;
+		case 6:
+			out.x += cornerScale;
+			break;
+		case 7:
+			out.x -= scale;
+			out.y -= scale;
+			break;
+		case 8:
+			out.y -= cornerScale;
+			break;
+		case 9:
+			out.x += scale;
+			out.y -= scale;
+			break;
+		}
+
+	}
+
+	void drawLine(int a, int b, DWORD colA, DWORD colB) {
+		// a and b are numpad directions. 
+		// good luck
+
+		if (a == b) {
+			return;
+		}
+
+		if (a > b) {
+			int temp = b;
+			b = a;
+			a = temp;
+		}
+
+		D3DXVECTOR2 start;
+		D3DXVECTOR2 end;
+
+		numpadToCoords(a, start);
+		numpadToCoords(b, end);
+
+		const float size = 4.0f;
+
+		D3DXVECTOR2 sizeX = D3DXVECTOR2(size / 2.0f, 0.0f);
+		D3DXVECTOR2 sizeY = D3DXVECTOR2(0.0f, size / 2.0f);
+
+		//start -= (size / 2.0f);
+		//end -= (size / 2.0f);
+
+		//const D3DXVECTOR2 lineTopLeft(9.0f / 16.0f, 7.0f / 16.0);
+		//const D3DXVECTOR2 lineWidth(3.0f / 16.0f, 0.0f / 16.0f);
+
+		MeltyVert v1(start.x, start.y, colA);
+		MeltyVert v2(end.x, end.y, colB);
+
+		meltyLineData.addScale(v1, v2);
+
+		/*
+		const D3DXVECTOR2 lineTopLeft(10.0f / 16.0f, 7.0f / 16.0);
+		const D3DXVECTOR2 lineWidth(1.0f / 16.0f, 0.0f / 16.0f);
+		const D3DXVECTOR2 lineHeight(0.0f / 16.0f, 1.0f / 16.0f);
+
+		const Quad<MeltyVert> test(
+			MeltyVert(start.x, start.y, lineTopLeft, 0xFF0000FF),
+			MeltyVert(end.x,   start.y, lineTopLeft + lineWidth, 0xFFFF0000),
+			MeltyVert(start.x,   end.y, lineTopLeft + lineHeight, 0xFF0000FF),
+			MeltyVert(end.x,     end.y, lineTopLeft + lineWidth + lineHeight, 0xFFFF0000)
+		);
+
+		meltyVertData.add(test);
+		*/
+		
+	}
+
+	void drawBounds() {
+		
+		const Quad<MeltyVert> bounds(
+			MeltyVert(xPos - cornerScale * 1.1f, yPos - cornerScale * 1.1f),
+			MeltyVert(xPos - cornerScale * 1.1f, yPos + cornerScale * 1.1f),
+			MeltyVert(xPos + cornerScale * 3.15f, yPos - cornerScale * 1.1f),
+			MeltyVert(xPos + cornerScale * 3.15f, yPos + cornerScale * 1.1f),
+			0x60A0A0A0
+		);
+		
+		meltyVertData.add(bounds);
+
+	}
+
+	void drawBase() {
+
+		const Quad<MeltyVert> center(
+			MeltyVert(xPos - scale, yPos - scale),
+			MeltyVert(xPos - scale, yPos + scale),
+			MeltyVert(xPos + scale, yPos - scale),
+			MeltyVert(xPos + scale, yPos + scale),
+			0xA0A0A0A0
+		);
+
+		meltyVertData.add(center);
+
+		const Tri<MeltyVert> corners[4] = {
+
+			Tri<MeltyVert>(
+				center.verts[0],
+				center.verts[2],
+				MeltyVert(xPos, yPos - cornerScale),
+				0xA0A0A0A0
+			),
+
+			Tri<MeltyVert>(
+				center.verts[1],
+				center.verts[3],
+				MeltyVert(xPos, yPos + cornerScale),
+				0xA0A0A0A0
+			),
+
+			Tri<MeltyVert>(
+				center.verts[0],
+				center.verts[1],
+				MeltyVert(xPos - cornerScale, yPos),
+				0xA0A0A0A0
+			),
+
+			Tri<MeltyVert>(
+				center.verts[2],
+				center.verts[3],
+				MeltyVert(xPos + cornerScale, yPos),
+				0xA0A0A0A0
+			)
+
+		};
+
+		meltyVertData.add(corners[0]);
+		meltyVertData.add(corners[1]);
+		meltyVertData.add(corners[2]);
+		meltyVertData.add(corners[3]);
+
+		drawPoint(xPos, yPos);
+
+		drawPoint(xPos - cornerScale, yPos);
+		drawPoint(xPos + cornerScale, yPos);
+		drawPoint(xPos, yPos - cornerScale);
+		drawPoint(xPos, yPos + cornerScale);
+
+		drawPoint(xPos - scale, yPos - scale);
+		drawPoint(xPos - scale, yPos + scale);
+		drawPoint(xPos + scale, yPos - scale);
+		drawPoint(xPos + scale, yPos + scale);
+
+		//drawLine(1, 2);
+		//drawLine(2, 3);
+		//drawLine(3, 6);
+		//drawLine(6, 9);
+		//drawLine(9, 8);
+		//drawLine(8, 7);
+		//drawLine(7, 4);
+		//drawLine(4, 1);
+	}
+
+	void drawLines() {
+
+		// using the prev values might have weird consequences
+
+		//const D3DXVECTOR2 lineTopLeft(9.0f / 16.0f, 7.0f / 16.0);
+		//const D3DXVECTOR2 lineWidth(2.0f / 16.0f, 1.0f / 16.0f);
+		//const D3DXVECTOR2 lineHeight(1.0f / 16.0f, 1.0f / 16.0f);
+
+		MeltyVert v1;
+		MeltyVert v2;
+
+		DWORD colStart;
+		DWORD colEnd;
+
+		for (int i = 0; i < 60 - 30; i++) {
+
+			int index1 = (i + joyLogIndex) % 60;
+			int index2 = (i + joyLogIndex + 1) % 60;
+
+			colStart = 0xFF000000 | ((BYTE)(255.0f * (((float)i) / 60.0)) << 16) | ((BYTE)(255.0f * (((float)(60 - i)) / 60.0)));
+			colEnd   = 0xFF000000 | ((BYTE)(255.0f * (((float)i+1) / 60.0)) << 16) | ((BYTE)(255.0f * (((float)(60 - i+1)) / 60.0)));
+
+			drawLine(joyLog[index1], joyLog[index2], colStart, colEnd);
+		}
+	}
+
+	void drawJoystick() {
+
+		//TextDraw(xPos, yPos, 16, 0xFFFFFFFF, "hi%c %c%c%c%c %c%c%c%c %c%c%c%c %c%c%c%c", JOYSTICK, BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_A_GRAY, BUTTON_B_GRAY, BUTTON_C_GRAY, BUTTON_D_GRAY, ARROW_1, ARROW_2, ARROW_3, ARROW_4, ARROW_6, ARROW_7, ARROW_8, ARROW_9);
+		DWORD input = inputColumn->rawInputData[inputColumn->rawInputIndex];
+
+		BYTE direction = input & 0xF;
+
+		float joyX = xPos - 8;
+		float joyY = yPos - 8;
+
+		switch (direction) {
+		default:
+		case 0:
+		case 5:
+			break;
+		case 1:
+			joyX -= scale;
+			joyY += scale;
+			break;
+		case 2:
+			joyY += cornerScale;
+			break;
+		case 3:
+			joyX += scale;
+			joyY += scale;
+			break;
+		case 4:
+			joyX -= cornerScale;
+			break;
+		case 6:
+			joyX += cornerScale;
+			break;
+		case 7:
+			joyX -= scale;
+			joyY -= scale;
+			break;
+		case 8:
+			joyY -= cornerScale;
+			break;
+		case 9:
+			joyX += scale;
+			joyY -= scale;
+			break;
+		}
+
+		// todo, draw joystick afterimage
+		if (joyX != prevJoyX || joyY != prevJoyY) {
+		
+			// a factor of 2 might not be the best here
+			//prevJoyX = (joyX + prevJoyX) / 2.0f;
+			//prevJoyY = (joyY + prevJoyY) / 2.0f;
+			// also, putting the prevjoy thing before or after matters
+			
+			prevJoyX = (joyX * 0.45f) + (prevJoyX * 0.55f);
+			prevJoyY = (joyY * 0.45f) + (prevJoyY * 0.55f);
+			
+			TextDraw(prevJoyX, prevJoyY, 16, 0x40FFFFFF, "%c", JOYSTICK);
+		}
+
+		TextDraw(joyX, joyY, 16, 0xFFFFFFFF, "%c", JOYSTICK);
+		
+		joyLogIndex--;
+		if (joyLogIndex < 0) {
+			joyLogIndex = 60 - 1;
+		}
+		//joyLogIndex = (joyLogIndex + 1) % 60;
+		joyLog[joyLogIndex] = direction;
+		
+	}
+
+	void drawButtons() {
+
+		// tbh calling drawtext here is bad. im doing it anyway.
+
+		BYTE buttonA = BUTTON_A_GRAY;
+		BYTE buttonB = BUTTON_B_GRAY;
+		BYTE buttonC = BUTTON_C_GRAY;
+		BYTE buttonD = BUTTON_D_GRAY;
+		BYTE buttonE = BUTTON_E_GRAY;
+		BYTE buttonZ = BUTTON_DASH_GRAY;
+
+		// 0xF00000 has buttons
+		// 0xF00 has if a button was hit this turn 
+		// 0xF has the direction.
+
+		DWORD input = inputColumn->rawInputData[inputColumn->rawInputIndex];
+
+		if ((input & 0x700000) == 0x700000) { // if E, dont handle the other buttons
+			buttonE = BUTTON_E;
+			sizeE = 22;
+		} else {
+			if ((input & 0x300000) == 0x300000) { // if dash, only handle C
+				buttonZ = BUTTON_DASH;
+				sizeZ = 22;
+			} else { // handle A and B like normal
+				if (input & 0x100000) {
+					buttonA = BUTTON_A;
+					sizeA = 22;
+				}
+
+				if (input & 0x200000) {
+					buttonB = BUTTON_B;
+					sizeB = 22;
+				}
+			}
+			if (input & 0x400000) {
+				buttonC = BUTTON_C;
+				sizeC = 22;
+			}
+		}
+
+		if (input & 0x800000) {
+			buttonD = BUTTON_D;
+			sizeD = 22;
+		}
+		
+		TextDraw(xPos + cornerScale + 8 + (18 * 0) - ((sizeA - 16) >> 1), yPos - 16 - ((sizeA - 16) >> 1), sizeA, 0xFFFFFFFF, "%c", buttonA);
+		TextDraw(xPos + cornerScale + 8 + (18 * 1) - ((sizeB - 16) >> 1), yPos - 16 - ((sizeB - 16) >> 1), sizeB, 0xFFFFFFFF, "%c", buttonB);
+		TextDraw(xPos + cornerScale + 8 + (18 * 2) - ((sizeC - 16) >> 1), yPos - 16 - ((sizeC - 16) >> 1), sizeC, 0xFFFFFFFF, "%c", buttonC);
+		TextDraw(xPos + cornerScale + 8 + (18 * 0) - ((sizeD - 16) >> 1), yPos +  2 - ((sizeD - 16) >> 1), sizeD, 0xFFFFFFFF, "%c", buttonD);
+		TextDraw(xPos + cornerScale + 8 + (18 * 1) - ((sizeE - 16) >> 1), yPos +  2 - ((sizeE - 16) >> 1), sizeE, 0xFFFFFFFF, "%c", buttonE);
+		TextDraw(xPos + cornerScale + 8 + (18 * 2) - ((sizeZ - 16) >> 1), yPos +  2 - ((sizeZ - 16) >> 1), sizeZ, 0xFFFFFFFF, "%c", buttonZ);
+
+		if (sizeA > 16) { sizeA--; }
+		if (sizeB > 16) { sizeB--; }
+		if (sizeC > 16) { sizeC--; }
+		if (sizeD > 16) { sizeD--; }
+		if (sizeE > 16) { sizeE--; }
+		if (sizeZ > 16) { sizeZ--; }
+	}
+
+	void draw() {
+		drawBounds();
+		drawBase();
+		drawLines();
+		drawJoystick();
+		drawButtons();
+	}
+
+	const float xPos = 300;
+	const float yPos = 300;
+	const float scale = 50.0f;
+	const float cornerScale = 60.0f;
+
+	int sizeA = 16;
+	int sizeB = 16;
+	int sizeC = 16;
+	int sizeD = 16;
+	int sizeE = 16;
+	int sizeZ = 16;
+
+	float prevJoyX = xPos - 8;
+	float prevJoyY = yPos - 8;
+
+	int joyLog[60];
+	int joyLogIndex = 0;
+
+	InputColumn* inputColumn = NULL;
+
+};
+
+InputDisplay P1InputDisplay(200.0f, 400.0f, 25.0f, 25.0f * 1.2f, &P1InputBar);
+InputDisplay P2InputDisplay(378.0f, 400.0f, 25.0f, 25.0f * 1.2f, &P2InputBar);
+
+void drawFancyInputDisplay() {
+
+	P1InputDisplay.draw();
+	P2InputDisplay.draw();
+
+}

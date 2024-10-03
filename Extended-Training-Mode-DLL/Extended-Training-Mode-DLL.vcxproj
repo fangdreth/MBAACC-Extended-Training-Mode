@@ -175,6 +175,7 @@
     <ClInclude Include="..\Common\RawData.h" />
     <ClInclude Include="..\Common\SharedMemoryHelper.h" />
     <ClInclude Include="DirectX.h" />
+    <ClInclude Include="FancyInputDisplay.h" />
     <ClInclude Include="FrameBar.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="RendererModifications.h" />
