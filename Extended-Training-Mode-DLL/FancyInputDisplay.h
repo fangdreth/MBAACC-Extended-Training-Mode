@@ -186,7 +186,32 @@ public:
 		unsigned frame;
 	} JoyLog;
 
-	InputDisplay(float xPos_, float yPos_, float scale_, float cornerScale_, InputColumn* inputColumn_) : xPos(xPos_), yPos(yPos_), scale(scale_), cornerScale(cornerScale_), inputColumn(inputColumn_) { }
+	InputDisplay(float xPos_, float yPos_, float scale_, float cornerScale_, InputColumn* inputColumn_, int player_) : xPos(xPos_), yPos(yPos_), scale(scale_), cornerScale(cornerScale_), inputColumn(inputColumn_), player(player_) { }
+
+	void handleDrag() {
+		// this should really be done by giving information/a func callback to a global menu manager. but will work for now
+		if (hasDrag && hasDrag != player) {
+			return;
+		}
+
+		static KeyState lButton(VK_LBUTTON);
+
+		if (mousePos.x > xPos - cornerScale * 1.1f &&
+			mousePos.y > yPos - cornerScale * 1.1f &&
+			mousePos.x < xPos + cornerScale * 3.15f &&
+			mousePos.y < yPos + cornerScale * 1.1f
+			) {
+			if (lButton.keyHeld()) {
+				xPos = mousePos.x;
+				yPos = mousePos.y;
+				hasDrag = player;
+				return;
+			}
+		}
+
+		hasDrag = 0;
+
+	}
 
 	void drawPoint(float x, float y, DWORD col = 0xFFD0D0D0, float size = 4.0f) {
 
@@ -325,6 +350,8 @@ public:
 		);
 		
 		meltyVertData.add(bounds);
+
+		TextDraw(xPos + cornerScale * 3.15f - 14, yPos - cornerScale * 1.1f, 8, 0xFFFFFFFF, "P%d", player);
 
 	}
 
@@ -581,6 +608,7 @@ public:
 		if (!safeWrite() || isPaused()) {
 			return;
 		}
+		handleDrag();
 		drawBounds();
 		drawBase();
 		drawLines();
@@ -593,8 +621,8 @@ public:
 		frame++;
 	}
 
-	const float xPos = 300;
-	const float yPos = 300;
+	float xPos = 300;
+	float yPos = 300;
 	const float scale = 50.0f;
 	const float cornerScale = 60.0f;
 
@@ -615,14 +643,19 @@ public:
 	unsigned frame = 0;
 
 	InputColumn* inputColumn = NULL;
+	int player;
+
+	static int hasDrag;
 
 };
+
+int InputDisplay::hasDrag = 0;
 
 //200.0f, 400.0f
 //378.0f, 400.0f
 
-InputDisplay P1InputDisplay(200.0f - 0.0f, 112.0f, 25.0f, 25.0f * 1.2f, &P1InputBar);
-InputDisplay P2InputDisplay(378.0f + 0.0f, 112.0f, 25.0f, 25.0f * 1.2f, &P2InputBar);
+InputDisplay P1InputDisplay(200.0f - 0.0f, 112.0f, 25.0f, 25.0f * 1.2f, &P1InputBar, 1);
+InputDisplay P2InputDisplay(378.0f + 0.0f, 112.0f, 25.0f, 25.0f * 1.2f, &P2InputBar, 2);
 
 void drawFancyInputDisplay() {
 

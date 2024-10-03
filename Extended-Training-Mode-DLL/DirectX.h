@@ -1104,6 +1104,7 @@ D3DVECTOR renderModificationFactor = { 1.0f, 1.0f, 1.0f };
 D3DXVECTOR2 mouseTopLeft;
 D3DXVECTOR2 mouseBottomRight;
 D3DXVECTOR2 mouseFactor;
+D3DXVECTOR2 mousePos; // no use getting this multiple times a frame
 
 inline void scaleVertex(D3DVECTOR& v) {
 	/*
@@ -1262,6 +1263,39 @@ void __stdcall backupRenderState() {
 	device->SetTransform(D3DTS_VIEW, &defaultViewMatrix);
 
 
+	POINT tempMousePos;
+	RECT clientRect;
+	if (GetCursorPos(&tempMousePos)) {
+		HWND hwnd = (HWND) * (DWORD*)(0x0074dfac);
+		ScreenToClient(hwnd, &tempMousePos);
+
+		GetClientRect(hwnd, &clientRect);
+		if (tempMousePos.x >= clientRect.left && tempMousePos.x < clientRect.right &&
+			tempMousePos.y >= clientRect.top && tempMousePos.y < clientRect.bottom) {
+
+			if (tempMousePos.x < mouseTopLeft.x ||
+				tempMousePos.y < mouseTopLeft.y ||
+				tempMousePos.x > mouseBottomRight.x ||
+				tempMousePos.y > mouseBottomRight.y
+				) {
+				mousePos = { -100.0f, -100.0f };
+			}
+
+			mousePos = D3DXVECTOR2((float)tempMousePos.x, (float)tempMousePos.y);
+
+			mousePos.x -= mouseTopLeft.x;
+			mousePos.y -= mouseTopLeft.y;
+
+			mousePos.x *= mouseFactor.x;
+			mousePos.y *= mouseFactor.y;
+
+			
+		}
+	} else {
+		mousePos = { -100.0f, -100.0f };
+	}
+
+	
 }
 	
 void __stdcall restoreRenderState() {	
@@ -1303,41 +1337,6 @@ void __stdcall restoreRenderState() {
 
 	device->SetTransform(D3DTS_VIEW, &_D3DTS_VIEW);
 
-}
-
-D3DXVECTOR2 getMousePos() {
-
-	POINT mousePos;
-	RECT clientRect;
-	if (GetCursorPos(&mousePos)) {
-		HWND hwnd = (HWND) * (DWORD*)(0x0074dfac);
-		ScreenToClient(hwnd, &mousePos);
-
-		GetClientRect(hwnd, &clientRect);
-		if (mousePos.x >= clientRect.left && mousePos.x < clientRect.right &&
-			mousePos.y >= clientRect.top && mousePos.y < clientRect.bottom) {
-
-			if (mousePos.x < mouseTopLeft.x ||
-				mousePos.y < mouseTopLeft.y ||
-				mousePos.x > mouseBottomRight.x ||
-				mousePos.y > mouseBottomRight.y
-				) {
-				return { -1.0f, -1.0f };
-			}
-
-			D3DXVECTOR2 res( (float)mousePos.x, (float)mousePos.y );
-
-			res.x -= mouseTopLeft.x;
-			res.y -= mouseTopLeft.y;
-
-			res.x *= mouseFactor.x;
-			res.y *= mouseFactor.y;
-
-			return res;
-		}
-	}
-
-	return { -1.0f, -1.0f };
 }
 
 // -----
@@ -2822,11 +2821,8 @@ void __stdcall _doDrawCalls() {
 
 	*/
 
-	
-	D3DXVECTOR2 mousePos = getMousePos();
 	//TextDraw(300, 300, 16, 0xFFFFFFFF, "%7.2f %7.2f", mousePos.x, mousePos.y);
 
-	TextDraw(mousePos.x - 8.0f, mousePos.y - 8.0f, 16, 0xFFFFFFFF, "%c", JOYSTICK);
 
 	//dualInputDisplay();
 
@@ -2899,6 +2895,8 @@ void __stdcall _doDrawCalls() {
 
 	// -- ACTUAL RENDERING --
 	backupRenderState();
+
+	TextDraw(mousePos.x - 4.0f, mousePos.y - 4.0f, 8, 0x80FF0000, "%c", JOYSTICK);
 
 	_drawGeneralCalls();
 
