@@ -375,15 +375,16 @@ public:
 	
 		
 
-		for (int i = 0; i < 60 - 2; i++) {
+		//for (int i = 0; i < 60 - 2; i++) {
+		for (int i = 60 - 2; i > 0; i--) {
 
 			int index1 = (i + joyLogIndex) % 60;
-			int index2 = (i + joyLogIndex + 1) % 60;
+			int index2 = (i + joyLogIndex - 1) % 60;
 
 			// break the loop if the time is over a certain value
 			t1 = frame - joyLog[index1].frame;
 			if (t1 > 30.0f) {
-				break;
+				continue;
 			}
 			t2 = frame - joyLog[index2].frame;
 
