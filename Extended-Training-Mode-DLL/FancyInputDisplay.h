@@ -150,6 +150,8 @@ public:
 		BYTE buttons = (inputVal & 0xF00000) >> 20;
 		BYTE direction = 0x80 + (inputVal & 0xF);
 
+		buttons |= (!!(inputVal & 0x01000000)) << 4;
+
 		rawInputIndex = (rawInputIndex + 1) % 60;
 		rawInputData[rawInputIndex] = inputVal;
 		
@@ -172,27 +174,27 @@ public:
 		inputs[inputIndex].buttons = buttons;
 
 		BYTE* buf = inputs[inputIndex].buttonString;
-		if (buttons & 0x1) {
+		if (buttons & 0x01) {
 			*buf = BUTTON_A;
 			buf++;
 		}
 
-		if (buttons & 0x2) {
+		if (buttons & 0x02) {
 			*buf = BUTTON_B;
 			buf++;
 		}
 
-		if (buttons & 0x4) {
+		if (buttons & 0x04) {
 			*buf = BUTTON_C;
 			buf++;
 		}
 
-		if (buttons & 0x8) {
+		if (buttons & 0x08) {
 			*buf = BUTTON_D;
 			buf++;
 		}
 
-		if (inputVal & 0x01000000) {
+		if (buttons & 0x10) {
 			*buf = BUTTON_E;
 			buf++;
 		}
