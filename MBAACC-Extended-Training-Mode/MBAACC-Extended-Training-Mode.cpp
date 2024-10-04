@@ -291,6 +291,8 @@ int main(int argc, char* argv[])
         ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
         ReadFromRegistry(L"HitboxStyle", &nHitboxStyle);
         ReadFromRegistry(L"FrameBarY", &nFrameBarY);
+        ReadFromRegistry(L"P1InputDisplay", &nP1InputDisplay);
+        ReadFromRegistry(L"P2InputDisplay", &nP2InputDisplay);
 
         char pcModPath[MAX_PATH];
         GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
@@ -2896,11 +2898,13 @@ int main(int argc, char* argv[])
                                 {
                                     nP1InputDisplay = max(INPUT_OFF, nP1InputDisplay - 1);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1InputDisplay), &nP1InputDisplay, 1, 0);
+                                    SetRegistryValue(L"P1InputDisplay", nP1InputDisplay);
                                 }
                                 else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                                 {
                                     nP1InputDisplay = min(INPUT_BOTH, nP1InputDisplay + 1);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1InputDisplay), &nP1InputDisplay, 1, 0);
+                                    SetRegistryValue(L"P1InputDisplay", nP1InputDisplay);
                                 }
 
                                 if (nOldEnemyDefenseTypeIndex == -1)
@@ -2909,11 +2913,13 @@ int main(int argc, char* argv[])
                                 {
                                     nP2InputDisplay = max(INPUT_OFF, nP2InputDisplay - 1);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2InputDisplay), &nP2InputDisplay, 1, 0);
+                                    SetRegistryValue(L"P2InputDisplay", nP2InputDisplay);
                                 }
                                 else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
                                 {
                                     nP2InputDisplay = min(INPUT_BOTH, nP2InputDisplay + 1);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2InputDisplay), &nP2InputDisplay, 1, 0);
+                                    SetRegistryValue(L"P2InputDisplay", nP2InputDisplay);
                                 }
 
                                 if (nOldAirRecoveryIndex == -1)
