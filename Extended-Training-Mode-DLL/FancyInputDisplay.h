@@ -129,7 +129,7 @@ typedef struct InputData {
 	DWORD rawInput = 0;
 	BYTE direction = ' ';
 	BYTE buttons = 0;
-	BYTE buttonString[5] = { ' ', ' ', ' ', ' ', '\0' };
+	BYTE buttonString[6] = {' ', ' ', ' ', ' ', ' ', '\0' };
 	int length = 0;
 } InputData;
 
@@ -192,6 +192,11 @@ public:
 			buf++;
 		}
 
+		if (inputVal & 0x01000000) {
+			*buf = BUTTON_E;
+			buf++;
+		}
+
 		*buf = '\0';
 
 		inputs[inputIndex].length = 1;
@@ -230,7 +235,7 @@ public:
 
 			int index = (i + inputIndex) % inputMaxLen;
 
-			TextDrawSimple(x, yVal, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
+			TextDraw(x, yVal, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
 			TextDraw(x + 55, yVal, 13, 0xFFFFFFFF, "%3d", inputs[index].length);
 
 			RectDraw(x, yVal, 90, 12, 0x40000000);
@@ -626,6 +631,7 @@ public:
 
 		DWORD input = inputColumn->rawInputData[inputColumn->rawInputIndex];
 
+		/*
 		if ((input & 0x700000) == 0x700000) { // if E, dont handle the other buttons
 			buttonE = BUTTON_E;
 			sizeE = 22;
@@ -654,13 +660,42 @@ public:
 			buttonD = BUTTON_D;
 			sizeD = 22;
 		}
+		*/
+		
+
+		
+		if (input & 0x01000000) {
+			buttonE = BUTTON_E;
+			sizeE = 22;
+		}
+		
+		if (input & 0x100000) {
+			buttonA = BUTTON_A;
+			sizeA = 22;
+		}
+
+		if (input & 0x200000) {
+			buttonB = BUTTON_B;
+			sizeB = 22;
+		}
+		if (input & 0x400000) {
+			buttonC = BUTTON_C;
+			sizeC = 22;
+		}
+
+		if (input & 0x800000) {
+			buttonD = BUTTON_D;
+			sizeD = 22;
+		}
+		
+		
 		
 		TextDraw(xPos + cornerScale + 8 + (18 * 0) - ((sizeA - 16) >> 1), yPos - 16 - ((sizeA - 16) >> 1), sizeA, 0xFFFFFFFF, "%c", buttonA);
 		TextDraw(xPos + cornerScale + 8 + (18 * 1) - ((sizeB - 16) >> 1), yPos - 16 - ((sizeB - 16) >> 1), sizeB, 0xFFFFFFFF, "%c", buttonB);
 		TextDraw(xPos + cornerScale + 8 + (18 * 2) - ((sizeC - 16) >> 1), yPos - 16 - ((sizeC - 16) >> 1), sizeC, 0xFFFFFFFF, "%c", buttonC);
 		TextDraw(xPos + cornerScale + 8 + (18 * 0) - ((sizeD - 16) >> 1), yPos +  2 - ((sizeD - 16) >> 1), sizeD, 0xFFFFFFFF, "%c", buttonD);
 		TextDraw(xPos + cornerScale + 8 + (18 * 1) - ((sizeE - 16) >> 1), yPos +  2 - ((sizeE - 16) >> 1), sizeE, 0xFFFFFFFF, "%c", buttonE);
-		TextDraw(xPos + cornerScale + 8 + (18 * 2) - ((sizeZ - 16) >> 1), yPos +  2 - ((sizeZ - 16) >> 1), sizeZ, 0xFFFFFFFF, "%c", buttonZ);
+		//TextDraw(xPos + cornerScale + 8 + (18 * 2) - ((sizeZ - 16) >> 1), yPos +  2 - ((sizeZ - 16) >> 1), sizeZ, 0xFFFFFFFF, "%c", buttonZ);
 
 		if (sizeA > 16) { sizeA--; }
 		if (sizeB > 16) { sizeB--; }
@@ -668,6 +703,8 @@ public:
 		if (sizeD > 16) { sizeD--; }
 		if (sizeE > 16) { sizeE--; }
 		if (sizeZ > 16) { sizeZ--; }
+
+		prevInput = input;
 	}
 
 	void draw() {
@@ -718,6 +755,7 @@ public:
 	int player;
 
 	static int hasDrag;
+	DWORD prevInput = 0;
 
 };
 
