@@ -2686,36 +2686,11 @@ __declspec(naked) void _naked_newAttackDisplay() {
 
 // input display funcs
 
-void dualInputDisplay() {
-
-	// font size 13
-	// 24 rows are displayed
-
-	if (!_naked_newPauseCallback2_IsPaused) {
-		P1InputBar.update();
-		P2InputBar.update();
-	}
-
-	if (*(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_LIST || *(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_BOTH) {
-		P1InputBar.draw();
-	}
-	
-	if (*(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_LIST || *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_BOTH) {
-		P2InputBar.draw();
-	}
-	
-}
-
-void dualInputDisplayReset() {
-	P1InputBar.reset();
-	P2InputBar.reset();
-}
-
 __declspec(naked) void _naked_dualInputDisplay() {
 
-	PUSH_ALL;
-	dualInputDisplay();
-	POP_ALL;
+	//PUSH_ALL;
+	//dualInputDisplay();
+	//POP_ALL;
 
 	emitJump(0x00477f25);
 }

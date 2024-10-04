@@ -1,11 +1,106 @@
 #pragma once
+#include <set>
 
 #include "resource.h"
 
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
+void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
+void cursorDraw();
+unsigned directxFrameCount = 0;
 
-void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...);
+D3DXVECTOR2 mousePos; // no use getting this multiple times a frame
+
+typedef struct DragInfo {
+	float* dragPointX;
+	float* dragPointY;
+
+	float topLeftX;
+	float topLeftY;
+
+	float bottomRightX;
+	float bottomRightY;
+
+	bool enable = false;
+
+	DragInfo() {}
+} DragInfo;
+
+class DragManager { // there will only ever be one of this object
+public:
+
+	DragManager() {
+
+	}
+
+	void add(DragInfo* info) {
+		if (dragInfoData.contains(info)) {
+			log("DragManager had a duplicate id added. this should never happen");
+			return;
+		}
+
+		dragInfoData.insert(info);
+
+	}
+
+	void remove(DragInfo* info) {
+		dragInfoData.erase(info);
+	}
+
+	void handleDragId(DragInfo* info) {
+
+		BorderDraw((info->topLeftX), (info->topLeftY), (info->bottomRightX) - (info->topLeftX), (info->bottomRightY) - (info->topLeftY), 0xFF42e5f4);
+		//LineDraw((info->topLeftX), (info->topLeftY), (info->bottomRightX), (info->bottomRightY), 0xFF42e5f4);
+
+		static KeyState lButton(VK_LBUTTON);
+
+		if (mousePos.x > (info->topLeftX) &&
+			mousePos.y > (info->topLeftY) &&
+			mousePos.x < (info->bottomRightX) &&
+			mousePos.y < (info->bottomRightY)
+			) {
+			hasHover = true;
+			if (lButton.keyHeld()) {
+				*(info->dragPointX) = mousePos.x;
+				*(info->dragPointY) = mousePos.y;
+				hasDrag = info;
+				return;
+			}
+		}
+
+		hasDrag = NULL;
+	}
+
+	void handleDrag() {
+
+		if (hasDrag != NULL) {
+			handleDragId(hasDrag);
+			return;
+		}
+
+		hasHover = false;
+
+		for (DragInfo* info : dragInfoData) {
+
+			if (info->enable == false) {
+				continue;
+			}
+
+			handleDragId(info);
+
+			if (hasDrag != NULL) { // we found an element to drag, leave
+				break;
+			}
+		}
+	}
+
+	DragInfo* hasDrag = NULL; // object currently in possesion of drag
+	bool hasHover = false;
+	std::set<DragInfo*> dragInfoData;
+
+};
+
+DragManager dragManager;
 
 void printDirectXError(HRESULT hr) {
 	const char* errorStr = DXGetErrorStringA(hr);
@@ -974,7 +1069,6 @@ D3DVECTOR renderModificationFactor = { 1.0f, 1.0f, 1.0f };
 D3DXVECTOR2 mouseTopLeft;
 D3DXVECTOR2 mouseBottomRight;
 D3DXVECTOR2 mouseFactor;
-D3DXVECTOR2 mousePos; // no use getting this multiple times a frame
 
 // -----
 
@@ -1004,6 +1098,9 @@ constexpr BYTE BUTTON_E_GRAY(0xA0 + 0x04);
 constexpr BYTE BUTTON_DASH_GRAY(0xA0 + 0x05);
 
 constexpr BYTE JOYSTICK(0x90 + 0x07); // double size
+
+constexpr BYTE CURSOR(0x80 + 0x0C); 
+constexpr BYTE CURSOR_LOADING(0x00 + 0x00);
 
 inline void scaleVertex(D3DVECTOR& v) {
 	/*
@@ -1198,8 +1295,37 @@ void __stdcall backupRenderState() {
 		mousePos = { -100.0f, -100.0f };
 	}
 
+	//if (dragManager.hasDrag == NULL) {
+	//	TextDraw(mousePos.x - 4.0f, mousePos.y - 4.0f, 32, 0x8042e5f4, "%c", CURSOR);
+	//} else {										   
+	//	TextDraw(mousePos.x - 4.0f, mousePos.y - 4.0f, 32, 0x8042e5f4, "%c", CURSOR_LOADING);
+	//}
 
-	TextDraw(mousePos.x - 4.0f, mousePos.y - 4.0f, 8, 0x80FF0000, "%c", JOYSTICK);
+	// -----
+
+	/*
+	if (wWidth < (wHeight * 4.0f / 3.0f)) {
+		x = xVal;
+	}
+	else {
+		if (xVal < 300.0f) {
+			x = -((wWidth - (wHeight * 4.0f / 3.0f)) / 2.0f) / wWidth;
+
+			x *= (wWidth / (wHeight * 4.0f / 3.0f));
+			x *= 640.0f;
+
+			x += xVal;
+		}
+		else {
+			x = ((wWidth - (wHeight * 4.0f / 3.0f)) / 2.0f) / wWidth;
+
+			x *= (wWidth / (wHeight * 4.0f / 3.0f));
+			x *= 640.0f;
+
+			x = 640.0 + x - 100.0f;
+		}
+	}
+	*/
 
 }
 	
@@ -1338,7 +1464,7 @@ void RectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
 	posColVertData.add(v2, v3, v4);
 }
 
-void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4) {
+void BorderDraw(float x, float y, float w, float h, DWORD ARGB) {
 	
 	//x /= 480.0f;
 	//w /= 480.0f;
@@ -1537,7 +1663,7 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 
 		charWidthOffset = w * 0.75;
 
-		D3DXVECTOR2 charTopLeft(charWidth * (c & 0xF), charHeight * ((c - 0x20) / 0x10));
+		D3DXVECTOR2 charTopLeft(charWidth * (c & 0xF), charHeight * ((c - 0x00) / 0x10));
 
 		D3DXVECTOR2 charW(charWidth, 0.0);
 		D3DXVECTOR2 charH(0.0, charHeight);
@@ -1618,16 +1744,26 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 			break;
 		case JOYSTICK:
 			charWidthOffset = w;
-			charW = D3DXVECTOR2(charWidth * 2.0f, 0.0);
-			charH = D3DXVECTOR2(0.0, charHeight * 2.0f);
+			charW = D3DXVECTOR2(2.0f / 16.0f, 0.0);
+			charH = D3DXVECTOR2(0.0, 2.0f / 16.0f);
+			break;
+		case CURSOR:
+			charTopLeft.y = (8.0f + ((float)(directxFrameCount & 0b1))) / 16.0f;
+			charWidthOffset = w * 4;
+			charW = D3DXVECTOR2(4.0f / 16.0f, 0.0);
+			charH = D3DXVECTOR2(0.0, 1.0f / 16.0f);
+			break;
+		case CURSOR_LOADING:
+			charTopLeft.x = ((float)(directxFrameCount & 0b111)) / 8.0f;
+			charWidthOffset = w * 2;
+			charW = D3DXVECTOR2(2.0f / 16.0f, 0.0);
+			charH = D3DXVECTOR2(0.0, 2.0f / 16.0f);
 			break;
 		default:
 			break;
 		}
 
 		y = 1 - origY;
-
-	
 
 		PosColTexVert v1{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft };
 		PosColTexVert v2{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft + charW };
@@ -1778,6 +1914,101 @@ void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format
 
 		str++;
 	}
+}
+
+void joystickDraw(float x, float y, float size, DWORD ARGB) {
+
+	D3DXVECTOR2 charTopLeft(7.0f / 16.0f, 9.0f / 16.0f);
+	D3DXVECTOR2 charW(2.0f / 16.0f, 0.0f / 16.0f);
+	D3DXVECTOR2 charH(0.0f / 16.0f, 2.0f / 16.0f);
+
+	Quad<MeltyVert> joystick(
+		MeltyVert(x - 0, y - 0, charTopLeft),
+		MeltyVert(x + size, y - 0, charTopLeft + charW),
+		MeltyVert(x - 0, y + size, charTopLeft + charH),
+		MeltyVert(x + size, y + size, charTopLeft + charW + charH),
+		ARGB
+	);
+
+	meltyVertData.add(joystick);
+}
+
+void cursorDraw() {
+
+	D3DXVECTOR2 charTopLeft;
+	D3DXVECTOR2 charW;
+	D3DXVECTOR2 charH;
+
+	float posX = mousePos.x;
+	float posY = mousePos.y;
+	// if the compiler doesnt precompute these floats i will scream.
+
+	//if (dragManager.hasDrag == NULL) {
+
+	float size = 16.0f;
+
+	posX += size / 3.9f;
+	posY += size / 2.1f;
+
+	charTopLeft = D3DXVECTOR2(10.0f / 16.0f, 8.0f / 16.0f);
+	//charTopLeft.y += ((float)(directxFrameCount & 0b1)) / 16.0f;
+	charW = D3DXVECTOR2(1.0f / 16.0f, 0.0);
+	charH = D3DXVECTOR2(0.0, 1.0f / 16.0f);
+
+	Quad<MeltyVert> cursor(
+		MeltyVert(-size, -size, charTopLeft),
+		MeltyVert(size, -size, charTopLeft + charW),
+		MeltyVert(-size, size, charTopLeft + charH),
+		MeltyVert(size, size, charTopLeft + charW + charH),
+		0xFFFFFFFF
+	);
+	
+	float angle = 00.0f * (3.1415926535 / 180.0f);
+	float c = cos(angle);
+	float s = sin(angle);
+
+	for (int i = 0; i < 4; i++) {
+
+		float xBack = cursor.verts[i].x;
+		float yBack = cursor.verts[i].y;
+
+		cursor.verts[i].x = posX + (xBack * c) - (yBack * s);
+		cursor.verts[i].y = posY + (xBack * s) + (yBack * c);
+	}
+
+	meltyVertData.add(cursor);
+	
+	/*
+	} else {
+
+		float size = 22.627;
+		DWORD col = 0xFFe0000a;
+
+		posX -= size / 64.0f;
+		posY -= size / 64.0f;
+
+		posX += size / 8.0f;
+		posY += size / 8.0f;
+
+		charTopLeft = D3DXVECTOR2(((float)(directxFrameCount & 0b111)) / 8.0f, 0.0f / 16.0f);
+		charTopLeft.x += (1.0f / 512.0f); // for the loading cursor, make sure to add 1/512 to x TO ACCOUNT FOR THAT ONE WHITE PIXEL!
+		charW = D3DXVECTOR2(2.0f / 16.0f, 0.0);
+		charH = D3DXVECTOR2(0.0, 2.0f / 16.0f);
+
+
+		Quad<MeltyVert> cursor(
+			MeltyVert(posX - size, posY - size, charTopLeft),
+			MeltyVert(posX + size, posY - size, charTopLeft + charW),
+			MeltyVert(posX - size, posY + size, charTopLeft + charH),
+			MeltyVert(posX + size, posY + size, charTopLeft + charW + charH),
+			col
+		);
+
+		meltyVertData.add(cursor);
+	}
+	*/
+
+	
 }
 
 IDirect3DPixelShader9* getOutlinePixelShader() {
@@ -2629,11 +2860,14 @@ void _drawGeneralCalls() {
 	
 	_drawHitboxes();
 
-	
+	posColTexVertData.draw();
+	posTexVertData.draw();
+
+	cursorDraw();
 	meltyVertData.draw();
 	meltyLineData.draw();
 
-	posColTexVertData.draw();
+	
 	
 
 
@@ -2644,7 +2878,11 @@ void _drawGeneralCalls() {
 	//device->SetRenderState(D3DRS_ALPHAREF, 0);
 	//device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATER);
 
-	posTexVertData.draw();
+	
+
+	// horrid way to do priority
+	//
+	//meltyVertData.draw();
 	
 
 	device->EndScene();
@@ -2705,6 +2943,8 @@ void __stdcall _doDrawCalls() {
 	//dualInputDisplay();
 
 	profileFunction();
+
+	directxFrameCount++;
 
 	HRESULT hr = device->TestCooperativeLevel();
 

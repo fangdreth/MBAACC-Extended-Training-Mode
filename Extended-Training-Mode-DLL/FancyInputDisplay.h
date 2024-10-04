@@ -1,92 +1,6 @@
 #pragma once
 #include <set>
 
-typedef struct DragInfo {
-	float* dragPointX;
-	float* dragPointY;
-
-	float topLeftX;
-	float topLeftY;
-
-	float bottomRightX;
-	float bottomRightY;
-
-	bool enable = false;
-
-	DragInfo() {}
-} DragInfo;
-
-class DragManager { // there will only ever be one of this object
-public:
-
-	DragManager() {
-
-	}
-
-	void add(DragInfo* info) {
-		if (dragInfoData.contains(info)) {
-			log("DragManager had a duplicate id added. this should never happen");
-			return;
-		}
-
-		dragInfoData.insert(info);
-
-	}
-
-	void remove(DragInfo* info) {
-		dragInfoData.erase(info);
-	}
-
-	void handleDragId(DragInfo* info) {
-
-		BorderDraw((info->topLeftX), (info->topLeftY), (info->bottomRightX) - (info->topLeftX), (info->bottomRightY) - (info->topLeftY), 0xFFFFFFFF);
-
-		static KeyState lButton(VK_LBUTTON);
-
-		if (mousePos.x > (info->topLeftX) &&
-			mousePos.y > (info->topLeftY) &&
-			mousePos.x < (info->bottomRightX) &&
-			mousePos.y < (info->bottomRightY)
-			) {
-			if (lButton.keyHeld()) {
-				*(info->dragPointX) = mousePos.x;
-				*(info->dragPointY) = mousePos.y;
-				hasDrag = info;
-				return;
-			}
-		}
-
-		hasDrag = NULL;
-	}
-
-	void handleDrag() {
-		
-		if (hasDrag != NULL) {
-			handleDragId(hasDrag);
-			return;
-		}
-
-		for (DragInfo* info : dragInfoData) {
-			
-			if (info->enable == false) {
-				continue;
-			}
-
-			handleDragId(info);
-
-			if (hasDrag != NULL) { // we found an element to drag, leave
-				break;
-			}
-		}
-	}
-	
-	DragInfo* hasDrag = NULL; // object currently in possesion of drag
-	std::set<DragInfo*> dragInfoData;
-
-};
-
-DragManager dragManager;
-
 template <typename T, int size>
 class CircularBuffer {
 public:
@@ -136,12 +50,20 @@ typedef struct InputData {
 class InputColumn {
 public:
 
-	InputColumn(unsigned addr_, float xVal_, int inputMaxLen_) {
+	InputColumn(unsigned addr_, float xVal_, float yVal_, int inputMaxLen_) {
 		addr = addr_;
 		xVal = xVal_;
+		yVal = yVal_;
 		inputMaxLen = inputMaxLen_;
 
 		inputs = std::vector<InputData>(60);
+
+		xVal += 50.0f;
+		yVal += 50.0f;
+
+		dragInfo.dragPointX = &xVal;
+		dragInfo.dragPointY = &yVal;
+		dragManager.add(&dragInfo);
 	}
 
 	void update() {
@@ -206,42 +128,21 @@ public:
 
 	void draw() {
 
-		float x;
+		dragInfo.topLeftX = xVal - 50.0f;
+		dragInfo.topLeftY = yVal - 50.0f;
+		dragInfo.bottomRightX = xVal - 50.0f + 90;
+		dragInfo.bottomRightY = yVal - 50.0f + (13 * inputMaxLen);
 
-		if (wWidth < (wHeight * 4.0f / 3.0f)) {
-			x = xVal;
-		} else {
-			if (xVal < 300.0f) {
-				x = -((wWidth - (wHeight * 4.0f / 3.0f)) / 2.0f) / wWidth;
-
-				x *= (wWidth / (wHeight * 4.0f / 3.0f));
-				x *= 640.0f;
-
-				x += xVal;
-			} else {
-				x = ((wWidth - (wHeight * 4.0f / 3.0f)) / 2.0f) / wWidth;
-
-				x *= (wWidth / (wHeight * 4.0f / 3.0f));
-				x *= 640.0f;
-
-				x = 640.0 + x - 100.0f;
-			}
-		}
-	
-		
-
-		float y = 0.2f * 480.0f;
-
-		float yVal = 124;
+		float yValTemp = yVal - 50.0f;
 		for (int i = 0; i < inputMaxLen; i++) {
 
 			int index = (i + inputIndex) % inputMaxLen;
 
-			TextDraw(x, yVal, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
-			TextDraw(x + 55, yVal, 13, 0xFFFFFFFF, "%3d", inputs[index].length);
+			TextDraw(xVal - 50.0f,      yValTemp, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
+			TextDraw(xVal - 50.0f + 55, yValTemp, 13, 0xFFFFFFFF, "%3d",  inputs[index].length);
 
-			RectDraw(x, yVal, 90, 12, 0x40000000);
-			yVal += 13;
+			RectDraw(xVal - 50.0f,      yValTemp, 90, 12, 0x40000000);
+			yValTemp += 13;
 		}
 
 	}
@@ -260,6 +161,7 @@ public:
 
 	unsigned addr;
 	float xVal;
+	float yVal;
 	int inputMaxLen;
 	//InputData inputs[inputMaxLen];
 	std::vector<InputData> inputs;
@@ -267,10 +169,42 @@ public:
 	
 	DWORD rawInputData[60]; // store the last second of inputs for the input display. should it be more than this? maybe? 
 	int rawInputIndex = 0;
+
+	DragInfo dragInfo;
 };
 
-InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f , 20);
-InputColumn P2InputBar(0x00555C30 + 0x02E7, 545.0f, 20);
+InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f , 124.0f, 24);
+InputColumn P2InputBar(0x00555C30 + 0x02E7, 545.0f, 124.0f, 24);
+
+void dualInputDisplay() {
+
+	// font size 13
+	// 24 rows are displayed
+
+	if (!_naked_newPauseCallback2_IsPaused) {
+		P1InputBar.update();
+		P2InputBar.update();
+	}
+
+	P1InputBar.dragInfo.enable = *(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_LIST || *(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_BOTH;
+	P1InputBar.dragInfo.enable &= !(!safeWrite() || isPaused());
+	if (P1InputBar.dragInfo.enable) {
+		P1InputBar.draw();
+	}
+
+	P2InputBar.dragInfo.enable = *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_LIST || *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_BOTH;
+	P2InputBar.dragInfo.enable &= !(!safeWrite() || isPaused());
+	if (P2InputBar.dragInfo.enable) {
+		P2InputBar.draw();
+	}
+
+}
+
+void dualInputDisplayReset() {
+	P1InputBar.reset();
+	P2InputBar.reset();
+}
+
 
 class InputDisplay {
 public:
@@ -291,7 +225,7 @@ public:
 		x -= (size / 2.0f);
 		y -= (size / 2.0f);
 
-		const D3DXVECTOR2 lineTopLeft(9.0f / 16.0f, 7.0f / 16.0);
+		const D3DXVECTOR2 lineTopLeft(9.0f / 16.0f, 9.0f / 16.0);
 		const D3DXVECTOR2 lineWidth(1.0f / 16.0f, 0.0f / 16.0f);
 		const D3DXVECTOR2 lineHeight(0.0f / 16.0f, 1.0f / 16.0f);
 
@@ -373,7 +307,7 @@ public:
 		
 		//const D3DXVECTOR2 lineTopLeft(9.0f / 16.0f, 7.0f / 16.0);
 		//const D3DXVECTOR2 lineWidth(3.0f / 16.0f, 0.0f / 16.0f);
-		const D3DXVECTOR2 lineTopLeft(10.0f / 16.0f, 7.0f / 16.0);
+		const D3DXVECTOR2 lineTopLeft(10.0f / 16.0f, 9.0f / 16.0);
 		const D3DXVECTOR2 lineWidth(1.0f / 16.0f, 0.0f / 16.0f);
 		const D3DXVECTOR2 lineHeight(0.0f / 16.0f, 1.0f / 16.0f);
 
@@ -594,10 +528,12 @@ public:
 			prevJoyX = (joyX * 0.45f) + (prevJoyX * 0.55f);
 			prevJoyY = (joyY * 0.45f) + (prevJoyY * 0.55f);
 			
-			TextDraw(prevJoyX, prevJoyY, 16, 0x40FFFFFF, "%c", JOYSTICK);
+			//TextDraw(prevJoyX, prevJoyY, 16, 0x40FFFFFF, "%c", JOYSTICK);
+			joystickDraw(prevJoyX, prevJoyY, 16, 0x40FFFFFF);
 		}
 
-		TextDraw(joyX, joyY, 16, 0xFFFFFFFF, "%c", JOYSTICK);
+		//TextDraw(joyX, joyY, 16, 0xFFFFFFFF, "%c", JOYSTICK);
+		joystickDraw(joyX, joyY, 16, 0xFFFFFFFF);
 		
 		if (_naked_newPauseCallback2_IsPaused) {
 			return;
@@ -770,6 +706,8 @@ InputDisplay P1InputDisplay(200.0f - 0.0f, 112.0f, 25.0f, 25.0f * 1.2f, &P1Input
 InputDisplay P2InputDisplay(378.0f + 0.0f, 112.0f, 25.0f, 25.0f * 1.2f, &P2InputBar, 2);
 
 void drawFancyInputDisplay() {
+
+	dualInputDisplay();
 
 	P1InputDisplay.dragInfo.enable = *(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_ARCADE || *(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_BOTH;
 	P1InputDisplay.dragInfo.enable &= !(!safeWrite() || isPaused());
