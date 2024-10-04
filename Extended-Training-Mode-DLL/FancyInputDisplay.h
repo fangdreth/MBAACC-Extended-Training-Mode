@@ -1,4 +1,91 @@
 #pragma once
+#include <set>
+
+typedef struct DragInfo {
+	float* dragPointX;
+	float* dragPointY;
+
+	float topLeftX;
+	float topLeftY;
+
+	float bottomRightX;
+	float bottomRightY;
+
+	bool enable = false;
+
+	DragInfo() {}
+} DragInfo;
+
+class DragManager { // there will only ever be one of this object
+public:
+
+	DragManager() {
+
+	}
+
+	void add(DragInfo* info) {
+		if (dragInfoData.contains(info)) {
+			log("DragManager had a duplicate id added. this should never happen");
+			return;
+		}
+
+		dragInfoData.insert(info);
+
+	}
+
+	void remove(DragInfo* info) {
+		dragInfoData.erase(info);
+	}
+
+	void handleDragId(DragInfo* info) {
+
+		BorderDraw((info->topLeftX), (info->topLeftY), (info->bottomRightX) - (info->topLeftX), (info->bottomRightY) - (info->topLeftY), 0xFFFFFFFF);
+
+		static KeyState lButton(VK_LBUTTON);
+
+		if (mousePos.x > (info->topLeftX) &&
+			mousePos.y > (info->topLeftY) &&
+			mousePos.x < (info->bottomRightX) &&
+			mousePos.y < (info->bottomRightY)
+			) {
+			if (lButton.keyHeld()) {
+				*(info->dragPointX) = mousePos.x;
+				*(info->dragPointY) = mousePos.y;
+				hasDrag = info;
+				return;
+			}
+		}
+
+		hasDrag = NULL;
+	}
+
+	void handleDrag() {
+		
+		if (hasDrag != NULL) {
+			handleDragId(hasDrag);
+			return;
+		}
+
+		for (DragInfo* info : dragInfoData) {
+			
+			if (info->enable == false) {
+				continue;
+			}
+
+			handleDragId(info);
+
+			if (hasDrag != NULL) { // we found an element to drag, leave
+				break;
+			}
+		}
+	}
+	
+	DragInfo* hasDrag = NULL; // object currently in possesion of drag
+	std::set<DragInfo*> dragInfoData;
+
+};
+
+DragManager dragManager;
 
 template <typename T, int size>
 class CircularBuffer {
@@ -186,31 +273,10 @@ public:
 		unsigned frame;
 	} JoyLog;
 
-	InputDisplay(float xPos_, float yPos_, float scale_, float cornerScale_, InputColumn* inputColumn_, int player_) : xPos(xPos_), yPos(yPos_), scale(scale_), cornerScale(cornerScale_), inputColumn(inputColumn_), player(player_) { }
-
-	void handleDrag() {
-		// this should really be done by giving information/a func callback to a global menu manager. but will work for now
-		if (hasDrag && hasDrag != player) {
-			return;
-		}
-
-		static KeyState lButton(VK_LBUTTON);
-
-		if (mousePos.x > xPos - cornerScale * 1.1f &&
-			mousePos.y > yPos - cornerScale * 1.1f &&
-			mousePos.x < xPos + cornerScale * 3.15f &&
-			mousePos.y < yPos + cornerScale * 1.1f
-			) {
-			if (lButton.keyHeld()) {
-				xPos = mousePos.x;
-				yPos = mousePos.y;
-				hasDrag = player;
-				return;
-			}
-		}
-
-		hasDrag = 0;
-
+	InputDisplay(float xPos_, float yPos_, float scale_, float cornerScale_, InputColumn* inputColumn_, int player_) : xPos(xPos_), yPos(yPos_), scale(scale_), cornerScale(cornerScale_), inputColumn(inputColumn_), player(player_) { 
+		dragManager.add(&dragInfo);
+		dragInfo.dragPointX = &xPos;
+		dragInfo.dragPointY = &yPos;
 	}
 
 	void drawPoint(float x, float y, DWORD col = 0xFFD0D0D0, float size = 4.0f) {
@@ -605,10 +671,16 @@ public:
 	}
 
 	void draw() {
+
+		dragInfo.topLeftX = xPos - cornerScale * 1.1f;
+		dragInfo.topLeftY = yPos - cornerScale * 1.1f;
+		dragInfo.bottomRightX = xPos + cornerScale * 3.15;
+		dragInfo.bottomRightY = yPos + cornerScale * 1.1f;
+
 		if (!safeWrite() || isPaused()) {
 			return;
 		}
-		handleDrag();
+		//handleDrag();
 		drawBounds();
 		drawBase();
 		drawLines();
@@ -626,6 +698,8 @@ public:
 	const float scale = 50.0f;
 	const float cornerScale = 60.0f;
 
+	DragInfo dragInfo;
+
 	int sizeA = 16;
 	int sizeB = 16;
 	int sizeC = 16;
@@ -637,8 +711,6 @@ public:
 	float prevJoyY = yPos - 8;
 	int prevDir = 0;
 
-	//JoyLog joyLog[60];
-	//int joyLogIndex = 0;
 	CircularBuffer<JoyLog, 60> joyLog;
 	unsigned frame = 0;
 
@@ -659,7 +731,15 @@ InputDisplay P2InputDisplay(378.0f + 0.0f, 112.0f, 25.0f, 25.0f * 1.2f, &P2Input
 
 void drawFancyInputDisplay() {
 
-	P1InputDisplay.draw();
-	P2InputDisplay.draw();
-
+	P1InputDisplay.dragInfo.enable = *(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_ARCADE || *(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_BOTH;
+	P1InputDisplay.dragInfo.enable &= !(!safeWrite() || isPaused());
+	if (P1InputDisplay.dragInfo.enable) {
+		P1InputDisplay.draw();
+	}
+	
+	P2InputDisplay.dragInfo.enable = *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_ARCADE || *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_BOTH;
+	P2InputDisplay.dragInfo.enable &= !(!safeWrite() || isPaused());
+	if (P2InputDisplay.dragInfo.enable) {
+		P2InputDisplay.draw();
+	}
 }

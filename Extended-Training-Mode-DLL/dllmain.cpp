@@ -1383,6 +1383,8 @@ void frameDoneCallback()
 
 	renderModificationsFrameDone();
 
+	dragManager.handleDrag();
+
 	setAllKeys();
 
 	shouldDrawBackground = *(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle) == BG_NORMAL;
@@ -2694,8 +2696,11 @@ void dualInputDisplay() {
 		P2InputBar.update();
 	}
 
-	if (*(BYTE*)(0x05585f8)) {
+	if (*(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_LIST || *(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_BOTH) {
 		P1InputBar.draw();
+	}
+	
+	if (*(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_LIST || *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_BOTH) {
 		P2InputBar.draw();
 	}
 	

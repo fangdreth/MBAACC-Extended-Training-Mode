@@ -518,138 +518,6 @@ bool loadResource(int id, BYTE*& buffer, unsigned& bufferSize) {
 	return true;
 }
 
-/*
-void _initDefaultFont(IDirect3DTexture9*& resTexture) {
-
-	resTexture = NULL;
-
-	ID3DXFont* font = NULL;
-
-	IDirect3DSurface9* surface = NULL;
-	ID3DXBuffer* buffer = NULL;
-	IDirect3DTexture9* texture = NULL;
-
-	int fontSizePow2 = scaleNextPow2(fontSize);
-
-	HRESULT hr = D3DXCreateFontA(
-		device,
-		fontSize, // height 
-		fontWidth,  // width. this could be set to 0, but out of paranoia, i want it at a fixed value
-		//FW_NORMAL, // weight?
-		FW_BOLD,
-		//FW_MEDIUM,
-		//FW_SEMIBOLD,
-		//FW_REGULAR,
-		1,  // mip? i should probs use these tbh
-		FALSE, // italicized
-		DEFAULT_CHARSET,
-		OUT_DEFAULT_PRECIS,
-		ANTIALIASED_QUALITY, // is this the best ver
-		FIXED_PITCH | FF_MODERN, // pitch is monospace,,, modern is,,, for constant stroke witdth?
-		"Courier New", // this appears to be the only monospaced font shipped by default on windows. i could also include another font in rom if needed tho
-		&font
-	);
-
-	if (FAILED(hr)) {
-		log("failed to create font?");
-		return;
-	}
-
-	std::string dispChars = "";
-
-	size_t charCount = 0;
-
-	for (char c = ' '; c <= '~'; c++) {
-		if (((int)c & 0xF) == 0 && c != ' ') {
-			dispChars += "\n";
-		}
-
-		dispChars += c;
-		charCount++;
-	}
-
-	int texWidth = scaleNextPow2(charCount * fontSize);
-	int texHeight = fontSizePow2 * 16;
-
-	D3DVIEWPORT9 viewport;
-
-	viewport.X = 0;
-	viewport.Y = 0;
-	viewport.Width = texWidth;
-	viewport.Height = texHeight;
-	viewport.MinZ = 0.0f;
-	viewport.MaxZ = 1.0f;
-	device->SetViewport(&viewport);
-
-	hr = device->CreateTexture(fontTexWidth, fontTexHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
-	if (FAILED(hr)) {
-		log("font createtexture failed");
-		return;
-	}
-
-	IDirect3DSurface9* oldRenderTarget = nullptr;
-	hr = device->GetRenderTarget(0, &oldRenderTarget);
-	if (FAILED(hr)) {
-		log("font getrendertarget failed");
-		return;
-	}
-
-	hr = texture->GetSurfaceLevel(0, &surface);
-	if (FAILED(hr)) {
-		log("font getsurfacelevel failed");
-		return;
-	}
-
-	hr = device->SetRenderTarget(0, surface);
-	if (FAILED(hr)) {
-		log("font setrendertarget failed");
-		return;
-	}
-
-	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-	//device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0x00, 0xFF, 0xFF, 0xFF), 1.0f, 0);
-
-	hr = device->BeginScene();
-	if (SUCCEEDED(hr)) {
-
-		RECT rect = { 0, 0, texWidth, texHeight };
-		font->DrawTextA(NULL, dispChars.c_str(), -1, &rect, DT_LEFT | DT_TOP, D3DCOLOR_XRGB(255, 255, 255)); // gross horrid disgusting hook removing call
-
-		// End the scene
-		device->EndScene();
-	}
-	else {
-		log("beginscene failed?????");
-		return;
-	}
-
-	// i could, and maybe should, include this png raw.
-	//hr = D3DXSaveTextureToFileA("defaultFont.png", D3DXIFF_PNG, texture, NULL);
-	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG, texture, NULL);
-
-	BYTE* bufferPtr = (BYTE*)buffer->GetBufferPointer();
-	size_t bufferSize = buffer->GetBufferSize();
-
-	fontBuffer = (BYTE*)malloc(bufferSize);
-	if (fontBuffer == NULL) {
-		log("font malloc failed, what are you doing");
-		return;
-	}
-
-	memcpy(fontBuffer, bufferPtr, bufferSize);
-	fontBufferSize = bufferSize;
-
-	device->SetRenderTarget(0, oldRenderTarget);
-	oldRenderTarget->Release();
-	font->Release();
-	//texture->Release();
-	surface->Release();
-	buffer->Release();
-
-	resTexture = texture;
-}
-*/
-
 void _initDefaultFont(IDirect3DTexture9*& resTexture) {
 	
 	HRESULT hr;
@@ -1042,6 +910,8 @@ void initFont() {
 typedef struct Point {
 	float x = 0.0;
 	float y = 0.0;
+	Point() {}
+	Point(float x_, float y_) : x(x_), y(y_) {}
 } Point;
 
 enum class BoxType {
@@ -1105,6 +975,35 @@ D3DXVECTOR2 mouseTopLeft;
 D3DXVECTOR2 mouseBottomRight;
 D3DXVECTOR2 mouseFactor;
 D3DXVECTOR2 mousePos; // no use getting this multiple times a frame
+
+// -----
+
+constexpr BYTE ARROW_0(0x80 + 0x00);
+constexpr BYTE ARROW_1(0x80 + 0x01);
+constexpr BYTE ARROW_2(0x80 + 0x02);
+constexpr BYTE ARROW_3(0x80 + 0x03);
+constexpr BYTE ARROW_4(0x80 + 0x04);
+constexpr BYTE ARROW_5(0x80 + 0x05);
+constexpr BYTE ARROW_6(0x80 + 0x06);
+constexpr BYTE ARROW_7(0x80 + 0x07);
+constexpr BYTE ARROW_8(0x80 + 0x08);
+constexpr BYTE ARROW_9(0x80 + 0x09);
+
+constexpr BYTE BUTTON_A(0x90 + 0x00);
+constexpr BYTE BUTTON_B(0x90 + 0x01);
+constexpr BYTE BUTTON_C(0x90 + 0x02);
+constexpr BYTE BUTTON_D(0x90 + 0x03);
+constexpr BYTE BUTTON_E(0x90 + 0x04);
+constexpr BYTE BUTTON_DASH(0x90 + 0x05);
+
+constexpr BYTE BUTTON_A_GRAY(0xA0 + 0x00);
+constexpr BYTE BUTTON_B_GRAY(0xA0 + 0x01);
+constexpr BYTE BUTTON_C_GRAY(0xA0 + 0x02);
+constexpr BYTE BUTTON_D_GRAY(0xA0 + 0x03);
+constexpr BYTE BUTTON_E_GRAY(0xA0 + 0x04);
+constexpr BYTE BUTTON_DASH_GRAY(0xA0 + 0x05);
+
+constexpr BYTE JOYSTICK(0x90 + 0x07); // double size
 
 inline void scaleVertex(D3DVECTOR& v) {
 	/*
@@ -1184,6 +1083,7 @@ void __stdcall backupRenderState() {
 	device->GetViewport(&viewport);
 	vWidth = viewport.Width;
 	vHeight = viewport.Height;
+	//vWidth = (4.0f / 3.0f) * vHeight;
 
 	HWND hwnd = (HWND)*(DWORD*)(0x0074dfac);
 
@@ -1211,8 +1111,11 @@ void __stdcall backupRenderState() {
 	renderModificationFactor.x = 1.0f;
 	renderModificationFactor.y = 1.0f;
 
-	renderModificationFactor.x = (vHeight * (4.0f / 3.0f)) / 640.0f;
-	renderModificationFactor.y = (vWidth / (4.0f / 3.0f)) / 480.0f;
+	//renderModificationFactor.x = (vHeight * (4.0f / 3.0f)) / 640.0f;
+	//renderModificationFactor.y = (vWidth / (4.0f / 3.0f)) / 480.0f;
+
+	renderModificationFactor.x = (vHeight * (vWidth / vHeight)) / 640.0f;
+	renderModificationFactor.y = (vWidth / (vWidth / vHeight)) / 480.0f;
 
 	renderModificationFactor.x *= factor.x;
 	renderModificationFactor.y *= factor.y;
@@ -1295,7 +1198,9 @@ void __stdcall backupRenderState() {
 		mousePos = { -100.0f, -100.0f };
 	}
 
-	
+
+	TextDraw(mousePos.x - 4.0f, mousePos.y - 4.0f, 8, 0x80FF0000, "%c", JOYSTICK);
+
 }
 	
 void __stdcall restoreRenderState() {	
@@ -1579,33 +1484,6 @@ void BorderRectDrawBlend(float x, float y, float w, float h, DWORD ARGB = 0x8042
 }
 
 // -----
-
-constexpr BYTE ARROW_0(0x80 + 0x00);
-constexpr BYTE ARROW_1(0x80 + 0x01);
-constexpr BYTE ARROW_2(0x80 + 0x02);
-constexpr BYTE ARROW_3(0x80 + 0x03);
-constexpr BYTE ARROW_4(0x80 + 0x04);
-constexpr BYTE ARROW_5(0x80 + 0x05);
-constexpr BYTE ARROW_6(0x80 + 0x06);
-constexpr BYTE ARROW_7(0x80 + 0x07);
-constexpr BYTE ARROW_8(0x80 + 0x08);
-constexpr BYTE ARROW_9(0x80 + 0x09);
-
-constexpr BYTE BUTTON_A(0x90 + 0x00);
-constexpr BYTE BUTTON_B(0x90 + 0x01);
-constexpr BYTE BUTTON_C(0x90 + 0x02);
-constexpr BYTE BUTTON_D(0x90 + 0x03);
-constexpr BYTE BUTTON_E(0x90 + 0x04);
-constexpr BYTE BUTTON_DASH(0x90 + 0x05);
-
-constexpr BYTE BUTTON_A_GRAY(0xA0 + 0x00);
-constexpr BYTE BUTTON_B_GRAY(0xA0 + 0x01);
-constexpr BYTE BUTTON_C_GRAY(0xA0 + 0x02);
-constexpr BYTE BUTTON_D_GRAY(0xA0 + 0x03);
-constexpr BYTE BUTTON_E_GRAY(0xA0 + 0x04);
-constexpr BYTE BUTTON_DASH_GRAY(0xA0 + 0x05);
-
-constexpr BYTE JOYSTICK(0x90 + 0x07); // double size
 
 void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...) {
 	// i do hope that this allocing does not slow things down. i tried saving the va_args for when the actual print func was called, but it would not work
@@ -2895,8 +2773,6 @@ void __stdcall _doDrawCalls() {
 
 	// -- ACTUAL RENDERING --
 	backupRenderState();
-
-	TextDraw(mousePos.x - 4.0f, mousePos.y - 4.0f, 8, 0x80FF0000, "%c", JOYSTICK);
 
 	_drawGeneralCalls();
 
