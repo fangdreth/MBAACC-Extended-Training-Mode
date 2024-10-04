@@ -14,7 +14,7 @@
 
 typedef DWORD ADDRESS;
 
-enum eMenu { MAIN = 2, BATTLE_SETTINGS = 6, ENEMY_SETTINGS = 7, VIEW_SCREEN = 12, COMMAND_LIST = 13 };
+enum eMenu { MAIN = 2, BATTLE_SETTINGS = 6, ENEMY_SETTINGS = 7, VIEW_SCREEN = 12, COMMAND_LIST = 13, TRAINING_DISPLAY = 8 };
 enum eEnemyStatus { STAND, JUMP, CROUCH, CPU, MANUAL, DUMMY };
 enum eMagicCircuit { UNLIMITED = 3 };
 enum eRecover {};
@@ -23,7 +23,7 @@ enum eEnemyDefense { NOGUARD, ALLGUARD, STATUSGUARD, ALLSHIELD, STATUSSHIELD, DO
 enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
-enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE, HIGHLIGHT_PAGE, POSITIONS_PAGE, CHARACTER_SPECIFICS, HITBOXES_PAGE, SAVE_STATE_PAGE, FRAME_TOOL, RNG_PAGE, SYSTEM_PAGE };
+enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE, HIGHLIGHT_PAGE, POSITIONS_PAGE, CHARACTER_SPECIFICS, HITBOXES_PAGE, SAVE_STATE_PAGE, FRAME_TOOL, RNG_PAGE, UI_PAGE, SYSTEM_PAGE };
 enum eHotkeyPages { GENERIC_HOTKEYS_PAGE = 1, FRAME_TOOL_HOTKEYS_PAGE, RNG_HOTKEYS_PAGE };
 enum eReversalType { REVERSAL_OFF, REVERSAL_NORMAL, REVERSAL_RANDOM, REVERSAL_SHIELD, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
@@ -33,6 +33,7 @@ enum eRNGRate { RNG_EVERY_FRAME, RNG_EVERY_RESET };
 enum eHitboxStyle { HITBOX_DRAW_ALL, HITBOX_BLEND };
 enum eBackground { BG_NORMAL, BG_WHITE, BG_GRAY, BG_BLACK, BG_RED, BG_GREEN, BG_BLUE, BG_PURPLE, BG_YELLOW };
 enum eSlow { SLOW_THREE_FOURTHS = 3, SLOW_ONE_HALF = 2, SLOW_ONE_FOURTH = 1 };
+enum eInputDisplay { INPUT_OFF, INPUT_LIST, INPUT_ARCADE, INPUT_BOTH };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
@@ -140,6 +141,8 @@ const DWORD dwFrameTimer = 0x15D1CC;
 const DWORD dwGameState = 0x14EEE8; //1=training
 const DWORD dwP1ThrowInvuln = 0x1552B6; //0=no >0=invuln
 const DWORD dwP2ThrowInvuln = 0x1552B6 + 0xAFC; //0=no >0=invuln
+const DWORD dwAttackInfo = 0x1595B8;
+const DWORD dwInputDisplay = 0x1585F8;
 
 // DLL Constants
 const DWORD dwCameraX = 0x0055dec4;
@@ -355,6 +358,9 @@ const ADDRESS adSharedFastReversePenalty =			adShareBase + 0x1D; // 1 byte
 const ADDRESS adSharedFrameDataDisplay =			adShareBase + 0x1E; // 1 byte
 const ADDRESS adSharedSlowSpeed =					adShareBase + 0x1F; // 1 byte
 const ADDRESS adSharedFrameBarY =					adShareBase + 0x20; // 4 bytes
+const ADDRESS adSharedShowStats =					adShareBase + 0x24; // 1 byte
+const ADDRESS adSharedP1InputDisplay =				adShareBase + 0x25; // 1 byte
+const ADDRESS adSharedP2InputDisplay =				adShareBase + 0x26; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x30;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x31;	// 1 byte
@@ -394,7 +400,7 @@ const std::vector<int> vGuardLevelLookupTable =
 const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
-const int MAX_SETTINGS_PAGES = 10;
+const int MAX_SETTINGS_PAGES = 11;
 const int MAX_HOTKEY_PAGES = 3;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
@@ -474,6 +480,13 @@ const char pcSlowMotion_12[12] = "SLOW MOTION";
 const char pcThreeFourths_4[4] = "3/4";
 const char pcOneHalf_4[4] = "1/2";
 const char pcOneFourth_4[4] = "1/4";
+const char pcList_5[5] = "LIST";
+const char pcArcade_7[7] = "ARCADE";
+const char pcBoth_5[5] = "BOTH";
+const char pcP1InputDisplay_17[17] = "P1 INPUT DISPLAY";
+const char pcP2InputDisplay_17[17] = "P2 INPUT DISPLAY";
+const char pcShowStats_11[11] = "SHOW STATS";
+const char pcAttackDisplay_15[15] = "ATTACK DISPLAY";
 
 const char pcReversals_10[10] = "REVERSALS";
 const char pcTraining_9[9] = "TRAINING";
@@ -484,6 +497,7 @@ const char pcHitboxes_9[9] = "HITBOXES";
 const char pcHighlights_11[11] = "HIGHLIGHTS";
 const char pcRNG_4[4] = "RNG";
 const char pcSystem_8[8] = "SYSTEM";
+const char pcUI_3[3] = "UI";
 const char pcGeneralHotkeys_16[16] = "GENERAL HOTKEYS";
 const char pcFrameDataHotkeys_19[19] = "FRAME DATA HOTKEYS";
 const char pcRNGHotkeys_12[12] = "RNG HOTKEYS";

@@ -1773,11 +1773,16 @@ void frameDoneCallback()
 			drawFrameBar();
 		}*/	
 
-		drawStats();
+		if (*(bool*)(dwBaseAddress + adSharedShowStats))
+			drawStats();
 	}
-	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll))
+	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 1)
 	{
 		drawFrameBar(325);
+	}
+	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 2)
+	{
+		drawFrameBar();
 	}
 
 	int nFrameTimer = *(int*)(dwBaseAddress + dwFrameTimer);
