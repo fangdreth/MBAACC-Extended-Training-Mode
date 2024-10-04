@@ -2321,12 +2321,12 @@ int main(int argc, char* argv[])
                                     nOldThrowRecoveryIndex = nThrowRecoveryIndex;
                                 else if (nOldThrowRecoveryIndex > nThrowRecoveryIndex)// left
                                 {
-                                    bFrameDataDisplay = true;
+                                    bFrameDataDisplay = false;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplay), &bFrameDataDisplay, 1, 0);
                                 }
                                 else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
                                 {
-                                    bFrameDataDisplay = false;
+                                    bFrameDataDisplay = true;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplay), &bFrameDataDisplay, 1, 0);
                                 }
 
@@ -3532,10 +3532,11 @@ int main(int argc, char* argv[])
                                     nAirRecoveryIndex = 2;
                                 }
 
-                                if (bFrameDataDisplay)
+                                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplay), &bFrameDataDisplay, 2, 0);
+                                if (!bFrameDataDisplay)
                                 {
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryNormalString), &pcOn_3, 3, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcOn_3, 3, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryNormalString), &pcOff_4, 4, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcOff_4, 4, 0);
 
                                     nWriteBuffer = 0;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
@@ -3543,8 +3544,8 @@ int main(int argc, char* argv[])
                                 }
                                 else
                                 {
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomLateString), &pcOff_4, 4, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomRandomString), &pcOff_4, 4, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomLateString), &pcOn_3, 3, 0);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomRandomString), &pcOn_3, 3, 0);
 
                                     nWriteBuffer = 6;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
