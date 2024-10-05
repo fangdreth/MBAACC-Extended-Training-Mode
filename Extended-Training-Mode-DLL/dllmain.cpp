@@ -1481,6 +1481,11 @@ void frameDoneCallback()
 	else
 		bHitboxesDisplay = false;
 
+	if (*(bool*)(dwBaseAddress + adSharedHighlight))
+		bHighlightsOn = true;
+	else
+		bHighlightsOn = false;
+
 	doFastReversePenalty();
 	
 	//drawTextWithBorder(300, 300, 36, 48	, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
@@ -1566,6 +1571,7 @@ void frameDoneCallback()
 	if (oHighlightsOnKey.keyDown())
 	{
 		bHighlightsOn = !bHighlightsOn;
+		*(bool*)(dwBaseAddress + adSharedHighlight) = bHighlightsOn;
 		nDrawTextTimer = TEXT_TIMER;
 		if (bHighlightsOn)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HIGHLIGHTS ON");
@@ -1780,7 +1786,7 @@ void frameDoneCallback()
 	}
 	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 1)
 	{
-		drawFrameBar(325);
+		drawFrameBar(405);
 	}
 	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 2)
 	{
