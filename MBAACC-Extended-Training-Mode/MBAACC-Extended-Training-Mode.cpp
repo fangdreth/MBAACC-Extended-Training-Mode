@@ -297,7 +297,7 @@ int main(int argc, char* argv[])
 
         char pcModPath[MAX_PATH];
         GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
-        std::string sDLLPath = std::string(pcModPath).substr(0, std::string(pcModPath).length() - 33) + "Extended-Training-Mode-DLL.dll";
+        std::string sDLLPath = std::string(pcModPath).substr(0, std::string(pcModPath).length() - 33) + "\Extended-Training-Mode-DLL.dll";
         while (!std::ifstream(sDLLPath).good())
         {
             std::wstring wsErrorString(sDLLPath.begin(), sDLLPath.end());
