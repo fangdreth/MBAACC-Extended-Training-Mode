@@ -148,6 +148,10 @@ Yes.
   + Pick a custom Seed or a specific RNG value
   + Can reset every frame or just set it once when resetting training mode
 
++ Improved Input Display
+  + Shows E presses
+  + Arcade style similar to Strive
+
 + Customization
   + Configurable hotkeys for many of the training mode functions
   + Significantly more accurate FPS
@@ -155,12 +159,12 @@ Yes.
   + Disable the background and replace it with a solid color.  Useful for chroma keying
   + Disable shadows
 
++ Training Display
+  + Improved the accuracy of meter built during a combo
+
 + More character specific controls
   + FMaids Hearts
   + Ryougi Knife
-
-+ Training Display
-	+ Improved the accuracy of meter built during a combo
 
 + Et cetera
   + Helper text has been added to everything in the Extended Settings menu
@@ -168,7 +172,7 @@ Yes.
   + Improved inputs being dropped in the menu performance
   + Moved several menus around
   + Frame advantage is not shown with the FPS counter anymore
-  + Removed random tripping 
+  + Removed random tripping
 
 # License
 
