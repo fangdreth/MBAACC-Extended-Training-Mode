@@ -787,12 +787,18 @@ void UpdateBars(Player& P, Player& Assist)
 			else //Grounded
 			{
 				if (P.nHitstunRemaining > 1) //Still has hitstun remaining
+				{
 					sBarValue = std::format("{:2}", (P.nHitstunRemaining - 1) % 100);
+				}
 			}
 		}
 		else if (P.bBlockstunFlag) //Blockstun
 		{
 			sFont = FD_BLOCKSTUN;
+			if (P.cState_Stance != 1 && P.nHitstunRemaining > 1)
+			{
+				sBarValue = std::format("{:2}", (P.nHitstunRemaining - 1) % 100);
+			}
 		}
 		else if (bHasInvuln)
 		{

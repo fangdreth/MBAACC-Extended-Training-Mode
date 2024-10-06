@@ -209,6 +209,10 @@ void UpdateBars(Player& P, Player& Assist)
 		else if (*(char*)(P.adPlayerBase + adBlockstunFlag)) //Blockstun
 		{
 			dwColor = 0xFFB4B4B4;
+			if (*(int*)(P.adPlayerBase + adHitstunRemaining) > 2 && *(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Stance) != 1)
+			{
+				nNumber = *(short*)(P.adPlayerBase + adHitstunRemaining) - 1;
+			}
 		}
 		else if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0) //Attacking
 		{
