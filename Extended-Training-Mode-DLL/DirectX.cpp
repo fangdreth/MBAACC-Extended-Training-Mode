@@ -101,9 +101,7 @@ IDirect3DPixelShader9* createPixelShader(const char* pixelShaderCode) {
 		NULL,
 		NULL,
 		"main",
-		//"trans",					 
 		"ps_3_0",
-		//"ps_4_0",
 		0,
 		&pShaderBuffer,
 		&pErrorBuffer,
@@ -111,6 +109,8 @@ IDirect3DPixelShader9* createPixelShader(const char* pixelShaderCode) {
 	);
 
 	if (FAILED(hr)) {
+		log("pixel shader compile failed???");
+		printDirectXError(hr);
 		if (pErrorBuffer) {
 			log((char*)pErrorBuffer->GetBufferPointer());
 			pErrorBuffer->Release();
@@ -121,7 +121,8 @@ IDirect3DPixelShader9* createPixelShader(const char* pixelShaderCode) {
 	hr = device->CreatePixelShader((DWORD*)pShaderBuffer->GetBufferPointer(), &res);
 
 	if (FAILED(hr)) {
-		log("createShader died");
+		log("createPixelShader died");
+		printDirectXError(hr);
 		return NULL;
 	}
 
@@ -152,6 +153,8 @@ IDirect3DVertexShader9* createVertexShader(const char* shaderCode) {
 	);
 
 	if (FAILED(hr)) {
+		log("vertex shader compile failed???");
+		printDirectXError(hr);
 		if (pErrorBuffer) {
 			log((char*)pErrorBuffer->GetBufferPointer());
 			pErrorBuffer->Release();
@@ -162,7 +165,8 @@ IDirect3DVertexShader9* createVertexShader(const char* shaderCode) {
 	hr = device->CreateVertexShader((DWORD*)pShaderBuffer->GetBufferPointer(), &res);
 
 	if (FAILED(hr)) {
-		log("createShader died");
+		log("createVertexShader died");
+		printDirectXError(hr);
 		return NULL;
 	}
 
@@ -439,7 +443,9 @@ void _initMeltyFont() {
 		return;
 	}
 
+	log("creating font outline pixel shader");
 	IDirect3DPixelShader9* textOutlinePixelShader = getFontOutlinePixelShader();
+	log("creating font outline vertex shader");
 	IDirect3DVertexShader9* textOutlineVertexShader = getFontOutlineVertexShader();
 
 	//device->SetPixelShader(textOutlinePixelShader);
@@ -449,8 +455,7 @@ void _initMeltyFont() {
 	device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
 
 	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-	//device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0xFF, 0, 0, 0xFF), 1.0f, 0);
-
+	
 	VertexData<PosTexVert, 3 * 2> tempVertData(D3DFVF_XYZ | D3DFVF_TEX1, &meltyTex); // the deconstructor should handle this.	
 	tempVertData.alloc();
 
@@ -470,6 +475,10 @@ void _initMeltyFont() {
 
 	//hr = D3DXSaveTextureToFileA("meltyFontTest.png", D3DXIFF_PNG, texture, NULL);
 	hr = D3DXSaveTextureToFileInMemory(&buffer, D3DXIFF_PNG, texture, NULL);
+	if (FAILED(hr)) {
+		log("_initMeltyFont D3DXSaveTextureToFileInMemory failed");
+		return;
+	}
 
 	BYTE* bufferPtr = (BYTE*)buffer->GetBufferPointer();
 	size_t bufferSize = buffer->GetBufferSize();
@@ -2689,11 +2698,116 @@ _declspec(naked) void _naked_RehookDirectX() {
 	}
 }
 
+void logDeviceCapability() {
+
+
+	D3DCAPS9 caps;
+
+	//IDirect3D9* pD3D9 = (IDirect3D9*)0x00767448;
+	//HRESULT hr = pD3D9->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &caps);
+	device->GetDeviceCaps(&caps);
+
+	log("DEVICE INFO");
+	log("%32s D3DDEVTYPE        %08X", "DeviceType", caps.DeviceType);
+	log("%32s UINT              %d", "AdapterOrdinal", caps.AdapterOrdinal);
+	log("%32s DWORD             %08X", "Caps", caps.Caps);
+	log("%32s DWORD             %08X", "Caps2", caps.Caps2);
+	log("%32s DWORD             %08X", "Caps3", caps.Caps3);
+	log("%32s DWORD             %08X", "PresentationIntervals", caps.PresentationIntervals);
+	log("%32s DWORD             %08X", "CursorCaps", caps.CursorCaps);
+	log("%32s DWORD             %08X", "DevCaps", caps.DevCaps);
+	log("%32s DWORD             %08X", "PrimitiveMiscCaps", caps.PrimitiveMiscCaps);
+	log("%32s DWORD             %08X", "RasterCaps", caps.RasterCaps);
+	log("%32s DWORD             %08X", "ZCmpCaps", caps.ZCmpCaps);
+	log("%32s DWORD             %08X", "SrcBlendCaps", caps.SrcBlendCaps);
+	log("%32s DWORD             %08X", "DestBlendCaps", caps.DestBlendCaps);
+	log("%32s DWORD             %08X", "AlphaCmpCaps", caps.AlphaCmpCaps);
+	log("%32s DWORD             %08X", "ShadeCaps", caps.ShadeCaps);
+	log("%32s DWORD             %08X", "TextureCaps", caps.TextureCaps);
+	log("%32s DWORD             %08X", "TextureFilterCaps", caps.TextureFilterCaps);
+	log("%32s DWORD             %08X", "CubeTextureFilterCaps", caps.CubeTextureFilterCaps);
+	log("%32s DWORD             %08X", "VolumeTextureFilterCaps", caps.VolumeTextureFilterCaps);
+	log("%32s DWORD             %08X", "TextureAddressCaps", caps.TextureAddressCaps);
+	log("%32s DWORD             %08X", "VolumeTextureAddressCaps", caps.VolumeTextureAddressCaps);
+	log("%32s DWORD             %08X", "LineCaps", caps.LineCaps);
+	log("%32s DWORD             %08X", "MaxTextureWidth", caps.MaxTextureWidth);
+	log("%32s DWORD             %08X", "MaxTextureHeight", caps.MaxTextureHeight);
+	log("%32s DWORD             %08X", "MaxVolumeExtent", caps.MaxVolumeExtent);
+	log("%32s DWORD             %08X", "MaxTextureRepeat", caps.MaxTextureRepeat);
+	log("%32s DWORD             %08X", "MaxTextureAspectRatio", caps.MaxTextureAspectRatio);
+	log("%32s DWORD             %08X", "MaxAnisotropy", caps.MaxAnisotropy);
+	log("%32s float             %f", "MaxVertexW", caps.MaxVertexW);
+	log("%32s float             %f", "GuardBandLeft", caps.GuardBandLeft);
+	log("%32s float             %f", "GuardBandTop", caps.GuardBandTop);
+	log("%32s float             %f", "GuardBandRight", caps.GuardBandRight);
+	log("%32s float             %f", "GuardBandBottom", caps.GuardBandBottom);
+	log("%32s float             %f", "ExtentsAdjust", caps.ExtentsAdjust);
+	log("%32s DWORD             %08X", "StencilCaps", caps.StencilCaps);
+	log("%32s DWORD             %08X", "FVFCaps", caps.FVFCaps);
+	log("%32s DWORD             %08X", "TextureOpCaps", caps.TextureOpCaps);
+	log("%32s DWORD             %08X", "MaxTextureBlendStages", caps.MaxTextureBlendStages);
+	log("%32s DWORD             %08X", "MaxSimultaneousTextures", caps.MaxSimultaneousTextures);
+	log("%32s DWORD             %08X", "VertexProcessingCaps", caps.VertexProcessingCaps);
+	log("%32s DWORD             %08X", "MaxActiveLights", caps.MaxActiveLights);
+	log("%32s DWORD             %08X", "MaxUserClipPlanes", caps.MaxUserClipPlanes);
+	log("%32s DWORD             %08X", "MaxVertexBlendMatrices", caps.MaxVertexBlendMatrices);
+	log("%32s DWORD             %08X", "MaxVertexBlendMatrixIndex", caps.MaxVertexBlendMatrixIndex);
+	log("%32s float             %f", "MaxPointSize", caps.MaxPointSize);
+	log("%32s DWORD             %08X", "MaxPrimitiveCount", caps.MaxPrimitiveCount);
+	log("%32s DWORD             %08X", "MaxVertexIndex", caps.MaxVertexIndex);
+	log("%32s DWORD             %08X", "MaxStreams", caps.MaxStreams);
+	log("%32s DWORD             %08X", "MaxStreamStride", caps.MaxStreamStride);
+	log("%32s DWORD             %08X", "VertexShaderVersion", caps.VertexShaderVersion);
+	log("%32s DWORD             %08X", "MaxVertexShaderConst", caps.MaxVertexShaderConst);
+	log("%32s DWORD             %08X", "PixelShaderVersion", caps.PixelShaderVersion);
+	log("%32s float             %f", "PixelShader1xMaxValue", caps.PixelShader1xMaxValue);
+	log("%32s DWORD             %08X", "DevCaps2", caps.DevCaps2);
+	log("%32s float             %f", "MaxNpatchTessellationLevel", caps.MaxNpatchTessellationLevel);
+	log("%32s DWORD             %08X", "Reserved5", caps.Reserved5);
+	log("%32s UINT              %d", "MasterAdapterOrdinal", caps.MasterAdapterOrdinal);
+	log("%32s UINT              %d", "AdapterOrdinalInGroup", caps.AdapterOrdinalInGroup);
+	log("%32s UINT              %d", "NumberOfAdaptersInGroup", caps.NumberOfAdaptersInGroup);
+	log("%32s DWORD             %08X", "DeclTypes", caps.DeclTypes);
+	log("%32s DWORD             %08X", "NumSimultaneousRTs", caps.NumSimultaneousRTs);
+	log("%32s DWORD             %08X", "StretchRectFilterCaps", caps.StretchRectFilterCaps);
+	log("%32s DWORD             %08X", "VertexTextureFilterCaps", caps.VertexTextureFilterCaps);
+	log("%32s DWORD             %08X", "MaxVShaderInstructionsExecuted", caps.MaxVShaderInstructionsExecuted);
+	log("%32s DWORD             %08X", "MaxPShaderInstructionsExecuted", caps.MaxPShaderInstructionsExecuted);
+	log("%32s DWORD             %08X", "MaxVertexShader30InstructionSlots", caps.MaxVertexShader30InstructionSlots);
+	log("%32s DWORD             %08X", "MaxPixelShader30InstructionSlots", caps.MaxPixelShader30InstructionSlots);
+	log("-----");
+	log("D3DVSHADERCAPS2_0 DWORD Caps %08X", caps.VS20Caps.Caps);
+	log("D3DVSHADERCAPS2_0 INT   DynamicFlowControlDepth %d", caps.VS20Caps.DynamicFlowControlDepth);
+	log("D3DVSHADERCAPS2_0 INT   NumTemps %d", caps.VS20Caps.NumTemps);
+	log("D3DVSHADERCAPS2_0 INT   StaticFlowControlDepth %d", caps.VS20Caps.StaticFlowControlDepth);
+	log("-----");
+	log("D3DPSHADERCAPS2_0 DWORD Caps %08X", caps.PS20Caps.Caps);
+	log("D3DPSHADERCAPS2_0 INT   DynamicFlowControlDepth %d", caps.PS20Caps.DynamicFlowControlDepth);
+	log("D3DPSHADERCAPS2_0 INT   NumTemps %d", caps.PS20Caps.NumTemps);
+	log("D3DPSHADERCAPS2_0 INT   StaticFlowControlDepth %d", caps.PS20Caps.StaticFlowControlDepth);
+	log("D3DPSHADERCAPS2_0 INT   NumInstructionSlots %d", caps.PS20Caps.NumInstructionSlots);
+	log("-----");
+	
+	log("%32s                   %d.%d", "VertexShaderVersion", D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MINOR(caps.VertexShaderVersion));
+	log("%32s                   %d.%d", "PixelShaderVersion",  D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion), D3DSHADER_VERSION_MINOR(caps.PixelShaderVersion));
+
+	log("-----");
+}
+
 bool HookDirectX() {
 
 	if (device == NULL) {
 		return false;
 	}
+
+	HRESULT hr = device->TestCooperativeLevel();
+
+	if (hr != D3D_OK) {
+		return false;
+	}
+
+	logDeviceCapability();
+
 
 	// disable their fps counter
 	patchByte(0x00554128, 0x00);

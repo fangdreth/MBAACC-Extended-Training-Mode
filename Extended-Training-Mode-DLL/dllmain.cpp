@@ -211,6 +211,7 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 
 bool logFileInit = false;
 void __stdcall initLogFile() {
+#ifdef ENABLEFILELOG
 
 	FILE* file = fopen("Extended-Training-Mode-DLL.log", "w");
 	if (file == NULL) {
@@ -221,6 +222,7 @@ void __stdcall initLogFile() {
 
 
 	logFileInit = true;
+#endif
 }
 
 void __stdcall writeLog(const char* msg) {

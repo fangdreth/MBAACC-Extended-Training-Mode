@@ -42,7 +42,7 @@ public:
 
 	void add(const Menu& newItem);
 
-	void draw(Point p = Point(0.0f, 0.0f));
+	void draw(Point& p);
 
 	std::string name = "NULL";
 
@@ -50,6 +50,7 @@ public:
 
 	std::function<std::string(int)> optionFunc = nullptr; // i dislike std::string, but it makes this much simpler.
 	int optionIndex = 0;
+	bool unfold = false;
 
 };
 
