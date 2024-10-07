@@ -175,6 +175,7 @@
     <ClInclude Include="..\Common\RawData.h" />
     <ClInclude Include="..\Common\SharedMemoryHelper.h" />
     <ClInclude Include="DirectX.h" />
+    <ClInclude Include="dllmain.h" />
     <ClInclude Include="FancyInputDisplay.h" />
     <ClInclude Include="FrameBar.h" />
     <ClInclude Include="framework.h" />
@@ -182,7 +183,9 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="FancyInputDisplay.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DLLAsmFuncs.asm">

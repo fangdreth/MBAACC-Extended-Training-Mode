@@ -1,49 +1,11 @@
 
-#include "..\Common\Common.h"
-//#include <ws2tcpip.h>
-//#include <winsock2.h>
-//#include <windows.h>
-#include <cstring> 
-#include <cstdio>
-#include <psapi.h>
-#include <time.h>
-#include <functional>
-#include <TlHelp32.h>
-#include <array>
-#include <stdint.h>
-#include <cmath>
-#include <random>
-#include <format>
-#include <string.h>
-#include <cstdarg>
-#include <chrono>
-#include <deque>
-#include "resource.h"
 
-#include "..\Common\CharacterData.h"
+#include "dllmain.h"
+
 #include "FrameBar.h"
-
-#include <d3d9.h>
-#include <d3dx9.h> // https://www.microsoft.com/en-us/download/details.aspx?id=6812
-#include <dxerr.h>
-#include <dsound.h>
-
-
-#pragma comment(lib, "d3d9.lib") 
-#pragma comment(lib, "d3dx9.lib")
-#pragma comment(lib, "dxerr.lib")
-#pragma comment(lib, "dsound.lib")
-#pragma comment(lib, "legacy_stdio_definitions.lib")
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
-
-
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX(a,b) (((a)>(b))?(a):(b))
-#define CLAMP(value, min_val, max_val) MAX(MIN((value), (max_val)), (min_val))
-
-static_assert(sizeof(int*) == 4, "COMPILE PROGRAM AS 32BIT");
 
 typedef DWORD ADDRESS;
 typedef long long longlong;
@@ -59,8 +21,6 @@ void doFastReversePenalty();
 // or i could make all pointers u8*, but that defeats half the point of what i did
 // or,, making address a class which allowed for CONST ONLY derefing 
 // or i could allow for writing and integrate the virtualprotect stuff into it?
-
-const ADDRESS dwBaseAddress = (0x00400000);
 
 DWORD addrEndScene = 0x663fb900;
 DWORD addrEndScenePatch = 0x663fb996;
@@ -106,122 +66,12 @@ uint32_t nCustomRN = 0;
 
 DWORD _naked_newPauseCallback2_IsPaused = 0;
 
-#define PUSH_CALLEE __asm \
-{                         \
-   __asm push ebx   \
-   __asm push esi   \
-   __asm push edi   \
-}
-
-#define POP_CALLEE __asm \
-{                        \
-   __asm pop edi   \
-   __asm pop esi   \
-   __asm pop ebx   \
-}
-
-#define PUSH_FRAME __asm \
-{                        \
-   __asm push ebp        \
-   __asm mov ebp, esp    \
-}
-
-#define POP_FRAME __asm \
-{                       \
-   __asm pop ebp        \
-}
-
-#define PUSH_ALL __asm \
-{                      \
-__asm push esp		   \
-__asm push ebp		   \
-__asm push edi		   \
-__asm push esi		   \
-__asm push edx		   \
-__asm push ecx		   \
-__asm push ebx  	   \
-__asm push eax		   \
-__asm push ebp         \
-__asm mov ebp, esp     \
-}
-
-#define POP_ALL __asm  \
-{                      \
-__asm pop ebp          \
-__asm pop eax		   \
-__asm pop ebx  	       \
-__asm pop ecx		   \
-__asm pop edx		   \
-__asm pop esi		   \
-__asm pop edi		   \
-__asm pop ebp		   \
-__asm pop esp		   \
-}
-
-// this was needed due to the preprocessor being a bitch and not accepting multiple emits on the same line
-// i have had so many issues with the way this compiler works
-#define emitByte(b) __asm _emit b;
-#define emitWord(b) \
-    __asm { _emit b & 0xFF } \
-    __asm { _emit b >> 8 } 
-#define emitDword(b) \
-    __asm { _emit b & 0xFF } \
-    __asm { _emit (b & 0xFF00) >> 8 } \
-    __asm { _emit (b & 0xFF0000) >> 16 } \
-    __asm { _emit (b & 0xFF000000) >> 24 } 
-// if i wanted to make tolerable jump things that didnt use a variable, i would have to use a dummy call, and read the EIP from there, just to do one fucking call
-// wait. i can only jump from reads from addresses, not addresses. 
-// can i use eip as a addr?
-// or tbh, i can just use pushes and be real weird about it
-// ugh 
-
-#define CONCATENATE_DETAIL(x, y) x##y
-#define CONCATENATE(x, y) CONCATENATE_DETAIL(x, y)
-#define LINE_NAME CONCATENATE(LINE, __LINE__)
-
-#define emitCall(addr) \
-    __asm { push LINE_NAME } \
-	__asm { push addr } \
-    __asm { ret } \
-    __asm { LINE_NAME: }
-
-#define emitJump(addr) \
-	__asm { push addr } \
-    __asm { ret }
-
 std::array<uint8_t, 4> arrDefaultHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrIdleHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrBlockingHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrHitHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrArmorHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrThrowProtectionHighlightSetting({ 255, 255, 255, 0 });
-
-inline long long getMicroSec() {
-	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-}
-
-bool __stdcall safeWrite()
-{
-	//BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
-	BYTE GameState = *reinterpret_cast<BYTE*>(dwBaseAddress + dwGameState);
-	int FrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
-
-	if (//PauseFlag == 1 ||
-		GameState != 1 ||
-		FrameTimer == 0)
-		return false;
-	
-	return true;
-}
-
-bool __stdcall isPaused()
-{
-	return *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
-}
-
-void __stdcall ___log(const char* msg);
-
-void __stdcall log(const char* format, ...);
 
 static KeyState oSaveStateKey;
 static KeyState oPrevSaveSlotKey;
@@ -254,6 +104,25 @@ void setAllKeys()
 	oDecRNG.setKey(*(uint8_t*)(dwBaseAddress + adSharedRNGDecKey));
 	oReversalKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedReversalKey));
 	oSlowKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSlowKey));
+}
+
+bool __stdcall safeWrite()
+{
+	//BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
+	BYTE GameState = *reinterpret_cast<BYTE*>(dwBaseAddress + dwGameState);
+	int FrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);
+
+	if (//PauseFlag == 1 ||
+		GameState != 1 ||
+		FrameTimer == 0)
+		return false;
+
+	return true;
+}
+
+bool __stdcall isPaused()
+{
+	return *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
 }
 
 // patch funcs
