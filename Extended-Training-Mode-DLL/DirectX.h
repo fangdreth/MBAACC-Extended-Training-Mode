@@ -8,9 +8,6 @@ void _naked_InitDirectXHooks();
 void dualInputDisplay();
 void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 void cursorDraw();
-extern unsigned directxFrameCount;
-
-extern D3DXVECTOR2 mousePos; // no use getting this multiple times a frame
 
 // my inconsistent use of D3DXVECTOR2 vs point is bad. i should use point
 
@@ -19,6 +16,13 @@ typedef struct Point {
 	float y = 0.0;
 	Point() {}
 	Point(float x_, float y_) : x(x_), y(y_) {}
+	bool operator==(const Point const& rhs) { return x == rhs.x && y == rhs.y; }
+	bool operator!=(const Point const& rhs) { return x != rhs.x || y != rhs.y; }
+	Point operator+(const Point const& rhs) { return Point(x + rhs.x, y + rhs.y); }
+	Point operator-(const Point const& rhs) { return Point(x - rhs.x, y - rhs.y); }
+	Point& operator+=(const Point const& rhs) { x += rhs.x; y += rhs.y; return *this; }
+	Point& operator-=(const Point const& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
+	Point& operator=(const Point const& rhs) { if (this != &rhs) { x = rhs.x; y = rhs.y; } return *this; }
 } Point;
 
 typedef struct Rect {
@@ -62,7 +66,11 @@ typedef struct DragInfo {
 	DragInfo() {}
 } DragInfo;
 
-class DragManager { // there will only ever be one of this object
+extern unsigned directxFrameCount;
+
+extern Point mousePos; // no use getting this multiple times a frame
+
+class DragManager { // there will only ever be one of this object. it should probs be something else other than a class?
 public:
 
 	DragManager() {
@@ -86,9 +94,10 @@ public:
 	void handleDragId(DragInfo* info) {
 
 		BorderDraw((info->topLeftX), (info->topLeftY), (info->bottomRightX) - (info->topLeftX), (info->bottomRightY) - (info->topLeftY), 0xFF42e5f4);
-		//LineDraw((info->topLeftX), (info->topLeftY), (info->bottomRightX), (info->bottomRightY), 0xFF42e5f4);
 
 		static KeyState lButton(VK_LBUTTON);
+
+		static Point startDrag;
 
 		if (mousePos.x > (info->topLeftX) &&
 			mousePos.y > (info->topLeftY) &&
@@ -97,8 +106,15 @@ public:
 			) {
 			hasHover = true;
 			if (lButton.keyHeld()) {
-				*(info->dragPointX) = mousePos.x;
-				*(info->dragPointY) = mousePos.y;
+
+				if (hasDrag == NULL) {
+					startDrag.x = *(info->dragPointX) - mousePos.x;
+					startDrag.y = *(info->dragPointY) - mousePos.y;
+				}
+				
+				*(info->dragPointX) = mousePos.x + startDrag.x;
+				*(info->dragPointY) = mousePos.y + startDrag.y;
+
 				hasDrag = info;
 				return;
 			}

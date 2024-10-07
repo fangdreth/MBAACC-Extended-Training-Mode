@@ -10,7 +10,7 @@ void dualInputDisplay();
 void cursorDraw();
 unsigned directxFrameCount = 0;
 
-D3DXVECTOR2 mousePos; // no use getting this multiple times a frame
+Point mousePos; // no use getting this multiple times a frame
 
 // my inconsistent use of D3DXVECTOR2 vs point is bad. i should use point
 
@@ -779,7 +779,7 @@ void __stdcall backupRenderState() {
 				mousePos = { -100.0f, -100.0f };
 			}
 
-			mousePos = D3DXVECTOR2((float)tempMousePos.x, (float)tempMousePos.y);
+			mousePos = Point((float)tempMousePos.x, (float)tempMousePos.y);
 
 			mousePos.x -= mouseTopLeft.x;
 			mousePos.y -= mouseTopLeft.y;
@@ -1476,37 +1476,6 @@ void cursorDraw() {
 	}
 
 	meltyVertData.add(cursor);
-
-	/*
-	} else {
-
-		float size = 22.627;
-		DWORD col = 0xFFe0000a;
-
-		posX -= size / 64.0f;
-		posY -= size / 64.0f;
-
-		posX += size / 8.0f;
-		posY += size / 8.0f;
-
-		charTopLeft = D3DXVECTOR2(((float)(directxFrameCount & 0b111)) / 8.0f, 0.0f / 16.0f);
-		charTopLeft.x += (1.0f / 512.0f); // for the loading cursor, make sure to add 1/512 to x TO ACCOUNT FOR THAT ONE WHITE PIXEL!
-		charW = D3DXVECTOR2(2.0f / 16.0f, 0.0);
-		charH = D3DXVECTOR2(0.0, 2.0f / 16.0f);
-
-
-		Quad<MeltyVert> cursor(
-			MeltyVert(posX - size, posY - size, charTopLeft),
-			MeltyVert(posX + size, posY - size, charTopLeft + charW),
-			MeltyVert(posX - size, posY + size, charTopLeft + charH),
-			MeltyVert(posX + size, posY + size, charTopLeft + charW + charH),
-			col
-		);
-
-		meltyVertData.add(cursor);
-	}
-	*/
-
 
 }
 
