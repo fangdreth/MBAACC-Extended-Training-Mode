@@ -11,6 +11,41 @@ unsigned directxFrameCount = 0;
 
 D3DXVECTOR2 mousePos; // no use getting this multiple times a frame
 
+// my inconsistent use of D3DXVECTOR2 vs point is bad. i should use point
+
+typedef struct Point {
+	float x = 0.0;
+	float y = 0.0;
+	Point() {}
+	Point(float x_, float y_) : x(x_), y(y_) {}
+} Point;
+
+typedef struct Rect {
+
+	// there is specifically not a 4 float constructor due to ambiguity between if its 2 points, or 1 point, and width, height
+	Rect() {}
+
+	Rect(const Point& a, const Point& b) {
+		x1 = a.x;
+		y1 = a.y;
+		x2 = b.x;
+		y2 = b.y;
+	}
+
+	Rect(const Point& a, float w, float h) {
+		x1 = a.x;
+		y1 = a.y;
+		x2 = a.x + w; 
+		y2 = a.y + h;
+	}
+
+	float x1 = 0.0f;
+	float y1 = 0.0f;
+	float x2 = 0.0f;
+	float y2 = 0.0f;
+	
+} Rect;
+
 typedef struct DragInfo {
 	float* dragPointX;
 	float* dragPointY;
@@ -200,9 +235,9 @@ public:
 };
 
 template <typename T>
-class Quad {
+class Quad { 
 public:
-
+	// really should have made this class more complex to allow for easier texture usage, and also i need to make my point class better. but i also need to actually use that class 
 	Quad() {}
 
 	Quad(const T& v1_, const T& v2_, const T& v3_, const T& v4_) {
@@ -222,6 +257,13 @@ public:
 		v2.color = col;
 		v3.color = col;
 		v4.color = col;
+	}
+
+	Quad(const Rect& pos, const Rect& texPos = Rect({ 0.0f, 0.0f }, { 0.0f, 0.0f }), DWORD col = 0xFF42E5F4) {
+		v1 = T(pos.x1, pos.y1, 0.0f, 1.0f, texPos.x1, texPos.y1, col); 
+		v2 = T(pos.x2, pos.y1, 0.0f, 1.0f, texPos.x2, texPos.y1, col);
+		v3 = T(pos.x1, pos.y2, 0.0f, 1.0f, texPos.x1, texPos.y2, col);
+		v4 = T(pos.x2, pos.y2, 0.0f, 1.0f, texPos.x2, texPos.y2, col);
 	}
 
 	union { // this use of unions here is one of my fave things in c++
@@ -1001,13 +1043,6 @@ void initFont() {
 }
 
 // -----
-
-typedef struct Point {
-	float x = 0.0;
-	float y = 0.0;
-	Point() {}
-	Point(float x_, float y_) : x(x_), y(y_) {}
-} Point;
 
 enum class BoxType {
 	//None,
@@ -2238,8 +2273,11 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	}*/
 
 	static D3DRECT clearRect = { 0, 0, width, height };
-	device->Clear(1, &clearRect, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-	
+	//device->Clear(1, &clearRect, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	// WHEN RESETING TO A NON CENTERED CAMERA, THIS FUCKS UP. FIX IT
+	device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+
+
 	clearRect = { width, height, 0, 0 }; // these are the hypothetical opposite max/min values each could have
 
 	static IDirect3DPixelShader9* pColorShader = NULL;
