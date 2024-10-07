@@ -207,6 +207,33 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 #include "DirectX.h"
 #include "RendererModifications.h"
 
+#define ENABLEFILELOG 1
+
+bool logFileInit = false;
+void __stdcall initLogFile() {
+
+	FILE* file = fopen("Extended-Training-Mode-DLL.log", "w");
+	if (file == NULL) {
+		log("opening log file failed?");
+		return;
+	}
+	fclose(file);
+
+
+	logFileInit = true;
+}
+
+void __stdcall writeLog(const char* msg) {
+	if (!logFileInit) {
+		return;
+	}
+
+	FILE* file = fopen("Extended-Training-Mode-DLL.log", "a");
+	fprintf(file, "%s\n", msg); 
+	fclose(file);
+
+}
+
 void __stdcall ___log(const char* msg)
 {
 	const char* ipAddress = "127.0.0.1";
@@ -261,6 +288,10 @@ void __stdcall log(const char* format, ...) {
 	___log(buffer);
 	va_end(args);
 	DrawLog(buffer);
+
+	#ifdef ENABLEFILELOG
+	writeLog(buffer);
+	#endif
 }
 
 // legacy melty draw funcs. please use the funcs in directx.h instead of these
@@ -2759,6 +2790,8 @@ void threadFunc()
 
 	// make sure that caster has time to hook at the start
 	Sleep(32);
+
+	initLogFile();
 
 	// todo, put something here to prevent mult injection
 

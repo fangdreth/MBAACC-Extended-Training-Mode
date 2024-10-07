@@ -3,6 +3,7 @@
 #include <set>
 #include "dllmain.h"
 #include "resource.h"
+//#include "FancyMenu.h"
 
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
@@ -676,6 +677,8 @@ void BorderRectDrawBlend(float x, float y, float w, float h, DWORD ARGB = 0x8042
 // -----
 
 void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...);
+
+void TextDraw(const Point& p, float size, DWORD ARGB, const char* format, ...);
 
 void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format, ...);
 

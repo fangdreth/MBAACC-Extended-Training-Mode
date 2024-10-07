@@ -177,6 +177,7 @@
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="FancyInputDisplay.h" />
+    <ClInclude Include="FancyMenu.h" />
     <ClInclude Include="FrameBar.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="RendererModifications.h" />
@@ -186,6 +187,7 @@
     <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FancyInputDisplay.cpp" />
+    <ClCompile Include="FancyMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DLLAsmFuncs.asm">

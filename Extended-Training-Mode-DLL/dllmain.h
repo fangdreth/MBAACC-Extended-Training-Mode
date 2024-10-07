@@ -20,6 +20,7 @@
 #include <chrono>
 #include <deque>
 #include "resource.h"
+#include <thread>
 
 #include "..\Common\CharacterData.h"
 

@@ -3,6 +3,7 @@
 
 #include "DirectX.h"
 #include "resource.h"
+#include "FancyMenu.h"
 
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
@@ -1287,6 +1288,22 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 
 }
 
+void TextDraw(const Point& p, float size, DWORD ARGB, const char* format, ...) {
+	
+	if (format == NULL) {
+		return;
+	}
+
+	static char buffer[1024];
+
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, 1024, format, args);
+	va_end(args);
+
+	TextDraw(p.x, p.y, size, ARGB, buffer);
+}
+
 void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format, ...) {
 
 	if (format == NULL) {
@@ -2417,6 +2434,7 @@ void __stdcall _doDrawCalls() {
 	*/
 
 	// predraw stuff goes here.
+	drawFancyMenu();
 	drawFancyInputDisplay();
 	_drawProfiler();
 	_drawLog();
@@ -2681,10 +2699,11 @@ bool HookDirectX() {
 	patchByte(0x00554128, 0x00);
 
 	// this specifically checks if our hooks were overwritten, and then rehooks
+	log("attempting to init directx rehook");
 	patchJump(0x004be3c4, _naked_RehookDirectX);
-
+	log("attempting to init directx present hook");
 	patchJump(0x004bdd0b, _naked_PresentHook);
-
+	log("attempting to init directx font");
 	// this NEEDS to be first, before directx is hooked
 	initFont();
 
@@ -2700,6 +2719,7 @@ bool HookDirectX() {
 	// either caster is calling my hook, or im calling caster's hook. caster doesnt seem to sanitize
 	// or actually maybe i was relying on casters unsanitized state as my default?
 	// however, it actually seems like caster does not call my hooks,, and that was the issue?
+	log("actually hooking directx");
 	_naked_InitDirectXHooks();
 
 	log("directX hooked");
