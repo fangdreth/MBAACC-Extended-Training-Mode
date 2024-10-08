@@ -99,6 +99,9 @@ Check Task Manager too see if you have a zombie MBAA.exe process running.  You m
 ### "VCRUNTIME140.dll" was not found
 This means your VC++ redistributable is missing or needs repaired.  There are step-by-step instructions on Google, so you're best off searching this error to find the best way to fix it.
 
+### MBAA crashes as soon as I open the mod
+There is a good chance this is being caused by your DirectX installation.  Try to reinstall DirectX if you can, and if you still have this problem, please reach out and we can try to help you.
+
 ### Some of my settings change on their own
 This is most likely because you are using the HITS UNTIL BURST option.  This setting requires MANUAL for the dummy and INFINITE for the meter, and turning HITS UNTIL BURST on automatically changes these.
 
