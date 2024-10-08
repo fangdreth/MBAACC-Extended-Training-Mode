@@ -1168,7 +1168,7 @@ int main(int argc, char* argv[])
                                 {
                                     char pcTemp64[64] = "Enemy reversal {slot 1}.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex1] + ".").c_str());
+                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex1] + ". {Press A} to reset.").c_str());
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
@@ -1176,7 +1176,7 @@ int main(int argc, char* argv[])
                                 {
                                     char pcTemp64[64] = "Enemy reversal {slot 2}.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex2] + ".").c_str());
+                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex2] + ". {Press A} to reset.").c_str());
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
@@ -1184,7 +1184,7 @@ int main(int argc, char* argv[])
                                 {
                                     char pcTemp64[64] = "Enemy reversal {slot 3}.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex3] + ".").c_str());
+                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex3] + ". {Press A} to reset.").c_str());
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
@@ -1192,7 +1192,7 @@ int main(int argc, char* argv[])
                                 {
                                     char pcTemp64[64] = "Enemy reversal {slot 4}.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex4] + ".").c_str());
+                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex4] + ". {Press A} to reset.").c_str());
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
