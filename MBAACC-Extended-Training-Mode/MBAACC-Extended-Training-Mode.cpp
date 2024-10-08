@@ -902,7 +902,7 @@ int main(int argc, char* argv[])
                                             }
                                             if (nRNGMode == RNG_RN)
                                             {
-                                                nCustomRN = PromptForNumber(hMBAAHandle, dwBaseAddress);
+                                                nCustomRN = nOut;
                                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomRN), &nCustomRN, 4, 0);
                                             }
                                         }
