@@ -6,7 +6,9 @@
 #include <format>
 #include <fstream>
 
-#include "..\Common\Common.h"
+//#include "..\Common\Common.h"
+
+//#include "..\Common\Common.h"
 
 static HANDLE m_hConsole;
 static std::string m_sLogFile;
@@ -75,3 +77,4 @@ static void LogError(std::string sError)
 
 	m_fLogFile.flush();
 }
+

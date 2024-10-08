@@ -207,7 +207,7 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 #include "DirectX.h"
 #include "RendererModifications.h"
 
-#define ENABLEFILELOG 1
+//#define ENABLEFILELOG 1
 
 bool logFileInit = false;
 void __stdcall initLogFile() {

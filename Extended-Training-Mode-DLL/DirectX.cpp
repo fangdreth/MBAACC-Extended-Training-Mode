@@ -15,6 +15,89 @@ Point mousePos; // no use getting this multiple times a frame
 
 // my inconsistent use of D3DXVECTOR2 vs point is bad. i should use point
 
+bool Point::inside(const Rect& rect) const {
+	return (x >= rect.x1 && x <= rect.x2 && y >= rect.y1 && y <= rect.y2);
+}
+
+bool Point::outside(const Rect& rect) const {
+	return !inside(rect);
+}
+
+// -----
+
+void DragManager::add(DragInfo* info) {
+	if (dragInfoData.contains(info)) {
+		log("DragManager had a duplicate id added. this should never happen");
+		return;
+	}
+
+	dragInfoData.insert(info);
+}
+
+void DragManager::remove(DragInfo* info) {
+	dragInfoData.erase(info);
+}
+
+void DragManager::handleDragId(DragInfo* info) {
+
+	BorderDraw((info->topLeftX), (info->topLeftY), (info->bottomRightX) - (info->topLeftX), (info->bottomRightY) - (info->topLeftY), 0xFF42e5f4);
+
+	//static KeyState lButton(VK_LBUTTON);
+
+	static Point startDrag;
+
+	if ((info == hasDrag) ||
+		(
+			mousePos.x > (info->topLeftX) &&
+			mousePos.y > (info->topLeftY) &&
+			mousePos.x < (info->bottomRightX) &&
+			mousePos.y < (info->bottomRightY)
+			)
+		) {
+		hasHover = true;
+		if (lHeld) {
+
+			if (hasDrag == NULL) {
+				startDrag.x = *(info->dragPointX) - mousePos.x;
+				startDrag.y = *(info->dragPointY) - mousePos.y;
+			}
+
+			*(info->dragPointX) = mousePos.x + startDrag.x;
+			*(info->dragPointY) = mousePos.y + startDrag.y;
+
+			hasDrag = info;
+			return;
+		}
+	}
+
+	hasDrag = NULL;
+}
+
+void DragManager::handleDrag() {
+
+	if (hasDrag != NULL) {
+		handleDragId(hasDrag);
+		return;
+	}
+
+	hasHover = false;
+
+	for (DragInfo* info : dragInfoData) {
+
+		if (info->enable == false) {
+			continue;
+		}
+
+		handleDragId(info);
+
+		if (hasDrag != NULL) { // we found an element to drag, leave
+			break;
+		}
+	}
+}
+
+// -----
+
 DragManager dragManager;
 
 void printDirectXError(HRESULT hr) {
@@ -639,6 +722,10 @@ D3DVECTOR renderModificationFactor = { 1.0f, 1.0f, 1.0f };
 D3DXVECTOR2 mouseTopLeft;
 D3DXVECTOR2 mouseBottomRight;
 D3DXVECTOR2 mouseFactor;
+bool lClick = false;
+bool rClick = false;
+bool lHeld = false;
+bool rHeld = false;
 
 // -----
 
@@ -803,6 +890,16 @@ void __stdcall backupRenderState() {
 	else {
 		mousePos = { -100.0f, -100.0f };
 	}
+
+	static KeyState lButton(VK_LBUTTON);
+	static KeyState rButton(VK_RBUTTON);
+
+	lClick = lButton.keyDown();
+	rClick = rButton.keyDown();
+
+	lHeld = lButton.keyHeld();
+	rHeld = rButton.keyHeld();
+
 
 	//if (dragManager.hasDrag == NULL) {
 	//	TextDraw(mousePos.x - 4.0f, mousePos.y - 4.0f, 32, 0x8042e5f4, "%c", CURSOR);
@@ -973,6 +1070,10 @@ void RectDraw(float x, float y, float w, float h, DWORD ARGB) {
 	posColVertData.add(v2, v3, v4);
 }
 
+void RectDraw(const Rect& rect, DWORD ARGB) {
+	RectDraw(rect.x1, rect.y1, rect.x2 - rect.x1, rect.y2 - rect.y1, ARGB);
+}
+
 void BorderDraw(float x, float y, float w, float h, DWORD ARGB) {
 
 	//x /= 480.0f;
@@ -990,6 +1091,10 @@ void BorderDraw(float x, float y, float w, float h, DWORD ARGB) {
 	LineDraw(x, y, x, y + h, ARGB, false);
 	LineDraw(x + w, y, x + w, y + h, ARGB, false);
 	LineDraw(x, y + h, x + w + lineWidth, y + h, ARGB, true);
+}
+
+void BorderDraw(const Rect& rect, DWORD ARGB) {
+	BorderDraw(rect.x1, rect.y1, rect.x2 - rect.x1, rect.y2 - rect.y1, ARGB);
 }
 
 void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB) {
@@ -1120,12 +1225,14 @@ void BorderRectDrawBlend(float x, float y, float w, float h, DWORD ARGB) {
 
 // -----
 
-void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...) {
+Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...) {
 	// i do hope that this allocing does not slow things down. i tried saving the va_args for when the actual print func was called, but it would not work
 
 	if (format == NULL) {
-		return;
+		return Rect();
 	}
+
+	Rect res(Point(x, y), Point(x, y + size));
 
 	size *= 2.0f;
 
@@ -1145,7 +1252,7 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 
 	if (fontTexture == NULL) {
 		log("fontTexture was null, im not drawing");
-		return;
+		return Rect();
 	}
 
 	DWORD antiAliasBackup;
@@ -1182,10 +1289,12 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 		case '\n':
 			x = origX;
 			origY += charHeightOffset;
+			res.y2 += (480.0f * charHeightOffset);
 			str++;
 			continue;
 		case ' ':
 			x += charWidthOffset;
+			res.x2 += (480.0f * charWidthOffset);
 			str++;
 			continue;
 		case '\t': // please dont use tabs. please
@@ -1226,7 +1335,7 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 		case '\\': // in case you want to print one of the above chars, you can escape them
 			str++;
 			if (c == '\0') {
-				return;
+				return res;
 			}
 			break;
 		case ARROW_1:
@@ -1288,6 +1397,7 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 		posColTexVertData.add(v2, v3, v4);
 
 		x += charWidthOffset;
+		res.x2 += (480.0f * charWidthOffset);
 		str++;
 	}
 
@@ -1295,12 +1405,13 @@ void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 
 	//device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
 
+	return res;
 }
 
-void TextDraw(const Point& p, float size, DWORD ARGB, const char* format, ...) {
+Rect TextDraw(const Point& p, float size, DWORD ARGB, const char* format, ...) {
 	
 	if (format == NULL) {
-		return;
+		return Rect();
 	}
 
 	static char buffer[1024];
@@ -1310,7 +1421,7 @@ void TextDraw(const Point& p, float size, DWORD ARGB, const char* format, ...) {
 	vsnprintf(buffer, 1024, format, args);
 	va_end(args);
 
-	TextDraw(p.x, p.y, size, ARGB, buffer);
+	return TextDraw(p.x, p.y, size, ARGB, buffer);
 }
 
 void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format, ...) {
@@ -1464,11 +1575,29 @@ void cursorDraw() {
 	D3DXVECTOR2 charW;
 	D3DXVECTOR2 charH;
 
+	static Point prevMousePos;
+	static int noMovement = 0;
+
+	DWORD col = 0xFFFFFFFF;
+
+	if(prevMousePos == mousePos) {
+		if (noMovement < 60 * 5) {
+			noMovement++;
+		}
+	} else {
+		noMovement = 0;
+	}
+
+	if (noMovement > 60 * 4) {
+		col &= (int)((((float)(60 * 5) - noMovement)) * 255.0f / 60.0f) << 24;
+		col |= 0x00FFFFFF;
+	}
+
+	prevMousePos = mousePos;
+
 	float posX = mousePos.x;
 	float posY = mousePos.y;
 	// if the compiler doesnt precompute these floats i will scream.
-
-	//if (dragManager.hasDrag == NULL) {
 
 	float size = 16.0f;
 
@@ -1485,7 +1614,7 @@ void cursorDraw() {
 		MeltyVert(size, -size, charTopLeft + charW),
 		MeltyVert(-size, size, charTopLeft + charH),
 		MeltyVert(size, size, charTopLeft + charW + charH),
-		0xFFFFFFFF
+		col
 	);
 
 	float angle = 00.0f * (3.1415926535 / 180.0f);

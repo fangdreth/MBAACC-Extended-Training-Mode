@@ -10,6 +10,9 @@
 #include <cwctype>
 #include <algorithm>
 
+//void LogInfo(std::string sInfo);
+//void LogError(std::string sError);
+
 #pragma comment(lib, "ws2_32.lib") 
 
 typedef DWORD ADDRESS;
@@ -33,12 +36,14 @@ enum eRNGRate { RNG_EVERY_FRAME, RNG_EVERY_RESET };
 enum eHitboxStyle { HITBOX_DRAW_ALL, HITBOX_BLEND };
 enum eBackground { BG_NORMAL, BG_WHITE, BG_GRAY, BG_BLACK, BG_RED, BG_GREEN, BG_BLUE, BG_PURPLE, BG_YELLOW };
 enum eSlow { SLOW_THREE_FOURTHS = 3, SLOW_ONE_HALF = 2, SLOW_ONE_FOURTH = 1 };
-enum eInputDisplay { INPUT_OFF, INPUT_LIST, INPUT_ARCADE, INPUT_BOTH };
+enum eInputDisplay { INPUT_OFF = 0, INPUT_LIST = 1, INPUT_ARCADE = 2, INPUT_BOTH = 3 };
 
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
 const std::string GITHUB_README = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/README.md";
 const std::string VERSION = "v2.0";
+
+#include "../MBAACC-Extended-Training-Mode/Logger.h"
 
 const DWORD dwP1WillBlock = 0x1552AC;
 const DWORD dwP2WillBlock = 0x1552AC + 0xAFC;
@@ -786,3 +791,144 @@ static bool GetSaveSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wst
 	return false;
 }
 
+static void CreateRegistryKey()
+{
+    try
+    {
+        SECURITY_DESCRIPTOR SD;
+        SECURITY_ATTRIBUTES SA;
+        InitializeSecurityDescriptor(&SD, SECURITY_DESCRIPTOR_REVISION);
+        //SetSecurityDescriptorDacl(&SD, true, 0, false);
+        SA.nLength = sizeof(SA);
+        SA.lpSecurityDescriptor = &SD;
+        SA.bInheritHandle = false;
+
+        DWORD dwFunc;
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+        LONG openResult = RegCreateKeyExW(HKEY_CURRENT_USER, sk, 0, (LPTSTR)NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, &SA, &hKey, &dwFunc);
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
+}
+
+static LONG ReadFromRegistry(std::wstring sKey, uint8_t* nValue)
+{
+    LONG openResult = -1;
+
+    try
+    {
+        DWORD dwValue = NULL;
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+        DWORD dwType = REG_DWORD;
+        DWORD dwSize = sizeof(nValue);
+
+        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+        if (openResult == 0)
+            openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
+        if (openResult == 0)
+            *nValue = (int)dwValue;
+
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
+
+    return openResult;
+}
+
+static LONG ReadFromRegistry(std::wstring sKey, int* nValue)
+{
+    LONG openResult = -1;
+
+    try
+    {
+        DWORD dwValue = NULL;
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+        DWORD dwType = REG_DWORD;
+        DWORD dwSize = sizeof(nValue);
+
+        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+        if (openResult == 0)
+            openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
+        if (openResult == 0)
+            *nValue = (int)dwValue;
+
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
+
+    return openResult;
+}
+
+static LONG SetRegistryValue(std::wstring sKey, int nValue)
+{
+    LONG openResult = -1;
+
+    try
+    {
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
+
+        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
+        if (openResult == 0)
+            openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_DWORD, (unsigned char*)&nValue, sizeof(nValue));
+
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
+    return openResult;
+}
+
+static LONG SetRegistryValue(std::wstring sKey, bool bValue)
+{
+    return SetRegistryValue(sKey, bValue ? 1 : 0);
+}
+
+static LONG ReadFromRegistry(std::wstring sKey, bool* bValue)
+{
+    uint8_t nValue = 0;
+    LONG openResult = ReadFromRegistry(sKey, &nValue);
+    if (openResult == 0)
+        *bValue = nValue > 0 ? true : false;
+    return openResult;
+}
+
+static LONG DeleteRegistry()
+{
+    LONG openResult = -1;
+
+    try
+    {
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+
+        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_ALL_ACCESS, &hKey);
+        if (openResult == ERROR_SUCCESS)
+        {
+            openResult = RegDeleteKeyW(HKEY_CURRENT_USER, sk);
+            if (openResult != ERROR_SUCCESS)
+                LogError("Unable to delete registry key");
+        }
+        else
+        {
+            LogError("Unable to open registry key");
+        }
+
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
+
+    return openResult;
+}

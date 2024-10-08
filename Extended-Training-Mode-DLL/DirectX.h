@@ -7,10 +7,17 @@
 
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
-void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 void cursorDraw();
 
+extern bool lClick;
+extern bool rClick;
+extern bool lHeld;
+extern bool rHeld;
+
 // my inconsistent use of D3DXVECTOR2 vs point is bad. i should use point
+
+struct Rect;
+typedef struct Rect Rect;
 
 typedef struct Point {
 	float x = 0.0;
@@ -24,6 +31,11 @@ typedef struct Point {
 	Point& operator+=(const Point const& rhs) { x += rhs.x; y += rhs.y; return *this; }
 	Point& operator-=(const Point const& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
 	Point& operator=(const Point const& rhs) { if (this != &rhs) { x = rhs.x; y = rhs.y; } return *this; }
+
+	bool inside(const Rect& rect) const;
+
+	bool outside(const Rect& rect) const;
+
 } Point;
 
 typedef struct Rect {
@@ -45,26 +57,66 @@ typedef struct Rect {
 		y2 = a.y + h;
 	}
 
-	float x1 = 0.0f;
-	float y1 = 0.0f;
-	float x2 = 0.0f;
-	float y2 = 0.0f;
+	union {
+		struct {
+			float x1;
+			float y1;
+		};
+		Point p1;
+	};
 	
+	union {
+		struct {
+			float x2;
+			float y2;
+		};
+		Point p2;
+	};
+
+	bool inside(const Point& p) const {
+		return (p.x >= x1 && p.x <= x2 && p.y >= y1 && p.y <= y2);
+	}
+
+	bool outside(const Point& p) const {
+		return !inside(p);
+	}
+	
+	Rect& operator=(const Rect const& rhs) { if (this != &rhs) { p1 = rhs.p1; p2 = rhs.p2; } return *this; }
+
 } Rect;
 
 typedef struct DragInfo {
 	float* dragPointX;
 	float* dragPointY;
 
-	float topLeftX;
-	float topLeftY;
+	union {
+		struct {
+			union {
+				struct {
+					float topLeftX;
+					float topLeftY;
+				};
+				Point topLeft;
+			};
 
-	float bottomRightX;
-	float bottomRightY;
-
+			union {
+				struct {
+					float bottomRightX;
+					float bottomRightY;
+				};
+				Point bottomRight;
+			};
+		};
+		Rect bounds;
+	};
+	
 	bool enable = false;
 
 	DragInfo() {}
+	DragInfo(float* dragX, float* dragY) {
+		dragPointX = dragX;
+		dragPointY = dragY;
+	}
 } DragInfo;
 
 extern unsigned directxFrameCount;
@@ -78,74 +130,13 @@ public:
 
 	}
 
-	void add(DragInfo* info) {
-		if (dragInfoData.contains(info)) {
-			log("DragManager had a duplicate id added. this should never happen");
-			return;
-		}
+	void add(DragInfo* info);
 
-		dragInfoData.insert(info);
+	void remove(DragInfo* info);
 
-	}
+	void handleDragId(DragInfo* info);
 
-	void remove(DragInfo* info) {
-		dragInfoData.erase(info);
-	}
-
-	void handleDragId(DragInfo* info) {
-
-		BorderDraw((info->topLeftX), (info->topLeftY), (info->bottomRightX) - (info->topLeftX), (info->bottomRightY) - (info->topLeftY), 0xFF42e5f4);
-
-		static KeyState lButton(VK_LBUTTON);
-
-		static Point startDrag;
-
-		if (mousePos.x > (info->topLeftX) &&
-			mousePos.y > (info->topLeftY) &&
-			mousePos.x < (info->bottomRightX) &&
-			mousePos.y < (info->bottomRightY)
-			) {
-			hasHover = true;
-			if (lButton.keyHeld()) {
-
-				if (hasDrag == NULL) {
-					startDrag.x = *(info->dragPointX) - mousePos.x;
-					startDrag.y = *(info->dragPointY) - mousePos.y;
-				}
-				
-				*(info->dragPointX) = mousePos.x + startDrag.x;
-				*(info->dragPointY) = mousePos.y + startDrag.y;
-
-				hasDrag = info;
-				return;
-			}
-		}
-
-		hasDrag = NULL;
-	}
-
-	void handleDrag() {
-
-		if (hasDrag != NULL) {
-			handleDragId(hasDrag);
-			return;
-		}
-
-		hasHover = false;
-
-		for (DragInfo* info : dragInfoData) {
-
-			if (info->enable == false) {
-				continue;
-			}
-
-			handleDragId(info);
-
-			if (hasDrag != NULL) { // we found an element to drag, leave
-				break;
-			}
-		}
-	}
+	void handleDrag();
 
 	DragInfo* hasDrag = NULL; // object currently in possesion of drag
 	bool hasHover = false;
@@ -660,7 +651,11 @@ void LineDraw(float x1, float y1, float x2, float y2, DWORD ARGB = 0x8042e5f4, b
 
 void RectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 
-void BorderDraw(float x, float y, float w, float h, DWORD ARGB);
+void RectDraw(const Rect& rect, DWORD ARGB = 0x8042e5f4);
+
+void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
+
+void BorderDraw(const Rect& rect, DWORD ARGB = 0x8042e5f4);
 
 void BorderRectDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 
@@ -676,9 +671,9 @@ void BorderRectDrawBlend(float x, float y, float w, float h, DWORD ARGB = 0x8042
 
 // -----
 
-void TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...);
+Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...);
 
-void TextDraw(const Point& p, float size, DWORD ARGB, const char* format, ...);
+Rect TextDraw(const Point& p, float size, DWORD ARGB, const char* format, ...);
 
 void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format, ...);
 

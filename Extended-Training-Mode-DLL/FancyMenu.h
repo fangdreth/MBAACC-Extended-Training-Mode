@@ -34,23 +34,28 @@ also worried abt lambda captures. i hope that menus dont ever need more than one
 class Menu {
 public:
 
-	Menu(const std::string& name_);
+	Menu(std::string name_);
 
-	Menu(const std::string& name_, std::function<std::string(int)> optionFunc_);
+	Menu(std::string name_, std::function<void(int, int&)> optionFunc_, std::function<std::string(int)> nameFunc_, std::wstring key_ = L"");
 
 	~Menu();
 
 	void add(const Menu& newItem);
 
-	void draw(Point& p);
+	void add(std::string name_, std::function<void(int, int&)> optionFunc_, std::function<std::string(int)> nameFunc_, std::wstring key_ = L"");
 
-	std::string name = "NULL";
+	void draw(Point& p);
 
 	std::vector<Menu> items; // should i have these be pointers? 
 
-	std::function<std::string(int)> optionFunc = nullptr; // i dislike std::string, but it makes this much simpler.
+	std::string name = "NULL";
+	std::wstring key = L"";
+
+	// i dislike std::string, but it makes this much simpler.
+	std::function<void(int, int&)> optionFunc = nullptr; // execute code upon menu change
+	std::function<std::string(int)> nameFunc = nullptr; // give the name of the option
 	int optionIndex = 0;
-	bool unfold = false;
+	bool unfolded = false;
 
 };
 
