@@ -110,9 +110,11 @@ DWORD listAppendHook_callerAddr = 0;
 DWORD _naked_drawCallHook_ebx;
 void drawLoopHook() {
 
+	/*
 	if (!debugMode) {
 		return;
 	}
+	*/
 
 
 	// before we setup all the stupid vertex shit, lets figure out what we are actually drawing here
@@ -273,7 +275,7 @@ void drawLoopHook() {
 	float MinZ = view.MinZ;
 	float MaxZ = view.MaxZ;
 
-	if (vertFormat == 0x1C4 && PrimitiveCountTestVar == 4 && !(Height != 512 || Width != 1024)) {
+	if (debugMode && vertFormat == 0x1C4 && PrimitiveCountTestVar == 4 && !(Height != 512 || Width != 1024)) {
 
 		if (NumVertices % 4 != 0) {
 			//log("ohno");

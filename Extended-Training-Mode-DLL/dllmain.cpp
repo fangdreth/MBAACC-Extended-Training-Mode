@@ -16,6 +16,7 @@ void enemyReversal();
 void frameStartCallback();
 void dualInputDisplayReset();
 void doFastReversePenalty();
+void drawFancyMenu();
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
@@ -1284,6 +1285,8 @@ void frameDoneCallback()
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
 
 	renderModificationsFrameDone();
+
+	drawFancyMenu();
 
 	dragManager.handleDrag();
 

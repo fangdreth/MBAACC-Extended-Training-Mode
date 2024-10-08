@@ -15,7 +15,10 @@ Menu::Menu(std::string name_, std::function<void(int, int&)> optionFunc_, std::f
 	nameFunc = nameFunc_;
 	key = key_;
 
-	ReadFromRegistry(key, &optionIndex);
+	if (key.size() != 0) {
+		ReadFromRegistry(key, &optionIndex);
+	}
+	
 }
 
 Menu::~Menu() {
@@ -35,7 +38,7 @@ void Menu::draw(Point& p) {
 	Rect bounds;
 	bool inside = false;
 	DWORD col = 0xFFFFFFFF;
-	
+
 	if (items.size() == 0) {
 
 		bounds = TextDraw(p, 10, 0xFFFFFFFF, "%s %s", name.c_str(), nameFunc(optionIndex).c_str());
@@ -43,12 +46,14 @@ void Menu::draw(Point& p) {
 
 		if (lClick && inside) {
 			optionFunc(1, optionIndex);
-			SetRegistryValue(key, optionIndex);
-		}
-
-		if (rClick && inside) {
+			if (key.size() != 0) {
+				SetRegistryValue(key, optionIndex);
+			}
+		} else if (rClick && inside) {
 			optionFunc(-1, optionIndex);
-			SetRegistryValue(key, optionIndex);
+			if (key.size() != 0) {
+				SetRegistryValue(key, optionIndex);
+			}
 		}
 
 	} else {
@@ -78,6 +83,12 @@ void Menu::draw(Point& p) {
 // -----
 
 void initMenu() {
+
+	std::function<std::string(int)> defaultOnOffNameFunc = [](int opt) -> std::string {
+		return opt & 0b1 ? "ON" : "OFF";
+	};
+
+	// -----
 
 	Menu ui("UI");
 
@@ -137,7 +148,103 @@ void initMenu() {
 
 	baseMenu.add(ui);
 
+	Menu hitboxes("Hitboxes");
+
+	hitboxes.add("Hitbox Style",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt = CLAMP(opt, HITBOX_DRAW_ALL, HITBOX_BLEND);
+
+			*(BYTE*)(dwBaseAddress + adSharedHitboxStyle) = opt;
+		},
+		[](int opt) -> std::string {
+
+			switch ((eHitboxStyle)opt) {
+			case HITBOX_DRAW_ALL:
+				return "LAYERED";
+			case INPUT_LIST:
+				return "BLENDED";
+			default:
+				break;
+			}
+
+			return "unknown" + std::to_string(opt);
+		},
+		L"HitboxStyle"
+	);
+
+	//hitboxes.add
+
+
+	baseMenu.add(hitboxes);
+
+	Menu debug("Debug");
+
+	debug.add("Draw Info",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			debugMode = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
+	debug.add("Object Info",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			verboseMode = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
+	debug.add("Call Info",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			overkillVerboseMode = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
+	debug.add("Profiler",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			doDrawProfiler = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
+	debug.add("vertex info",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			doDrawVertexInfo = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
+	debug.add("Debug log",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			doDrawLog = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
+	baseMenu.add(debug);
+	
 	baseMenu.unfolded = true;
+
+	log("menu setup done");
 }
 
 Point menuDragPoint(100.0f, 100.0f);

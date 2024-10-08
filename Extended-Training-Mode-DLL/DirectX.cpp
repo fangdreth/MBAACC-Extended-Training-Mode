@@ -2209,18 +2209,18 @@ void _drawHitboxes() {
 
 }
 
+bool doDrawProfiler = false;
 void _drawProfiler() {
 	static char buffer[1024];
-	static bool drawDebug = false;
 	static KeyState F10Key(VK_F10);
 
 	if (F10Key.keyDown()) {
-		drawDebug = !drawDebug;
+		doDrawProfiler = !doDrawProfiler;
 	}
 
 	DWORD col = 0xFF00FFFF;
 
-	if (drawDebug) {
+	if (doDrawProfiler) {
 		// how slow is this,,, im not sure how expensive map lookups are, but the keys to it could be constexpr. ugh 
 		// i also have the pointer strat. might go do that tbh
 		float profileInfoY = 256;
@@ -2264,16 +2264,17 @@ void _drawProfiler() {
 	}
 }
 
+bool doDrawLog = false;
 void _drawLog() {
 
 	static bool drawDebug = false;
 	static KeyState F11Key(VK_F11);
 
 	if (F11Key.keyDown()) {
-		drawDebug = !drawDebug;
+		doDrawLog = !doDrawLog;
 	}
 
-	if (!drawDebug) {
+	if (!doDrawLog) {
 		return;
 	}
 
@@ -2293,16 +2294,15 @@ void _drawLog() {
 
 }
 
+bool doDrawVertexInfo = false;
 bool debugMode = false;
 bool verboseMode = false;
 bool overkillVerboseMode = false;
 void _drawMiscInfo() {
-
-	static bool drawDebug = false;
 	static KeyState F12Key(VK_F12);
 
 	if (F12Key.keyDown()) {
-		drawDebug = !drawDebug;
+		doDrawVertexInfo = !doDrawVertexInfo;
 	}
 
 	static KeyState F9Key(VK_F9);
@@ -2374,7 +2374,7 @@ void _drawMiscInfo() {
 
 	}
 
-	if (!drawDebug) {
+	if (!doDrawVertexInfo) {
 		return;
 	}
 
@@ -2572,7 +2572,6 @@ void __stdcall _doDrawCalls() {
 	*/
 
 	// predraw stuff goes here.
-	drawFancyMenu();
 	drawFancyInputDisplay();
 	_drawProfiler();
 	_drawLog();

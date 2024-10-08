@@ -784,6 +784,9 @@ void _drawLog();
 extern bool debugMode;
 extern bool verboseMode;
 extern bool overkillVerboseMode;
+extern bool doDrawProfiler;
+extern bool doDrawVertexInfo;
+extern bool doDrawLog;
 void _drawMiscInfo();
 
 // -----

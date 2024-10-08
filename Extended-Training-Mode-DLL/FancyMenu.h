@@ -43,7 +43,7 @@ public:
 	void add(const Menu& newItem);
 
 	void add(std::string name_, std::function<void(int, int&)> optionFunc_, std::function<std::string(int)> nameFunc_, std::wstring key_ = L"");
-
+		
 	void draw(Point& p);
 
 	std::vector<Menu> items; // should i have these be pointers? 
