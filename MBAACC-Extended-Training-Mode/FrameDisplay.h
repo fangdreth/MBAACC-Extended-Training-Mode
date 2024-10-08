@@ -48,7 +48,7 @@ char cLastDisplayOptions = 0;
 
 std::string sColumnHeader = "";
 
-static uint8_t nSaveSlot = 0;
+static uint8_t nSaveSlot = 1;
 
 static int nPlayerAdvantage;
 int nSharedHitstop;

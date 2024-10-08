@@ -294,6 +294,12 @@ int main(int argc, char* argv[])
         ReadFromRegistry(L"FrameBarY", &nFrameBarY);
         ReadFromRegistry(L"P1InputDisplay", &nP1InputDisplay);
         ReadFromRegistry(L"P2InputDisplay", &nP2InputDisplay);
+        ReadFromRegistry(L"BlockingHighlight", &nBlockingHighlightSetting);
+        ReadFromRegistry(L"ThrowProtectionHighlight", &nThrowProtectionHighlightSetting);
+        ReadFromRegistry(L"HitHighlight", &nHitHighlightSetting);
+        ReadFromRegistry(L"IdleHighlight", &nIdleHighlightSetting);
+        ReadFromRegistry(L"ArmorHighlight", &nArmorHighlightSetting);
+        ReadFromRegistry(L"HighlightToggle", &bHighlight);
 
         char pcModPath[MAX_PATH];
         GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
@@ -422,12 +428,18 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayHitboxes), &bDisplayHitboxes, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedExtendOrigins), &bExtendOrigins, 1, 0);
 
-                        std::array<uint8_t, 4> arrTemp = CreateColorArray2(NO_HIGHLIGHT);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 4, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTemp, 4, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 4, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 4, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 4, 0);
+                        //std::array<uint8_t, 4> arrTemp = CreateColorArray2(NO_HIGHLIGHT);
+                        std::array<uint8_t, 4> arrTempBlockingHighlight = CreateColorArray2(nBlockingHighlightSetting);
+                        std::array<uint8_t, 4> arrTempHitHighlight = CreateColorArray2(nHitHighlightSetting);
+                        std::array<uint8_t, 4> arrTempThrowProtectionHighlight = CreateColorArray2(nThrowProtectionHighlightSetting);
+                        std::array<uint8_t, 4> arrTempIdleHighlight = CreateColorArray2(nIdleHighlightSetting);
+                        std::array<uint8_t, 4> arrTempArmorHighlight = CreateColorArray2(nArmorHighlightSetting);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTempIdleHighlight, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTempBlockingHighlight, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTempHitHighlight, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTempArmorHighlight, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTempThrowProtectionHighlight, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlight), &bHighlight, 1, 0);
 
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedOnExtendedSettings), &bOnSettingsMenu, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
@@ -446,7 +458,6 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedShowStats), &bShowStats, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1InputDisplay), &nP1InputDisplay, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2InputDisplay), &nP2InputDisplay, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlight), &bHighlight, 1, 0);
                     }
                 }
             }
@@ -2685,11 +2696,13 @@ int main(int argc, char* argv[])
                                 {
                                     bHighlight = false;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlight), &bHighlight, 1, 0);
+                                    SetRegistryValue(L"HighlightToggle", bHighlight);
                                 }
                                 else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
                                 {
                                     bHighlight = true;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlight), &bHighlight, 1, 0);
+                                    SetRegistryValue(L"HighlightToggle", bHighlight);
                                 }
 
                                 if (nOldEnemyDefenseIndex == -1)
@@ -2699,12 +2712,14 @@ int main(int argc, char* argv[])
                                     nBlockingHighlightSetting = max(NO_HIGHLIGHT, nBlockingHighlightSetting - 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nBlockingHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"BlockingHighlight", nBlockingHighlightSetting);
                                 }
                                 else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                                 {
                                     nBlockingHighlightSetting = min(BLACK_HIGHLIGHT, nBlockingHighlightSetting + 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nBlockingHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"BlockingHighlight", nBlockingHighlightSetting);
                                 }
 
                                 if (nOldEnemyDefenseTypeIndex == -1)
@@ -2714,12 +2729,14 @@ int main(int argc, char* argv[])
                                     nHitHighlightSetting = max(NO_HIGHLIGHT, nHitHighlightSetting - 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nHitHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"HitHighlight", nHitHighlightSetting);
                                 }
                                 else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
                                 {
                                     nHitHighlightSetting = min(BLACK_HIGHLIGHT, nHitHighlightSetting + 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nHitHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"HitHighlight", nHitHighlightSetting);
                                 }
 
                                 if (nOldAirRecoveryIndex == -1)
@@ -2729,12 +2746,14 @@ int main(int argc, char* argv[])
                                     nArmorHighlightSetting = max(NO_HIGHLIGHT, nArmorHighlightSetting - 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nArmorHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"ArmorHighlight", nArmorHighlightSetting);
                                 }
                                 else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
                                 {
                                     nArmorHighlightSetting = min(BLACK_HIGHLIGHT, nArmorHighlightSetting + 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nArmorHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"ArmorHighlight", nArmorHighlightSetting);
                                 }
 
                                 if (nOldDownRecoveryIndex == -1)
@@ -2744,12 +2763,14 @@ int main(int argc, char* argv[])
                                     nThrowProtectionHighlightSetting = max(NO_HIGHLIGHT, nThrowProtectionHighlightSetting - 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nThrowProtectionHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"ThrowProtectionHighlight", nThrowProtectionHighlightSetting);
                                 }
                                 else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                                 {
                                     nThrowProtectionHighlightSetting = min(BLACK_HIGHLIGHT, nThrowProtectionHighlightSetting + 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nThrowProtectionHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"ThrowProtectionHighlight", nThrowProtectionHighlightSetting);
                                 }
 
                                 if (nOldThrowRecoveryIndex == -1)
@@ -2759,12 +2780,14 @@ int main(int argc, char* argv[])
                                     nIdleHighlightSetting = max(NO_HIGHLIGHT, nIdleHighlightSetting - 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nIdleHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"IdleHighlight", nIdleHighlightSetting);
                                 }
                                 else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
                                 {
                                     nIdleHighlightSetting = min(BLACK_HIGHLIGHT, nIdleHighlightSetting + 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nIdleHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"IdleHighlight", nIdleHighlightSetting);
                                 }
 
                                 break;
@@ -4435,8 +4458,8 @@ int main(int argc, char* argv[])
                                 }
                                 else
                                 {
-                                    char pcTemp[3];
-                                    strcpy_s(pcTemp, std::to_string(nReversalDelayFrames).c_str());
+                                    char pcTemp[19];
+                                    strcpy_s(pcTemp, vHighlightNames[nIdleHighlightSetting]);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcTemp, 19, 0);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllLateString), &pcTemp, 19, 0);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllRandomString), &pcTemp, 19, 0);
