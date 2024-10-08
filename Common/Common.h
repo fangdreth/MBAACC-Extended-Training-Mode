@@ -41,7 +41,7 @@ enum eInputDisplay { INPUT_OFF = 0, INPUT_LIST = 1, INPUT_ARCADE = 2, INPUT_BOTH
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
 const std::string GITHUB_README = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/README.md";
-const std::string VERSION = "v2.0";
+const std::string VERSION = "v2.1";
 
 #include "../MBAACC-Extended-Training-Mode/Logger.h"
 
