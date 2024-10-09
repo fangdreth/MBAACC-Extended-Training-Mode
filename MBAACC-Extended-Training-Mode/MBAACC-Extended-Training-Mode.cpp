@@ -194,7 +194,8 @@ int main(int argc, char* argv[])
                 break;
             }
         }
-        SetRegistryValue(L"InstallPath", sInstallPath);
+        // Not needed currently, but if we ever need it this can be uncommented
+        //SetRegistryValue(L"InstallPath", sInstallPath);
 
         try
         {
@@ -223,16 +224,16 @@ int main(int argc, char* argv[])
                                             DLL_NAME;                                   // 2nd download
                                                                                         // append more files to download
                     
-                    CreateProcessA(sUpdaterName.c_str(),   // the path
-                        (LPSTR)sCmdArgs.c_str(),        // Command line
-                        NULL,           // Process handle not inheritable
-                        NULL,           // Thread handle not inheritable
-                        FALSE,          // Set handle inheritance to FALSE
-                        0,              // No creation flags
-                        NULL,           // Use parent's environment block
-                        NULL,           // Use parent's starting directory 
-                        &si,            // Pointer to STARTUPINFO structure
-                        &pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
+                    CreateProcessA(sUpdaterName.c_str(),    // the path
+                        (LPSTR)sCmdArgs.c_str(),            // Command line
+                        NULL,                               // Process handle not inheritable
+                        NULL,                               // Thread handle not inheritable
+                        FALSE,                              // Set handle inheritance to FALSE
+                        0,                                  // No creation flags
+                        NULL,                               // Use parent's environment block
+                        NULL,                               // Use parent's starting directory 
+                        &si,                                // Pointer to STARTUPINFO structure
+                        &pi                                 // Pointer to PROCESS_INFORMATION structure
                     );
                     
                     CloseHandle(pi.hProcess);
