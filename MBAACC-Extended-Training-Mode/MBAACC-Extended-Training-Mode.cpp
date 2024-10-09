@@ -199,7 +199,7 @@ int main(int argc, char* argv[])
         try
         {
             sOnlineVersion = GetLatestVersion();
-            if (sOnlineVersion != "" && sOnlineVersion != VERSION && false)
+            if (sOnlineVersion != "" && sOnlineVersion != VERSION)
             {
                 std::string sUpdate = "A new version of the Extended Training Mode is available.\nWould you like to update?";
                 switch (MessageBoxA(NULL, sUpdate.c_str(), "", MB_YESNO | MB_ICONASTERISK | MB_DEFBUTTON1))
@@ -220,6 +220,7 @@ int main(int argc, char* argv[])
                     std::string sCmdArgs =  UPDATER_NAME + " " +                        // Updater Name
                                             sInstallPath + " " +                        // Path to the intstallation
                                             GITHUB_DOWNLOAD + sOnlineVersion + "/ " +   // Path to the latest download
+                                            "exampleArg1;exampleArg2 " +                // cmdArgs to pass back
                                             EXE_NAME + " " +                            // 1st download and what gets launched
                                             DLL_NAME;                                   // 2nd download
                                                                                         // append more files to download
