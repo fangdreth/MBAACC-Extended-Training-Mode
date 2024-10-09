@@ -181,12 +181,14 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="RendererModifications.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SaveState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FancyInputDisplay.cpp" />
     <ClCompile Include="FancyMenu.cpp" />
+    <ClCompile Include="SaveState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DLLAsmFuncs.asm">

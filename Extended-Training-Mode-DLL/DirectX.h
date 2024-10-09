@@ -7,6 +7,125 @@
 //#include "FancyMenu.h"
 
 
+template <typename T, int size>
+class CircularBuffer {
+public:
+
+	CircularBuffer() {}
+
+	T get(int i) {
+		while (i < 0) {
+			i += size;
+		}
+		i += index;
+		return data[i % size];
+	}
+
+	void pushHead(const T& v) {
+		index++;
+		if (index >= size) {
+			index = 0;
+		}
+		data[index] = v;
+	}
+
+	void pushTail(const T& v) {
+		index--;
+		if (index < 0) {
+			index = size - 1;
+		}
+		data[index] = v;
+	}
+
+	T front() {
+		return data[index];
+	}
+
+	int totalMemory() {
+		return sizeof(T) * size;
+	}
+
+	T data[size];
+	int index = 0; // index will be the head, index-1 will be the tail
+};
+
+template <typename T>
+class Vec {
+public:
+
+	Vec(int maxSize_ = 16) {
+		maxSize = maxSize_;
+		data = (T*)malloc(maxSize * sizeof(T));
+	}
+
+	~Vec() {
+		if (data != NULL) {
+			free(data);
+			data = NULL;
+		}
+	}
+
+	Vec(const Vec& other) = delete;
+	Vec& operator=(const Vec& other) = delete;
+
+	int totalMemory() {
+		return sizeof(T) * maxSize;
+	}
+
+	void resize() {
+		maxSize *= 2;
+		T* temp = (T*)realloc(data, maxSize * sizeof(T));
+		
+		if (temp == NULL) {
+			log("vec resize failed??!");
+			return;
+		}
+
+		data = temp;
+	}
+
+	void addCapacity(int n) {
+		maxSize += n;
+
+		T* temp = (T*)realloc(data, maxSize * sizeof(T));
+
+		if (temp == NULL) {
+			log("Vec realloc failed??!");
+			return;
+		}
+
+		data = temp;
+	}
+
+	void push_back(const T& newItem) {
+
+		if (size == maxSize) {
+			resize();
+		}
+
+		data[size] = newItem;
+		size++;
+	}
+
+	void emplace_back(const T&& newItem) {
+
+		if (size == maxSize) {
+			resize();
+		}
+
+		data[size] = std::forward<T>(newItem);
+		size++;
+	}
+	
+	T operator [](int i) const { return data[i]; }
+	T& operator [](int i) { return data[i]; }
+
+	T* data = NULL;
+	int size = 0;
+	int maxSize = 0;
+
+};
+
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
 void cursorDraw();

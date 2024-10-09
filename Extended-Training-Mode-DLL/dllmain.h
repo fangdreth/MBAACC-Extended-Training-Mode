@@ -132,6 +132,7 @@ const DWORD dwBaseAddress = (0x00400000);
 extern IDirect3DDevice9* device;
 
 extern DWORD _naked_newPauseCallback2_IsPaused;
+extern int needPause;
 
 extern DWORD shouldDrawBackground;
 extern DWORD shouldDrawHud;
@@ -139,6 +140,9 @@ extern DWORD shouldDrawGroundLine;
 extern DWORD backgroundColor;
 extern DWORD shouldDrawShadow;
 extern DWORD fastReversePenalty;
+
+extern DWORD __frameDoneCount;
+extern DWORD unpausedFrameCount;
 
 // -----
 
@@ -158,15 +162,75 @@ bool __stdcall isPaused();
 
 void frameStartCallback();
 
-// patch funcs
-void __stdcall patchMemcpy(auto dst, auto src, size_t n);
-
-void __stdcall patchMemset(auto dst, BYTE v, size_t n);
-
+// non templated patch funcs
 void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n);
 
-void __stdcall patchFunction(auto patchAddr_, auto newAddr_);
+// patch funcs, since these are templated they are ok(and honestly semi needed) to be declared in header
+void __stdcall patchMemcpy(auto dst, auto src, size_t n)
+{
 
-void __stdcall patchJump(auto patchAddr_, auto newAddr_);
+	static_assert(sizeof(dst) == 4, "Type must be 4 bytes");
+	static_assert(sizeof(src) == 4, "Type must be 4 bytes");
 
-void __stdcall patchByte(auto addr, const BYTE byte);
+	LPVOID dest = reinterpret_cast<LPVOID>(dst);
+	LPVOID source = reinterpret_cast<LPVOID>(src);
+
+	DWORD oldProtect;
+	VirtualProtect(dest, n, PAGE_EXECUTE_READWRITE, &oldProtect);
+	memcpy(dest, source, n);
+	VirtualProtect(dest, n, oldProtect, NULL);
+}
+
+void __stdcall patchMemset(auto dst, BYTE v, size_t n)
+{
+
+	static_assert(sizeof(dst) == 4, "Type must be 4 bytes");
+
+	LPVOID dest = reinterpret_cast<LPVOID>(dst);
+
+	DWORD oldProtect;
+	VirtualProtect(dest, n, PAGE_EXECUTE_READWRITE, &oldProtect);
+	memset(dest, v, n);
+	VirtualProtect(dest, n, oldProtect, NULL);
+}
+
+void __stdcall patchFunction(auto patchAddr_, auto newAddr_)
+{
+
+	static_assert(sizeof(patchAddr_) == 4, "Type must be 4 bytes");
+	static_assert(sizeof(newAddr_) == 4, "Type must be 4 bytes");
+
+	DWORD patchAddr = (DWORD)(patchAddr_);
+	DWORD newAddr = (DWORD)(newAddr_);
+
+	BYTE callCode[] = { 0xE8, 0x00, 0x00, 0x00, 0x00 };
+	DWORD funcOffset = newAddr - (patchAddr + 5);
+	*(unsigned*)(&callCode[1]) = funcOffset;
+	patchMemcpy(patchAddr, callCode, sizeof(callCode));
+}
+
+void __stdcall patchJump(auto patchAddr_, auto newAddr_)
+{
+
+	static_assert(sizeof(patchAddr_) == 4, "Type must be 4 bytes");
+	static_assert(sizeof(newAddr_) == 4, "Type must be 4 bytes");
+
+	DWORD patchAddr = (DWORD)(patchAddr_);
+	DWORD newAddr = (DWORD)(newAddr_);
+
+	BYTE callCode[] = { 0xE9, 0x00, 0x00, 0x00, 0x00 };
+	DWORD funcOffset = newAddr - (patchAddr + 5);
+	*(unsigned*)(&callCode[1]) = funcOffset;
+	patchMemcpy(patchAddr, callCode, sizeof(callCode));
+}
+
+void __stdcall patchByte(auto addr, const BYTE byte)
+{
+	static_assert(sizeof(addr) == 4, "Type must be 4 bytes");
+
+	BYTE temp[] = { byte };
+
+	patchMemcpy(addr, temp, 1);
+}
+
+bool __stdcall isAddrValid(DWORD addr);

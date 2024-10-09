@@ -15,6 +15,8 @@
 
 #pragma comment(lib, "ws2_32.lib") 
 
+extern DWORD __frameDoneCount;
+
 typedef DWORD ADDRESS;
 
 enum eMenu { MAIN = 2, BATTLE_SETTINGS = 6, ENEMY_SETTINGS = 7, VIEW_SCREEN = 12, COMMAND_LIST = 13, TRAINING_DISPLAY = 8 };
@@ -698,13 +700,56 @@ public:
 	}
 
 	bool keyHeld()
-	{
+    {
 		if (!isFocused()) {
+            freqHeldCounter = 0;
 			return false;
 		}
 
-		return nKey != 0x0 && GetAsyncKeyState(nKey) & 0x8000;
+        bool res = nKey != 0x0 && GetAsyncKeyState(nKey) & 0x8000;
+        if (res) {
+            freqHeldCounter++;
+        } else {
+            freqHeldCounter = 0;
+        }
+        return res;
 	}
+
+    template<int freq, int startup = 45> // freq is the frame modulo for when this should trig, startup is how long to wait for that
+    bool keyHeldFreq() {
+
+        bool res = keyHeld();
+
+        if (freqHeldCounter < startup) {
+            return false;
+        }
+
+        if (__frameDoneCount % freq != 0) {
+            return false;
+        }
+
+        return res;
+    }
+
+    template<int freq, int startup = 45> // same as above func, but also will return immediately on keydown
+    bool keyDownHeldFreq() {
+
+        bool res = keyHeld();
+
+        if (keyDown()) {
+            return true;
+        }
+
+        if (freqHeldCounter < startup) {
+            return false;
+        }
+
+        if (__frameDoneCount % freq != 0) {
+            return false;
+        }
+
+        return res;
+    }
 
 	bool keyDown()
 	{
@@ -728,6 +773,7 @@ public:
 	}
 public:
 	int nHeldKeyCounter;
+    int freqHeldCounter = 0;
 private:
 	uint8_t nKey;
 	bool prevState = false;

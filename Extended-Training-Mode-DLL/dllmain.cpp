@@ -1,8 +1,8 @@
 
 
 #include "dllmain.h"
-
 #include "FrameBar.h"
+#include "SaveState.h"
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
@@ -39,7 +39,8 @@ DWORD tempRegister2;
 DWORD tempRegister3;
 DWORD tempRegister4;
 
-DWORD __frameDoneCount;
+DWORD __frameDoneCount = 0;
+DWORD unpausedFrameCount = 0;
 
 int nFreezeKey;
 int nFrameStepKey;
@@ -126,35 +127,6 @@ bool __stdcall isPaused()
 	return *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
 }
 
-// patch funcs
-void __stdcall patchMemcpy(auto dst, auto src, size_t n)
-{
-
-	static_assert(sizeof(dst) == 4, "Type must be 4 bytes");
-	static_assert(sizeof(src) == 4, "Type must be 4 bytes");
-
-	LPVOID dest = reinterpret_cast<LPVOID>(dst);
-	LPVOID source = reinterpret_cast<LPVOID>(src);
-
-	DWORD oldProtect;
-	VirtualProtect(dest, n, PAGE_EXECUTE_READWRITE, &oldProtect);
-	memcpy(dest, source, n);
-	VirtualProtect(dest, n, oldProtect, NULL);
-}
-
-void __stdcall patchMemset(auto dst, BYTE v, size_t n)
-{
-
-	static_assert(sizeof(dst) == 4, "Type must be 4 bytes");
-
-	LPVOID dest = reinterpret_cast<LPVOID>(dst);
-
-	DWORD oldProtect;
-	VirtualProtect(dest, n, PAGE_EXECUTE_READWRITE, &oldProtect);
-	memset(dest, v, n);
-	VirtualProtect(dest, n, oldProtect, NULL);
-}
-
 // the patch func being templated causes problems when calling from asm
 void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n)
 {
@@ -162,45 +134,6 @@ void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n)
 	VirtualProtect(dest, n, PAGE_EXECUTE_READWRITE, &oldProtect);
 	memcpy(dest, source, n);
 	VirtualProtect(dest, n, oldProtect, NULL);
-}
-
-void __stdcall patchFunction(auto patchAddr_, auto newAddr_)
-{
-
-	static_assert(sizeof(patchAddr_) == 4, "Type must be 4 bytes");
-	static_assert(sizeof(newAddr_) == 4, "Type must be 4 bytes");
-
-	DWORD patchAddr = (DWORD)(patchAddr_);
-	DWORD newAddr = (DWORD)(newAddr_);
-
-	BYTE callCode[] = { 0xE8, 0x00, 0x00, 0x00, 0x00 };
-	DWORD funcOffset = newAddr - (patchAddr + 5);
-	*(unsigned*)(&callCode[1]) = funcOffset;
-	patchMemcpy(patchAddr, callCode, sizeof(callCode));
-}
-
-void __stdcall patchJump(auto patchAddr_, auto newAddr_)
-{
-
-	static_assert(sizeof(patchAddr_) == 4, "Type must be 4 bytes");
-	static_assert(sizeof(newAddr_) == 4, "Type must be 4 bytes");
-
-	DWORD patchAddr = (DWORD)(patchAddr_);
-	DWORD newAddr = (DWORD)(newAddr_);
-
-	BYTE callCode[] = { 0xE9, 0x00, 0x00, 0x00, 0x00 }; 
-	DWORD funcOffset = newAddr - (patchAddr + 5);
-	*(unsigned*)(&callCode[1]) = funcOffset;
-	patchMemcpy(patchAddr, callCode, sizeof(callCode));
-}
-
-void __stdcall patchByte(auto addr, const BYTE byte)
-{
-	static_assert(sizeof(addr) == 4, "Type must be 4 bytes");
-
-	BYTE temp[] = { byte };
-
-	patchMemcpy(addr, temp, 1);
 }
 
 // -----
@@ -295,6 +228,16 @@ void __stdcall log(const char* format, ...) {
 	#ifdef ENABLEFILELOG
 	writeLog(buffer);
 	#endif
+}
+
+bool __stdcall isAddrValid(DWORD addr) {
+	__try {
+		volatile BYTE test = *(BYTE*)addr;
+		return true;
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER) {
+		return false;
+	}
 }
 
 // legacy melty draw funcs. please use the funcs in directx.h instead of these
@@ -1284,6 +1227,31 @@ void frameDoneCallback()
 
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
 
+	static DWORD prevUnpausedFrameCount = 0;
+	if (prevUnpausedFrameCount != unpausedFrameCount) {
+		//long long startTime = getMicroSec();
+
+		saveStateManager.save();
+		unpausedFrameCount = prevUnpausedFrameCount;
+
+		//long long endTime = getMicroSec();
+		//long long totalTime = endTime - startTime;
+		//log("%3lld.%03lld", totalTime / 1000, totalTime % 1000);
+	}
+
+	static KeyState UpKey(VK_UP);
+	static KeyState DownKey(VK_DOWN);
+
+	if (UpKey.keyDownHeldFreq<4, 24>()) {
+		saveStateManager.load(1);
+	}
+
+	if (DownKey.keyDownHeldFreq<4, 24>()) {
+		saveStateManager.load(-1);
+	}
+
+	//TextDraw(300, 100, 12, 0xFFFFFFFF, "savestates: %d, %.4f MB", saveStateManager.states.size(), ((float)saveStateManager.totalMemory()) / ((float)(1 << 20)));
+
 	renderModificationsFrameDone();
 
 	drawFancyMenu();
@@ -1736,10 +1704,9 @@ __declspec(naked) void nakedFrameDoneCallback()
 
 // pause funcs
 
+int needPause = false;
 void newPauseCallback2()
 {
-
-	static bool needPause = false;
 
 	if (oFreezeKey.keyDown()) {
 		bFreeze = !bFreeze;
@@ -1786,12 +1753,19 @@ void newPauseCallback2()
 		needPause = true;
 		_naked_newPauseCallback2_IsPaused = false;
 	}
-	else if (needPause)
+	else if (needPause == 1)
 	{
 		needPause = false;
 		_naked_newPauseCallback2_IsPaused = true;
 	}
+	else if (needPause > 1) {
+		needPause--;
+	}
 	
+	if (!_naked_newPauseCallback2_IsPaused) {
+		unpausedFrameCount++;
+	}
+
 }
 
 DWORD _naked_pauseInputDisplay2_FUN_004790a0 = 0x004790a0;

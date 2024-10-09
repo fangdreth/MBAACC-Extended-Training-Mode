@@ -2,44 +2,6 @@
 #include <set>
 #include "DirectX.h"
 
-template <typename T, int size>
-class CircularBuffer {
-public:
-
-	CircularBuffer() {}
-
-	T get(int i) {
-		while (i < 0) {
-			i += size;
-		}
-		i += index;
-		return data[i % size];
-	}
-
-	void pushHead(const T& v) {
-		index++;
-		if (index >= size) {
-			index = 0;
-		}
-		data[index] = v;
-	}
-
-	void pushTail(const T& v) {
-		index--;
-		if (index < 0) {
-			index = size - 1;
-		}
-		data[index] = v;
-	}
-
-	T front() {
-		return data[index];
-	}
-
-	T data[size];
-	int index = 0; // index will be the head, index-1 will be the tail
-};
-
 typedef struct InputData {
 	DWORD rawInput = 0;
 	BYTE direction = ' ';
