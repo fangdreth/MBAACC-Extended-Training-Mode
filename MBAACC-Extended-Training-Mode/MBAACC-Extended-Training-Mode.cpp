@@ -194,12 +194,13 @@ int main(int argc, char* argv[])
                 break;
             }
         }
-        SetRegistryValue(L"InstallPath", sInstallPath);
+        // Not needed currently, but if we ever need it this can be uncommented
+        //SetRegistryValue(L"InstallPath", sInstallPath);
 
         try
         {
             sOnlineVersion = GetLatestVersion();
-            if (sOnlineVersion != "" && sOnlineVersion != VERSION)
+            if (sOnlineVersion != "" && sOnlineVersion != VERSION && false)
             {
                 std::string sUpdate = "A new version of the Extended Training Mode is available.\nWould you like to update?";
                 switch (MessageBoxA(NULL, sUpdate.c_str(), "", MB_YESNO | MB_ICONASTERISK | MB_DEFBUTTON1))
@@ -208,34 +209,33 @@ int main(int argc, char* argv[])
                 {
                     std::string sUpdaterName = sInstallPath + UPDATER_NAME;
 
-                    // additional information
                     STARTUPINFOA si;
                     PROCESS_INFORMATION pi;
 
-                    // set the size of the structures
                     ZeroMemory(&si, sizeof(si));
                     si.cb = sizeof(si);
                     ZeroMemory(&pi, sizeof(pi));
 
-                    std::string sCmdArgs =  UPDATER_NAME + " " +
-                                            sInstallPath + " " + 
-                                            GITHUB_DOWNLOAD + sOnlineVersion + "/ " +
-                                            EXE_NAME + " " +
-                                            DLL_NAME;
+                    std::string sCmdArgs =  UPDATER_NAME + " " +                        // Updater Name
+                                            sInstallPath + " " +                        // Path to the intstallation
+                                            GITHUB_DOWNLOAD + sOnlineVersion + "/ " +   // Path to the latest download
+                                            "exampleArg1;exampleArg2 " +                // cmdArgs to pass back
+                                            EXE_NAME + " " +                            // 1st download and what gets launched
+                                            DLL_NAME;                                   // 2nd download
+                                                                                        // append more files to download
                     
-                    // start the program up
-                    CreateProcessA(sUpdaterName.c_str(),   // the path
-                        (LPSTR)sCmdArgs.c_str(),        // Command line
-                        NULL,           // Process handle not inheritable
-                        NULL,           // Thread handle not inheritable
-                        FALSE,          // Set handle inheritance to FALSE
-                        0,              // No creation flags
-                        NULL,           // Use parent's environment block
-                        NULL,           // Use parent's starting directory 
-                        &si,            // Pointer to STARTUPINFO structure
-                        &pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
+                    CreateProcessA(sUpdaterName.c_str(),    // the path
+                        (LPSTR)sCmdArgs.c_str(),            // Command line
+                        NULL,                               // Process handle not inheritable
+                        NULL,                               // Thread handle not inheritable
+                        FALSE,                              // Set handle inheritance to FALSE
+                        0,                                  // No creation flags
+                        NULL,                               // Use parent's environment block
+                        NULL,                               // Use parent's starting directory 
+                        &si,                                // Pointer to STARTUPINFO structure
+                        &pi                                 // Pointer to PROCESS_INFORMATION structure
                     );
-                    // Close process and thread handles. 
+                    
                     CloseHandle(pi.hProcess);
                     CloseHandle(pi.hThread);
 
