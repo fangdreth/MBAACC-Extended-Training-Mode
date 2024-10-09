@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
         try
         {
             sOnlineVersion = GetLatestVersion();
-            if (sOnlineVersion != "" && sOnlineVersion != VERSION)
+            if (sOnlineVersion != "" && sOnlineVersion != VERSION && false)
             {
                 std::string sUpdate = "A new version of the Extended Training Mode is available.\nWould you like to update?";
                 switch (MessageBoxA(NULL, sUpdate.c_str(), "", MB_YESNO | MB_ICONASTERISK | MB_DEFBUTTON1))

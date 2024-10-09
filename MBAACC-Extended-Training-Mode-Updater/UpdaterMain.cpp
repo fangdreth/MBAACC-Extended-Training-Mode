@@ -25,6 +25,8 @@ int main(int argc, const char* argv[])
             std::string sDownloadURL = sGithubDownloadPath + argv[i];
             std::string sSavePath = sInstallPath + argv[i];
             hr = URLDownloadToFileA(NULL, sDownloadURL.c_str(), sSavePath.c_str(), 0, NULL);
+            if (!SUCCEEDED(hr))
+                break;
         }
     }
     catch (...)
