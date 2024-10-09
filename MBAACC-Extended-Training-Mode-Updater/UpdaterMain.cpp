@@ -18,12 +18,20 @@ int main(int argc, const char* argv[])
     sCmdArgs = sEXEName + " " + sCmdArgs;
 
     HRESULT hr = S_OK;
-	for (int i = 4; i < argc; i++)
-	{
-		std::string sDownloadURL = sGithubDownloadPath + argv[i];
-		std::string sSavePath = sInstallPath + argv[i];
-		hr = URLDownloadToFileA(NULL, sDownloadURL.c_str(), sSavePath.c_str(), 0, NULL);
-	}
+    try
+    {
+        for (int i = 4; i < argc; i++)
+        {
+            std::string sDownloadURL = sGithubDownloadPath + argv[i];
+            std::string sSavePath = sInstallPath + argv[i];
+            hr = URLDownloadToFileA(NULL, sDownloadURL.c_str(), sSavePath.c_str(), 0, NULL);
+        }
+    }
+    catch (...)
+    {
+        hr = E_UNEXPECTED;
+    }
+
 	if (SUCCEEDED(hr))
 	{
         STARTUPINFOA si;
