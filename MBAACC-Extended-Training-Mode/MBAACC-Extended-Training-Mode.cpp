@@ -170,6 +170,97 @@ int main(int argc, char* argv[])
 
         HANDLE hConsoleHandle;
 
+
+        char pcModPath[MAX_PATH];
+        GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
+        std::vector<std::string> vPathTokens;
+        std::istringstream f(pcModPath);
+        std::string s;
+        while (std::getline(f, s, '\\'))
+            vPathTokens.push_back(s + "\\");
+        vPathTokens.pop_back();
+        std::string sInstallPath = std::accumulate(vPathTokens.begin(), vPathTokens.end(), std::string{});
+        std::string sDLLPath = sInstallPath + "Extended-Training-Mode-DLL.dll";
+        while (!std::ifstream(sDLLPath).good())
+        {
+            std::string sErrorString = "UNABLE TO FIND " + sDLLPath;
+            //int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONERROR | MB_RETRYCANCEL);
+            switch (MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONERROR | MB_RETRYCANCEL))
+            {
+            case IDRETRY:
+                continue;
+            default:
+                return 0;
+                break;
+            }
+        }
+        SetRegistryValue(L"InstallPath", sInstallPath);
+
+        try
+        {
+            sOnlineVersion = GetLatestVersion();
+            if (sOnlineVersion != "" && sOnlineVersion != VERSION)
+            {
+                std::string sUpdate = "A new version of the Extended Training Mode is available.\nWould you like to update?";
+                switch (MessageBoxA(NULL, sUpdate.c_str(), "", MB_YESNO | MB_ICONASTERISK | MB_DEFBUTTON1))
+                {
+                case IDYES:
+                {
+                    std::string sUpdaterName = sInstallPath + UPDATER_NAME;
+
+                    // additional information
+                    STARTUPINFOA si;
+                    PROCESS_INFORMATION pi;
+
+                    // set the size of the structures
+                    ZeroMemory(&si, sizeof(si));
+                    si.cb = sizeof(si);
+                    ZeroMemory(&pi, sizeof(pi));
+
+                    std::string sCmdArgs =  UPDATER_NAME + " " +
+                                            sInstallPath + " " + 
+                                            GITHUB_DOWNLOAD + sOnlineVersion + "/ " +
+                                            EXE_NAME + " " +
+                                            DLL_NAME;
+                    
+                    // start the program up
+                    CreateProcessA(sUpdaterName.c_str(),   // the path
+                        (LPSTR)sCmdArgs.c_str(),        // Command line
+                        NULL,           // Process handle not inheritable
+                        NULL,           // Thread handle not inheritable
+                        FALSE,          // Set handle inheritance to FALSE
+                        0,              // No creation flags
+                        NULL,           // Use parent's environment block
+                        NULL,           // Use parent's starting directory 
+                        &si,            // Pointer to STARTUPINFO structure
+                        &pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
+                    );
+                    // Close process and thread handles. 
+                    CloseHandle(pi.hProcess);
+                    CloseHandle(pi.hThread);
+
+                    TerminateProcess(GetCurrentProcess(), 0);
+                }
+                default:
+                    break;
+                }
+
+                bNeedToAnnounceNewVersion = true;
+                LogInfo("New version " + sOnlineVersion + " found online");
+            }
+            else
+            {
+                LogInfo("Latest version installed");
+            }
+
+        }
+        catch (...)
+        {
+            sOnlineVersion = "";
+            LogError("Cannot fetch latest version");
+        }
+
+
         std::srand((unsigned int)std::time(nullptr));
    
         hConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -191,26 +282,6 @@ int main(int argc, char* argv[])
         }
     
         InitializeCharacterMaps();
-
-        try
-        {
-            sOnlineVersion = GetLatestVersion();
-            if (sOnlineVersion != "" && sOnlineVersion != VERSION)
-            {
-                bNeedToAnnounceNewVersion = true;
-                LogInfo("New version " + sOnlineVersion + " found online");
-            }
-            else
-            {
-                LogInfo("Latest version installed");
-            }
-        
-        }
-        catch (...)
-        {
-            sOnlineVersion = "";
-            LogError("Cannot fetch latest version");
-        }
 
         CreateRegistryKey();
         ReadFromRegistry(L"FreezeKey", &nFreezeKey);
@@ -294,24 +365,12 @@ int main(int argc, char* argv[])
         ReadFromRegistry(L"FrameBarY", &nFrameBarY);
         ReadFromRegistry(L"P1InputDisplay", &nP1InputDisplay);
         ReadFromRegistry(L"P2InputDisplay", &nP2InputDisplay);
-
-        char pcModPath[MAX_PATH];
-        GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
-        std::string sDLLPath = std::string(pcModPath).substr(0, std::string(pcModPath).length() - 33) + "\Extended-Training-Mode-DLL.dll";
-        while (!std::ifstream(sDLLPath).good())
-        {
-            std::wstring wsErrorString(sDLLPath.begin(), sDLLPath.end());
-            wsErrorString = L"UNABLE TO FIND " + wsErrorString;
-            int nReturnVal = MessageBoxW(NULL, wsErrorString.c_str(), L"", MB_ICONERROR | MB_RETRYCANCEL);
-            switch (nReturnVal)
-            {
-            case IDRETRY:
-                continue;
-            default:
-                return 0;
-                break;
-            }
-        }
+        ReadFromRegistry(L"BlockingHighlight", &nBlockingHighlightSetting);
+        ReadFromRegistry(L"ThrowProtectionHighlight", &nThrowProtectionHighlightSetting);
+        ReadFromRegistry(L"HitHighlight", &nHitHighlightSetting);
+        ReadFromRegistry(L"IdleHighlight", &nIdleHighlightSetting);
+        ReadFromRegistry(L"ArmorHighlight", &nArmorHighlightSetting);
+        ReadFromRegistry(L"HighlightToggle", &bHighlight);
 
         while (1)
         {
@@ -326,7 +385,7 @@ int main(int argc, char* argv[])
             std::cout << "|                                                                         |\x1b[K" << "\n";
             std::cout << "|   " << GITHUB_RELEASE << "   |\x1b[K" << "\n";
             if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
-                std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                 |\x1b[K" << "\n";
+                std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                  |\x1b[K" << "\n";
             else
                 std::cout << "|                                                                         |\x1b[K" << "\n";
             std::cout << "===========================================================================\x1b[K" << "\n";
@@ -422,12 +481,18 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayHitboxes), &bDisplayHitboxes, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedExtendOrigins), &bExtendOrigins, 1, 0);
 
-                        std::array<uint8_t, 4> arrTemp = CreateColorArray2(NO_HIGHLIGHT);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 4, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTemp, 4, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 4, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 4, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 4, 0);
+                        //std::array<uint8_t, 4> arrTemp = CreateColorArray2(NO_HIGHLIGHT);
+                        std::array<uint8_t, 4> arrTempBlockingHighlight = CreateColorArray2(nBlockingHighlightSetting);
+                        std::array<uint8_t, 4> arrTempHitHighlight = CreateColorArray2(nHitHighlightSetting);
+                        std::array<uint8_t, 4> arrTempThrowProtectionHighlight = CreateColorArray2(nThrowProtectionHighlightSetting);
+                        std::array<uint8_t, 4> arrTempIdleHighlight = CreateColorArray2(nIdleHighlightSetting);
+                        std::array<uint8_t, 4> arrTempArmorHighlight = CreateColorArray2(nArmorHighlightSetting);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTempIdleHighlight, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTempBlockingHighlight, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTempHitHighlight, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTempArmorHighlight, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTempThrowProtectionHighlight, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlight), &bHighlight, 1, 0);
 
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedOnExtendedSettings), &bOnSettingsMenu, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
@@ -446,7 +511,6 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedShowStats), &bShowStats, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1InputDisplay), &nP1InputDisplay, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2InputDisplay), &nP2InputDisplay, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlight), &bHighlight, 1, 0);
                     }
                 }
             }
@@ -460,10 +524,6 @@ int main(int argc, char* argv[])
             if (totalTime > 8000) {
                 //netlog("console framedisplay took %3lld.%03lld ms", totalTime / 1000, totalTime % 1000);
             }
-
-
-            //nWriteBuffer = nPlayerAdvantage;
-            //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwFPS), &nWriteBuffer, 4, 0);
 
             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwCSSFlag), &nReadResult, 4, 0);
             if (nReadResult == 0)
@@ -806,6 +866,21 @@ int main(int argc, char* argv[])
                             {
                                 switch (nSettingsPage)
                                 {
+                                case REVERSALS_PAGE:
+                                {
+                                    if (nEnemySettingsCursor == 2)
+                                        nReversalIndex1 = 0;
+                                    if (nEnemySettingsCursor == 3)
+                                        nReversalIndex2 = 0;
+                                    if (nEnemySettingsCursor == 5)
+                                        nReversalIndex3 = 0;
+                                    if (nEnemySettingsCursor == 6)
+                                        nReversalIndex4 = 0;
+                                    if (nEnemySettingsCursor == 8)
+                                        nReversalDelayFrames = 0;
+                                    
+                                    break;
+                                }
                                 case POSITIONS_PAGE:
                                 {
                                     if (nEnemySettingsCursor == 8)
@@ -902,7 +977,7 @@ int main(int argc, char* argv[])
                                             }
                                             if (nRNGMode == RNG_RN)
                                             {
-                                                nCustomRN = PromptForNumber(hMBAAHandle, dwBaseAddress);
+                                                nCustomRN = nOut;
                                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGCustomRN), &nCustomRN, 4, 0);
                                             }
                                         }
@@ -1140,7 +1215,7 @@ int main(int argc, char* argv[])
                                 {
                                     char pcTemp64[64] = "Enemy reversal {slot 1}.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex1] + ".").c_str());
+                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex1] + ". {Press A} to reset.").c_str());
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
@@ -1148,7 +1223,7 @@ int main(int argc, char* argv[])
                                 {
                                     char pcTemp64[64] = "Enemy reversal {slot 2}.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex2] + ".").c_str());
+                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex2] + ". {Press A} to reset.").c_str());
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
@@ -1156,7 +1231,7 @@ int main(int argc, char* argv[])
                                 {
                                     char pcTemp64[64] = "Enemy reversal {slot 3}.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex3] + ".").c_str());
+                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex3] + ". {Press A} to reset.").c_str());
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
@@ -1164,7 +1239,7 @@ int main(int argc, char* argv[])
                                 {
                                     char pcTemp64[64] = "Enemy reversal {slot 4}.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex4] + ".").c_str());
+                                    strcpy_s(pcTemp64, std::string(">Reversal {" + vPatternNames[nReversalIndex4] + ". {Press A} to reset.").c_str());
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
@@ -2185,44 +2260,60 @@ int main(int argc, char* argv[])
                                     nOldEnemyDefenseIndex = nEnemyDefenseIndex;
                                 else if (nOldEnemyDefenseIndex > nEnemyDefenseIndex)// left
                                 {
-                                    nReversalIndex1 = max(0, nReversalIndex1 - 1);
+                                    nReversalIndex1--;
+                                    if (nReversalIndex1 == -1)
+                                        nReversalIndex1 = vPatternNames.size() - 1;
                                 }
                                 else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                                 {
-                                    nReversalIndex1 = min(nReversalIndex1 + 1, vPatternNames.size() - 1);
+                                    nReversalIndex1++;
+                                    if (nReversalIndex1 == vPatternNames.size())
+                                        nReversalIndex1 = 0;
                                 }
 
                                 if (nOldEnemyDefenseTypeIndex == -1)
                                     nOldEnemyDefenseTypeIndex = nEnemyDefenseTypeIndex;
                                 else if (nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex)// left
                                 {
-                                    nReversalIndex2 = max(0, nReversalIndex2 - 1);
+                                    nReversalIndex2--;
+                                    if (nReversalIndex2 == -1)
+                                        nReversalIndex2 = vPatternNames.size() - 1;
                                 }
                                 else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
                                 {
-                                    nReversalIndex2 = min(nReversalIndex2 + 1, vPatternNames.size() - 1);
+                                    nReversalIndex2++;
+                                    if (nReversalIndex2 == vPatternNames.size())
+                                        nReversalIndex2 = 0;
                                 }
 
                                 if (nOldAirRecoveryIndex == -1)
                                     nOldAirRecoveryIndex = nAirRecoveryIndex;
                                 else if (nOldAirRecoveryIndex > nAirRecoveryIndex)// left
                                 {
-                                    nReversalIndex3 = max(0, nReversalIndex3 - 1);
+                                    nReversalIndex3--;
+                                    if (nReversalIndex3 == -1)
+                                        nReversalIndex3 = vPatternNames.size() - 1;
                                 }
                                 else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
                                 {
-                                    nReversalIndex3 = min(nReversalIndex3 + 1, vPatternNames.size() - 1);
+                                    nReversalIndex3++;
+                                    if (nReversalIndex3 == vPatternNames.size())
+                                        nReversalIndex3 = 0;
                                 }
 
                                 if (nOldDownRecoveryIndex == -1)
                                     nOldDownRecoveryIndex = nDownRecoveryIndex;
                                 else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
                                 {
-                                    nReversalIndex4 = max(0, nReversalIndex4 - 1);
+                                    nReversalIndex4--;
+                                    if (nReversalIndex4 == -1)
+                                        nReversalIndex4 = vPatternNames.size() - 1;
                                 }
                                 else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                                 {
-                                    nReversalIndex4 = min(nReversalIndex4 + 1, vPatternNames.size() - 1);
+                                    nReversalIndex4++;
+                                    if (nReversalIndex4 == vPatternNames.size())
+                                        nReversalIndex4 = 0;
                                 }
 
                                 if (nOldThrowRecoveryIndex == -1)
@@ -2685,11 +2776,13 @@ int main(int argc, char* argv[])
                                 {
                                     bHighlight = false;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlight), &bHighlight, 1, 0);
+                                    SetRegistryValue(L"HighlightToggle", bHighlight);
                                 }
                                 else if (nOldEnemyActionIndex < nEnemyActionIndex)// right
                                 {
                                     bHighlight = true;
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlight), &bHighlight, 1, 0);
+                                    SetRegistryValue(L"HighlightToggle", bHighlight);
                                 }
 
                                 if (nOldEnemyDefenseIndex == -1)
@@ -2699,12 +2792,14 @@ int main(int argc, char* argv[])
                                     nBlockingHighlightSetting = max(NO_HIGHLIGHT, nBlockingHighlightSetting - 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nBlockingHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"BlockingHighlight", nBlockingHighlightSetting);
                                 }
                                 else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                                 {
                                     nBlockingHighlightSetting = min(BLACK_HIGHLIGHT, nBlockingHighlightSetting + 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nBlockingHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"BlockingHighlight", nBlockingHighlightSetting);
                                 }
 
                                 if (nOldEnemyDefenseTypeIndex == -1)
@@ -2714,12 +2809,14 @@ int main(int argc, char* argv[])
                                     nHitHighlightSetting = max(NO_HIGHLIGHT, nHitHighlightSetting - 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nHitHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"HitHighlight", nHitHighlightSetting);
                                 }
                                 else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
                                 {
                                     nHitHighlightSetting = min(BLACK_HIGHLIGHT, nHitHighlightSetting + 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nHitHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"HitHighlight", nHitHighlightSetting);
                                 }
 
                                 if (nOldAirRecoveryIndex == -1)
@@ -2729,12 +2826,14 @@ int main(int argc, char* argv[])
                                     nArmorHighlightSetting = max(NO_HIGHLIGHT, nArmorHighlightSetting - 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nArmorHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"ArmorHighlight", nArmorHighlightSetting);
                                 }
                                 else if (nOldAirRecoveryIndex < nAirRecoveryIndex)// right
                                 {
                                     nArmorHighlightSetting = min(BLACK_HIGHLIGHT, nArmorHighlightSetting + 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nArmorHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"ArmorHighlight", nArmorHighlightSetting);
                                 }
 
                                 if (nOldDownRecoveryIndex == -1)
@@ -2744,12 +2843,14 @@ int main(int argc, char* argv[])
                                     nThrowProtectionHighlightSetting = max(NO_HIGHLIGHT, nThrowProtectionHighlightSetting - 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nThrowProtectionHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"ThrowProtectionHighlight", nThrowProtectionHighlightSetting);
                                 }
                                 else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                                 {
                                     nThrowProtectionHighlightSetting = min(BLACK_HIGHLIGHT, nThrowProtectionHighlightSetting + 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nThrowProtectionHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"ThrowProtectionHighlight", nThrowProtectionHighlightSetting);
                                 }
 
                                 if (nOldThrowRecoveryIndex == -1)
@@ -2759,12 +2860,14 @@ int main(int argc, char* argv[])
                                     nIdleHighlightSetting = max(NO_HIGHLIGHT, nIdleHighlightSetting - 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nIdleHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"IdleHighlight", nIdleHighlightSetting);
                                 }
                                 else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
                                 {
                                     nIdleHighlightSetting = min(BLACK_HIGHLIGHT, nIdleHighlightSetting + 1);
                                     std::array<uint8_t, 4> arrTemp = CreateColorArray2(nIdleHighlightSetting);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrTemp, 4, 0);
+                                    SetRegistryValue(L"IdleHighlight", nIdleHighlightSetting);
                                 }
 
                                 break;
@@ -3085,141 +3188,57 @@ int main(int argc, char* argv[])
                                     break;
                                 }
 
+                                char pcTemp[19];
                                 if (nReversalIndex1 == 0)
-                                {
-                                    char pcTemp[4] = "OFF";
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOffString), &pcTemp, 4, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 4, 0);
-
-                                    nWriteBuffer = 0;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
-                                    nEnemyDefenseIndex = 0;
-                                }
-                                else if (nReversalIndex1 == vPatternNames.size() - 1)
-                                {
-                                    char pcTemp[19];
-                                    strcpy_s(pcTemp, vPatternNames[nReversalIndex1].c_str());
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseDodgeString), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusShieldString), &pcTemp, 19, 0);
-
-                                    nWriteBuffer = 5;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
-                                    nEnemyDefenseIndex = 5;
-                                }
+                                    strcpy_s(pcTemp, "OFF");
                                 else
-                                {
-                                    char pcTemp[19];
                                     strcpy_s(pcTemp, vPatternNames[nReversalIndex1].c_str());
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllGuardString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseStatusGuardString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseAllShieldString), &pcTemp, 19, 0);
 
-                                    nWriteBuffer = 2;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
-                                    nEnemyDefenseIndex = 2;
-                                }
+                                nWriteBuffer = 2;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
+                                nEnemyDefenseIndex = 2;
+
 
                                 if (nReversalIndex2 == 0)
-                                {
-                                    char pcTemp[4] = "OFF";
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 4, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 4, 0);
-
-                                    nWriteBuffer = 0;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
-                                    nEnemyDefenseTypeIndex = 0;
-                                }
-                                else if (nReversalIndex2 == vPatternNames.size() - 1)
-                                {
-                                    char pcTemp[19];
-                                    strcpy_s(pcTemp, vPatternNames[nReversalIndex2].c_str());
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 19, 0);
-
-                                    nWriteBuffer = 2;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
-                                    nEnemyDefenseTypeIndex = 2;
-                                }
+                                    strcpy_s(pcTemp, "OFF");
                                 else
-                                {
-                                    char pcTemp[19];
                                     strcpy_s(pcTemp, vPatternNames[nReversalIndex2].c_str());
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 19, 0);
 
-                                    nWriteBuffer = 1;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
-                                    nEnemyDefenseTypeIndex = 1;
-                                }
+                                nWriteBuffer = 1;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
+                                nEnemyDefenseTypeIndex = 1;
 
                                 if (nReversalIndex3 == 0)
-                                {
-                                    char pcTemp[4] = "OFF";
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOffString), &pcTemp, 4, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 4, 0);
-
-                                    nWriteBuffer = 0;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
-                                    nAirRecoveryIndex = 0;
-                                }
-                                else if (nReversalIndex3 == vPatternNames.size() - 1)
-                                {
-                                    char pcTemp[19];
-                                    strcpy_s(pcTemp, vPatternNames[nReversalIndex3].c_str());
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom1String), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryRandom2String), &pcTemp, 19, 0);
-
-                                    nWriteBuffer = 5;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
-                                    nAirRecoveryIndex = 5;
-                                }
+                                    strcpy_s(pcTemp, "OFF");
                                 else
-                                {
-                                    char pcTemp[19];
                                     strcpy_s(pcTemp, vPatternNames[nReversalIndex3].c_str());
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryBackString), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryForwardString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryBackString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryForwardString), &pcTemp, 19, 0);
 
-                                    nWriteBuffer = 2;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
-                                    nAirRecoveryIndex = 2;
-                                }
+                                nWriteBuffer = 2;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                nAirRecoveryIndex = 2;
+
 
                                 if (nReversalIndex4 == 0)
-                                {
-                                    char pcTemp[4] = "OFF";
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOffString), &pcTemp, 4, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 4, 0);
-
-                                    nWriteBuffer = 0;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
-                                    nDownRecoveryIndex = 0;
-                                }
-                                else if (nReversalIndex4 == vPatternNames.size() - 1)
-                                {
-                                    char pcTemp[19];
-                                    strcpy_s(pcTemp, vPatternNames[nReversalIndex4].c_str());
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom1String), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryRandom2String), &pcTemp, 19, 0);
-
-                                    nWriteBuffer = 5;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
-                                    nDownRecoveryIndex = 5;
-                                }
+                                    strcpy_s(pcTemp, "OFF");
                                 else
-                                {
-                                    char pcTemp[19];
                                     strcpy_s(pcTemp, vPatternNames[nReversalIndex4].c_str());
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryBackString), &pcTemp, 19, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryForwardString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryBackString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryForwardString), &pcTemp, 19, 0);
 
-                                    nWriteBuffer = 2;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
-                                    nDownRecoveryIndex = 2;
-                                }
+                                nWriteBuffer = 2;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                nDownRecoveryIndex = 2;
+
 
                                 if (nReversalDelayFrames == 0)
                                 {
@@ -4435,8 +4454,8 @@ int main(int argc, char* argv[])
                                 }
                                 else
                                 {
-                                    char pcTemp[3];
-                                    strcpy_s(pcTemp, std::to_string(nReversalDelayFrames).c_str());
+                                    char pcTemp[19];
+                                    strcpy_s(pcTemp, vHighlightNames[nIdleHighlightSetting]);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcTemp, 19, 0);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllLateString), &pcTemp, 19, 0);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllRandomString), &pcTemp, 19, 0);

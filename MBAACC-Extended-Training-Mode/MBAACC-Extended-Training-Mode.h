@@ -17,6 +17,8 @@
 #include <chrono>
 #include <thread>
 #include <timeapi.h>
+#include <sstream>
+#include <iostream>
 #pragma comment(lib, "winmm.lib")
 
 #include "json.hpp"
