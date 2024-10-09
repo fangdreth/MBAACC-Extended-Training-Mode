@@ -44,6 +44,7 @@ const std::string GITHUB_DOWNLOAD = "https://github.com/fangdreth/MBAACC-Extende
 const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
 const std::string EXE_NAME = "MBAACC-Extended-Training-Mode.exe";
 const std::string DLL_NAME = "Extended-Training-Mode-DLL.dll";
+const std::string UPDATER_NAME = "MBAACC-Extended-Training-Mode-Updater.exe";
 #include "../MBAACC-Extended-Training-Mode/Logger.h"
 
 const DWORD dwP1WillBlock = 0x1552AC;

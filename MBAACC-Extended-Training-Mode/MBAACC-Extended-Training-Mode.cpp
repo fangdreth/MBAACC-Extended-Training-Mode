@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
                 {
                 case IDYES:
                 {
-                    std::string sUpdaterName = sInstallPath + "MBAACC-Extended-Training-Mode-Updater.exe";
+                    std::string sUpdaterName = sInstallPath + UPDATER_NAME;
 
                     // additional information
                     STARTUPINFOA si;
@@ -217,7 +217,7 @@ int main(int argc, char* argv[])
                     si.cb = sizeof(si);
                     ZeroMemory(&pi, sizeof(pi));
 
-                    std::string sCmdArgs = "MBAACC-Extended-Training-Mode-Updater.exe " + 
+                    std::string sCmdArgs =  UPDATER_NAME + " " +
                                             sInstallPath + " " + 
                                             GITHUB_DOWNLOAD + sOnlineVersion + "/ " +
                                             EXE_NAME + " " +
