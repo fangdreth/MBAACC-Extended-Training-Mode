@@ -385,7 +385,7 @@ int main(int argc, char* argv[])
             std::cout << "|                                                                         |\x1b[K" << "\n";
             std::cout << "|   " << GITHUB_RELEASE << "   |\x1b[K" << "\n";
             if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
-                std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                 |\x1b[K" << "\n";
+                std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                  |\x1b[K" << "\n";
             else
                 std::cout << "|                                                                         |\x1b[K" << "\n";
             std::cout << "===========================================================================\x1b[K" << "\n";
