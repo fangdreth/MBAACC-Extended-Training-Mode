@@ -208,11 +208,9 @@ int main(int argc, char* argv[])
                 {
                     std::string sUpdaterName = sInstallPath + UPDATER_NAME;
 
-                    // additional information
                     STARTUPINFOA si;
                     PROCESS_INFORMATION pi;
 
-                    // set the size of the structures
                     ZeroMemory(&si, sizeof(si));
                     si.cb = sizeof(si);
                     ZeroMemory(&pi, sizeof(pi));
@@ -225,7 +223,6 @@ int main(int argc, char* argv[])
                                             DLL_NAME;                                   // 2nd download
                                                                                         // append more files to download
                     
-                    // start the program up
                     CreateProcessA(sUpdaterName.c_str(),   // the path
                         (LPSTR)sCmdArgs.c_str(),        // Command line
                         NULL,           // Process handle not inheritable
@@ -237,7 +234,7 @@ int main(int argc, char* argv[])
                         &si,            // Pointer to STARTUPINFO structure
                         &pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
                     );
-                    // Close process and thread handles. 
+                    
                     CloseHandle(pi.hProcess);
                     CloseHandle(pi.hThread);
 

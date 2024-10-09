@@ -26,18 +26,13 @@ int main(int argc, const char* argv[])
 	}
 	if (SUCCEEDED(hr))
 	{
-        // additional information
         STARTUPINFOA si;
         PROCESS_INFORMATION pi;
 
-        // set the size of the structures
         ZeroMemory(&si, sizeof(si));
         si.cb = sizeof(si);
         ZeroMemory(&pi, sizeof(pi));
 
-        //std::string sCmdArgs = sEXEName;
-
-        // start the program up
         CreateProcessA((sInstallPath + sEXEName).c_str(),   // the path
             (LPSTR)sCmdArgs.c_str(),                        // Command line
             NULL,                                           // Process handle not inheritable
@@ -49,7 +44,7 @@ int main(int argc, const char* argv[])
             &si,                                            // Pointer to STARTUPINFO structure
             &pi                                             // Pointer to PROCESS_INFORMATION structure
         );
-        // Close process and thread handles. 
+        
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
 	}
