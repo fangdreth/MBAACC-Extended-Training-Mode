@@ -12,9 +12,7 @@ int main(int argc, const char* argv[])
 	std::string sGithubDownloadPath = argv[2];
     std::string sEXEName = argv[3];
 
-    MessageBoxA(NULL, "", "attach here", NULL);
-
-	HRESULT hr = S_OK;
+    HRESULT hr = S_OK;
 	for (int i = 3; i < argc; i++)
 	{
 		std::string sDownloadURL = sGithubDownloadPath + argv[i];

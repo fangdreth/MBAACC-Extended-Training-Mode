@@ -217,9 +217,6 @@ int main(int argc, char* argv[])
                     si.cb = sizeof(si);
                     ZeroMemory(&pi, sizeof(pi));
 
-                    //https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases/download/v2.0/MBAACC-Extended-Training-Mode.exe
-                    //https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases/download/v2.0/Extended-Training-Mode-DLL.dll
-
                     std::string sCmdArgs = "MBAACC-Extended-Training-Mode-Updater.exe " + 
                                             sInstallPath + " " + 
                                             GITHUB_DOWNLOAD + sOnlineVersion + "/ " +
