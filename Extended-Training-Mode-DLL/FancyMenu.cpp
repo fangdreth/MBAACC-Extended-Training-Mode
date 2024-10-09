@@ -1,39 +1,58 @@
 
 #include "FancyMenu.h"
 
-Menu baseMenu("Base");
+Menu<int> baseMenu("Base");
+
+template <typename T>
+struct always_false : std::false_type { };
+
+template <typename T>
+constexpr bool always_false_v = always_false<T>::value;
+
+template <typename T>
+void printType(T&&) {
+	static_assert(always_false_v<T>, "Compilation failed because you wanted to know the type; see below:");
+}
 
 // -----
 
-Menu::Menu(std::string name_) {
+template <typename T>
+Menu<T>::Menu(std::string name_) {
 	name = name_;
 }
 
-Menu::Menu(std::string name_, std::function<void(int, int&)> optionFunc_, std::function<std::string(int)> nameFunc_, std::wstring key_) {
+template <typename T>
+Menu<T>::Menu(std::string name_, std::function<void(int, T&)> optionFunc_, std::function<std::string(T)> nameFunc_, std::wstring key_) {
 	name = name_;
 	optionFunc = optionFunc_;
 	nameFunc = nameFunc_;
 	key = key_;
 
 	if (key.size() != 0) {
-		ReadFromRegistry(key, &optionIndex);
+		ReadFromRegistry(key, (int*)&optionState);
 	}
 	
 }
 
-Menu::~Menu() {
+template <typename T>
+Menu<T>::~Menu() {
 
 }
 
-void Menu::add(const Menu& newItem) {
-	items.push_back(newItem);
+template <typename T>
+template <typename U>
+void Menu<T>::add(const Menu<U>& newItem) {
+	items.emplace_back(newItem);
 }
 
-void Menu::add(std::string name_, std::function<void(int, int&)> optionFunc_, std::function<std::string(int)> nameFunc_, std::wstring key_) {
-	add(Menu(name_, optionFunc_, nameFunc_, key_));
+template <typename T>
+template <typename U>
+void Menu<T>::add(std::string name_, std::function<void(int, U&)> optionFunc_, std::function<std::string(U)> nameFunc_, std::wstring key_) {
+	items.push_back(Menu<U>(name_, optionFunc_, nameFunc_, key_));
 }
 
-void Menu::draw(Point& p) {
+template <typename T>
+void Menu<T>::draw(Point& p) {
 	p += Point(10.0f, 0.0f);
 	Rect bounds;
 	bool inside = false;
@@ -41,18 +60,18 @@ void Menu::draw(Point& p) {
 
 	if (items.size() == 0) {
 
-		bounds = TextDraw(p, 10, 0xFFFFFFFF, "%s %s", name.c_str(), nameFunc(optionIndex).c_str());
+		bounds = TextDraw(p, 10, 0xFFFFFFFF, "%s %s", name.c_str(), nameFunc(optionState).c_str());
 		inside = bounds.inside(mousePos);
 
 		if (lClick && inside) {
-			optionFunc(1, optionIndex);
+			optionFunc(1, optionState);
 			if (key.size() != 0) {
-				SetRegistryValue(key, optionIndex);
+				SetRegistryValue(key, *(int*)&optionState);
 			}
 		} else if (rClick && inside) {
-			optionFunc(-1, optionIndex);
+			optionFunc(-1, optionState);
 			if (key.size() != 0) {
-				SetRegistryValue(key, optionIndex);
+				SetRegistryValue(key, *(int*)&optionState);
 			}
 		}
 
@@ -63,7 +82,8 @@ void Menu::draw(Point& p) {
 		if (unfolded) {
 			for (int i = 0; i < items.size(); i++) {
 				p += Point(0.0f, 10.0f);
-				items[i].draw(p);
+				//items[i].draw(p);
+				std::visit([&p](auto& m) { m.draw(p); }, items[i]);
 			}
 		}
 
@@ -88,19 +108,27 @@ void initMenu() {
 		return opt & 0b1 ? "ON" : "OFF";
 	};
 
+	std::function<std::string(float)> defaultSliderNameFunc = [](float opt) -> std::string {
+		//return std::string("-", (int)(opt * 10.0f)) + std::string("+") + std::string("-", (int)((1.0f - opt) * 10.0f));
+		//return opt & 0b1 ? "ON" : "OFF";
+		return "opt is: " + std::to_string(opt);
+	};
+
+
 	// -----
 
 	Menu ui("UI");
 
-	ui.add("P1 Input Display",
-		[](int inc, int& opt) {
+	// whack syntax. should honestly be able to be inferred.
+	ui.add<int>("P1 Input Display",
+		[](int inc, int& opt) mutable -> void {
 			opt += inc;
 			opt = CLAMP(opt, INPUT_OFF, INPUT_BOTH);
 
 			*(BYTE*)(0x00400000 + adSharedP1InputDisplay) = opt;
 		},
-		[](int opt) -> std::string {
-			
+		[](int opt) mutable -> std::string {
+
 			switch ((eInputDisplay)opt) {
 			case INPUT_OFF:
 				return "OFF";
@@ -113,13 +141,13 @@ void initMenu() {
 			default:
 				break;
 			}
-			
+
 			return "unknown" + std::to_string(opt);
 		},
-		L"P1InputDisplay"
+		std::wstring(L"P1InputDisplay")
 	);
 
-	ui.add("P2 Input Display",
+	ui.add<int>("P2 Input Display",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt = CLAMP(opt, INPUT_OFF, INPUT_BOTH);
@@ -150,10 +178,10 @@ void initMenu() {
 
 	Menu hitboxes("Hitboxes");
 
-	hitboxes.add("Hitbox Style",
+	hitboxes.add<int>("Hitbox Style",
 		[](int inc, int& opt) {
 			opt += inc;
-			opt = CLAMP(opt, HITBOX_DRAW_ALL, HITBOX_BLEND);
+			opt &= 0b1;
 
 			*(BYTE*)(dwBaseAddress + adSharedHitboxStyle) = opt;
 		},
@@ -173,14 +201,31 @@ void initMenu() {
 		L"HitboxStyle"
 	);
 
-	//hitboxes.add
+	hitboxes.add<int>("Color Blind Mode",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
 
+			*(BYTE*)(dwBaseAddress + adSharedColorBlindMode) = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
+	hitboxes.add<float>("Opacity",
+		std::function<void(int, float&)>([](int inc, float& opt) -> void {
+			opt += (inc * 0.1f);
+			opt = CLAMP(opt, 0.0f, 1.0f);
+
+			//*(BYTE*)(dwBaseAddress + adSharedColorBlindMode) = opt;
+		}),
+		defaultSliderNameFunc
+	);
 
 	baseMenu.add(hitboxes);
 
 	Menu debug("Debug");
 
-	debug.add("Draw Info",
+	debug.add<int>("Draw Info",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt &= 0b1;
@@ -190,7 +235,7 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
-	debug.add("Object Info",
+	debug.add<int>("Object Info",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt &= 0b1;
@@ -200,7 +245,7 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
-	debug.add("Call Info",
+	debug.add<int>("Call Info",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt &= 0b1;
@@ -210,7 +255,7 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
-	debug.add("Profiler",
+	debug.add<int>("Profiler",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt &= 0b1;
@@ -220,7 +265,7 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
-	debug.add("vertex info",
+	debug.add<int>("vertex info",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt &= 0b1;
@@ -230,7 +275,7 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
-	debug.add("Debug log",
+	debug.add<int>("Debug log",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt &= 0b1;

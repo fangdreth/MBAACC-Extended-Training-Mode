@@ -1,10 +1,14 @@
 #pragma once
 
 #include "DirectX.h"
-
+#include <any>
 #include <vector>
 #include <functional>
 #include <string>
+#include <variant>
+#include <type_traits>
+#include <utility>
+
 
 /*
 
@@ -31,34 +35,43 @@ also worried abt lambda captures. i hope that menus dont ever need more than one
 
 */
 
+template <typename T = int>
 class Menu {
 public:
 
 	Menu(std::string name_);
 
-	Menu(std::string name_, std::function<void(int, int&)> optionFunc_, std::function<std::string(int)> nameFunc_, std::wstring key_ = L"");
+	Menu(std::string name_, std::function<void(int, T&)> optionFunc_, std::function<std::string(T)> nameFunc_, std::wstring key_ = L"");
 
 	~Menu();
 
-	void add(const Menu& newItem);
+	template <typename U = int>	
+	void add(const Menu<U>& newItem);
 
-	void add(std::string name_, std::function<void(int, int&)> optionFunc_, std::function<std::string(int)> nameFunc_, std::wstring key_ = L"");
-		
+	template <typename U = int>
+	void add(std::string name_, std::function<void(int, U&)> optionFunc_, std::function<std::string(U)> nameFunc_, std::wstring key_ = L"");
+
+
 	void draw(Point& p);
 
-	std::vector<Menu> items; // should i have these be pointers? 
+	//std::vector<std::variant<Menu<int>, Menu<float>>> items;
+	//std::vector<Menu> items;
+	using MenuVariant = std::variant<Menu<int>, Menu<float>>;
+	std::vector<MenuVariant> items;
 
 	std::string name = "NULL";
 	std::wstring key = L"";
 
 	// i dislike std::string, but it makes this much simpler.
-	std::function<void(int, int&)> optionFunc = nullptr; // execute code upon menu change
-	std::function<std::string(int)> nameFunc = nullptr; // give the name of the option
-	int optionIndex = 0;
+	std::function<void(int, T&)> optionFunc = nullptr; // execute code upon menu change
+	std::function<std::string(T)> nameFunc = nullptr; // give the name of the option
+	
+	T optionState;
+
 	bool unfolded = false;
 
 };
 
-extern Menu baseMenu;
+extern Menu<int> baseMenu;
 
 void drawFancyMenu();

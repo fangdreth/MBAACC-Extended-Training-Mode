@@ -1,9 +1,11 @@
 #pragma once
-
+#include <cstdio>
+#include <type_traits>
 #include <set>
 #include "dllmain.h"
 #include "resource.h"
 //#include "FancyMenu.h"
+
 
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
@@ -671,9 +673,25 @@ void BorderRectDrawBlend(float x, float y, float w, float h, DWORD ARGB = 0x8042
 
 // -----
 
-Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...);
 
-Rect TextDraw(const Point& p, float size, DWORD ARGB, const char* format, ...);
+Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format);
+
+Rect TextDraw(const Point& p, float size, DWORD ARGB, const char* format);
+
+template<typename... Args>
+Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format, Args... args) {
+
+	static char buffer[1024];
+	snprintf(buffer, 1024, format, args...);
+
+	return TextDraw(x, y, size, ARGB, buffer);
+}
+
+template<typename... Args>
+Rect TextDraw(const Point& p, float size, DWORD ARGB, const char* format, Args... args) {
+	// if this isnt inlined ill kill someone
+	return TextDraw(p.x, p.y, size, ARGB, format, args...);
+}
 
 void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format, ...);
 

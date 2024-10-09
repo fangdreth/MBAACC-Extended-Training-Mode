@@ -1225,7 +1225,7 @@ void BorderRectDrawBlend(float x, float y, float w, float h, DWORD ARGB) {
 
 // -----
 
-Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...) {
+Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format) {
 	// i do hope that this allocing does not slow things down. i tried saving the va_args for when the actual print func was called, but it would not work
 
 	if (format == NULL) {
@@ -1240,13 +1240,14 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	y /= 480.0f;
 	size /= 480.0f;
 
+	/*
 	static char buffer[1024];
 
 	va_list args;
 	va_start(args, format);
 	vsnprintf(buffer, 1024, format, args);
 	va_end(args);
-
+	*/
 
 	DWORD TempARGB = ARGB;
 
@@ -1271,7 +1272,7 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	float charWidth = ((float)(fontSize >> 1)) / (float)fontTexWidth;
 	float charHeight = (((float)fontSize) / (float)fontTexWidth) / 2.0f;
 
-	char* str = buffer;
+	const char* str = format;
 
 	while (*str) {
 
@@ -1408,20 +1409,8 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format, ...)
 	return res;
 }
 
-Rect TextDraw(const Point& p, float size, DWORD ARGB, const char* format, ...) {
-	
-	if (format == NULL) {
-		return Rect();
-	}
-
-	static char buffer[1024];
-
-	va_list args;
-	va_start(args, format);
-	vsnprintf(buffer, 1024, format, args);
-	va_end(args);
-
-	return TextDraw(p.x, p.y, size, ARGB, buffer);
+Rect TextDraw(const Point& p, float size, DWORD ARGB, const char* format) {
+	return TextDraw(p.x, p.y, size, ARGB, format);
 }
 
 void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format, ...) {
