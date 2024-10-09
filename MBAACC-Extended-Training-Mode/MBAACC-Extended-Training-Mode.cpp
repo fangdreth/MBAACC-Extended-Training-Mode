@@ -170,6 +170,100 @@ int main(int argc, char* argv[])
 
         HANDLE hConsoleHandle;
 
+
+        char pcModPath[MAX_PATH];
+        GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
+        std::vector<std::string> vPathTokens;
+        std::istringstream f(pcModPath);
+        std::string s;
+        while (std::getline(f, s, '\\'))
+            vPathTokens.push_back(s + "\\");
+        vPathTokens.pop_back();
+        std::string sInstallPath = std::accumulate(vPathTokens.begin(), vPathTokens.end(), std::string{});
+        std::string sDLLPath = sInstallPath + "Extended-Training-Mode-DLL.dll";
+        while (!std::ifstream(sDLLPath).good())
+        {
+            std::string sErrorString = "UNABLE TO FIND " + sDLLPath;
+            //int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONERROR | MB_RETRYCANCEL);
+            switch (MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONERROR | MB_RETRYCANCEL))
+            {
+            case IDRETRY:
+                continue;
+            default:
+                return 0;
+                break;
+            }
+        }
+        SetRegistryValue(L"InstallPath", sInstallPath);
+
+        try
+        {
+            sOnlineVersion = GetLatestVersion();
+            if (sOnlineVersion != "" && sOnlineVersion != VERSION)
+            {
+                std::string sUpdate = "A new version of the Extended Training Mode is available.\nWould you like to update?";
+                switch (MessageBoxA(NULL, sUpdate.c_str(), "", MB_YESNO | MB_ICONASTERISK | MB_DEFBUTTON1))
+                {
+                case IDYES:
+                {
+                    std::string sUpdaterName = sInstallPath + "MBAACC-Extended-Training-Mode-Updater.exe";
+
+                    // additional information
+                    STARTUPINFOA si;
+                    PROCESS_INFORMATION pi;
+
+                    // set the size of the structures
+                    ZeroMemory(&si, sizeof(si));
+                    si.cb = sizeof(si);
+                    ZeroMemory(&pi, sizeof(pi));
+
+                    //https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases/download/v2.0/MBAACC-Extended-Training-Mode.exe
+                    //https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases/download/v2.0/Extended-Training-Mode-DLL.dll
+
+                    std::string sCmdArgs = "MBAACC-Extended-Training-Mode-Updater.exe " + 
+                                            sInstallPath + " " + 
+                                            GITHUB_DOWNLOAD + sOnlineVersion + "/ " +
+                                            EXE_NAME + " " +
+                                            DLL_NAME;
+                    
+                    // start the program up
+                    CreateProcessA(sUpdaterName.c_str(),   // the path
+                        (LPSTR)sCmdArgs.c_str(),        // Command line
+                        NULL,           // Process handle not inheritable
+                        NULL,           // Thread handle not inheritable
+                        FALSE,          // Set handle inheritance to FALSE
+                        0,              // No creation flags
+                        NULL,           // Use parent's environment block
+                        NULL,           // Use parent's starting directory 
+                        &si,            // Pointer to STARTUPINFO structure
+                        &pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
+                    );
+                    // Close process and thread handles. 
+                    CloseHandle(pi.hProcess);
+                    CloseHandle(pi.hThread);
+
+                    TerminateProcess(GetCurrentProcess(), 0);
+                }
+                default:
+                    break;
+                }
+
+                bNeedToAnnounceNewVersion = true;
+                LogInfo("New version " + sOnlineVersion + " found online");
+            }
+            else
+            {
+                LogInfo("Latest version installed");
+            }
+
+        }
+        catch (...)
+        {
+            sOnlineVersion = "";
+            LogError("Cannot fetch latest version");
+        }
+
+
         std::srand((unsigned int)std::time(nullptr));
    
         hConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -191,26 +285,6 @@ int main(int argc, char* argv[])
         }
     
         InitializeCharacterMaps();
-
-        try
-        {
-            sOnlineVersion = GetLatestVersion();
-            if (sOnlineVersion != "" && sOnlineVersion != VERSION)
-            {
-                bNeedToAnnounceNewVersion = true;
-                LogInfo("New version " + sOnlineVersion + " found online");
-            }
-            else
-            {
-                LogInfo("Latest version installed");
-            }
-        
-        }
-        catch (...)
-        {
-            sOnlineVersion = "";
-            LogError("Cannot fetch latest version");
-        }
 
         CreateRegistryKey();
         ReadFromRegistry(L"FreezeKey", &nFreezeKey);
@@ -300,30 +374,6 @@ int main(int argc, char* argv[])
         ReadFromRegistry(L"IdleHighlight", &nIdleHighlightSetting);
         ReadFromRegistry(L"ArmorHighlight", &nArmorHighlightSetting);
         ReadFromRegistry(L"HighlightToggle", &bHighlight);
-
-        char pcModPath[MAX_PATH];
-        GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
-        std::vector<std::string> vPathTokens;
-        std::istringstream f(pcModPath);
-        std::string s;
-        while (std::getline(f, s, '\\'))
-            vPathTokens.push_back(s + "\\");
-        vPathTokens.pop_back();
-        vPathTokens.push_back("Extended-Training-Mode-DLL.dll");
-        std::string sDLLPath = std::accumulate(vPathTokens.begin(), vPathTokens.end(), std::string{});
-        while (!std::ifstream(sDLLPath).good())
-        {
-            std::string sErrorString = "UNABLE TO FIND " + sDLLPath;
-            //int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONERROR | MB_RETRYCANCEL);
-            switch (MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONERROR | MB_RETRYCANCEL))
-            {
-            case IDRETRY:
-                continue;
-            default:
-                return 0;
-                break;
-            }
-        }
 
         while (1)
         {

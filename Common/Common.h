@@ -38,11 +38,12 @@ enum eBackground { BG_NORMAL, BG_WHITE, BG_GRAY, BG_BLACK, BG_RED, BG_GREEN, BG_
 enum eSlow { SLOW_THREE_FOURTHS = 3, SLOW_ONE_HALF = 2, SLOW_ONE_FOURTH = 1 };
 enum eInputDisplay { INPUT_OFF = 0, INPUT_LIST = 1, INPUT_ARCADE = 2, INPUT_BOTH = 3 };
 
-const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
-const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
-const std::string GITHUB_README = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/README.md";
 const std::string VERSION = "v2.1";
-
+const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
+const std::string GITHUB_DOWNLOAD = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases/download/";
+const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases";
+const std::string EXE_NAME = "MBAACC-Extended-Training-Mode.exe";
+const std::string DLL_NAME = "Extended-Training-Mode-DLL.dll";
 #include "../MBAACC-Extended-Training-Mode/Logger.h"
 
 const DWORD dwP1WillBlock = 0x1552AC;
@@ -841,7 +842,7 @@ static LONG ReadFromRegistry(std::wstring sKey, uint8_t* nValue)
     return openResult;
 }
 
-static LONG ReadFromRegistry(std::wstring sKey, int* nValue)
+static LONG ReadFromRegistry(std::wstring sKey, int* pnValue)
 {
     LONG openResult = -1;
 
@@ -851,13 +852,13 @@ static LONG ReadFromRegistry(std::wstring sKey, int* nValue)
         HKEY hKey;
         LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
         DWORD dwType = REG_DWORD;
-        DWORD dwSize = sizeof(nValue);
+        DWORD dwSize = sizeof(pnValue);
 
         openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
         if (openResult == 0)
             openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
         if (openResult == 0)
-            *nValue = (int)dwValue;
+            *pnValue = (int)dwValue;
 
         RegCloseKey(hKey);
     }
@@ -894,12 +895,62 @@ static LONG SetRegistryValue(std::wstring sKey, bool bValue)
     return SetRegistryValue(sKey, bValue ? 1 : 0);
 }
 
-static LONG ReadFromRegistry(std::wstring sKey, bool* bValue)
+static LONG SetRegistryValue(std::wstring sKey, std::string sValue)
+{
+    LONG openResult = -1;
+
+    try
+    {
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
+        char pcVal[MAX_PATH];
+        strcpy_s(pcVal, sValue.c_str());
+
+        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
+        if (openResult == 0)
+            openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_SZ, (LPBYTE)pcVal, strlen(pcVal) + 1);
+
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
+    return openResult;
+}
+
+static LONG ReadFromRegistry(std::wstring sKey, bool* pbValue)
 {
     uint8_t nValue = 0;
     LONG openResult = ReadFromRegistry(sKey, &nValue);
     if (openResult == 0)
-        *bValue = nValue > 0 ? true : false;
+        *pbValue = nValue > 0 ? true : false;
+    return openResult;
+}
+
+static LONG ReadFromRegistry(std::wstring sKey, std::string* psValue)
+{
+    LONG openResult = -1;
+
+    try
+    {
+        char pcValue[MAX_PATH];
+        HKEY hKey;
+        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+        DWORD dwType = REG_SZ;
+        DWORD dwSize = MAX_PATH;
+
+        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+        if (openResult == 0)
+            openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&pcValue, &dwSize);
+        if (openResult == 0)
+            *psValue = std::string(pcValue);
+
+        RegCloseKey(hKey);
+    }
+    catch (...)
+    {
+    }
+
     return openResult;
 }
 
