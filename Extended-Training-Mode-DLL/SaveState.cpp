@@ -3,6 +3,16 @@
 
 SaveStateManager saveStateManager;
 
+SaveState::~SaveState() {
+	if (P3 != NULL) {
+		free(P3);
+	}
+
+	if (P4 != NULL) {
+		free(P4);
+	}
+}
+
 void SaveState::save() {
 
 	slowMo = *(WORD*)(0x0055d208);
@@ -18,40 +28,59 @@ void SaveState::save() {
 	//SaveCurrentCamYCopy       = *(DWORD*)(0x00400000 + adSaveCurrentCamYCopy		 );
 	//SaveCurrentCamZoom        = *(DWORD*)(0x00400000 + adSaveCurrentCamZoom			 );
 	//SaveDestinationCamZoom    = *(DWORD*)(0x00400000 + adSaveDestinationCamZoom		 );
-	//P1ControlledCharacter     = *(DWORD*)(0x00400000 + adP1ControlledCharacter		 );
-	//P1NextControlledCharacter = *(DWORD*)(0x00400000 + adP1NextControlledCharacter	 );
-	//P2ControlledCharacter     = *(DWORD*)(0x00400000 + adP2ControlledCharacter		 );
-	//P2NextControlledCharacter = *(DWORD*)(0x00400000 + adP2NextControlledCharacter	 );
+	P1ControlledCharacter     = *(DWORD*)(0x00400000 + adP1ControlledCharacter		 );
+	P1NextControlledCharacter = *(DWORD*)(0x00400000 + adP1NextControlledCharacter	 );
+	P2ControlledCharacter     = *(DWORD*)(0x00400000 + adP2ControlledCharacter		 );
+	P2NextControlledCharacter = *(DWORD*)(0x00400000 + adP2NextControlledCharacter	 );
 	
-	memcpy((void*)&playerSaves, (void*)0x00555130, 0xAFC * 4);
+	//memcpy((void*)&playerSaves, (void*)0x00555130, 0xAFC * 4);
 
+	memcpy((void*)&P1, (void*)(0x00555130 + (0xAFC * 0)), 0x33C);
+	memcpy((void*)&P2, (void*)(0x00555130 + (0xAFC * 1)), 0x33C);
+	//memcpy((void*)&P3, (void*)(0x00555130 + (0xAFC * 2)), 0x33C);
+	//memcpy((void*)&P4, (void*)(0x00555130 + (0xAFC * 3)), 0x33C);
+
+	if (*(BYTE*)(0x00555130 + (0xAFC * 2)) != 0) {
+		P3 = (PlayerSave*)malloc(1 * sizeof(PlayerSave));
+		memcpy((void*)P3, (void*)(0x00555130 + (0xAFC * 2)), 0x33C);
+	}
 	
+	if (*(BYTE*)(0x00555130 + (0xAFC * 3)) != 0) {
+		P4 = (PlayerSave*)malloc(1 * sizeof(PlayerSave));
+		memcpy((void*)P4, (void*)(0x00555130 + (0xAFC * 3)), 0x33C);
+	}
+
 	// should we also save hit effect data?
 
 	// effects start at 0x0067BDE8
 
+	constexpr int chunkSize = 4; // higher this is, more memory, faster(probs), and safer tbh
+
 	bool foundActiveEffect = false;
-	for (int index = 0; index < 1000; index += 16) {
+	for (int index = 0; index < 1000; index += chunkSize) {
 		
 		foundActiveEffect = false;
 		
-		for (int i = 0; i < 16; i++) {
+		// this is chunkSize * 2 out of paranoia, and leads to shit code
+		for (int i = 0; i < chunkSize*2; i++) {
 			if (*(BYTE*)(0x0067BDE8 + (0x33C * (index + i)))) {
 				foundActiveEffect = true;
 				break;
 			}
 		}
 
-		// the capacity is already there, we need to put something in it. this will also serve to clear out higher index effects when/if going back
-		memcpy((void*)&effects.data[index], (void*)(0x0067BDE8 + (0x33C * index)), 0x33C * 16);
-		effects.size += 16;// what am i doing
-
 		if (!foundActiveEffect) {
 			break;
 		}
 
 		// vec starts with 16 capacity. give it 16 more. this might not be the fastest
-		effects.addCapacity(16);
+		effects.addCapacity(chunkSize);
+
+		// the capacity is already there, we need to put something in it. this will also serve to clear out higher index effects when/if going back
+		memcpy((void*)&effects.data[index], (void*)(0x0067BDE8 + (0x33C * index)), 0x33C * chunkSize);
+		effects.size += chunkSize;// what am i doing
+
+		
 	}
 }
 
@@ -70,20 +99,54 @@ void SaveState::load() {
 	//*(DWORD*)(0x00400000 + adSaveCurrentCamYCopy		 ) = SaveCurrentCamYCopy       ;
 	//*(DWORD*)(0x00400000 + adSaveCurrentCamZoom			 ) = SaveCurrentCamZoom        ;
 	//*(DWORD*)(0x00400000 + adSaveDestinationCamZoom		 ) = SaveDestinationCamZoom    ;
-	//*(DWORD*)(0x00400000 + adP1ControlledCharacter		 ) = P1ControlledCharacter     ;
-	//*(DWORD*)(0x00400000 + adP1NextControlledCharacter	 ) = P1NextControlledCharacter ;
-	//*(DWORD*)(0x00400000 + adP2ControlledCharacter		 ) = P2ControlledCharacter     ;
-	//*(DWORD*)(0x00400000 + adP2NextControlledCharacter	 ) = P2NextControlledCharacter ;
+	*(DWORD*)(0x00400000 + adP1ControlledCharacter		 ) = P1ControlledCharacter     ;
+	*(DWORD*)(0x00400000 + adP1NextControlledCharacter	 ) = P1NextControlledCharacter ;
+	*(DWORD*)(0x00400000 + adP2ControlledCharacter		 ) = P2ControlledCharacter     ;
+	*(DWORD*)(0x00400000 + adP2NextControlledCharacter	 ) = P2NextControlledCharacter ;
 
-	memcpy((void*)0x00555130, (void*)&playerSaves, 0xAFC * 4);
+	//memcpy((void*)0x00555130, (void*)&playerSaves, 0xAFC * 4);
+	
+	memcpy((void*)(0x00555130 + (0xAFC * 0)), (void*)&P1, 0x33C);
+	memcpy((void*)(0x00555130 + (0xAFC * 1)), (void*)&P2, 0x33C);
 
-	memcpy((void*)0x0067BDE8, (void*)effects.data, 0x33C * effects.size);
+	if (P3 != NULL) {
+		memcpy((void*)(0x00555130 + (0xAFC * 2)), (void*)P3, 0x33C);
+	}
 
+	if (P4 != NULL) {
+		memcpy((void*)(0x00555130 + (0xAFC * 3)), (void*)P4, 0x33C);
+	}
+	
+	
+
+
+	if (effects.data != NULL) {
+		// restore previous effects
+		memcpy((void*)0x0067BDE8, (void*)effects.data, 0x33C * effects.size);
+	}
+
+	// need to disable future effects. could do this with a memcpy but thats trash, just toggle off the enable
+	// as for how many,,, not sure, hoping 16 is good
+	DWORD addr = 0x0067BDE8 + (0x33C * effects.size);
+	for (int i = 0; i < 16; i++) {
+		*(BYTE*)(addr) = 0;
+		addr += 0x33C;
+	}
 
 }
 
 int SaveState::totalMemory() {
-	return sizeof(SaveState) + effects.totalMemory();
+	int res = sizeof(SaveState) + effects.totalMemory();
+
+	if (P3 != NULL) {
+		res += sizeof(PlayerSave);
+	}
+
+	if (P4 != NULL) {
+		res += sizeof(PlayerSave);
+	}
+
+	return res;
 }
 
 void SaveStateManager::save() {
@@ -146,4 +209,17 @@ int SaveStateManager::totalMemory() {
 	}
 
 	return res;
+}
+
+void SaveStateManager::log() {
+
+
+	float totalMB = ((float)saveStateManager.totalMemory()) / ((float)(1 << 20));
+	int count = saveStateManager.states.size();
+	float avgMB = totalMB / ((float)count);
+
+	TextDraw(200, 200, 12, 0xFFFFFFFF, "savestates: %d, %.4f MB", count, totalMB);
+	TextDraw(200, 214, 12, 0xFFFFFFFF, "avg: %.4f KB", (1024.0f) * avgMB);
+	TextDraw(200, 228, 12, 0xFFFFFFFF, "pred: %.4f MB", maxStates * avgMB);
+
 }

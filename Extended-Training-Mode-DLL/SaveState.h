@@ -10,7 +10,15 @@ we could only record the changes between each state maybe?
 */
 
 typedef struct PlayerSave {
-	BYTE data[0xAFC];
+	/*
+	a thought:
+	the player and effect structs are very similar. basically sorta kinda the same
+	if you squint and have horrid vision.
+	what about only backing up the first 0x33C of each player?
+	*/
+	// BYTE data[0xAFC];
+
+	BYTE data[0x33C];
 } PlayerSave;
 
 typedef struct EffectSave {
@@ -20,19 +28,17 @@ typedef struct EffectSave {
 // ideally, memory would be aligned for quick load/save, but idrk
 typedef struct SaveState {
 
-	union {
-		struct {
-			PlayerSave P1;
-			PlayerSave P2;
-			PlayerSave P3;
-			PlayerSave P4;
-		};
-		PlayerSave playerSaves[4];
-	};
+	PlayerSave P1;
+	PlayerSave P2;
+
+	// a bit weird/stupid, but lets only alloc these when they are actually needed
+	// i could(and probs should) do the same with P1 and P2,,, but ehh
+	PlayerSave* P3 = NULL;
+	PlayerSave* P4 = NULL;
 
 	// reasoning for [16] is that copying 16 effects at a time is faster
 	// reasoning for not using vector: cannot resize without default init. and for 0x33C * 16, thats way to much
-	Vec<EffectSave> effects = Vec<EffectSave>(16);
+	Vec<EffectSave> effects = Vec<EffectSave>(0); // yes. this is intended
 
 	// put other variables in here
 
@@ -45,10 +51,11 @@ typedef struct SaveState {
 	//DWORD SaveCurrentCamYCopy;
 	//DWORD SaveCurrentCamZoom;
 	//DWORD SaveDestinationCamZoom;
-	//DWORD P1ControlledCharacter;
-	//DWORD P1NextControlledCharacter;
-	//DWORD P2ControlledCharacter;
-	//DWORD P2NextControlledCharacter;
+	
+	DWORD P1ControlledCharacter;
+	DWORD P1NextControlledCharacter;
+	DWORD P2ControlledCharacter;
+	DWORD P2NextControlledCharacter;
 
 	//DWORD reallyNotSure;
 	DWORD slowMo;
@@ -57,6 +64,8 @@ typedef struct SaveState {
 	void load();
 
 	int totalMemory();
+
+	~SaveState();
 
 } SaveState;
 
@@ -70,6 +79,8 @@ public:
 	void load(int dir);
 
 	int totalMemory();
+
+	void log();
 
 	int currentState = 0;
 	// i would prefer something more not-externally-managed, but this is fine. if performance takes a hit, use circ buffer

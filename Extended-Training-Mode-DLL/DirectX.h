@@ -55,7 +55,9 @@ public:
 
 	Vec(int maxSize_ = 16) {
 		maxSize = maxSize_;
-		data = (T*)malloc(maxSize * sizeof(T));
+		if(maxSize != 0) {
+			data = (T*)malloc(maxSize * sizeof(T));
+		}
 	}
 
 	~Vec() {

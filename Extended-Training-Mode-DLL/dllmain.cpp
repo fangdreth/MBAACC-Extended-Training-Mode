@@ -1227,30 +1227,33 @@ void frameDoneCallback()
 
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
 
-	static DWORD prevUnpausedFrameCount = 0;
-	if (prevUnpausedFrameCount != unpausedFrameCount) {
-		//long long startTime = getMicroSec();
+	if (!isPaused()) {
+		static DWORD prevUnpausedFrameCount = 0;
+		if (prevUnpausedFrameCount != unpausedFrameCount) {
+			//long long startTime = getMicroSec();
 
-		saveStateManager.save();
-		unpausedFrameCount = prevUnpausedFrameCount;
+			saveStateManager.save();
+			unpausedFrameCount = prevUnpausedFrameCount;
 
-		//long long endTime = getMicroSec();
-		//long long totalTime = endTime - startTime;
-		//log("%3lld.%03lld", totalTime / 1000, totalTime % 1000);
+			//long long endTime = getMicroSec();
+			//long long totalTime = endTime - startTime;
+			//log("%3lld.%03lld", totalTime / 1000, totalTime % 1000);
+		}
+
+		static KeyState UpKey(VK_UP);
+		static KeyState DownKey(VK_DOWN);
+
+		if (UpKey.keyDownHeldFreq<4, 24>()) {
+			saveStateManager.load(1);
+		}
+
+		if (DownKey.keyDownHeldFreq<4, 24>()) {
+			saveStateManager.load(-1);
+		}
+
+		saveStateManager.log();
 	}
-
-	static KeyState UpKey(VK_UP);
-	static KeyState DownKey(VK_DOWN);
-
-	if (UpKey.keyDownHeldFreq<4, 24>()) {
-		saveStateManager.load(1);
-	}
-
-	if (DownKey.keyDownHeldFreq<4, 24>()) {
-		saveStateManager.load(-1);
-	}
-
-	//TextDraw(300, 100, 12, 0xFFFFFFFF, "savestates: %d, %.4f MB", saveStateManager.states.size(), ((float)saveStateManager.totalMemory()) / ((float)(1 << 20)));
+	
 
 	renderModificationsFrameDone();
 
