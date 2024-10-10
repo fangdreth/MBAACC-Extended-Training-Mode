@@ -1599,7 +1599,7 @@ int main(int argc, char* argv[])
                                 {
                                     char pcTemp64[64] = "Display a line on the ground";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    if (!bDrawGround)
+                                    if (bDrawGround)
                                         strcpy_s(pcTemp64, ">A line on the ground {will be drawn.");
                                     else
                                         strcpy_s(pcTemp64, ">A line on the ground {will not be drawn.");
