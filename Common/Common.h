@@ -152,6 +152,7 @@ const DWORD dwP1ThrowInvuln = 0x1552B6; //0=no >0=invuln
 const DWORD dwP2ThrowInvuln = 0x1552B6 + 0xAFC; //0=no >0=invuln
 const DWORD dwAttackInfo = 0x1595B8;
 const DWORD dwInputDisplay = 0x1585F8;
+const DWORD dwP1ButtonHeld = 0x15541D; // 16:A 32:B 64:C 112:ABC
 
 // DLL Constants
 const DWORD dwCameraX = 0x0055dec4;
