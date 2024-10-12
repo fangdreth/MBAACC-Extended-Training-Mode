@@ -671,7 +671,7 @@ const std::map<std::string, int> CNECO_Map =
 	{ "6A", 191 },
 	{ "6[A]", 1191 },
 	{ "j.2C", 68 },
-	{ "B DIVEKICK", 190 },
+	{ "j.2B", 190 },
 	{ "BUNKER", 169 },
 	{ "5D", 83 },
 	{ "2D", 84 },
@@ -1517,7 +1517,7 @@ const std::map<std::string, int> FARC_Map =
 	{ "6C", 459 },
 	{ "3C", 440 },
 	{ "j.2C", 103 },
-	{ "B DIVEKICK", 107 },
+	{ "j.2B", 107 },
 	{ "BUNKER", 96 },
 	{ "SHIELD COUNTER", 465 },
 	{ "5D", 72 },
@@ -1658,7 +1658,7 @@ const std::map<std::string, int> FHISUI_Map =
 	{ "6[C]", 1526 },
 	{ "3C", 186 },
 	{ "j.6B", 495 },
-	{ "C DIVEKICK", 70 },
+	{ "j.2C", 70 },
 	{ "BUNKER", 181 },
 	{ "SHIELD COUNTER", 475 },
 	{ "5D", 81 },
@@ -2028,7 +2028,7 @@ const std::map<std::string, int> FNECO_Map =
 	{ "6A", 191 },
 	{ "6[A]", 1191 },
 	{ "j.2C", 68 },
-	{ "B DIVEKICK", 190 },
+	{ "j.2B", 190 },
 	{ "BUNKER", 169 },
 	{ "SHIELD COUNTER", 440 },
 	{ "5D", 83 },
@@ -2683,7 +2683,8 @@ const std::map<std::string, int> FWLEN_Map =
 
 const std::map<std::string, int> HAKIHA_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "2[C]", 1006 },
 	{ "4C", 80 },
 	{ "6C", 60 },
 	{ "j.2C", 58 },
@@ -2726,8 +2727,9 @@ const std::map<std::string, int> HAKIHA_Map =
 
 const std::map<std::string, int> HAOKO_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "4C", 46 },
+	{ "4[C]", 1046 },
 	{ "3C", 170 },
 	{ "BUNKER", 96 },
 	{ "LOW SHIELD COUNTER", 410 },
@@ -2765,6 +2767,7 @@ const std::map<std::string, int> HAOKO_Map =
 	{ "j.214C", 77 },
 	{ "236A", 108 },
 	{ "236B", 100 },
+	{ "236[B]", 1100 },
 	{ "236C", 142 },
 	{ "j.236A", 172 },
 	{ "j.236B", 173 },
@@ -2782,9 +2785,11 @@ const std::map<std::string, int> HARC_Map =
 {
 
 	{ "4C", 104 },
+	{ "4[C]", 1104 },
 	{ "3C", 120 },
 	{ "j.2C", 436 },
-	{ "B DIVEKICK", 107 },
+	{ "j.2[C]", 1436 },
+	{ "j.2B", 107 },
 	{ "BUNKER", 96 },
 	{ "LOW SHIELD COUNTER", 466 },
 	{ "SHIELD COUNTER", 465 },
@@ -2827,11 +2832,13 @@ const std::map<std::string, int> HARC_Map =
 
 const std::map<std::string, int> HCIEL_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "4B", 90 },
+	{ "4[B]", 1090 },
 	{ "3B", 390 },
 	{ "4C", 61 },
-	{ "C DIVEKICK", 53 },
+	{ "j.2C", 53 },
+	{ "j.2[C]", 1053 },
 	{ "BUNKER", 78 },
 	{ "LOW SHIELD COUNTER", 466 },
 	{ "SHIELD COUNTER", 465 },
@@ -2851,6 +2858,7 @@ const std::map<std::string, int> HCIEL_Map =
 	{ "623A", 225 },
 	{ "623B", 226 },
 	{ "623C", 227 },
+	{ "623[C]", 1227 },
 	{ "22A", 150 },
 	{ "22B", 151 },
 	{ "22C", 152 },
@@ -2864,6 +2872,7 @@ const std::map<std::string, int> HCIEL_Map =
 	{ "j.214B", 161 },
 	{ "j.214C", 162 },
 	{ "236A", 505 },
+	{ "236[A]", 1505 },
 	{ "236B", 506 },
 	{ "236C", 400 },
 	{ "j.236A", 95 },
@@ -2879,8 +2888,10 @@ const std::map<std::string, int> HHIME_Map =
 {
 
 	{ "6C", 124 },
+	{ "6[C]", 1124 },
 	{ "3C", 121 },
 	{ "j.6B", 290 },
+	{ "j.6[B]", 1290 },
 	{ "BUNKER", 72 },
 	{ "LOW SHIELD COUNTER", 286 },
 	{ "SHIELD COUNTER", 285 },
@@ -2922,12 +2933,15 @@ const std::map<std::string, int> HHIME_Map =
 
 const std::map<std::string, int> HHISUI_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "j.[C]", 1009 },
 	{ "4B", 73 },
+	{ "4[B]", 1073 },
 	{ "6B", 186 },
 	{ "6C", 71 },
 	{ "j.6B", 495 },
-	{ "C DIVEKICK", 70 },
+	{ "j.2C", 70 },
+	{ "j.2[C]", 1070 },
 	{ "BUNKER", 181 },
 	{ "LOW SHIELD COUNTER", 476 },
 	{ "SHIELD COUNTER", 475 },
@@ -2959,12 +2973,16 @@ const std::map<std::string, int> HHISUI_Map =
 	{ "j.236A", 377 },
 	{ "j.236B", 378 },
 	{ "j.236C", 379 },
-	{ "ARC DRIVE", 199 }
+	{ "ARC DRIVE", 199 },
+	{ "[ARC DRIVE]", 1199 }
 };
 
 const std::map<std::string, int> HKOHAKU_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "BUNKER", 235 },
 	{ "LOW SHIELD COUNTER", 406 },
 	{ "SHIELD COUNTER", 405 },
@@ -2982,6 +3000,7 @@ const std::map<std::string, int> HKOHAKU_Map =
 	{ "FORWARD SUPER JUMP", 63 },
 	{ "SUPER JUMP", 360 },
 	{ "623A", 450 },
+	{ "623[A]", 1450 },
 	{ "623B", 451 },
 	{ "623C", 452 },
 	{ "22A", 490 },
@@ -2992,9 +3011,12 @@ const std::map<std::string, int> HKOHAKU_Map =
 	{ "214C", 98 },
 	{ "j.214A", 100 },
 	{ "j.214B", 425 },
+	{ "j.214[B]", 1425 },
 	{ "j.214C", 102 },
 	{ "236A", 170 },
+	{ "236[A]", 1170 },
 	{ "236B", 171 },
+	{ "236[B]", 1171 },
 	{ "236C", 172 },
 	{ "j.236A", 422 },
 	{ "j.236B", 421 },
@@ -3005,7 +3027,10 @@ const std::map<std::string, int> HKOHAKU_Map =
 
 const std::map<std::string, int> HKOHAMECH_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "2[C]", 1006 },
+	{ "j.[B]", 1008 },
+	{ "j.[C]", 1009 },
 	{ "BUNKER", 235 },
 	{ "LOW SHIELD COUNTER", 406 },
 	{ "SHIELD COUNTER", 405 },
@@ -3031,12 +3056,15 @@ const std::map<std::string, int> HKOHAMECH_Map =
 	{ "214A", 600 },
 	{ "214B", 601 },
 	{ "214C", 602 },
+	{ "214[C]", 1602 },
 	{ "214214C", 137 },
 	{ "j.214A", 605 },
 	{ "j.214B", 606 },
 	{ "j.214C", 607 },
 	{ "236A", 170 },
+	{ "236[A]", 1170 },
 	{ "236B", 171 },
+	{ "236[B]", 1171 },
 	{ "236C", 172 },
 	{ "624C", 680 },
 	{ "ARC DRIVE", 200 }
@@ -3112,10 +3140,13 @@ const std::map<std::string, int> HLEN_Map =
 	{ "214B", 86 },
 	{ "214C", 82 },
 	{ "236A", 115 },
+	{ "236[A]", 1115 },
 	{ "236B", 116 },
+	{ "236[B]", 1116 },
 	{ "236C", 117 },
 	{ "j.236A", 119 },
 	{ "j.236B", 120 },
+	{ "j.236[B]", 1120 },
 	{ "j.236C", 121 },
 	{ "421A", 415 },
 	{ "421B", 417 },
@@ -3129,7 +3160,9 @@ const std::map<std::string, int> HMAIDS_Map =
 
 const std::map<std::string, int> HMECH_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "4B", 172 },
 	{ "6C", 71 },
 	{ "j.2C", 73 },
@@ -3161,6 +3194,7 @@ const std::map<std::string, int> HMECH_Map =
 	{ "236A", 554 },
 	{ "236B", 555 },
 	{ "236C", 556 },
+	{ "236236C", 563 },
 	{ "j.236A", 380 },
 	{ "j.236B", 381 },
 	{ "j.236C", 382 },
@@ -3197,7 +3231,9 @@ const std::map<std::string, int> HMIYAKO_Map =
 	{ "22B", 161 },
 	{ "22C", 162 },
 	{ "214A", 185 },
+	{ "214[A]", 1185 },
 	{ "214B", 426 },
+	{ "214[B]", 1426 },
 	{ "214C", 435 },
 	{ "236A", 407 },
 	{ "236B", 408 },
@@ -3213,7 +3249,8 @@ const std::map<std::string, int> HMIYAKO_Map =
 
 const std::map<std::string, int> HNAC_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "6C", 79 },
 	{ "3C", 78 },
 	{ "j.2C", 68 },
@@ -3283,6 +3320,7 @@ const std::map<std::string, int> HNANAYA_Map =
 	{ "22C", 116 },
 	{ "214A", 408 },
 	{ "214B", 409 },
+	{ "214[B]", 1409 },
 	{ "214C", 410 },
 	{ "j.214A", 485 },
 	{ "j.214B", 486 },
@@ -3295,9 +3333,10 @@ const std::map<std::string, int> HNANAYA_Map =
 
 const std::map<std::string, int> HNECO_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "j.2C", 68 },
-	{ "B DIVEKICK", 190 },
+	{ "j.2B", 190 },
 	{ "BUNKER", 169 },
 	{ "LOW SHIELD COUNTER", 442 },
 	{ "SHIELD COUNTER", 440 },
@@ -3338,8 +3377,10 @@ const std::map<std::string, int> HNECO_Map =
 
 const std::map<std::string, int> HNECOMECH_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "j.[C]", 1009 },
 	{ "6C", 71 },
+	{ "6[C]", 71 },
 	{ "BUNKER", 206 },
 	{ "LOW SHIELD COUNTER", 441 },
 	{ "SHIELD COUNTER", 440 },
@@ -3373,8 +3414,9 @@ const std::map<std::string, int> HNECOMECH_Map =
 
 const std::map<std::string, int> HNERO_Map =
 {
-
+	{ "2[C]", 1009 },
 	{ "4C", 60 },
+	{ "4[C]", 1060 },
 	{ "3C", 401 },
 	{ "BUNKER", 90 },
 	{ "LOW SHIELD COUNTER", 442 },
@@ -3434,12 +3476,17 @@ const std::map<std::string, int> HPCIEL_Map =
 	{ "623B", 106 },
 	{ "623C", 107 },
 	{ "214A", 125 },
+	{ "214[A]", 1125 },
 	{ "214B", 126 },
+	{ "214[B]", 1126 },
 	{ "214C", 132 },
-	{ "j.214B", 140 },
+	{ "j.214A", 140 },
+	{ "j.214[A]", 1140 },
 	{ "j.214B", 141 },
+	{ "j.214[B]", 1141 },
 	{ "j.214C", 137 },
 	{ "236A", 85 },
+	{ "236[A]", 1085 },
 	{ "236B", 86 },
 	{ "236C", 87 },
 	{ "j.236A", 115 },
@@ -3450,8 +3497,9 @@ const std::map<std::string, int> HPCIEL_Map =
 
 const std::map<std::string, int> HRIES_Map =
 {
-
+	{ "j.[C]", 1009 },
 	{ "6B", 374 },
+	{ "6[B]", 1374 },
 	{ "3C", 501 },
 	{ "j.6C", 445 },
 	{ "BUNKER", 102 },
@@ -3477,10 +3525,13 @@ const std::map<std::string, int> HRIES_Map =
 	{ "214B", 111 },
 	{ "214C", 112 },
 	{ "236A", 125 },
+	{ "236[A]", 1125 },
 	{ "236B", 126 },
+	{ "236[B]", 1126 },
 	{ "236C", 127 },
 	{ "624A", 130 },
 	{ "624B", 131 },
+	{ "624[B]", 1131 },
 	{ "624C", 132 },
 	{ "ARC DRIVE", 400 }
 };
@@ -3489,6 +3540,7 @@ const std::map<std::string, int> HROA_Map =
 {
 
 	{ "6C", 481 },
+	{ "6[C]", 1481 },
 	{ "BUNKER", 85 },
 	{ "LOW SHIELD COUNTER", 442 },
 	{ "SHIELD COUNTER", 440 },
@@ -3513,6 +3565,7 @@ const std::map<std::string, int> HROA_Map =
 	{ "214C", 540 },
 	{ "236A", 529 },
 	{ "236B", 530 },
+	{ "236[B]", 1530 },
 	{ "236C", 517 },
 	{ "j.236A", 420 },
 	{ "j.236B", 421 },
@@ -3543,8 +3596,11 @@ const std::map<std::string, int> HRYOUGI_Map =
 	{ "FORWARD SUPER JUMP", 95 },
 	{ "SUPER JUMP", 96 },
 	{ "623A", 310 },
+	{ "623[A]", 1310 },
 	{ "623B", 311 },
+	{ "623[B]", 1311 },
 	{ "623C", 312 },
+	{ "623[C]", 1312 },
 	{ "22A", 740 },
 	{ "22B", 741 },
 	{ "22C", 722 },
@@ -3571,8 +3627,12 @@ const std::map<std::string, int> HRYOUGI_Map =
 
 const std::map<std::string, int> HSATSUKI_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
+	{ "j.[B]", 1008 },
 	{ "3C", 490 },
+	{ "3[C]", 1490 },
 	{ "BUNKER", 175 },
 	{ "LOW SHIELD COUNTER", 442 },
 	{ "SHIELD COUNTER", 440 },
@@ -3607,7 +3667,7 @@ const std::map<std::string, int> HSATSUKI_Map =
 
 const std::map<std::string, int> HSEIFUKU_Map =
 {
-
+	{ "j.[C]", 1009 },
 	{ "6B", 240 },
 	{ "6C", 154 },
 	{ "BUNKER", 75 },
@@ -3647,9 +3707,11 @@ const std::map<std::string, int> HSEIFUKU_Map =
 
 const std::map<std::string, int> HSION_Map =
 {
-
+	{ "j.[C]", 1009 },
 	{ "6B", 58 },
+	{ "6[B]", 1058 },
 	{ "6C", 440 },
+	{ "6[C]", 1440 },
 	{ "3C", 61 },
 	{ "BUNKER", 85 },
 	{ "LOW SHIELD COUNTER", 466 },
@@ -3689,6 +3751,7 @@ const std::map<std::string, int> HTOHNO_Map =
 {
 
 	{ "6C", 475 },
+	{ "6[C]", 1475 },
 	{ "BUNKER", 122 },
 	{ "LOW SHIELD COUNTER", 441 },
 	{ "SHIELD COUNTER", 440 },
@@ -3709,7 +3772,9 @@ const std::map<std::string, int> HTOHNO_Map =
 	{ "623B", 141 },
 	{ "623C", 142 },
 	{ "22A", 244 },
+	{ "22[A]", 1244 },
 	{ "22B", 246 },
+	{ "22[B]", 1246 },
 	{ "22C", 234 },
 	{ "22D", 247 },
 	{ "214A", 110 },
@@ -3723,7 +3788,7 @@ const std::map<std::string, int> HTOHNO_Map =
 
 const std::map<std::string, int> HVAKIHA_Map =
 {
-
+	{ "5[B]", 1002 },
 	{ "4C", 80 },
 	{ "6C", 60 },
 	{ "BUNKER", 91 },
@@ -3752,7 +3817,9 @@ const std::map<std::string, int> HVAKIHA_Map =
 	{ "j.22B", 174 },
 	{ "j.22C", 175 },
 	{ "214A", 180 },
+	{ "214[A]", 1180 },
 	{ "214B", 181 },
+	{ "214[B]", 1181 },
 	{ "214C", 182 },
 	{ "236A", 449 },
 	{ "236B", 450 },
@@ -3767,10 +3834,13 @@ const std::map<std::string, int> HVSION_Map =
 {
 
 	{ "6B", 470 },
+	{ "6[B]", 1470 },
 	{ "6C", 225 },
+	{ "6[C]", 1225 },
 	{ "3C", 61 },
 	{ "j.6A", 7 },
-	{ "B DIVEKICK", 80 },
+	{ "j.2B", 80 },
+	{ "j.2[B]", 1080 },
 	{ "BUNKER", 85 },
 	{ "LOW SHIELD COUNTER", 441 },
 	{ "SHIELD COUNTER", 440 },
@@ -3795,6 +3865,7 @@ const std::map<std::string, int> HVSION_Map =
 	{ "214C", 167 },
 	{ "236A", 215 },
 	{ "236B", 216 },
+	{ "236[B]", 1216 },
 	{ "236C", 217 },
 	{ "j.236A", 436 },
 	{ "j.236B", 437 },
@@ -3827,7 +3898,9 @@ const std::map<std::string, int> HWARA_Map =
 	{ "623B", 136 },
 	{ "623C", 137 },
 	{ "22A", 100 },
+	{ "22[A]", 1100 },
 	{ "22B", 101 },
+	{ "22[B]", 1101 },
 	{ "22C", 102 },
 	{ "214A", 190 },
 	{ "214B", 191 },
@@ -3837,12 +3910,15 @@ const std::map<std::string, int> HWARA_Map =
 	{ "236C", 182 },
 	{ "j.236A", 450 },
 	{ "j.236B", 451 },
+	{ "j.236[B]", 1451 },
 	{ "j.236C", 452 },
 	{ "421A", 170 },
 	{ "421B", 171 },
 	{ "421C", 172 },
 	{ "j.421A", 75 },
+	{ "j.421[A]", 1075 },
 	{ "j.421B", 77 },
+	{ "j.421[B]", 1077 },
 	{ "j.421C", 89 },
 	{ "624C", 193 },
 	{ "ARC DRIVE", 149 }
@@ -3850,7 +3926,8 @@ const std::map<std::string, int> HWARA_Map =
 
 const std::map<std::string, int> HWARC_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "3C", 49 },
 	{ "j.2C", 103 },
 	{ "BUNKER", 78 },
@@ -3896,8 +3973,11 @@ const std::map<std::string, int> HWARC_Map =
 
 const std::map<std::string, int> HWLEN_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "4B", 47 },
+	{ "4[B]", 1047 },
+	{ "j.[B]", 1008 },
 	{ "j.2C", 56 },
 	{ "BUNKER", 101 },
 	{ "LOW SHIELD COUNTER", 442 },
@@ -3916,7 +3996,9 @@ const std::map<std::string, int> HWLEN_Map =
 	{ "FORWARD SUPER JUMP", 46 },
 	{ "SUPER JUMP", 360 },
 	{ "623A", 195 },
+	{ "623[A]", 1195 },
 	{ "623B", 196 },
+	{ "623[B]", 1196 },
 	{ "623C", 197 },
 	{ "22A", 182 },
 	{ "22B", 495 },
@@ -3929,9 +4011,11 @@ const std::map<std::string, int> HWLEN_Map =
 	{ "j.214B", 458 },
 	{ "j.214C", 459 },
 	{ "236A", 115 },
+	{ "236[A]", 1115 },
 	{ "236B", 116 },
 	{ "236C", 117 },
 	{ "j.236A", 119 },
+	{ "j.236[A]", 1119 },
 	{ "j.236B", 120 },
 	{ "j.236C", 121 },
 	{ "421A", 500 },
