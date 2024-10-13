@@ -111,7 +111,10 @@ void initMenu() {
 	std::function<std::string(float)> defaultSliderNameFunc = [](float opt) -> std::string {
 		//return std::string("-", (int)(opt * 10.0f)) + std::string("+") + std::string("-", (int)((1.0f - opt) * 10.0f));
 		//return opt & 0b1 ? "ON" : "OFF";
-		return "opt is: " + std::to_string(opt);
+
+		static char buffer[256];
+		snprintf(buffer, 256, "opt is: %5.2f", opt);
+		return std::string(buffer);
 	};
 
 	// returns a func which modifies the variable passed in
@@ -225,10 +228,13 @@ void initMenu() {
 			opt += (inc * 0.1f);
 			opt = CLAMP(opt, 0.0f, 1.0f);
 
-			//*(BYTE*)(dwBaseAddress + adSharedColorBlindMode) = opt;
+			hitboxOpacity = opt;
 		}),
 		defaultSliderNameFunc
 	);
+	
+	// wow thats some syntax
+	std::get<Menu<float>>(hitboxes.items[hitboxes.items.size() - 1]).optionState = 0.20f;
 
 	baseMenu.add(hitboxes);
 

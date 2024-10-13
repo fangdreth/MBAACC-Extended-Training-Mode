@@ -3,6 +3,7 @@
 #include "dllmain.h"
 #include "FrameBar.h"
 #include "SaveState.h"
+#include "ReplayManager.cpp"
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 

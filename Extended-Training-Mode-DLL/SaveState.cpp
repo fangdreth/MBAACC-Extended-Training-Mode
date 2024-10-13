@@ -211,7 +211,6 @@ int SaveStateManager::totalMemory() {
 
 void SaveStateManager::log() {
 
-
 	float totalMB = ((float)saveStateManager.totalMemory()) / ((float)(1 << 20));
 	int count = saveStateManager.states.size();
 	float avgMB = totalMB / ((float)count);

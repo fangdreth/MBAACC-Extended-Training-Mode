@@ -8,6 +8,7 @@
 
 extern bool logPowerInfo;
 extern bool logVerboseFps;
+extern float hitboxOpacity;
 
 template <typename T, int size>
 class CircularBuffer {

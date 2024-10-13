@@ -13,6 +13,7 @@ unsigned directxFrameCount = 0;
 float _freqTimerYVal = 0.0f;
 bool logPowerInfo = false;
 bool logVerboseFps = false;
+float hitboxOpacity = 0.20f;
 
 Point mousePos; // no use getting this multiple times a frame
 
@@ -1628,6 +1629,7 @@ void cursorDraw() {
 
 IDirect3DPixelShader9* getOutlinePixelShader() {
 	return createPixelShader(R"(
+			float4 shadeColor : register(c218);
 			sampler2D textureSampler : register(s0);
 			float4 texSize : register(c219);
 
@@ -1674,7 +1676,7 @@ IDirect3DPixelShader9* getOutlinePixelShader() {
 
 					}
 			
-					return float4(texColor.rgb, 0.1875);
+					return float4(texColor.rgb, shadeColor.a);
 			}
 
 		)");
@@ -1706,7 +1708,7 @@ IDirect3DPixelShader9* getColorPixelShader() {
 	return createPixelShader(R"(
 			float4 shadeColor : register(c218);
 			float4 main() : COLOR {
-				return shadeColor;
+				return float4(shadeColor.rgb, 1.0);
 			}
 	)");
 }
@@ -1734,14 +1736,14 @@ IDirect3DTexture9* renderTargetTex = NULL;
 
 void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade) {
 	if (shade) {
-		RectDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0x30000000); // make sure to sync these alpha values with the ones in the outline shader
+		RectDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | (((BYTE)(255.0f * hitboxOpacity)) << 24)); // make sure to sync these alpha values with the ones in the outline shader
 	}
 	BorderDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0xE0000000);
 }
 
 void drawSingleHitboxBlend(const BoxData& box, DWORD ARGB, bool shade) {
 	if (shade) {
-		RectDrawBlend(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0x30000000); // make sure to sync these alpha values with the ones in the outline shader
+		RectDrawBlend(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | (((BYTE)(255.0f * hitboxOpacity)) << 24)); // make sure to sync these alpha values with the ones in the outline shader
 	}
 	BorderDrawBlend(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0xE0000000);
 }
@@ -1913,7 +1915,7 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 	rectColor.x = (float)((ARGB & 0x00FF0000) >> 16) / 255.0f;
 	rectColor.y = (float)((ARGB & 0x0000FF00) >> 8) / 255.0f;
 	rectColor.z = (float)((ARGB & 0x000000FF) >> 0) / 255.0f;
-	rectColor.w = 1.0f;
+	rectColor.w = hitboxOpacity;
 
 	device->SetPixelShaderConstantF(218, (float*)&rectColor, 1);
 
@@ -2496,7 +2498,7 @@ void drawPowerInfo() {
 		break;
 	}
 
-	TextDraw(450, 0, 10, 0xFFFFFFFF,
+	TextDraw(500, 0, 10, 0xFFFFFFFF,
 		"AC: %s\n"
 		"status: %s\n"
 		"%%rem: %d\n"
@@ -2506,8 +2508,6 @@ void drawPowerInfo() {
 		percentStatus == 0xFF ? -1 : percentStatus,
 		powerStatus.SystemStatusFlag == 1 ? "ON" : "OFF"
 	);
-
-
 }
 
 DWORD maintainFPSState = 0;
