@@ -53,6 +53,7 @@ int main(int argc, char* argv[])
         int nOldMot = 0;
         int nP2Y = 0;
         int nBurstCooldown = 0;
+        bool bDoingHeldReversal = false;
 
         int nOldEnemyActionIndex = -1;
         int nOldPresetIndex = -1;
@@ -1599,7 +1600,7 @@ int main(int argc, char* argv[])
                                 {
                                     char pcTemp64[64] = "Display a line on the ground";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    if (!bDrawGround)
+                                    if (bDrawGround)
                                         strcpy_s(pcTemp64, ">A line on the ground {will be drawn.");
                                     else
                                         strcpy_s(pcTemp64, ">A line on the ground {will not be drawn.");
@@ -6193,6 +6194,18 @@ int main(int argc, char* argv[])
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyAction), &nWriteBuffer, 4, 0);
 
 
+                    if (bDoingHeldReversal)
+                    {
+                        uint8_t nHoldButtons = 112;
+                        WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ButtonHeld, &nHoldButtons, 1, nP2Controlled);
+                    }
+                    else
+                    {
+                        uint8_t nHoldButtons = 0;
+                        WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ButtonHeld, &nHoldButtons, 1, nP2Controlled);
+                    }
+
+
                     // This locks all the code that follows to the framerate of the game
                     // put code that needs to run faster above this
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwRoundTime), &nReadResult, 4, 0);
@@ -6428,6 +6441,7 @@ int main(int argc, char* argv[])
                         {
                             if (!bDelayingReversal && (nMot == 0 || nHitstun != 0) && (nMot != nOldMot || nReversalType == REVERSAL_REPEAT || bReversalKeyHeld) /* && nP2Y == 0*/)
                             {
+                                bDoingHeldReversal = false;
                                 if (!bReversaled)
                                 {
                                     bDelayingReversal = true;
@@ -6466,7 +6480,13 @@ int main(int argc, char* argv[])
                                             if (vValidReversals[nTempReversalIndex] != 0)
                                                 break;
                                         }
-                                        nWriteBuffer = vValidReversals[nTempReversalIndex];
+                                        nWriteBuffer = vValidReversals[nTempReversalIndex] % 1000;
+                                        
+                                        if (vValidReversals[nTempReversalIndex] > 999)
+                                            bDoingHeldReversal = true;
+                                        else
+                                            bDoingHeldReversal = false;
+                                        
                                         if (nP2Controlled == 1)
                                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternSet), &nWriteBuffer, 4, 0);
                                         else

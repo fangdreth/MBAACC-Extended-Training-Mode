@@ -12,7 +12,7 @@ const std::map<std::string, int> UniversalPatterns_Map =
 
 const std::map<std::string, int> CVAKIHA_Map =
 {
-
+	{ "5[B]", 1002 },
 	{ "4C", 80 },
 	{ "6C", 60 },
 	{ "BUNKER", 91 },
@@ -39,6 +39,8 @@ const std::map<std::string, int> CVAKIHA_Map =
 	{ "j.22C", 175 },
 	{ "214A", 180 },
 	{ "214B", 181 },
+	{ "214[A]", 1180 },
+	{ "214[B]", 1181 },
 	{ "214C", 182 },
 	{ "236A", 114 },
 	{ "236B", 115 },
@@ -53,11 +55,14 @@ const std::map<std::string, int> CAOKO_Map =
 {
 
 	{ "6A", 180 },
+	{ "6[A]", 1180},
+	{ "5[C}", 1003 },
 	{ "4C", 46 },
 	{ "3C", 170 },
 	{ "BUNKER", 96 },
 	{ "5D", 54 },
 	{ "2D", 55 },
+	{ "j.[C]", 1009 },
 	{ "j.D", 56 },
 	{ "DODGE", 45 },
 	{ "AIR DODGE", 270 },
@@ -91,10 +96,13 @@ const std::map<std::string, int> CAOKO_Map =
 	{ "j.214C", 77 },
 	{ "236A", 108 },
 	{ "236B", 100 },
+	{ "236[B]", 1100 },
 	{ "236C", 468 },
+	{ "236[C]", 1468 },
 	{ "j.236A", 172 },
 	{ "j.236B", 173 },
 	{ "j.236C", 174 },
+	{ "j.236[C]", 1174 },
 	{ "421A", 174 },
 	{ "421B", 208 },
 	{ "421C", 562 },
@@ -106,8 +114,10 @@ const std::map<std::string, int> CAOKO_Map =
 
 const std::map<std::string, int> CARC_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "4C", 104 },
+	{ "4[C]", 1104 },
 	{ "3C", 120 },
 	{ "j.2B", 107 },
 	{ "j.2C", 103 },
@@ -139,7 +149,9 @@ const std::map<std::string, int> CARC_Map =
 	{ "214B", 123 },
 	{ "214C", 124 },
 	{ "236A", 180 },
+	{ "236[A]", 1180 },
 	{ "236B", 184 },
+	{ "236[B]", 1184 },
 	{ "236C", 188 },
 	{ "624A", 390 },
 	{ "624B", 391 },
@@ -152,14 +164,17 @@ const std::map<std::string, int> CARC_Map =
 
 const std::map<std::string, int> CCIEL_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "4B", 90 },
+	{ "4[B]", 1090 },
 	{ "3B", 390 },
 	{ "4C", 61 },
 	{ "BUNKER", 78 },
 	{ "5D", 72 },
 	{ "2D", 73 },
 	{ "j.D", 74 },
+	{ "j.2C", 53 },
+	{ "j.2[C]", 1053 },
 	{ "DODGE", 84 },
 	{ "AIR DODGE", 270 },
 	{ "HEAT", 260 },
@@ -172,6 +187,7 @@ const std::map<std::string, int> CCIEL_Map =
 	{ "FORWARD SUPER JUMP", 80 },
 	{ "SUPER JUMP", 442},
 	{ "623A", 80 },
+	{ "623[A]", 1080 },
 	{ "623B", 486 },
 	{ "623C", 487 },
 	{ "j.623A", 508 },
@@ -184,6 +200,7 @@ const std::map<std::string, int> CCIEL_Map =
 	{ "j.22B", 157 },
 	{ "j.22C", 158 },
 	{ "214A", 415 },
+	{ "214[A]", 1415 },
 	{ "214B", 121 },
 	{ "214C", 122 },
 	{ "j.214A", 160 },
@@ -191,6 +208,7 @@ const std::map<std::string, int> CCIEL_Map =
 	{ "j.214C", 162 },
 	{ "236A", 170 },
 	{ "236B", 171 },
+	{ "236[B]", 1171 },
 	{ "236C", 400 },
 	{ "j.236A", 95 },
 	{ "j.236B", 96 },
@@ -202,7 +220,9 @@ const std::map<std::string, int> CHIME_Map =
 {
 
 	{ "6C", 124 },
+	{ "6[C]", 1124 },
 	{ "j.6B", 290 },
+	{ "j.6[B]", 1290 },
 	{ "BUNKER", 72 },
 	{ "5D", 56 },
 	{ "2D", 57 },
@@ -227,10 +247,13 @@ const std::map<std::string, int> CHIME_Map =
 	{ "22B", 171 },
 	{ "22C", 172 },
 	{ "214A", 150 },
+	{ "214[A]", 1150 },
 	{ "214B", 151 },
 	{ "214C", 152 },
 	{ "j.214A", 240 },
+	{ "j.214[A]", 1240 },
 	{ "j.214B", 241 },
+	{ "j.214[B]", 1241 },
 	{ "j.214C", 242 },
 	{ "236A", 160 },
 	{ "236B", 161 },
@@ -243,12 +266,15 @@ const std::map<std::string, int> CHIME_Map =
 
 const std::map<std::string, int> CHISUI_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "j.[C]", 1009 },
 	{ "4B", 73 },
+	{ "4[B]", 1073 },
 	{ "6B", 186 },
 	{ "6C", 71 },
 	{ "j.6B", 495 },
 	{ "j.2C", 70 },
+	{ "j.2[C]", 1070 },
 	{ "BUNKER", 181 },
 	{ "5D", 81 },
 	{ "2D", 82 },
@@ -266,6 +292,7 @@ const std::map<std::string, int> CHISUI_Map =
 	{ "SUPER JUMP", 360 },
 	{ "623A", 160 },
 	{ "623B", 161 },
+	{ "623[B]", 1161 },
 	{ "623C", 162 },
 	{ "22A", 410 },
 	{ "22B", 411 },
@@ -279,13 +306,17 @@ const std::map<std::string, int> CHISUI_Map =
 	{ "j.236A", 377 },
 	{ "j.236B", 378 },
 	{ "j.236C", 379 },
-	{ "ARC DRIVE", 199 }
+	{ "ARC DRIVE", 199 },
+	{ "[ARC DRIVE]", 1199 }
 };
 
 const std::map<std::string, int> CKOHAKU_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "4B", 381 },
+	{ "4[B]", 1381 },
 	{ "6C", 466 },
 	{ "BUNKER", 235 },
 	{ "5D", 70 },
@@ -311,17 +342,23 @@ const std::map<std::string, int> CKOHAKU_Map =
 	{ "214C", 98 },
 	{ "j.214A", 100 },
 	{ "j.214B", 425 },
+	{ "j.214[B]", 1425 },
 	{ "j.214C", 102 },
 	{ "236A", 170 },
+	{ "236[A]", 1170 },
 	{ "236B", 171 },
+	{ "236[B]", 1171 },
 	{ "236C", 172 },
 	{ "624C", 480 },
-	{ "ARC DRIVE", 200 }
+	{ "ARC DRIVE", 200 },
+	{ "DRUG INSTALL", 176 }
 };
 
 const std::map<std::string, int> CKOHAMECH_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "BUNKER", 235 },
 	{ "5D", 70 },
 	{ "2D", 71 },
@@ -348,7 +385,9 @@ const std::map<std::string, int> CKOHAMECH_Map =
 	{ "j.214B", 606 },
 	{ "j.214C", 607 },
 	{ "236A", 170 },
+	{ "236[A]", 1170 },
 	{ "236B", 171 },
+	{ "236[B]", 1171 },
 	{ "236C", 172 },
 	{ "624C", 680 },
 	{ "421A", 620 },
@@ -404,6 +443,7 @@ const std::map<std::string, int> CLEN_Map =
 {
 
 	{ "4B", 210 },
+	{ "4[B]", 1210 },
 	{ "3C", 66 },
 	{ "j.2C", 65 },
 	{ "BUNKER", 101 },
@@ -428,10 +468,13 @@ const std::map<std::string, int> CLEN_Map =
 	{ "214B", 86 },
 	{ "214C", 82 },
 	{ "236A", 115 },
+	{ "236[A]", 1115 },
 	{ "236B", 116 },
+	{ "236[B]", 1116 },
 	{ "236C", 117 },
 	{ "j.236A", 119 },
 	{ "j.236B", 120 },
+	{ "j.236[B]", 1120 },
 	{ "j.236C", 121 },
 	{ "421A", 200 },
 	{ "421B", 201 },
@@ -446,7 +489,9 @@ const std::map<std::string, int> CMAIDS_Map =
 
 const std::map<std::string, int> CMECH_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "4B", 172 },
 	{ "6C", 71 },
 	{ "j.2C", 73 },
@@ -478,12 +523,17 @@ const std::map<std::string, int> CMECH_Map =
 	{ "j.214B", 175 },
 	{ "j.214C", 176 },
 	{ "236A", 410 },
+	{ "236[A]", 1410 },
 	{ "236B", 411 },
+	{ "236[B]", 1411 },
 	{ "236C", 412 },
 	{ "j.236A", 75 },
+	{ "j.236[A]", 1075 },
 	{ "j.236B", 76 },
+	{ "j.236[B]", 1076 },
 	{ "j.236C", 213 },
 	{ "421A", 416 },
+	{ "421[A]", 1416 },
 	{ "421B", 417 },
 	{ "421C", 129 },
 	{ "624C", 531 },
@@ -493,7 +543,7 @@ const std::map<std::string, int> CMECH_Map =
 
 const std::map<std::string, int> CMIYAKO_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "6B", 62 },
 	{ "6C", 60 },
 	{ "BUNKER", 120 },
@@ -524,7 +574,9 @@ const std::map<std::string, int> CMIYAKO_Map =
 	{ "j.22B", 446 },
 	{ "j.22C", 447 },
 	{ "214A", 185 },
+	{ "214[A]", 1185 },
 	{ "214B", 426 },
+	{ "214[B]", 1426 },
 	{ "214C", 435 },
 	{ "236A", 150 },
 	{ "236B", 151 },
@@ -534,7 +586,8 @@ const std::map<std::string, int> CMIYAKO_Map =
 
 const std::map<std::string, int> CNAC_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
 	{ "6C", 79 },
 	{ "3C", 78 },
 	{ "BUNKER", 169 },
@@ -579,7 +632,7 @@ const std::map<std::string, int> CNAC_Map =
 
 const std::map<std::string, int> CNANAYA_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "BUNKER", 96 },
 	{ "5D", 63 },
 	{ "2D", 64 },
@@ -601,6 +654,7 @@ const std::map<std::string, int> CNANAYA_Map =
 	{ "623C", 462 },
 	{ "22A", 114 },
 	{ "22B", 451 },
+	{ "22[B]", 1451 },
 	{ "22C", 116 },
 	{ "214A", 110 },
 	{ "214B", 111 },
@@ -615,8 +669,9 @@ const std::map<std::string, int> CNECO_Map =
 {
 
 	{ "6A", 191 },
+	{ "6[A]", 1191 },
 	{ "j.2C", 68 },
-	{ "B DIVEKICK", 190 },
+	{ "j.2B", 190 },
 	{ "BUNKER", 169 },
 	{ "5D", 83 },
 	{ "2D", 84 },
@@ -659,8 +714,10 @@ const std::map<std::string, int> CNECO_Map =
 
 const std::map<std::string, int> CNECOMECH_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "j.[C]", 1009 },
 	{ "6C", 71 },
+	{ "6C", 1071 },
 	{ "BUNKER", 206 },
 	{ "5D", 81 },
 	{ "2D", 82 },
@@ -693,7 +750,8 @@ const std::map<std::string, int> CNECOMECH_Map =
 
 const std::map<std::string, int> CNERO_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
 	{ "4C", 60 },
 	{ "BUNKER", 90 },
 	{ "5D", 73 },
@@ -729,8 +787,9 @@ const std::map<std::string, int> CNERO_Map =
 
 const std::map<std::string, int> CPCIEL_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "6B", 151 },
+	{ "6[B]", 1151 },
 	{ "4C", 153 },
 	{ "6C", 152 },
 	{ "3C", 158 },
@@ -753,12 +812,17 @@ const std::map<std::string, int> CPCIEL_Map =
 	{ "623B", 106 },
 	{ "623C", 107 },
 	{ "214A", 130 },
+	{ "214[A]", 1130 },
 	{ "214B", 131 },
+	{ "214[B]", 1131 },
 	{ "214C", 132 },
 	{ "j.214A", 135 },
+	{ "j.214[A]", 1135 },
 	{ "j.214B", 136 },
+	{ "j.214[B]", 1136 },
 	{ "j.214C", 137 },
 	{ "236A", 85 },
+	{ "236[A]", 1085 },
 	{ "236B", 86 },
 	{ "236C", 87 },
 	{ "j.236A", 115 },
@@ -769,9 +833,12 @@ const std::map<std::string, int> CPCIEL_Map =
 
 const std::map<std::string, int> CRIES_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "j.[C]", 1009 },
 	{ "6B", 374 },
+	{ "6[B]", 1374 },
 	{ "6C", 490 },
+	{ "6[C]", 1490 },
 	{ "j.6C", 445 },
 	{ "BUNKER", 102 },
 	{ "5D", 56 },
@@ -798,7 +865,9 @@ const std::map<std::string, int> CRIES_Map =
 	{ "214B", 111 },
 	{ "214C", 112 },
 	{ "236A", 125 },
+	{ "236[A]", 1125 },
 	{ "236B", 126 },
+	{ "236[B]", 1126 },
 	{ "236C", 127 },
 	{ "ARC DRIVE", 399 }
 };
@@ -829,24 +898,34 @@ const std::map<std::string, int> CROA_Map =
 	{ "j.623B", 497 },
 	{ "j.623C", 498 },
 	{ "22A", 105 },
+	{ "22[A]", 1105 },
 	{ "22B", 101 },
 	{ "22C", 102 },
 	{ "214A", 580 },
+	{ "214[A]", 1580 },
 	{ "214B", 581 },
+	{ "214[B]", 1581 },
 	{ "214C", 582 },
+	{ "214[C]", 1582 },
 	{ "j.214A", 595 },
+	{ "j.214[A]", 1595 },
 	{ "j.214B", 596 },
+	{ "j.214[B]", 1596 },
 	{ "j.214C", 596 },
+	{ "j.214[C]", 1596 },
 	{ "236A", 400 },
+	{ "236[A]", 1400 },
 	{ "236B", 401 },
+	{ "236[B]", 1401 },
 	{ "236C", 402 },
 	{ "ARC DRIVE", 149 }
 };
 
 const std::map<std::string, int> CRYOUGI_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "6C", 430 },
+	{ "6[C]", 1430 },
 	{ "BUNKER", 85 },
 	{ "5D", 75 },
 	{ "2D", 76 },
@@ -866,7 +945,9 @@ const std::map<std::string, int> CRYOUGI_Map =
 	{ "623B", 311 },
 	{ "623C", 312 },
 	{ "22A", 720 },
+	{ "22[A]", 1720 },
 	{ "22B", 721 },
+	{ "22[B]", 1721 },
 	{ "22C", 732 },
 	{ "j.22A", 535 },
 	{ "j.22B", 536 },
@@ -889,8 +970,11 @@ const std::map<std::string, int> CRYOUGI_Map =
 
 const std::map<std::string, int> CSATSUKI_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "3C", 490 },
+	{ "3[C]", 1490 },
 	{ "BUNKER", 175 },
 	{ "5D", 90 },
 	{ "2D", 91 },
@@ -907,13 +991,17 @@ const std::map<std::string, int> CSATSUKI_Map =
 	{ "FORWARD SUPER JUMP", 75 },
 	{ "SUPER JUMP", 360 },
 	{ "623A", 462 },
+	{ "623[A]", 1462 },
 	{ "623B", 461 },
+	{ "623[B]", 1461 },
 	{ "623C", 142 },
 	{ "22A", 100 },
 	{ "22B", 101 },
 	{ "22C", 102 },
 	{ "214A", 475 },
+	{ "214[A]", 1475 },
 	{ "214B", 478 },
+	{ "214[B]", 1478 },
 	{ "214C", 112 },
 	{ "236A", 136 },
 	{ "236B", 137 },
@@ -928,9 +1016,11 @@ const std::map<std::string, int> CSATSUKI_Map =
 
 const std::map<std::string, int> CSEIFUKU_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "j.[C]", 1009 },
 	{ "6B", 245 },
 	{ "6C", 154 },
+	{ "6[C]", 1154 },
 	{ "BUNKER", 75 },
 	{ "5D", 70 },
 	{ "2D", 71 },
@@ -950,11 +1040,17 @@ const std::map<std::string, int> CSEIFUKU_Map =
 	{ "623B", 231 },
 	{ "623C", 232 },
 	{ "22A", 390 },
+	{ "22[A]", 1390 },
 	{ "22B", 391 },
+	{ "22[B]", 1391 },
 	{ "22C", 392 },
+	{ "22[C]", 1392 },
 	{ "j.22A", 385 },
+	{ "j.22[A]", 1385 },
 	{ "j.22B", 386 },
+	{ "j.22[B]", 1386 },
 	{ "j.22C", 387 },
+	{ "j.22[C]", 1387 },
 	{ "214A", 180 },
 	{ "214B", 181 },
 	{ "214C", 182 },
@@ -973,14 +1069,17 @@ const std::map<std::string, int> CSEIFUKU_Map =
 
 const std::map<std::string, int> CSION_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "j.[C]", 1009 },
 	{ "6B", 58 },
+	{ "6[B]", 1058 },
 	{ "6C", 59 },
 	{ "3C", 61 },
 	{ "BUNKER", 85 },
 	{ "5D", 65 },
 	{ "2D", 66 },
 	{ "j.D", 67 },
+	{ "j.2C", 490 },
 	{ "DODGE", 132 },
 	{ "AIR DODGE", 270 },
 	{ "HEAT", 260 },
@@ -1006,18 +1105,24 @@ const std::map<std::string, int> CSION_Map =
 	{ "j.214B", 121 },
 	{ "j.214C", 122 },
 	{ "236A", 100 },
+	{ "236[A]", 1100 },
 	{ "236B", 102 },
+	{ "236[B]", 1102 },
 	{ "236C", 435 },
 	{ "421A", 81 },
+	{ "421[A]", 1081 },
 	{ "421B", 82 },
+	{ "421[B]", 1082 },
 	{ "421C", 83 },
 	{ "ARC DRIVE", 145 }
 };
 
 const std::map<std::string, int> CTOHNO_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1009 },
 	{ "6B", 130 },
+	{ "6[B]", 1130 },
 	{ "BUNKER", 122 },
 	{ "5D", 63 },
 	{ "2D", 64 },
@@ -1040,7 +1145,9 @@ const std::map<std::string, int> CTOHNO_Map =
 	{ "j.623B", 467 },
 	{ "j.623C", 468 },
 	{ "22A", 244 },
+	{ "22[A]", 1244 },
 	{ "22B", 246 },
+	{ "22[B]", 1246 },
 	{ "22C", 234 },
 	{ "22D", 247 },
 	{ "j.22A", 451 },
@@ -1051,13 +1158,15 @@ const std::map<std::string, int> CTOHNO_Map =
 	{ "214C", 112 },
 	{ "236A", 105 },
 	{ "236B", 106 },
+	{ "236[B]", 1106 },
 	{ "236C", 107 },
 	{ "ARC DRIVE", 199 }
 };
 
 const std::map<std::string, int> CAKIHA_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "2[C]", 1006 },
 	{ "4C", 80 },
 	{ "6C", 60 },
 	{ "j.2C", 58 },
@@ -1087,12 +1196,15 @@ const std::map<std::string, int> CAKIHA_Map =
 	{ "j.22C", 175 },
 	{ "214A", 180 },
 	{ "214B", 181 },
+	{ "214[B]", 1181 },
 	{ "214C", 182 },
 	{ "236A", 114 },
+	{ "236[A]", 1114 },
 	{ "236B", 115 },
 	{ "236C", 116 },
 	{ "j.236A", 117 },
 	{ "j.236B", 118 },
+	{ "j.236[B]", 1118 },
 	{ "j.236C", 119 },
 	{ "624A", 373 },
 	{ "624B", 374 },
@@ -1105,6 +1217,7 @@ const std::map<std::string, int> CVSION_Map =
 
 	{ "4B", 525 },
 	{ "6C", 225 },
+	{ "6[C]", 1225 },
 	{ "3C", 61 },
 	{ "j.6A", 20 },
 	{ "j.2B", 80 },
@@ -1131,6 +1244,7 @@ const std::map<std::string, int> CVSION_Map =
 	{ "214C", 167 },
 	{ "236A", 215 },
 	{ "236B", 216 },
+	{ "236[B]", 1216 },
 	{ "236C", 217 },
 	{ "421A", 531 },
 	{ "421B", 532 },
@@ -1140,8 +1254,10 @@ const std::map<std::string, int> CVSION_Map =
 
 const std::map<std::string, int> CWARA_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
 	{ "6C", 72 },
+	{ "6[C]", 1072 },
 	{ "j.2C", 73 },
 	{ "BUNKER", 130 },
 	{ "5D", 62 },
@@ -1162,7 +1278,9 @@ const std::map<std::string, int> CWARA_Map =
 	{ "623B", 121 },
 	{ "623C", 122 },
 	{ "22A", 100 },
+	{ "22[A]", 1100 },
 	{ "22B", 101 },
+	{ "22[B]", 1101 },
 	{ "22C", 102 },
 	{ "j.22A", 470 },
 	{ "j.22B", 471 },
@@ -1182,7 +1300,9 @@ const std::map<std::string, int> CWARA_Map =
 	{ "421B", 171 },
 	{ "421C", 172 },
 	{ "j.421A", 75 },
+	{ "j.421[A]", 1075 },
 	{ "j.421B", 77 },
+	{ "j.421[B]", 1077 },
 	{ "j.421C", 89 },
 	{ "624C", 193 },
 	{ "j.624C", 478 },
@@ -1191,8 +1311,10 @@ const std::map<std::string, int> CWARA_Map =
 
 const std::map<std::string, int> CWARC_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "6C", 500 },
+	{ "6[C]", 1500 },
 	{ "3C", 49 },
 	{ "j.2C", 103 },
 	{ "BUNKER", 78 },
@@ -1213,6 +1335,9 @@ const std::map<std::string, int> CWARC_Map =
 	{ "623A", 155 },
 	{ "623B", 156 },
 	{ "623C", 157 },
+	{ "22A", 405 },
+	{ "22B", 406 },
+	{ "22C", 407 },
 	{ "j.623A", 165 },
 	{ "j.623B", 167 },
 	{ "j.623C", 166 },
@@ -1234,10 +1359,16 @@ const std::map<std::string, int> CWARC_Map =
 
 const std::map<std::string, int> CWLEN_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[B]", 1008 },
+	{ "j.[C]", 1009 },
 	{ "4B", 47 },
+	{ "4[B]", 1047 },
 	{ "3C", 370 },
 	{ "j.2C", 56 },
+	{ "j.2[C]", 1056 },
 	{ "BUNKER", 101 },
 	{ "5D", 134 },
 	{ "2D", 135 },
@@ -1254,7 +1385,9 @@ const std::map<std::string, int> CWLEN_Map =
 	{ "FORWARD SUPER JUMP", 46 },
 	{ "SUPER JUMP", 360 },
 	{ "623A", 195 },
+	{ "623[A]", 1195 },
 	{ "623B", 196 },
+	{ "623[B]", 1196 },
 	{ "623C", 197 },
 	{ "22A", 182 },
 	{ "22B", 183 },
@@ -1264,10 +1397,13 @@ const std::map<std::string, int> CWLEN_Map =
 	{ "214B", 143 },
 	{ "214C", 144 },
 	{ "j.214A", 179 },
+	{ "j.214[A]", 1179 },
 	{ "j.214B", 147 },
 	{ "j.214C", 148 },
 	{ "236A", 115 },
+	{ "236[A]", 1115 },
 	{ "236B", 116 },
+	{ "236[B]", 1116 },
 	{ "236C", 117 },
 	{ "j.236A", 119 },
 	{ "j.236B", 120 },
@@ -1309,6 +1445,7 @@ const std::map<std::string, int> FAKIHA_Map =
 	{ "22B", 421 },
 	{ "22C", 422 },
 	{ "214A", 400 },
+	{ "214[A]", 1400 },
 	{ "214B", 401 },
 	{ "214C", 402 },
 	{ "236A", 114 },
@@ -1316,6 +1453,7 @@ const std::map<std::string, int> FAKIHA_Map =
 	{ "236C", 116 },
 	{ "j.236A", 117 },
 	{ "j.236B", 118 },
+	{ "j.236[B]", 1118 },
 	{ "j.236C", 119 },
 	{ "421A", 437 },
 	{ "421B", 438 },
@@ -1325,8 +1463,9 @@ const std::map<std::string, int> FAKIHA_Map =
 
 const std::map<std::string, int> FAOKO_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "4C", 46 },
+	{ "4[C]", 1046 },
 	{ "3C", 170 },
 	{ "BUNKER", 96 },
 	{ "SHIELD COUNTER", 412 },
@@ -1358,6 +1497,7 @@ const std::map<std::string, int> FAOKO_Map =
 	{ "j.214B", 76 },
 	{ "j.214C", 77 },
 	{ "236A", 435 },
+	{ "236[A]", 1435 },
 	{ "236B", 436 },
 	{ "236C", 470 },
 	{ "421A", 511 },
@@ -1373,11 +1513,11 @@ const std::map<std::string, int> FAOKO_Map =
 
 const std::map<std::string, int> FARC_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "6C", 459 },
 	{ "3C", 440 },
 	{ "j.2C", 103 },
-	{ "B DIVEKICK", 107 },
+	{ "j.2B", 107 },
 	{ "BUNKER", 96 },
 	{ "SHIELD COUNTER", 465 },
 	{ "5D", 72 },
@@ -1415,12 +1555,15 @@ const std::map<std::string, int> FARC_Map =
 
 const std::map<std::string, int> FCIEL_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "4B", 90 },
+	{ "4[B]", 1090 },
 	{ "3B", 390 },
 	{ "4C", 61 },
 	{ "3C", 475 },
-	{ "C DIVEKICK", 53 },
+	{ "3[C]", 1475 },
+	{ "j.2C", 53 },
+	{ "j.2[C]", 1053 },
 	{ "BUNKER", 78 },
 	{ "SHIELD COUNTER", 465 },
 	{ "5D", 72 },
@@ -1436,6 +1579,7 @@ const std::map<std::string, int> FCIEL_Map =
 	{ "FORWARD SUPER JUMP", 80 },
 	{ "SUPER JUMP", 442},
 	{ "623A", 485 },
+	{ "623[A]", 1485 },
 	{ "623B", 486 },
 	{ "623C", 487 },
 	{ "22A", 150 },
@@ -1464,9 +1608,11 @@ const std::map<std::string, int> FCIEL_Map =
 
 const std::map<std::string, int> FHIME_Map =
 {
-
+	{ "j.[C]", 1009 },
 	{ "6C", 124 },
+	{ "6[C]", 1124 },
 	{ "j.6B", 290 },
+	{ "j.6[B]", 1290 },
 	{ "BUNKER", 72 },
 	{ "SHIELD COUNTER", 285 },
 	{ "5D", 56 },
@@ -1503,12 +1649,16 @@ const std::map<std::string, int> FHIME_Map =
 
 const std::map<std::string, int> FHISUI_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
+	{ "j.[C]", 1009 },
 	{ "4B", 73 },
+	{ "4[B]", 1073 },
 	{ "6C", 526 },
+	{ "6[C]", 1526 },
 	{ "3C", 186 },
 	{ "j.6B", 495 },
-	{ "C DIVEKICK", 70 },
+	{ "j.2C", 70 },
 	{ "BUNKER", 181 },
 	{ "SHIELD COUNTER", 475 },
 	{ "5D", 81 },
@@ -1538,12 +1688,15 @@ const std::map<std::string, int> FHISUI_Map =
 	{ "j.236A", 377 },
 	{ "j.236B", 378 },
 	{ "j.236C", 379 },
-	{ "ARC DRIVE", 199 }
+	{ "ARC DRIVE", 199 },
+	{ "[ARC DRIVE]", 1199 }
 };
 
 const std::map<std::string, int> FKOHAKU_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "4B", 465 },
 	{ "3C", 520 },
 	{ "BUNKER", 235 },
@@ -1570,17 +1723,24 @@ const std::map<std::string, int> FKOHAKU_Map =
 	{ "214C", 400 },
 	{ "j.214A", 100 },
 	{ "j.214B", 425 },
+	{ "j.214[B]", 1425 },
 	{ "j.214C", 425 },
 	{ "236A", 470 },
+	{ "236[A]", 1470 },
 	{ "236B", 471 },
+	{ "236[B]", 1471 },
 	{ "236C", 472 },
 	{ "624C", 480 },
-	{ "ARC DRIVE", 200 }
+	{ "ARC DRIVE", 200 },
+	{ "DRUG INSTALL", 176 }
 };
 
 const std::map<std::string, int> FKOHAMECH_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[B]", 1008 },
+	{ "j.[C]", 1009 },
 	{ "4B", 465 },
 	{ "3C", 520 },
 	{ "BUNKER", 235 },
@@ -1606,12 +1766,16 @@ const std::map<std::string, int> FKOHAMECH_Map =
 	{ "214A", 600 },
 	{ "214B", 601 },
 	{ "214C", 602 },
+	{ "214[C]", 1602 },
 	{ "214214C", 137 },
 	{ "j.214A", 605 },
 	{ "j.214B", 606 },
 	{ "j.214C", 607 },
+	{ "j.214[C]", 1607 },
 	{ "236A", 470 },
+	{ "236[A]", 1470 },
 	{ "236B", 471 },
+	{ "236[B]", 1471 },
 	{ "236C", 472 },
 	{ "624C", 680 },
 	{ "ARC DRIVE", 200 }
@@ -1619,7 +1783,9 @@ const std::map<std::string, int> FKOHAMECH_Map =
 
 const std::map<std::string, int> FKOUMA_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "6C", 76 },
 	{ "BUNKER", 180 },
 	{ "SHIELD COUNTER", 442 },
@@ -1698,7 +1864,8 @@ const std::map<std::string, int> FMAIDS_Map =
 
 const std::map<std::string, int> FMECH_Map =
 {
-
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "6C", 71 },
 	{ "j.2C", 73 },
 	{ "BUNKER", 206 },
@@ -1722,7 +1889,9 @@ const std::map<std::string, int> FMECH_Map =
 	{ "22B", 426 },
 	{ "22C", 432 },
 	{ "214A", 510 },
+	{ "214[A]", 1510 },
 	{ "214B", 511 },
+	{ "214[B]", 1511 },
 	{ "214C", 463 },
 	{ "236A", 488 },
 	{ "236B", 489 },
@@ -1732,8 +1901,9 @@ const std::map<std::string, int> FMECH_Map =
 
 const std::map<std::string, int> FMIYAKO_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "6C", 405 },
+	{ "6[C]", 1405 },
 	{ "BUNKER", 120 },
 	{ "SHIELD COUNTER", 442 },
 	{ "5D", 67 },
@@ -1758,7 +1928,9 @@ const std::map<std::string, int> FMIYAKO_Map =
 	{ "22B", 161 },
 	{ "22C", 140 },
 	{ "214A", 185 },
+	{ "214[A]", 1185 },
 	{ "214B", 426 },
+	{ "214[B]", 1426 },
 	{ "214C", 435 },
 	{ "236A", 407 },
 	{ "236B", 408 },
@@ -1774,7 +1946,7 @@ const std::map<std::string, int> FMIYAKO_Map =
 
 const std::map<std::string, int> FNAC_Map =
 {
-
+	{ "2[C]", 1006 },
 	{ "6C", 79 },
 	{ "3C", 78 },
 	{ "BUNKER", 169 },
@@ -1815,10 +1987,10 @@ const std::map<std::string, int> FNAC_Map =
 
 const std::map<std::string, int> FNANAYA_Map =
 {
-
-	{ "A DIVEKICK", 434 },
-	{ "B DIVEKICK", 433 },
-	{ "C DIVEKICK", 432 },
+	{ "5[C]", 1003 },
+	{ "j.2A", 434 },
+	{ "j.2B", 433 },
+	{ "j.2C", 432 },
 	{ "BUNKER", 96 },
 	{ "SHIELD COUNTER", 440 },
 	{ "5D", 63 },
@@ -1851,10 +2023,12 @@ const std::map<std::string, int> FNANAYA_Map =
 
 const std::map<std::string, int> FNECO_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "2[B]", 1005 },
 	{ "6A", 191 },
+	{ "6[A]", 1191 },
 	{ "j.2C", 68 },
-	{ "B DIVEKICK", 190 },
+	{ "j.2B", 190 },
 	{ "BUNKER", 169 },
 	{ "SHIELD COUNTER", 440 },
 	{ "5D", 83 },
@@ -1893,8 +2067,9 @@ const std::map<std::string, int> FNECO_Map =
 
 const std::map<std::string, int> FNECOMECH_Map =
 {
-
+	{ "j.[C]", 1009 },
 	{ "6C", 71 },
+	{ "6[C]", 1071 },
 	{ "BUNKER", 206 },
 	{ "SHIELD COUNTER", 440 },
 	{ "5D", 81 },
@@ -1926,9 +2101,11 @@ const std::map<std::string, int> FNECOMECH_Map =
 
 const std::map<std::string, int> FNERO_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
 	{ "4C", 60 },
 	{ "6C", 500 },
+	{ "6[C]", 1500 },
 	{ "3C", 401 },
 	{ "BUNKER", 90 },
 	{ "SHIELD COUNTER", 440 },
@@ -1962,6 +2139,7 @@ const std::map<std::string, int> FPCIEL_Map =
 
 	{ "6B", 154 },
 	{ "3B", 151 },
+	{ "3[B]", 1151 },
 	{ "3C", 158 },
 	{ "j.6C", 164 },
 	{ "BUNKER", 75 },
@@ -1988,22 +2166,27 @@ const std::map<std::string, int> FPCIEL_Map =
 	{ "j.214B", 146 },
 	{ "j.214C", 147 },
 	{ "236A", 110 },
+	{ "236[A]", 1110 },
 	{ "236B", 111 },
+	{ "236[B]", 1111 },
 	{ "236C", 112 },
 	{ "j.236A", 115 },
 	{ "j.236B", 116 },
 	{ "j.236C", 117 },
 	{ "624A", 100 },
 	{ "624B", 101 },
+	{ "624[B]", 1101 },
 	{ "624C", 102 },
 	{ "ARC DRIVE", 200 }
 };
 
 const std::map<std::string, int> FRIES_Map =
 {
-
+	{ "j.[C]", 1009 },
 	{ "6B", 374 },
+	{ "6[B]", 1374 },
 	{ "6C", 92 },
+	{ "6[C]", 1092 },
 	{ "j.6C", 445 },
 	{ "BUNKER", 102 },
 	{ "SHIELD COUNTER", 452 },
@@ -2023,17 +2206,20 @@ const std::map<std::string, int> FRIES_Map =
 	{ "623B", 441 },
 	{ "623C", 442 },
 	{ "214A", 437 },
+	{ "214[A]", 1437 },
 	{ "214B", 438 },
+	{ "214[B]", 1438 },
 	{ "214C", 112 },
 	{ "236A", 175 },
 	{ "236B", 179 },
+	{ "236[B]", 1179 },
 	{ "236C", 485 },
 	{ "ARC DRIVE", 399 }
 };
 
 const std::map<std::string, int> FROA_Map =
 {
-
+	{ "j.[C]", 1009 },
 	{ "6C", 386 },
 	{ "BUNKER", 85 },
 	{ "SHIELD COUNTER", 440 },
@@ -2057,6 +2243,7 @@ const std::map<std::string, int> FROA_Map =
 	{ "214C", 445 },
 	{ "236A", 477 },
 	{ "236B", 478 },
+	{ "236[B]", 1478 },
 	{ "236C", 482 },
 	{ "j.236A", 420 },
 	{ "j.236B", 421 },
@@ -2066,7 +2253,7 @@ const std::map<std::string, int> FROA_Map =
 
 const std::map<std::string, int> FRYOUGI_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "4C", 194 },
 	{ "3C", 365 },
 	{ "BUNKER", 85 },
@@ -2088,6 +2275,7 @@ const std::map<std::string, int> FRYOUGI_Map =
 	{ "623C", 592 },
 	{ "22A", 740 },
 	{ "22B", 741 },
+	{ "22[B]", 1741 },
 	{ "22C", 742 },
 	{ "j.22A", 535 },
 	{ "j.22B", 536 },
@@ -2109,8 +2297,11 @@ const std::map<std::string, int> FRYOUGI_Map =
 
 const std::map<std::string, int> FSATSUKI_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "3C", 490 },
+	{ "3[C]", 1490 },
 	{ "BUNKER", 175 },
 	{ "SHIELD COUNTER", 440 },
 	{ "5D", 90 },
@@ -2126,16 +2317,22 @@ const std::map<std::string, int> FSATSUKI_Map =
 	{ "FORWARD SUPER JUMP", 75 },
 	{ "SUPER JUMP", 360 },
 	{ "623A", 462 },
+	{ "623[A]", 1462 },
 	{ "623B", 461 },
+	{ "623[B]", 1461 },
 	{ "623C", 142 },
 	{ "22A", 380 },
 	{ "22B", 381 },
 	{ "22C", 382 },
 	{ "214A", 475 },
+	{ "214[A]", 1475 },
 	{ "214B", 478 },
+	{ "214[B]", 478 },
 	{ "214C", 112 },
 	{ "236A", 508 },
+	{ "236[A]", 1508 },
 	{ "236B", 509 },
+	{ "236[B]", 1509 },
 	{ "236C", 510 },
 	{ "421A", 450 },
 	{ "421B", 451 },
@@ -2146,7 +2343,8 @@ const std::map<std::string, int> FSATSUKI_Map =
 
 const std::map<std::string, int> FSEIFUKU_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "2[C]", 1006 },
 	{ "3C", 152 },
 	{ "BUNKER", 75 },
 	{ "SHIELD COUNTER", 465 },
@@ -2183,8 +2381,10 @@ const std::map<std::string, int> FSEIFUKU_Map =
 
 const std::map<std::string, int> FSION_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "j.[C]", 1009 },
 	{ "6B", 58 },
+	{ "6[B]", 1058 },
 	{ "3B", 61 },
 	{ "6C", 442 },
 	{ "3C", 515 },
@@ -2222,7 +2422,7 @@ const std::map<std::string, int> FSION_Map =
 
 const std::map<std::string, int> FTOHNO_Map =
 {
-
+	{ "2[C]", 1006 },
 	{ "6B", 191 },
 	{ "BUNKER", 122 },
 	{ "SHIELD COUNTER", 440 },
@@ -2242,7 +2442,9 @@ const std::map<std::string, int> FTOHNO_Map =
 	{ "623B", 401 },
 	{ "623C", 399 },
 	{ "22A", 244 },
+	{ "22[A]", 1244 },
 	{ "22B", 246 },
+	{ "22[B]", 1246 },
 	{ "22C", 234 },
 	{ "22D", 247 },
 	{ "214A", 110 },
@@ -2256,7 +2458,7 @@ const std::map<std::string, int> FTOHNO_Map =
 
 const std::map<std::string, int> FVAKIHA_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "4C", 80 },
 	{ "6C", 60 },
 	{ "3C", 445 },
@@ -2284,10 +2486,14 @@ const std::map<std::string, int> FVAKIHA_Map =
 	{ "j.22B", 404 },
 	{ "j.22C", 406 },
 	{ "214A", 180 },
+	{ "214[A]", 1180 },
 	{ "214B", 181 },
+	{ "214[B]", 1181 },
 	{ "214C", 182 },
 	{ "j.214A", 485 },
+	{ "j.214[A]", 1485 },
 	{ "j.214B", 486 },
+	{ "j.214[B]", 1486 },
 	{ "j.214C", 487 },
 	{ "236A", 505 },
 	{ "236B", 506 },
@@ -2300,10 +2506,13 @@ const std::map<std::string, int> FVAKIHA_Map =
 
 const std::map<std::string, int> FVSION_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "6B", 470 },
+	{ "6[B]", 1470 },
 	{ "6C", 225 },
-	{ "B DIVEKICK", 80 },
+	{ "6[C]", 1225 },
+	{ "j.2B", 80 },
 	{ "BUNKER", 85 },
 	{ "SHIELD COUNTER", 440 },
 	{ "5D", 65 },
@@ -2326,6 +2535,7 @@ const std::map<std::string, int> FVSION_Map =
 	{ "22C", 434 },
 	{ "214A", 471 },
 	{ "214B", 472 },
+	{ "214[B]", 1472 },
 	{ "214C", 473 },
 	{ "j.214A", 365 },
 	{ "j.214B", 366 },
@@ -2338,8 +2548,9 @@ const std::map<std::string, int> FVSION_Map =
 
 const std::map<std::string, int> FWARA_Map =
 {
-
+	{ "2[C]", 1006 },
 	{ "6C", 72 },
+	{ "6[C]", 1072 },
 	{ "j.2C", 73 },
 	{ "BUNKER", 130 },
 	{ "SHIELD COUNTER", 440 },
@@ -2359,7 +2570,9 @@ const std::map<std::string, int> FWARA_Map =
 	{ "623B", 411 },
 	{ "623C", 412 },
 	{ "22A", 100 },
+	{ "22[A]", 1100 },
 	{ "22B", 101 },
+	{ "22[B]", 1101 },
 	{ "22C", 102 },
 	{ "214A", 398 },
 	{ "214B", 399 },
@@ -2374,17 +2587,20 @@ const std::map<std::string, int> FWARA_Map =
 	{ "421B", 171 },
 	{ "421C", 172 },
 	{ "j.421A", 75 },
+	{ "j.421[A]", 1075 },
 	{ "j.421B", 77 },
+	{ "j.421[B]", 1077 },
 	{ "j.421C", 89 },
 	{ "ARC DRIVE", 149 }
 };
 
 const std::map<std::string, int> FWARC_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "3C", 49 },
 	{ "j.2C", 103 },
-	{ "B DIVEKICK", 130 },
+	{ "j.2B", 130 },
 	{ "BUNKER", 78 },
 	{ "SHIELD COUNTER", 439 },
 	{ "5D", 72 },
@@ -2420,9 +2636,13 @@ const std::map<std::string, int> FWARC_Map =
 
 const std::map<std::string, int> FWLEN_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "4B", 47 },
+	{ "4[B]", 1047 },
 	{ "j.2C", 56 },
+	{ "j.[B]", 1008 },
+	{ "j.[C]", 1009 },
 	{ "BUNKER", 101 },
 	{ "SHIELD COUNTER", 440 },
 	{ "5D", 134 },
@@ -2438,6 +2658,7 @@ const std::map<std::string, int> FWLEN_Map =
 	{ "FORWARD SUPER JUMP", 46 },
 	{ "SUPER JUMP", 360 },
 	{ "623A", 480 },
+	{ "623[A]", 1480 },
 	{ "623B", 481 },
 	{ "623C", 482 },
 	{ "22A", 182 },
@@ -2447,6 +2668,7 @@ const std::map<std::string, int> FWLEN_Map =
 	{ "214B", 487 },
 	{ "214C", 485 },
 	{ "j.214A", 179 },
+	{ "j.214[A]", 1179 },
 	{ "j.214B", 147 },
 	{ "j.214C", 148 },
 	{ "236A", 390 },
@@ -2461,7 +2683,8 @@ const std::map<std::string, int> FWLEN_Map =
 
 const std::map<std::string, int> HAKIHA_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "2[C]", 1006 },
 	{ "4C", 80 },
 	{ "6C", 60 },
 	{ "j.2C", 58 },
@@ -2504,8 +2727,9 @@ const std::map<std::string, int> HAKIHA_Map =
 
 const std::map<std::string, int> HAOKO_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "4C", 46 },
+	{ "4[C]", 1046 },
 	{ "3C", 170 },
 	{ "BUNKER", 96 },
 	{ "LOW SHIELD COUNTER", 410 },
@@ -2543,6 +2767,7 @@ const std::map<std::string, int> HAOKO_Map =
 	{ "j.214C", 77 },
 	{ "236A", 108 },
 	{ "236B", 100 },
+	{ "236[B]", 1100 },
 	{ "236C", 142 },
 	{ "j.236A", 172 },
 	{ "j.236B", 173 },
@@ -2560,9 +2785,11 @@ const std::map<std::string, int> HARC_Map =
 {
 
 	{ "4C", 104 },
+	{ "4[C]", 1104 },
 	{ "3C", 120 },
 	{ "j.2C", 436 },
-	{ "B DIVEKICK", 107 },
+	{ "j.2[C]", 1436 },
+	{ "j.2B", 107 },
 	{ "BUNKER", 96 },
 	{ "LOW SHIELD COUNTER", 466 },
 	{ "SHIELD COUNTER", 465 },
@@ -2605,11 +2832,13 @@ const std::map<std::string, int> HARC_Map =
 
 const std::map<std::string, int> HCIEL_Map =
 {
-
+	{ "5[C]", 1003 },
 	{ "4B", 90 },
+	{ "4[B]", 1090 },
 	{ "3B", 390 },
 	{ "4C", 61 },
-	{ "C DIVEKICK", 53 },
+	{ "j.2C", 53 },
+	{ "j.2[C]", 1053 },
 	{ "BUNKER", 78 },
 	{ "LOW SHIELD COUNTER", 466 },
 	{ "SHIELD COUNTER", 465 },
@@ -2629,6 +2858,7 @@ const std::map<std::string, int> HCIEL_Map =
 	{ "623A", 225 },
 	{ "623B", 226 },
 	{ "623C", 227 },
+	{ "623[C]", 1227 },
 	{ "22A", 150 },
 	{ "22B", 151 },
 	{ "22C", 152 },
@@ -2642,6 +2872,7 @@ const std::map<std::string, int> HCIEL_Map =
 	{ "j.214B", 161 },
 	{ "j.214C", 162 },
 	{ "236A", 505 },
+	{ "236[A]", 1505 },
 	{ "236B", 506 },
 	{ "236C", 400 },
 	{ "j.236A", 95 },
@@ -2657,8 +2888,10 @@ const std::map<std::string, int> HHIME_Map =
 {
 
 	{ "6C", 124 },
+	{ "6[C]", 1124 },
 	{ "3C", 121 },
 	{ "j.6B", 290 },
+	{ "j.6[B]", 1290 },
 	{ "BUNKER", 72 },
 	{ "LOW SHIELD COUNTER", 286 },
 	{ "SHIELD COUNTER", 285 },
@@ -2700,12 +2933,15 @@ const std::map<std::string, int> HHIME_Map =
 
 const std::map<std::string, int> HHISUI_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "j.[C]", 1009 },
 	{ "4B", 73 },
+	{ "4[B]", 1073 },
 	{ "6B", 186 },
 	{ "6C", 71 },
 	{ "j.6B", 495 },
-	{ "C DIVEKICK", 70 },
+	{ "j.2C", 70 },
+	{ "j.2[C]", 1070 },
 	{ "BUNKER", 181 },
 	{ "LOW SHIELD COUNTER", 476 },
 	{ "SHIELD COUNTER", 475 },
@@ -2737,12 +2973,16 @@ const std::map<std::string, int> HHISUI_Map =
 	{ "j.236A", 377 },
 	{ "j.236B", 378 },
 	{ "j.236C", 379 },
-	{ "ARC DRIVE", 199 }
+	{ "ARC DRIVE", 199 },
+	{ "[ARC DRIVE]", 1199 }
 };
 
 const std::map<std::string, int> HKOHAKU_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "BUNKER", 235 },
 	{ "LOW SHIELD COUNTER", 406 },
 	{ "SHIELD COUNTER", 405 },
@@ -2760,6 +3000,7 @@ const std::map<std::string, int> HKOHAKU_Map =
 	{ "FORWARD SUPER JUMP", 63 },
 	{ "SUPER JUMP", 360 },
 	{ "623A", 450 },
+	{ "623[A]", 1450 },
 	{ "623B", 451 },
 	{ "623C", 452 },
 	{ "22A", 490 },
@@ -2770,9 +3011,12 @@ const std::map<std::string, int> HKOHAKU_Map =
 	{ "214C", 98 },
 	{ "j.214A", 100 },
 	{ "j.214B", 425 },
+	{ "j.214[B]", 1425 },
 	{ "j.214C", 102 },
 	{ "236A", 170 },
+	{ "236[A]", 1170 },
 	{ "236B", 171 },
+	{ "236[B]", 1171 },
 	{ "236C", 172 },
 	{ "j.236A", 422 },
 	{ "j.236B", 421 },
@@ -2783,7 +3027,10 @@ const std::map<std::string, int> HKOHAKU_Map =
 
 const std::map<std::string, int> HKOHAMECH_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "2[C]", 1006 },
+	{ "j.[B]", 1008 },
+	{ "j.[C]", 1009 },
 	{ "BUNKER", 235 },
 	{ "LOW SHIELD COUNTER", 406 },
 	{ "SHIELD COUNTER", 405 },
@@ -2809,12 +3056,15 @@ const std::map<std::string, int> HKOHAMECH_Map =
 	{ "214A", 600 },
 	{ "214B", 601 },
 	{ "214C", 602 },
+	{ "214[C]", 1602 },
 	{ "214214C", 137 },
 	{ "j.214A", 605 },
 	{ "j.214B", 606 },
 	{ "j.214C", 607 },
 	{ "236A", 170 },
+	{ "236[A]", 1170 },
 	{ "236B", 171 },
+	{ "236[B]", 1171 },
 	{ "236C", 172 },
 	{ "624C", 680 },
 	{ "ARC DRIVE", 200 }
@@ -2890,10 +3140,13 @@ const std::map<std::string, int> HLEN_Map =
 	{ "214B", 86 },
 	{ "214C", 82 },
 	{ "236A", 115 },
+	{ "236[A]", 1115 },
 	{ "236B", 116 },
+	{ "236[B]", 1116 },
 	{ "236C", 117 },
 	{ "j.236A", 119 },
 	{ "j.236B", 120 },
+	{ "j.236[B]", 1120 },
 	{ "j.236C", 121 },
 	{ "421A", 415 },
 	{ "421B", 417 },
@@ -2907,7 +3160,9 @@ const std::map<std::string, int> HMAIDS_Map =
 
 const std::map<std::string, int> HMECH_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
 	{ "4B", 172 },
 	{ "6C", 71 },
 	{ "j.2C", 73 },
@@ -2939,6 +3194,7 @@ const std::map<std::string, int> HMECH_Map =
 	{ "236A", 554 },
 	{ "236B", 555 },
 	{ "236C", 556 },
+	{ "236236C", 563 },
 	{ "j.236A", 380 },
 	{ "j.236B", 381 },
 	{ "j.236C", 382 },
@@ -2975,7 +3231,9 @@ const std::map<std::string, int> HMIYAKO_Map =
 	{ "22B", 161 },
 	{ "22C", 162 },
 	{ "214A", 185 },
+	{ "214[A]", 1185 },
 	{ "214B", 426 },
+	{ "214[B]", 1426 },
 	{ "214C", 435 },
 	{ "236A", 407 },
 	{ "236B", 408 },
@@ -2991,7 +3249,8 @@ const std::map<std::string, int> HMIYAKO_Map =
 
 const std::map<std::string, int> HNAC_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "6C", 79 },
 	{ "3C", 78 },
 	{ "j.2C", 68 },
@@ -3061,6 +3320,7 @@ const std::map<std::string, int> HNANAYA_Map =
 	{ "22C", 116 },
 	{ "214A", 408 },
 	{ "214B", 409 },
+	{ "214[B]", 1409 },
 	{ "214C", 410 },
 	{ "j.214A", 485 },
 	{ "j.214B", 486 },
@@ -3073,9 +3333,10 @@ const std::map<std::string, int> HNANAYA_Map =
 
 const std::map<std::string, int> HNECO_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "j.2C", 68 },
-	{ "B DIVEKICK", 190 },
+	{ "j.2B", 190 },
 	{ "BUNKER", 169 },
 	{ "LOW SHIELD COUNTER", 442 },
 	{ "SHIELD COUNTER", 440 },
@@ -3116,8 +3377,10 @@ const std::map<std::string, int> HNECO_Map =
 
 const std::map<std::string, int> HNECOMECH_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "j.[C]", 1009 },
 	{ "6C", 71 },
+	{ "6[C]", 71 },
 	{ "BUNKER", 206 },
 	{ "LOW SHIELD COUNTER", 441 },
 	{ "SHIELD COUNTER", 440 },
@@ -3151,8 +3414,9 @@ const std::map<std::string, int> HNECOMECH_Map =
 
 const std::map<std::string, int> HNERO_Map =
 {
-
+	{ "2[C]", 1009 },
 	{ "4C", 60 },
+	{ "4[C]", 1060 },
 	{ "3C", 401 },
 	{ "BUNKER", 90 },
 	{ "LOW SHIELD COUNTER", 442 },
@@ -3212,12 +3476,17 @@ const std::map<std::string, int> HPCIEL_Map =
 	{ "623B", 106 },
 	{ "623C", 107 },
 	{ "214A", 125 },
+	{ "214[A]", 1125 },
 	{ "214B", 126 },
+	{ "214[B]", 1126 },
 	{ "214C", 132 },
-	{ "j.214B", 140 },
+	{ "j.214A", 140 },
+	{ "j.214[A]", 1140 },
 	{ "j.214B", 141 },
+	{ "j.214[B]", 1141 },
 	{ "j.214C", 137 },
 	{ "236A", 85 },
+	{ "236[A]", 1085 },
 	{ "236B", 86 },
 	{ "236C", 87 },
 	{ "j.236A", 115 },
@@ -3228,8 +3497,9 @@ const std::map<std::string, int> HPCIEL_Map =
 
 const std::map<std::string, int> HRIES_Map =
 {
-
+	{ "j.[C]", 1009 },
 	{ "6B", 374 },
+	{ "6[B]", 1374 },
 	{ "3C", 501 },
 	{ "j.6C", 445 },
 	{ "BUNKER", 102 },
@@ -3255,10 +3525,13 @@ const std::map<std::string, int> HRIES_Map =
 	{ "214B", 111 },
 	{ "214C", 112 },
 	{ "236A", 125 },
+	{ "236[A]", 1125 },
 	{ "236B", 126 },
+	{ "236[B]", 1126 },
 	{ "236C", 127 },
 	{ "624A", 130 },
 	{ "624B", 131 },
+	{ "624[B]", 1131 },
 	{ "624C", 132 },
 	{ "ARC DRIVE", 400 }
 };
@@ -3267,6 +3540,7 @@ const std::map<std::string, int> HROA_Map =
 {
 
 	{ "6C", 481 },
+	{ "6[C]", 1481 },
 	{ "BUNKER", 85 },
 	{ "LOW SHIELD COUNTER", 442 },
 	{ "SHIELD COUNTER", 440 },
@@ -3291,6 +3565,7 @@ const std::map<std::string, int> HROA_Map =
 	{ "214C", 540 },
 	{ "236A", 529 },
 	{ "236B", 530 },
+	{ "236[B]", 1530 },
 	{ "236C", 517 },
 	{ "j.236A", 420 },
 	{ "j.236B", 421 },
@@ -3321,8 +3596,11 @@ const std::map<std::string, int> HRYOUGI_Map =
 	{ "FORWARD SUPER JUMP", 95 },
 	{ "SUPER JUMP", 96 },
 	{ "623A", 310 },
+	{ "623[A]", 1310 },
 	{ "623B", 311 },
+	{ "623[B]", 1311 },
 	{ "623C", 312 },
+	{ "623[C]", 1312 },
 	{ "22A", 740 },
 	{ "22B", 741 },
 	{ "22C", 722 },
@@ -3349,8 +3627,12 @@ const std::map<std::string, int> HRYOUGI_Map =
 
 const std::map<std::string, int> HSATSUKI_Map =
 {
-
+	{ "5[C]", 1003 },
+	{ "2[C]", 1006 },
+	{ "j.[C]", 1009 },
+	{ "j.[B]", 1008 },
 	{ "3C", 490 },
+	{ "3[C]", 1490 },
 	{ "BUNKER", 175 },
 	{ "LOW SHIELD COUNTER", 442 },
 	{ "SHIELD COUNTER", 440 },
@@ -3385,7 +3667,7 @@ const std::map<std::string, int> HSATSUKI_Map =
 
 const std::map<std::string, int> HSEIFUKU_Map =
 {
-
+	{ "j.[C]", 1009 },
 	{ "6B", 240 },
 	{ "6C", 154 },
 	{ "BUNKER", 75 },
@@ -3425,9 +3707,11 @@ const std::map<std::string, int> HSEIFUKU_Map =
 
 const std::map<std::string, int> HSION_Map =
 {
-
+	{ "j.[C]", 1009 },
 	{ "6B", 58 },
+	{ "6[B]", 1058 },
 	{ "6C", 440 },
+	{ "6[C]", 1440 },
 	{ "3C", 61 },
 	{ "BUNKER", 85 },
 	{ "LOW SHIELD COUNTER", 466 },
@@ -3467,6 +3751,7 @@ const std::map<std::string, int> HTOHNO_Map =
 {
 
 	{ "6C", 475 },
+	{ "6[C]", 1475 },
 	{ "BUNKER", 122 },
 	{ "LOW SHIELD COUNTER", 441 },
 	{ "SHIELD COUNTER", 440 },
@@ -3487,7 +3772,9 @@ const std::map<std::string, int> HTOHNO_Map =
 	{ "623B", 141 },
 	{ "623C", 142 },
 	{ "22A", 244 },
+	{ "22[A]", 1244 },
 	{ "22B", 246 },
+	{ "22[B]", 1246 },
 	{ "22C", 234 },
 	{ "22D", 247 },
 	{ "214A", 110 },
@@ -3501,7 +3788,7 @@ const std::map<std::string, int> HTOHNO_Map =
 
 const std::map<std::string, int> HVAKIHA_Map =
 {
-
+	{ "5[B]", 1002 },
 	{ "4C", 80 },
 	{ "6C", 60 },
 	{ "BUNKER", 91 },
@@ -3530,7 +3817,9 @@ const std::map<std::string, int> HVAKIHA_Map =
 	{ "j.22B", 174 },
 	{ "j.22C", 175 },
 	{ "214A", 180 },
+	{ "214[A]", 1180 },
 	{ "214B", 181 },
+	{ "214[B]", 1181 },
 	{ "214C", 182 },
 	{ "236A", 449 },
 	{ "236B", 450 },
@@ -3545,10 +3834,13 @@ const std::map<std::string, int> HVSION_Map =
 {
 
 	{ "6B", 470 },
+	{ "6[B]", 1470 },
 	{ "6C", 225 },
+	{ "6[C]", 1225 },
 	{ "3C", 61 },
 	{ "j.6A", 7 },
-	{ "B DIVEKICK", 80 },
+	{ "j.2B", 80 },
+	{ "j.2[B]", 1080 },
 	{ "BUNKER", 85 },
 	{ "LOW SHIELD COUNTER", 441 },
 	{ "SHIELD COUNTER", 440 },
@@ -3573,6 +3865,7 @@ const std::map<std::string, int> HVSION_Map =
 	{ "214C", 167 },
 	{ "236A", 215 },
 	{ "236B", 216 },
+	{ "236[B]", 1216 },
 	{ "236C", 217 },
 	{ "j.236A", 436 },
 	{ "j.236B", 437 },
@@ -3605,7 +3898,9 @@ const std::map<std::string, int> HWARA_Map =
 	{ "623B", 136 },
 	{ "623C", 137 },
 	{ "22A", 100 },
+	{ "22[A]", 1100 },
 	{ "22B", 101 },
+	{ "22[B]", 1101 },
 	{ "22C", 102 },
 	{ "214A", 190 },
 	{ "214B", 191 },
@@ -3615,12 +3910,15 @@ const std::map<std::string, int> HWARA_Map =
 	{ "236C", 182 },
 	{ "j.236A", 450 },
 	{ "j.236B", 451 },
+	{ "j.236[B]", 1451 },
 	{ "j.236C", 452 },
 	{ "421A", 170 },
 	{ "421B", 171 },
 	{ "421C", 172 },
 	{ "j.421A", 75 },
+	{ "j.421[A]", 1075 },
 	{ "j.421B", 77 },
+	{ "j.421[B]", 1077 },
 	{ "j.421C", 89 },
 	{ "624C", 193 },
 	{ "ARC DRIVE", 149 }
@@ -3628,7 +3926,8 @@ const std::map<std::string, int> HWARA_Map =
 
 const std::map<std::string, int> HWARC_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "3C", 49 },
 	{ "j.2C", 103 },
 	{ "BUNKER", 78 },
@@ -3674,8 +3973,11 @@ const std::map<std::string, int> HWARC_Map =
 
 const std::map<std::string, int> HWLEN_Map =
 {
-
+	{ "5[B]", 1002 },
+	{ "5[C]", 1003 },
 	{ "4B", 47 },
+	{ "4[B]", 1047 },
+	{ "j.[B]", 1008 },
 	{ "j.2C", 56 },
 	{ "BUNKER", 101 },
 	{ "LOW SHIELD COUNTER", 442 },
@@ -3694,7 +3996,9 @@ const std::map<std::string, int> HWLEN_Map =
 	{ "FORWARD SUPER JUMP", 46 },
 	{ "SUPER JUMP", 360 },
 	{ "623A", 195 },
+	{ "623[A]", 1195 },
 	{ "623B", 196 },
+	{ "623[B]", 1196 },
 	{ "623C", 197 },
 	{ "22A", 182 },
 	{ "22B", 495 },
@@ -3707,9 +4011,11 @@ const std::map<std::string, int> HWLEN_Map =
 	{ "j.214B", 458 },
 	{ "j.214C", 459 },
 	{ "236A", 115 },
+	{ "236[A]", 1115 },
 	{ "236B", 116 },
 	{ "236C", 117 },
 	{ "j.236A", 119 },
+	{ "j.236[A]", 1119 },
 	{ "j.236B", 120 },
 	{ "j.236C", 121 },
 	{ "421A", 500 },

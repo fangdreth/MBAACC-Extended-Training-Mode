@@ -79,25 +79,25 @@ static std::map<short, std::map<short, bool>> MBAACC_PatternMap = { {} };
 
 static std::vector<std::string> vEveryPatternName =
 {
-	"5A", "2A", "6A", "5B", "2B", "4B", "6B", "3B", "5C", "2C", "4C", "6C", "3C",
-	"j.6A", "j.6B", "j.6C", "j.2C",
+	"5A", "2A", "6A", "6[A]", "5B", "5[B]", "2B", "2[B]", "4B", "4[B]", "6B", "6[B]", "3B", "3[B]", "5C", "5[C]", "2C", "2[C]", "4C", "4[C]", "6C", "6[C]", "3C", "3[C]",
+	"j.A", "j.[A]", "j.6A", "j.B", "j.[B]", "j.6B", "j.C", "j.[C]", "j.6C", "j.2C",
 	"A DIVEKICK", "B DIVEKICK", "C DIVEKICK",
 	"BUNKER", "LOW SHIELD COUNTER", "SHIELD COUNTER", "5D", "2D", "j.D", "DODGE", "AIR DODGE", "HEAT", "THROW", "AIR THROW", "FLOAT", "AIR FLOAT",
 	"BACK DASH", "BACK AIRDASH", "FORWARD DASH", "FORWARD AIRDASH", "FASTFALL", "JUMP", "DBL JUMP", "FORWARD JUMP", "FORWARD DBL JUMP", "BACKWARD JUMP", "BACKWARD DBL JUMP", "FORWARD SUPER JUMP", "SUPER JUMP", "SUPER DBL JUMP",
-	"623A", "623B", "623C",
-	"j.623A", "j.623B", "j.623C",
-	"22A", "22B", "22C", "22D", "2222C", "22222C",
-	"j.22A", "j.22B", "j.22C",
+	"623A", "623[A]", "623B", "623[B]", "623C", "623[C]",
+	"j.623A", "j.623[A]", "j.623B", "j.623[B]", "j.623C", "j.623C",
+	"22A", "22[A]", "22B", "22[B]", "22C", "22[C]", "22D", "2222C", "22222C",
+	"j.22A", "j.22[A]", "j.22B", "j.22[B]", "j.22C", "j.22[C]",
 	//"NEKO TECH", // don't work right :|
-	"214A", "214B", "214C", "214214C",
-	"j.214A", "j.214B", "j.214C",
-	"236A", "236B", "236C",
-	"j.236A", "j.236B", "j.236C",
-	"421A", "421B", "421C",
-	"j.421A", "j.421B", "j.421C",
-	"624A", "624B", "624C",
-	"j.624A", "j.624B", "j.624C",
-	"ARC DRIVE",
+	"214A", "214[A]", "214B", "214[B]", "214C", "214[C]", "214214C",
+	"j.214A", "j.214[A]", "j.214B", "j.214[B]", "j.214C", "j.214[C]",
+	"236A", "236[A]", "236B", "236[B]", "236C", "236[C]",
+	"j.236A", "j.236[A]", "j.236B", "j.236[B]", "j.236C", "j.236[C]",
+	"421A", "421[A]", "421B", "421[B]", "421C", "421[C]",
+	"j.421A", "j.421[A]", "j.421B", "j.421[B]", "j.421C", "j.421[C]",
+	"624A", "624[A]", "624B", "624[B]", "624C", "624[C]",
+	"j.624A", "j.624[A]", "j.624B", "j.624[B]", "j.624C", "j.624[C]",
+	"ARC DRIVE", "[ARC DRIVE]",
 	"DRUG INSTALL"
 };
 
@@ -226,6 +226,15 @@ static std::vector<std::string> GetPatternList(int nCharacterID)
 	}
 
 	return vReturnList;
+}
+
+static std::string GetPatternNameFromID(int nCharacterID, int nPattern)
+{
+	for (std::string& sPatternName : vEveryPatternName)
+	{
+		if (MBAACC_Map[eCharacterValues::UNIVERSAL][sPatternName] == nPattern || MBAACC_Map[nCharacterID][sPatternName] == nPattern)
+			return sPatternName;
+	}
 }
 
 static std::vector<std::string> GetEmptyPatternList()
