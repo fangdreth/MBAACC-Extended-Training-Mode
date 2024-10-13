@@ -6380,6 +6380,14 @@ int main(int argc, char* argv[])
                         }
                     }
                 
+
+                    nOldMot = nMot;
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMot), &nMot, 4, 0);
+                    if (!bDelayingReversal && nMot == 0 && nMot != nOldMot)
+                    { 
+                        bDoingHeldReversal = false;
+                    }
+
                     bool bReversalKeyHeld;
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedReversalKeyHeld), &bReversalKeyHeld, 1, 0);
                     if (nReversalType == REVERSAL_SHIELD && !bReversalKeyHeld)
@@ -6399,8 +6407,13 @@ int main(int argc, char* argv[])
                                     if (vValidReversals[nTempReversalIndex] != 0)
                                         break;
                                 }
-                                nWriteBuffer = vValidReversals[nTempReversalIndex];
-                                //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2InputEvent), &nWriteBuffer, 4, 0);
+                                nWriteBuffer = vValidReversals[nTempReversalIndex] % 1000;
+                                
+                                if (vValidReversals[nTempReversalIndex] > 999)
+                                    bDoingHeldReversal = true;
+                                else
+                                    bDoingHeldReversal = false;
+
                                 WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1InputEvent, &nWriteBuffer, 4, nP2Controlled);
                             }
                             
@@ -6424,9 +6437,7 @@ int main(int argc, char* argv[])
                         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMot), &nReadResult, 4, 0);
                         nOldMot = nMot;
                         nMot = nReadResult;*/
-                        nOldMot = nMot;
                         ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1Y, &nP2Y, 4, nP2Controlled);
-                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMot), &nMot, 4, 0);
 
                         if (nFrameCounter == 0)
                             bReversaled = true;
