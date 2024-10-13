@@ -228,7 +228,7 @@ static std::vector<std::string> GetPatternList(int nCharacterID)
 	return vReturnList;
 }
 
-static std::string GetPatternNameFromID(int nCharacterID, int nPattern)
+static std::string GetPatternNameFromID(int nPattern, int nCharacterID)
 {
 	for (std::string& sPatternName : vEveryPatternName)
 	{
@@ -282,5 +282,31 @@ static void PopulateAirAndGroundReversals(std::vector<int>* vAirReversals, std::
 			vAirReversals->push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex4]));
 		else
 			vGroundReversals->push_back(GetPattern(nP2CharacterID, (*vPatternNames)[nReversalIndex4]));
+	}
+}
+
+static void RemoveShieldReversals(std::vector<int>* vReversals, int nCharacterID)
+{
+	for (int i = 0; i < vReversals->size(); i++)
+	{
+		std::string sPatternName = GetPatternNameFromID(vReversals->at(i), nCharacterID);
+		if (sPatternName == "5D" || sPatternName == "2D" || sPatternName == "j.D")
+		{
+			vReversals->erase(vReversals->begin() + i);
+			i--;
+		}
+	}
+}
+
+static void RemoveNonShieldReversals(std::vector<int>* vReversals, int nCharacterID)
+{
+	for (int i = 0; i < vReversals->size(); i++)
+	{
+		std::string sPatternName = GetPatternNameFromID(vReversals->at(i), nCharacterID);
+		if (sPatternName != "5D" && sPatternName != "2D" && sPatternName != "j.D")
+		{
+			vReversals->erase(vReversals->begin() + i);
+			i--;
+		}
 	}
 }
