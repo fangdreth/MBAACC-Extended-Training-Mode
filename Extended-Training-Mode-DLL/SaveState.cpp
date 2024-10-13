@@ -50,7 +50,7 @@ void SaveState::save() {
 		memcpy((void*)P4, (void*)(0x00555130 + (0xAFC * 3)), 0x33C);
 	}
 
-	// should we also save hit effect data?
+	// should we also save hit effect data? (would need to fix hit effect pausing for that)
 
 	// effects start at 0x0067BDE8
 
@@ -79,8 +79,6 @@ void SaveState::save() {
 		// the capacity is already there, we need to put something in it. this will also serve to clear out higher index effects when/if going back
 		memcpy((void*)&effects.data[index], (void*)(0x0067BDE8 + (0x33C * index)), 0x33C * chunkSize);
 		effects.size += chunkSize;// what am i doing
-
-		
 	}
 }
 

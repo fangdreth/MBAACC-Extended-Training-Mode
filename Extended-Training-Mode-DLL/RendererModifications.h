@@ -437,7 +437,7 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 		listAppendHook_objAddr = listAppendHook_objAddr_pat;
 	}
 
-	if (listAppendHook_hitEffectRetAddr == 0x0042389C) {
+	if (listAppendHook_hitEffectRetAddr == 0x0042389C) { // i accidentally overwrote all my reversing on this :)
 		listAppendHook_objAddr = 0x0061E170 + (listAppendHook_objAddr_hit * 0x60);
 	}
 

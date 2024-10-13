@@ -1115,6 +1115,8 @@ void __stdcall legacyPauseCallback(DWORD dwMilliseconds)
 
 void frameStartCallback() {
 
+	//maintainFPS();
+
 	// this is called right after directx present displays a new frame
 
 	/*
@@ -1221,9 +1223,13 @@ void frameStartCallback() {
 
 }
 
+bool logSaveState = false;
+
 void frameDoneCallback()
 {
-	//profileFunction();
+	profileFunction();
+
+	//Sleep(8);
 
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
 
@@ -1251,7 +1257,10 @@ void frameDoneCallback()
 			saveStateManager.load(-1);
 		}
 
-		saveStateManager.log();
+		if (logSaveState) {
+			saveStateManager.log();
+		}
+		
 	}
 	
 
@@ -2648,6 +2657,19 @@ void initCasterMods()
 	patchByte(dwCasterBaseAddress + 0x665f17cd, '\0');
 
 	// it would be better to just patch this func out
+
+	/*
+	
+	for reasons only known to madsci, caster does some whack things in regards to fps, busy waiting, the whole 9 yards of ugh
+	i do not want to fuck with this shit,, hell if i were to release a caster update this is what i would fix
+	but like,,, omfg
+	the fps value is so fucking weird
+
+	*/
+
+	// make presentFrameEnd just ret
+	//patchByte(dwCasterBaseAddress + 0x6638c020, 0xC3);
+
 }
 
 void initAttackMeterDisplay()

@@ -114,6 +114,15 @@ void initMenu() {
 		return "opt is: " + std::to_string(opt);
 	};
 
+	// returns a func which modifies the variable passed in
+	std::function<std::function<void(int, int&)>(void*)> getDefaultOnOffOptionFunc = [](void* optPtr) -> std::function<void(int, int&)> {
+		return [optPtr](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			*(BYTE*)(optPtr) = opt;
+		};
+	};
 
 	// -----
 
@@ -282,6 +291,21 @@ void initMenu() {
 
 			doDrawLog = opt;
 		},
+		defaultOnOffNameFunc
+	);
+
+	debug.add<int>("Power Info",
+		getDefaultOnOffOptionFunc(&logPowerInfo),
+		defaultOnOffNameFunc
+	);
+
+	debug.add<int>("SaveState Info",
+		getDefaultOnOffOptionFunc(&logSaveState),
+		defaultOnOffNameFunc
+	);
+
+	debug.add<int>("Verbose FPS Info",
+		getDefaultOnOffOptionFunc(&logVerboseFps),
 		defaultOnOffNameFunc
 	);
 

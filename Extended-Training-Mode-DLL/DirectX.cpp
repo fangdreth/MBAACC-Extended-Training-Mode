@@ -10,6 +10,9 @@ void dualInputDisplay();
 //void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 void cursorDraw();
 unsigned directxFrameCount = 0;
+float _freqTimerYVal = 0.0f;
+bool logPowerInfo = false;
+bool logVerboseFps = false;
 
 Point mousePos; // no use getting this multiple times a frame
 
@@ -2448,6 +2451,101 @@ void _drawGeneralCalls() {
 
 void _drawDebugMenu();
 
+void drawPowerInfo() {
+	
+	static SYSTEM_POWER_STATUS powerStatus;
+	if (__frameDoneCount % (60 * 10) == 0) {
+		GetSystemPowerStatus(&powerStatus);
+	}
+
+	const char* ACStatus = "unknown";
+	const char* battStatus = "unknown";
+	BYTE percentStatus = powerStatus.BatteryLifePercent;
+
+	switch (powerStatus.ACLineStatus) {
+	default:
+		break;
+	case 0:
+		ACStatus = "Offline";
+		break;
+	case 1:
+		ACStatus = "Online";
+		break;
+	}
+
+	switch (powerStatus.BatteryFlag) {
+	default:
+		break;
+	case 0:
+		battStatus = "Med";
+		break;
+	case 1:
+		battStatus = "High";
+		break;
+	case 2:
+		battStatus = "Low";
+		break;
+	case 4:
+		battStatus = "Crit";
+		break;
+	case 8:
+		battStatus = "Charging";
+		break;
+	case 128:
+		battStatus = "No Batt";
+		break;
+	}
+
+	TextDraw(450, 0, 10, 0xFFFFFFFF,
+		"AC: %s\n"
+		"status: %s\n"
+		"%%rem: %d\n"
+		"saver: %s\n",
+		ACStatus,
+		battStatus,
+		percentStatus == 0xFF ? -1 : percentStatus,
+		powerStatus.SystemStatusFlag == 1 ? "ON" : "OFF"
+	);
+
+
+}
+
+DWORD maintainFPSState = 0;
+long long gameStartTime = getNanoSec();
+void maintainFPS() {
+
+	static bool firstRun = true;
+	if (firstRun) {
+		firstRun = false;
+		gameStartTime = getNanoSec();
+	}
+
+	static long long frameCount = 0;
+	frameCount++;
+
+	static long long prevTime = 0;
+	long long time;
+
+	//constexpr long long limit = (1000000.0f / 60.0f);
+	//constexpr long long limit = 16667;
+	constexpr long long limit = (1000000000.0f / 60.0f);
+	long long delta;
+
+	do {
+		time = getNanoSec();
+		delta = time - prevTime;
+
+
+	} while (delta < limit);
+
+	prevTime = time;
+
+	float frameTime = ((float)frameCount) * (1.0f / 60.0f);
+	float realTime = ((float)(time - gameStartTime)) / 1000000000.0f;
+
+	TextDraw(50, 50, 16, 0xFFFFFFFF, "%6.2f %6.2f %6.2f", frameTime, realTime, fabsf(frameTime - realTime) );
+}
+
 void __stdcall _doDrawCalls() {
 
 	/*
@@ -2495,6 +2593,18 @@ void __stdcall _doDrawCalls() {
 
 	//TextDraw(300, 300, 16, 0xFFFFFFFF, "%7.2f %7.2f", mousePos.x, mousePos.y);
 
+	// this is very temporary
+	/*
+	static KeyState fKey('F');
+	if (fKey.keyDown()) {
+		maintainFPSState = (maintainFPSState + 1) % 3;
+		if (maintainFPSState != 0) {
+			patchByte(dwCasterBaseAddress + 0x6638c020, 0xC3); // disable casters frame limiter
+		} else {
+			patchByte(dwCasterBaseAddress + 0x6638c020, 0x80); // reenable caster's frame limiter
+		}
+	}
+	*/
 
 	//dualInputDisplay();
 
@@ -2510,57 +2620,59 @@ void __stdcall _doDrawCalls() {
 		return;
 	}
 
+	_freqTimerYVal = 0.0f;
+
+	/*
 	// on my machine at least, i swear we are having some slowdown
 	// lots of the areas that are hooked occur,,, between when the 60fps timing checks are done?
 	// id appreciate it if we kept this on until release
 	// its in here bc present is guarenteed to only be called once a frame
-	static long long startTime = 0.0;
-	static long long endTime = 0.0;
+	static long long startTime = 0;
+	static long long endTime = 0;
+	//const int timeBufferLen = 128;
 	const int timeBufferLen = 64;
 	static double timeBuffer[timeBufferLen];
 	static int timeBufferIndex = 0;
 
-	endTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+	//endTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+	endTime = getMicroSec();
 
 	timeBuffer[timeBufferIndex] = (double)1000000.0 / ((double)endTime - startTime);
 
-	timeBufferIndex = (timeBufferIndex + 1) & (timeBufferLen - 1);
-
+	double minRes = timeBuffer[0];
+	double maxRes = timeBuffer[0];
 	double res = 0.0;
 	for (int i = 0; i < timeBufferLen; i++) {
 		res += timeBuffer[i];
+		minRes = MIN(minRes, timeBuffer[i]);
+		maxRes = MAX(maxRes, timeBuffer[i]);
+		DWORD col = i == timeBufferIndex ? 0xFF42e5f4 : 0xFFbd1a0b;
+		TextDraw(0.0, 10.0 + (i * 6), 6, col, "%5.2lf", timeBuffer[i]);
 	}
 	res /= ((double)timeBufferLen);
+
+	//timeBufferIndex = (timeBufferIndex + 1) & (timeBufferLen - 1);
+	timeBufferIndex = (timeBufferIndex + 1) % timeBufferLen;
 
 	if (shouldDrawHud) {
 #ifdef NDEBUG 
 		//TextDraw(631, 0.0, 9, 0xFF42e5f4, "REL", res);
 #else
-		TextDraw(500, 0.0, 9, 0xFFbd1a0b, "THIS IS A DEBUG BUILD", res);
+		TextDraw(500, 0.0, 9, 0xFFbd1a0b, "THIS IS A DEBUG BUILD %5.2lf", res);
 #endif
-		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "%5.2lf", res);
+		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "%5.2lf %5.2lf %5.2lf", res, minRes, maxRes);
 	}
 
 	startTime = endTime;
-
-	// ??? what coord space do these lines use?
-	// or wait was rhw the only thing i needed to draw on the screen?? none of the stupid bs i have been doing this entire time
-	// omfg
-
-	/*
-	MeltyTestVert a = {-100.0f, 200.0f, 0.0f, 1.0f, 0xFF0000FF};
-	MeltyTestVert b = { 100.0f, 200.0f, 0.0f, 1.0f, 0xFF0000FF };
-
-	meltyLineData.add(a, b);
-	meltyLineData.add(a, b);
-	meltyLineData.add(a, b);
-
-	MeltyTestVert temp = meltyLineData.vertexData[0];
-
-	log("%f %f %f %f %08X", temp.position.x, temp.position.y, temp.position.z, temp.rhw, temp.color);
 	*/
 
+	//TextDraw(50, 50, 16, 0xFFFFFFFF, "%6.10lf", 1000000.0 * (double)std::chrono::high_resolution_clock::period::num / std::chrono::high_resolution_clock::period::den);
+
+
 	// predraw stuff goes here.
+	if (logPowerInfo) {
+		drawPowerInfo();
+	}
 	drawFancyInputDisplay();
 	_drawProfiler();
 	_drawLog();
@@ -2578,17 +2690,66 @@ void __stdcall _doDrawCalls() {
 
 	drawCalls.clear();
 
+	//maintainFPS();
+
 }
 
 // -----
 
+void logFPS() {
+	constexpr int timerSize = 60;
+	static FreqTimer<timerSize> fpsTimer;
+	fpsTimer.tick();
+
+	for (int i = 0; i < timerSize; i++) {
+		//DWORD col = (i == fpsTimer.buffer.index) ? 0xFF42e5f4 : 0xFFbd1a0b;
+		//DWORD col = (i == fpsTimer.buffer.index) ? 0xFF42e5f4 : 0xFFbd1a0b;
+		DWORD col = 0xFF00FF00;
+		if (fpsTimer.buffer.data[i] > 61.0f) {
+			col = 0xFF0000FF;
+		}
+		else if (fpsTimer.buffer.data[i] < 59.0f) {
+			col = 0xFFFF0000;
+		}
+
+		const char* errorMsg = "";
+		if (fabsf(fpsTimer.buffer.data[i] - 60.0f) > 30.0f) {
+			errorMsg = "WHAT HAPPENED HERE";
+		}
+
+		if (logVerboseFps) {
+			TextDraw(0.0, 10.0 + (i * 7), 7, col, "%5.2lf %c %s", fpsTimer.buffer.data[i], (i == fpsTimer.buffer.index) ? '<' : ' ', errorMsg);
+		}
+	}
+
+	const char* fpsMethod = "CASTER";
+	if (maintainFPSState == 1) {
+		fpsMethod = "BEFORE";
+	}
+	else if (maintainFPSState == 2) {
+		fpsMethod = "AFTER";
+	}
+
+	FreqTimerData timerData = fpsTimer.getData();
+	if (logVerboseFps) {
+		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "avg:%6.2lf min:%6.2lf max:%6.2lf stdev:%6.2lf maintainfps: %s", timerData.mean, timerData.min, timerData.max, timerData.stdev, fpsMethod);
+	} else {
+		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "%5.2lf", timerData.mean);
+	}
+	
+}
+
 __declspec(naked) void _naked_PresentHook() {
 	// just in case, im only hooking this one present call
-	PUSH_ALL;
+	/*PUSH_ALL;
 	//log("doDrawCalls start");
-	_doDrawCalls();
+	//_doDrawCalls();
 	//log("doDrawCalls good");
-	POP_ALL;
+	if (maintainFPSState == 1) {
+		maintainFPS();
+	}
+	//maintainFPS(); // feels normal, feels responsive
+	POP_ALL;*/
 
 	__asm {
 		push 00000000h;
@@ -2600,7 +2761,17 @@ __declspec(naked) void _naked_PresentHook() {
 	};
 
 	PUSH_ALL;
-	frameStartCallback();
+	// basically, this pauses the game showing the most recent frame. putting it above shows the old one. it should be here
+	// but despite that,,, it being before feels, more normal? more melty?
+	// i should add a toggle and try both out
+	//maintainFPS(); // feels snappy? but good. caster puts theirs here
+	//frameStartCallback();
+	// this should stay here, as logging the fps right after a new frame is presented is correct
+	logFPS();
+	/*if (maintainFPSState == 2) {
+		maintainFPS();
+	}*/
+	
 	POP_ALL;
 
 	__asm {
@@ -2608,6 +2779,20 @@ __declspec(naked) void _naked_PresentHook() {
 		push 004bdd16h;
 		ret;
 	}
+}
+
+__declspec(naked) void _naked_PresentHook2() {
+	PUSH_ALL;
+	_doDrawCalls();
+	POP_ALL;
+
+	emitCall(0x004bdbc0);
+
+	PUSH_ALL;
+	frameStartCallback();
+	POP_ALL;
+
+	emitJump(0x004333ed);
 }
 
 void cleanForDirectXReset() {
@@ -2923,6 +3108,8 @@ bool HookDirectX() {
 		return false;
 	}
 
+	timeBeginPeriod(1);
+
 	logDeviceCapability();
 
 
@@ -2934,6 +3121,7 @@ bool HookDirectX() {
 	patchJump(0x004be3c4, _naked_RehookDirectX);
 	log("attempting to init directx present hook");
 	patchJump(0x004bdd0b, _naked_PresentHook);
+	patchJump(0x004333e8, _naked_PresentHook2);
 	log("attempting to init directx font");
 	// this NEEDS to be first, before directx is hooked
 	initFont();

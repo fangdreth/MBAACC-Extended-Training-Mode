@@ -6508,7 +6508,7 @@ int main(int argc, char* argv[])
 
                     ///long long testSleepTime = getMicroSec();
 
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    //std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
                     //long long endTestTime = getMicroSec();
 
@@ -6518,6 +6518,7 @@ int main(int argc, char* argv[])
                     //netlog("test time took %3lld.%03lld ms sleep: %3lld.%03lld ms", testTime / 1000, testTime % 1000, testSleepTimeEnd / 1000, testSleepTimeEnd % 1000);
                 }
             }
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }
     catch (const std::exception& ex)

@@ -29,6 +29,9 @@
 #include <d3dx9.h> // https://www.microsoft.com/en-us/download/details.aspx?id=6812
 #include <dxerr.h>
 #include <dsound.h>
+#include <timeapi.h>
+
+#pragma comment(lib, "winmm.lib")
 
 #pragma comment(lib, "d3d9.lib") 
 #pragma comment(lib, "d3dx9.lib")
@@ -144,6 +147,10 @@ extern DWORD fastReversePenalty;
 extern DWORD __frameDoneCount;
 extern DWORD unpausedFrameCount;
 
+extern ADDRESS dwCasterBaseAddress;
+
+extern bool logSaveState;
+
 // -----
 
 void __stdcall ___log(const char* msg);
@@ -152,6 +159,11 @@ void __stdcall log(const char* format, ...);
 
 inline long long getMicroSec() {
 	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+	//return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()).count();
+}
+
+inline long long getNanoSec() {
+	return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 }
 
 bool __stdcall safeWrite();

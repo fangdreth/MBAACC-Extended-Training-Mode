@@ -6,6 +6,8 @@
 #include "resource.h"
 //#include "FancyMenu.h"
 
+extern bool logPowerInfo;
+extern bool logVerboseFps;
 
 template <typename T, int size>
 class CircularBuffer {
@@ -45,8 +47,67 @@ public:
 		return sizeof(T) * size;
 	}
 
+	T operator [](int i) const { return get(i); }
+	T& operator [](int i) { return get(i); }
+
 	T data[size];
 	int index = 0; // index will be the head, index-1 will be the tail
+};
+
+typedef struct FreqTimerData {
+	float min;
+	float mean;
+	float max;
+	float stdev;
+} FreqTimerData;
+
+// meant to,,, assist in timing certain things/seeing how frequently something is called per frame
+extern float _freqTimerYVal; // template classes dont share statics
+template<int size>
+class FreqTimer {
+public:
+
+	void tick() {
+		long long time = getNanoSec();
+		float temp = (float)1000000000.0 / ((float)time - prevTime);
+		buffer.pushHead(temp);
+		prevTime = time;
+	}
+
+	FreqTimerData getData() {
+		FreqTimerData res;
+
+		res.min = buffer.data[0];
+		res.max = buffer.data[0];
+		res.mean = 0.0;
+		for (int i = 0; i < size; i++) {
+			res.mean += buffer.data[i];
+			res.min = MIN(res.min, buffer.data[i]);
+			res.max = MAX(res.max, buffer.data[i]);
+		}
+		res.mean /= ((float)size);
+
+		res.stdev = 0.0f;
+		for (int i = 0; i < size; i++) {
+			res.stdev += (buffer.data[i] - res.mean) * (buffer.data[i] - res.mean);
+		}
+		res.stdev /= ((float)size - 1);
+		res.stdev = sqrtf(res.stdev);
+
+		return res;
+	}
+
+	void log() {
+
+		FreqTimerData res = getData();
+
+		TextDraw(50.0f, 10.0 + (_freqTimerYVal  * 4), 4, 0xFFFFFFFF, "%5.2lf %5.2lf %5.2lf", res.mean, res.min, res.max);
+		_freqTimerYVal += 4;
+	}
+
+	long long prevTime = 0;
+	CircularBuffer<float, size> buffer;
+
 };
 
 template <typename T>
@@ -966,5 +1027,7 @@ void _DirectX_Present_Func();
 void _naked_InitDirectXHooks();
 
 void _naked_RehookDirectX();
+
+void maintainFPS();
 
 bool HookDirectX();
