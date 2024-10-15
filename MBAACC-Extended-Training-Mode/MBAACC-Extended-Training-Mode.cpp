@@ -6184,11 +6184,11 @@ int main(int argc, char* argv[])
                         uint8_t nHoldButtons = 112;
                         WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ButtonHeld, &nHoldButtons, 1, nP2Controlled);
                     }
-                    else
-                    {
-                        uint8_t nHoldButtons = 0;
-                        WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ButtonHeld, &nHoldButtons, 1, nP2Controlled);
-                    }
+                    //else
+                    //{
+                    //    uint8_t nHoldButtons = 0;
+                    //    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ButtonHeld, &nHoldButtons, 1, nP2Controlled);
+                    //}
 
 
                     // This locks all the code that follows to the framerate of the game
