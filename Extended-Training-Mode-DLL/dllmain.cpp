@@ -3,7 +3,7 @@
 #include "dllmain.h"
 #include "FrameBar.h"
 #include "SaveState.h"
-#include "ReplayManager.cpp"
+#include "ReplayManager.h"
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
@@ -1261,10 +1261,14 @@ void frameDoneCallback()
 		if (logSaveState) {
 			saveStateManager.log();
 		}
-		
 	}
 	
-
+	static bool replayLoaded = false;
+	if (!replayLoaded) {
+		//replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_241015104442.rep");
+		replayLoaded = true;
+	}
+	
 	renderModificationsFrameDone();
 
 	drawFancyMenu();
