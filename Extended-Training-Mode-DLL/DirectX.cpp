@@ -1573,16 +1573,18 @@ void cursorDraw() {
 
 	DWORD col = 0xFFFFFFFF;
 
+	const int framesBeforeStartFade = (60 * 1);
+
 	if(prevMousePos == mousePos) {
-		if (noMovement < 60 * 5) {
+		if (noMovement < (framesBeforeStartFade + 60)) {
 			noMovement++;
 		}
 	} else {
 		noMovement = 0;
 	}
 
-	if (noMovement > 60 * 4) {
-		col &= (int)((((float)(60 * 5) - noMovement)) * 255.0f / 60.0f) << 24;
+	if (noMovement > framesBeforeStartFade) {
+		col &= (int)((((float)(framesBeforeStartFade + 60) - noMovement)) * 255.0f / 60.0f) << 24;
 		col |= 0x00FFFFFF;
 	}
 
