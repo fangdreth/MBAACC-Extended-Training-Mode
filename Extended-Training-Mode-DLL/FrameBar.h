@@ -519,6 +519,7 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 	bDisplayFreeze = *(char*)(adMBAABase + adSharedDisplayFreeze);
 	bDisplayInputs = *(char*)(adMBAABase + adSharedDisplayInputs);
 	nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+	nBarCounter = *(int*)(adMBAABase + adSharedBarCounter);
 
 	Main1 = &P1;
 	Main2 = &P2;
@@ -553,4 +554,6 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 
 	nLastFrameCount = *(int*)(adMBAABase + adFrameCount);
 	nLastTrueFrameCount = *(int*)(adMBAABase + adTrueFrameCount);
+
+	*(int*)(adMBAABase + adSharedBarCounter) = nBarCounter;
 }

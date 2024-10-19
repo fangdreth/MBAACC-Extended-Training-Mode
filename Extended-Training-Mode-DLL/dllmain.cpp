@@ -768,7 +768,7 @@ void drawFrameBar(int nYOverride = -1)
 	if (nBarCounter <= DISPLAY_RANGE)
 	{
 		nForStart = 0;
-		nForEnd = DISPLAY_RANGE;
+		nForEnd = nBarCounter;
 	}
 
 	RectDraw(18, nFrameBarY, 602, 27, 0xFF000000); //Background

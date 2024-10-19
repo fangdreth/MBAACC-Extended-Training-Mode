@@ -32,6 +32,10 @@ void SaveState::save() {
 	P1NextControlledCharacter = *(DWORD*)(0x00400000 + adP1NextControlledCharacter	 );
 	P2ControlledCharacter     = *(DWORD*)(0x00400000 + adP2ControlledCharacter		 );
 	P2NextControlledCharacter = *(DWORD*)(0x00400000 + adP2NextControlledCharacter	 );
+
+	P1Inactionable            = *(int*)(0x00400000 + adP1Inaction);
+	P2Inactionable            = *(int*)(0x00400000 + adP1Inaction);
+	BarCounter                = *(int*)(0x00400000 + adSharedBarCounter) + 1;
 	
 	//memcpy((void*)&playerSaves, (void*)0x00555130, 0xAFC * 4);
 
@@ -101,6 +105,10 @@ void SaveState::load() {
 	*(DWORD*)(0x00400000 + adP1NextControlledCharacter	 ) = P1NextControlledCharacter ;
 	*(DWORD*)(0x00400000 + adP2ControlledCharacter		 ) = P2ControlledCharacter     ;
 	*(DWORD*)(0x00400000 + adP2NextControlledCharacter	 ) = P2NextControlledCharacter ;
+
+	*(int*)(0x00400000 + adP1Inaction                    ) = P1Inactionable;
+	*(int*)(0x00400000 + adP1Inaction                    ) = P2Inactionable;
+	*(int*)(0x00400000 + adSharedBarCounter              ) = BarCounter;
 
 	//memcpy((void*)0x00555130, (void*)&playerSaves, 0xAFC * 4);
 	
