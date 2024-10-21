@@ -373,6 +373,7 @@ const ADDRESS adSharedP1InputDisplay =				adShareBase + 0x25; // 1 byte
 const ADDRESS adSharedP2InputDisplay =				adShareBase + 0x26; // 1 byte
 const ADDRESS adSharedHighlight =					adShareBase + 0x27; // 1 byte
 const ADDRESS adSharedBarCounter =                  adShareBase + 0x28; // 4 bytes
+const ADDRESS adSharedTimer =                       adShareBase + 0x2C; // 4 bytes
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x30;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x31;	// 1 byte

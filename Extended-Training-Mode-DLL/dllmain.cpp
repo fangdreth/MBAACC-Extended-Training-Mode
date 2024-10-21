@@ -1683,6 +1683,8 @@ void frameDoneCallback()
 		drawFrameBar();
 	}
 
+	*(int*)(adMBAABase + adSharedTimer) = *(int*)(adMBAABase + adTrueFrameCount);
+
 	int nFrameTimer = *(int*)(dwBaseAddress + dwFrameTimer);
 	nRNGMode = *(uint8_t*)(dwBaseAddress + adSharedRNGMode);
 	nRNGRate = *(uint8_t*)(dwBaseAddress + adSharedRNGRate);
