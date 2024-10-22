@@ -126,7 +126,7 @@ void CheckGameState(HANDLE hMBAAHandle)
 
 void UpdateGlobals(HANDLE hMBAAHandle)
 {
-	nLastFrameCount = nFrameCount;
+	//nLastFrameCount = nFrameCount;
 	//nLastTrueFrameCount = nTrueFrameCount;
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1Freeze), &cP1Freeze, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2Freeze), &cP2Freeze, 1, 0);
@@ -1425,6 +1425,7 @@ void FrameDisplay(HANDLE hMBAAHandle)
 		CheckProjectiles(hMBAAHandle);
 		
 		BarHandling(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
+		nLastFrameCount = nFrameCount;
 
 		if (nTrueFrameCount == 1 && CheckSave(nSaveSlot) && bEnableFN2Load)
 		{
