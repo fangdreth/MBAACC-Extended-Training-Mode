@@ -135,11 +135,11 @@ void CalculateAdvantage(Player& P1, Player& P2)
 	{
 		if (*(int*)(P1.adInaction) == 0 && *(int*)(P2.adInaction) != 0)
 		{
-			P1.nAdvantageCounter++;
+			P1.nAdvantageCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 		}
 		else if (*(int*)(P2.adInaction) == 0 && *(int*)(P1.adInaction) != 0)
 		{
-			P2.nAdvantageCounter++;
+			P2.nAdvantageCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;;
 		}
 	}
 }
@@ -381,9 +381,9 @@ void UpdateBars(Player& P, Player& Assist)
 
 void IncrementActive(Player& P)
 {
-	if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0 && *(char*)(P.adPlayerBase + adHitstop) == 0)
+	if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0 && *(char*)(P.adPlayerBase + adHitstop) == 0 && *(int*)(P.adPlayerBase + adPlayerFrameCount) != P.nLastFrameCount)
 	{
-		P.nActiveCounter++;
+		P.nActiveCounter += *(int*)(P.adPlayerBase + adPlayerFrameCount) - P.nLastFrameCount;
 	}
 	else if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) == 0)
 	{
@@ -396,16 +396,18 @@ void IncrementFirstActive(Player& P)
 	if (*(char*)(P.adPlayerBase + adHitstop) == 0 &&
 		*(int*)(adMBAABase + adP1Freeze) == 0 &&
 		*(int*)(adMBAABase + adP2Freeze) == 0 &&
-		*(char*)(adMBAABase + adGlobalFreeze) == 0)
+		*(char*)(adMBAABase + adGlobalFreeze) == 0 &&
+		*(int*)(P.adPlayerBase + adPlayerFrameCount) != P.nLastFrameCount)
 	{
-		P.nFirstActiveCounter++;
+		P.nFirstActiveCounter += *(int*)(P.adPlayerBase + adPlayerFrameCount) - P.nLastFrameCount;
 		bAddPlayerFreeze = true;
 	}
 	if (bAddPlayerFreeze &&
 		(*(int*)(adMBAABase + adP1Freeze) != 0 ||
-		*(int*)(adMBAABase + adP2Freeze) != 0))
+		*(int*)(adMBAABase + adP2Freeze) != 0) &&
+		*(int*)(P.adPlayerBase + adPlayerFrameCount) != P.nLastFrameCount)
 	{
-		P.nFirstActiveCounter++;
+		P.nFirstActiveCounter += *(int*)(P.adPlayerBase + adPlayerFrameCount) - P.nLastFrameCount;
 		bAddPlayerFreeze = false;
 	}
 }
@@ -509,7 +511,7 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 				//IncrementActive(P2Assist);
 				UpdateBars(P2Assist, P2);
 			}
-			nBarCounter++;
+			nBarCounter += *(int*)(adMBAABase + adTrueFrameCount) - nLastTrueFrameCount;
 		}
 	}
 }
@@ -519,7 +521,6 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 	bDisplayFreeze = *(char*)(adMBAABase + adSharedDisplayFreeze);
 	bDisplayInputs = *(char*)(adMBAABase + adSharedDisplayInputs);
 	nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
-	nBarCounter = *(int*)(adMBAABase + adSharedBarCounter);
 
 	Main1 = &P1;
 	Main2 = &P2;
@@ -554,6 +555,4 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 
 	nLastFrameCount = *(int*)(adMBAABase + adFrameCount);
 	nLastTrueFrameCount = *(int*)(adMBAABase + adTrueFrameCount);
-
-	*(int*)(adMBAABase + adSharedBarCounter) = nBarCounter;
 }

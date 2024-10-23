@@ -716,11 +716,11 @@ void CalculateAdvantage(Player& P1, Player& P2)
 	{
 		if (P1.nInactionableFrames == 0 && P2.nInactionableFrames != 0)
 		{
-			P1.nAdvantageCounter++;
+			P1.nAdvantageCounter += nFrameCount - nLastFrameCount;
 		}
 		else if (P2.nInactionableFrames == 0 && P1.nInactionableFrames != 0)
 		{
-			P2.nAdvantageCounter++;
+			P2.nAdvantageCounter += nFrameCount - nLastFrameCount;
 		}
 	}
 }
@@ -1039,9 +1039,9 @@ void UpdateBars(Player& P, Player& Assist)
 
 void IncrementActive(Player& P)
 {
-	if (P.dwAttackDataPointer != 0 && P.cHitstop == 0 && P.nLastFrameCount != P.nFrameCount)
+	if (P.dwAttackDataPointer != 0 && P.cHitstop == 0 && P.nFrameCount != P.nLastFrameCount)
 	{
-		P.nActiveCounter++;
+		P.nActiveCounter += P.nFrameCount - P.nLastFrameCount;
 	}
 	else if (P.dwAttackDataPointer == 0)
 	{
@@ -1142,7 +1142,7 @@ void BarHandling(HANDLE hMBAAHandle, Player &P1, Player &P2, Player& P1Assist, P
 				UpdateBars(P2Assist, P2);
 
 			}
-			nBarCounter++;
+			nBarCounter += nTrueFrameCount - nLastTrueFrameCount;
 		}
 	}
 }
@@ -1420,12 +1420,12 @@ void FrameDisplay(HANDLE hMBAAHandle)
 
 	if (nLastTrueFrameCount != nTrueFrameCount && nTrueFrameCount == nTimer)
 	{
-		nLastTrueFrameCount = nTrueFrameCount;
 		UpdatePlayers(hMBAAHandle);
 		CheckProjectiles(hMBAAHandle);
 		
 		BarHandling(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
 		nLastFrameCount = nFrameCount;
+		nLastTrueFrameCount = nTrueFrameCount;
 
 		if (nTrueFrameCount == 1 && CheckSave(nSaveSlot) && bEnableFN2Load)
 		{
