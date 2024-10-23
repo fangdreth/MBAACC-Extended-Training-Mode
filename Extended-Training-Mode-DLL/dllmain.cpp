@@ -1341,7 +1341,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 		loadVideoThread = NULL;
 	}
 
-	/*
+	
 	if (!initTextureIsGood) {
 		initTextureIsGood = initTextureModifications();
 
@@ -1356,7 +1356,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	if (!initCSSIsGood) {
 		initCSSIsGood = initCSSModifications();
 	}
-	*/
+	
 
 	Sleep(dwMilliseconds);
 }
