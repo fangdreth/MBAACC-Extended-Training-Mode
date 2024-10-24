@@ -686,7 +686,7 @@ void PrintColorGuide()
 	std::cout << FD_SHIELD << "00" << FD_CLEAR << " SHIELD\n";
 	std::cout << FD_INACTIONABLE_INVULN << "00" << FD_CLEAR << " INVULN\t\t\t";
 	std::cout << FD_ACTIONABLE_INVULN << "00" << FD_CLEAR << " INVULN AND FULLY ACTIONABLE\n";
-	std::cout << FD_FREEZE << "00" << FD_CLEAR << " EX FLASH SCREEN FREEZE\t";
+	std::cout << FD_FREEZE << "00" << FD_CLEAR << " SCREEN FREEZE\t\t";
 	std::cout << FD_HITSTOP << "00" << FD_CLEAR << " HITSTOP\n";
 	std::cout << FD_ACTIVE << "00" << FD_CLEAR << " ACTIVE FRAMES\t\t";
 	std::cout << FD_ASSIST_ACTIVE << "00" << FD_CLEAR << " ASSIST ACTIVE FRAMES\n";

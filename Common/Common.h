@@ -218,6 +218,24 @@ const std::string FD_B_PRESSED = "\x1b[38;2;255;255;137m\x1b[48;2;169;91;7m";
 const std::string FD_C_PRESSED = "\x1b[38;2;143;255;195m\x1b[48;2;18;132;62m";
 const std::string FD_D_PRESSED = "\x1b[38;2;137;255;255m\x1b[48;2;21;66;161m";
 
+const DWORD FB_INACTIONABLE = 0xFF41C800;
+const DWORD FB_JUMP = 0xFFF1E084;
+const DWORD FB_HITSTUN = 0xFF8C8C8C;
+const DWORD FB_BLOCKSTUN = 0xFFB4B4B4;
+const DWORD FB_ACTIVE = 0xFFFF0000;
+const DWORD FB_ACTIONABLE = 0xFF202020;
+const DWORD FB_ADVANTAGE = 0xFF101010;
+const DWORD FB_NEUTRAL = 0xFF205A00;
+const DWORD FB_FREEZE = 0xFF3C3C3C;
+const DWORD FB_FREEZE_ACTIVE = 0xFFFF8080;
+const DWORD FB_THROWN = 0xFF6E6E6E;
+const DWORD FB_HITSTOP = 0xFF3C5080;
+const DWORD FB_SHIELD = 0xFF91C2FF;
+const DWORD FB_THROW_ACTIVE = 0xFFC00080;
+const DWORD FB_CLASH = 0xFFE1B800;
+const DWORD FB_INVULN = 0xFFFFFFFF;
+const DWORD FB_ASSIST_ACTIVE = 0xFFFF8000;
+
 const ADDRESS adMBAABase = 0x400000;
 
 const ADDRESS adSaveCurrentCamZoom = 0x14EB70;
@@ -373,6 +391,7 @@ const ADDRESS adSharedP1InputDisplay =				adShareBase + 0x25; // 1 byte
 const ADDRESS adSharedP2InputDisplay =				adShareBase + 0x26; // 1 byte
 const ADDRESS adSharedHighlight =					adShareBase + 0x27; // 1 byte
 const ADDRESS adSharedTimer =                       adShareBase + 0x28; // 4 bytes
+const ADDRESS adSharedColorGuide =                  adShareBase + 0x2C; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x30;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x31;	// 1 byte

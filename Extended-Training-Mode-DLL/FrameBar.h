@@ -182,15 +182,15 @@ void UpdateBars(Player& P, Player& Assist)
 	//Bar 1 - General action information
 	if (*(int*)(P.adInaction) != 0) //Doing something with limited actionability
 	{
-		dwColor = 0xFF41C800;
+		dwColor = FB_INACTIONABLE;
 		nNumber = *(int*)P.adInaction;
 		if (*(int*)(P.adPlayerBase + adPattern) >= 35 && *(int*)(P.adPlayerBase + adPattern) <= 37) //Jump Startup
 		{
-			dwColor = 0xFFF1E084;
+			dwColor = FB_JUMP;
 		}
 		else if (*(int*)(P.adPlayerBase + adHitstunRemaining) != 0 && *(char*)(P.adPlayerBase + adBlockstunFlag) == 0) //Hitstun
 		{
-			dwColor = 0xFF8C8C8C;
+			dwColor = FB_HITSTUN;
 			if (*(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Stance) == 1) //Airborne
 			{
 				if (*(short*)(P.adPlayerBase + adUntechCounter) < *(short*)(P.adPlayerBase + adUntechTotal)) //Still has untech remaining
@@ -208,7 +208,7 @@ void UpdateBars(Player& P, Player& Assist)
 		}
 		else if (*(char*)(P.adPlayerBase + adBlockstunFlag)) //Blockstun
 		{
-			dwColor = 0xFFB4B4B4;
+			dwColor = FB_BLOCKSTUN;
 			if (*(int*)(P.adPlayerBase + adHitstunRemaining) > 2 && *(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Stance) != 1)
 			{
 				nNumber = *(short*)(P.adPlayerBase + adHitstunRemaining) - 1;
@@ -216,7 +216,7 @@ void UpdateBars(Player& P, Player& Assist)
 		}
 		else if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0) //Attacking
 		{
-			dwColor = 0xFFFF0000;
+			dwColor = FB_ACTIVE;
 			nNumber = P.nActiveCounter;
 			nNumFlag = 2;
 			if (P.dwLastActivePointer == 0 && !P.bAlreadyGotFirstActive)
@@ -228,16 +228,15 @@ void UpdateBars(Player& P, Player& Assist)
 	}
 	else //Fully actionable
 	{
-		dwColor = 0xFF202020;
-
-		if (bDoAdvantage) //Has advantage
-		{
-			dwColor = 0xFF101010;
-		}
+		dwColor = FB_ACTIONABLE;
 
 		if (P.nLastInactionableFrames != 0) //Neutral frame
 		{
-			dwColor = 0xFF205A00;
+			dwColor = FB_NEUTRAL;
+		}
+		else if (bDoAdvantage) //Has advantage
+		{
+			dwColor = FB_ADVANTAGE;
 		}
 	}
 
@@ -272,19 +271,19 @@ void UpdateBars(Player& P, Player& Assist)
 		*(int*)(adMBAABase + adP1Freeze) != 0 ||
 		*(int*)(adMBAABase + adP2Freeze) != 0)
 	{
-		dwColor = 0xFF3C3C3C;
+		dwColor = FB_FREEZE;
 		if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0) //Attacking
 		{
-			dwColor = 0xFFFF8080;
+			dwColor = FB_FREEZE_ACTIVE;
 		}
 	}
 	else if (*(char*)(P.adPlayerBase + adThrowFlag) != 0) //Being thrown
 	{
-		dwColor = 0xFF6E6E6E;
+		dwColor = FB_THROWN;
 	}
 	else if (*(char*)(P.adPlayerBase + adHitstop) != 0) //in hitstop
 	{
-		dwColor = 0xFF3C5080;
+		dwColor = FB_HITSTOP;
 		if (*(char*)(P.adPlayerBase + adNotInCombo) == 0 && P.cLastHitstop == 0)
 		{
 			nNumFlag = 1;
@@ -297,7 +296,7 @@ void UpdateBars(Player& P, Player& Assist)
 	}
 	else if (cCondition1Type == 51) //Shield
 	{
-		dwColor = 0xFF91C2FF;
+		dwColor = FB_SHIELD;
 	}
 	else if (cCondition1Type == 52 || cCondition2Type == 52) //Throw
 	{
@@ -306,28 +305,28 @@ void UpdateBars(Player& P, Player& Assist)
 			P.nFirstActive = P.nFirstActiveCounter;
 			P.bAlreadyGotFirstActive = true;
 		}
-		dwColor = 0xFFC00080;
+		dwColor = FB_THROW_ACTIVE;
 	}
 
 	if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_BoxIndex) == 12) //Clash
 	{
-		dwColor2 = 0xFFE1B800;
+		dwColor2 = FB_CLASH;
 	}
 	else if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_BoxIndex) <= 1 || //Various forms of invuln
 		*(char*)(P.adPlayerBase + adEFStrikeInvuln) != 0 ||
 		*(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Invuln) == 3)
 	{
-		dwColor2 = 0xFFFFFFFF;
+		dwColor2 = FB_INVULN;
 	}
 
 	if (*(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Stance) == 1) //Airborne
 	{
-		dwBar2Color0 = 0xFFF1E084;
+		dwBar2Color0 = FB_JUMP;
 	}
 
 	if (P.bProjectileActive || Assist.bProjectileActive)
 	{
-		dwBar2Color1 = 0xFFFF0000;
+		dwBar2Color1 = FB_ACTIVE;
 		if (!P.bLastProjectileActive && !P.bAlreadyGotFirstActive)
 		{
 			P.nFirstActive = P.nFirstActiveCounter;
@@ -338,7 +337,7 @@ void UpdateBars(Player& P, Player& Assist)
 
 	if (*(DWORD*)(Assist.adPlayerBase + adAttackDataPointer) != 0) //Check Assist for active
 	{
-		dwBar2Color1 = 0xFFFF8000;
+		dwBar2Color1 = FB_ASSIST_ACTIVE;
 		if (Assist.dwLastActivePointer == 0 && !P.bAlreadyGotFirstActive)
 		{
 			P.nFirstActive = P.nFirstActiveCounter;
