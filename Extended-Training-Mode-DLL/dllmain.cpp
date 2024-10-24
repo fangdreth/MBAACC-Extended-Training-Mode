@@ -1265,8 +1265,14 @@ void frameDoneCallback()
 	
 	static bool replayLoaded = false;
 	if (!replayLoaded) {
-		//replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_241015104442.rep");
+		replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_241015104442.rep");
+		//replayManager.load("./ReplayVS/RED_ARCUEIDxRED_ARCUEID_241017190233.rep");
 		replayLoaded = true;
+	}
+
+	static KeyState rKey('R');
+	if (rKey.keyDown()) {
+		replayManager.reset();
 	}
 	
 	renderModificationsFrameDone();
@@ -2612,6 +2618,27 @@ void battleResetCallback()
 	POP_ALL;
 }
 
+// input funcs
+
+void inputCallback() {
+
+	replayManager.setInputs();
+
+}
+
+__declspec(naked) void _naked_inputCallback() {
+
+	PUSH_ALL;
+	inputCallback();
+	POP_ALL;
+
+	__asm {
+		add esp, 0090h;
+		ret;
+	}
+
+}
+
 // init funcs
 
 void initFrameDoneCallback()
@@ -2793,6 +2820,14 @@ void initDualInputDisplay() {
 	patchMemset(0x00477f20, 0x90, 5); 
 }
 
+void initInputCallback() {
+
+	// called after controller is read, but not processed. i think?
+
+	patchJump(0x0041f1a6, _naked_inputCallback);
+
+}
+
 void threadFunc() 
 {
 	srand(time(NULL));
@@ -2830,6 +2865,7 @@ void threadFunc()
 
 	initDualInputDisplay();
 
+	initInputCallback();
 	
 	while (true) 
 	{
