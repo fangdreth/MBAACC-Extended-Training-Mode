@@ -20,6 +20,7 @@ int nLastTrueFrameCount = 0;
 char cGlobalFreeze = 0; //Used for EXFlashes where neither char moves
 char cP1FN2Input = 0;
 char cDummyState = 0; // Same as Common.h "Enemy Status" except -1 for recording
+int nTimer = 0;
 
 int nBarCounter = 0;
 short nBarScrolling = 0;
@@ -125,8 +126,8 @@ void CheckGameState(HANDLE hMBAAHandle)
 
 void UpdateGlobals(HANDLE hMBAAHandle)
 {
-	nLastFrameCount = nFrameCount;
-	nLastTrueFrameCount = nTrueFrameCount;
+	//nLastFrameCount = nFrameCount;
+	//nLastTrueFrameCount = nTrueFrameCount;
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1Freeze), &cP1Freeze, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2Freeze), &cP2Freeze, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adFrameCount), &nFrameCount, 4, 0);
@@ -134,6 +135,7 @@ void UpdateGlobals(HANDLE hMBAAHandle)
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adGlobalFreeze), &cGlobalFreeze, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adDummyState), &cDummyState, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1FN2Input), &cP1FN2Input, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedTimer), &nTimer, 4, 0);
 }
 
 struct Player
@@ -684,7 +686,7 @@ void PrintColorGuide()
 	std::cout << FD_SHIELD << "00" << FD_CLEAR << " SHIELD\n";
 	std::cout << FD_INACTIONABLE_INVULN << "00" << FD_CLEAR << " INVULN\t\t\t";
 	std::cout << FD_ACTIONABLE_INVULN << "00" << FD_CLEAR << " INVULN AND FULLY ACTIONABLE\n";
-	std::cout << FD_FREEZE << "00" << FD_CLEAR << " EX FLASH SCREEN FREEZE\t";
+	std::cout << FD_FREEZE << "00" << FD_CLEAR << " SCREEN FREEZE\t\t";
 	std::cout << FD_HITSTOP << "00" << FD_CLEAR << " HITSTOP\n";
 	std::cout << FD_ACTIVE << "00" << FD_CLEAR << " ACTIVE FRAMES\t\t";
 	std::cout << FD_ASSIST_ACTIVE << "00" << FD_CLEAR << " ASSIST ACTIVE FRAMES\n";
@@ -714,11 +716,11 @@ void CalculateAdvantage(Player& P1, Player& P2)
 	{
 		if (P1.nInactionableFrames == 0 && P2.nInactionableFrames != 0)
 		{
-			P1.nAdvantageCounter++;
+			P1.nAdvantageCounter += nFrameCount - nLastFrameCount;
 		}
 		else if (P2.nInactionableFrames == 0 && P1.nInactionableFrames != 0)
 		{
-			P2.nAdvantageCounter++;
+			P2.nAdvantageCounter += nFrameCount - nLastFrameCount;
 		}
 	}
 }
@@ -1037,9 +1039,9 @@ void UpdateBars(Player& P, Player& Assist)
 
 void IncrementActive(Player& P)
 {
-	if (P.dwAttackDataPointer != 0 && P.cHitstop == 0 && P.nLastFrameCount != P.nFrameCount)
+	if (P.dwAttackDataPointer != 0 && P.cHitstop == 0 && P.nFrameCount != P.nLastFrameCount)
 	{
-		P.nActiveCounter++;
+		P.nActiveCounter += P.nFrameCount - P.nLastFrameCount;
 	}
 	else if (P.dwAttackDataPointer == 0)
 	{
@@ -1140,13 +1142,8 @@ void BarHandling(HANDLE hMBAAHandle, Player &P1, Player &P2, Player& P1Assist, P
 				UpdateBars(P2Assist, P2);
 
 			}
-			nBarCounter++;
+			nBarCounter += nTrueFrameCount - nLastTrueFrameCount;
 		}
-	}
-
-	if (nTrueFrameCount == 0)
-	{
-		ResetBars(hMBAAHandle);
 	}
 }
 
@@ -1173,6 +1170,14 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedScrolling), &nBarScrolling, 2, 0);
 	short sAdjustedScroll = min(min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange), nBarScrolling);
 
+	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - sAdjustedScroll;
+	int nForEnd = (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll;
+	if (nBarCounter <= nBarDisplayRange)
+	{
+		nForStart = 0;
+		nForEnd = nBarCounter;
+	}
+
 	std::string sLastFont1 = "";
 	std::string sLastFont2 = "";
 	std::string sLastFont3 = "";
@@ -1192,7 +1197,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 	P2.sBarString4 = "";
 	P2.sBarString5 = "";
 	bool bFirstFrameInDisplay = true;
-	for (int i = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - sAdjustedScroll; i < (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll; i++)
+	for (int i = nForStart; i < nForEnd; i++)
 	{
 		int c = i < 0 ? i + BAR_MEMORY_SIZE : i;
 		int l = i - 1 < 0 ? i - 1 + BAR_MEMORY_SIZE : i - 1;
@@ -1408,12 +1413,19 @@ void FrameDisplay(HANDLE hMBAAHandle)
 		Assist2 = &P2;
 	}
 
-	if (nLastTrueFrameCount != nTrueFrameCount)
+	if (nTrueFrameCount == 0)
+	{
+		ResetBars(hMBAAHandle);
+	}
+
+	if (nLastTrueFrameCount != nTrueFrameCount && nTrueFrameCount == nTimer)
 	{
 		UpdatePlayers(hMBAAHandle);
 		CheckProjectiles(hMBAAHandle);
 		
 		BarHandling(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
+		nLastFrameCount = nFrameCount;
+		nLastTrueFrameCount = nTrueFrameCount;
 
 		if (nTrueFrameCount == 1 && CheckSave(nSaveSlot) && bEnableFN2Load)
 		{

@@ -60,6 +60,11 @@ typedef struct SaveState {
 	//DWORD reallyNotSure;
 	DWORD slowMo;
 
+	int P1Inactionable;
+	int P2Inactionable;
+	int FrameTimer;
+	int TrueFrameTimer;
+
 	void save();
 	void load();
 

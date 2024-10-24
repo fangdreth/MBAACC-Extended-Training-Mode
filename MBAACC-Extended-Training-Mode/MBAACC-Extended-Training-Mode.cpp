@@ -903,6 +903,7 @@ int main(int argc, char* argv[])
                                     if (nEnemySettingsCursor == 6)
                                     {
                                         bPrintColorGuide = !bPrintColorGuide;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedColorGuide), &bPrintColorGuide, 1, 0);
                                         system("cls");
                                     }
                                     break;
@@ -1003,7 +1004,7 @@ int main(int argc, char* argv[])
                             }
 
                             uint8_t nIsHoveringScroll = 0;
-                            if ((nSettingsPage == FRAME_TOOL && nEnemySettingsCursor == 5))
+                            if ((nSettingsPage == FRAME_TOOL && (nEnemySettingsCursor == 5 || nEnemySettingsCursor == 6)))
                                 nIsHoveringScroll = 1;
                             else if (nSettingsPage == UI_PAGE && nEnemySettingsCursor == 5)
                                 nIsHoveringScroll = 2;
@@ -1729,20 +1730,10 @@ int main(int argc, char* argv[])
                                 }
                                 case 5:
                                 {
-                                    /*if (bFrameDataDisplay)
-                                    {
-                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
-                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcBlank_64, 64, 0);
-                                    }
-                                    else
-                                    {
-                                        char pcTemp64[64] = "Scroll through the frame display.";
-                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                        strcpy_s(pcTemp64, ">{DRAW ON SCREEN} is turned off.");
-                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
-                                    }*/
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcBlank_64, 64, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcBlank_64, 64, 0);
+                                    char pcTemp64[64] = "Scroll through the frame display.";
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
+                                    strcpy_s(pcTemp64, ">{DRAW ON SCREEN} is turned off.");
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
                                 case 6:
@@ -6152,6 +6143,15 @@ int main(int argc, char* argv[])
                         bJustUnpaused = false;
 
                         // put stuff here
+                        if (bPrintColorGuide)
+                        {
+                            bPrintColorGuide = false;
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedColorGuide), &bPrintColorGuide, 1, 0);
+                            system("cls");
+                        }
+
+                        uint8_t nIsHoveringScroll = 0;
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHoveringScroll), &nIsHoveringScroll, 1, 0);
                     }
 
                     long long testStartTime = getMicroSec();

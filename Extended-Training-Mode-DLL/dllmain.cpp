@@ -743,14 +743,61 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 	return true;
 }
 
-//In-game frame bar
+void drawColorGuide()
+{
+	RectDraw(10, 10, 7, 10, FB_INACTIONABLE);
+	TextDraw(17, 10, 10, 0xFFFFFFFF, "INACTIONABLE");
+	RectDraw(120, 10, 7, 10, FB_JUMP);
+	TextDraw(127, 10, 10, 0xFFFFFFFF, "JUMP STARTUP");
+	RectDraw(230, 10, 7, 10, FB_HITSTUN);
+	TextDraw(237, 10, 10, 0xFFFFFFFF, "HITSTUN");
+	RectDraw(300, 10, 7, 10, FB_BLOCKSTUN);
+	TextDraw(307, 10, 10, 0xFFFFFFFF, "BLOCKSTUN");
+	RectDraw(390, 10, 7, 10, FB_ACTIVE);
+	TextDraw(397, 10, 10, 0xFFFFFFFF, "ACTIVE FRAMES");
+	RectDraw(500, 10, 7, 10, FB_ACTIONABLE);
+	TextDraw(507, 10, 10, 0xFFFFFFFF, "FULLY ACTIONABLE");
+	RectDraw(10, 21, 7, 10, FB_ADVANTAGE);
+	TextDraw(17, 21, 10, 0xFFFFFFFF, "FRAME ADVANTAGE");
+	RectDraw(140, 21, 7, 10, FB_NEUTRAL);
+	TextDraw(147, 21, 10, 0xFFFFFFFF, "NEUTRAL FRAME");
+	RectDraw(260, 21, 7, 10, FB_FREEZE);
+	TextDraw(267, 21, 10, 0xFFFFFFFF, "SCREEN FREEZE");
+	RectDraw(370, 21, 7, 10, FB_FREEZE_ACTIVE);
+	TextDraw(377, 21, 10, 0xFFFFFFFF, "ACTIVE DURING FREEZE");
+	RectDraw(530, 21, 7, 10, FB_THROWN);
+	TextDraw(537, 21, 10, 0xFFFFFFFF, "BEING THROWN");
+	RectDraw(10, 32, 7, 10, FB_HITSTOP);
+	TextDraw(17, 32, 10, 0xFFFFFFFF, "HITSTOP");
+	RectDraw(80, 32, 7, 10, FB_SHIELD);
+	TextDraw(87, 32, 10, 0xFFFFFFFF, "SHIELD");
+	RectDraw(140, 32, 7, 10, FB_THROW_ACTIVE);
+	TextDraw(147, 32, 10, 0xFFFFFFFF, "THROW ACTIVE FRAME");
 
+	RectDraw(10, 42, 7, 10, FB_INACTIONABLE);
+	RectDraw(10, 41, 7, 2, FB_JUMP);
+	TextDraw(17, 42, 10, 0xFFFFFFFF, "AIRBORNE");
+	RectDraw(90, 42, 7, 10, FB_INACTIONABLE);
+	RectDraw(94, 42, 3, 10, FB_CLASH);
+	TextDraw(97, 42, 10, 0xFFFFFFFF, "CLASH");
+	RectDraw(150, 42, 7, 10, FB_INACTIONABLE);
+	RectDraw(154, 42, 3, 10, FB_INVULN);
+	TextDraw(157, 42, 10, 0xFFFFFFFF, "INVULN");
+	RectDraw(210, 42, 7, 10, FB_INACTIONABLE);
+	RectDraw(210, 51, 7, 2, FB_ACTIVE);
+	TextDraw(217, 42, 10, 0xFFFFFFFF, "ACTIVE PROJECTILE");
+	RectDraw(350, 42, 7, 10, FB_INACTIONABLE);
+	RectDraw(350, 51, 7, 2, FB_ASSIST_ACTIVE);
+	TextDraw(357, 42, 10, 0xFFFFFFFF, "ACTIVE ASSIST");
+}
+
+//In-game frame bar
 void drawFrameBar(int nYOverride = -1)
 {
 	if (!safeWrite())
 		return;
 
-	nFrameBarY = *(int*)(dwBaseAddress + adSharedFrameBarY);
+	nFrameBarY = *(int*)(adMBAABase + adSharedFrameBarY);
 	if (nYOverride != -1)
 	{
 		nFrameBarY = nYOverride;
@@ -768,7 +815,7 @@ void drawFrameBar(int nYOverride = -1)
 	if (nBarCounter <= DISPLAY_RANGE)
 	{
 		nForStart = 0;
-		nForEnd = DISPLAY_RANGE;
+		nForEnd = nBarCounter;
 	}
 
 	RectDraw(18, nFrameBarY, 602, 27, 0xFF000000); //Background
@@ -1682,12 +1729,19 @@ void frameDoneCallback()
 	}
 	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 1)
 	{
-		drawFrameBar(405);
+		drawFrameBar(325);
 	}
 	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 2)
 	{
 		drawFrameBar();
 	}
+
+	if (*(bool*)(dwBaseAddress + adSharedColorGuide))
+	{
+		drawColorGuide();
+	}
+
+	*(int*)(adMBAABase + adSharedTimer) = *(int*)(adMBAABase + adTrueFrameCount);
 
 	int nFrameTimer = *(int*)(dwBaseAddress + dwFrameTimer);
 	nRNGMode = *(uint8_t*)(dwBaseAddress + adSharedRNGMode);
