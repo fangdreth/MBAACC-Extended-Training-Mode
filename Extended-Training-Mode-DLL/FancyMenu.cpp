@@ -280,7 +280,7 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
-	debug.add<int>("vertex info",
+	debug.add<int>("Vertex info",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt &= 0b1;

@@ -1312,14 +1312,14 @@ void frameDoneCallback()
 	
 	static bool replayLoaded = false;
 	if (!replayLoaded) {
-		replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_241015104442.rep");
+		//replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_241015104442.rep");
 		//replayManager.load("./ReplayVS/RED_ARCUEIDxRED_ARCUEID_241017190233.rep");
 		replayLoaded = true;
 	}
 
 	static KeyState rKey('R');
 	if (rKey.keyDown()) {
-		replayManager.reset();
+		//replayManager.reset();
 	}
 	
 	renderModificationsFrameDone();
@@ -1890,12 +1890,6 @@ __declspec(naked) void _naked_pauseInputDisplay2() {
 	};
 }
 
-//DWORD _naked_newPauseCallback2_Func_Addr = 0x00432c50;
-//DWORD _naked_newPauseCallback2_Func_Addr = 0x00432b40;
-//DWORD _naked_newPauseCallback2_Func_Addr = 0x00423630;
-//DWORD _naked_newPauseCallback2_Func_Addr = 0x0046db40;
-//DWORD _naked_newPauseCallback2_Func_Addr = 0x004745e0;
-//DWORD _naked_newPauseCallback2_Func_Addr = 0x00472b20;
 DWORD _naked_newPauseCallback2_UpdateBattleScene = 0x00423630;
 DWORD _naked_newPauseCallback2_Func_TrainingPause = 0x0044c480;
 DWORD _naked_newPauseCallback2_Func_UpdateFX = 0x00453b80;
@@ -1975,12 +1969,12 @@ __declspec(naked) void _naked_pauseMenuProcessInput2() {
 __declspec(naked) void _naked_trigPauseHook() {
 	// makes sure menu doesnt open when we are in pause
 
-
 	__asm {
 		cmp _naked_newPauseCallback2_IsPaused, 1;
 		JNE _CONT;
 
 		// being here means we are in our pause section. ret.
+		
 		ret;
 
 	_CONT:
@@ -2676,7 +2670,7 @@ void battleResetCallback()
 
 void inputCallback() {
 
-	replayManager.setInputs();
+	//replayManager.setInputs();
 
 }
 
@@ -2841,7 +2835,8 @@ void initNewPauseCallback() {
 
 	patchJump(0x0044c48e, _naked_pauseMenuProcessInput2);
 
-	patchJump(0x0044c7b0, _naked_trigPauseHook);
+	// ppl wanted to open the menu while paused, so not doing this anymore
+	//patchJump(0x0044c7b0, _naked_trigPauseHook);
 
 	//patchJump(0x00477eb3, _naked_preventPauseReset);
 
