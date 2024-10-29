@@ -12,13 +12,8 @@ on:
     branches: [ "main" ]
 
 env:
-
   SOLUTION_FILE_PATH: .
-  
   BUILD_CONFIGURATION: Release
-
-permissions:
-  contents: read
 
 jobs:
   build:
