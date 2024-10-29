@@ -99,6 +99,9 @@
     <PostBuildEvent>
       <Command>if not "%MELTYPATH%"=="" (xcopy /y "$(TargetDir)$(TargetFileName)" "%MELTYPATH%")</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>call "$(ProjectDir)/../Common/genVersion.bat"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -129,6 +132,9 @@
       <AdditionalDependencies>%(AdditionalDependencies);$(IntDir)\DLLAsmFuncs.obj</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers />
     </Link>
+    <PreBuildEvent>
+      <Command>call "$(ProjectDir)/../Common/genVersion.bat"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

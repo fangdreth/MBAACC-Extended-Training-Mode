@@ -2835,7 +2835,7 @@ void initNewPauseCallback() {
 
 	patchJump(0x0044c48e, _naked_pauseMenuProcessInput2);
 
-	// ppl wanted to open the menu while paused, so not doing this anymore
+	// ppl wanted to open the menu while paused, so not doing this anymore	
 	//patchJump(0x0044c7b0, _naked_trigPauseHook);
 
 	//patchJump(0x00477eb3, _naked_preventPauseReset);

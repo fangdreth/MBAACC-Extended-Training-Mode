@@ -5,6 +5,8 @@
 #include "resource.h"
 #include "FancyMenu.h"
 
+#include "version.h"
+
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
 //void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
@@ -2455,6 +2457,10 @@ void _drawGeneralCalls() {
 
 void _drawDebugMenu();
 
+void _drawBuildInfo() {
+	TextDraw(640 - (7 * 10), 0, 10, 0xFF42e5f4, GIT_VERSION);
+}
+
 void drawPowerInfo() {
 	
 	static SYSTEM_POWER_STATUS powerStatus;
@@ -2680,6 +2686,7 @@ void __stdcall _doDrawCalls() {
 	_drawLog();
 	_drawMiscInfo();
 	_drawDebugMenu();
+	_drawBuildInfo();
 
 	// -- ACTUAL RENDERING --
 	backupRenderState();
