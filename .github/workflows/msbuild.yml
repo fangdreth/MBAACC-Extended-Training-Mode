@@ -15,6 +15,9 @@ env:
   SOLUTION_FILE_PATH: .
   BUILD_CONFIGURATION: Release
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
