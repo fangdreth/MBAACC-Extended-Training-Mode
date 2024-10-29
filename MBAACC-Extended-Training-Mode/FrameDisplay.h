@@ -818,19 +818,18 @@ void UpdateBars(Player& P, Player& Assist)
 		else
 		{
 			sFont = FD_INACTIONABLE;
-		}
-
-		if (bDisplayCancels)
-		{
-			if (P.nState_Flagset2 & 1)
+			if (bDisplayCancels)
 			{
-				sFont = FD_UNDERLINE;
+				if (P.nState_Flagset2 & 1)
+				{
+					sFont = FD_UNDERLINE;
+				}
+				else
+				{
+					sFont = FD_CLEAR;
+				}
+				sFont += SPECIAL_CANCEL_FONTS[P.cState_SpecialCancel] + NORMAL_CANCEL_FONTS[P.cState_NormalCancel];
 			}
-			else
-			{
-				sFont = FD_CLEAR;
-			}
-			sFont += SPECIAL_CANCEL_FONTS[P.cState_SpecialCancel] + NORMAL_CANCEL_FONTS[P.cState_NormalCancel];
 		}
 	}
 	else //Fully actionable
