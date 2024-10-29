@@ -5,7 +5,6 @@
 #include "resource.h"
 #include "FancyMenu.h"
 
-#include "version.h"
 
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
@@ -2458,7 +2457,11 @@ void _drawGeneralCalls() {
 void _drawDebugMenu();
 
 void _drawBuildInfo() {
-	TextDraw(640 - (7 * 10), 0, 10, 0xFF42e5f4, GIT_VERSION);
+	#ifdef BLEEDING
+		TextDraw(640 - (7 * 10), 0, 10, 0xFFbd1a0b, GIT_VERSION);
+	#else
+		TextDraw(640 - (7 * 10), 0, 10, 0xFF42e5f4, GIT_VERSION);
+	#endif
 }
 
 void drawPowerInfo() {

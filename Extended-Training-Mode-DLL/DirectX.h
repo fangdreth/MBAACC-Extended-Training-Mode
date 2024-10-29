@@ -81,19 +81,37 @@ public:
 		res.min = buffer.data[0];
 		res.max = buffer.data[0];
 		res.mean = 0.0;
+		int tempSize = size;
 		for (int i = 0; i < size; i++) {
+			if (std::isnan(buffer.data[i]) || std::isinf(buffer.data[i])) {
+				tempSize--;
+				continue;	
+			}
 			res.mean += buffer.data[i];
 			res.min = MIN(res.min, buffer.data[i]);
 			res.max = MAX(res.max, buffer.data[i]);
 		}
-		res.mean /= ((float)size);
+
+		if (tempSize != 0) {
+			res.mean /= ((float)tempSize);
+		} else {
+			res.mean = NAN;
+		}
 
 		res.stdev = 0.0f;
 		for (int i = 0; i < size; i++) {
+			if (std::isnan(buffer.data[i]) || std::isinf(buffer.data[i])) {
+				continue;
+			}
 			res.stdev += (buffer.data[i] - res.mean) * (buffer.data[i] - res.mean);
 		}
-		res.stdev /= ((float)size - 1);
-		res.stdev = sqrtf(res.stdev);
+
+		if (tempSize != 0) {
+			res.stdev /= ((float)tempSize - 1);
+			res.stdev = sqrtf(res.stdev);
+		} else {
+			res.stdev = NAN;
+		}
 
 		return res;
 	}

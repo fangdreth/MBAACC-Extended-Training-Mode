@@ -14,6 +14,7 @@ on:
 env:
   SOLUTION_FILE_PATH: .
   BUILD_CONFIGURATION: Release
+  BLEEDING: 1
 
 permissions:
   contents: write
