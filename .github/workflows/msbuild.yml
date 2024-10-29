@@ -8,8 +8,6 @@ name: MSBuild
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 env:
   # Path to the solution file relative to the root of the project.
@@ -48,3 +46,17 @@ jobs:
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Platform="x86" /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Upload files
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: bleeding-edge
+        name: Bleeding Edge
+        prerelease: true
+        fail_on_unmatched_files: true
+        files: |
+          ./Release/Extended-Training-Mode-DLL.dll
+          ./Release/MBAACC-Extended-Training-Mode.exe
+        body: | 
+          This is a bleeding edge release. There are bugs. To get an actual release, please scroll down.
+          
