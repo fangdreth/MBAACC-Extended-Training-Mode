@@ -363,6 +363,7 @@ int main(int argc, char* argv[])
             bSimpleFrameInfo = false;
         ReadFromRegistry(L"DisplayFreeze", &bDisplayFreeze);
         ReadFromRegistry(L"DisplayInputs", &bDisplayInputs);
+        ReadFromRegistry(L"DisplayCancels", &bDisplayCancels);
         ReadFromRegistry(L"HitboxStyle", &nHitboxStyle);
         ReadFromRegistry(L"FrameBarY", &nFrameBarY);
         ReadFromRegistry(L"P1InputDisplay", &nP1InputDisplay);
@@ -1074,8 +1075,8 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcFrameData_11, 11, 0);
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcFrameData_11, 11, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcDisplayFreeze_16, 16, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcDisplayInputs_15, 15, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcShowFreezeInputs_21, 21, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcShowCancelWindows_20, 20, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcScrollDisplay_15, 15, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcColorGuide_12, 12, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcDrawOnScreen_15, 15, 0);
@@ -1708,23 +1709,23 @@ int main(int argc, char* argv[])
                                 }
                                 case 2:
                                 {
-                                    char pcTemp64[64] = "Display {freeze frames} in the frame display.";
+                                    char pcTemp64[64] = "Display {freeze frames} and {inputs} in the frame display.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (bDisplayFreeze)
-                                        strcpy_s(pcTemp64, ">Freeze frames {will be displayed.");
+                                        strcpy_s(pcTemp64, ">Freeze frames and inputs {will be displayed.");
                                     else
-                                        strcpy_s(pcTemp64, ">Freeze frames {will not be displayed.");
+                                        strcpy_s(pcTemp64, ">Freeze frames and inputs {will not be displayed.");
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
                                 case 3:
                                 {
-                                    char pcTemp64[64] = "Display {controller inputs} in the frame display.";
+                                    char pcTemp64[64] = "Display {cancel windows} in the frame display.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (bDisplayInputs)
-                                        strcpy_s(pcTemp64, ">Controller inputs {will be displayed.");
+                                        strcpy_s(pcTemp64, ">Cancel windows {will be displayed.");
                                     else
-                                        strcpy_s(pcTemp64, ">Controller inputs {will not be displayed.");
+                                        strcpy_s(pcTemp64, ">Cancel windows {will not be displayed.");
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
@@ -2489,6 +2490,9 @@ int main(int argc, char* argv[])
                                 }
                                 else if (nOldEnemyDefenseIndex < nEnemyDefenseIndex)// right
                                 {
+                                    bDisplayInputs = true;
+                                    SetRegistryValue(L"DisplayInputs", bDisplayInputs);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayInputs), &bDisplayInputs, 1, 0);
                                     bDisplayFreeze = true;
                                     SetRegistryValue(L"DisplayFreeze", bDisplayFreeze);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayFreeze), &bDisplayFreeze, 1, 0);
@@ -2498,19 +2502,13 @@ int main(int argc, char* argv[])
                                     nOldEnemyDefenseTypeIndex = nEnemyDefenseTypeIndex;
                                 else if (nOldEnemyDefenseTypeIndex > nEnemyDefenseTypeIndex)// left
                                 {
-                                    bDisplayInputs = false;
-                                    SetRegistryValue(L"DisplayInputs", bDisplayInputs);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayInputs), &bDisplayInputs, 1, 0);
-                                    system("cls");
+                                    bDisplayCancels = false;
+                                    SetRegistryValue(L"DisplayCancels", bDisplayCancels);
                                 }
                                 else if (nOldEnemyDefenseTypeIndex < nEnemyDefenseTypeIndex)// right
                                 {
-                                    bDisplayInputs = true;
-                                    SetRegistryValue(L"DisplayInputs", bDisplayInputs);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayInputs), &bDisplayInputs, 1, 0);
-                                    bDisplayFreeze = true;
-                                    SetRegistryValue(L"DisplayFreeze", bDisplayFreeze);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayFreeze), &bDisplayFreeze, 1, 0);
+                                    bDisplayCancels = true;
+                                    SetRegistryValue(L"DisplayCancels", bDisplayCancels);
                                 }
 
                                 if (nOldAirRecoveryIndex == -1)
@@ -3696,7 +3694,7 @@ int main(int argc, char* argv[])
                                     nEnemyDefenseIndex = 5;
                                 }
 
-                                if (!bDisplayInputs)
+                                if (!bDisplayCancels)
                                 {
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcOff_4, 4, 0);
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcOff_4, 4, 0);

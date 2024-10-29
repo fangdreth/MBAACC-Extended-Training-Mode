@@ -194,6 +194,7 @@ const char CH_MAP[3] = { ' ', 'H', 'L' };
 // Foreground color -> \x1b[38;2;R;G;Bm
 // Background color -> \x1b[48;2;R;G;Bm
 const std::string FD_CLEAR = "\x1b[0m";
+const std::string FD_ITALICS = "\x1b[3m";
 const std::string FD_UNDERLINE = "\x1b[4m";
 const std::string FD_INACTIONABLE = "\x1b[38;2;255;255;255m\x1b[48;2;65;200;0m";
 const std::string FD_JUMP = "\x1b[38;2;177;177;255m\x1b[48;2;241;224;132m";
@@ -217,6 +218,11 @@ const std::string FD_A_PRESSED = "\x1b[38;2;255;143;169m\x1b[48;2;170;27;58m";
 const std::string FD_B_PRESSED = "\x1b[38;2;255;255;137m\x1b[48;2;169;91;7m";
 const std::string FD_C_PRESSED = "\x1b[38;2;143;255;195m\x1b[48;2;18;132;62m";
 const std::string FD_D_PRESSED = "\x1b[38;2;137;255;255m\x1b[48;2;21;66;161m";
+
+const std::string FD_SPECIAL_GUIDE_BG = "\x1b[48;2;65;200;0m"; 
+const std::string SPECIAL_CANCEL_FONTS[4] = { "\x1b[38;2;255;255;255m", "\x1b[38;2;0;0;0m", "\x1b[38;2;128;128;128m", "\x1b[38;2;0;0;0m" };
+const std::string FD_NORMAL_GUIDE_FG = "\x1b[38;2;255;255;255m";
+const std::string NORMAL_CANCEL_FONTS[4] = { "\x1b[48;2;65;200;0m", "\x1b[48;2;65;150;30m", "\x1b[48;2;65;80;65m", "\x1b[48;2;65;150;30m" };
 
 const DWORD FB_INACTIONABLE = 0xFF41C800;
 const DWORD FB_JUMP = 0xFFF1E084;
@@ -584,8 +590,8 @@ const char pcOffline_8[8] = "OFFLINE";
 const char pcFrameData_11[11] = "FRAME DATA";
 const char pcSaveStateSlot_16[16] = "SAVE STATE SLOT";
 const char pcSaveState_11[11] = "SAVE STATE";
-const char pcDisplayFreeze_16[16] = "DISPLAY FREEZE";
-const char pcDisplayInputs_15[15] = "DISPLAY INPUTS";
+const char pcShowFreezeInputs_21[21] = "SHOW FREEZE & INPUTS";
+const char pcShowCancelWindows_20[20] = "SHOW CANCEL WINDOWS";
 const char pcScrollDisplay_15[15] = "SCROLL DISPLAY";
 const char pcColorGuide_12[12] = "COLOR GUIDE";
 const char pcAdvanced_9[9] = "ADVANCED";

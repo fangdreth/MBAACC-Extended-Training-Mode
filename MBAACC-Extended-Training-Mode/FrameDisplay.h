@@ -42,6 +42,7 @@ static bool bInExtendedSettings = false;
 static bool bSimpleFrameInfo = true;
 static bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
 static bool bDisplayInputs = false;
+static bool bDisplayCancels = false;
 static bool bPrintColorGuide = false;
 static bool bLoadRNG = false;
 char cDisplayOptions = 0;
@@ -695,8 +696,16 @@ void PrintColorGuide()
 	std::cout << FD_A_PRESSED << "00" << FD_CLEAR << " A PRESSED\t\t\t";
 	std::cout << FD_B_PRESSED << "00" << FD_CLEAR << " B PRESSED\n";
 	std::cout << FD_C_PRESSED << "00" << FD_CLEAR << " C PRESSED\t\t\t";
-	std::cout << FD_D_PRESSED << "00" << FD_CLEAR << " D PRESSED\n";
+	std::cout << FD_D_PRESSED << "00" << FD_CLEAR << " D PRESSED\n\n";
 	
+	std::cout << "WHEN \"SHOW CANCELS\" IS TURNED ON:\n";
+	std::cout << NORMAL_CANCEL_FONTS[0] + FD_NORMAL_GUIDE_FG << "00" << FD_CLEAR << " NO NORMAL CANCEL\t\t";
+	std::cout << NORMAL_CANCEL_FONTS[1] + FD_NORMAL_GUIDE_FG << "00" << FD_CLEAR << " NORMAL CANCEL ON (SUCCESSFUL) HIT\n";
+	std::cout << NORMAL_CANCEL_FONTS[2] + FD_NORMAL_GUIDE_FG << "00" << FD_CLEAR << " NORMAL CANCEL ALWAYS\n";
+	std::cout << SPECIAL_CANCEL_FONTS[0] + FD_SPECIAL_GUIDE_BG << "00" << FD_CLEAR << " NO SPECIAL CANCEL\t\t";
+	std::cout << SPECIAL_CANCEL_FONTS[1] + FD_SPECIAL_GUIDE_BG << "00" << FD_CLEAR << " SPECIAL CANCEL ON (SUCCESSFUL) HIT\n";
+	std::cout << SPECIAL_CANCEL_FONTS[2] + FD_SPECIAL_GUIDE_BG << "00" << FD_CLEAR << " SPECIAL CANCEL ALWAYS\t";
+	std::cout << FD_INACTIONABLE + FD_UNDERLINE << "00" << FD_CLEAR << " EX CANCEL\n";
 }
 
 void CalculateAdvantage(Player& P1, Player& P2)
@@ -809,6 +818,19 @@ void UpdateBars(Player& P, Player& Assist)
 		else
 		{
 			sFont = FD_INACTIONABLE;
+		}
+
+		if (bDisplayCancels)
+		{
+			if (P.nState_Flagset2 & 1)
+			{
+				sFont = FD_UNDERLINE;
+			}
+			else
+			{
+				sFont = FD_CLEAR;
+			}
+			sFont += SPECIAL_CANCEL_FONTS[P.cState_SpecialCancel] + NORMAL_CANCEL_FONTS[P.cState_NormalCancel];
 		}
 	}
 	else //Fully actionable
