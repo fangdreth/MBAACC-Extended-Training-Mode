@@ -702,7 +702,7 @@ void PrintColorGuide()
 	std::cout << FD_C_PRESSED << "00" << FD_CLEAR << " C PRESSED\t\t\t";
 	std::cout << FD_D_PRESSED << "00" << FD_CLEAR << " D PRESSED\n\n";
 	
-	std::cout << "WHEN \"SHOW CANCELS\" IS TURNED ON:\n";
+	std::cout << "WHEN \"SHOW CANCEL WINDOWS\" IS TURNED ON:\n";
 	std::cout << NORMAL_CANCEL_FONTS[0] + FD_NORMAL_GUIDE_FG << "00" << FD_CLEAR << " NO NORMAL CANCEL\t\t";
 	std::cout << NORMAL_CANCEL_FONTS[1] + FD_NORMAL_GUIDE_FG << "00" << FD_CLEAR << " NORMAL CANCEL ON (SUCCESSFUL) HIT\n";
 	std::cout << NORMAL_CANCEL_FONTS[2] + FD_NORMAL_GUIDE_FG << "00" << FD_CLEAR << " NORMAL CANCEL ALWAYS\n";
