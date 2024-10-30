@@ -1,7 +1,5 @@
 #pragma once
 
-#include "version.h"
-
 #include "..\Common\Common.h"
 //#include <ws2tcpip.h>
 //#include <winsock2.h>
@@ -152,6 +150,8 @@ extern DWORD unpausedFrameCount;
 extern ADDRESS dwCasterBaseAddress;
 
 extern bool logSaveState;
+
+extern bool enableTAS;
 
 // -----
 

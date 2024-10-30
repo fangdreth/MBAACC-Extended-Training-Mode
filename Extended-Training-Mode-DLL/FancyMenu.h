@@ -1,6 +1,5 @@
 #pragma once
 
-#include "DirectX.h"
 #include <any>
 #include <vector>
 #include <functional>

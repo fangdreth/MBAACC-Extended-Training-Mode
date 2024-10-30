@@ -1,4 +1,5 @@
 
+#include "DirectX.h"
 #include "FancyMenu.h"
 
 Menu<int> baseMenu("Base");
@@ -113,7 +114,7 @@ void initMenu() {
 		//return opt & 0b1 ? "ON" : "OFF";
 
 		static char buffer[256];
-		snprintf(buffer, 256, "opt is: %5.2f", opt);
+		snprintf(buffer, 256, "%5.2f", opt);
 		return std::string(buffer);
 	};
 
@@ -312,6 +313,11 @@ void initMenu() {
 
 	debug.add<int>("Verbose FPS Info",
 		getDefaultOnOffOptionFunc(&logVerboseFps),
+		defaultOnOffNameFunc
+	);
+
+	debug.add<int>("TAS on reset",
+		getDefaultOnOffOptionFunc(&enableTAS),
 		defaultOnOffNameFunc
 	);
 

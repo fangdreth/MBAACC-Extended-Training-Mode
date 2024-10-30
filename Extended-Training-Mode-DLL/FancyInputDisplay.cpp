@@ -1,4 +1,5 @@
 
+#include "DirectX.h"
 #include "FancyInputDisplay.h"
 
 InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f, 124.0f, 24);

@@ -33,6 +33,8 @@ ADDRESS dwCasterBaseAddress = 0;
 DWORD dwDevice = 0; // MASM is horrid when it comes to writing pointers vs value of pointer bc it has type checking. thats why this cant be a pointer
 IDirect3DDevice9* device = NULL;
 
+bool enableTAS = false;
+
 const ADDRESS INPUTDISPLAYTOGGLE = (dwBaseAddress + 0x001585f8);
 
 DWORD tempRegister1;
