@@ -736,6 +736,92 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 			}
 		}
 	}
+
+	if (!isProjectile) {
+		char cCondition1Type = 0;
+		char cCondition2Type = 0;
+		if (*(char*)(animDataPtr + adAnimationData_ConditionCount) > 0)
+		{
+			DWORD dwPointer = *(DWORD*)(animDataPtr + adAnimationData_ConditionsPointer);
+			if (dwPointer != 0)
+			{
+				DWORD dwC1Pointer = *(DWORD*)(dwPointer + adConditions_Condition1Pointer);
+				if (dwC1Pointer != 0)
+				{
+					cCondition1Type = *(char*)(dwC1Pointer + adCondition_Type);
+				}
+				if (*(char*)(animDataPtr + adAnimationData_ConditionCount) > 1)
+				{
+					DWORD dwC2Pointer = *(DWORD*)(dwPointer + adConditions_Condition2Pointer);
+					if (dwC2Pointer != 0)
+					{
+						cCondition2Type = *(char*)(dwC2Pointer + adCondition_Type);
+					}
+				}
+			}
+		}
+		if (cCondition1Type == 52 || cCondition2Type == 52) //Throw boxes
+		{
+			if (*(char*)(*(DWORD*)(animDataPtr + adAnimationData_StateDataPointer) + adStateData_Stance) == 1)
+			{
+				drawColor = 0xFFC00080;
+				boxType = BoxType::Hitbox;
+
+				short x1 = 0;
+				short x2 = 120;
+				short y1 = -120;
+				short y2 = 60;
+
+				tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
+				x1Cord = ((float)x1) * (tempFloat + tempFloat) + (float)xCamTemp;
+				x2Cord = ((float)x2) * (float)isRight * (windowWidth / 640.0f) * cameraZoom + (float)xCamTemp;
+
+				y1Cord = ((float)y1) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp;
+				y2Cord = ((float)y2) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp;
+
+				x1Cord = ((float)x1Cord * (640.0f / windowWidth));
+				x2Cord = ((float)x2Cord * (640.0f / windowWidth));
+				y1Cord = ((float)y1Cord * (480.0f / windowHeight));
+				y2Cord = ((float)y2Cord * (480.0f / windowHeight));
+
+				if (facingLeft) {
+					(*res)[static_cast<int>(boxType)].emplace_back(BoxData(x2Cord, y1Cord, (x1Cord - x2Cord), (y2Cord - y1Cord)));
+				}
+				else {
+					(*res)[static_cast<int>(boxType)].emplace_back(BoxData(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord)));
+				}
+			}
+			else
+			{
+				drawColor = 0xFFC00080;
+				boxType = BoxType::Hitbox;
+
+				short x1 = 0;
+				short x2 = *(short*)(*(DWORD*)(objAddr + 0x33C) + 0x54) != 0 ? *(short*)(*(DWORD*)(objAddr + 0x33C) + 0x54) * 2 : 96;
+				short y1 = -120;
+				short y2 = 0;
+
+				tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
+				x1Cord = ((float)x1) * (tempFloat + tempFloat) + (float)xCamTemp;
+				x2Cord = ((float)x2) * (float)isRight * (windowWidth / 640.0f) * cameraZoom + (float)xCamTemp;
+
+				y1Cord = ((float)y1) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp;
+				y2Cord = ((float)y2) * (windowHeight / 480.0f) * cameraZoom + (float)yCamTemp;
+
+				x1Cord = ((float)x1Cord * (640.0f / windowWidth));
+				x2Cord = ((float)x2Cord * (640.0f / windowWidth));
+				y1Cord = ((float)y1Cord * (480.0f / windowHeight));
+				y2Cord = ((float)y2Cord * (480.0f / windowHeight));
+
+				if (facingLeft) {
+					(*res)[static_cast<int>(boxType)].emplace_back(BoxData(x2Cord, y1Cord, (x1Cord - x2Cord), (y2Cord - y1Cord)));
+				}
+				else {
+					(*res)[static_cast<int>(boxType)].emplace_back(BoxData(x1Cord, y1Cord, (x2Cord - x1Cord), (y2Cord - y1Cord)));
+				}
+			}
+		}
+	}
 	//log("-----");
 
 	DrawHitboxes(res);
