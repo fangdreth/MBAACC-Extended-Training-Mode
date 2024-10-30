@@ -4,6 +4,7 @@
 #include "FrameBar.h"
 #include "SaveState.h"
 #include "ReplayManager.h"
+#include "TASManager.h"
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
@@ -2741,7 +2742,7 @@ __declspec(naked) void _naked_dualInputDisplay() {
 
 // reset funcs
 
-void battleResetCallback()
+void __stdcall battleResetCallback()
 {
 	nTempP1MeterGain = 0;
 	nTempP2MeterGain = 0;
@@ -2749,9 +2750,19 @@ void battleResetCallback()
 	nP2MeterGain = 0;
 	prevComboPtr = 0;
 
-	PUSH_ALL;
 	dualInputDisplayReset();
+
+	TASManager::load("TAS.txt");
+	
+}
+
+__declspec(naked) void _naked_battleResetCallback() {
+	PUSH_ALL;
+	battleResetCallback();
 	POP_ALL;
+	__asm {
+		ret;
+	}
 }
 
 // input funcs
@@ -2893,7 +2904,7 @@ void initBattleResetCallback()
 	patchJump(patchAddr, 0x004234e1);
 
 	void* funcAddr = (void*)0x004234e4;
-	patchFunction(funcAddr, battleResetCallback);
+	patchFunction(funcAddr, _naked_battleResetCallback);
 
 	// this patch is a bit funky, since we need to have ret dec the stack pointer
 	BYTE tempCode[3] = {0xc2, 0x04, 0x00};

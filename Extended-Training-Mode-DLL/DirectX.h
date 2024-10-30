@@ -993,7 +993,7 @@ void DrawLog(char* s);
 
 // -----
 
-#include "FancyInputDisplay.h" // really need to switch the program over to proper .cpp files
+//#include "FancyInputDisplay.h" // really need to switch the program over to proper .cpp files
 
 // -----
 

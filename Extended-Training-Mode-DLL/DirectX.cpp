@@ -4,7 +4,8 @@
 #include "DirectX.h"
 #include "resource.h"
 #include "FancyMenu.h"
-#include "version.h"	
+#include "FancyInputDisplay.h"
+//#include "version.h"	
 
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
@@ -2467,11 +2468,14 @@ void _drawGeneralCalls() {
 void _drawDebugMenu();
 
 void _drawBuildInfo() {
-	#ifdef BLEEDING
-		TextDraw(640 - 5 - (13 * 10), 0, 10, 0xFFbd1a0b, "BLEEDING " GIT_VERSION);
-	#else
-		TextDraw(640 - (7 * 10), 0, 10, 0xFF42e5f4, GIT_VERSION);
-	#endif
+
+	DWORD col = 0xFF42e5f4;
+	if (isBleeding()) {
+		col = 0xFFbd1a0b;
+	}
+
+	TextDraw(640 - (7 * 10), 0, 10, col, getBuildInfo());
+
 }
 
 void drawPowerInfo() {

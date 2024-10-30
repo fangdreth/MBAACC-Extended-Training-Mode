@@ -189,6 +189,7 @@
     <ClInclude Include="ReplayManager.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SaveState.h" />
+    <ClInclude Include="TASManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DirectX.cpp" />
@@ -197,6 +198,8 @@
     <ClCompile Include="FancyMenu.cpp" />
     <ClCompile Include="ReplayManager.cpp" />
     <ClCompile Include="SaveState.cpp" />
+    <ClCompile Include="TASManager.cpp" />
+    <ClCompile Include="version.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DLLAsmFuncs.asm">

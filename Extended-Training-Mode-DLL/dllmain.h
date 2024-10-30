@@ -155,6 +155,10 @@ extern bool enableTAS;
 
 // -----
 
+bool isBleeding();
+
+const char* getBuildInfo();
+
 void __stdcall ___log(const char* msg);
 
 void __stdcall log(const char* format, ...);
