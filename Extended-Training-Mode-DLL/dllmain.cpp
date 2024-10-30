@@ -1932,8 +1932,8 @@ void newPauseCallback2()
 	
 	if (!_naked_newPauseCallback2_IsPaused) {
 		unpausedFrameCount++;
+		TASManager::incInputs();
 	}
-
 }
 
 DWORD _naked_pauseInputDisplay2_FUN_004790a0 = 0x004790a0;
@@ -2772,6 +2772,8 @@ __declspec(naked) void _naked_battleResetCallback() {
 void inputCallback() {
 
 	//replayManager.setInputs();
+		
+	TASManager::setInputs();	
 
 }
 

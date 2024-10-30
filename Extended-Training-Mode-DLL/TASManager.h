@@ -15,6 +15,10 @@ typedef struct TASItem {
         uint8_t data;
     };
     uint8_t _padding;
+    // -----
+    void logItem() {
+        log("%.4d %d %d%d%d%d", length, dir, a, b, c, d);
+    }
 } TASItem;
 
 static_assert(sizeof(TASItem) == 4, "TASItem must be a byte!");
@@ -28,7 +32,13 @@ namespace TASManager {
 
 	void reset();
 
+    void setInputs();
+    void incInputs();
 
+    void undoInputForPause();
+
+    extern int tasIndex;
+    extern int tasCurrentLen;
     extern std::vector<TASItem> tasData;
 
 };
