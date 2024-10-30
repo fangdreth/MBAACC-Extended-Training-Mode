@@ -13,6 +13,8 @@ void __stdcall netlog(const char* format, ...);
 char cGameState = 0; // 1:In-Game 2:Title 3:Logos 8:Loading 9:Arcade Cutscene 10:Next Stage 12:Options 20:CSS 25:Main Menu
 char cP1Freeze = 0; //Used for EXFlashes where initiator still moves (ex. Satsuki 214C winds up during flash)
 char cP2Freeze = 0;
+char cP3Freeze = 0;
+char cP4Freeze = 0;
 int nFrameCount = 0; //Counts slower during slowdown
 int nLastFrameCount = 0;
 int nTrueFrameCount = 0; //Counts all frames during slowdown
@@ -131,6 +133,8 @@ void UpdateGlobals(HANDLE hMBAAHandle)
 	//nLastTrueFrameCount = nTrueFrameCount;
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1Freeze), &cP1Freeze, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2Freeze), &cP2Freeze, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP3Freeze), &cP3Freeze, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP4Freeze), &cP4Freeze, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adFrameCount), &nFrameCount, 4, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adTrueFrameCount), &nTrueFrameCount, 4, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adGlobalFreeze), &cGlobalFreeze, 1, 0);
@@ -288,7 +292,7 @@ void UpdatePlayers(HANDLE hMBAAHandle)
 		P.bLastOnRight = P.bIsOnRight;
 		P.cLastStance = P.cState_Stance;
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase), &P, 1, 0);
-		if (!P.cExists) return;
+		if (!P.cExists) continue;
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.adPlayerBase), &P, 0x328, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_StateDataPointer), &P.dwAnimation_StateDataPointer, 4, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionCount), &P.cAnimation_ConditionCount, 1, 0);
@@ -851,7 +855,7 @@ void UpdateBars(Player& P, Player& Assist)
 		}
 	}
 
-	if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0) //Screen is frozen
+	if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0 || cP3Freeze != 0 || cP4Freeze != 0) //Screen is frozen
 	{
 		sFont = FD_FREEZE;
 	}
@@ -917,7 +921,7 @@ void UpdateBars(Player& P, Player& Assist)
 	P.sBar2[nBarCounter % BAR_MEMORY_SIZE][1] = sBarValue;
 
 	//Bar 3 - Projectile and assist active frames
-	if (Assist.dwAttackDataPointer != 0)
+	if (Assist.cExists && Assist.dwAttackDataPointer != 0)
 	{
 		sBarValue = std::format("{:2}", Assist.nActiveCounter % 100);
 		if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0)
@@ -1091,8 +1095,8 @@ void BarHandling(HANDLE hMBAAHandle, Player &P1, Player &P2, Player& P1Assist, P
 		P1.nInactionableFrames != 0 || P2.nInactionableFrames ||
 		P1.nState_Flagset2 != 0 || P2.nState_Flagset2 != 0 ||
 		P1.nActiveProjectileCount != 0 || P2.nActiveProjectileCount ||
-		P1Assist.dwAttackDataPointer != 0 || P2Assist.dwAttackDataPointer ||
-		P1Assist.nActiveProjectileCount != 0 || P2Assist.nActiveProjectileCount != 0
+		(P1Assist.cExists && (P1Assist.dwAttackDataPointer != 0 || P1Assist.nActiveProjectileCount != 0) ) ||
+		(P2Assist.cExists && (P2Assist.dwAttackDataPointer || P2Assist.nActiveProjectileCount != 0) )
 		); //True if either char is inactionable, can't block, has an active projectile, has an active assist, or has an active assist projectile
 
 	if (DoBarUpdate)
@@ -1149,20 +1153,18 @@ void BarHandling(HANDLE hMBAAHandle, Player &P1, Player &P2, Player& P1Assist, P
 			IncrementActive(P2);
 			HandleInactive(P1);
 			HandleInactive(P2);
-			UpdateBars(P1, P1Assist);
-			UpdateBars(P2, P2Assist);
 			if (P1Assist.cExists)
 			{
 				IncrementActive(P1Assist);
 				UpdateBars(P1Assist, P1);
-
 			}
 			if (P2Assist.cExists)
 			{
 				IncrementActive(P2Assist);
 				UpdateBars(P2Assist, P2);
-
 			}
+			UpdateBars(P1, P1Assist);
+			UpdateBars(P2, P2Assist);
 			nBarCounter += nTrueFrameCount - nLastTrueFrameCount;
 		}
 	}
