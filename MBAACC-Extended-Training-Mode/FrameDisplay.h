@@ -1064,9 +1064,9 @@ void UpdateBars(Player& P, Player& Assist)
 
 void IncrementActive(Player& P)
 {
-	if (P.dwAttackDataPointer != 0 && P.cHitstop == 0 && P.nFrameCount != P.nLastFrameCount)
+	if (P.dwAttackDataPointer != 0 && P.cHitstop == 0 && nFrameCount != nLastFrameCount)
 	{
-		P.nActiveCounter += P.nFrameCount - P.nLastFrameCount;
+		P.nActiveCounter += nFrameCount - nLastFrameCount;
 	}
 	else if (P.dwAttackDataPointer == 0)
 	{
