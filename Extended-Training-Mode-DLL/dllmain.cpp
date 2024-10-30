@@ -764,8 +764,8 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 		{
 			if (*(char*)(*(DWORD*)(animDataPtr + adAnimationData_StateDataPointer) + adStateData_Stance) == 1)
 			{
-				drawColor = 0xFFC00080;
-				boxType = BoxType::Hitbox;
+	
+				boxType = BoxType::Throw;
 
 				short x1 = 0;
 				short x2 = 120;
@@ -794,7 +794,7 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 			else
 			{
 				drawColor = 0xFFC00080;
-				boxType = BoxType::Hitbox;
+				boxType = BoxType::Throw;
 
 				short x1 = 0;
 				short x2 = *(short*)(*(DWORD*)(objAddr + 0x33C) + 0x54) != 0 ? *(short*)(*(DWORD*)(objAddr + 0x33C) + 0x54) * 2 : 96;

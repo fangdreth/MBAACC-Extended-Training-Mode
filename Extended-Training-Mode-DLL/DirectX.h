@@ -727,6 +727,7 @@ enum class BoxType {
 	Blue, // what is this
 	Shield, // Purple, also like,,, vaki??
 	Reflect, // 
+	Throw,
 
 	_Count, // dont use
 };
@@ -923,7 +924,8 @@ constexpr DWORD arrNormalColors[] = {
 	0xFF00FF00, // hurtbox
 	0xFFFFFF00, // clash
 	0xFF0000FF, // projectile
-	0xFFF54298 // shield
+	0xFFF54298, // shield
+	0xFFC00080
 };
 
 constexpr DWORD arrColorBlindColors[] = {
@@ -933,7 +935,8 @@ constexpr DWORD arrColorBlindColors[] = {
 	0xFF1403ff, // hurtbox
 	0xFFFFFF00, // clash
 	0xFF00ffcf, // projectile
-	0xFFffffff // shield
+	0xFFffffff, // shield
+	0xFFC00080
 };
 
 void HitboxBatchDrawNoBlend(const BoxObjects* b);

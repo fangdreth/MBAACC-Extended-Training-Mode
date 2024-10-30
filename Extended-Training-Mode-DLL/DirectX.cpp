@@ -2057,6 +2057,11 @@ void HitboxBatchDrawNoBlend(const BoxObjects* b) {
 		drawSingleHitbox((*b)[i][0], arrColors[i]);
 	}
 
+	i = static_cast<int>(BoxType::Throw);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], arrColors[i]);
+	}
+
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
 
@@ -2130,6 +2135,11 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 	}
 
 	i = static_cast<int>(BoxType::Shield);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitboxBlend((*b)[i][0], arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Throw);
 	if ((*b)[i].size() == 1) {
 		drawSingleHitboxBlend((*b)[i][0], arrColors[i]);
 	}
