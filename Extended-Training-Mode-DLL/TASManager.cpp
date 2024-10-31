@@ -13,6 +13,16 @@ std::string strip(const std::string& s) {
 	return res;
 }
 
+int safeStoi(const std::string& s) {
+	int res = -1;
+	try {
+		res = std::stoi(s);
+	} catch (...) {
+		return -1;
+	}
+	return res;
+}
+
 namespace TASManager {
 	
 	std::vector<TASItem> tasData;
@@ -20,6 +30,9 @@ namespace TASManager {
 	int tasCurrentLen = 0;
 
 	void parseLine(const std::string& l) {
+		
+		// this parser is way out of line, and needs to be refactored
+
 		TASItem res;
 		res.data = 0;
 
@@ -56,6 +69,35 @@ namespace TASManager {
 		if (std::regex_match(output, match, re)) {
 			if (match[1].matched) {
 				
+				if (match[2].matched && safeStoi(match[2].str()) != -1) {
+					if (match[1].str() == "p1pos") {
+						res.command = TASCommand::P1XPos;
+						res.commandData = safeStoi(match[2].str());
+						tasData.push_back(res);
+						return;
+					}  else if (match[1].str() == "p2pos") {
+						res.command = TASCommand::P2XPos;
+						res.commandData = safeStoi(match[2].str());
+						tasData.push_back(res);
+						return;
+					} else if (match[1].str() == "p1meter") {
+						res.command = TASCommand::P1Meter;
+						res.commandData = safeStoi(match[2].str());
+						tasData.push_back(res);
+						return;
+					} else if (match[1].str() == "p2meter") {
+						res.command = TASCommand::P2Meter;
+						res.commandData = safeStoi(match[2].str());
+						tasData.push_back(res);
+						return;
+					} else if (match[1].str() == "rng") {
+						res.command = TASCommand::RNG;
+						res.commandData = safeStoi(match[2].str());
+						tasData.push_back(res);
+						return;
+					}
+				}
+
 				try {
 					res.length = std::stoi(match[1].str());
 				} catch(...) {
@@ -228,16 +270,48 @@ namespace TASManager {
 			return;
 		}
 
-		int playerIndex = 0;
-		DWORD baseAddr = 0x00771398 + (0x2C * playerIndex);
+		if (tasData[tasIndex].command == TASCommand::Nothing) {
 
-		// dir
-		*(BYTE*)(baseAddr + 0) = tasData[tasIndex].dir;
-		// ABCD
-		*(BYTE*)(baseAddr + 1) = tasData[tasIndex].a;
-		*(BYTE*)(baseAddr + 2) = tasData[tasIndex].b;
-		*(BYTE*)(baseAddr + 3) = tasData[tasIndex].c;
-		*(BYTE*)(baseAddr + 4) = tasData[tasIndex].d;
+			int playerIndex = 0;
+			DWORD baseAddr = 0x00771398 + (0x2C * playerIndex);
+
+			// dir
+			*(BYTE*)(baseAddr + 0) = tasData[tasIndex].dir;
+			// ABCD
+			*(BYTE*)(baseAddr + 1) = tasData[tasIndex].a;
+			*(BYTE*)(baseAddr + 2) = tasData[tasIndex].b;
+			*(BYTE*)(baseAddr + 3) = tasData[tasIndex].c;
+			*(BYTE*)(baseAddr + 4) = tasData[tasIndex].d;
+
+			return;
+		}
+
+		switch (tasData[tasIndex].command) {
+
+		case TASCommand::P1XPos:
+			*(int32_t*)(dwBaseAddress + adP1Base + 0x108) = tasData[tasIndex].commandData;
+			break;
+		case TASCommand::P2XPos:
+			*(int32_t*)(dwBaseAddress + adP2Base + 0x108) = tasData[tasIndex].commandData;
+			break;
+		case TASCommand::P1Meter:
+			*(int32_t*)(dwBaseAddress + adP1Base + 0x0E0) = tasData[tasIndex].commandData;
+			break;
+		case TASCommand::P2Meter:
+			*(int32_t*)(dwBaseAddress + adP2Base + 0x0E0) = tasData[tasIndex].commandData;
+			break;
+		case TASCommand::RNG:
+			SetSeed(tasData[tasIndex].commandDataU32);
+			break;
+		default: 
+			break;
+		}
+
+		// i do not want TAS commands to take up a frame, so i will inc the thing and go from there
+		// additionally, i will sometimes be using the length variable/button data for other things, so i need to inc the index custom here
+		tasIndex++;
+		tasCurrentLen = 0;
+		setInputs();
 		
 	}
 

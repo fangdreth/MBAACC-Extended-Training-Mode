@@ -2,8 +2,17 @@
 
 #include "DirectX.h"
 
+enum class TASCommand : uint8_t {
+    Nothing = 0,
+    P1XPos = 1,
+    P2XPos = 2,
+    P1Meter = 3,
+    P2Meter = 4,
+    RNG = 5,
+};
+
 typedef struct TASItem {
-    uint16_t length;
+    int16_t length;
     union {
         struct {
             uint8_t dir : 4;
@@ -14,14 +23,19 @@ typedef struct TASItem {
         };
         uint8_t data;
     };
-    uint8_t _padding;
+    TASCommand command = TASCommand::Nothing;
+    union {
+        int32_t commandData = 0; // wish i didnt need this here, but i do 
+        uint32_t commandDataU32;
+    };
+    
     // -----
     void logItem() {
         log("%.4d %d %d%d%d%d", length, dir, a, b, c, d);
     }
 } TASItem;
 
-static_assert(sizeof(TASItem) == 4, "TASItem must be a byte!");
+static_assert(sizeof(TASItem) == 8, "TASItem must be proper size!");
 
 // i could use a class here, but if only one copy will ever be needed, then there is no point
 namespace TASManager {

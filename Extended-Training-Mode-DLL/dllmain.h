@@ -253,3 +253,5 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 }
 
 bool __stdcall isAddrValid(DWORD addr);
+
+void SetSeed(uint32_t nSeed);
