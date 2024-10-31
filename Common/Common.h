@@ -220,7 +220,7 @@ const std::string FD_C_PRESSED = "\x1b[38;2;143;255;195m\x1b[48;2;18;132;62m";
 const std::string FD_D_PRESSED = "\x1b[38;2;137;255;255m\x1b[48;2;21;66;161m";
 
 const std::string FD_SPECIAL_GUIDE_BG = "\x1b[48;2;65;200;0m"; 
-const std::string SPECIAL_CANCEL_FONTS[4] = { "\x1b[38;2;255;255;255m", "\x1b[38;2;0;0;0m", "\x1b[38;2;128;128;128m", "\x1b[38;2;0;0;0m" };
+const std::string SPECIAL_CANCEL_FONTS[4] = { "\x1b[38;2;255;255;255m", "\x1b[38;2;128;80;128m", "\x1b[38;2;0;0;0m", "\x1b[38;2;158;80;158m" };
 const std::string FD_NORMAL_GUIDE_FG = "\x1b[38;2;255;255;255m";
 const std::string NORMAL_CANCEL_FONTS[4] = { "\x1b[48;2;65;200;0m", "\x1b[48;2;65;150;30m", "\x1b[48;2;65;80;65m", "\x1b[48;2;65;150;30m" };
 
@@ -310,6 +310,7 @@ const ADDRESS adStateData_Flagset2 = 0x18;
 const ADDRESS adConditions_Condition1Pointer = 0x0;
 const ADDRESS adConditions_Condition2Pointer = 0x4;
 const ADDRESS adCondition_Type = 0x0;
+const ADDRESS adCondition_Param1 = 0x4;
 
 const ADDRESS adP1TagFlag = 0x155130 + 0x178; //0x1552A8
 const ADDRESS adP2TagFlag = 0x155130 + 0x178 + 1 * dwPlayerStructSize; //0x155DA4

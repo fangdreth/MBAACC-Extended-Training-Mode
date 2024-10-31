@@ -215,6 +215,8 @@ struct Player
 	DWORD dwConditions_Condition2Pointer = 0x0; //0x320 : 0x44 : 0x4
 	DWORD dwCondition1_ConditionType = 0; //0x320 : 0x44 : 0x0 : 0x0
 	DWORD dwCondition2_ConditionType = 0; //0x320 : 0x44 : 0x4 : 0x0
+	DWORD dwCondition1_ConditionParam1 = 0; //0x320 : 0x44 : 0x0 : 0x4
+	DWORD dwCondition2_ConditionParam1 = 0; //0x320 : 0x44 : 0x4 : 0x4
 
 	char cPlayerNumber = 0;
 	DWORD adPlayerBase = 0x0;
@@ -307,10 +309,12 @@ void UpdatePlayers(HANDLE hMBAAHandle)
 			ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionsPointer), &P.dwAnimation_ConditionsPointer, 4, 0);
 			ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_ConditionsPointer + adConditions_Condition1Pointer), &P.dwConditions_Condition1Pointer, 4, 0);
 			ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwConditions_Condition1Pointer + adCondition_Type), &P.dwCondition1_ConditionType, 4, 0);
+			ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwConditions_Condition1Pointer + adCondition_Param1), &P.dwCondition1_ConditionParam1, 4, 0);
 			if (P.cAnimation_ConditionCount > 1)
 			{
 				ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_ConditionsPointer + adConditions_Condition2Pointer), &P.dwConditions_Condition2Pointer, 4, 0);
 				ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwConditions_Condition2Pointer + adCondition_Type), &P.dwCondition2_ConditionType, 4, 0);
+				ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwConditions_Condition2Pointer + adCondition_Param1), &P.dwCondition2_ConditionParam1, 4, 0);
 			}
 			else
 			{
@@ -707,8 +711,8 @@ void PrintColorGuide()
 	std::cout << NORMAL_CANCEL_FONTS[1] + FD_NORMAL_GUIDE_FG << "00" << FD_CLEAR << " NORMAL CANCEL ON (SUCCESSFUL) HIT\n";
 	std::cout << NORMAL_CANCEL_FONTS[2] + FD_NORMAL_GUIDE_FG << "00" << FD_CLEAR << " NORMAL CANCEL ALWAYS\n";
 	std::cout << SPECIAL_CANCEL_FONTS[0] + FD_SPECIAL_GUIDE_BG << "00" << FD_CLEAR << " NO SPECIAL CANCEL\t\t";
-	std::cout << SPECIAL_CANCEL_FONTS[1] + FD_SPECIAL_GUIDE_BG << "00" << FD_CLEAR << " SPECIAL CANCEL ON (SUCCESSFUL) HIT\n";
-	std::cout << SPECIAL_CANCEL_FONTS[2] + FD_SPECIAL_GUIDE_BG << "00" << FD_CLEAR << " SPECIAL CANCEL ALWAYS\t";
+	std::cout << SPECIAL_CANCEL_FONTS[1] + FD_SPECIAL_GUIDE_BG << "00" << FD_CLEAR << " SPECIAL/REKKA CANCEL ON (SUCCESSFUL) HIT\n";
+	std::cout << SPECIAL_CANCEL_FONTS[2] + FD_SPECIAL_GUIDE_BG << "00" << FD_CLEAR << " SPECIAL/REKKA CANCEL ALWAYS\t";
 	std::cout << FD_INACTIONABLE + FD_UNDERLINE << "00" << FD_CLEAR << " EX CANCEL\n";
 }
 
@@ -824,15 +828,19 @@ void UpdateBars(Player& P, Player& Assist)
 			sFont = FD_INACTIONABLE;
 			if (bDisplayCancels)
 			{
-				if (P.nState_Flagset2 & 1)
+				char SpecialCancel = P.cState_SpecialCancel;
+				if (P.dwCondition1_ConditionType == 35 || P.dwCondition2_ConditionType == 35)
 				{
-					sFont = FD_UNDERLINE;
+					if (P.dwCondition1_ConditionParam1 == 1 || P.dwCondition2_ConditionParam1 == 1)
+					{
+						SpecialCancel = 1;
+					}
+					else
+					{
+						SpecialCancel = 2;
+					}
 				}
-				else
-				{
-					sFont = FD_CLEAR;
-				}
-				sFont += SPECIAL_CANCEL_FONTS[P.cState_SpecialCancel] + NORMAL_CANCEL_FONTS[P.cState_NormalCancel];
+				sFont += SPECIAL_CANCEL_FONTS[SpecialCancel] + NORMAL_CANCEL_FONTS[P.cState_NormalCancel];
 			}
 		}
 	}
@@ -853,6 +861,15 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			sFont = FD_ACTIONABLE_INVULN;
 		}
+	}
+
+	if (bDisplayCancels && P.nState_Flagset2 & 1)
+	{
+		sFont = FD_UNDERLINE + sFont;
+	}
+	else
+	{
+		sFont = FD_CLEAR + sFont;
 	}
 
 	if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0 || cP3Freeze != 0 || cP4Freeze != 0) //Screen is frozen
