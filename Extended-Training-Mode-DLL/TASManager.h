@@ -26,7 +26,7 @@ static_assert(sizeof(TASItem) == 4, "TASItem must be a byte!");
 // i could use a class here, but if only one copy will ever be needed, then there is no point
 namespace TASManager {
 
-    std::optional<TASItem> parseLine(const std::string& l);
+    void parseLine(const std::string& l);
 
 	void load(const std::string& filename);
 

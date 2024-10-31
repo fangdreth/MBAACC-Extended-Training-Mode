@@ -3,6 +3,7 @@
 #include "FancyMenu.h"
 
 Menu<int> baseMenu("Base");
+Menu<int>* disableFpsMenuOption = NULL;
 
 template <typename T>
 struct always_false : std::false_type { };
@@ -321,8 +322,20 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
+	debug.add<int>("Disable FPS Limit",
+		getDefaultOnOffOptionFunc(&disableFPSLimit),
+		defaultOnOffNameFunc
+	);
+
+	// i despise that this option didnt work. i made specific effort to copy by reference, but that wasnt enough
+	//disableFpsMenuOption = &(std::get<Menu<int>>(debug.items[debug.items.size() - 1]));
+
+	int disableFPSIndex = debug.items.size() - 1;
+
 	baseMenu.add(debug);
-	
+
+	disableFpsMenuOption = &std::get<Menu<int>>(std::get<Menu<int>>(baseMenu.items[baseMenu.items.size() - 1]).items[disableFPSIndex]);
+
 	baseMenu.unfolded = true;
 
 	log("menu setup done");

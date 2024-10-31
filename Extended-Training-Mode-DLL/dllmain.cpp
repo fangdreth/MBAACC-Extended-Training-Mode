@@ -5,6 +5,7 @@
 #include "SaveState.h"
 #include "ReplayManager.h"
 #include "TASManager.h"
+#include "FancyMenu.h"
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
@@ -35,6 +36,7 @@ DWORD dwDevice = 0; // MASM is horrid when it comes to writing pointers vs value
 IDirect3DDevice9* device = NULL;
 
 bool enableTAS = false;
+bool disableFPSLimit = false;
 
 const ADDRESS INPUTDISPLAYTOGGLE = (dwBaseAddress + 0x001585f8);
 
@@ -1411,6 +1413,16 @@ void frameDoneCallback()
 	static KeyState rKey('R');
 	if (rKey.keyDown()) {
 		//replayManager.reset();
+	}
+
+	static KeyState fKey('F');
+	if (fKey.keyDown()) {
+		disableFPSLimit = !disableFPSLimit;
+		// i,, i do not know what to do here.
+		// i wish i designed the menu with this in mind, but not all menu elements have/need globals
+		// if the menu design is changed, this will need to be changed
+		// i could maybe pass an int* as the menu type instead?
+		disableFpsMenuOption->optionState = disableFPSLimit;
 	}
 	
 	renderModificationsFrameDone();

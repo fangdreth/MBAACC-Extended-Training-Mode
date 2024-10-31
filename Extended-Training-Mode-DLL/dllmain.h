@@ -152,6 +152,7 @@ extern ADDRESS dwCasterBaseAddress;
 extern bool logSaveState;
 
 extern bool enableTAS;
+extern bool disableFPSLimit;
 
 // -----
 

@@ -53,8 +53,6 @@ public:
 
 	void draw(Point& p);
 
-	//std::vector<std::variant<Menu<int>, Menu<float>>> items;
-	//std::vector<Menu> items;
 	using MenuVariant = std::variant<Menu<int>, Menu<float>>;
 	std::vector<MenuVariant> items;
 
@@ -72,5 +70,6 @@ public:
 };
 
 extern Menu<int> baseMenu;
+extern Menu<int>* disableFpsMenuOption;
 
 void drawFancyMenu();

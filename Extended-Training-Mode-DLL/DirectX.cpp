@@ -2631,6 +2631,13 @@ void __stdcall _doDrawCalls() {
 	}
 	*/
 
+	static bool prevDisableFPSLimit = false;
+
+	if (prevDisableFPSLimit != disableFPSLimit) {
+		patchByte(dwCasterBaseAddress + 0x6638c020, disableFPSLimit ? 0xC3 : 0x80);
+		prevDisableFPSLimit = disableFPSLimit;
+	}
+
 	//dualInputDisplay();
 
 	profileFunction();
