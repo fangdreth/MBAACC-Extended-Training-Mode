@@ -153,6 +153,7 @@ extern bool logSaveState;
 
 extern bool enableTAS;
 extern bool disableFPSLimit;
+extern bool bFreeze;
 
 // -----
 
@@ -255,3 +256,5 @@ void __stdcall patchByte(auto addr, const BYTE byte)
 bool __stdcall isAddrValid(DWORD addr);
 
 void SetSeed(uint32_t nSeed);
+
+void setFPSLimiter(bool b);

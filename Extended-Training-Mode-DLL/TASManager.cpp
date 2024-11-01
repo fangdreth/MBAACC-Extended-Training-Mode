@@ -31,7 +31,7 @@ namespace TASManager {
 
 	void parseLine(const std::string& l) {
 		
-		// this parser is way out of line, and needs to be refactored
+		// this parser is way out of line, and needs to be refactored. i should hash strings too
 
 		TASItem res;
 		res.data = 0;
@@ -67,8 +67,7 @@ namespace TASManager {
 		res.length = 1;
 
 		if (std::regex_match(output, match, re)) {
-			if (match[1].matched) {
-				
+			if (match[1].matched) {				
 				if (match[2].matched && safeStoi(match[2].str()) != -1) {
 					if (match[1].str() == "p1pos") {
 						res.command = TASCommand::P1XPos;
@@ -112,7 +111,21 @@ namespace TASManager {
 			return;
 		}
 
-		if (output[0] == 'S' || output[0] == 's') {
+		if (output == "pause") {
+			res.command = TASCommand::Pause;
+			tasData.push_back(res);
+			return;
+		} else if (output == "startff") {
+			res.command = TASCommand::StartFF;
+			tasData.push_back(res);
+			return;
+		} else if (output == "stopff") {
+			res.command = TASCommand::StopFF;
+			tasData.push_back(res);
+			return;
+		}
+
+		if (output[0] == 's') {
 			for (int i = 1; i < output.size(); i++) {
 				char c = output[i];
 
@@ -183,7 +196,6 @@ namespace TASManager {
 
 		res.data = 0;
 		res.dir = 5;
-		
 
 		for (int i = 0; i < output.size(); i++) {
 
@@ -303,6 +315,16 @@ namespace TASManager {
 		case TASCommand::RNG:
 			SetSeed(tasData[tasIndex].commandDataU32);
 			break;
+		case TASCommand::Pause:
+			bFreeze = 1;
+			needPause = 1;
+			break;
+		case TASCommand::StartFF:
+			setFPSLimiter(true);
+			break;
+		case TASCommand::StopFF:
+			setFPSLimiter(false);
+			break;
 		default: 
 			break;
 		}
@@ -310,7 +332,7 @@ namespace TASManager {
 		// i do not want TAS commands to take up a frame, so i will inc the thing and go from there
 		// additionally, i will sometimes be using the length variable/button data for other things, so i need to inc the index custom here
 		tasIndex++;
-		tasCurrentLen = 0;
+		tasCurrentLen = 1; 
 		setInputs();
 		
 	}

@@ -9,6 +9,9 @@ enum class TASCommand : uint8_t {
     P1Meter = 3,
     P2Meter = 4,
     RNG = 5,
+    Pause = 6,
+    StartFF = 7,
+    StopFF = 8,
 };
 
 typedef struct TASItem {

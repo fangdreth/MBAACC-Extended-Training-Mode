@@ -1366,6 +1366,16 @@ void frameStartCallback() {
 
 bool logSaveState = false;
 
+void setFPSLimiter(bool b) {
+	disableFPSLimit = b;
+
+	// i,, i do not know what to do here.
+	// i wish i designed the menu with this in mind, but not all menu elements have/need globals
+	// if the menu design is changed, this will need to be changed
+	// i could maybe pass an int* as the menu type instead?
+	disableFpsMenuOption->optionState = b;
+}
+
 void frameDoneCallback()
 {
 	profileFunction();
@@ -1417,12 +1427,7 @@ void frameDoneCallback()
 
 	static KeyState fKey('F');
 	if (fKey.keyDown()) {
-		disableFPSLimit = !disableFPSLimit;
-		// i,, i do not know what to do here.
-		// i wish i designed the menu with this in mind, but not all menu elements have/need globals
-		// if the menu design is changed, this will need to be changed
-		// i could maybe pass an int* as the menu type instead?
-		disableFpsMenuOption->optionState = disableFPSLimit;
+		setFPSLimiter(!disableFPSLimit);
 	}
 	
 	renderModificationsFrameDone();
@@ -1915,6 +1920,9 @@ void newPauseCallback2()
 		}
 		else
 		{
+			// this code prevents me from being able to set needpause from anywhere in the code
+			// bfreeze is legacy!, _naked_newPauseCallback2_IsPaused is what actually controls the pausing!
+			// but im scared to fuck with this so im leaving it
 			bSlow = false;
 			needPause = false;
 			_naked_newPauseCallback2_IsPaused = false;
