@@ -2775,7 +2775,7 @@ void __stdcall battleResetCallback()
 	dualInputDisplayReset();
 
 	TASManager::load("TAS.txt");
-	
+
 }
 
 __declspec(naked) void _naked_battleResetCallback() {

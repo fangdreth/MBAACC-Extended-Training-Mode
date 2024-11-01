@@ -267,6 +267,12 @@ namespace TASManager {
 		reset();
 
 		log("loaded tas file");
+
+		if (TASManager::tasData.size() > 0 && TASManager::tasData[0].command == TASCommand::Unpause) {
+			bFreeze = 0;
+			needPause = 0;
+			_naked_newPauseCallback2_IsPaused = 0;
+		}
 	}
 
 	void reset() {
