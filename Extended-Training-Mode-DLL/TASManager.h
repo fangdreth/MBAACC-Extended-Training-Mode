@@ -9,9 +9,10 @@ enum class TASCommand : uint8_t {
     P1Meter = 3,
     P2Meter = 4,
     RNG = 5,
-    Pause = 6,
-    StartFF = 7,
-    StopFF = 8,
+    Pause = 6, 
+    Unpause = 7, // this command is useless and does nothing since inputs arent exected on pause
+    StartFF = 8,
+    StopFF = 9,
 };
 
 typedef struct TASItem {

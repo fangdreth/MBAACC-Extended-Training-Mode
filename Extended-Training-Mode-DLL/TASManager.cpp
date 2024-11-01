@@ -115,6 +115,10 @@ namespace TASManager {
 			res.command = TASCommand::Pause;
 			tasData.push_back(res);
 			return;
+		} else if (output == "unpause") {
+			res.command = TASCommand::Unpause;
+			tasData.push_back(res);
+			return;
 		} else if (output == "startff") {
 			res.command = TASCommand::StartFF;
 			tasData.push_back(res);
@@ -318,6 +322,11 @@ namespace TASManager {
 		case TASCommand::Pause:
 			bFreeze = 1;
 			needPause = 1;
+			break;
+		case TASCommand::Unpause:	
+			bFreeze = 0;
+			needPause = 0;
+			_naked_newPauseCallback2_IsPaused = 0;
 			break;
 		case TASCommand::StartFF:
 			setFPSLimiter(true);
