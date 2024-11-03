@@ -66,6 +66,8 @@ DWORD shouldDrawGroundLine = 0;
 DWORD backgroundColor = 0xFFFFFFFF;
 DWORD shouldDrawShadow = 0;
 DWORD fastReversePenalty = 0;
+DWORD shouldDrawMeter = 1;
+DWORD frameBarY = 400;
 
 uint8_t nRNGMode = RNG_OFF;
 uint8_t nRNGRate = RNG_EVERY_FRAME;
@@ -890,10 +892,10 @@ void drawFrameBar(int nYOverride = -1)
 	if (!safeWrite())
 		return;
 
-	nFrameBarY = *(int*)(adMBAABase + adSharedFrameBarY);
+	frameBarY = *(int*)(adMBAABase + adSharedFrameBarY);
 	if (nYOverride != -1)
 	{
-		nFrameBarY = nYOverride;
+		frameBarY = nYOverride;
 	}
 
 	FrameBar(P1, P2, P3, P4);
@@ -911,25 +913,25 @@ void drawFrameBar(int nYOverride = -1)
 		nForEnd = nBarCounter;
 	}
 
-	RectDraw(18, nFrameBarY, 602, 27, 0xFF000000); //Background
+	RectDraw(18, frameBarY, 602, 27, 0xFF000000); //Background
 
 	int j = 0;
 	for (int i = nForStart; i < nForEnd; i++)
 	{
 		j = i < 0 ? i + BAR_MEMORY_SIZE : i;
 
-		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 2, 7, 10, (*Main1).dwColorBar1[j][0]);
+		RectDraw(20 + 8 * nBarDrawCounter, frameBarY + 2, 7, 10, (*Main1).dwColorBar1[j][0]);
 		if ((*Main1).dwColorBar1[j][1] != 0)
-			RectDraw(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 2, 3, 10, (*Main1).dwColorBar1[j][1]);
-		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 15, 7, 10, (*Main2).dwColorBar1[j][0]);
+			RectDraw(20 + 8 * nBarDrawCounter + 4, frameBarY + 2, 3, 10, (*Main1).dwColorBar1[j][1]);
+		RectDraw(20 + 8 * nBarDrawCounter, frameBarY + 15, 7, 10, (*Main2).dwColorBar1[j][0]);
 		if ((*Main2).dwColorBar1[j][1] != 0)
-			RectDraw(20 + 8 * nBarDrawCounter + 4, nFrameBarY + 15, 3, 10, (*Main2).dwColorBar1[j][1]);
-		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 1, 7, 2, (*Main1).dwColorBar2[j][0]);
+			RectDraw(20 + 8 * nBarDrawCounter + 4, frameBarY + 15, 3, 10, (*Main2).dwColorBar1[j][1]);
+		RectDraw(20 + 8 * nBarDrawCounter, frameBarY + 1, 7, 2, (*Main1).dwColorBar2[j][0]);
 		if ((*Main1).dwColorBar2[j][1] != 0)
-			RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 11, 7, 2, (*Main1).dwColorBar2[j][1]);
-		RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 14, 7, 2, (*Main2).dwColorBar2[j][0]);
+			RectDraw(20 + 8 * nBarDrawCounter, frameBarY + 11, 7, 2, (*Main1).dwColorBar2[j][1]);
+		RectDraw(20 + 8 * nBarDrawCounter, frameBarY + 14, 7, 2, (*Main2).dwColorBar2[j][0]);
 		if ((*Main2).dwColorBar2[j][1] != 0)
-			RectDraw(20 + 8 * nBarDrawCounter, nFrameBarY + 24, 7, 2, (*Main2).dwColorBar2[j][1]);
+			RectDraw(20 + 8 * nBarDrawCounter, frameBarY + 24, 7, 2, (*Main2).dwColorBar2[j][1]);
 
 		static char buffer[256];
 
@@ -937,24 +939,24 @@ void drawFrameBar(int nYOverride = -1)
 		{
 			int nLength = floor(log10((*Main1).nNumBar[j][0]));
 			snprintf(buffer, 256, "%i", (*Main1).nNumBar[j][0]);
-			TextDraw(19 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 2, 10, 0xFFFFFFFF, buffer);
+			TextDraw(19 + 8 * nBarDrawCounter - 8 * nLength, frameBarY + 2, 10, 0xFFFFFFFF, buffer);
 		}
 
 		if ((*Main2).nNumBar[j][0] >= 0)
 		{
 			int nLength = floor(log10((*Main2).nNumBar[j][0]));
 			snprintf(buffer, 256, "%i", (*Main2).nNumBar[j][0]);
-			TextDraw(19 + 8 * nBarDrawCounter - 8 * nLength, nFrameBarY + 15, 10, 0xFFFFFFFF, buffer);
+			TextDraw(19 + 8 * nBarDrawCounter - 8 * nLength, frameBarY + 15, 10, 0xFFFFFFFF, buffer);
 		}
 		nBarDrawCounter++;
 	}
 	static char buffer[256];
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main1).nFirstActive % 1000, (*Main1).nInactionableMemory % 1000, nPlayerAdvantage % 1000);
-	TextDraw(20, nFrameBarY - 11, 10, 0xFFFFFFFF, buffer);
+	TextDraw(20, frameBarY - 11, 10, 0xFFFFFFFF, buffer);
 
 
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main2).nFirstActive % 1000, (*Main2).nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
-	TextDraw(20, nFrameBarY + 28, 10, 0xFFFFFFFF, buffer);
+	TextDraw(20, frameBarY + 28, 10, 0xFFFFFFFF, buffer);
 
 }
 
@@ -1849,6 +1851,15 @@ void frameDoneCallback()
 		drawColorGuide();
 	}
 
+	if (bFrameDataDisplay && frameBarY > 400)
+	{
+		shouldDrawMeter = 0;
+	}
+	else
+	{
+		shouldDrawMeter = 1;
+	}
+
 	*(int*)(adMBAABase + adSharedTimer) = *(int*)(adMBAABase + adTrueFrameCount);
 
 	int nFrameTimer = *(int*)(dwBaseAddress + dwFrameTimer);
@@ -2487,6 +2498,21 @@ __declspec(naked) void _naked_DrawHud() {
 	}
 }
 
+DWORD _naked_DrawHudMeter_FuncAddr = 0x004253c0;
+__declspec(naked) void _naked_DrawHudMeter() {
+	__asm {
+		cmp shouldDrawMeter, 0;
+		Je _SKIP;
+
+		call[_naked_DrawHudMeter_FuncAddr];
+
+	_SKIP:
+
+		push 00425232h;
+		ret;
+	}
+}
+
 DWORD _naked_DisableShadows_FuncAddr = 0x0041a390;
 __declspec(naked) void _naked_DisableShadows() {
 	__asm {
@@ -2977,6 +3003,7 @@ void initDrawBackground() {
 	patchJump(0x004238c0, _naked_DrawBackground);
 	//patchJump(0x0042389c, _naked_DrawHudText);
 	patchJump(0x004238a6, _naked_DrawHud);
+	patchJump(0x0042522d, _naked_DrawHudMeter);
 	patchJump(0x0041b47c, _naked_DisableShadows);
 }
 
