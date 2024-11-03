@@ -21,7 +21,7 @@ int nTrueFrameCount = 0; //Counts all frames during slowdown
 int nLastTrueFrameCount = 0;
 char cGlobalFreeze = 0; //Used for EXFlashes where neither char moves
 char cP1FN2Input = 0;
-char cDummyState = 0; // Same as Common.h "Enemy Status" except -1 for recording
+static char cDummyState = 0; // Same as Common.h "Enemy Status" except -1 for recording
 int nTimer = 0;
 
 int nBarCounter = 0;
@@ -1103,11 +1103,6 @@ void BarHandling(HANDLE hMBAAHandle, Player &P1, Player &P2, Player& P1Assist, P
 {
 	CalculateAdvantage(P1, P2);
 
-	bool IsInput = (
-		P1.cRawDirectionalInput != 0 || P2.cRawDirectionalInput != 0 ||
-		P1.cButtonInput != 0 || P2.cButtonInput ||
-		P1.cMacroInput != 0 || P2.cMacroInput != 0
-		); //True if player or dummy has any input
 	bool DoBarUpdate = (
 		P1.nInactionableFrames != 0 || P2.nInactionableFrames ||
 		P1.nState_Flagset2 != 0 || P2.nState_Flagset2 != 0 ||

@@ -6165,8 +6165,14 @@ int main(int argc, char* argv[])
                     if (nExGuardSetting == eEnemyOffOnRandom::ON || (rand() % 2 == 0 && nExGuardSetting == eEnemyOffOnRandom::RANDOM))
                         nWriteBuffer = 10;
                     //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2ExGuard), &nWriteBuffer, 4, 0);
-                    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nP1Controlled);
-                    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nP2Controlled);
+                    if (cDummyState == -1)
+                    {
+                        WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nP1Controlled);
+                    }
+                    else
+                    {
+                        WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nP2Controlled);
+                    }
 
                     // Disable built-in health recovery
                     nWriteBuffer = 4;
