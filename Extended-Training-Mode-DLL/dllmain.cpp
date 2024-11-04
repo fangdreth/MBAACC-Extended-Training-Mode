@@ -960,6 +960,113 @@ void drawFrameBar(int nYOverride = -1)
 
 }
 
+void drawSimpleMeter()
+{
+	if (!shouldDrawHud) return;
+
+	int nP1Meter = *(int*)(adMBAABase + adP1Base + adMagicCircuit);
+	int nP1MeterTime = *(int*)(adMBAABase + adP1Base + adMagicCircuitTime);
+	uint8_t cP1MeterMode = *(uint8_t*)(adMBAABase + adP1Base + adMagicCircuitMode);
+
+	int nP2Meter = *(int*)(adMBAABase + adP2Base + adMagicCircuit);
+	int nP2MeterTime = *(int*)(adMBAABase + adP2Base + adMagicCircuitTime);
+	uint8_t cP2MeterMode = *(uint8_t*)(adMBAABase + adP2Base + adMagicCircuitMode);
+
+	static char buffer[8];
+
+	switch (cP1MeterMode)
+	{
+	case 0: //Normal
+	{
+		RectDraw(59, 19, 152, 14, 0x80FFFFFF);
+		RectDraw(60, 20, nP1Meter / 200.0, 12, METER_COLOR_MAP[nP1Meter / 10000]);
+		snprintf(buffer, 8, "%3.2f", nP1Meter / 100.0);
+		TextDraw(60, 21, 10, 0xFFFFFFFF, buffer);
+		break;
+	}
+	case 1: //HEAT
+	{
+		RectDraw(59, 19, 152, 14, 0x80FFFFFF);
+		RectDraw(60, 20, nP1MeterTime / 3.6666, 12, HEAT_COLOR);
+		snprintf(buffer, 8, "%3i", nP1MeterTime);
+		TextDraw(60, 21, 10, 0xFFFFFFFF, buffer);
+		TextDraw(60 + 150 - 4 * 7.7777, 21, 10, 0xFFFFFFFF, "HEAT");
+		break;
+	}
+	case 2: //MAX
+	{
+		RectDraw(59, 19, 152, 14, 0x80FFFFFF);
+		RectDraw(60, 20, nP1MeterTime / 4.0, 12, MAX_COLOR);
+		snprintf(buffer, 8, "%3i", nP1MeterTime);
+		TextDraw(60, 21, 10, 0xFFFFFFFF, buffer);
+		TextDraw(60 + 150 - 3 * 7.7777, 21, 10, 0xFFFFFFFF, "MAX");
+		break;
+	}
+	case 3: //BLOOD HEAT
+	{
+		RectDraw(59, 19, 152, 14, 0x80FFFFFF);
+		RectDraw(60, 20, nP1MeterTime / 3.3466, 12, BLOODHEAT_COLOR);
+		snprintf(buffer, 8, "%3i", nP1MeterTime);
+		TextDraw(60, 21, 10, 0xFFFFFFFF, buffer);
+		TextDraw(60 + 150 - 10 * 7.7777, 21, 10, 0xFFFFFFFF, "BLOOD HEAT");
+		break;
+	}
+	case 5: //UNLIMITED
+	{
+		RectDraw(59, 19, 152, 14, 0x80FFFFFF);
+		RectDraw(60, 20, 150, 12, UNLIMITED_COLOR);
+		TextDraw(60, 21, 10, 0xFFFFFFFF, "UNLIMITED");
+		break;
+	}
+	}
+
+	switch (cP2MeterMode)
+	{
+	case 0: //NORMAL
+	{
+		RectDraw(579 - 150, 19, 152, 14, 0x80FFFFFF);
+		RectDraw(580 - nP2Meter / 200.0, 20, nP2Meter / 200.0, 12, METER_COLOR_MAP[nP2Meter / 10000]);
+		snprintf(buffer, 8, "%6.2f", nP2Meter / 100.0);
+		TextDraw(580 - 6 * 7.7777, 21, 10, 0xFFFFFFFF, buffer);
+		break;
+	}
+	case 1: //HEAT
+	{
+		RectDraw(579 - 150, 19, 152, 14, 0x80FFFFFF);
+		RectDraw(580 - nP2MeterTime / 3.6666, 20, nP2MeterTime / 3.6666, 12, HEAT_COLOR);
+		snprintf(buffer, 8, "%3i", nP2MeterTime);
+		TextDraw(580 - 3 * 7.7777, 21, 10, 0xFFFFFFFF, buffer);
+		TextDraw(580 - 150, 21, 10, 0xFFFFFFFF, "HEAT");
+		break;
+	}
+	case 2: //MAX
+	{
+		RectDraw(579 - 150, 19, 152, 14, 0x80FFFFFF);
+		RectDraw(580 - nP2MeterTime / 4.0, 20, nP2MeterTime / 4.0, 12, MAX_COLOR);
+		snprintf(buffer, 8, "%3i", nP2MeterTime);
+		TextDraw(580 - 3 * 7.7777, 21, 10, 0xFFFFFFFF, buffer);
+		TextDraw(580 - 150, 21, 10, 0xFFFFFFFF, "MAX");
+		break;
+	}
+	case 3: //BLOOD HEAT
+	{
+		RectDraw(579 - 150, 19, 152, 14, 0x80FFFFFF);
+		RectDraw(580 - nP2MeterTime / 3.3466, 20, nP2MeterTime / 3.3466, 12, BLOODHEAT_COLOR);
+		snprintf(buffer, 8, "%3i", nP2MeterTime);
+		TextDraw(580 - 3 * 7.7777, 21, 10, 0xFFFFFFFF, buffer);
+		TextDraw(580 - 150, 21, 10, 0xFFFFFFFF, "BLOOD HEAT");
+		break;
+	}
+	case 5: //UNLIMITED
+	{
+		RectDraw(579 - 150, 19, 152, 14, 0x80FFFFFF);
+		RectDraw(580 - 150, 20, 150, 12, UNLIMITED_COLOR);
+		TextDraw(580 - 9 * 7.7777, 21, 10, 0xFFFFFFFF, "UNLIMITED");
+		break;
+	}
+	}
+}
+
 void drawStats()
 {
 
@@ -1828,6 +1935,9 @@ void frameDoneCallback()
 		
 		if (bHitboxesDisplay)
 			drawFrameData();
+
+		if (!shouldDrawMeter)
+			drawSimpleMeter();
 		
 		/*if (bFrameDataDisplay)
 		{
@@ -2502,7 +2612,7 @@ DWORD _naked_DrawHudMeter_FuncAddr = 0x004253c0;
 __declspec(naked) void _naked_DrawHudMeter() {
 	__asm {
 		cmp shouldDrawMeter, 0;
-		Je _SKIP;
+		JE _SKIP;
 
 		call[_naked_DrawHudMeter_FuncAddr];
 

@@ -224,6 +224,12 @@ const std::string SPECIAL_CANCEL_FONTS[4] = { "\x1b[38;2;255;255;255m", "\x1b[38
 const std::string FD_NORMAL_GUIDE_FG = "\x1b[38;2;255;255;255m";
 const std::string NORMAL_CANCEL_FONTS[4] = { "\x1b[48;2;65;200;0m", "\x1b[48;2;65;150;30m", "\x1b[48;2;65;80;65m", "\x1b[48;2;65;150;30m" };
 
+const DWORD METER_COLOR_MAP[3] = { 0xFFC80000, 0xFFC8C800, 0xFF00C800 };
+const DWORD HEAT_COLOR = 0xFF5A5AE6;
+const DWORD MAX_COLOR = 0xFFFAA000;
+const DWORD BLOODHEAT_COLOR = 0xFFB4B4B4;
+const DWORD UNLIMITED_COLOR = 0xFF3296FF;
+
 const DWORD FB_INACTIONABLE = 0xFF41C800;
 const DWORD FB_JUMP = 0xFFF1E084;
 const DWORD FB_HITSTUN = 0xFF8C8C8C;
@@ -267,6 +273,8 @@ const ADDRESS adRedHealth = 0xC0;
 const ADDRESS adGuardGauge = 0xC4;
 const ADDRESS adGuardQuality = 0xD8;
 const ADDRESS adMagicCircuit = 0xE0;
+const ADDRESS adMagicCircuitTime = 0xE4;
+const ADDRESS adMagicCircuitMode = 0xE8;
 const ADDRESS adPlayerFrameCount = 0xF0;
 const ADDRESS adXPosition = 0x108;
 const ADDRESS adYPosition = 0x10C;
