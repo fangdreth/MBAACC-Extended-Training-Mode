@@ -562,9 +562,9 @@ int main(int argc, char* argv[])
 
                 // these flags are used to determine if assist chars exist
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP3Exists), &nReadResult, 4, 0);
-                bP3Exists = (nReadResult == 1 ? true : false);
+                bP3Exists = (nReadResult == 1 && nP1CharacterNumber != 4 ? true : false);
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP4Exists), &nReadResult, 4, 0);
-                bP4Exists = (nReadResult == 1 ? true : false);
+                bP4Exists = (nReadResult == 1 && nP2CharacterNumber != 4 ? true : false);
 
                 // update the location variables if not locked
                 if (!bPositionsLocked)
