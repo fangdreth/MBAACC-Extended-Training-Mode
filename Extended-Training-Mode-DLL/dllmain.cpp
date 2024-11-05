@@ -68,6 +68,7 @@ DWORD shouldDrawShadow = 0;
 DWORD fastReversePenalty = 0;
 DWORD shouldDrawMeter = 1;
 DWORD frameBarY = 400;
+bool bDoResetBars = true;
 
 uint8_t nRNGMode = RNG_OFF;
 uint8_t nRNGRate = RNG_EVERY_FRAME;
@@ -1968,7 +1969,20 @@ void frameDoneCallback()
 	//ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
 	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12)) {
 		if (bFrameDataDisplay)
+		{
 			drawFrameBar();
+			bDoResetBars = true;
+		}
+		else if (bDoResetBars)
+		{
+			ResetBars();
+			bDoResetBars = false;
+		}
+		else
+		{
+			nLastFrameCount = *(int*)(adMBAABase + adFrameCount);
+			nLastTrueFrameCount = *(int*)(adMBAABase + adTrueFrameCount);
+		}
 		
 		if (bHitboxesDisplay)
 			drawFrameData();

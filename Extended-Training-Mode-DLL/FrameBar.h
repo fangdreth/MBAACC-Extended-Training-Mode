@@ -139,22 +139,22 @@ void CalculateAdvantage(Player& P1, Player& P2)
 		}
 		else if (*(int*)(P2.adInaction) == 0 && *(int*)(P1.adInaction) != 0)
 		{
-			P2.nAdvantageCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;;
+			P2.nAdvantageCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 		}
 	}
 }
 
 void ResetBars()
 {
+	bIsBarReset = true;
+	nBarCounter = 0;
+	nBarIntervalCounter = 0;
+	nBarScrolling = 0;
+	bDoBarReset = false;
+	nBarIntervalMax = DISPLAY_RANGE;
 	for (int i = 0; i < 4; i++)
 	{
 		Player& P = *paPlayerArray[i];
-		bIsBarReset = true;
-		nBarCounter = 0;
-		nBarIntervalCounter = 0;
-		nBarScrolling = 0;
-		bDoBarReset = false;
-		nBarIntervalMax = DISPLAY_RANGE;
 		for (int i = 0; i < BAR_MEMORY_SIZE; i++)
 		{
 			P.dwColorBar1[i][0] = 0x00000000;
@@ -165,8 +165,8 @@ void ResetBars()
 			P.nNumBar[i][0] = -1;
 			P.nNumBar[i][1] = 0;
 		}
-		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(adBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
 	}
+	WriteProcessMemory(GetCurrentProcess(), (LPVOID)(adBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
 }
 
 void UpdateBars(Player& P, Player& Assist)
