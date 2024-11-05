@@ -1492,6 +1492,6 @@ void FrameDisplay(HANDLE hMBAAHandle)
 		}
 	}
 
-	nPlayerAdvantage = (P1.nAdvantageCounter - P2.nAdvantageCounter) % 100;
+	nPlayerAdvantage = ((*Main1).nAdvantageCounter - (*Main2).nAdvantageCounter) % 100;
 
 }

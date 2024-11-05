@@ -901,6 +901,9 @@ void drawFrameBar(int nYOverride = -1)
 
 	FrameBar(P1, P2, P3, P4);
 
+	if (!bFrameDataDisplay)
+		return;
+
 	int nBarDrawCounter = 0;
 
 	nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
@@ -1968,21 +1971,7 @@ void frameDoneCallback()
 	//int nSubMenu;
 	//ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
 	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12)) {
-		if (bFrameDataDisplay)
-		{
-			drawFrameBar();
-			bDoResetBars = true;
-		}
-		else if (bDoResetBars)
-		{
-			ResetBars();
-			bDoResetBars = false;
-		}
-		else
-		{
-			nLastFrameCount = *(int*)(adMBAABase + adFrameCount);
-			nLastTrueFrameCount = *(int*)(adMBAABase + adTrueFrameCount);
-		}
+		drawFrameBar();
 		
 		if (bHitboxesDisplay)
 			drawFrameData();
@@ -1998,11 +1987,11 @@ void frameDoneCallback()
 		if (*(bool*)(dwBaseAddress + adSharedShowStats))
 			drawStats();
 	}
-	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 1 && bFrameDataDisplay && *(bool*)(dwBaseAddress + adSharedOnExtendedSettings))
+	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 1 && *(bool*)(dwBaseAddress + adSharedOnExtendedSettings))
 	{
 		drawFrameBar(325);
 	}
-	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 2 && bFrameDataDisplay && *(bool*)(dwBaseAddress + adSharedOnExtendedSettings))
+	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 2 && *(bool*)(dwBaseAddress + adSharedOnExtendedSettings))
 	{
 		drawFrameBar();
 	}

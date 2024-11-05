@@ -1079,7 +1079,7 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcShowCancelWindows_20, 20, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcScrollDisplay_15, 15, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcColorGuide_12, 12, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcInGameDisplay_16, 16, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcInGameFramebar_17, 17, 0);
 
                                 break;
                             }
@@ -1747,12 +1747,12 @@ int main(int argc, char* argv[])
                                 }
                                 case 8:
                                 {
-                                    char pcTemp64[64] = "Display game data on screen.";
+                                    char pcTemp64[64] = "Display frame-by-frame data on screen.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (bFrameDataDisplay)
-                                        strcpy_s(pcTemp64, ">Game data {will be displayed.");
+                                        strcpy_s(pcTemp64, ">Data {will be displayed.");
                                     else
-                                        strcpy_s(pcTemp64, ">Game data {will not be displayed");
+                                        strcpy_s(pcTemp64, ">Data {will not be displayed");
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
