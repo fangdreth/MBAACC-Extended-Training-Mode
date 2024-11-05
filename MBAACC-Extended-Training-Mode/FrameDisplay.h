@@ -1318,18 +1318,14 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 	int nP1YPixelPosition = (int)floor(P1.nYPosition / 128.0);
 	char cP1CounterHit = CH_MAP[P1.cCounterHit];
 	int nP1GuardGauge = (int)P1.fGuardGauge;
-	int nP1Gravity = (int)max(0, round((P1.fGravity - 0.072) / 0.008));
-	nP1Gravity -= (int)floor(nP1Gravity / 60.0);
-	nP1Gravity = (int)ceil(nP1Gravity / 6.0);
+	int nP1Gravity = max(0, (int)100 - floor(100 - (P1.fGravity - 0.072f) / 0.928f * 19));
 	int nP1GravityHits = (int)round(P1.fGravity / 0.008);
 
 	int nP2XPixelPosition = (int)floor(P2.nXPosition / 128.0);
 	int nP2YPixelPosition = (int)floor(P2.nYPosition / 128.0);
 	char cP2CounterHit = CH_MAP[P2.cCounterHit];
 	int nP2GuardGauge = (int)P2.fGuardGauge;
-	int nP2Gravity = (int)max(0, round((P2.fGravity - 0.072) / 0.008));
-	nP2Gravity -= (int)floor(nP2Gravity / 60.0);
-	nP2Gravity = (int)ceil(nP2Gravity / 6.0);
+	int nP2Gravity = max(0, (int)100 - floor(100 - (P2.fGravity - 0.072f) / 0.928f * 19));
 	int nP2GravityHits = (int)round(P2.fGravity / 0.008);
 
 	int nXDistance = (int)abs(P1.nXPosition - P2.nXPosition);
@@ -1360,10 +1356,10 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 
 	if (!bSimpleFrameInfo)
 	{
-		writeBuffer("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i" "\x1b[0m\x1b[K\n"
-			"\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %2i [%i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i"  "\x1b[0m\x1b[K\n",
-			cP1Freeze, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 10, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality, P1.nInactionableMemory % 1000,
-			cP2Freeze, cP2CounterHit, P4.nPattern, P4.nState, nP2GravityHits, nP2Gravity % 10, P2.sUntechPenalty % 10, P2.nRedHealth, nP2GuardGauge, P2.fGuardQuality, P2.nInactionableMemory % 1000);
+		writeBuffer("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %3i [%2i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i" "\x1b[0m\x1b[K\n"
+			"\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %3i [%2i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i"  "\x1b[0m\x1b[K\n",
+			cP1Freeze, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 100, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality, P1.nInactionableMemory % 1000,
+			cP2Freeze, cP2CounterHit, P4.nPattern, P4.nState, nP2GravityHits, nP2Gravity % 100, P2.sUntechPenalty % 10, P2.nRedHealth, nP2GuardGauge, P2.fGuardQuality, P2.nInactionableMemory % 1000);
 	}
 
 	if (bDisplayInputs)
