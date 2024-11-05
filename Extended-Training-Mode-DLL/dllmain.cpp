@@ -1998,11 +1998,11 @@ void frameDoneCallback()
 		if (*(bool*)(dwBaseAddress + adSharedShowStats))
 			drawStats();
 	}
-	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 1)
+	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 1 && bFrameDataDisplay && *(bool*)(dwBaseAddress + adSharedOnExtendedSettings))
 	{
 		drawFrameBar(325);
 	}
-	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 2)
+	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 2 && bFrameDataDisplay && *(bool*)(dwBaseAddress + adSharedOnExtendedSettings))
 	{
 		drawFrameBar();
 	}

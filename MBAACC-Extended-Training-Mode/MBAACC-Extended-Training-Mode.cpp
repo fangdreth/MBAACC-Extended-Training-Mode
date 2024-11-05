@@ -1079,7 +1079,7 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcShowCancelWindows_20, 20, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcScrollDisplay_15, 15, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcColorGuide_12, 12, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcDrawOnScreen_15, 15, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcInGameDisplay_16, 16, 0);
 
                                 break;
                             }
@@ -1698,7 +1698,7 @@ int main(int argc, char* argv[])
                                 {
                                 case 0:
                                 {
-                                    char pcTemp64[64] = "Level of detail to show in the {frame display.";
+                                    char pcTemp64[64] = "Level of detail to show in the {console window.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (nFrameData == FRAMEDISPLAY_NORMAL)
                                         strcpy_s(pcTemp64, ">Display {the basics.");
@@ -1709,7 +1709,7 @@ int main(int argc, char* argv[])
                                 }
                                 case 2:
                                 {
-                                    char pcTemp64[64] = "Display {freeze frames} and {inputs} in the frame display.";
+                                    char pcTemp64[64] = "Show {freeze frames} and {inputs} in the frame display.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (bDisplayFreeze)
                                         strcpy_s(pcTemp64, ">Freeze frames and inputs {will be displayed.");
@@ -1720,10 +1720,10 @@ int main(int argc, char* argv[])
                                 }
                                 case 3:
                                 {
-                                    char pcTemp64[64] = "Display {cancel windows} in the frame display.";
+                                    char pcTemp64[64] = "Show {cancel windows} in the frame display.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    if (bDisplayInputs)
-                                        strcpy_s(pcTemp64, ">Cancel windows {will be displayed.");
+                                    if (bDisplayCancels)
+                                        strcpy_s(pcTemp64, ">Cancel windows {will be displayed} (console only).");
                                     else
                                         strcpy_s(pcTemp64, ">Cancel windows {will not be displayed.");
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
@@ -1733,7 +1733,7 @@ int main(int argc, char* argv[])
                                 {
                                     char pcTemp64[64] = "Scroll through the frame display.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-                                    strcpy_s(pcTemp64, ">{DRAW ON SCREEN} is turned off.");
+                                    strcpy_s(pcTemp64, ">Up to {400} frames are stored.");
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
