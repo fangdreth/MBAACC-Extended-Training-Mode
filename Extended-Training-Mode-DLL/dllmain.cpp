@@ -969,43 +969,25 @@ void drawSimpleMeter()
 {
 	if (!shouldDrawHud) return;
 
-	int nP1Meter = *(int*)(adMBAABase + adP1Base + adMagicCircuit);
-	int nP1MeterTime = *(int*)(adMBAABase + adP1Base + adMagicCircuitTime);
-	uint8_t nP1MeterMode = *(uint8_t*)(adMBAABase + adP1Base + adMagicCircuitMode);
-	short sP1CircuitBreakTimer = *(short*)(adMBAABase + adP1Base + adCircuitBreakTimer);
-	short sP1CircuitBreakFlag = *(short*)(adMBAABase + adP1Base + adBreakOrPenalty);
+	DWORD P1Base = adP1Base + (*(uint8_t*)(adMBAABase + adP1Base + adTagFlag) * dwPlayerStructSize * 2);
+	int nP1Meter = *(int*)(adMBAABase + P1Base + adMagicCircuit);
+	int nP1MeterTime = *(int*)(adMBAABase + P1Base + adMagicCircuitTime);
+	uint8_t nP1MeterMode = *(uint8_t*)(adMBAABase + P1Base + adMagicCircuitMode);
+	short sP1CircuitBreakTimer = *(short*)(adMBAABase + P1Base + adCircuitBreakTimer);
+	short sP1CircuitBreakTotal = *(short*)(adMBAABase + P1Base + adCircuitBreakTotal);
+	short sP1CircuitBreakFlag = *(short*)(adMBAABase + P1Base + adBreakOrPenalty);
 	uint8_t nP1Moon = *(uint8_t*)(adMBAABase + dwP1CharMoon);
 
-	int nP2Meter = *(int*)(adMBAABase + adP2Base + adMagicCircuit);
-	int nP2MeterTime = *(int*)(adMBAABase + adP2Base + adMagicCircuitTime);
-	uint8_t nP2MeterMode = *(uint8_t*)(adMBAABase + adP2Base + adMagicCircuitMode);
-	short sP2CircuitBreakTimer = *(short*)(adMBAABase + adP2Base + adCircuitBreakTimer);
-	short sP2CircuitBreakFlag = *(short*)(adMBAABase + adP2Base + adBreakOrPenalty);
+	DWORD P2Base = adP2Base + (*(uint8_t*)(adMBAABase + adP2Base + adTagFlag) * dwPlayerStructSize * 2);
+	int nP2Meter = *(int*)(adMBAABase + P2Base + adMagicCircuit);
+	int nP2MeterTime = *(int*)(adMBAABase + P2Base + adMagicCircuitTime);
+	uint8_t nP2MeterMode = *(uint8_t*)(adMBAABase + P2Base + adMagicCircuitMode);
+	short sP2CircuitBreakTimer = *(short*)(adMBAABase + P2Base + adCircuitBreakTimer);
+	short sP2CircuitBreakTotal = *(short*)(adMBAABase + P2Base + adCircuitBreakTotal);
+	short sP2CircuitBreakFlag = *(short*)(adMBAABase + P2Base + adBreakOrPenalty);
 	uint8_t nP2Moon = *(uint8_t*)(adMBAABase + dwP2CharMoon);
 
 	static char buffer[8];
-
-	DWORD dwBorderColor = (sP1CircuitBreakTimer && !sP1CircuitBreakFlag) ? CIRCUITBREAK_COLOR : 0xFFFFFFFF;
-	RectDraw(59, 17, 216, 2, dwBorderColor);
-	RectDraw(58, 18, 2, 14, dwBorderColor);
-	RectDraw(59, 31, 216, 2, dwBorderColor);
-	RectDraw(274, 18, 2, 14, dwBorderColor);
-	if (sP1CircuitBreakTimer && !sP1CircuitBreakFlag)
-	{
-		snprintf(buffer, 8, "%3i", sP1CircuitBreakTimer);
-		TextDraw(61 + 106 - 1.5 * 7.7777, 20, 10, CIRCUITBREAKFONT_COLOR, buffer);
-	}
-
-	dwBorderColor = (sP2CircuitBreakTimer && !sP2CircuitBreakFlag) ? CIRCUITBREAK_COLOR : 0xFFFFFFFF;
-	RectDraw(59 + 306, 17, 216, 2, dwBorderColor);
-	RectDraw(58 + 306, 18, 2, 14, dwBorderColor);
-	RectDraw(59 + 306, 31, 216, 2, dwBorderColor);
-	RectDraw(274 + 306, 18, 2, 14, dwBorderColor);
-	if (sP2CircuitBreakTimer && !sP2CircuitBreakFlag)
-	{
-		snprintf(buffer, 8, "%3i", sP2CircuitBreakTimer);
-		TextDraw(579 - 106 - 1.5 * 7.7777, 20, 10, CIRCUITBREAKFONT_COLOR, buffer);
-	}
 
 	RectDraw(60, 19, 214, 12, 0x99000000); //BG
 	switch (nP1MeterMode)
@@ -1095,6 +1077,30 @@ void drawSimpleMeter()
 		TextDraw(579 - 9 * 7.7777, 20, 10, UNLIMITEDFONT_COLOR, "UNLIMITED");
 		break;
 	}
+	}
+
+	DWORD dwBorderColor = (sP1CircuitBreakTimer && !sP1CircuitBreakFlag) ? CIRCUITBREAK_COLOR : 0xFFFFFFFF;
+	RectDraw(59, 17, 216, 2, dwBorderColor);
+	RectDraw(58, 18, 2, 14, dwBorderColor);
+	RectDraw(59, 31, 216, 2, dwBorderColor);
+	RectDraw(274, 18, 2, 14, dwBorderColor);
+	if (sP1CircuitBreakTimer && !sP1CircuitBreakFlag)
+	{
+		snprintf(buffer, 8, "%3i", sP1CircuitBreakTimer);
+		RectDraw(61, 20, sP1CircuitBreakTimer / (sP1CircuitBreakTotal / 212.0), 10, CIRCUITBREAK_COLOR & 0x60FFFFFF);
+		TextDraw(61 + 106 - 1.5 * 7.7777, 20, 10, CIRCUITBREAKFONT_COLOR, buffer);
+	}
+
+	dwBorderColor = (sP2CircuitBreakTimer && !sP2CircuitBreakFlag) ? CIRCUITBREAK_COLOR : 0xFFFFFFFF;
+	RectDraw(59 + 306, 17, 216, 2, dwBorderColor);
+	RectDraw(58 + 306, 18, 2, 14, dwBorderColor);
+	RectDraw(59 + 306, 31, 216, 2, dwBorderColor);
+	RectDraw(274 + 306, 18, 2, 14, dwBorderColor);
+	if (sP2CircuitBreakTimer && !sP2CircuitBreakFlag)
+	{
+		snprintf(buffer, 8, "%3i", sP2CircuitBreakTimer);
+		RectDraw(579 - sP2CircuitBreakTimer / (sP2CircuitBreakTotal / 212.0), 20, sP2CircuitBreakTimer / (sP2CircuitBreakTotal / 212.0), 10, CIRCUITBREAK_COLOR & 0x60FFFFFF);
+		TextDraw(579 - 106 - 1.5 * 7.7777, 20, 10, CIRCUITBREAKFONT_COLOR, buffer);
 	}
 }
 

@@ -283,6 +283,7 @@ const ADDRESS adMagicCircuitTime = 0xE4;
 const ADDRESS adMagicCircuitMode = 0xE8;
 const ADDRESS adPlayerFrameCount = 0xF0;
 const ADDRESS adCircuitBreakTimer = 0x100;
+const ADDRESS adCircuitBreakTotal = 0x102;
 const ADDRESS adBreakOrPenalty = 0x104;
 const ADDRESS adXPosition = 0x108;
 const ADDRESS adYPosition = 0x10C;
