@@ -593,6 +593,8 @@ int main(int argc, char* argv[])
                 uint8_t nP2Controlled;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &nP1Controlled, 1, 0);
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &nP2Controlled, 1, 0);
+                uint8_t nPlayer = cDummyState == -1 ? nP2Controlled : nP1Controlled;
+                uint8_t nDummy = cDummyState == -1 ? nP1Controlled : nP2Controlled;
 
                 // This is the big if-else
                 if (bPaused)
@@ -6165,14 +6167,7 @@ int main(int argc, char* argv[])
                     if (nExGuardSetting == eEnemyOffOnRandom::ON || (rand() % 2 == 0 && nExGuardSetting == eEnemyOffOnRandom::RANDOM))
                         nWriteBuffer = 10;
                     //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2ExGuard), &nWriteBuffer, 4, 0);
-                    if (cDummyState == -1)
-                    {
-                        WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nP1Controlled);
-                    }
-                    else
-                    {
-                        WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nP2Controlled);
-                    }
+                    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nDummy);
 
                     // Disable built-in health recovery
                     nWriteBuffer = 4;
