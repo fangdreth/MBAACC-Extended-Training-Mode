@@ -271,6 +271,7 @@ const ADDRESS adP2Base = 0x155130 + 1 * dwPlayerStructSize; //0x155C2C
 const ADDRESS adP3Base = 0x155130 + 2 * dwPlayerStructSize; //0x156728
 const ADDRESS adP4Base = 0x155130 + 3 * dwPlayerStructSize; //0x157224
 
+const ADDRESS adInputIndex = 0x7;
 const ADDRESS adPattern = 0x10;
 const ADDRESS adSave1Offset = 0x10;
 const ADDRESS adState = 0x14;

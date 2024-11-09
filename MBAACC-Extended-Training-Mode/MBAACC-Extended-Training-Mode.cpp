@@ -593,8 +593,9 @@ int main(int argc, char* argv[])
                 uint8_t nP2Controlled;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &nP1Controlled, 1, 0);
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &nP2Controlled, 1, 0);
-                uint8_t nPlayer = cDummyState == -1 ? nP2Controlled : nP1Controlled;
-                uint8_t nDummy = cDummyState == -1 ? nP1Controlled : nP2Controlled;
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adInputIndex), &nReadResult, 1, 0);
+                uint8_t nPlayer = nReadResult == 0 ? nP1Controlled : nP2Controlled;
+                uint8_t nDummy = nReadResult == 0 ? nP2Controlled : nP1Controlled;
 
                 // This is the big if-else
                 if (bPaused)
