@@ -840,7 +840,7 @@ void UpdateBars(Player& P, Player& Assist)
 						SpecialCancel = 2;
 					}
 				}
-				sFont += SPECIAL_CANCEL_FONTS[SpecialCancel] + NORMAL_CANCEL_FONTS[P.cState_NormalCancel];
+				sFont = SPECIAL_CANCEL_FONTS[SpecialCancel] + NORMAL_CANCEL_FONTS[P.cState_NormalCancel];
 			}
 		}
 	}
