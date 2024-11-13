@@ -1,4 +1,5 @@
 
+#include "DirectX.h"
 #include "ReplayManager.h"
 
 /*

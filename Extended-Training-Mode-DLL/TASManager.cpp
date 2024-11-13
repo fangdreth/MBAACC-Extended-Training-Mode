@@ -1,4 +1,5 @@
 
+#include "DirectX.h"
 #include "TASManager.h"
 #include <fstream>
 #include <string>

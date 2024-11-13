@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DirectX.h"
+
 
 typedef struct InputItem {
 	BYTE length;

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "DirectX.h"
-
 enum class TASCommand : uint8_t {
     Nothing = 0,
     P1XPos = 1,
