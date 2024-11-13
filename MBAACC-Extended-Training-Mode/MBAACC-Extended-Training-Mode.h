@@ -19,6 +19,7 @@
 #include <timeapi.h>
 #include <sstream>
 #include <iostream>
+#include "resource.h"
 #pragma comment(lib, "winmm.lib")
 
 #include "json.hpp"
@@ -650,4 +651,57 @@ void __stdcall netlog(const char* format, ...) {
 
 long long getMicroSec() {
     return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+}
+
+std::wstring getDLLPath() {
+    wchar_t buffer[1024];
+    if (!GetTempPathW(1024, buffer)) {
+        printf(RED "Failed to get temp path\n" RESET);
+        return L"";
+    }
+    std::wstring dllPath = std::wstring(buffer) + std::wstring(L"\\Extended-Training-Mode-DLL.dll");
+    return dllPath;
+}
+
+bool writeDLL() {
+
+    std::wstring dllPath = getDLLPath();
+
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+
+    // there was no way to get a solution path, or the current configuration, while inside the rc file. this fix is dumb but works
+    #ifdef NDEBUG
+        #define DLLRESOURCE IDR_DLL1
+    #else
+        #define DLLRESOURCE IDR_DLL2
+    #endif
+
+    HRSRC hRes = FindResource(hInstance, MAKEINTRESOURCE(IDR_DLL1), L"DLL");
+    if (!hRes) {
+        printf(RED "Failed to FindResource %d\n" RESET, GetLastError());
+        return false;
+    }
+
+    HGLOBAL hData = LoadResource(hInstance, hRes);
+    if (!hData) {
+        printf(RED "Failed to LoadResource\n" RESET);
+        return false;
+    }
+    void* pData = LockResource(hData);
+    if (!pData) {
+        printf(RED "Failed to LockResource\n" RESET);
+        return false;
+    }
+
+    DWORD dwSize = SizeofResource(hInstance, hRes);
+
+    std::ofstream outFile(dllPath, std::ios::binary);
+    if (outFile) {
+        outFile.write(reinterpret_cast<char*>(pData), dwSize);
+    } else {
+        printf(RED "Failed to open dll file\n" RESET);
+        return false;
+    }
+
+    return true;
 }

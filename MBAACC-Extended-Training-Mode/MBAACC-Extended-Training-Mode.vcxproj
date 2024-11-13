@@ -169,6 +169,13 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MBAACC-Extended-Training-Mode.h" />
     <ClInclude Include="PointerManager.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MBAACC-Extended-Training-Mode.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Release\Extended-Training-Mode-DLL.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,6 +2,14 @@
 
 int main(int argc, char* argv[])
 {
+
+    if (!writeDLL()) {
+        printf("FAILED TO WRITE DLL\n");
+        printf("press any key to exit\n");
+        getchar();
+        return 1;
+    }
+
     timeBeginPeriod(1);
     try
     {
@@ -182,12 +190,13 @@ int main(int argc, char* argv[])
             vPathTokens.push_back(s + "\\");
         vPathTokens.pop_back();
         std::string sInstallPath = std::accumulate(vPathTokens.begin(), vPathTokens.end(), std::string{});
-        std::string sDLLPath = sInstallPath + "Extended-Training-Mode-DLL.dll";
+        //std::string sDLLPath = sInstallPath + "Extended-Training-Mode-DLL.dll";
+        std::wstring sDLLPath = getDLLPath();
         while (!std::ifstream(sDLLPath).good())
         {
-            std::string sErrorString = "UNABLE TO FIND " + sDLLPath;
+            std::wstring sErrorString = L"UNABLE TO FIND " + sDLLPath;
             //int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONERROR | MB_RETRYCANCEL);
-            switch (MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONERROR | MB_RETRYCANCEL))
+            switch (MessageBoxW(NULL, sErrorString.c_str(), L"", MB_ICONERROR | MB_RETRYCANCEL))
             {
             case IDRETRY:
                 continue;
@@ -196,6 +205,7 @@ int main(int argc, char* argv[])
                 break;
             }
         }
+        
         // Not needed currently, but if we ever need it this can be uncommented
         //SetRegistryValue(L"InstallPath", sInstallPath);
 
