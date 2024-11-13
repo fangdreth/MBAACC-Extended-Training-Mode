@@ -55,6 +55,7 @@ int nFrameDataDisplayKey;
 int nHighlightsOnKey;
 int nSaveStateKey;
 
+int showDebugMenu = 0;
 bool bFreeze = false;
 bool bSlow = false;
 bool bFrameDataDisplay = false;
@@ -1582,10 +1583,8 @@ void frameDoneCallback()
 	
 	renderModificationsFrameDone();
 
-	if (!*(bool*)(adMBAABase + adSharedHideFancyMenu)) {
-		drawFancyMenu();
-		dragManager.handleDrag();
-	}
+	drawFancyMenu();
+	dragManager.handleDrag();
 
 	setAllKeys();
 
@@ -3216,6 +3215,8 @@ void threadFunc()
 	initDualInputDisplay();
 
 	initInputCallback();
+
+	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 	
 	while (true) 
 	{

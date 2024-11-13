@@ -55,7 +55,7 @@ jobs:
         prerelease: true
         fail_on_unmatched_files: true
         files: |
-          ./Release/MBAACC-Extended-Training-Mode.exe
+          ./Release/MBAACC-Extended-Training-Mode-Launcher.exe
         body: | 
           This is a bleeding edge release. There are bugs. To get an actual release, please scroll down.
       env:

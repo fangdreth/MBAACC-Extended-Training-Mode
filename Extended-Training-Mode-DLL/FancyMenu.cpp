@@ -2,7 +2,7 @@
 #include "DirectX.h"
 #include "FancyMenu.h"
 
-Menu<int> baseMenu("Base");
+Menu<int> baseMenu("Debug Menu");
 Menu<int>* disableFpsMenuOption = NULL;
 
 template <typename T>
@@ -346,6 +346,22 @@ DragInfo menuDrag = DragInfo(&menuDragPoint.x, &menuDragPoint.y);
 
 void drawFancyMenu() {
 
+	if (rClick) {
+		showDebugMenu = !showDebugMenu;
+		SetRegistryValue(L"ShowDebugMenu", showDebugMenu);
+		if (showDebugMenu) {
+			dragManager.add(&menuDrag);
+		} else {
+			dragManager.remove(&menuDrag);
+		}
+	}
+
+	if (!showDebugMenu) {
+		return;
+	}
+	
+	menuDrag.enable = showDebugMenu;
+
 	static bool menuInit = false;
 	
 	if (!menuInit) {
@@ -364,3 +380,4 @@ void drawFancyMenu() {
 	Point menuBasePos = menuDragPoint; // copy bc the menu messes with this point value
 	baseMenu.draw(menuBasePos);
 }
+

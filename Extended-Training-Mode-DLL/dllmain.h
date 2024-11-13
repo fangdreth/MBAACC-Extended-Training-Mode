@@ -155,6 +155,8 @@ extern bool enableTAS;
 extern bool disableFPSLimit;
 extern bool bFreeze;
 
+extern int showDebugMenu;
+
 // -----
 
 void __stdcall ___log(const char* msg);

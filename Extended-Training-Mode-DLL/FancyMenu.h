@@ -73,3 +73,4 @@ extern Menu<int> baseMenu;
 extern Menu<int>* disableFpsMenuOption;
 
 void drawFancyMenu();
+
