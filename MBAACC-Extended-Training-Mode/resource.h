@@ -3,7 +3,6 @@
 // Used by MBAACC-Extended-Training-Mode.rc
 //
 #define IDR_DLL1                        101
-#define IDR_DLL2                        102
 
 // Next default values for new objects
 // 

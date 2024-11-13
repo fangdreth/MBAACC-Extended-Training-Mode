@@ -669,13 +669,6 @@ bool writeDLL() {
 
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
-    // there was no way to get a solution path, or the current configuration, while inside the rc file. this fix is dumb but works
-    #ifdef NDEBUG
-        #define DLLRESOURCE IDR_DLL1
-    #else
-        #define DLLRESOURCE IDR_DLL2
-    #endif
-
     HRSRC hRes = FindResource(hInstance, MAKEINTRESOURCE(IDR_DLL1), L"DLL");
     if (!hRes) {
         printf(RED "Failed to FindResource %d\n" RESET, GetLastError());
