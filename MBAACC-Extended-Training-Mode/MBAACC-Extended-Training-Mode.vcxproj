@@ -157,6 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Common\RawData.cpp" />
     <ClCompile Include="Injector.h" />
     <ClCompile Include="MBAACC-Extended-Training-Mode.cpp" />
   </ItemGroup>

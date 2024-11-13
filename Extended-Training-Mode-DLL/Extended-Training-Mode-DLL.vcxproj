@@ -100,7 +100,7 @@
       <Command>if not "%MELTYPATH%"=="" (xcopy /y "$(TargetDir)$(TargetFileName)" "%MELTYPATH%")</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>call "$(ProjectDir)/../Common/genVersion.bat"</Command>
+      <Command>cd /D "$(ProjectDir)/../Common/" &amp;&amp; call "$(ProjectDir)/../Common/genVersion.bat"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -133,7 +133,7 @@
       <ImageHasSafeExceptionHandlers />
     </Link>
     <PreBuildEvent>
-      <Command>call "$(ProjectDir)/../Common/genVersion.bat"</Command>
+      <Command>cd /D "$(ProjectDir)/../Common/" &amp;&amp; call "$(ProjectDir)/../Common/genVersion.bat"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -192,6 +192,8 @@
     <ClInclude Include="TASManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Common\RawData.cpp" />
+    <ClCompile Include="..\Common\version.cpp" />
     <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FancyInputDisplay.cpp" />
@@ -199,7 +201,6 @@
     <ClCompile Include="ReplayManager.cpp" />
     <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="TASManager.cpp" />
-    <ClCompile Include="version.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DLLAsmFuncs.asm">

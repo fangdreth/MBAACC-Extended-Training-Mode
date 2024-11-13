@@ -6,6 +6,7 @@
 #include "FancyMenu.h"
 #include "FancyInputDisplay.h"
 //#include "version.h"	
+#include "../Common/version.h"
 
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
@@ -2470,11 +2471,11 @@ void _drawDebugMenu();
 void _drawBuildInfo() {
 
 	DWORD col = 0xFF42e5f4;
-	if (isBleeding()) {
+	if (BLEEDING) {
 		col = 0xFFbd1a0b;
 	}
 
-	TextDraw(640 - (7 * 10), 0, 10, col, getBuildInfo());
+	TextDraw(640 - (7 * 10), 0, 10, col, GIT_VERSION);
 
 }
 
