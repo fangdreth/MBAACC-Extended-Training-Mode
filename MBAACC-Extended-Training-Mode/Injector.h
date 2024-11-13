@@ -25,7 +25,6 @@ static int inject(unsigned long procID, std::wstring dllPath)
 {
 
 	unsigned long pid = procID;
-	const wchar_t* path = dllPath.c_str();
 	size_t dllPathLength = (dllPath.length() + 1) * sizeof(wchar_t);
 
 	std::ifstream f(dllPath);
@@ -49,12 +48,13 @@ static int inject(unsigned long procID, std::wstring dllPath)
 		return 1;
 	}
 
-	if (WriteProcessMemory(injectorProcHandle, dllNameAdr, path, dllPathLength, NULL) == 0)
+	if (WriteProcessMemory(injectorProcHandle, dllNameAdr, dllPath.c_str(), dllPathLength, NULL) == 0)
 	{
 		LogError("WriteProcessMemory failed for DLL injection");
 		return 1;
 	}
 
+	//HANDLE tHandle = CreateRemoteThread(injectorProcHandle, 0, 0, (LPTHREAD_START_ROUTINE)(void*)GetProcAddress(GetModuleHandle(L"kernel32.dll"), "LoadLibraryW"), dllNameAdr, 0, 0);
 	HANDLE tHandle = CreateRemoteThread(injectorProcHandle, 0, 0, (LPTHREAD_START_ROUTINE)(void*)GetProcAddress(GetModuleHandle(L"kernel32.dll"), "LoadLibraryW"), dllNameAdr, 0, 0);
 	if (tHandle == NULL)
 	{
@@ -79,5 +79,5 @@ static bool InjectIntoMBAA(unsigned long nPID, std::wstring sDLLPath)
 		LogError("Failure during injection");
 	}
 
-	return nReturn;
+	return !nReturn;
 }
