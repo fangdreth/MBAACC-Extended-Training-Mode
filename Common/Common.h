@@ -417,8 +417,11 @@ const ADDRESS adSharedShowStats =					adShareBase + 0x24; // 1 byte
 const ADDRESS adSharedP1InputDisplay =				adShareBase + 0x25; // 1 byte
 const ADDRESS adSharedP2InputDisplay =				adShareBase + 0x26; // 1 byte
 const ADDRESS adSharedHighlight =					adShareBase + 0x27; // 1 byte
-const ADDRESS adSharedTimer =                       adShareBase + 0x28; // 4 bytes
-const ADDRESS adSharedColorGuide =                  adShareBase + 0x2C; // 1 byte
+const ADDRESS adSharedTimer =						adShareBase + 0x28; // 4 bytes
+const ADDRESS adSharedColorGuide =					adShareBase + 0x2C; // 1 byte
+const ADDRESS adSharedHideFPS =						adShareBase + 0x2D; // 1 byte
+const ADDRESS adSharedHideBuildInfo =				adShareBase + 0x2E; // 1 byte
+const ADDRESS adSharedHideFancyMenu =				adShareBase + 0x2F; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x30;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x31;	// 1 byte
@@ -450,9 +453,9 @@ const ADDRESS adSharedSubInfoText =					adShareBase + 0x161; // 64 bytes
 // not interested in messing with converting them when a table is good enough
 const std::vector<int> vGuardLevelLookupTable =
 {
-    1174011904/*C 100*/, 1169915904/*C 75*/, 1165623296/*C 50*/, 1157234688/*C 25*/, 0/*C 0*/,
-    1171963904/*F 100*/, 1168379904/*F 75*/, 1163575296/*F 50*/, 1155186688/*F 25*/, 0/*F 0*/,
-    1176768512/*H 100*/, 1173755904/*H 75*/, 1168379904/*H 50*/, 1159991296/*H 25*/, 0/*H 0*/
+	1174011904/*C 100*/, 1169915904/*C 75*/, 1165623296/*C 50*/, 1157234688/*C 25*/, 0/*C 0*/,
+	1171963904/*F 100*/, 1168379904/*F 75*/, 1163575296/*F 50*/, 1155186688/*F 25*/, 0/*F 0*/,
+	1176768512/*H 100*/, 1173755904/*H 75*/, 1168379904/*H 50*/, 1159991296/*H 25*/, 0/*H 0*/
 };
 
 const int MAX_REVERSAL_DELAY = 99;
@@ -643,6 +646,7 @@ const char pcHideHUD_9[9] = "HIDE HUD";
 const char pcHideShadow_13[13] = "HIDE SHADOWS";
 const char pcBackground_11[11] = "BACKGROUND";
 const char pcDrawGround_12[12] = "DRAW GROUND";
+const char pcHideExtras_12[12] = "HIDE EXTRAS";
 
 const char pcFreeze_11[11] = "FREEZE KEY";
 const char pcNextStep_14[14] = "NEXT STEP KEY";
@@ -748,56 +752,56 @@ public:
 	}
 
 	bool keyHeld()
-    {
+	{
 		if (!isFocused()) {
-            freqHeldCounter = 0;
+			freqHeldCounter = 0;
 			return false;
 		}
 
-        bool res = nKey != 0x0 && GetAsyncKeyState(nKey) & 0x8000;
-        if (res) {
-            freqHeldCounter++;
-        } else {
-            freqHeldCounter = 0;
-        }
-        return res;
+		bool res = nKey != 0x0 && GetAsyncKeyState(nKey) & 0x8000;
+		if (res) {
+			freqHeldCounter++;
+		} else {
+			freqHeldCounter = 0;
+		}
+		return res;
 	}
 
-    template<int freq, int startup = 45> // freq is the frame modulo for when this should trig, startup is how long to wait for that
-    bool keyHeldFreq() {
+	template<int freq, int startup = 45> // freq is the frame modulo for when this should trig, startup is how long to wait for that
+	bool keyHeldFreq() {
 
-        bool res = keyHeld();
+		bool res = keyHeld();
 
-        if (freqHeldCounter < startup) {
-            return false;
-        }
+		if (freqHeldCounter < startup) {
+			return false;
+		}
 
-        if (__frameDoneCount % freq != 0) {
-            return false;
-        }
+		if (__frameDoneCount % freq != 0) {
+			return false;
+		}
 
-        return res;
-    }
+		return res;
+	}
 
-    template<int freq, int startup = 45> // same as above func, but also will return immediately on keydown
-    bool keyDownHeldFreq() {
+	template<int freq, int startup = 45> // same as above func, but also will return immediately on keydown
+	bool keyDownHeldFreq() {
 
-        bool res = keyHeld();
+		bool res = keyHeld();
 
-        if (keyDown()) {
-            return true;
-        }
+		if (keyDown()) {
+			return true;
+		}
 
-        if (freqHeldCounter < startup) {
-            return false;
-        }
+		if (freqHeldCounter < startup) {
+			return false;
+		}
 
-        if (__frameDoneCount % freq != 0) {
-            return false;
-        }
+		if (__frameDoneCount % freq != 0) {
+			return false;
+		}
 
-        return res;
-    }
+		return res;
+	}
 
 	bool keyDown()
 	{
@@ -821,7 +825,7 @@ public:
 	}
 public:
 	int nHeldKeyCounter;
-    int freqHeldCounter = 0;
+	int freqHeldCounter = 0;
 private:
 	uint8_t nKey;
 	bool prevState = false;
@@ -834,18 +838,18 @@ static bool GetOpenSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wst
 	const uint8_t nZero = 0;
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nOne, 1, 0);
 
-    char pcFileName[MAX_PATH];
+	char pcFileName[MAX_PATH];
 
-    OPENFILENAME ofn;
-    ZeroMemory(pcFileName, sizeof(pcFileName));
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = NULL;
-    ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
-    ofn.lpstrFile = (LPWSTR)pcFileName;
-    ofn.nMaxFile = MAX_PATH;
-    ofn.lpstrTitle = (LPWSTR)L"Open Save State";
-    ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
+	OPENFILENAME ofn;
+	ZeroMemory(pcFileName, sizeof(pcFileName));
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = NULL;
+	ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
+	ofn.lpstrFile = (LPWSTR)pcFileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrTitle = (LPWSTR)L"Open Save State";
+	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
 
 	bool bResult = GetOpenFileNameW(&ofn);
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
@@ -863,23 +867,23 @@ static bool GetSaveSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wst
 	const uint8_t nZero = 0;
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nOne, 1, 0);
 
-    char pcFileName[MAX_PATH];
+	char pcFileName[MAX_PATH];
 
-    OPENFILENAME ofn;
-    ZeroMemory(pcFileName, sizeof(pcFileName));
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = NULL;
-    ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
-    ofn.lpstrFile = (LPWSTR)pcFileName;
-    ofn.nMaxFile = MAX_PATH;
-    ofn.lpstrTitle = (LPWSTR)L"Create Save State";
-    ofn.lpstrDefExt = L"sav";
-    ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT;
+	OPENFILENAME ofn;
+	ZeroMemory(pcFileName, sizeof(pcFileName));
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = NULL;
+	ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
+	ofn.lpstrFile = (LPWSTR)pcFileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrTitle = (LPWSTR)L"Create Save State";
+	ofn.lpstrDefExt = L"sav";
+	ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT;
 
 	bool bResult = GetSaveFileNameW(&ofn);
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
-    if (bResult)
+	if (bResult)
 	{
 		*pwsFileName = std::wstring(ofn.lpstrFile);
 		return true;
@@ -889,192 +893,192 @@ static bool GetSaveSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wst
 
 static void CreateRegistryKey()
 {
-    try
-    {
-        SECURITY_DESCRIPTOR SD;
-        SECURITY_ATTRIBUTES SA;
-        InitializeSecurityDescriptor(&SD, SECURITY_DESCRIPTOR_REVISION);
-        //SetSecurityDescriptorDacl(&SD, true, 0, false);
-        SA.nLength = sizeof(SA);
-        SA.lpSecurityDescriptor = &SD;
-        SA.bInheritHandle = false;
+	try
+	{
+		SECURITY_DESCRIPTOR SD;
+		SECURITY_ATTRIBUTES SA;
+		InitializeSecurityDescriptor(&SD, SECURITY_DESCRIPTOR_REVISION);
+		//SetSecurityDescriptorDacl(&SD, true, 0, false);
+		SA.nLength = sizeof(SA);
+		SA.lpSecurityDescriptor = &SD;
+		SA.bInheritHandle = false;
 
-        DWORD dwFunc;
-        HKEY hKey;
-        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
-        LONG openResult = RegCreateKeyExW(HKEY_CURRENT_USER, sk, 0, (LPTSTR)NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, &SA, &hKey, &dwFunc);
-        RegCloseKey(hKey);
-    }
-    catch (...)
-    {
-    }
+		DWORD dwFunc;
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+		LONG openResult = RegCreateKeyExW(HKEY_CURRENT_USER, sk, 0, (LPTSTR)NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, &SA, &hKey, &dwFunc);
+		RegCloseKey(hKey);
+	}
+	catch (...)
+	{
+	}
 }
 
 static LONG ReadFromRegistry(std::wstring sKey, uint8_t* nValue)
 {
-    LONG openResult = -1;
+	LONG openResult = -1;
 
-    try
-    {
-        DWORD dwValue = NULL;
-        HKEY hKey;
-        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
-        DWORD dwType = REG_DWORD;
-        DWORD dwSize = sizeof(nValue);
+	try
+	{
+		DWORD dwValue = NULL;
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+		DWORD dwType = REG_DWORD;
+		DWORD dwSize = sizeof(nValue);
 
-        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
-        if (openResult == 0)
-            openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
-        if (openResult == 0)
-            *nValue = (int)dwValue;
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+		if (openResult == 0)
+			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
+		if (openResult == 0)
+			*nValue = (int)dwValue;
 
-        RegCloseKey(hKey);
-    }
-    catch (...)
-    {
-    }
+		RegCloseKey(hKey);
+	}
+	catch (...)
+	{
+	}
 
-    return openResult;
+	return openResult;
 }
 
 static LONG ReadFromRegistry(std::wstring sKey, int* pnValue)
 {
-    LONG openResult = -1;
+	LONG openResult = -1;
 
-    try
-    {
-        DWORD dwValue = NULL;
-        HKEY hKey;
-        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
-        DWORD dwType = REG_DWORD;
-        DWORD dwSize = sizeof(pnValue);
+	try
+	{
+		DWORD dwValue = NULL;
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+		DWORD dwType = REG_DWORD;
+		DWORD dwSize = sizeof(pnValue);
 
-        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
-        if (openResult == 0)
-            openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
-        if (openResult == 0)
-            *pnValue = (int)dwValue;
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+		if (openResult == 0)
+			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
+		if (openResult == 0)
+			*pnValue = (int)dwValue;
 
-        RegCloseKey(hKey);
-    }
-    catch (...)
-    {
-    }
+		RegCloseKey(hKey);
+	}
+	catch (...)
+	{
+	}
 
-    return openResult;
+	return openResult;
 }
 
 static LONG SetRegistryValue(std::wstring sKey, int nValue)
 {
-    LONG openResult = -1;
+	LONG openResult = -1;
 
-    try
-    {
-        HKEY hKey;
-        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
+	try
+	{
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
 
-        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
-        if (openResult == 0)
-            openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_DWORD, (unsigned char*)&nValue, sizeof(nValue));
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
+		if (openResult == 0)
+			openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_DWORD, (unsigned char*)&nValue, sizeof(nValue));
 
-        RegCloseKey(hKey);
-    }
-    catch (...)
-    {
-    }
-    return openResult;
+		RegCloseKey(hKey);
+	}
+	catch (...)
+	{
+	}
+	return openResult;
 }
 
 static LONG SetRegistryValue(std::wstring sKey, bool bValue)
 {
-    return SetRegistryValue(sKey, bValue ? 1 : 0);
+	return SetRegistryValue(sKey, bValue ? 1 : 0);
 }
 
 static LONG SetRegistryValue(std::wstring sKey, std::string sValue)
 {
-    LONG openResult = -1;
+	LONG openResult = -1;
 
-    try
-    {
-        HKEY hKey;
-        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
-        char pcVal[MAX_PATH];
-        strcpy_s(pcVal, sValue.c_str());
+	try
+	{
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
+		char pcVal[MAX_PATH];
+		strcpy_s(pcVal, sValue.c_str());
 
-        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
-        if (openResult == 0)
-            openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_SZ, (LPBYTE)pcVal, strlen(pcVal) + 1);
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
+		if (openResult == 0)
+			openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_SZ, (LPBYTE)pcVal, strlen(pcVal) + 1);
 
-        RegCloseKey(hKey);
-    }
-    catch (...)
-    {
-    }
-    return openResult;
+		RegCloseKey(hKey);
+	}
+	catch (...)
+	{
+	}
+	return openResult;
 }
 
 static LONG ReadFromRegistry(std::wstring sKey, bool* pbValue)
 {
-    uint8_t nValue = 0;
-    LONG openResult = ReadFromRegistry(sKey, &nValue);
-    if (openResult == 0)
-        *pbValue = nValue > 0 ? true : false;
-    return openResult;
+	uint8_t nValue = 0;
+	LONG openResult = ReadFromRegistry(sKey, &nValue);
+	if (openResult == 0)
+		*pbValue = nValue > 0 ? true : false;
+	return openResult;
 }
 
 static LONG ReadFromRegistry(std::wstring sKey, std::string* psValue)
 {
-    LONG openResult = -1;
+	LONG openResult = -1;
 
-    try
-    {
-        char pcValue[MAX_PATH];
-        HKEY hKey;
-        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
-        DWORD dwType = REG_SZ;
-        DWORD dwSize = MAX_PATH;
+	try
+	{
+		char pcValue[MAX_PATH];
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+		DWORD dwType = REG_SZ;
+		DWORD dwSize = MAX_PATH;
 
-        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
-        if (openResult == 0)
-            openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&pcValue, &dwSize);
-        if (openResult == 0)
-            *psValue = std::string(pcValue);
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+		if (openResult == 0)
+			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&pcValue, &dwSize);
+		if (openResult == 0)
+			*psValue = std::string(pcValue);
 
-        RegCloseKey(hKey);
-    }
-    catch (...)
-    {
-    }
+		RegCloseKey(hKey);
+	}
+	catch (...)
+	{
+	}
 
-    return openResult;
+	return openResult;
 }
 
 static LONG DeleteRegistry()
 {
-    LONG openResult = -1;
+	LONG openResult = -1;
 
-    try
-    {
-        HKEY hKey;
-        LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+	try
+	{
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
 
-        openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_ALL_ACCESS, &hKey);
-        if (openResult == ERROR_SUCCESS)
-        {
-            openResult = RegDeleteKeyW(HKEY_CURRENT_USER, sk);
-            if (openResult != ERROR_SUCCESS)
-                LogError("Unable to delete registry key");
-        }
-        else
-        {
-            LogError("Unable to open registry key");
-        }
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_ALL_ACCESS, &hKey);
+		if (openResult == ERROR_SUCCESS)
+		{
+			openResult = RegDeleteKeyW(HKEY_CURRENT_USER, sk);
+			if (openResult != ERROR_SUCCESS)
+				LogError("Unable to delete registry key");
+		}
+		else
+		{
+			LogError("Unable to open registry key");
+		}
 
-        RegCloseKey(hKey);
-    }
-    catch (...)
-    {
-    }
+		RegCloseKey(hKey);
+	}
+	catch (...)
+	{
+	}
 
-    return openResult;
+	return openResult;
 }

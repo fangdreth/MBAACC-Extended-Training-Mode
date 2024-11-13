@@ -1582,9 +1582,10 @@ void frameDoneCallback()
 	
 	renderModificationsFrameDone();
 
-	drawFancyMenu();
-
-	dragManager.handleDrag();
+	if (!*(bool*)(adMBAABase + adSharedHideFancyMenu)) {
+		drawFancyMenu();
+		dragManager.handleDrag();
+	}
 
 	setAllKeys();
 

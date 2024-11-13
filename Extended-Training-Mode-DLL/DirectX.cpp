@@ -2711,7 +2711,9 @@ void __stdcall _doDrawCalls() {
 	_drawLog();
 	_drawMiscInfo();
 	_drawDebugMenu();
-	_drawBuildInfo();
+	if (!*(bool*)(adMBAABase + adSharedHideBuildInfo)) {
+		_drawBuildInfo();
+	}
 
 	// -- ACTUAL RENDERING --
 	backupRenderState();
@@ -2765,6 +2767,9 @@ void logFPS() {
 	}
 
 	FreqTimerData timerData = fpsTimer.getData();
+
+	if (*(char*)(adMBAABase + adSharedHideFPS)) return;
+
 	if (logVerboseFps) {
 		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "avg:%6.2lf min:%6.2lf max:%6.2lf stdev:%6.2lf maintainfps: %s", timerData.mean, timerData.min, timerData.max, timerData.stdev, fpsMethod);
 	} else {
