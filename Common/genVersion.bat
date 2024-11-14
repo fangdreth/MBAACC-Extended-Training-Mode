@@ -14,7 +14,11 @@ echo const char* GIT_DIRTY = "%GIT_DIRTY%"; >> version.cpp
 echo const char* GIT_VERSION = "%GIT_HASH%_%GIT_DIRTY%"; >> version.cpp
 
 if "%BLEEDING%"=="^%BLEEDING^%" (
-	echo const bool BLEEDING = true; >> version.cpp
-) else (
 	echo const bool BLEEDING = false; >> version.cpp
+) else (
+	if "%BLEEDING%"=="" (
+		echo const bool BLEEDING = false; >> version.cpp
+	) else (
+		echo const bool BLEEDING = true; >> version.cpp
+	)
 )

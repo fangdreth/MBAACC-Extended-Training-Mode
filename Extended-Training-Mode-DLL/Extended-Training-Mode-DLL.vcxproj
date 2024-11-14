@@ -183,6 +183,7 @@
     <ClInclude Include="..\Common\CharacterData.h" />
     <ClInclude Include="..\Common\Common.h" />
     <ClInclude Include="..\Common\RawData.h" />
+    <ClInclude Include="..\Common\version.h" />
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="FancyInputDisplay.h" />
