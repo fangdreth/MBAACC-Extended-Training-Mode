@@ -730,8 +730,10 @@ D3DXVECTOR2 mouseTopLeft;
 D3DXVECTOR2 mouseBottomRight;
 D3DXVECTOR2 mouseFactor;
 bool lClick = false;
+bool mClick = false;
 bool rClick = false;
 bool lHeld = false;
+bool mHeld = false;
 bool rHeld = false;
 
 // -----
@@ -899,12 +901,15 @@ void __stdcall backupRenderState() {
 	}
 
 	static KeyState lButton(VK_LBUTTON);
+	static KeyState mButton(VK_MBUTTON);
 	static KeyState rButton(VK_RBUTTON);
 
 	lClick = lButton.keyDown();
+	mClick = mButton.keyDown();
 	rClick = rButton.keyDown();
 
 	lHeld = lButton.keyHeld();
+	mHeld = mButton.keyHeld();
 	rHeld = rButton.keyHeld();
 
 

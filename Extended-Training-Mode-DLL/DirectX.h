@@ -213,8 +213,10 @@ void dualInputDisplay();
 void cursorDraw();
 
 extern bool lClick;
+extern bool mClick;
 extern bool rClick;
 extern bool lHeld;
+extern bool mHeld;
 extern bool rHeld;
 
 // my inconsistent use of D3DXVECTOR2 vs point is bad. i should use point

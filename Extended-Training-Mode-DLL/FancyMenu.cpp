@@ -346,7 +346,7 @@ DragInfo menuDrag = DragInfo(&menuDragPoint.x, &menuDragPoint.y);
 
 void drawFancyMenu() {
 
-	if (rClick) {
+	if (mClick) {
 		showDebugMenu = !showDebugMenu;
 		SetRegistryValue(L"ShowDebugMenu", showDebugMenu);
 		if (showDebugMenu) {
