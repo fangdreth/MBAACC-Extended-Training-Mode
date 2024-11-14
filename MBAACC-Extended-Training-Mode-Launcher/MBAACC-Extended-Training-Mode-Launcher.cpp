@@ -181,7 +181,7 @@ int needUpdate() {
 	log("compile time: %lld", compileTime);
 
 	//return true;
-	return releaseTime > compileTime;
+	return releaseTime > compileTime + 600; // 10 minute buffer bc compile time and release time are offset.
 }
 
 bool update() {
