@@ -2712,7 +2712,9 @@ void __stdcall _doDrawCalls() {
 	_drawMiscInfo();
 	_drawDebugMenu();
 	if (!*(bool*)(adMBAABase + adSharedHideBuildInfo)) {
-		_drawBuildInfo();
+		if (shouldDrawHud) {
+			_drawBuildInfo();
+		}
 	}
 
 	// -- ACTUAL RENDERING --
@@ -2733,6 +2735,7 @@ void __stdcall _doDrawCalls() {
 // -----
 
 void logFPS() {
+
 	constexpr int timerSize = 60;
 	static FreqTimer<timerSize> fpsTimer;
 	fpsTimer.tick();
@@ -2773,7 +2776,9 @@ void logFPS() {
 	if (logVerboseFps) {
 		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "avg:%6.2lf min:%6.2lf max:%6.2lf stdev:%6.2lf maintainfps: %s", timerData.mean, timerData.min, timerData.max, timerData.stdev, fpsMethod);
 	} else {
-		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "%5.2lf", timerData.mean);
+		if (shouldDrawHud) {
+			TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "%5.2lf", timerData.mean);
+		}
 	}
 	
 }
