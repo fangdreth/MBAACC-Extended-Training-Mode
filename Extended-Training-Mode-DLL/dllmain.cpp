@@ -965,7 +965,6 @@ void drawFrameBar(int nYOverride = -1)
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main1).nFirstActive % 1000, (*Main1).nInactionableMemory % 1000, nPlayerAdvantage % 1000);
 	TextDraw(20, frameBarY - 12, 10, 0xFFFFFFFF, buffer);
 
-
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", (*Main2).nFirstActive % 1000, (*Main2).nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
 	TextDraw(20, frameBarY + 29, 10, 0xFFFFFFFF, buffer);
 
@@ -1976,8 +1975,9 @@ void frameDoneCallback()
 	//int nSubMenu;
 	//ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
 	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12)) {
-		drawFrameBar();
 		
+		drawFrameBar();
+
 		if (bHitboxesDisplay)
 			drawFrameData();
 

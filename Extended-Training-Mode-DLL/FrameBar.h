@@ -76,16 +76,14 @@ Player* Assist2 = &P4;
 
 void UpdatePlayers() //Called after bar handling
 {
-	for (int i = 0; i < 4; i++)
-	{
+	for (int i = 0; i < 4; i++) {
 		Player& P = *paPlayerArray[i];
 		P.nLastInactionableFrames = *(int*)(P.adInaction);
 		P.nLastFrameCount = *(int*)(P.adPlayerBase + adPlayerFrameCount);
 		P.bLastOnRight = *(int*)(P.adPlayerBase + adOnRightFlag);
 		P.dwLastActivePointer = *(DWORD*)(P.adPlayerBase + adAttackDataPointer);
 		P.cLastHitstop = *(char*)(P.adPlayerBase + adHitstop);
-		if (*(short*)(P.adPlayerBase + adInputEvent) != -1)
-		{
+		if (*(short*)(P.adPlayerBase + adInputEvent) != -1) {
 			P.bAlreadyGotFirstActive = false;
 			P.nFirstActiveCounter = 0;
 		}
@@ -511,6 +509,9 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 				UpdateBars(P2Assist, P2);
 			}
 			nBarCounter += *(int*)(adMBAABase + adTrueFrameCount) - nLastTrueFrameCount;
+			if (nBarCounter < 0) {
+				nBarCounter = 0;
+			}
 		}
 	}
 }
@@ -554,4 +555,5 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 
 	nLastFrameCount = *(int*)(adMBAABase + adFrameCount);
 	nLastTrueFrameCount = *(int*)(adMBAABase + adTrueFrameCount);
+
 }

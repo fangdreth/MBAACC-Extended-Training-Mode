@@ -1178,6 +1178,9 @@ void BarHandling(HANDLE hMBAAHandle, Player &P1, Player &P2, Player& P1Assist, P
 			UpdateBars(P1, P1Assist);
 			UpdateBars(P2, P2Assist);
 			nBarCounter += nTrueFrameCount - nLastTrueFrameCount;
+			if (nBarCounter < 0) {
+				nBarCounter = 0;
+			}
 		}
 	}
 }

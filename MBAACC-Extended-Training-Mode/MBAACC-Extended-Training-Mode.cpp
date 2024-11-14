@@ -533,7 +533,7 @@ int main(int argc, char* argv[])
             long long start = getMicroSec();
 
             FrameDisplay(hMBAAHandle);
-
+            
             long long totalTime = getMicroSec() - start;
 
             if (totalTime > 8000) {
