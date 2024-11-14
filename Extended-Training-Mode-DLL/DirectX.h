@@ -16,14 +16,6 @@ public:
 
 	CircularBuffer() {}
 
-	T get(int i) {
-		while (i < 0) {
-			i += size;
-		}
-		i += index;
-		return data[i % size];
-	}
-
 	void pushHead(const T& v) {
 		index++;
 		if (index >= size) {
@@ -40,7 +32,21 @@ public:
 		data[index] = v;
 	}
 
-	T front() {
+	void rollHead() {
+		index--;
+		if (index >= size) {
+			index = 0;
+		}
+	}
+
+	void rollTail() {
+		index++;
+		if (index < 0) {
+			index = size - 1;
+		}
+	}
+
+	T& front() {
 		return data[index];
 	}
 
@@ -48,8 +54,28 @@ public:
 		return sizeof(T) * size;
 	}
 
-	T operator [](int i) const { return get(i); }
-	T& operator [](int i) { return get(i); }
+	void clear() {
+		for (size_t i = 0; i < size; i++) {
+			data[i] = T();
+		}
+		index = 0;
+	}
+
+	T& operator [](int i) {
+		while (i < 0) {
+			i += size;
+		}
+		i += index;
+		return data[i % size];
+	}
+	
+	const T& operator [](int i) const {
+		while (i < 0) {
+			i += size;
+		}
+		i += index;
+		return data[i % size];
+	}
 
 	T data[size];
 	int index = 0; // index will be the head, index-1 will be the tail

@@ -181,17 +181,17 @@ void SaveStateManager::save() {
 
 }
 
-void SaveStateManager::load(int dir) {
+bool SaveStateManager::load(int dir) {
 
 	if (states.size() == 0) {
-		return;
+		return false;
 	}
 
 	if (dir == 1 && currentState == states.size() - 1) {
 		// we are at the front of our buffer, just go generate a new frame instead. pause checking occurs AFTER framecallback(i think) which is why needpause=2
 		needPause = 2;
 		_naked_newPauseCallback2_IsPaused = false;
-		return;
+		return true;
 	}
 
 	currentState += dir;
@@ -206,6 +206,8 @@ void SaveStateManager::load(int dir) {
 	//long long endTime = getMicroSec();
 	//long long totalTime = endTime - startTime;
 	//log("%3lld.%03lld", totalTime / 1000, totalTime % 1000);
+
+	return false;
 }
 
 int SaveStateManager::totalMemory() {

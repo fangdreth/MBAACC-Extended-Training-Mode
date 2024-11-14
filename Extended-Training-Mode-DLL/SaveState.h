@@ -81,7 +81,7 @@ public:
 
 	void save();
 
-	void load(int dir);
+	bool load(int dir);
 
 	int totalMemory();
 

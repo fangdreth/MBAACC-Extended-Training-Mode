@@ -20,6 +20,7 @@ void frameStartCallback();
 void dualInputDisplayReset();
 void doFastReversePenalty();
 void drawFancyMenu();
+void rollFancyInputDisplay(int n);
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
@@ -1552,11 +1553,15 @@ void frameDoneCallback()
 		static KeyState DownKey(VK_DOWN);
 
 		if (UpKey.keyDownHeldFreq<4, 24>()) {
-			saveStateManager.load(1);
+			bool needNewFrame = saveStateManager.load(1);
+			if (!needNewFrame) {
+				rollFancyInputDisplay(1);
+			}
 		}
 
 		if (DownKey.keyDownHeldFreq<4, 24>()) {
 			saveStateManager.load(-1);
+			rollFancyInputDisplay(-1);
 		}
 
 		if (logSaveState) {
