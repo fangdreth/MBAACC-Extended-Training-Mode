@@ -1556,9 +1556,7 @@ void frameDoneCallback()
 			if (!needNewFrame) {
 				rollFancyInputDisplay(1);
 			}
-		}
-
-		if (DownKey.keyDownHeldFreq<4, 24>()) {
+		} else if (DownKey.keyDownHeldFreq<4, 24>()) {
 			saveStateManager.load(-1);
 			rollFancyInputDisplay(-1);
 		}

@@ -1,6 +1,7 @@
 
 #include "DirectX.h"
 #include "FancyMenu.h"
+extern bool shouldDisplayDebugInfo;
 
 Menu<int> baseMenu("Debug Menu");
 Menu<int>* disableFpsMenuOption = NULL;
@@ -331,6 +332,11 @@ void initMenu() {
 	//disableFpsMenuOption = &(std::get<Menu<int>>(debug.items[debug.items.size() - 1]));
 
 	int disableFPSIndex = debug.items.size() - 1;
+
+	debug.add<int>("Show structs",
+		getDefaultOnOffOptionFunc(&shouldDisplayDebugInfo),
+		defaultOnOffNameFunc
+	);
 
 	baseMenu.add(debug);
 

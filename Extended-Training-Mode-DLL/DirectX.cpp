@@ -8,6 +8,7 @@
 //#include "version.h"	
 #include "../Common/version.h"
 
+void displayDebugInfo();
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
 //void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
@@ -2715,6 +2716,7 @@ void __stdcall _doDrawCalls() {
 	_drawProfiler();
 	_drawLog();
 	_drawMiscInfo();
+	displayDebugInfo();
 	_drawDebugMenu();
 	if (!*(bool*)(adMBAABase + adSharedHideBuildInfo)) {
 		if (shouldDrawHud) {

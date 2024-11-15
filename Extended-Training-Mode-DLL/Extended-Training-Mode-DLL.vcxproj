@@ -184,6 +184,7 @@
     <ClInclude Include="..\Common\Common.h" />
     <ClInclude Include="..\Common\RawData.h" />
     <ClInclude Include="..\Common\version.h" />
+    <ClInclude Include="DebugInfo.h" />
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="FancyInputDisplay.h" />
@@ -199,6 +200,7 @@
   <ItemGroup>
     <ClCompile Include="..\Common\RawData.cpp" />
     <ClCompile Include="..\Common\version.cpp" />
+    <ClCompile Include="DebugInfo.cpp" />
     <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FancyInputDisplay.cpp" />
