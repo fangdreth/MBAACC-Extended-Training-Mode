@@ -78,7 +78,9 @@ void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
 		DWORD state = *(DWORD*)(info.object + 0x4);
 
 		//snprintf(buffer, buflen, "PLAYER%d\nP:%d\nS:%d", playerIndex, pattern, state);
-		playerDataArr[playerIndex]->describe(buffer, buflen);
+		//playerDataArr[playerIndex].describe(buffer, buflen);
+		//int offset = snprintf(buffer, buflen, "PLAYER%d ");
+		playerDataArr[playerIndex].describe(buffer, buflen);
 		return;
 	}
 
@@ -87,7 +89,9 @@ void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
 		DWORD pattern = *(DWORD*)(info.object + 0x0);
 		DWORD state = *(DWORD*)(info.object + 0x4);
 
-		snprintf(buffer, buflen, "EFFECT: %d\nP:%d\nS:%d", effectIndex, pattern, state);
+		//snprintf(buffer, buflen, "EFFECT: %d\nP:%d\nS:%d", effectIndex, pattern, state);
+		//int offset = snprintf(buffer, buflen, "EFFECT%d ");
+		effectDataArr[effectIndex].describe(buffer, buflen);
 		return;
 	}
 

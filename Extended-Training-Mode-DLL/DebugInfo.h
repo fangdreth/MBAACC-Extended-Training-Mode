@@ -123,9 +123,8 @@ typedef struct FrameData {
 };
 #pragma pack(pop)
 
-// im going off of base 00555130, sorta wish we could switch to 00555134 tho
 #pragma pack(push,1)
-typedef struct PlayerData {
+typedef struct EffectData {
 	
 	void describe(char* buffer, int bufLen);
 
@@ -258,15 +257,28 @@ typedef struct PlayerData {
 	PatternData* patternDataPtr;
 	AnimationData* animationDataPtr;
 	AttackData* attackDataPtr;
-	PlayerData* selfPtr;
+	EffectData* selfPtr;
 	UNUSED(4); // i have never seen a more suspicious 4 bytes in my life
 	FrameData* frameDataPtr;
 	DWORD framesIntoCurrentPattern;
-
-	UNUSED(0x7C4);
-} PlayerData;
+	UNUSED(4);
+} EffectData;
 #pragma pack(pop)
 
+#define CHECKOFFSET(v, n) static_assert(offsetof(EffectData, v) == n, "EffectData offset incorrect for " #v);
+
+CHECKOFFSET(frameDataPtr, 0x330);
+
+#undef CHECKOFFSET
+
+static_assert(sizeof(EffectData) == 0x33C, "PlayerData MUST be 0xAFC large!");
+
+// im going off of base 00555130, sorta wish we could switch to 00555134 tho
+#pragma pack(push,1)
+typedef struct PlayerData : public EffectData {
+	UNUSED(0x7C0);
+} PlayerData;
+#pragma pack(pop)
 
 #define CHECKOFFSET(v, n) static_assert(offsetof(PlayerData, v) == n, "PlayerData offset incorrect for " #v);
 
@@ -313,15 +325,10 @@ CHECKOFFSET(frameDataPtr, 0x330);
 
 static_assert(sizeof(PlayerData) == 0xAFC, "PlayerData MUST be 0xAFC large!");
 
-extern PlayerData* playerDataArr[4];
+extern PlayerData* playerDataArr;
+extern EffectData* effectDataArr;
 
 #undef CHECKOFFSET
-
-#pragma pack(push,1)
-typedef struct EffectData {
-
-} EffectData;
-#pragma pack(pop)
 
 #pragma pack(push,1)
 typedef struct HitEffectData {
