@@ -2,25 +2,20 @@
 #include "DebugInfo.h"
 #include "DirectX.h"
 
-void PlayerData::display() {
+void PlayerData::describe(char* buffer, int bufLen) {
 
+	int playerIndex = (((int)& exists) - 0x00555130) / 0xAFC;
+
+	snprintf(buffer, bufLen, "PLAYER%d P%d S%d\n(%d,%d)", playerIndex, pattern, state, xPos, yPos);
 }
 
 // -----
 
-static union {
-	PlayerData* playerDataArr[4] = {
+PlayerData* playerDataArr[4] = {
 		(PlayerData*)(0x00555130 + (0xAFC * 0)),
 		(PlayerData*)(0x00555130 + (0xAFC * 1)),
 		(PlayerData*)(0x00555130 + (0xAFC * 2)),
 		(PlayerData*)(0x00555130 + (0xAFC * 3)),
-	};
-	struct {
-		PlayerData* P1Data;
-		PlayerData* P2Data;
-		PlayerData* P3Data;
-		PlayerData* P4Data;
-	};
 };
 
 bool shouldDisplayDebugInfo = false;
@@ -32,7 +27,7 @@ void displayDebugInfo() {
 
 	for (int i = 0; i < 4; i++) {
 		if (playerDataArr[i]->exists) {
-			playerDataArr[i]->display();
+			//playerDataArr[i]->display();
 		}
 	}
 

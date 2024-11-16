@@ -2,6 +2,9 @@
 #include <set>
 #include <map>
 
+// todo, please move this over to a cpp
+#include "DebugInfo.h"
+
 // contains things which modify melty's rendering system internally.
 
 // 0x1C4 000111000100
@@ -74,7 +77,8 @@ void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
 		DWORD pattern = *(DWORD*)(info.object + 0x0);
 		DWORD state = *(DWORD*)(info.object + 0x4);
 
-		snprintf(buffer, buflen, "PLAYER%d\nP:%d\nS:%d", playerIndex, pattern, state);
+		//snprintf(buffer, buflen, "PLAYER%d\nP:%d\nS:%d", playerIndex, pattern, state);
+		playerDataArr[playerIndex]->describe(buffer, buflen);
 		return;
 	}
 
@@ -130,7 +134,7 @@ void drawLoopHook() {
 	}
 
 	bool hasExtraDetail = false;
-	static char extraDetail[512];
+	static char extraDetail[2048];
 
 	const char* infoString = "NULL";
 	switch (info.caller) {
@@ -164,7 +168,7 @@ void drawLoopHook() {
 		infoString = "DrawCharactersAndBackground";
 		lineCol = 0xFF42e5f4;
 		hasExtraDetail = true;
-		describeObject(extraDetail, 512, info);
+		describeObject(extraDetail, 2048, info);
 		break;
 	case 0x0041621f:
 		infoString = "FUN_004161b0";

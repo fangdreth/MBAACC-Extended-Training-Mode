@@ -127,7 +127,7 @@ typedef struct FrameData {
 #pragma pack(push,1)
 typedef struct PlayerData {
 	
-	void display();
+	void describe(char* buffer, int bufLen);
 
 	// -----
 
@@ -207,7 +207,7 @@ typedef struct PlayerData {
 	BYTE tagFlag;
 	UNUSED(1);
 	BYTE remainingHits;
-	BYTE inBlockstn;
+	BYTE inBlockstun;
 	BYTE willBlock;
 	BYTE proxyGuardTime;
 	BYTE bounceCount;
@@ -312,6 +312,8 @@ CHECKOFFSET(selfPtr, 0x328);
 CHECKOFFSET(frameDataPtr, 0x330);
 
 static_assert(sizeof(PlayerData) == 0xAFC, "PlayerData MUST be 0xAFC large!");
+
+extern PlayerData* playerDataArr[4];
 
 #undef CHECKOFFSET
 
