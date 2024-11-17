@@ -499,47 +499,22 @@ void scaleCords(const float xOrig, const float yOrig, float& x1Cord, float& y1Co
 	y2Cord = yOrig + (y2Cord - yOrig) * 0.5f;
 }
 
-DWORD getObjFrameDataPointer(DWORD objAddr)
-{
-	
-	int objState = *(DWORD*)(objAddr + 0x14);
-	int objPattern = *(DWORD*)(objAddr + 0x10);
-
-	DWORD baseFrameDataPtr1 = *(DWORD*)(objAddr + 0x330);
-	if (baseFrameDataPtr1 == 0) { return 0; }
-
-	DWORD baseFrameDataPtr2 = *(DWORD*)(baseFrameDataPtr1);
-	if (baseFrameDataPtr2 == 0) { return 0; }
-
-	DWORD unknownPtr1 = *(DWORD*)(baseFrameDataPtr2 + 0x4);
-	if (unknownPtr1 == 0) { return 0; }
-
-	DWORD unknownPtr2 = *(DWORD*)(unknownPtr1 + 0x4);
-	if (unknownPtr2 == 0) { return 0; }
-
-	DWORD basePatternPtr = *(DWORD*)(unknownPtr2 + (objPattern * 0x4));
-	if (basePatternPtr == 0) { return 0; }
-
-	DWORD unknownPtr3 = *(DWORD*)(basePatternPtr + 0x34);
-	if (unknownPtr3 == 0) { return 0; }
-
-	DWORD unknownPtr4 = *(DWORD*)(unknownPtr3 + 0x4);
-	if (unknownPtr4 == 0) { return 0; }
-
-	DWORD baseStatePtr = unknownPtr4 + (objState * 0x54);
-
-	return baseStatePtr;
-}
-
 bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 {
-	int xPos = *(DWORD*)(objAddr + 0x108);
-	int yPos = *(DWORD*)(objAddr + 0x10C);
-	bool facingLeft = *(BYTE*)(objAddr + 0x314);
+	EffectData* effect = ((EffectData*)objAddr);
+
+	//int xPos = *(DWORD*)(objAddr + 0x108);
+	//int yPos = *(DWORD*)(objAddr + 0x10C);
+	//bool facingLeft = *(BYTE*)(objAddr + 0x314);
+
+	int xPos = effect->xPos;
+	int yPos = effect->yPos;
+	bool facingLeft = effect->facingLeft;
 	
-	DWORD objFramePtr = getObjFrameDataPointer(objAddr);
-	
-	if (objFramePtr == 0) {
+	AnimationData* animationData = effect->animationDataPtr;
+	//DWORD objFramePtr = (DWORD)animationData;
+
+	if (animationData == NULL) {
 		return false;
 	}
 
@@ -623,11 +598,15 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 	bool isPat = *(BYTE*)(animDataPtr + 0x0);
 	
 	// non hitboxes
-	if (*(DWORD*)(objFramePtr + 0x4C) != 0) {
-		unsigned unknownLoopLimit = *(BYTE*)(objFramePtr + 0x42);
-		for (unsigned index = 0; index < unknownLoopLimit; index++) {
+	//if (*(DWORD*)(objFramePtr + 0x4C) != 0) {
+	if(animationData->nonHitboxData != NULL) {
+		unsigned highestIndex = animationData->highestNonHitboxIndex;
+		for (unsigned index = 0; index < highestIndex; index++) {
 
-			if (*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) == 0) {
+			/*if (*(int*)(*(int*)(objFramePtr + 0x4c) + index * 4) == 0) {
+				continue;
+			}*/
+			if (animationData->nonHitboxData->boxes[index] == NULL) {
 				continue;
 			}
 
@@ -660,10 +639,10 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 					break;
 			}
 
-			short x1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 0);
-			short x2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 4) * 2;
-			short y1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 2) * 2;
-			short y2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x4C) + index * 4) + 6) * 2;
+			short x1 = animationData->nonHitboxData->boxes[index]->x1;
+			short x2 = animationData->nonHitboxData->boxes[index]->x2 * 2;
+			short y1 = animationData->nonHitboxData->boxes[index]->y1 * 2;
+			short y2 = animationData->nonHitboxData->boxes[index]->y2 * 2;
 
 			tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
 			x1Cord = ((float)x1) * (tempFloat + tempFloat) + (float)xCamTemp;
@@ -698,19 +677,20 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 	}
 
 	// hitboxes
-	if (*(DWORD*)(objFramePtr + 0x50) != 0) {
+	if (animationData->hitboxData != NULL) {
 		drawColor = 0xFFFF0000;
 		boxType = BoxType::Hitbox;
-		unsigned unknownLoopLimit = *(BYTE*)(objFramePtr + 0x43);
-		for (unsigned index = 0; index < unknownLoopLimit; index++) {
-			if (*(int*)(*(int*)(objFramePtr + 0x50) + index * 4) == 0) {
+		unsigned highestHitboxIndex = animationData->highestHitboxIndex;
+		for (unsigned index = 0; index < highestHitboxIndex; index++) {
+			
+			if (animationData->hitboxData->boxes[index] == NULL) {
 				continue;
 			}
 
-			short x1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 0); 
-			short x2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 4) * 2;
-			short y1 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 2) * 2;
-			short y2 = *(short*)(*(DWORD*)(*(DWORD*)(objFramePtr + 0x50) + index * 4) + 6) * 2;
+			short x1 = animationData->hitboxData->boxes[index]->x1;
+			short x2 = animationData->hitboxData->boxes[index]->x2 * 2;
+			short y1 = animationData->hitboxData->boxes[index]->y1 * 2;
+			short y2 = animationData->hitboxData->boxes[index]->y2 * 2;
 
 			tempFloat = (float)isRight * (windowWidth / 640.0f) * cameraZoom;
 			x1Cord = ((float)x1) * (tempFloat + tempFloat) + (float)xCamTemp;
