@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "..\Common\Common.h"
 
 const ADDRESS adBaseAddress = (0x00400000);
 
@@ -549,7 +548,7 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 		ResetBars();
 	}
 
-	nPlayerAdvantage = ((*Main1).nAdvantageCounter - (*Main2).nAdvantageCounter) % 100;
+	nPlayerAdvantage = (Main1->nAdvantageCounter - Main2->nAdvantageCounter) % 100;
 
 	UpdatePlayers();
 

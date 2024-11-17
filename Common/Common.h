@@ -355,6 +355,8 @@ const ADDRESS adFrameCount = 0x15D1CC;
 const ADDRESS adSaveCurrentCamX = 0x15DEC4;
 const ADDRESS adSaveCurrentCamY = 0x15DEC8;
 
+const ADDRESS adTrainingResetScroll = 0x15DEF0;
+
 const ADDRESS adTrueFrameCount = 0x162A40;
 const ADDRESS adGlobalFreeze = 0x162A48;
 
