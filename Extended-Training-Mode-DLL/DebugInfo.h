@@ -8,27 +8,28 @@
 #define LINE_NAME CONCATENATE(LINE, __LINE__)
 
 #define UNUSED(length) BYTE LINE_NAME[length]
-#define UNUSEDBITS(length) DWORD LINE_NAME : length
+#define UNUSEDBITS(length) BYTE LINE_NAME : length
 
 #pragma pack(push,1)
 typedef struct AttackData {
 	union {
-		struct {
-			DWORD standBlockable : 1;
-			DWORD airBlockable : 1;
-			DWORD crouchBlockable : 1;
-			UNUSEDBITS(5);
-			DWORD missStanding : 1;
-			DWORD missAirborne: 1;
-			DWORD missCrouching : 1;
-			DWORD missHitstun : 1; // includes blockstun
-			DWORD missBlockstun : 1;
-			DWORD missOTG : 1;
-			DWORD hitOnlyHitstun : 1; // includes blockstun
-			DWORD missPlayableCharacter : 1;
-			UNUSEDBITS(16);
-		};
 		DWORD guardFlags;
+		struct {
+			BYTE standBlockable : 1;
+			BYTE airBlockable : 1;
+			BYTE crouchBlockable : 1;
+			UNUSEDBITS(5);
+			BYTE missStanding : 1;
+			BYTE missAirborne: 1;
+			BYTE missCrouching : 1;
+			BYTE missHitstun : 1; // includes blockstun
+			BYTE missBlockstun : 1;
+			BYTE missOTG : 1;
+			BYTE hitOnlyHitstun : 1; // includes blockstun
+			BYTE missPlayableCharacter : 1;
+			//UNUSEDBITS(16);
+			UNUSED(2);
+		};
 	};
 	short standingHitVector;
 	short airborneHitVector;
@@ -53,34 +54,34 @@ typedef struct AttackData {
 	UNUSED(1);
 	float extraGravity;
 	union {
+		DWORD hitFlags;
 		struct {
-			DWORD chipDamage : 1;
-			DWORD noKO : 1;
-			DWORD makeEnemyUnhittable : 1;
-			DWORD notClashable : 1;
-			DWORD autoSuperjumpCancel : 1;
-			DWORD dontAddToComboCount : 1;
-			DWORD screenShake : 1;
-			DWORD notAirTechable : 1;
+			BYTE chipDamage : 1;
+			BYTE noKO : 1;
+			BYTE makeEnemyUnhittable : 1;
+			BYTE notClashable : 1;
+			BYTE autoSuperjumpCancel : 1;
+			BYTE dontAddToComboCount : 1;
+			BYTE screenShake : 1;
+			BYTE notAirTechable : 1;
 
-			DWORD notGroundTechable : 1;
-			DWORD canHitAllies : 1;
-			DWORD noSelfHitstop : 1;
+			BYTE notGroundTechable : 1;
+			BYTE canHitAllies : 1;
+			BYTE noSelfHitstop : 1;
 			UNUSEDBITS(1);
-			DWORD cantBeBursted : 1;
-			DWORD cantBeShielded : 1;
-			DWORD cantCrit : 1;
+			BYTE cantBeBursted : 1;
+			BYTE cantBeShielded : 1;
+			BYTE cantCrit : 1;
 			UNUSEDBITS(1);
 
-			DWORD useCustomBlockstop : 1;
-			DWORD canOTGRelaunch : 1;
-			DWORD cantCounterhit : 1;
+			BYTE useCustomBlockstop : 1;
+			BYTE canOTGRelaunch : 1;
+			BYTE cantCounterhit : 1;
 			UNUSEDBITS(3);
-			DWORD extraInternalHitscaling : 1;
+			BYTE extraInternalHitscaling : 1;
 			UNUSEDBITS(1);
 
 		};
-		DWORD hitFlags;
 	};
 	UNUSED(4);
 	WORD damage;
@@ -89,7 +90,7 @@ typedef struct AttackData {
 	WORD guardBreak;
 	WORD circuitBreakTime;
 	UNUSED(2);
-};
+} AttackData;
 #pragma pack(pop)
 
 #define CHECKOFFSET(v, n) static_assert(offsetof(AttackData, v) == n, "AttackData offset incorrect for " #v);
@@ -106,28 +107,237 @@ static_assert(sizeof(AttackData) == 0x50, "AttackData size must be 0x50");
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
-typedef struct PatternData {
+typedef struct MovementData {
+	union {
+		BYTE movementFlags;
+		struct {
+			BYTE setY : 1;
+			BYTE addY : 1;
+			UNUSEDBITS(2);
+			BYTE setX : 1;
+			BYTE addX : 1;
+			UNUSEDBITS(2);
+		};
+	};
+	UNUSED(1);
+	short xVel;
+	short yVel;
+	short xAccel;
+	short yAccel;
+} MovementData;
+#pragma pack(pop)
 
-};
+#pragma pack(push,1)
+typedef struct StateData { // i am sure of nothing in this struct.
+	MovementData* movementData;
+	UNUSED(8);
+	BYTE state;
+	BYTE invincibility;
+	BYTE cancelNormal;
+	BYTE cancelSpecial;
+	BYTE hitCount;
+	BYTE canMove;
+	BYTE counterHit;
+	UNUSED(1);
+	union {
+		DWORD flagset1;
+		struct {
+			BYTE giveMomentum : 1;
+			BYTE clearMomentum : 1;
+			BYTE dontTransitionToWalking : 1;
+			UNUSEDBITS(1);
+			BYTE canGroundTech : 1;
+			UNUSEDBITS(3);
+			BYTE blockHighsAndMids : 1;
+			BYTE blockAirBlockable : 1;
+			UNUSEDBITS(6);
+			UNUSEDBITS(8);
+			UNUSEDBITS(8);
+		};
+	};
+	union {
+		DWORD flagset2;
+		struct {
+			BYTE canAlwaysExCancel : 1;
+			BYTE canOnlyJumpCancel : 1;
+			UNUSEDBITS(6);
+			UNUSEDBITS(8);
+			UNUSEDBITS(8);
+			UNUSEDBITS(7);
+			BYTE cantBlock : 1;
+		};
+	};
+} StateData;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(StateData, v) == n, "StateData offset incorrect for " #v);
+
+CHECKOFFSET(state, 0xC);
+CHECKOFFSET(counterHit, 0x12);
+CHECKOFFSET(flagset2, 0x18);
+
+static_assert(sizeof(StateData) == 0x1C, "StateData MUST be 0x1C large!");
+
+#undef CHECKOFFSET
+
+#pragma pack(push,1)
+typedef struct RawBoxData {
+	short x1;
+	short y1;
+	short x2;
+	short y2;
+} RawBoxData;
+#pragma pack(pop)
+
+#pragma pack(push,1)
+typedef struct NonHitboxData { // this needs verification on if it actually works
+	union {
+		RawBoxData* boxes[25];
+		struct {
+			RawBoxData* collisionBox;
+			RawBoxData* hurtboxes[8];
+			RawBoxData* shieldBoxes[2];
+			RawBoxData* clashBox;
+			RawBoxData* reflectBox;
+			RawBoxData* specialBoxes[12];
+		};
+	};
+} NonHitboxData;
+#pragma pack(pop)
+
+static_assert(sizeof(NonHitboxData) == 0x64, "NonHitboxData must be size 0x64");
+
+#pragma pack(push,1)
+typedef struct HitboxData {
+	RawBoxData* boxes[8]; // this needs verification on if it actually works
+} HitboxData;
 #pragma pack(pop)
 
 #pragma pack(push,1)
 typedef struct AnimationData {
+	WORD usePat;
+	WORD currentSprite;
+	WORD xOffset;
+	UNUSED(2);
+	WORD yOffset;
+	UNUSED(2);
+	BYTE stateDuration;
+	UNUSED(1);
+	BYTE animationType;
+	union {
+		BYTE animationFlags;	
+		struct {
+			BYTE landToPattern : 1;
+			BYTE checkLoopCounter : 1;
+			BYTE gotoRelativeOffset: 1;
+			BYTE relativeEndOfLoop : 1;
+			UNUSEDBITS(4);
+		};
+	};
+	WORD gotoAnim; // i cant use goto as a var name, not sure what this is going to tho! ask gonp!
+	WORD landingFrame;
+	WORD loopNTimes;
+	WORD endOfLoop;
+	BYTE r;
+	BYTE g;
+	BYTE b;
+	BYTE blendMode;
+	BYTE a;
+	BYTE interp;
+	UNUSED(2);
+	float xRot;
+	float yRot;
+	float zRot;
+	BYTE rotKeepsEFScale;
+	UNUSED(1);
+	WORD zPrio;
+	float xScale;
+	float yScale;
+	StateData* stateData;
+	UNUSED(6);
+	BYTE highestNonHitboxIndex;
+	BYTE highestHitboxIndex;
+	UNUSED(8);
+	NonHitboxData* nonHitboxData;
+	HitboxData* hitboxData;
+} AnimationData;
+#pragma pack(pop)
 
-};
+#define CHECKOFFSET(v, n) static_assert(offsetof(AnimationData, v) == n, "AnimationData offset incorrect for " #v);
+
+CHECKOFFSET(r, 0x18);
+CHECKOFFSET(xScale, 0x30);
+CHECKOFFSET(stateData, 0x38);
+CHECKOFFSET(highestNonHitboxIndex, 0x42);
+CHECKOFFSET(nonHitboxData, 0x4C);
+
+static_assert(sizeof(AnimationData) == 0x54, "AnimationDataMUST be 0x50 large!");
+#undef CHECKOFFSET
+
+typedef struct AnimationDataArr {
+	UNUSED(4);
+	AnimationData* animationDataArr;
+} AnimationDataArr;
+
+#pragma pack(push,1)
+typedef struct PatternData {
+	// this is the pattern name. i dont know what encoding its in though. size is 0x24/36 bytes. also, 36 is a weird number of chars for a string. 32 would make more sense
+	//wchar_t patternName[18];
+	// the char encoding seems to be Shift JIS 
+	char patternName[32];
+	UNUSED(4);
+	DWORD PSTS;
+	DWORD level;
+	DWORD PFLG;
+	UNUSED(4);
+	AnimationDataArr* ptrToAnimationDataArr;
+	UNUSED(0x20);
+} PatternData;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(PatternData, v) == n, "PatternData offset incorrect for " #v);
+
+CHECKOFFSET(PSTS, 0x24);
+CHECKOFFSET(PFLG, 0x2C);
+CHECKOFFSET(ptrToAnimationDataArr, 0x34);
+
+static_assert(sizeof(PatternData) == 0x58, "PatternData must have size 0x58."); // i am pretty confident on this number, but it could be off.
+#undef CHECKOFFSET
+
+#pragma pack(push,1)
+typedef struct SubHA6Data2 {
+	DWORD isPointerList;
+	PatternData* (*ptrToPatternDataArr)[1000];
+	DWORD elementSize;
+	DWORD count;
+	DWORD capacity;
+} SubHA6Data2;
+#pragma pack(pop)
+
+static_assert(sizeof(SubHA6Data2) == 0x14, "SubHA6Data2 must have a size of 0x14");
+
+#pragma pack(push,1)
+typedef struct SubHA6Data1 {
+	DWORD isStaticSize;
+	SubHA6Data2* subData2;
+} SubHA6Data1;
 #pragma pack(pop)
 
 #pragma pack(push,1)
-typedef struct FrameData {
-
-};
+typedef struct HA6Data { 
+	// out of all the structs, i understand this one the least.
+	// the important thing, is that it eventually leads to 0x31C patternDataPtr, and so in most cases, you can and should probs just use that
+	// this however, can be used to see all paterns in a char. seems very nice to have
+	SubHA6Data1* subData1;
+} HA6Data;
 #pragma pack(pop)
 
 #pragma pack(push,1)
 typedef struct EffectData {
 	
 	void describe(char* buffer, int bufLen);
-
+	inline PatternData* getPatternDataPtr(int p);
+	inline AnimationData* getAnimationDataPtr(int p, int s);
 	// -----
 
 	DWORD exists;
@@ -259,7 +469,7 @@ typedef struct EffectData {
 	AttackData* attackDataPtr;
 	EffectData* selfPtr;
 	UNUSED(4); // i have never seen a more suspicious 4 bytes in my life
-	FrameData* frameDataPtr;
+	HA6Data* ha6DataPtr;
 	DWORD framesIntoCurrentPattern;
 	UNUSED(4);
 } EffectData;
@@ -267,11 +477,11 @@ typedef struct EffectData {
 
 #define CHECKOFFSET(v, n) static_assert(offsetof(EffectData, v) == n, "EffectData offset incorrect for " #v);
 
-CHECKOFFSET(frameDataPtr, 0x330);
+CHECKOFFSET(ha6DataPtr, 0x330);
 
 #undef CHECKOFFSET
 
-static_assert(sizeof(EffectData) == 0x33C, "PlayerData MUST be 0xAFC large!");
+static_assert(sizeof(EffectData) == 0x33C, "EffectData MUST be 0x33C large!");
 
 // im going off of base 00555130, sorta wish we could switch to 00555134 tho
 #pragma pack(push,1)
@@ -321,7 +531,7 @@ CHECKOFFSET(facingLeft, 0x314);
 CHECKOFFSET(delayedStandAirbornCrouchState, 0x31B);
 CHECKOFFSET(patternDataPtr, 0x31C);
 CHECKOFFSET(selfPtr, 0x328);
-CHECKOFFSET(frameDataPtr, 0x330);
+CHECKOFFSET(ha6DataPtr, 0x330);
 
 static_assert(sizeof(PlayerData) == 0xAFC, "PlayerData MUST be 0xAFC large!");
 
