@@ -131,7 +131,7 @@ typedef struct MovementData {
 typedef struct StateData { // i am sure of nothing in this struct.
 	MovementData* movementData;
 	UNUSED(8);
-	BYTE state;
+	BYTE stance;
 	BYTE invincibility;
 	BYTE cancelNormal;
 	BYTE cancelSpecial;
@@ -172,11 +172,48 @@ typedef struct StateData { // i am sure of nothing in this struct.
 
 #define CHECKOFFSET(v, n) static_assert(offsetof(StateData, v) == n, "StateData offset incorrect for " #v);
 
-CHECKOFFSET(state, 0xC);
+CHECKOFFSET(stance, 0xC);
 CHECKOFFSET(counterHit, 0x12);
 CHECKOFFSET(flagset2, 0x18);
 
 static_assert(sizeof(StateData) == 0x1C, "StateData MUST be 0x1C large!");
+
+#undef CHECKOFFSET
+
+#pragma pack(push,1)
+typedef struct IF { // Condition
+	int IFTP;
+	int IFPR1;
+	int IFPR2;
+	int IFPR3;
+	int IFPR4;
+	int IFPR5;
+	int IFPR6;
+	int IFPR7;
+	int IFPR8;
+	int IFPR9;
+} IF;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(IF, v) == n, "IF offset incorrect for " #v);
+
+CHECKOFFSET(IFPR1, 0x4);
+
+static_assert(sizeof(IF) == 0x28, "IF MUST be 0x28 large!");
+
+#undef CHECKOFFSET
+
+#pragma pack(push,1)
+typedef struct IFData { // List of Conditions
+	IF* IFs[4];
+} IFData;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(IFData, v) == n, "IFData offset incorrect for " #v);
+
+CHECKOFFSET(IFs, 0x0);
+
+static_assert(sizeof(IFData) == 0x10, "IFData MUST be 0x10 large!");
 
 #undef CHECKOFFSET
 
@@ -254,10 +291,13 @@ typedef struct AnimationData {
 	float xScale;
 	float yScale;
 	StateData* stateData;
-	UNUSED(6);
+	UNUSED(4);
+	BYTE highestIFIndex;
+	BYTE highestEFIndex;
 	BYTE highestNonHitboxIndex;
 	BYTE highestHitboxIndex;
-	UNUSED(8);
+	IFData* IFDataPtr;
+	DWORD EFDataPtr;
 	NonHitboxData* nonHitboxData;
 	HitboxData* hitboxData;
 } AnimationData;
@@ -341,11 +381,12 @@ typedef struct EffectData {
 	// -----
 
 	DWORD exists;
-	UNUSED(1);
+	BYTE index;
 	BYTE charID;
 	BYTE charIDCopy;
 	BYTE recording;
-	UNUSED(2);
+	UNUSED(1);
+	BYTE someFlag;
 	BYTE palette;
 	UNUSED(1);
 	BYTE moon;
@@ -409,7 +450,7 @@ typedef struct EffectData {
 	WORD shieldHeldTime;
 	UNUSED(2);
 	WORD shieldType;
-	BYTE selfHitstop;
+	BYTE hitstop;
 	UNUSED(3);
 	BYTE throwFlag;
 	BYTE deathFlag;
@@ -425,11 +466,12 @@ typedef struct EffectData {
 	BYTE throwInvuln;
 	UNUSED(1);
 	BYTE preJumpTimeRemaining;
+	UNUSED(1);
 	WORD airTime;
 	WORD timeThrown;
 	WORD totalUntechTime;
 	WORD untechTimeElapsed;
-	UNUSED(7);
+	UNUSED(6);
 	WORD armorTimer;
 	WORD reversedControlsTimer;
 	UNUSED(8);
@@ -456,9 +498,11 @@ typedef struct EffectData {
 	BYTE buttonHeld;
 	WORD macroPressed;
 	WORD buttonReleased;
-	UNUSED(0x1A);
+	UNUSED(0x2);
+	BYTE ownerIndex;
+	UNUSED(0x17);
 	WORD inputEvent;
-	WORD fiveThousandMinusInputPrio;
+	WORD inputPriority;
 	UNUSED(0x4);
 	BYTE facingLeft;
 	BYTE isOpponentToLeft;
@@ -517,6 +561,7 @@ CHECKOFFSET(shieldHeldTime, 0x16C)
 CHECKOFFSET(tagFlag, 0x178);
 CHECKOFFSET(bounceCount, 0x17E);
 CHECKOFFSET(strikeInvuln, 0x185);
+CHECKOFFSET(timeThrown, 0x18C);
 CHECKOFFSET(armorTimer, 0x198);
 CHECKOFFSET(recievedHitstop, 0x1A4);
 CHECKOFFSET(isKnockedDown, 0x1B0);
@@ -526,7 +571,7 @@ CHECKOFFSET(counterhitState, 0x1FA);
 CHECKOFFSET(recievingAttackPtr, 0x1FC);
 CHECKOFFSET(gravity, 0x2E4);
 CHECKOFFSET(buttonHeld, 0x2ED);
-CHECKOFFSET(fiveThousandMinusInputPrio, 0x30E);
+CHECKOFFSET(inputPriority, 0x30E);
 CHECKOFFSET(facingLeft, 0x314);
 CHECKOFFSET(delayedStandAirbornCrouchState, 0x31B);
 CHECKOFFSET(patternDataPtr, 0x31C);
