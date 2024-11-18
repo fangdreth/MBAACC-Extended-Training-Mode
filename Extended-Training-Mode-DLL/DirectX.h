@@ -245,6 +245,11 @@ extern bool lHeld;
 extern bool mHeld;
 extern bool rHeld;
 
+extern bool iDown;
+extern bool jDown;
+extern bool kDown;
+extern bool lDown;
+
 // my inconsistent use of D3DXVECTOR2 vs point is bad. i should use point
 
 struct Rect;
@@ -695,7 +700,8 @@ extern IDirect3DTexture9* fontTextureMelty;
 extern VertexData<PosColVert, 3 * 2048> posColVertData;//(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 extern VertexData<PosTexVert, 3 * 2048> posTexVertData;//(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
 // need to rework font rendering, 4096 is just horrid
-extern VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData;// (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
+//extern VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData;// (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
+extern VertexData<PosColTexVert, 3 * 4096 * 16> posColTexVertData;// (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 
 extern VertexData<MeltyVert, 3 * 4096 * 2> meltyVertData;// (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 extern VertexData<MeltyVert, 2 * 16384, D3DPT_LINELIST> meltyLineData;// (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty); // 8192 is overkill

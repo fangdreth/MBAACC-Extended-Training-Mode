@@ -8,6 +8,7 @@
 //#include "version.h"	
 #include "../Common/version.h"
 
+void debugLinkedList();
 void displayDebugInfo();
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
@@ -158,7 +159,8 @@ IDirect3DTexture9* fontTextureMelty = NULL;
 VertexData<PosColVert, 3 * 2048> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
 // need to rework font rendering, 4096 is just horrid
-VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
+//VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
+VertexData<PosColTexVert, 3 * 4096 * 16> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 
 VertexData<MeltyVert, 3 * 4096 * 2> meltyVertData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 VertexData<MeltyVert, 2 * 16384, D3DPT_LINELIST> meltyLineData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty); // 8192 is overkill
@@ -737,6 +739,11 @@ bool lHeld = false;
 bool mHeld = false;
 bool rHeld = false;
 
+bool iDown = false;
+bool jDown = false;
+bool kDown = false;
+bool lDown = false;
+
 // -----
 
 void __stdcall backupRenderState() {
@@ -912,6 +919,17 @@ void __stdcall backupRenderState() {
 	lHeld = lButton.keyHeld();
 	mHeld = mButton.keyHeld();
 	rHeld = rButton.keyHeld();
+
+
+	static KeyState iKey('I');
+	static KeyState jKey('J');
+	static KeyState kKey('K');
+	static KeyState lKey('L');
+
+	iDown = iKey.keyDown();
+	jDown = jKey.keyDown();
+	kDown = kKey.keyDown();
+	lDown = lKey.keyDown();
 
 
 	//if (dragManager.hasDrag == NULL) {
@@ -2846,6 +2864,18 @@ __declspec(naked) void _naked_PresentHook2() {
 	emitJump(0x004333ed);
 }
 
+__declspec(naked) void _naked_linkedListInspect() {
+	
+	PUSH_ALL;
+	debugLinkedList();
+	POP_ALL;
+
+	__asm {
+		push 0040e49eh;
+	}
+	emitJump(0x00433490);
+}
+
 void cleanForDirectXReset() {
 	// all textures need to be reset here this occurs during the transition to and from fullscreen
 	// i should make a class to manage all of them, make it easier for ppl
@@ -3194,5 +3224,8 @@ bool HookDirectX() {
 
 	log("directX hooked");
 	log("<3");
+
+	// misc hook for when im inspecting the linked list
+	patchJump(0x0040e499, _naked_linkedListInspect);
 	return true;
 }

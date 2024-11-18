@@ -548,3 +548,4 @@ typedef struct HitEffectData {
 
 extern bool shouldDisplayDebugInfo;
 void displayDebugInfo();
+void debugLinkedList();

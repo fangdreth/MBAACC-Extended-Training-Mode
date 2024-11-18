@@ -1504,7 +1504,10 @@ void setFPSLimiter(bool b) {
 	// i wish i designed the menu with this in mind, but not all menu elements have/need globals
 	// if the menu design is changed, this will need to be changed
 	// i could maybe pass an int* as the menu type instead?
-	disableFpsMenuOption->optionState = b;
+	if (disableFpsMenuOption != NULL) {
+		disableFpsMenuOption->optionState = b;
+	}
+	
 }
 
 void frameDoneCallback()

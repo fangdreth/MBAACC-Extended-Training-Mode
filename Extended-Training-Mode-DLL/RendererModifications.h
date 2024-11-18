@@ -36,6 +36,10 @@ typedef struct LinkedListData {
 } LinkedListData;
 std::map<DWORD, LinkedListData> textureToObject;
 
+bool hasTextureAddr(DWORD test) {
+	return textureToObject.find(test) != textureToObject.end();
+}
+
 std::set<DWORD> textureAddrs;
 
 void renderModificationsFrameDone() {
@@ -448,6 +452,37 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 	if (listAppendHook_hitEffectRetAddr == 0x0042389C) { // i accidentally overwrote all my reversing on this :)
 		listAppendHook_objAddr = 0x0061E170 + (listAppendHook_objAddr_hit * 0x60);
 	}
+
+	
+
+	/*
+	
+	this texture ideally MUST be stored somewhere inside the char data?
+	or,,, i remember the unfiltered linked list being very long. are all textures loaded from there?
+
+	there are two approaches i can think of.
+	each object has a sprite index. that sprite index goes into an array of textures, gets the texture addr
+	each object actually holds the texture addr
+
+	or,, something really weird is going on with the linked list
+
+	when derefing down linkedListAddr(0x005550a8) after a few derefs, they started being 0x10 apart from each other?
+
+	*/
+	 
+	/*
+	
+	log("listAppendHook_texAddr %08X", listAppendHook_texAddr);
+	IDirect3DTexture9* test = (IDirect3DTexture9*)listAppendHook_texAddr;
+
+	__try {
+		test = (IDirect3DTexture9*)*(DWORD*)(0x005550f8); // from 00424e9f
+		D3DRESOURCETYPE resourceType = test->GetType();
+		log("resource type was %d", resourceType);
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		log("failure");
+	}
+	*/
 
 	/*
 	

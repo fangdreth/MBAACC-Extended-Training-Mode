@@ -3,6 +3,8 @@
 #include "DirectX.h"
 #include <string>
 
+extern bool hasTextureAddr(DWORD test);
+
 void EffectData::describe(char* buffer, int bufLen) {
 
 	DWORD offset = ((DWORD)&exists);
@@ -81,11 +83,11 @@ void displayDebugInfo() {
 		}
 	}
 
-	DWORD testPatternDataPtr = (DWORD)playerDataArr[0].getPatternDataPtr(playerDataArr[0].pattern);
-	TextDraw(100, 200, 8, 0xFF00FF00, "pattern: %08X %08X", (DWORD)playerDataArr[0].patternDataPtr, testPatternDataPtr);
+	//DWORD testPatternDataPtr = (DWORD)playerDataArr[0].getPatternDataPtr(playerDataArr[0].pattern);
+	//TextDraw(100, 200, 8, 0xFF00FF00, "pattern: %08X %08X", (DWORD)playerDataArr[0].patternDataPtr, testPatternDataPtr);
 
-	DWORD testAnimationDataPtr = (DWORD)playerDataArr[0].getAnimationDataPtr(playerDataArr[0].pattern, playerDataArr[0].state);
-	TextDraw(100, 216, 8, 0xFF00FF00, "state:   %08X %08X", (DWORD)playerDataArr[0].animationDataPtr, testAnimationDataPtr);
+	//DWORD testAnimationDataPtr = (DWORD)playerDataArr[0].getAnimationDataPtr(playerDataArr[0].pattern, playerDataArr[0].state);
+	//TextDraw(100, 216, 8, 0xFF00FF00, "state:   %08X %08X", (DWORD)playerDataArr[0].animationDataPtr, testAnimationDataPtr);
 
 
 	static KeyState cKey('C');
@@ -100,8 +102,274 @@ void displayDebugInfo() {
 			}
 		}
 
-
 		writeClipboard(std::string(buffer));
 	}
+
+}
+
+#pragma pack(push,1)
+typedef struct LinkedListTest {
+	LinkedListTest* nextLink;
+	DWORD unknown1;
+	DWORD unknown2;
+	DWORD unknown3;
+} LinkedListTest;
+#pragma pack(pop)
+
+static_assert(sizeof(LinkedListTest) == 0x10, "LinkedListTest should have size 0x10");
+
+#pragma pack(push,1)
+typedef struct UnknownMallocData {
+	union {
+		struct {
+			UNUSED(4);
+			BYTE type; // 004c0231
+			UNUSED(3);
+			UNUSED(0x80);
+			IDirect3DTexture9* texture; // huge. actually so huge
+			UNUSED(8);
+		};
+		DWORD allData[0x94 / 4];
+	};
+};
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(UnknownMallocData, v) == n, "UnknownMallocData offset incorrect for " #v);
+
+CHECKOFFSET(type, 4);
+CHECKOFFSET(texture, 0x88);
+
+static_assert(sizeof(UnknownMallocData) == 0x94, "UnknownMallocData should have size 0x94");
+
+#undef CHECKOFFSET
+
+bool describePointer(char* buffer, int bufferLen, int* bufferOffset, const char* name, DWORD ptr, int depth = 0) {
+	if (!isAddrValid(ptr)) {
+		return false;
+	}
+
+	if (*bufferOffset >= bufferLen) {
+		return false;
+	}
+
+	DWORD val = *(DWORD*)(ptr);
+	int res = snprintf(buffer + *bufferOffset, bufferLen - *bufferOffset, "%s%d: %08X -> %08X ", name, depth, ptr, val);
+
+	if (res < 0) {
+		return false;
+	}
+
+	*bufferOffset += res;
+
+	describePointer(buffer, bufferLen, bufferOffset, name, val, depth + 1);
+	describePointer(buffer, bufferLen, bufferOffset, name, val+4, depth + 1);
+
+	return true;
+}
+
+void displayLinkedList(int y, LinkedListTest* l, int depth = 0) {
+
+	if (y > 420) {
+		return;
+	}
+
+	if (l == NULL) {
+		TextDraw(250, y, 4, 0xFF00FF00, "%d NULL", depth);
+		return;
+	}
+	
+	/*
+	
+	const int bufferLen = 1024;
+	static char buffer[bufferLen];
+	int bufferOffset = 0;
+
+	bool res1 = describePointer(buffer, bufferLen, &bufferOffset, "UNK1", (DWORD)l->unknown1);
+	bool res2 = describePointer(buffer, bufferLen, &bufferOffset, "UNK2", (DWORD)l->unknown2);
+	bool res3 = describePointer(buffer, bufferLen, &bufferOffset, "UNK3", (DWORD)l->unknown3);
+
+	if (res1 || res2 || res3) {
+
+		TextDraw(250, y, 4, 0xFF00FF00, "%d %08X", depth, (DWORD)l->nextLink);
+		buffer[bufferLen - 1] = '\0';
+		TextDraw(250 + 45, y, 4, 0xFFFF00FF, buffer);
+		y += 4;
+	}
+
+	displayLinkedList(y, l->nextLink, depth + 1);
+
+	*/
+
+	
+
+
+};
+
+bool isValidTexture(DWORD addr) {
+	__try {
+		IDirect3DTexture9* tex = (IDirect3DTexture9*)addr;
+		D3DRESOURCETYPE  type = tex->GetType();
+		return type != 0;
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		return false;
+	}
+}
+
+void debugLinkedList() {
+
+	if (!showDebugMenu) {
+		return;
+	}
+
+	DWORD list = *(DWORD*)0x005550a8;
+	DWORD listLength = *(DWORD*)0x005550ac;
+
+	// eax of 004c0220 is multed by 0x10 and indexed into the base list
+	// 004162c8 has a 0x94 malloc
+	// that func returns a pointer to that malloc, which is most likely the stuff which stores the draw data? it is in ESI when passed to 004c0220
+
+	float font = 8;
+	DWORD color = 0xFFFF00FF;
+
+	const int buflen = 1024;
+	char buffer[buflen];
+	int bufOffset = 0;
+
+	static int startIndex = 0;
+	static int xOffset = 0;
+
+	if (iDown) {
+		startIndex -= 40;
+	} else if (kDown) {
+		startIndex += 40;
+	}
+
+	if (jDown) {
+		xOffset -= 1;
+	} else if (lDown) {
+		xOffset += 1;
+	}
+
+	startIndex = SAFEMOD(startIndex, 1600);
+	xOffset = SAFEMOD(xOffset, 0x94 / 4);
+
+	TextDraw(0, 0, 16, 0xFF00FF00, "%d %02X", startIndex, xOffset);
+	
+	bufOffset += snprintf(buffer, buflen, "%4d %10s ", 0, "");
+
+	for (int dataIndex = xOffset; dataIndex < 0x94 / 4; dataIndex++) {
+		bufOffset += snprintf(buffer + bufOffset, buflen - bufOffset, "%08X ", dataIndex * 4);
+	}
+
+	TextDraw(0, 100 - font, font, 0xFF00FF00, buffer);
+
+	int y = 100;
+	for (int i = startIndex; i < listLength; i++) {
+
+		if (y > 460) {
+			break;
+		}
+
+		//DWORD elementAddr = (list + (i * 0x10));
+		//DWORD EDI = elementAddr;
+		
+		// this element is now in edi, check 004c0273 for what happens to it.
+		// edi is the pointer to the list element
+		// *esi = *edi
+
+		
+		DWORD* in_EAX = (DWORD*)0x005550a8;
+		int* piVar1 = (int*)in_EAX[2];
+		//DWORD uVar2 = *(DWORD*)0x005550c0; // this is a indexer, incs on each func call. its max is the 1600 length. 
+
+		DWORD uVar2 = i;
+		DWORD* res = *(DWORD**)(piVar1[1] + uVar2 * 4);
+		
+		UnknownMallocData* data = (UnknownMallocData*)res;
+
+		BYTE type = data->type;
+		if (!type) {
+			continue;
+		}
+
+		bufOffset = 0;
+
+		//bufOffset += snprintf(buffer, buflen, "%4d ", i);
+
+		float x = 11.5f * font;
+		for (int dataIndex = xOffset; dataIndex < 0x94 / 4; dataIndex++) {
+			//bufOffset += snprintf(buffer + bufOffset, buflen - bufOffset, "%08X ", data->allData[dataIndex]);
+			DWORD val = data->allData[dataIndex];
+			color = 0xFFFF00FF;
+			if (isValidTexture(val)) {
+				color = 0xFF00FF00;
+			}
+			TextDraw(x, y, font, color, "%08X", val);
+			x += 6.5f * font;
+			//snprintf(buffer, buflen, "%08X", data->enabled);
+		}
+
+		int ESIOffset = -1;
+		const char* typeString = "???";
+		switch (type) {
+		case 1:
+		case 3:
+			typeString = "Surf/Text";
+			ESIOffset = 0x22 * 4;
+			break;
+		case 2:
+			typeString = "Volume";
+			break;
+		case 4:
+			typeString = "VolText";
+			break;
+		case 5:
+		case 7:
+			typeString = "cubeTx/ind";
+			break;
+		case 6:
+			typeString = "vertexBuf";
+			break;
+		default:
+			break;
+		}
+
+		/*
+		if (ESIOffset == -1) {
+			strcpy_s(buffer, "how");
+		} else {
+			DWORD* idek = (DWORD*)data->allData[ESIOffset / 4];
+			
+			snprintf(buffer, buflen, "%08X", (DWORD)idek);
+
+			if (hasTextureAddr((DWORD)idek)) {
+				color = 0xFFFF0000;
+			}
+
+			/*if (idek == NULL) {
+				strcpy_s(buffer, "NULL");
+			} else {
+				bufOffset = 0;
+				for (int dataIndex = 0; dataIndex < 0x10 / 4; dataIndex++) {
+					bufOffset += snprintf(buffer + bufOffset, buflen - bufOffset, "%08X ", idek[dataIndex]);
+					//snprintf(buffer, buflen, "%08X", data->enabled);
+				}
+			}
+			
+		}
+		*/
+		
+		//int font = 5;
+
+		//TextDraw(250 + (55 * (i / (480 / font))), (i * font) % 480, font, 0xFFFF00FF, "%08X", res);
+		buffer[0] = '\0';
+		TextDraw(0, y, font, color, "%4d %10s %s", i, typeString, buffer);
+
+		y += font;
+		
+	}
+
+
+	//TextDraw(250, 0, 4, 0xFF00FF00, "%d", listLength);
 
 }
