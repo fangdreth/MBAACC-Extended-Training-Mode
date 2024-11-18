@@ -119,9 +119,9 @@ typedef struct LinkedListTest {
 static_assert(sizeof(LinkedListTest) == 0x10, "LinkedListTest should have size 0x10");
 
 #pragma pack(push,1)
-typedef struct UnknownMallocData {
+typedef struct UnknownMallocData { 
 	union {
-		struct {
+		struct { // i would really like to find the sprite index in here!
 			UNUSED(4);
 			BYTE type; // 004c0231
 			UNUSED(3);
@@ -215,9 +215,14 @@ bool isValidTexture(DWORD addr) {
 	}
 }
 
+bool shouldDisplayLinkedListInfo = false;
 void debugLinkedList() {
 
 	if (!showDebugMenu) {
+		return;
+	}
+
+	if (!shouldDisplayLinkedListInfo) {
 		return;
 	}
 
@@ -227,6 +232,8 @@ void debugLinkedList() {
 	// eax of 004c0220 is multed by 0x10 and indexed into the base list
 	// 004162c8 has a 0x94 malloc
 	// that func returns a pointer to that malloc, which is most likely the stuff which stores the draw data? it is in ESI when passed to 004c0220
+	// if i had a brain, i wouldnot include the object addr in the rendering pipeline(i really wish/hope they did) 
+	// sprite index though? totally in there somewhere
 
 	float font = 8;
 	DWORD color = 0xFFFF00FF;
@@ -250,12 +257,29 @@ void debugLinkedList() {
 		xOffset += 1;
 	}
 
+	static int writeToDisk = 0;
+	static bool toggle = 0;
+	bool trigWrite = false;
+	if (((lDown && !toggle) || (jDown && toggle)) && writeToDisk == 0) {
+		toggle = !toggle;
+		writeToDisk += 100;
+		trigWrite = true;
+	}
+
+	if (writeToDisk > 0) {
+		writeToDisk--;
+	} 
+
+	
+
 	startIndex = SAFEMOD(startIndex, 1600);
 	xOffset = SAFEMOD(xOffset, 0x94 / 4);
 
-	TextDraw(0, 0, 16, 0xFF00FF00, "%d %02X", startIndex, xOffset);
+	//TextDraw(0, 0, 16, 0xFF00FF00, "%d %02X", startIndex, xOffset);
 	
-	bufOffset += snprintf(buffer, buflen, "%4d %10s ", 0, "");
+	static std::set<DWORD> textureAddrs;
+	bufOffset += snprintf(buffer, buflen, "%4d %2d %7d ", startIndex, xOffset, textureAddrs.size());
+	textureAddrs.clear();
 
 	for (int dataIndex = xOffset; dataIndex < 0x94 / 4; dataIndex++) {
 		bufOffset += snprintf(buffer + bufOffset, buflen - bufOffset, "%08X ", dataIndex * 4);
@@ -266,9 +290,9 @@ void debugLinkedList() {
 	int y = 100;
 	for (int i = startIndex; i < listLength; i++) {
 
-		if (y > 460) {
+		/*if (y > 460) {
 			break;
-		}
+		}*/
 
 		//DWORD elementAddr = (list + (i * 0x10));
 		//DWORD EDI = elementAddr;
@@ -288,9 +312,10 @@ void debugLinkedList() {
 		UnknownMallocData* data = (UnknownMallocData*)res;
 
 		BYTE type = data->type;
-		if (!type) {
-			continue;
-		}
+		// this was actually filtering out things???
+		//if (!type) {
+		//	continue;
+		//}
 
 		bufOffset = 0;
 
@@ -301,13 +326,42 @@ void debugLinkedList() {
 			//bufOffset += snprintf(buffer + bufOffset, buflen - bufOffset, "%08X ", data->allData[dataIndex]);
 			DWORD val = data->allData[dataIndex];
 			color = 0xFFFF00FF;
-			if (isValidTexture(val)) {
+			if (dataIndex * 4 == 0x88 && isValidTexture(val)) {
+				
+				if (trigWrite && textureAddrs.find(val) == textureAddrs.end()) {
+					saveTexture((IDirect3DBaseTexture9*)val, i);
+				}
+				textureAddrs.insert(val);
 				color = 0xFF00FF00;
 			}
+
+			// warc standing is in the range 1385 - 1408
+
+			WORD testVal = val & 0xFFFF;
+
+			if (testVal >= 1385 && testVal <= 1408) {
+				color = 0xFF0000FF;
+			}
+
+			testVal = (val >> 16) & 0xFFFF;
+			
+			if (testVal >= 1385 && testVal <= 1408) {
+				color = 0xFF0000FF;
+			}
+
+			
+			if (x > 700) {
+				continue;
+			}
+
 			TextDraw(x, y, font, color, "%08X", val);
 			x += 6.5f * font;
 			//snprintf(buffer, buflen, "%08X", data->enabled);
+
+			
 		}
+
+		color = 0xFFFF00FF;
 
 		int ESIOffset = -1;
 		const char* typeString = "???";
@@ -360,6 +414,10 @@ void debugLinkedList() {
 		*/
 		
 		//int font = 5;
+		if (y > 460) {
+			continue;
+		}
+
 
 		//TextDraw(250 + (55 * (i / (480 / font))), (i * font) % 480, font, 0xFFFF00FF, "%08X", res);
 		buffer[0] = '\0';
@@ -372,4 +430,27 @@ void debugLinkedList() {
 
 	//TextDraw(250, 0, 4, 0xFF00FF00, "%d", listLength);
 
+}
+
+void saveTexture(IDirect3DBaseTexture9* pTex, int i) { // does this inc the refcounter??
+
+	if (pTex == NULL) {
+		log("saveTexture tex was NULL! ret");
+		return;
+	}
+
+	static unsigned imageCounter = 0;
+
+	const char* writePath = "./temp/";
+
+	static char fileName[256];
+	if (i == -1) {
+		snprintf(fileName, 256, "%s%7d.png", writePath, imageCounter);
+	} else {
+		snprintf(fileName, 256, "%s%7d.png", writePath, i);
+	}
+	
+	D3DXSaveTextureToFileA(fileName, D3DXIFF_PNG, pTex, NULL);
+
+	imageCounter++;
 }

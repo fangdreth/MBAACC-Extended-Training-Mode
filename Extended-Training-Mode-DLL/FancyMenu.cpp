@@ -2,6 +2,7 @@
 #include "DirectX.h"
 #include "FancyMenu.h"
 extern bool shouldDisplayDebugInfo;
+extern bool shouldDisplayLinkedListInfo;
 
 Menu<int> baseMenu("Debug Menu");
 Menu<int>* disableFpsMenuOption = NULL;
@@ -337,6 +338,12 @@ void initMenu() {
 		getDefaultOnOffOptionFunc(&shouldDisplayDebugInfo),
 		defaultOnOffNameFunc
 	);
+
+	debug.add<int>("Show Linked List Hex",
+		getDefaultOnOffOptionFunc(&shouldDisplayLinkedListInfo),
+		defaultOnOffNameFunc
+	);
+
 
 	baseMenu.add(debug);
 

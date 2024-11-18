@@ -594,3 +594,6 @@ typedef struct HitEffectData {
 extern bool shouldDisplayDebugInfo;
 void displayDebugInfo();
 void debugLinkedList();
+struct IDirect3DBaseTexture9;
+extern bool shouldDisplayLinkedListInfo;
+void saveTexture(IDirect3DBaseTexture9* pTex, int i=-1);
