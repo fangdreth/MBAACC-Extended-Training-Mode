@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "DebugInfo.h"
 
 const ADDRESS adBaseAddress = (0x00400000);
 
@@ -37,7 +38,7 @@ struct Player
 {
 	char cPlayerNumber = 0;
 
-	DWORD adPlayerBase = 0x0;
+	PlayerData* PlayerData = 0x0;
 	DWORD adInaction = 0x0;
 
 	int nLastInactionableFrames = 0;
@@ -61,10 +62,10 @@ struct Player
 	bool bLastProjectileActive = false;
 };
 
-Player P1{ 0, adMBAABase + adP1Base, adMBAABase + adP1Inaction };
-Player P2{ 1, adMBAABase + adP2Base, adMBAABase + adP2Inaction };
-Player P3{ 2, adMBAABase + adP3Base, adMBAABase + adP1Inaction };
-Player P4{ 3, adMBAABase + adP4Base, adMBAABase + adP2Inaction };
+Player P1{ 0, (PlayerData*)(adMBAABase + adP1Base), adMBAABase + adP1Inaction };
+Player P2{ 1, (PlayerData*)(adMBAABase + adP2Base), adMBAABase + adP2Inaction };
+Player P3{ 2, (PlayerData*)(adMBAABase + adP3Base), adMBAABase + adP1Inaction };
+Player P4{ 3, (PlayerData*)(adMBAABase + adP4Base), adMBAABase + adP2Inaction };
 
 Player* paPlayerArray[4] = { &P1, &P2, &P3, &P4 };
 
@@ -78,11 +79,11 @@ void UpdatePlayers() //Called after bar handling
 	for (int i = 0; i < 4; i++) {
 		Player& P = *paPlayerArray[i];
 		P.nLastInactionableFrames = *(int*)(P.adInaction);
-		P.nLastFrameCount = *(int*)(P.adPlayerBase + adPlayerFrameCount);
-		P.bLastOnRight = *(int*)(P.adPlayerBase + adOnRightFlag);
-		P.dwLastActivePointer = *(DWORD*)(P.adPlayerBase + adAttackDataPointer);
-		P.cLastHitstop = *(char*)(P.adPlayerBase + adHitstop);
-		if (*(short*)(P.adPlayerBase + adInputEvent) != -1) {
+		P.nLastFrameCount = P.PlayerData->heatTimeThisHeat;
+		P.bLastOnRight = P.PlayerData->isOpponentToLeft;
+		P.dwLastActivePointer = (DWORD)P.PlayerData->attackDataPtr;
+		P.cLastHitstop = P.PlayerData->hitstop;
+		if (P.PlayerData->inputEvent != 1) {
 			P.bAlreadyGotFirstActive = false;
 			P.nFirstActiveCounter = 0;
 		}
@@ -100,18 +101,22 @@ void CheckProjectiles()
 	P4.bLastProjectileActive = P4.bProjectileActive;
 	P4.bProjectileActive = false;
 	char cBlankEffectCount = 0;
+	EffectData* curFX = (EffectData*)(adMBAABase + adEffectBase);
 	for (int i = 0; i < 200; i++) //Check Projectiles for active
 	{
 		if (cBlankEffectCount > 16) break;
 		cBlankEffectCount++;
-		if (*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i) != 0 &&
-			*(DWORD*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adAttackDataPointer) != 0 &&
-			*(int*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectStatus) == 0xFF)
+		if (curFX->exists)
 		{
 			cBlankEffectCount = 0;
-			Player& P = *paPlayerArray[*(char*)((adMBAABase + adEffectBase) + dwEffectStructSize * i + adEffectOwner)];
-			P.bProjectileActive = true;
+			if (curFX->attackDataPtr != 0 &&
+				curFX->someFlag == 0xFF)
+			{
+				Player& P = *paPlayerArray[curFX->index];
+				P.bProjectileActive = true;
+			}
 		}
+		curFX = (EffectData*)(adMBAABase + adEffectBase + dwEffectStructSize * i);
 	}
 }
 
@@ -174,44 +179,43 @@ void UpdateBars(Player& P, Player& Assist)
 	DWORD dwBar2Color1 = 0x00000000;
 	int nNumber = -1;
 	int nNumFlag = 0; //0 = default, go away on next info; 1 = persist always; 2 = persist and delete prior 2s; 3 = get deleted and pass it on if followed by 2
-	bool bIsButtonPressed = *(char*)(P.adPlayerBase + adButtonInput) != 0 || *(char*)(P.adPlayerBase + adMacroInput) != 0;
 
 	//Bar 1 - General action information
 	if (*(int*)(P.adInaction) != 0) //Doing something with limited actionability
 	{
 		dwColor = FB_INACTIONABLE;
 		nNumber = *(int*)P.adInaction;
-		if (*(int*)(P.adPlayerBase + adPattern) >= 35 && *(int*)(P.adPlayerBase + adPattern) <= 37) //Jump Startup
+		if (P.PlayerData->pattern >= 35 && P.PlayerData->pattern <= 37) //Jump Startup
 		{
 			dwColor = FB_JUMP;
 		}
-		else if (*(int*)(P.adPlayerBase + adHitstunRemaining) != 0 && *(char*)(P.adPlayerBase + adBlockstunFlag) == 0) //Hitstun
+		else if (P.PlayerData->hitstunTimeRemaining != 0 && !P.PlayerData->inBlockstun) //Hitstun
 		{
 			dwColor = FB_HITSTUN;
-			if (*(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Stance) == 1) //Airborne
+			if (P.PlayerData->animationDataPtr->stateData->stance == 1) //Airborne
 			{
-				if (*(short*)(P.adPlayerBase + adUntechCounter) < *(short*)(P.adPlayerBase + adUntechTotal)) //Still has untech remaining
+				if (P.PlayerData->untechTimeElapsed < P.PlayerData->totalUntechTime) //Still has untech remaining
 				{
-					nNumber = *(short*)(P.adPlayerBase + adUntechTotal) - *(short*)(P.adPlayerBase + adUntechCounter);
+					nNumber = P.PlayerData->totalUntechTime - P.PlayerData->untechTimeElapsed;
 				}
 			}
 			else //Grounded
 			{
-				if (*(int*)(P.adPlayerBase + adHitstunRemaining) > 2) //Still has hitstun remaining
+				if (P.PlayerData->hitstunTimeRemaining > 2) //Still has hitstun remaining
 				{
-					nNumber = *(short*)(P.adPlayerBase + adHitstunRemaining) - 1;
+					nNumber = P.PlayerData->hitstunTimeRemaining - 1;
 				}
 			}
 		}
-		else if (*(char*)(P.adPlayerBase + adBlockstunFlag)) //Blockstun
+		else if (P.PlayerData->inBlockstun) //Blockstun
 		{
 			dwColor = FB_BLOCKSTUN;
-			if (*(int*)(P.adPlayerBase + adHitstunRemaining) > 2 && *(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Stance) != 1)
+			if (P.PlayerData->hitstunTimeRemaining > 2 && P.PlayerData->animationDataPtr->stateData->stance != 1)
 			{
-				nNumber = *(short*)(P.adPlayerBase + adHitstunRemaining) - 1;
+				nNumber = P.PlayerData->hitstunTimeRemaining - 1;
 			}
 		}
-		else if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0) //Attacking
+		else if (P.PlayerData->attackDataPtr) //Attacking
 		{
 			dwColor = FB_ACTIVE;
 			nNumber = P.nActiveCounter;
@@ -239,26 +243,19 @@ void UpdateBars(Player& P, Player& Assist)
 
 	char cCondition1Type = 0;
 	char cCondition2Type = 0;
-	if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_ConditionCount) > 0)
+	if (P.PlayerData->animationDataPtr->highestIFIndex > 0)
 	{
-		DWORD dwPointer = *(DWORD*)(P.adPlayerBase + adAnimationDataPointer);
-		if (dwPointer != 0)
+		if (P.PlayerData->animationDataPtr->IFDataPtr != 0)
 		{
-			dwPointer = *(DWORD*)(dwPointer + adAnimationData_ConditionsPointer);
-			if (dwPointer != 0)
+			if (P.PlayerData->animationDataPtr->IFDataPtr->IFs[0] != 0)
 			{
-				DWORD dwC1Pointer = *(DWORD*)(dwPointer + adConditions_Condition1Pointer);
-				if (dwC1Pointer != 0)
+				cCondition1Type = P.PlayerData->animationDataPtr->IFDataPtr->IFs[0]->IFTP;
+			}
+			if (P.PlayerData->animationDataPtr->highestIFIndex > 1)
+			{
+				if (P.PlayerData->animationDataPtr->IFDataPtr->IFs[1] != 0)
 				{
-					cCondition1Type = *(char*)(dwC1Pointer + adCondition_Type);
-				}
-				if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_ConditionCount) > 1)
-				{
-					DWORD dwC2Pointer = *(DWORD*)(dwPointer + adConditions_Condition2Pointer);
-					if (dwC2Pointer != 0)
-					{
-						cCondition2Type = *(char*)(dwC2Pointer + adCondition_Type);
-					}
+					cCondition2Type = P.PlayerData->animationDataPtr->IFDataPtr->IFs[1]->IFTP;
 				}
 			}
 		}
@@ -269,23 +266,23 @@ void UpdateBars(Player& P, Player& Assist)
 		*(int*)(adMBAABase + adP2Freeze) != 0)
 	{
 		dwColor = FB_FREEZE;
-		if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0) //Attacking
+		if (P.PlayerData->attackDataPtr != 0) //Attacking
 		{
 			dwColor = FB_FREEZE_ACTIVE;
 		}
 	}
-	else if (*(char*)(P.adPlayerBase + adThrowFlag) != 0) //Being thrown
+	else if (P.PlayerData->throwFlag) //Being thrown
 	{
 		dwColor = FB_THROWN;
 	}
-	else if (*(char*)(P.adPlayerBase + adHitstop) != 0) //in hitstop
+	else if (P.PlayerData->hitstop != 0) //in hitstop
 	{
 		dwColor = FB_HITSTOP;
-		if (*(char*)(P.adPlayerBase + adNotInCombo) == 0 && P.cLastHitstop == 0)
+		if (!P.PlayerData->notInCombo && P.cLastHitstop == 0)
 		{
 			nNumFlag = 1;
 		}
-		else if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0)
+		else if (P.PlayerData->attackDataPtr != 0)
 		{
 			nNumFlag = 3;
 			nNumber = -1;
@@ -305,18 +302,18 @@ void UpdateBars(Player& P, Player& Assist)
 		dwColor = FB_THROW_ACTIVE;
 	}
 
-	if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_BoxIndex) == 12) //Clash
+	if (P.PlayerData->animationDataPtr->highestNonHitboxIndex == 12) //Clash
 	{
 		dwColor2 = FB_CLASH;
 	}
-	else if (*(char*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_BoxIndex) <= 1 || //Various forms of invuln
-		*(char*)(P.adPlayerBase + adEFStrikeInvuln) != 0 ||
-		*(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Invuln) == 3)
+	else if (P.PlayerData->animationDataPtr->highestNonHitboxIndex <= 1 || //Various forms of invuln
+		P.PlayerData->strikeInvuln != 0 ||
+		P.PlayerData->animationDataPtr->stateData->invincibility == 3)
 	{
 		dwColor2 = FB_INVULN;
 	}
 
-	if (*(char*)(*(DWORD*)(*(DWORD*)(P.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Stance) == 1) //Airborne
+	if (P.PlayerData->animationDataPtr->stateData->stance == 1) //Airborne
 	{
 		dwBar2Color0 = FB_JUMP;
 	}
@@ -332,7 +329,7 @@ void UpdateBars(Player& P, Player& Assist)
 		}
 	}
 
-	if (*(DWORD*)(Assist.adPlayerBase + adAttackDataPointer) != 0) //Check Assist for active
+	if (Assist.PlayerData->attackDataPtr != 0) //Check Assist for active
 	{
 		dwBar2Color1 = FB_ASSIST_ACTIVE;
 		if (Assist.dwLastActivePointer == 0 && !P.bAlreadyGotFirstActive)
@@ -377,11 +374,11 @@ void UpdateBars(Player& P, Player& Assist)
 
 void IncrementActive(Player& P)
 {
-	if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) != 0 && *(char*)(P.adPlayerBase + adHitstop) == 0 && *(int*)(P.adPlayerBase + adPlayerFrameCount) != P.nLastFrameCount)
+	if (P.PlayerData->attackDataPtr && P.PlayerData->hitstop == 0 && P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
 	{
-		P.nActiveCounter += *(int*)(P.adPlayerBase + adPlayerFrameCount) - P.nLastFrameCount;
+		P.nActiveCounter += P.PlayerData->heatTimeThisHeat - P.nLastFrameCount;
 	}
-	else if (*(DWORD*)(P.adPlayerBase + adAttackDataPointer) == 0)
+	else if (P.PlayerData->attackDataPtr == 0)
 	{
 		P.nActiveCounter = 0;
 	}
@@ -389,21 +386,21 @@ void IncrementActive(Player& P)
 
 void IncrementFirstActive(Player& P)
 {
-	if (*(char*)(P.adPlayerBase + adHitstop) == 0 &&
+	if (P.PlayerData->hitstop == 0 &&
 		*(int*)(adMBAABase + adP1Freeze) == 0 &&
 		*(int*)(adMBAABase + adP2Freeze) == 0 &&
 		*(char*)(adMBAABase + adGlobalFreeze) == 0 &&
-		*(int*)(P.adPlayerBase + adPlayerFrameCount) != P.nLastFrameCount)
+		P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
 	{
-		P.nFirstActiveCounter += *(int*)(P.adPlayerBase + adPlayerFrameCount) - P.nLastFrameCount;
+		P.nFirstActiveCounter += P.PlayerData->heatTimeThisHeat - P.nLastFrameCount;
 		bAddPlayerFreeze = true;
 	}
 	if (bAddPlayerFreeze &&
 		(*(int*)(adMBAABase + adP1Freeze) != 0 ||
 		*(int*)(adMBAABase + adP2Freeze) != 0) &&
-		*(int*)(P.adPlayerBase + adPlayerFrameCount) != P.nLastFrameCount)
+		P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
 	{
-		P.nFirstActiveCounter += *(int*)(P.adPlayerBase + adPlayerFrameCount) - P.nLastFrameCount;
+		P.nFirstActiveCounter += P.PlayerData->heatTimeThisHeat - P.nLastFrameCount;
 		bAddPlayerFreeze = false;
 	}
 }
@@ -420,19 +417,15 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 {
 	CalculateAdvantage(P1, P2);
 
-	bool IsInput = (
-		*(DWORD*)(P1.adPlayerBase + adRawDirectionalInput) != 0 ||
-		*(DWORD*)(P2.adPlayerBase + adRawDirectionalInput) != 0
-		); //True if player or dummy has any input
 	bool DoBarUpdate = (
 		*(int*)(P1.adInaction) != 0 ||
-		*(int*)(P2.adInaction) ||
-		*(DWORD*)(*(DWORD*)(*(DWORD*)(P1.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Flagset2) != 0 ||
-		*(DWORD*)(*(DWORD*)(*(DWORD*)(P2.adPlayerBase + adAnimationDataPointer) + adAnimationData_StateDataPointer) + adStateData_Flagset2) != 0 ||
+		*(int*)(P2.adInaction) != 0||
+		P1.PlayerData->animationDataPtr->stateData->flagset2 != 0||
+		P2.PlayerData->animationDataPtr->stateData->flagset2 != 0||
 		P1.bProjectileActive != 0 ||
 		P2.bProjectileActive != 0 ||
-		*(DWORD*)(P1Assist.adPlayerBase + adAttackDataPointer) != 0 ||
-		*(DWORD*)(P2Assist.adPlayerBase + adAttackDataPointer) != 0 ||
+		P1Assist.PlayerData->attackDataPtr != 0 ||
+		P2Assist.PlayerData->attackDataPtr != 0 ||
 		P1Assist.bProjectileActive != 0 ||
 		P2Assist.bProjectileActive != 0
 		); //True if either char is inactionable, can't block, has an active projectile, has an active assist, or has an active assist projectile
@@ -471,8 +464,8 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 
 	if (bUpdateBar)
 	{
-		if (*(char*)(P1.adPlayerBase + adHitstop) != 0 &&
-			*(char*)(P2.adPlayerBase + adHitstop) != 0) //Player hitstop values count down but we need it to count up
+		if (P1.PlayerData->hitstop != 0 &&
+			P2.PlayerData->hitstop != 0) //Player hitstop values count down but we need it to count up
 		{
 			nSharedHitstop++;
 		}
@@ -497,12 +490,12 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 			HandleInactive(P2);
 			UpdateBars(P1, P1Assist);
 			UpdateBars(P2, P2Assist);
-			if (*(char*)(P1Assist.adPlayerBase))
+			if (P1Assist.PlayerData->exists)
 			{
 				//IncrementActive(P1Assist);
 				UpdateBars(P1Assist, P1);
 			}
-			if (*(char*)(P2Assist.adPlayerBase))
+			if (P2Assist.PlayerData->exists)
 			{
 				//IncrementActive(P2Assist);
 				UpdateBars(P2Assist, P2);
@@ -525,12 +518,12 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 	Main2 = &P2;
 	Assist1 = &P3;
 	Assist2 = &P4;
-	if (*(char*)(P1.adPlayerBase + adTagFlag))
+	if (P1.PlayerData->tagFlag)
 	{
 		Main1 = &P3;
 		Assist1 = &P1;
 	}
-	if (*(char*)(P2.adPlayerBase + adTagFlag))
+	if (P2.PlayerData->tagFlag)
 	{
 		Main2 = &P4;
 		Assist2 = &P2;
