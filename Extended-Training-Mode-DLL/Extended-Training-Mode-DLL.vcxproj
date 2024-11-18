@@ -198,6 +198,7 @@
     <ClInclude Include="TASManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Common\CharacterData.cpp" />
     <ClCompile Include="..\Common\RawData.cpp" />
     <ClCompile Include="..\Common\version.cpp" />
     <ClCompile Include="DebugInfo.cpp" />
