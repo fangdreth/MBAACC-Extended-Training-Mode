@@ -3,6 +3,7 @@
 #include "FancyMenu.h"
 extern bool shouldDisplayDebugInfo;
 extern bool shouldDisplayLinkedListInfo;
+extern bool shouldDebugImportantDraw;
 
 Menu<int> baseMenu("Debug Menu");
 Menu<int>* disableFpsMenuOption = NULL;
@@ -344,6 +345,11 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
+	debug.add<int>("Show ImportantDraw Hex",
+		getDefaultOnOffOptionFunc(&shouldDebugImportantDraw),
+		defaultOnOffNameFunc
+	);
+	
 
 	baseMenu.add(debug);
 

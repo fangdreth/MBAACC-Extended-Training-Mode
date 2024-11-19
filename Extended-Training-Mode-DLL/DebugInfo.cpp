@@ -206,9 +206,25 @@ void displayLinkedList(int y, LinkedListTest* l, int depth = 0) {
 };
 
 bool isValidTexture(DWORD addr) {
+	if (addr == 0) {
+		return false;
+	}
 	__try {
 		IDirect3DTexture9* tex = (IDirect3DTexture9*)addr;
-		D3DRESOURCETYPE  type = tex->GetType();
+		D3DRESOURCETYPE type = tex->GetType();
+		return type != 0;
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		return false;
+	}
+}
+
+bool isValidResource(DWORD addr) {
+	if (addr == 0) {
+		return false;
+	}
+	__try {
+		IDirect3DResource9* tex = (IDirect3DResource9*)addr;
+		D3DRESOURCETYPE type = tex->GetType();
 		return type != 0;
 	} __except (EXCEPTION_EXECUTE_HANDLER) {
 		return false;
@@ -234,6 +250,12 @@ void debugLinkedList() {
 	// that func returns a pointer to that malloc, which is most likely the stuff which stores the draw data? it is in ESI when passed to 004c0220
 	// if i had a brain, i wouldnot include the object addr in the rendering pipeline(i really wish/hope they did) 
 	// sprite index though? totally in there somewhere
+	// ok a thought occurs. 
+	// im saving this after the renderer pipeline is setup, but before its actually rendered.
+	// and tbh, im getting complete shit out of this.
+	// is it possible that textures are changed/altered during the actual rendering? (hell thats likely)
+	// new idea: call this func AFTER rendering has occured. maybe. make sure the linked list isnt reset at the end of callsImportantDraw1
+	// i could also increase the 0x94 malloc to 0x98 and put the address in those extrabytes? but i dont think that,,
 
 	float font = 8;
 	DWORD color = 0xFFFF00FF;
@@ -260,7 +282,10 @@ void debugLinkedList() {
 	static int writeToDisk = 0;
 	static bool toggle = 0;
 	bool trigWrite = false;
-	if (((lDown && !toggle) || (jDown && toggle)) && writeToDisk == 0) {
+	
+	/*
+	//if (((lDown && !toggle) || (jDown && toggle)) && writeToDisk == 0) {
+	if(writeToDisk == 0 && mDown) {
 		toggle = !toggle;
 		writeToDisk += 100;
 		trigWrite = true;
@@ -269,7 +294,7 @@ void debugLinkedList() {
 	if (writeToDisk > 0) {
 		writeToDisk--;
 	} 
-
+	*/
 	
 
 	startIndex = SAFEMOD(startIndex, 1600);
@@ -327,9 +352,10 @@ void debugLinkedList() {
 			DWORD val = data->allData[dataIndex];
 			color = 0xFFFF00FF;
 			if (dataIndex * 4 == 0x88 && isValidTexture(val)) {
+			//if (isValidResource(val)) {
 				
 				if (trigWrite && textureAddrs.find(val) == textureAddrs.end()) {
-					saveTexture((IDirect3DBaseTexture9*)val, i);
+					//saveTexture((IDirect3DBaseTexture9*)val, i);
 				}
 				textureAddrs.insert(val);
 				color = 0xFF00FF00;
@@ -337,18 +363,11 @@ void debugLinkedList() {
 
 			// warc standing is in the range 1385 - 1408
 
-			WORD testVal = val & 0xFFFF;
+			DWORD testVal = val;
 
-			if (testVal >= 1385 && testVal <= 1408) {
+			if (testVal >= 1385 * 4 && testVal <= 1408 * 4) {
 				color = 0xFF0000FF;
 			}
-
-			testVal = (val >> 16) & 0xFFFF;
-			
-			if (testVal >= 1385 && testVal <= 1408) {
-				color = 0xFF0000FF;
-			}
-
 			
 			if (x > 700) {
 				continue;
@@ -432,7 +451,7 @@ void debugLinkedList() {
 
 }
 
-void saveTexture(IDirect3DBaseTexture9* pTex, int i) { // does this inc the refcounter??
+void saveTexture(IDirect3DBaseTexture9* pTex, int i){ // does this inc the refcounter??
 
 	if (pTex == NULL) {
 		log("saveTexture tex was NULL! ret");
@@ -453,4 +472,103 @@ void saveTexture(IDirect3DBaseTexture9* pTex, int i) { // does this inc the refc
 	D3DXSaveTextureToFileA(fileName, D3DXIFF_PNG, pTex, NULL);
 
 	imageCounter++;
+}
+
+#pragma pack(push,1)
+typedef struct UnknownDrawData { // ghidra only lets you rerun autocreatestructure if you right click the variable NAME not type. omfg
+	// this struct and its size are mostly guesses from ghidra, assume everything is incorrect
+	union {
+		struct {
+			DWORD unknown1;
+			DWORD unknown2;
+			UNUSED(12);
+			DWORD* unknown3;	
+			UNUSED(60);
+			struct UnknownHasTexture {
+				UNUSED(12);
+				IDirect3DTexture9* tex; // this is the [0x54] + 0xC i was getting addresses from 
+			} *unknownHasTexture; // i could also name this UnknownHasTexture. 
+			//UnknownHasTexture* unknownHasTexture; 
+			DWORD* unknown4;
+			DWORD unknown5;
+			DWORD unknown6;
+			DWORD unknown7;
+			IDirect3DTexture9* tex;
+			BYTE unknown9;
+			BYTE unknown10;
+			short unknown11;
+			short unknown12;
+		};
+		struct {
+			DWORD dwordData[0x6C / 4];
+			UNUSED(6);
+		};
+		BYTE data[0x72];
+	};
+} UnknownDrawData;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(UnknownDrawData, v) == n, "UnknownDrawData offset incorrect for " #v);
+
+CHECKOFFSET(unknownHasTexture, 0x54);
+CHECKOFFSET(tex, 0x68);
+CHECKOFFSET(unknown9, 0x6C);
+
+static_assert(sizeof(UnknownDrawData) == 0x72, "UnknownDrawData should have size 0x94");
+
+#undef CHECKOFFSET
+
+bool shouldDebugImportantDraw = false;
+void debugImportantDraw() {
+
+	if (!shouldDebugImportantDraw) {
+		return;
+	}
+	
+	int bufOffset = 0;
+	const int bufLen = 1024;
+	char buffer[bufLen];
+
+	auto tempPrint = [&buffer, &bufLen, &bufOffset](DWORD val) mutable -> bool {
+
+		bool isValid = isValidResource(val);
+
+		if (isValid && mDown) {
+			saveTexture((IDirect3DBaseTexture9*)val);
+		}
+
+		bufOffset += snprintf(buffer + bufOffset, bufLen - bufOffset, "%s %08X\n", isValid ? "VAL" : "???", val);
+
+		return isValid;
+	};
+
+	// when calling this right after callsImportantDraw1(), printebxindex 0 contains the frame. pretty funny 
+
+	float font = 12.0f;
+	float y = 20.0f;
+	for (int printDrawEBXIndex = 0; printDrawEBXIndex < 3; printDrawEBXIndex++) {
+		
+		UnknownDrawData* drawData = (UnknownDrawData*)*(DWORD*)((printDrawEBXIndex * 4) + 0x00767430);
+
+		for (int i = 0; i < 0x6C / 4; i++) {
+			bufOffset = 0;
+			bufOffset += snprintf(buffer + bufOffset, bufLen - bufOffset, "%02X ", i * 4);
+			bool isValid = tempPrint(drawData->dwordData[i]);
+			TextDraw(0, y, font, isValid ? 0xFF00FF00 : 0xFFFF00FF, buffer);
+			y += font;
+		}
+
+		if (isAddrValid((DWORD)drawData->unknownHasTexture)) {
+			bufOffset = 0;
+			bufOffset += snprintf(buffer + bufOffset, bufLen - bufOffset, "   ");
+			bool isValid = tempPrint((DWORD)drawData->unknownHasTexture->tex);
+			TextDraw(0, y, font, isValid ? 0xFF00FF00 : 0xFFFF00FF, buffer);
+			y += font;
+		}
+		
+
+		break;
+	}
+
+
 }

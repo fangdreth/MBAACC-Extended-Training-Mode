@@ -137,6 +137,14 @@ void drawLoopHook() {
 	unknownTexAddr = *(DWORD*)(_naked_drawCallHook_ebx + 0x54);
 	unknownTexAddr = *(DWORD*)(unknownTexAddr + 0xC);
 
+	bool isValidTex = false;
+	if (isValidTexture(unknownTexAddr)) {
+		isValidTex = true;
+		//if (mDown) {
+		//	saveTexture((IDirect3DBaseTexture9*)unknownTexAddr);
+		//}
+	}
+
 	if (textureToObject.find(unknownTexAddr) != textureToObject.end()) {
 		info = textureToObject[unknownTexAddr];
 	}
@@ -432,7 +440,7 @@ void drawLoopHook() {
 
 	if (overkillVerboseMode) {
 		//TextDraw(0, drawY, 6, col, "%4d %08X %08X %08X %08X %08X %08X %08X %08X %s", linkedListLength, PrimitiveType, NumVertices, PrimitiveCount, pIndexData, pVertexStreamZeroData, VertexStreamZeroStride, unknownTexAddr, info.object, infoString);
-		TextDraw(0, drawY, 6, lineCol, "%4d %08X %08X %s", linkedListLength, unknownTexAddr, info.object, infoString);
+		TextDraw(0, drawY, 6, lineCol, "%4d %s%08X %08X %s", linkedListLength, isValidTex ? "TEX" : "???", unknownTexAddr, info.object, infoString);
 	}
 
 

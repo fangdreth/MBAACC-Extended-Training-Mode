@@ -249,6 +249,7 @@ extern bool iDown;
 extern bool jDown;
 extern bool kDown;
 extern bool lDown;
+extern bool mDown;
 
 // my inconsistent use of D3DXVECTOR2 vs point is bad. i should use point
 

@@ -10,6 +10,7 @@
 
 void debugLinkedList();
 void displayDebugInfo();
+void debugImportantDraw();
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
 //void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
@@ -743,6 +744,7 @@ bool iDown = false;
 bool jDown = false;
 bool kDown = false;
 bool lDown = false;
+bool mDown = false;
 
 // -----
 
@@ -931,6 +933,8 @@ void __stdcall backupRenderState() {
 	kDown = kKey.keyDown();
 	lDown = lKey.keyDown();
 
+	static KeyState mKey('M');
+	mDown = mKey.keyDown();
 
 	//if (dragManager.hasDrag == NULL) {
 	//	TextDraw(mousePos.x - 4.0f, mousePos.y - 4.0f, 32, 0x8042e5f4, "%c", CURSOR);
@@ -2871,9 +2875,26 @@ __declspec(naked) void _naked_linkedListInspect() {
 	POP_ALL;
 
 	__asm {
-		push 0040e49eh;
+		push 0040e49eh; // return address to be used by the func we are jumping to
 	}
 	emitJump(0x00433490);
+}
+
+__declspec(naked) void _naked_linkedListInspect2() {
+
+	//PUSH_ALL;
+	//debugImportantDraw();
+	//POP_ALL;
+
+	emitCall(0x00433490);
+
+	PUSH_ALL;
+	debugLinkedList();
+	debugImportantDraw();
+	POP_ALL;
+
+	emitJump(0x0040e49e);
+
 }
 
 void cleanForDirectXReset() {
@@ -3226,6 +3247,7 @@ bool HookDirectX() {
 	log("<3");
 
 	// misc hook for when im inspecting the linked list
-	patchJump(0x0040e499, _naked_linkedListInspect);
+	//patchJump(0x0040e499, _naked_linkedListInspect);
+	patchJump(0x0040e499, _naked_linkedListInspect2);
 	return true;
 }
