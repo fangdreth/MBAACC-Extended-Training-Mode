@@ -2496,14 +2496,75 @@ void _drawGeneralCalls() {
 
 void _drawDebugMenu();
 
+char byteToBase64(BYTE b) {
+	if (b == 62) {
+		return '+';
+	} else if (b == 63) {
+		return '/';
+	} else if (b >= 52) {
+		return (b - 52) + '0';
+	} else if (b >= 26) {
+		return (b - 26) + 'a';
+	} else {
+		return b + 'A';
+	}
+
+}
+
+std::array<char, 5> getBase64Hash() {
+
+	unsigned bits = 0;
+
+	for (int i = 0; i < 6; i++) {
+		bits <<= 4;
+
+		unsigned char temp = GIT_HASH[i] < 'a' ? GIT_HASH[i] - '0' : (GIT_HASH[i] - 'a' + 0xA);
+		bits |= temp;
+	}
+
+	std::array<char, 5> res = { ' ', ' ', ' ', ' ', '\0' };
+
+	for (int i = 0; i < 2; i++) {
+		unsigned val = (bits & (0xFFF << (i * 12))) >> (i * 12);
+
+		BYTE v1 = (val & 0xFC0) >> 6;
+		BYTE v2 = (val & 0x03F);
+
+		v1 = byteToBase64(v1);
+		v2 = byteToBase64(v2);
+		res[2 * (1 - i) + 0] = v1;
+		res[2 * (1 - i) + 1] = v2;
+	}
+
+
+	return res;
+}
+
 void _drawBuildInfo() {
 
 	DWORD col = 0xFF42e5f4;
 	if (BLEEDING) {
 		col = 0xFFbd1a0b;
+		// dirty should never occur under bleeding conditions
+	} else {
+		if (GIT_DIRTY[0] == 'C') {
+			col = 0xFF42f4aa;
+		}
 	}
 
-	TextDraw(640 - (7 * 10), 0, 10, col, GIT_VERSION);
+	// only using 6 chars of the git hash, but that will be fine. base64 will let me move that down to 4
+
+	static std::array<char, 5> str;
+	static bool firstRun = true;
+	if (firstRun) {
+		str = getBase64Hash();
+		firstRun = false;
+	}
+
+	
+
+	//TextDraw(640 - (7 * 10), 0, 10, col, str.data());
+	TextDraw(640 - (3.25 * 10), 0, 10, col, str.data());
 
 }
 

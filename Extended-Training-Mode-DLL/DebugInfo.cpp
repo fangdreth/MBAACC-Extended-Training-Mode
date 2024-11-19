@@ -18,7 +18,7 @@ void EffectData::describe(char* buffer, int bufLen) {
 	}
 
 	int bufferOffset = 0;
-	bufferOffset = snprintf(buffer, bufLen, "%s%d P%d S%d\n(%d,%d)\n", entityString, index, pattern, state, xPos, yPos);
+	bufferOffset = snprintf(buffer, bufLen, "%s%d P%d S%d\n(%d,%d)\nUNTCH%d\n", entityString, index, pattern, state, xPos, yPos, totalUntechTime);
 
 	if (attackDataPtr != NULL) {
 		snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d\nPROR%d", attackDataPtr->damage, attackDataPtr->proration);

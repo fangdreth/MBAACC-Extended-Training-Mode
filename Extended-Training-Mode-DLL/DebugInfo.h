@@ -562,6 +562,7 @@ CHECKOFFSET(tagFlag, 0x178);
 CHECKOFFSET(bounceCount, 0x17E);
 CHECKOFFSET(strikeInvuln, 0x185);
 CHECKOFFSET(timeThrown, 0x18C);
+CHECKOFFSET(totalUntechTime, 0x18E);
 CHECKOFFSET(armorTimer, 0x198);
 CHECKOFFSET(recievedHitstop, 0x1A4);
 CHECKOFFSET(isKnockedDown, 0x1B0);
