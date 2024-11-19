@@ -286,3 +286,5 @@ Images/v-8-22-2024.png
 Images/v2-0-8-22-2024.png
 enc_temp_folder/a1f59299b5fbeb614d278c2b34dc2c/MBAACC-Extended-Training-Mode.h
 /enc_temp_folder
+Common/version.cpp
+MBAACC-Extended-Training-Mode-Launcher/Time.cpp
