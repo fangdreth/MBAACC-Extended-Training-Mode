@@ -6284,15 +6284,16 @@ int main(int argc, char* argv[])
                     // burst a combo
                     if (nHitsTillBurst != TOO_HIGH_TO_BURST)
                     {
-                        int nComboCount, nHitstopRemaining, nHitstunRemaining;
+                        int nComboCount;
+                        uint8_t nHitstunRemaining, nHitstopRemaining;
                         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwComboCount), &nComboCount, 4, 0);
-                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstopRemaining, &nHitstopRemaining, 4, nP2Controlled);
-                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 4, nP2Controlled);
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstopRemaining, &nHitstopRemaining, 1, nP2Controlled);
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nP2Controlled);
                         if (nComboCount >= nHitsTillBurst && nHitstopRemaining == 0 && nHitstunRemaining != 0)
                         {
                             while (true)
                             {
-                                ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 4, nP2Controlled);
+                                ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nP2Controlled);
                                 if (nHitstunRemaining == 0)
                                 {
                                     Sleep(16);  //need to wait 1 frame
@@ -6342,7 +6343,7 @@ int main(int argc, char* argv[])
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
                     int nP2Pattern = nReadResult;*/
                     int nHitstunRemaining, nP2Pattern;
-                    ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 4, nP2Controlled);
+                    ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nP2Controlled);
                     ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1PatternRead, &nP2Pattern, 4, nP2Controlled);
 
                     if (nHitstunRemaining == 0 && nP2Pattern != 350)
