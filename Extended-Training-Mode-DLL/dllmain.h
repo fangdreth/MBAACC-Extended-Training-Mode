@@ -256,3 +256,7 @@ bool __stdcall isAddrValid(DWORD addr);
 void SetSeed(uint32_t nSeed);
 
 void setFPSLimiter(bool b);
+
+void renderModificationsFrameDone();
+
+bool initRenderModifications();

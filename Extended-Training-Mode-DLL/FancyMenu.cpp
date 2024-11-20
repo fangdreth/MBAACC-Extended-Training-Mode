@@ -8,6 +8,9 @@ extern bool shouldDebugImportantDraw;
 Menu<int> baseMenu("Debug Menu");
 Menu<int>* disableFpsMenuOption = NULL;
 
+bool enableEffectColors = false;
+float effectColorHue = 0.0f;
+
 template <typename T>
 struct always_false : std::false_type { };
 
@@ -243,6 +246,33 @@ void initMenu() {
 
 	baseMenu.add(hitboxes);
 
+	Menu misc("Misc");
+
+	misc.add<int>("TAS on reset",
+		getDefaultOnOffOptionFunc(&enableTAS),
+		defaultOnOffNameFunc
+	);
+
+	Menu subColorMenu("color options");
+
+	subColorMenu.add<int>("enable effect colors",
+		getDefaultOnOffOptionFunc(&enableEffectColors),
+		defaultOnOffNameFunc
+	);
+
+	subColorMenu.add<float>("effect hue",
+		std::function<void(int, float&)>([](int inc, float& opt) -> void {
+			opt += (inc * 0.01f);
+			opt = CLAMP(opt, 0.0f, 1.0f);
+
+			effectColorHue = opt;
+			}),
+		defaultSliderNameFunc);
+	
+	misc.add(subColorMenu);
+
+	baseMenu.add(misc);
+
 	Menu debug("Debug");
 
 	debug.add<int>("Draw Info",
@@ -320,11 +350,6 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
-	debug.add<int>("TAS on reset",
-		getDefaultOnOffOptionFunc(&enableTAS),
-		defaultOnOffNameFunc
-	);
-
 	debug.add<int>("Disable FPS Limit",
 		getDefaultOnOffOptionFunc(&disableFPSLimit),
 		defaultOnOffNameFunc
@@ -353,6 +378,8 @@ void initMenu() {
 
 	baseMenu.add(debug);
 
+	// i need to find a way to make this better. its so fucking stupid
+	// options being stored in the menu is so much nicer
 	disableFpsMenuOption = &std::get<Menu<int>>(std::get<Menu<int>>(baseMenu.items[baseMenu.items.size() - 1]).items[disableFPSIndex]);
 
 	baseMenu.unfolded = true;

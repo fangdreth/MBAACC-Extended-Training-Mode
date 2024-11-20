@@ -63,7 +63,7 @@ public:
 	std::function<void(int, T&)> optionFunc = nullptr; // execute code upon menu change
 	std::function<std::string(T)> nameFunc = nullptr; // give the name of the option
 	
-	T optionState;
+	T optionState = T(0);
 
 	bool unfolded = false;
 
@@ -71,6 +71,10 @@ public:
 
 extern Menu<int> baseMenu;
 extern Menu<int>* disableFpsMenuOption;
+
+// i hate this. wish i could more easily access menu data
+extern bool enableEffectColors;
+extern float effectColorHue;
 
 void drawFancyMenu();
 

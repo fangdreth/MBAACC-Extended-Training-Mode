@@ -150,7 +150,8 @@ void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n)
 // -----
 
 #include "DirectX.h"
-#include "RendererModifications.h"
+//#include "RendererModifications.h"
+
 
 //#define ENABLEFILELOG 1
 

@@ -206,6 +206,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FancyInputDisplay.cpp" />
     <ClCompile Include="FancyMenu.cpp" />
+    <ClCompile Include="RendererModifications.cpp" />
     <ClCompile Include="ReplayManager.cpp" />
     <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="TASManager.cpp" />

@@ -7,6 +7,9 @@
 
 // contains things which modify melty's rendering system internally.
 
+bool shouldThisBeColored(BYTE charID, DWORD pattern);
+
+
 // 0x1C4 000111000100
 // 0x004			0x040				0x080			0x100
 // D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1
@@ -31,20 +34,23 @@ void _drawDebugMenu() {
 
 // key is mystery texture addr, val is its obj offset
 typedef struct LinkedListData {
+	bool shouldColor = false;
 	DWORD object = 0;
 	DWORD caller = 0;
 } LinkedListData;
 std::map<DWORD, LinkedListData> textureToObject;
 
+bool pixelShaderNeedsReset = false;
+IDirect3DPixelShader9* pPixelShader_backup = NULL;
+IDirect3DPixelShader9* pPixelShader = NULL;
+
 bool hasTextureAddr(DWORD test) {
 	return textureToObject.find(test) != textureToObject.end();
 }
 
-std::set<DWORD> textureAddrs;
+std::set<DWORD> skipTextureAddrs;
 
-void renderModificationsFrameDone() {
-	//textureAddrs.clear();
-}
+void renderModificationsFrameDone();
 
 void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
 
@@ -461,63 +467,7 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 		listAppendHook_objAddr = 0x0061E170 + (listAppendHook_objAddr_hit * 0x60);
 	}
 
-	
-
-	/*
-	
-	this texture ideally MUST be stored somewhere inside the char data?
-	or,,, i remember the unfiltered linked list being very long. are all textures loaded from there?
-
-	there are two approaches i can think of.
-	each object has a sprite index. that sprite index goes into an array of textures, gets the texture addr
-	each object actually holds the texture addr
-
-	or,, something really weird is going on with the linked list
-
-	when derefing down linkedListAddr(0x005550a8) after a few derefs, they started being 0x10 apart from each other?
-
-	*/
-	 
-	/*
-	
-	log("listAppendHook_texAddr %08X", listAppendHook_texAddr);
-	IDirect3DTexture9* test = (IDirect3DTexture9*)listAppendHook_texAddr;
-
-	__try {
-		test = (IDirect3DTexture9*)*(DWORD*)(0x005550f8); // from 00424e9f
-		D3DRESOURCETYPE resourceType = test->GetType();
-		log("resource type was %d", resourceType);
-	} __except (EXCEPTION_EXECUTE_HANDLER) {
-		log("failure");
-	}
-	*/
-
-	/*
-	
-	0061e230
-	0061e290
-	0061e2F0
-
-	check out 00415b88 in ghidra. 
-	there is most definitely a format for hit effects. figure it out!
-	whats the base addr for the array?
-	0061E170? (almost def it)
-
-	size is,, 0x60, i think
-	array length is,,, 4000?
-	0x0061E170 + (0x60 * 4000) = 0x67bd70, below the start addr for effects at ~ 0x67BDE8
-	oh god i dont know if this is the actual base offset for this thing or if its +-0x10
-
-	
-
-	*/
-
-	/*
-	while (textureToObject.find(listAppendHook_texAddr) != textureToObject.end()) {
-		listAppendHook_texAddr++; // super janky, super weird
-	}*/
-
-	textureToObject.insert({ listAppendHook_texAddr, { listAppendHook_objAddr, listAppendHook_callerAddr } });
+	textureToObject.insert({ listAppendHook_texAddr, { false, listAppendHook_objAddr, listAppendHook_callerAddr } });
 
 	if (listAppendHook_effectRetAddr == 0x0045410F || listAppendHook_effectRetAddr_pat == 0x0045410F) {
 
@@ -527,9 +477,13 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 			DWORD pattern = *(DWORD*)(listAppendHook_objAddr + 0x0);
 			DWORD state = *(DWORD*)(listAppendHook_objAddr + 0x4);
 
-			if (source == -2 && !shouldDrawHud) {
-				// check effects.txt
-				switch (pattern) {
+			// what the hell is this doing??? is this doing something??? when did i write this????
+			// ok maddy thanks for the shit comments
+			// this is the code which prevents the flashing of the meter bar when hud is hidden.
+			if (source == -2) {
+				if (!shouldDrawHud) {
+					// check effects.txt
+					switch (pattern) {
 					case 100:
 					case 101:
 					case 102:
@@ -546,15 +500,31 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 					case 306:
 					case 307:
 					case 308:
-						break;
+						skipTextureAddrs.insert(listAppendHook_texAddr);
+						return;
 					default:
 						return;
+					}
 				}
-			} else {
 				return;
 			}
+
+			if (enableEffectColors) {
 			
-			textureAddrs.insert(listAppendHook_texAddr);
+				BYTE owner = *(BYTE*)(listAppendHook_objAddr - 0x10 + 0x02F4);
+
+				BYTE charID;
+
+				if (owner == 0) {
+					charID = *(BYTE*)0x555135;
+				} else {
+					charID = *(BYTE*)0x555C31;
+				}
+
+				if (shouldThisBeColored(charID, pattern)) { // tbh would having a seperate map for things to be colored be ideal.
+					textureToObject[listAppendHook_texAddr].shouldColor = true;
+				}
+			} 
 		}
 	}
 }
@@ -565,17 +535,44 @@ DWORD skipTextureDraw = 0;
 void drawPrimHook() {
 
 	if (leadToDrawPrimHook_ret != 0x004331D9) {
-		textureAddrs.clear(); // calling this repeatedly is wasteful!
+		skipTextureAddrs.clear(); // calling this repeatedly is wasteful!
 		textureToObject.clear();
 		return;
 	}
 
-	if (textureAddrs.contains(drawPrimHook_texAddr)) {
+	// set lookups are trash. there has to be some way of,, getting the index of this texture or something??
+	if (skipTextureAddrs.contains(drawPrimHook_texAddr)) {
 		skipTextureDraw = 1;
+	} else if (textureToObject.contains(drawPrimHook_texAddr)) {
+		
+		if (textureToObject[drawPrimHook_texAddr].shouldColor) {
+			device->GetPixelShader(&pPixelShader_backup); // does this inc a refcount?
+
+			pixelShaderNeedsReset = true;
+			device->SetPixelShader(pPixelShader);
+		}
+
+	}
+}
+
+void drawPrimCallback() {
+	if (pixelShaderNeedsReset) {
+		pixelShaderNeedsReset = false;
+		device->SetPixelShader(pPixelShader_backup);
+		pPixelShader_backup = NULL;
 	}
 }
 
 // naked funcs
+
+__declspec(naked) void _naked_drawPrimCallback() {
+	PUSH_ALL;
+	drawPrimCallback();
+	POP_ALL;
+	__asm {
+		ret;
+	};
+}
 
 __declspec(naked) void _naked_drawIndexPrimHook() {
 	__asm {
@@ -597,28 +594,6 @@ __declspec(naked) void _naked_drawIndexPrimHook() {
 
 	}
 
-
-}
-
-DWORD _naked_drawCallHook_Func = 0x004be290;
-__declspec(naked) void _naked_drawCallHook() {
-
-	__asm {
-		mov _naked_drawCallHook_ebx, ebx;
-	}
-
-	PUSH_ALL;
-	drawLoopHook();
-	POP_ALL;
-
-	__asm {
-		call[_naked_drawCallHook_Func];
-	}
-
-	__asm {
-		push 004c03e4h;
-		ret;
-	}
 
 }
 
@@ -748,27 +723,9 @@ __declspec(naked) void _naked_leadToDrawPrimHook() {
 
 // init 
 
-void initDrawCallHook() {
-	patchJump(0x004c03df, _naked_drawCallHook);
-}
+void initDrawIndexPrimHook();
 
-void initDrawIndexPrimHook() {
-	patchJump(0x004be46e, _naked_drawIndexPrimHook);
-}
+void initEffectSelector();
 
-void initEffectSelector() {
+bool initRenderModifications();
 
-	patchJump(0x004c026b, _naked_listAppendHook);
-	patchJump(0x004be290, _naked_drawPrimHook);
-	patchJump(0x004c0380, _naked_leadToDrawPrimHook);
-
-}
-
-bool initRenderModifications() {
-
-	initDrawIndexPrimHook();
-	
-	initEffectSelector();
-
-	return true;
-}

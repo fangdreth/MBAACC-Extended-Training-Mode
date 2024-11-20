@@ -2536,7 +2536,6 @@ std::array<char, 5> getBase64Hash() {
 		res[2 * (1 - i) + 1] = v2;
 	}
 
-
 	return res;
 }
 
