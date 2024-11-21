@@ -267,7 +267,10 @@ void initMenu() {
 
 			effectColorHue = opt;
 			}),
-		defaultSliderNameFunc);
+		defaultSliderNameFunc,
+		L"EFFECTHUECOLOR"
+	);
+	effectColorHue = std::get<Menu<float>>(subColorMenu.items[subColorMenu.items.size() - 1]).optionState; // i really need a rewrite on the menu class to allow for more easy access
 	
 	misc.add(subColorMenu);
 
