@@ -6342,7 +6342,8 @@ int main(int argc, char* argv[])
                     int nHitstunRemaining = nReadResult;
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
                     int nP2Pattern = nReadResult;*/
-                    int nHitstunRemaining, nP2Pattern;
+                    BYTE nHitstunRemaining;
+                    int nP2Pattern;
                     ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nP2Controlled);
                     ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1PatternRead, &nP2Pattern, 4, nP2Controlled);
 
