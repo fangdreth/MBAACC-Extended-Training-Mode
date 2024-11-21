@@ -13,6 +13,7 @@ void displayDebugInfo();
 void debugImportantDraw();
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
+
 //void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 void cursorDraw();
 unsigned directxFrameCount = 0;

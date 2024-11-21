@@ -521,8 +521,10 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 					charID = *(BYTE*)0x555C31;
 				}
 
-				if (shouldThisBeColored(charID, pattern)) { // tbh would having a seperate map for things to be colored be ideal.
-					textureToObject[listAppendHook_texAddr].shouldColor = true;
+				if (*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x20) != 0x00000101) {
+					if (shouldThisBeColored(charID, pattern)) { // tbh would having a seperate map for things to be colored be ideal.
+						textureToObject[listAppendHook_texAddr].shouldColor = true;
+					}
 				}
 			} 
 		}

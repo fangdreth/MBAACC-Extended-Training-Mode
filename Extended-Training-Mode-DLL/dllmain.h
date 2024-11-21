@@ -260,3 +260,26 @@ void setFPSLimiter(bool b);
 void renderModificationsFrameDone();
 
 bool initRenderModifications();
+
+constexpr DWORD hashString(const std::string_view& str) {
+
+	// this func should be safe in terms of collisions, but tbh i need to do more testing on if its ok
+
+	DWORD hash = 5381;
+
+	int i = 0;
+	char c;
+	while (true) {
+		c = str[i++];
+		if (c == '\0') {
+			break;
+		}
+
+		//hash = (hash * 31) + (c);
+		hash = (hash ^ c) * 16777619;
+	}
+
+	return hash;
+}
+
+

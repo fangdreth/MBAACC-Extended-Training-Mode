@@ -5,7 +5,7 @@
 #include <string>
 #include <optional>
 #include <regex>
-
+#include <algorithm>
 
 std::string strip(const std::string& s) {
 	std::string res = s;
@@ -31,215 +31,131 @@ namespace TASManager {
 	int tasCurrentLen = 0;
 
 	void parseLine(const std::string& l) {
-		
-		// this parser is way out of line, and needs to be refactored. i should hash strings too
 
-		TASItem res;
-		res.data = 0;
+		std::string s = l;
 
-		std::string output = l;
+		s = s.substr(0, s.find('#', 0)); // remove everything past the first '#' 
 
-		// make the string lowercase
-		std::transform(output.begin(), output.end(), output.begin(), [](unsigned char c) { return std::tolower(c); });
+		std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); }); // make the string lowercase
 
-		std::regex trim_re("^\\s+|\\s+$");
-		output = std::regex_replace(output, trim_re, "");
+		std::regex removeDupleWhitespaceRe(R"(^\s+|\s+$|\s+(?=\s))");
+		s = std::regex_replace(s, removeDupleWhitespaceRe, ""); // remove duplicate/non space whitespace and replace it with a single one, also strip 
 
-		if (output.size() == 0) {
-			return;
-		}
+		// the format of this map is key(string hash), val is the rest of the string not containing the command
+		// constexpr doesnt like maps, which is why im using an array, the size is small enough that it will probs be better that way
+		constexpr std::array<std::pair<DWORD, void(*)(const std::string&)>, 9> parseArr = {{
 
-		if (output[0] == '#') {
-			return;
-		}
+			{ hashString("pause"), [](const std::string& data) -> void {
+				TASItem res;
+				res.command = TASCommand::Pause;
+				tasData.push_back(res);
+			}},
 
-		std::regex whitespace_re("\\s+");
-		output = std::regex_replace(output, whitespace_re, " ");
+			{ hashString("unpause"), [](const std::string& data) -> void {
+				TASItem res;
+				res.command = TASCommand::Unpause;
+				tasData.push_back(res);
+			}},
 
-		std::regex removeAfterHashtag("^[^#]*");
+			{ hashString("p1pos"), [](const std::string& data) -> void {
+				TASItem res;
+				res.command = TASCommand::P1XPos;
+				res.commandData = safeStoi(data);
+				tasData.push_back(res);
+			}},
+
+			{ hashString("p2pos"), [](const std::string& data) -> void {
+				TASItem res;
+				res.command = TASCommand::P2XPos;
+				res.commandData = safeStoi(data);
+				tasData.push_back(res);
+			}},
+
+			{ hashString("p1meter"), [](const std::string& data) -> void {
+				TASItem res;
+				res.command = TASCommand::P1Meter;
+				res.commandData = safeStoi(data);
+				tasData.push_back(res);
+			}},
+
+			{ hashString("p2meter"), [](const std::string& data) -> void {
+				TASItem res;
+				res.command = TASCommand::P2Meter;
+				res.commandData = safeStoi(data);
+				tasData.push_back(res);
+			}},
+
+			{ hashString("startff"), [](const std::string& data) -> void {
+				TASItem res;
+				res.command = TASCommand::StartFF;
+				tasData.push_back(res);
+			}},
+
+			{ hashString("stopff"), [](const std::string& data) -> void {
+				TASItem res;
+				res.command = TASCommand::StopFF;
+				tasData.push_back(res);
+			}},
+
+			{ hashString("dl"), [](const std::string& data) -> void {
+				TASItem res;
+				res.length = safeStoi(data);
+				tasData.push_back(res);
+			}}
+
+		}};
+
+		std::regex re(R"(^(\S+)(?:\s?)(\S*)?$)");
 		std::smatch match;
 
-		if (std::regex_search(output, match, removeAfterHashtag)) {
-			output = match.str();
-		}
+		if (std::regex_match(s, match, re)) {
+			std::string instr = match[1].matched ? match[1].str() : "";
+			std::string data = match[2].matched ? match[2].str() : "";
+			
+			//log("TAS instr:\"%s\" data:\"%s\"", instr.c_str(), data.c_str());
 
-		std::regex re("(?:(.*?)(?: ))?(.+)");
+			DWORD hash = hashString(instr);
+			
+			int index = -1;
+			for(int i=0; i<parseArr.size(); i++) {
+				if (hash == parseArr[i].first) {
+					index = i;
+					break;
+				}
+			}
 
-		res.length = 1;
+			if (index == -1) {
+				// this means its a typical button command, with either "length input" or "input" format
+				// or a sequence input like S236 was passed in 
 
-		if (std::regex_match(output, match, re)) {
-			if (match[1].matched) {				
-				if (match[2].matched && safeStoi(match[2].str()) != -1) {
-					if (match[1].str() == "p1pos") {
-						res.command = TASCommand::P1XPos;
-						res.commandData = safeStoi(match[2].str());
+				// if data is blank, it means that this is supposed to be a 1 frame input, so ill move the inputs a lil bit to set that up
+				if (data.size() == 0) {
+					data = instr;
+					instr = "1";
+				}
+
+				if (data[0] == 's') { // parse sequence
+					std::string temp = " ";
+					for (int i = 1; i < data.size(); i++) {
+						TASItem res;
+						res.length = 1;
+						temp[0] = data[i];
+						res.setData(temp);
 						tasData.push_back(res);
-						return;
-					}  else if (match[1].str() == "p2pos") {
-						res.command = TASCommand::P2XPos;
-						res.commandData = safeStoi(match[2].str());
-						tasData.push_back(res);
-						return;
-					} else if (match[1].str() == "p1meter") {
-						res.command = TASCommand::P1Meter;
-						res.commandData = safeStoi(match[2].str());
-						tasData.push_back(res);
-						return;
-					} else if (match[1].str() == "p2meter") {
-						res.command = TASCommand::P2Meter;
-						res.commandData = safeStoi(match[2].str());
-						tasData.push_back(res);
-						return;
-					} else if (match[1].str() == "rng") {
-						res.command = TASCommand::RNG;
-						res.commandData = safeStoi(match[2].str());
-						tasData.push_back(res);
-						return;
 					}
+				} else { // parse a normal input
+					TASItem res;
+					res.setLength(instr);
+					res.setData(data);
+					tasData.push_back(res);
 				}
 
-				try {
-					res.length = std::stoi(match[1].str());
-				} catch(...) {
-					return;
-				}
-				if (res.length < 1) {
-					return;
-				}
+			} else {
+				parseArr[index].second(data);
 			}
-			output = match[2].str();
-		} else {
-			return;
+	
 		}
 
-		if (output == "pause") {
-			res.command = TASCommand::Pause;
-			tasData.push_back(res);
-			return;
-		} else if (output == "unpause") {
-			res.command = TASCommand::Unpause;
-			tasData.push_back(res);
-			return;
-		} else if (output == "startff") {
-			res.command = TASCommand::StartFF;
-			tasData.push_back(res);
-			return;
-		} else if (output == "stopff") {
-			res.command = TASCommand::StopFF;
-			tasData.push_back(res);
-			return;
-		}
-
-		if (output[0] == 's') {
-			for (int i = 1; i < output.size(); i++) {
-				char c = output[i];
-
-				TASItem temp;
-				temp.data = 0;
-				temp.length = 1;
-				
-
-				bool validItem = true;
-				switch (c) {
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '6':
-					case '7':
-					case '8':
-					case '9':
-						temp.dir = c - '0';
-						break;
-					case '5':
-						temp.dir = 0;
-						break;
-					case 'a':
-					case 'A':
-						temp.a = true;
-						break;
-					case 'b':
-					case 'B':
-						temp.b = true;
-						break;
-					case 'c':
-					case 'C':
-						temp.c = true;
-						break;
-					case 'd':
-					case 'D':
-						temp.d = true;
-						break;
-					default:
-						validItem = false;
-						break;
-				}
-
-				if (validItem) {
-					tasData.push_back(temp);
-				}
-				
-			}
-			return;
-		}
-
-		if (output.size() >= 3 && output.substr(0, 2) == "dl") {
-
-			try {
-				res.length = std::stoi(strip(output.substr(2, std::string::npos)));
-			} catch(...) {
-				return;
-			}
-			if (res.length < 1) {
-				return;
-			}
-
-			tasData.push_back(res);
-			return;
-		}
-
-		res.data = 0;
-		res.dir = 5;
-
-		for (int i = 0; i < output.size(); i++) {
-
-			if (output[i] == '#') {
-				break;
-			}
-
-			if (output[i] >= '0' && output[i] <= '9') {
-				res.dir = output[i] - '0';
-				if (res.dir == 5) {
-					res.dir = 0;
-				}
-				continue;
-			}
-
-			switch (output[i]) {
-			case 'a':
-			case 'A':
-				res.a = true;
-				break;
-			case 'b':
-			case 'B':
-				res.b = true;
-				break;
-			case 'c':
-			case 'C':
-				res.c = true;
-				break;
-			case 'd':
-			case 'D':
-				res.d = true;
-				break;
-			default:
-				break;
-			}
-
-		}
-
-		tasData.push_back(res);
 	}
 
 	void load(const std::string& filename) {

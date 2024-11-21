@@ -1565,13 +1565,14 @@ void frameDoneCallback()
 	static KeyState rKey('R');
 	if (rKey.keyDown()) {
 		//replayManager.reset();
+		TASManager::load("TAS.txt");
 	}
 
 	static KeyState fKey('F');
 	if (fKey.keyDown()) {
 		setFPSLimiter(!disableFPSLimit);
 	}
-	
+
 	renderModificationsFrameDone();
 
 	drawFancyMenu();
