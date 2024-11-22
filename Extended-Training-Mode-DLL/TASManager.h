@@ -16,7 +16,7 @@ enum class TASCommand : uint8_t {
 	P2XPos = 2,
 	P1Meter = 3,
 	P2Meter = 4,
-	RNG = 5,
+	RNG = 5, // not implemented
 	Pause = 6, 
 	Unpause = 7, 
 	StartFF = 8,
@@ -25,8 +25,6 @@ enum class TASCommand : uint8_t {
 
 #pragma pack(push,1)
 typedef struct TASItem {
-	int16_t length = 0;
-	
 	union {
 		struct {
 			uint8_t dir : 4; // direction 5 MUST be 0 !			
@@ -41,7 +39,9 @@ typedef struct TASItem {
 		};
 		uint8_t data = 0;
 	};
-
+	
+	int16_t length = 0;
+	
 	TASCommand command = TASCommand::Nothing;
 	union {
 		int32_t commandData = 0;

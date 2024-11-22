@@ -394,7 +394,7 @@ TASManager TASManager::breed(const TASManager& managerA, const TASManager& manag
 	// lets say that max combo should give 0.25
 	// or well, this is the DIFFERENCE, fitA - fitB
 	float fitDelta = managerA.fitness - managerB.fitness;
-	float parentSelector = 0.5f + (powf(fabsf(fitDelta), 0.25) * (fitDelta > 0 ? 1.0f : -1.0f));
+	float parentSelector = 0.5f + (powf(fabsf(fitDelta), 0.25f) * 0.125f * (fitDelta > 0 ? 1.0f : -1.0f));
 
 	for (size_t i = 0; i < managerA.tasData.size(); i++) {
 
@@ -405,22 +405,15 @@ TASManager TASManager::breed(const TASManager& managerA, const TASManager& manag
 
 		// i have read no math behind this
 		
-		if (A.buttons == B.buttons) { // this check def saves cycles, but isnt needed, sorta makes the code messy
-			C.buttons = A.buttons; // should i have a random chance of change here
-		} else {
-			// should this selection be fitness based, and if so how much fitness -> how much probability?
-			C.buttons = getRandFloat() < parentSelector ? A.buttons : B.buttons;
-		}
+		C.buttons = getRandFloat() < parentSelector ? A.buttons : B.buttons;
+
 		if (getRandFloat() < buttonMutationRate) {
 			BYTE tempButtons = 1 << (getRand() & 0b11);
 			C.buttons ^= tempButtons;
 		}
 
-		if (A.dir == B.dir) {
-			C.dir = A.dir; // should i have a random chance of change here
-		} else {
-			C.dir = getRandFloat() < parentSelector ? A.dir : B.dir;
-		}
+		C.dir = getRandFloat() < parentSelector ? A.dir : B.dir;
+
 		if (getRandFloat() < directionMutationRate) {
 			// how should this occur? i feel like it just,, idek
 			unsigned tempDir = getRand() % 9;
@@ -430,14 +423,11 @@ TASManager TASManager::breed(const TASManager& managerA, const TASManager& manag
 			C.dir = tempDir;
 		}
 
-		if (A.length == B.length) {
-			C.length = A.length; // should i have a random chance of change here
-		} else {
-			C.length = getRandFloat() < parentSelector ? A.length : B.length;
-		}
+		C.length = getRandFloat() < parentSelector ? A.length : B.length;
+
 		if (getRandFloat() < lengthMutationRate) {
 			float val = getRandNorm();
-			val += val > 0 ? 1.0f : -1.0f; // make sure that no mutation doesnt occur. this is weird
+			val += val > 0 ? 1.0f : -1.0f; // make sure that a mutation actually occurs
 			C.length += val;
 			C.length = MAX(C.length, 1);
 		}

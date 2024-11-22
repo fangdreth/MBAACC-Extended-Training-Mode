@@ -37,7 +37,7 @@ jobs:
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild /m /p:Platform="x86" /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+      run: msbuild /m /p:Platform="x86" /p:Configuration=${{env.BUILD_CONFIGURATION}} /t:MBAACC-Extended-Training-Mode-Launcher ${{env.SOLUTION_FILE_PATH}}
 
     - name: Delete tag and release
       uses: dev-drprasad/delete-tag-and-release@v1.1
