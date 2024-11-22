@@ -21,6 +21,7 @@ float _freqTimerYVal = 0.0f;
 bool logPowerInfo = false;
 bool logVerboseFps = false;
 float hitboxOpacity = 0.20f;
+bool renderingEnable = true;
 
 Point mousePos; // no use getting this multiple times a frame
 
@@ -2649,8 +2650,6 @@ void maintainFPS() {
 	do {
 		time = getNanoSec();
 		delta = time - prevTime;
-
-
 	} while (delta < limit);
 
 	prevTime = time;
@@ -2741,55 +2740,53 @@ void __stdcall _doDrawCalls() {
 		//printDirectXError(hr);
 		return;
 	}
-
 	_freqTimerYVal = 0.0f;
 
-	/*
-	// on my machine at least, i swear we are having some slowdown
-	// lots of the areas that are hooked occur,,, between when the 60fps timing checks are done?
-	// id appreciate it if we kept this on until release
-	// its in here bc present is guarenteed to only be called once a frame
-	static long long startTime = 0;
-	static long long endTime = 0;
-	//const int timeBufferLen = 128;
-	const int timeBufferLen = 64;
-	static double timeBuffer[timeBufferLen];
-	static int timeBufferIndex = 0;
+	// ok this is going here because i know that being in this func means i am past the code that ill be patching around here
+	// i should move all this to renderingmodifications!
+	static KeyState tKey('T');
+	if (tKey.keyDown()) {
+		renderingEnable = !renderingEnable;
 
-	//endTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-	endTime = getMicroSec();
+		if (renderingEnable) {
 
-	timeBuffer[timeBufferIndex] = (double)1000000.0 / ((double)endTime - startTime);
+			// i can totally get melty to run faster than this if i properly disable the threaded waiting 
+			// rn its sorta consistent at ~300us jumping to 1000us sometimes. smells like threads?
+			// if i assume a worste case average of 500us, thats ~2000fps, a 33.33x speedup.
+			// im not sure if thats enough for what i want to do without setting some sorta distributed system up tho
+			// turning off hud and bg also help ofc. wish that turning off hud didnt require those texture removes
+			// before i move on to NEAT or something, please have something that waits until a move connects (but also registers if it doesnt somehow? a timeout ig?)
 
-	double minRes = timeBuffer[0];
-	double maxRes = timeBuffer[0];
-	double res = 0.0;
-	for (int i = 0; i < timeBufferLen; i++) {
-		res += timeBuffer[i];
-		minRes = MIN(minRes, timeBuffer[i]);
-		maxRes = MAX(maxRes, timeBuffer[i]);
-		DWORD col = i == timeBufferIndex ? 0xFF42e5f4 : 0xFFbd1a0b;
-		TextDraw(0.0, 10.0 + (i * 6), 6, col, "%5.2lf", timeBuffer[i]);
+			patchMemset(0x0040e48d, 0x50, 1);
+			
+			BYTE code1[5] = { 0xe8, 0x27, 0x4c, 0x02, 0x00 };
+			patchMemcpy(0x0040e494, &code1, 5);
+
+			BYTE code2[5] = { 0xe8, 0x6d, 0x4e, 0x02, 0x00 };
+			patchMemcpy(0x0040e49e, &code2, 5);
+
+
+		} else {
+			// ugh this is annoying
+
+			// 0040e499 callsImportantDraw1
+			//patchMemset(0x0040e499, 0x90, 5); // idek what this does
+
+			// 0040e494 thisFuncCallsthefpsDoesalotofothershittoo and its push before it
+			patchMemset(0x0040e48d, 0x90, 1);
+			//patchMemset(0x0040e494, 0x90, 5);
+			// this func is what calls framedonecallback. we need that to still get called
+			patchCall(0x0040e494, nakedFrameDoneCallback_RAW);
+
+			patchCall(0x0040e49e, _naked_doDrawCalls);
+		}
 	}
-	res /= ((double)timeBufferLen);
 
-	//timeBufferIndex = (timeBufferIndex + 1) & (timeBufferLen - 1);
-	timeBufferIndex = (timeBufferIndex + 1) % timeBufferLen;
-
-	if (shouldDrawHud) {
-#ifdef NDEBUG 
-		//TextDraw(631, 0.0, 9, 0xFF42e5f4, "REL", res);
-#else
-		TextDraw(500, 0.0, 9, 0xFFbd1a0b, "THIS IS A DEBUG BUILD %5.2lf", res);
-#endif
-		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "%5.2lf %5.2lf %5.2lf", res, minRes, maxRes);
+	if (!renderingEnable) {
+		drawCalls.clear();
+		return;
 	}
-
-	startTime = endTime;
-	*/
-
-	//TextDraw(50, 50, 16, 0xFFFFFFFF, "%6.10lf", 1000000.0 * (double)std::chrono::high_resolution_clock::period::num / std::chrono::high_resolution_clock::period::den);
-
+	
 
 	// predraw stuff goes here.
 	if (logPowerInfo) {
@@ -2871,6 +2868,9 @@ void logFPS() {
 		}
 	}
 	
+	// this better not make it into a release
+	//log("fps: %5.2lf", timerData.mean);
+
 }
 
 __declspec(naked) void _naked_PresentHook() {
@@ -2927,6 +2927,16 @@ __declspec(naked) void _naked_PresentHook2() {
 	POP_ALL;
 
 	emitJump(0x004333ed);
+}
+
+__declspec(naked) void _naked_doDrawCalls() {
+	PUSH_ALL;
+	_doDrawCalls();
+	POP_ALL;
+
+	__asm {
+		ret;
+	}
 }
 
 __declspec(naked) void _naked_linkedListInspect() {
@@ -3055,7 +3065,14 @@ __declspec(naked) void _DirectX_Present_Func() {
 	__asm {
 		pop _DirectX_Present_Func_ret;
 		//jmp[_DirectX_Present_Func_Addr];
+
+		cmp renderingEnable, 0; // insanity. is this hook even active? will masm throw a tantrum when i try using anything but a dword in it?
+		JE _SKIP;
+		
 		call[_DirectX_Present_Func_Addr];
+
+	_SKIP:
+
 	}
 
 	PUSH_ALL;
@@ -3104,6 +3121,8 @@ __declspec(naked) void _naked_InitDirectXHooks() {
 		mov[ecx + 000000F0h], edx;
 	_DirectX_BeginStateBlock_Func_DONT:
 
+		
+		// i re enabled this hook. it might have problems!!
 		/*
 		// hook present, so we can draw on the screen
 		mov eax, [device];
@@ -3116,6 +3135,7 @@ __declspec(naked) void _naked_InitDirectXHooks() {
 		mov[ecx + 00000044h], edx;
 	_DirectX_Present_Func_DONT:
 		*/
+		
 
 		// hook evict, so i can manage memory properly for once
 		mov eax, [device];

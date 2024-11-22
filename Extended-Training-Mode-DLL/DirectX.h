@@ -9,6 +9,7 @@
 extern bool logPowerInfo;
 extern bool logVerboseFps;
 extern float hitboxOpacity;
+extern bool renderingEnable;
 
 template <typename T, int size>
 class CircularBuffer {
@@ -1061,6 +1062,7 @@ void __stdcall _doDrawCalls();
 // -----
 
 void _naked_PresentHook();
+void _naked_doDrawCalls();
 
 void cleanForDirectXReset();
 
@@ -1088,3 +1090,4 @@ void _naked_RehookDirectX();
 void maintainFPS();
 
 bool HookDirectX();
+

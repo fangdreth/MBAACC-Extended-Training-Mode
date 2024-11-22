@@ -4,6 +4,9 @@
 extern bool shouldDisplayDebugInfo;
 extern bool shouldDisplayLinkedListInfo;
 extern bool shouldDebugImportantDraw;
+extern bool enableTAS;
+extern bool randomTAS;
+extern bool regenTAS;
 
 Menu<int> baseMenu("Debug Menu");
 Menu<int>* disableFpsMenuOption = NULL;
@@ -248,10 +251,25 @@ void initMenu() {
 
 	Menu misc("Misc");
 
-	misc.add<int>("TAS on reset",
+	Menu tasMenu("TAS options");
+	
+	tasMenu.add<int>("enable on reset",
 		getDefaultOnOffOptionFunc(&enableTAS),
 		defaultOnOffNameFunc
 	);
+
+	tasMenu.add<int>("regenTAS",
+		getDefaultOnOffOptionFunc(&regenTAS),
+		defaultOnOffNameFunc
+	);
+	std::get<Menu<int>>(tasMenu.items[tasMenu.items.size() - 1]).optionState = regenTAS;
+
+	tasMenu.add<int>("randomize???",
+		getDefaultOnOffOptionFunc(&randomTAS),
+		defaultOnOffNameFunc
+	);
+	
+	misc.add(tasMenu);
 
 	Menu subColorMenu("color options");
 

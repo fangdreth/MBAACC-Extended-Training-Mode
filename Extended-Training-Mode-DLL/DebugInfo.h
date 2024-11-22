@@ -601,3 +601,4 @@ extern bool shouldDisplayLinkedListInfo;
 void saveTexture(IDirect3DBaseTexture9* pTex, int i=-1);
 extern bool shouldDebugImportantDraw;
 void debugImportantDraw();
+int getComboCount();

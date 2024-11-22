@@ -572,3 +572,21 @@ void debugImportantDraw() {
 
 
 }
+
+int getComboCount() {
+	// go read 00478c38
+	// this only gets the combo count for p1, and doesnt reset properly without more code
+
+	if (playerDataArr[1].notInCombo) {
+		return 0;
+	}
+
+	DWORD iVar2 = *(BYTE*)(0x0055df0f);
+	iVar2 *= 0x20C;
+	int iVar1 = *(int*)(0x00557e20 + iVar2);
+
+	DWORD res = *(DWORD*)(0x00557e28 + iVar1 * 0x18 + iVar2 + 4);
+
+	return res;
+}
+

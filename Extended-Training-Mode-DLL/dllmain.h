@@ -151,11 +151,13 @@ extern ADDRESS dwCasterBaseAddress;
 
 extern bool logSaveState;
 
-extern bool enableTAS;
 extern bool disableFPSLimit;
 extern bool bFreeze;
 
 extern int showDebugMenu;
+
+class TASManager;
+extern TASManager TASManagerObj;
 
 // -----
 
@@ -227,6 +229,20 @@ void __stdcall patchFunction(auto patchAddr_, auto newAddr_)
 	patchMemcpy(patchAddr, callCode, sizeof(callCode));
 }
 
+void __stdcall patchCall(auto patchAddr_, auto newAddr_) {
+
+	static_assert(sizeof(patchAddr_) == 4, "Type must be 4 bytes");
+	static_assert(sizeof(newAddr_) == 4, "Type must be 4 bytes");
+
+	DWORD patchAddr = (DWORD)(patchAddr_);
+	DWORD newAddr = (DWORD)(newAddr_);
+
+	BYTE callCode[] = { 0xE8, 0x00, 0x00, 0x00, 0x00 };
+	DWORD funcOffset = newAddr - (patchAddr + 5);
+	*(unsigned*)(&callCode[1]) = funcOffset;
+	patchMemcpy(patchAddr, callCode, sizeof(callCode));
+}
+
 void __stdcall patchJump(auto patchAddr_, auto newAddr_)
 {
 
@@ -282,4 +298,8 @@ constexpr DWORD hashString(const std::string_view& str) {
 	return hash;
 }
 
+void nakedFrameDoneCallback_RAW();
 
+void timeMeltyCall(DWORD patchAddr, const char* funcName = "???");
+
+extern bool needTrainingModeReset;

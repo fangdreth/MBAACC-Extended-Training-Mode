@@ -22,6 +22,8 @@ void doFastReversePenalty();
 void drawFancyMenu();
 void rollFancyInputDisplay(int n);
 
+TASManager TASManagerObj;
+
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
 // or,, making address a class which allowed for CONST ONLY derefing 
@@ -36,7 +38,6 @@ ADDRESS dwCasterBaseAddress = 0;
 DWORD dwDevice = 0; // MASM is horrid when it comes to writing pointers vs value of pointer bc it has type checking. thats why this cant be a pointer
 IDirect3DDevice9* device = NULL;
 
-bool enableTAS = false;
 bool disableFPSLimit = false;
 
 const ADDRESS INPUTDISPLAYTOGGLE = (dwBaseAddress + 0x001585f8);
@@ -250,6 +251,100 @@ bool __stdcall isAddrValid(DWORD addr) {
 	__except (EXCEPTION_EXECUTE_HANDLER) {
 		return false;
 	}
+}
+
+std::map<DWORD, std::pair<DWORD, const char*>> timeMeltyStates;
+
+DWORD _naked_timeMeltyCall_ret_temp;
+std::vector<DWORD> _naked_timeMeltyCall_ret; // this is a stack to allow for recursive calls
+std::vector<long long> timeMeltyLoggerStart; // stack of starting times;
+DWORD timeMeltyCall_Func;
+
+void timeMeltyCallLogger() {
+
+	_naked_timeMeltyCall_ret.push_back(_naked_timeMeltyCall_ret_temp);
+
+	DWORD retVal = _naked_timeMeltyCall_ret.back();
+	timeMeltyCall_Func = 0;
+	if (timeMeltyStates.contains(retVal - 5)) {
+		timeMeltyCall_Func = timeMeltyStates[retVal - 5].first;
+		const char* funcName = timeMeltyStates[retVal - 5].second;
+		log(".%.*stiming %s: %08X", timeMeltyLoggerStart.size(), "\t\t\t\t\t\t\t\t\t\t", funcName, retVal - 5);
+		timeMeltyLoggerStart.push_back(getMicroSec());
+	}
+}
+
+void timeMeltyCallLoggerDone() {
+
+	long long dur = getMicroSec() - timeMeltyLoggerStart.back();
+	DWORD retVal = _naked_timeMeltyCall_ret.back();
+	_naked_timeMeltyCall_ret_temp = retVal;
+
+	_naked_timeMeltyCall_ret.pop_back();
+	timeMeltyLoggerStart.pop_back();
+
+	if (timeMeltyCall_Func == 0) {
+		return;
+	}
+
+	double time = ((double)1000000000.0) / (double)dur;
+
+	const char* funcName = "???";
+	if (timeMeltyStates.contains(retVal - 5)) {
+		funcName = timeMeltyStates[retVal - 5].second;
+	}
+
+	//log("%s took %lf", funcName, time);
+	log(".%.*s%s took %lld", timeMeltyLoggerStart.size(), "\t\t\t\t\t\t\t\t\t\t", funcName, dur);
+
+}
+
+__declspec(naked) void _naked_timeMeltyCall() {
+	__asm {
+		pop _naked_timeMeltyCall_ret_temp;
+	}
+
+	PUSH_ALL;
+	timeMeltyCallLogger();
+	POP_ALL;
+
+	__asm {
+		cmp timeMeltyCall_Func, 0;
+		JE _SKIP;
+
+		call[timeMeltyCall_Func]; // PLEASE MASM DONT BE STUPID
+	_SKIP:
+	};
+
+	PUSH_ALL;
+	timeMeltyCallLoggerDone();
+	POP_ALL;
+
+	__asm {
+		push _naked_timeMeltyCall_ret_temp;
+		ret;
+	}
+}
+
+void timeMeltyCall(DWORD patchAddr, const char* funcName) {
+
+	// patchaddr is the address of the call, callAddr is the address of the originally called func by said call
+	// actually i shouldnt even need callAddr, with math
+	// 0x0040e499 0x00024ff2 -> 0x00433490
+	// 0x0040e499 + 0x00024ff2 + 5. please note that the call offset is signed
+	
+	// i need to maintain state of where to go. ill use a map despite that being very stupid
+	// can i even,, use my emitcall funcs with variables omfg
+
+	// lets say ill only use this on calls, not jumps.
+	// this will be slow and stupid.
+
+	int callOffset = *(int*)(patchAddr + 1);
+	DWORD funcAddr = patchAddr + callOffset + 5;
+	timeMeltyStates[patchAddr] = { funcAddr, funcName };
+
+	patchCall(patchAddr, _naked_timeMeltyCall);
+
 }
 
 // legacy melty draw funcs. please use the funcs in directx.h instead of these
@@ -1524,6 +1619,8 @@ void frameDoneCallback()
 
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
 
+	//log("combo: %d", getComboCount());
+
 	if (!isPaused()) {
 		static DWORD prevUnpausedFrameCount = 0;
 		if (prevUnpausedFrameCount != unpausedFrameCount) {
@@ -1564,8 +1661,16 @@ void frameDoneCallback()
 
 	static KeyState rKey('R');
 	if (rKey.keyDown()) {
+		
+		log("RKEY hit");
 		//replayManager.reset();
-		TASManager::load("TAS.txt");
+		//TASManagerObj.load("TAS.txt");
+		//needTrainingModeReset = true;
+	}
+
+	static KeyState mKey('M');
+	if (mKey.keyDown()) {
+		needTrainingModeReset = true;
 	}
 
 	static KeyState fKey('F');
@@ -2041,6 +2146,16 @@ __declspec(naked) void nakedFrameDoneCallback()
 	};
 }
 
+__declspec(naked) void nakedFrameDoneCallback_RAW() {
+	PUSH_ALL;
+	frameDoneCallback();
+	POP_ALL;
+
+	__asm {
+		ret;
+	}
+}
+
 // pause funcs
 
 int needPause = false;
@@ -2106,7 +2221,7 @@ void newPauseCallback2()
 	
 	if (!_naked_newPauseCallback2_IsPaused) {
 		unpausedFrameCount++;
-		TASManager::incInputs();
+		TASManagerObj.incInputs();
 	}
 }
 
@@ -2943,7 +3058,7 @@ void __stdcall battleResetCallback()
 
 	dualInputDisplayReset();
 
-	TASManager::load("TAS.txt");
+	TASManagerObj.load("TAS.txt");
 
 }
 
@@ -2957,12 +3072,20 @@ __declspec(naked) void _naked_battleResetCallback() {
 }
 
 // input funcs
-
+bool needTrainingModeReset = false;
 void inputCallback() {
 
 	//replayManager.setInputs();
 		
-	TASManager::setInputs();	
+	TASManagerObj.setInputs();
+
+	if (needTrainingModeReset) {
+		needTrainingModeReset = false;
+
+		PUSH_ALL;
+		emitCall(0x00478590);
+		POP_ALL;
+	}
 
 }
 
@@ -2983,18 +3106,6 @@ __declspec(naked) void _naked_inputCallback() {
 
 void initFrameDoneCallback()
 {
-
-	/*
-	// this might be getting called a frame late. unsure 
-	// this callback, is very bad. caster uses it.
-	void* funcAddress = (void*)0x0041d815;
-	patchByte(((BYTE*)funcAddress) + 0, 0x50); // push eax?
-	patchFunction(((BYTE*)funcAddress) + 1, frameDoneCallback); // call
-	patchByte(((BYTE*)funcAddress) + 6, 0x58); // pop eax
-	patchByte(((BYTE*)funcAddress) + 7, 0xC3); // ret
-	*/
-
-
 	// caster hooks the start of this func. ill have to hook the end of it 
 	void* patchAddr = (void*)0x00432e2b;
 	patchJump(patchAddr, nakedFrameDoneCallback);
@@ -3210,7 +3321,23 @@ void threadFunc()
 	initInputCallback();
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
-	
+
+	//timeMeltyCall(0x0040d350, "GoesToGameLoop0");
+
+	//timeMeltyCall(0x0040e410, "FUN_0048e0a0");
+	//timeMeltyCall(0x0040e438, "linkedListAppend_MAYBE???");
+	//timeMeltyCall(0x0040e471, "GoesToGameLoop1");
+	//timeMeltyCall(0x0040e483, "FUN_0043b8d0");
+	//timeMeltyCall(0x0040e494, "callsTheFpsAndEverything");
+	//timeMeltyCall(0x0040e499, "callsImportantDraw1");
+	//timeMeltyCall(0x0040e49e, "callsDirectXPresent2");
+	//timeMeltyCall(0x0040e4a3, "somethingTimeRelated");
+	//timeMeltyCall(0x0040e4a8, "FUN_004bf970");
+	//timeMeltyCall(0x0040e4bd, "FUN_004151f0");
+	//timeMeltyCall(0x0040e4fb, "FUN_00406680");
+	//timeMeltyCall(0x0040e500, "FUN_004be8b0");
+	//timeMeltyCall(0x0040e505, "FUN_0040e220");
+
 	while (true) 
 	{
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrIdleHighlightSetting, 4, 0);
