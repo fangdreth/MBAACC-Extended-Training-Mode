@@ -1035,7 +1035,9 @@ void drawPrimHook() {
 
 		// this better not cause slowdown
 		static unsigned lastTextureFrameCount = -1;
+		//static double idekTime = (double)getMilliSec();
 		static double idekTime = 0.0;
+		static double startSongTime = getSeconds();
 		if (lastTextureFrameCount != textureFrameCount && badAppleFrames.size() != 0) {
 
 			lastTextureFrameCount = textureFrameCount;
@@ -1043,7 +1045,16 @@ void drawPrimHook() {
 			// this might be super dumb and not work, but im tired ok
 			// i just dont want ppl saying their videos dont work
 			// this was regretably easier than i thought it would be.
-			idekTime += (1.0 / 60.0);
+			//double tempTime = getSeconds();
+			//idekTime += (tempTime - lastFrameTime);
+			//log("time dif %lf", tempTime - lastFrameTime);
+		
+			idekTime += (1.0 / 60.0); // a timing based solution would be better for this
+
+			//static double lastFrameTime = getSeconds();
+
+
+			
 
 			//if ((textureFrameCount & fpsMod) == 0) { 
 			if(idekTime >= invVideoFps) {
@@ -1082,10 +1093,18 @@ void drawPrimHook() {
 				badAppleFrame++;
 				if (badAppleFrame >= badAppleFrames.size()) {
 					badAppleFrame = 0;
+					//lastFrameTime = getSeconds();
+					startSongTime = getSeconds();
 					restartSong();
 					idekTime = 0.0;
 				}
 			}
+
+			//static double lastFrameTime = getSeconds();
+
+
+			// not the biggest fan of calling this twice, but it made the code nicer. 
+			//lastFrameTime = getSeconds();
 		}
 
 		shouldPlaySong = true;
@@ -1200,7 +1219,7 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 					return;
 				}
 
-				log("char: %3d pattern: %5d", charID, pattern);
+				//log("char: %3d pattern: %5d", charID, pattern);
 
 				textureAddrs.insert({ listAppendHook_texAddr, TextureModification(blendMode)});
 				

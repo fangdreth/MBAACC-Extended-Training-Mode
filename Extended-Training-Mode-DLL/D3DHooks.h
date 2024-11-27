@@ -153,19 +153,19 @@ __declspec(naked) void _IDirect3DDevice9_Reset_func() {
 DWORD _IDirect3DDevice9_Present_ret;
 DWORD _IDirect3DDevice9_Present_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_Present_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_Present called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_Present called!");
+	//POP_ALL;
 	__asm {
 		pop _IDirect3DDevice9_Present_ret;
 		//jmp[_IDirect3DDevice9_Present_addr];
 		call[_IDirect3DDevice9_Present_addr];
 	}
 
-	PUSH_ALL;
+	//PUSH_ALL;
 	//saveThisFrame();
-	log("ret: %08X", _IDirect3DDevice9_Present_ret);
-	POP_ALL;
+	//log("ret: %08X", _IDirect3DDevice9_Present_ret);
+	//POP_ALL;
 
 	__asm {
 		push _IDirect3DDevice9_Present_ret;
@@ -174,27 +174,27 @@ __declspec(naked) void _IDirect3DDevice9_Present_func() {
 }
 DWORD _IDirect3DDevice9_GetBackBuffer_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetBackBuffer_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_GetBackBuffer called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_GetBackBuffer called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetBackBuffer_addr];
 	}
 }
 DWORD _IDirect3DDevice9_GetRasterStatus_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetRasterStatus_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_GetRasterStatus called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_GetRasterStatus called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetRasterStatus_addr];
 	}
 }
 DWORD _IDirect3DDevice9_SetDialogBoxMode_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetDialogBoxMode_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_SetDialogBoxMode called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_SetDialogBoxMode called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetDialogBoxMode_addr];
 	}
@@ -315,153 +315,153 @@ __declspec(naked) void _IDirect3DDevice9_CreateTexture_func() {
 }
 DWORD _IDirect3DDevice9_CreateVolumeTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateVolumeTexture_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_CreateVolumeTexture called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_CreateVolumeTexture called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateVolumeTexture_addr];
 	}
 }
 DWORD _IDirect3DDevice9_CreateCubeTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateCubeTexture_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_CreateCubeTexture called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_CreateCubeTexture called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateCubeTexture_addr];
 	}
 }
 DWORD _IDirect3DDevice9_CreateVertexBuffer_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateVertexBuffer_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_CreateVertexBuffer called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_CreateVertexBuffer called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateVertexBuffer_addr];
 	}
 }
 DWORD _IDirect3DDevice9_CreateIndexBuffer_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateIndexBuffer_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_CreateIndexBuffer called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_CreateIndexBuffer called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateIndexBuffer_addr];
 	}
 }
 DWORD _IDirect3DDevice9_CreateRenderTarget_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateRenderTarget_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_CreateRenderTarget called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_CreateRenderTarget called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateRenderTarget_addr];
 	}
 }
 DWORD _IDirect3DDevice9_CreateDepthStencilSurface_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateDepthStencilSurface_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_CreateDepthStencilSurface called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_CreateDepthStencilSurface called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateDepthStencilSurface_addr];
 	}
 }
 DWORD _IDirect3DDevice9_UpdateSurface_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_UpdateSurface_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_UpdateSurface called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_UpdateSurface called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_UpdateSurface_addr];
 	}
 }
 DWORD _IDirect3DDevice9_UpdateTexture_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_UpdateTexture_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_UpdateTexture called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_UpdateTexture called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_UpdateTexture_addr];
 	}
 }
 DWORD _IDirect3DDevice9_GetRenderTargetData_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetRenderTargetData_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_GetRenderTargetData called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_GetRenderTargetData called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetRenderTargetData_addr];
 	}
 }
 DWORD _IDirect3DDevice9_GetFrontBufferData_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetFrontBufferData_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_GetFrontBufferData called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_GetFrontBufferData called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetFrontBufferData_addr];
 	}
 }
 DWORD _IDirect3DDevice9_StretchRect_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_StretchRect_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_StretchRect called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_StretchRect called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_StretchRect_addr];
 	}
 }
 DWORD _IDirect3DDevice9_ColorFill_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_ColorFill_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_ColorFill called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_ColorFill called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_ColorFill_addr];
 	}
 }
 DWORD _IDirect3DDevice9_CreateOffscreenPlainSurface_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateOffscreenPlainSurface_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_CreateOffscreenPlainSurface called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_CreateOffscreenPlainSurface called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateOffscreenPlainSurface_addr];
 	}
 }
 DWORD _IDirect3DDevice9_SetRenderTarget_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetRenderTarget_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_SetRenderTarget called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_SetRenderTarget called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetRenderTarget_addr];
 	}
 }
 DWORD _IDirect3DDevice9_GetRenderTarget_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetRenderTarget_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_GetRenderTarget called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_GetRenderTarget called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetRenderTarget_addr];
 	}
 }
 DWORD _IDirect3DDevice9_SetDepthStencilSurface_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetDepthStencilSurface_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_SetDepthStencilSurface called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_SetDepthStencilSurface called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetDepthStencilSurface_addr];
 	}
 }
 DWORD _IDirect3DDevice9_GetDepthStencilSurface_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetDepthStencilSurface_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_GetDepthStencilSurface called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_GetDepthStencilSurface called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetDepthStencilSurface_addr];
 	}
@@ -1154,9 +1154,9 @@ __declspec(naked) void _IDirect3DDevice9_SetPixelShader_func() {
 }
 DWORD _IDirect3DDevice9_GetPixelShader_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetPixelShader_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_GetPixelShader called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_GetPixelShader called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetPixelShader_addr];
 	}
@@ -1216,9 +1216,9 @@ __declspec(naked) void _IDirect3DDevice9_SetPixelShaderConstantF_func() {
 }
 DWORD _IDirect3DDevice9_GetPixelShaderConstantF_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetPixelShaderConstantF_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_GetPixelShaderConstantF called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_GetPixelShaderConstantF called!");
+	//POP_ALL;
 	__asm {
 
 		jmp[_IDirect3DDevice9_GetPixelShaderConstantF_addr];
@@ -1226,72 +1226,72 @@ __declspec(naked) void _IDirect3DDevice9_GetPixelShaderConstantF_func() {
 }
 DWORD _IDirect3DDevice9_SetPixelShaderConstantI_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetPixelShaderConstantI_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_SetPixelShaderConstantI called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_SetPixelShaderConstantI called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetPixelShaderConstantI_addr];
 	}
 }
 DWORD _IDirect3DDevice9_GetPixelShaderConstantI_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetPixelShaderConstantI_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_GetPixelShaderConstantI called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_GetPixelShaderConstantI called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetPixelShaderConstantI_addr];
 	}
 }
 DWORD _IDirect3DDevice9_SetPixelShaderConstantB_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_SetPixelShaderConstantB_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_SetPixelShaderConstantB called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_SetPixelShaderConstantB called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_SetPixelShaderConstantB_addr];
 	}
 }
 DWORD _IDirect3DDevice9_GetPixelShaderConstantB_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_GetPixelShaderConstantB_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_GetPixelShaderConstantB called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_GetPixelShaderConstantB called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_GetPixelShaderConstantB_addr];
 	}
 }
 DWORD _IDirect3DDevice9_DrawRectPatch_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_DrawRectPatch_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_DrawRectPatch called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_DrawRectPatch called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_DrawRectPatch_addr];
 	}
 }
 DWORD _IDirect3DDevice9_DrawTriPatch_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_DrawTriPatch_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_DrawTriPatch called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_DrawTriPatch called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_DrawTriPatch_addr];
 	}
 }
 DWORD _IDirect3DDevice9_DeletePatch_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_DeletePatch_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_DeletePatch called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_DeletePatch called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_DeletePatch_addr];
 	}
 }
 DWORD _IDirect3DDevice9_CreateQuery_addr = 0;
 __declspec(naked) void _IDirect3DDevice9_CreateQuery_func() {
-	PUSH_ALL;
-	log("IDirect3DDevice9_CreateQuery called!");
-	POP_ALL;
+	//PUSH_ALL;
+	//log("IDirect3DDevice9_CreateQuery called!");
+	//POP_ALL;
 	__asm {
 		jmp[_IDirect3DDevice9_CreateQuery_addr];
 	}

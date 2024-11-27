@@ -106,6 +106,11 @@ void messUpTexture();
 void miscDirectX();
 void initIdk();
 
+static double getSeconds() {
+	long long temp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+	return ((double)temp) / 1000000.0;
+}
+
 D3DXVECTOR3 RGBtoHSV(const D3DXVECTOR3& rgb) {
 	float r_f = rgb.x / 255.0f;
 	float g_f = rgb.y / 255.0f;
@@ -354,6 +359,7 @@ bool useCustomPalettes = true;
 
 void __stdcall ___log(const char* msg)
 {
+	
 	const char* ipAddress = "127.0.0.1";
 	unsigned short port = 17474;
 
@@ -409,6 +415,7 @@ void __stdcall ___log(const char* msg)
 }
 
 void __stdcall log(const char* format, ...) {
+	
 	static char buffer[1024]; // no more random char buffers everywhere.
 	va_list args;
 	va_start(args, format);
@@ -1267,6 +1274,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	static bool trigDelay = false;
 	static int delay = 0;
 	
+	/*
 	if (pKey.keyDown())
 	{
 		bIsPaused = !bIsPaused;		
@@ -1282,7 +1290,7 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 	{
 		bIsPaused = true;
 	}
-
+	*/
 
 	bool ok = true;
 	MSG msg;
@@ -1352,10 +1360,10 @@ void __stdcall pauseCallback(DWORD dwMilliseconds)
 		}
 	}
 
-	static bool initCSSIsGood = false;
+	/*static bool initCSSIsGood = false;
 	if (!initCSSIsGood) {
 		initCSSIsGood = initCSSModifications();
-	}
+	}*/
 	
 
 	Sleep(dwMilliseconds);
@@ -1503,6 +1511,7 @@ void DrawTriangle(IDirect3DDevice9* d3ddev) {
 void frameDoneCallback()
 {
 
+	/*
 	if (lBracketKey.keyDown()) {
 		TESTVAR1--;
 		TESTVAR1 = MAX(TESTVAR1, -1);
@@ -1565,6 +1574,7 @@ void frameDoneCallback()
 	if (bDrawFramebar) {
 		drawFrameBar();
 	}
+	*/
 
 	//if (safeWrite()) {
 	//messUpTexture();

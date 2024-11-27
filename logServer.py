@@ -53,6 +53,12 @@ def writerFunc(packetQueue):
 
 		if data is None:
 			break
+		
+		if data == "CLEAR":
+			print(chr(27) + "[2J")
+			print(chr(27) + "[H")
+			continue
+			
 		print(f'{data}')
 
 		pass
