@@ -262,6 +262,8 @@ int main(int argc, char* argv[])
             }
         }
 
+        Sleep(16);
+
         // check this to prevent attaching to netplay
         ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwGameMode), &nReadResult, 4, 0);
         nGameMode = nReadResult;
@@ -280,7 +282,7 @@ int main(int argc, char* argv[])
         
         }
 
-        Sleep(16);
+        
 
     }
 
