@@ -21,6 +21,7 @@
 #include <deque>
 #include "resource.h"
 #include <thread>
+#include <wchar.h>
 
 #include "..\Common\CharacterData.h"
 
@@ -30,6 +31,7 @@
 #include <dxerr.h>
 #include <dsound.h>
 #include <timeapi.h>
+#include <dinput.h>
 
 #pragma comment(lib, "winmm.lib")
 
@@ -38,6 +40,8 @@
 #pragma comment(lib, "dxerr.lib")
 #pragma comment(lib, "dsound.lib")
 #pragma comment(lib, "legacy_stdio_definitions.lib")
+#pragma comment(lib, "dinput8.lib")
+
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -164,6 +168,10 @@ extern TASManager TASManagerObj;
 void __stdcall ___log(const char* msg);
 
 void __stdcall log(const char* format, ...);
+
+void __stdcall ___log(const wchar_t* msg);
+
+void __stdcall log(const wchar_t* format, ...);
 
 inline long long getMicroSec() {
 	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();

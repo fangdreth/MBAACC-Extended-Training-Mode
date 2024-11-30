@@ -72,12 +72,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(SolutionDir)Lib\x86;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(DXSDK_DIR)Include;$(LibraryPath);$(ProjectDir)lib\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(SolutionDir)Lib\x86;$(LibraryPath);C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;</LibraryPath>
+    <IncludePath>$(DXSDK_DIR)Include;$(LibraryPath);$(ProjectDir)lib\;$(IncludePath);C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(SolutionDir)Lib\x86;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(DXSDK_DIR)Include;$(LibraryPath);$(ProjectDir)lib\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(SolutionDir)Lib\x86;$(LibraryPath);C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;</LibraryPath>
+    <IncludePath>$(DXSDK_DIR)Include;$(LibraryPath);$(ProjectDir)lib\;$(IncludePath);C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>$(DXSDK_DIR)Lib\x86;$(SolutionDir)Lib\x86;$(LibraryPath)</LibraryPath>
@@ -168,6 +168,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\CharacterData.cpp" />
+    <ClCompile Include="..\Common\Common.cpp" />
     <ClCompile Include="..\Common\RawData.cpp" />
     <ClCompile Include="Injector.h" />
     <ClCompile Include="MBAACC-Extended-Training-Mode.cpp" />

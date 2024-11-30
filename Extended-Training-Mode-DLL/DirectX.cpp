@@ -22,6 +22,7 @@ bool logPowerInfo = false;
 bool logVerboseFps = false;
 float hitboxOpacity = 0.20f;
 bool renderingEnable = true;
+IDirectInput8* inputDevice = NULL;
 
 Point mousePos; // no use getting this multiple times a frame
 
@@ -111,13 +112,6 @@ void DragManager::handleDrag() {
 // -----
 
 DragManager dragManager;
-
-void printDirectXError(HRESULT hr) {
-	const char* errorStr = DXGetErrorStringA(hr);
-	const char* errorDesc = DXGetErrorDescriptionA(hr);
-
-	log("err: %s\n    %s", errorStr, errorDesc);
-}
 
 void logMatrix(const D3DMATRIX& matrix) {
 	for (int i = 0; i < 4; i++) {
@@ -2742,6 +2736,8 @@ void __stdcall _doDrawCalls() {
 	}
 	_freqTimerYVal = 0.0f;
 
+	KeyState::refreshDeviceList();
+
 	// ok this is going here because i know that being in this func means i am past the code that ill be patching around here
 	// i should move all this to renderingmodifications!
 	static KeyState tKey('T');
@@ -3279,6 +3275,40 @@ void logDeviceCapability() {
 	log("-----");
 }
 
+// misc 
+
+BOOL CALLBACK initDirectInputCallback(const DIDEVICEINSTANCE* deviceInst, VOID* pContext) {
+	return DIENUM_STOP;
+}
+
+void initDirectInput() {
+
+	HRESULT hr;
+
+	log("attempting to init directinput");
+
+	DWORD temp = *(DWORD*)0x005544e8;
+
+	if (!isAddrValid(temp)) {
+		log("directinput8 failed");
+		return;
+	}
+
+	inputDevice = (IDirectInput8*)temp;
+
+	hr = inputDevice->EnumDevices(DI8DEVCLASS_ALL, initDirectInputCallback, nullptr, DIEDFL_ATTACHEDONLY);
+
+	if (FAILED(hr)) {
+		log("EnumDevices failed");
+		return;
+	}
+
+	log("directInput is OK");
+
+}
+
+// starter
+
 bool HookDirectX() {
 
 	if (device == NULL) {
@@ -3330,5 +3360,8 @@ bool HookDirectX() {
 	// misc hook for when im inspecting the linked list
 	//patchJump(0x0040e499, _naked_linkedListInspect);
 	patchJump(0x0040e499, _naked_linkedListInspect2);
+
+	initDirectInput();
+
 	return true;
 }

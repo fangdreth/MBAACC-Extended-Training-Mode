@@ -11,6 +11,8 @@ extern bool logVerboseFps;
 extern float hitboxOpacity;
 extern bool renderingEnable;
 
+extern IDirectInput8* inputDevice;
+
 template <typename T, int size>
 class CircularBuffer {
 public:
@@ -383,8 +385,6 @@ public:
 };
 
 extern DragManager dragManager;
-
-void printDirectXError(HRESULT hr);
 
 void logMatrix(const D3DMATRIX& matrix);
 

@@ -9,11 +9,17 @@
 #include <iostream>
 #include <cwctype>
 #include <algorithm>
+#include <dinput.h>
+#include <dxerr.h>
 
 //void LogInfo(std::string sInfo);
 //void LogError(std::string sError);
 
 #pragma comment(lib, "ws2_32.lib") 
+#pragma comment(lib, "dinput8.lib")
+#pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "dxerr.lib")
+#pragma comment(lib, "legacy_stdio_definitions.lib")
 
 extern DWORD __frameDoneCount;
 
@@ -720,10 +726,13 @@ const uint8_t nDefaultRNGDecKey = VK_KEY_UNSET;
 const uint8_t nDefaultReversalKey = VK_KEY_UNSET;
 const uint8_t nDefaultSlowKey = VK_KEY_UNSET;
 
+extern IDirectInput8* inputDevice;
+
 class KeyState
 {
 public:
-	// please tell me if my use of classes here is overkill
+
+	// polling input multiple times a frame is bad, we really should switch over to something which polls the whole keyboard/controllers once a frame
 
 	KeyState()
 	{
@@ -825,11 +834,15 @@ public:
 
 		return res;
 	}
+
+	static void refreshDeviceList();
+
 public:
 	int nHeldKeyCounter;
 	int freqHeldCounter = 0;
 private:
-	uint8_t nKey;
+	// lets say that -1 will be a value for when we are using a dinput device instead
+	int nKey = -1;
 	bool prevState = false;
 	bool tempState = false;
 };
@@ -1084,3 +1097,15 @@ static LONG DeleteRegistry()
 
 	return openResult;
 }
+
+void __stdcall ___log(const char* msg);
+
+void __stdcall log(const char* format, ...);
+
+void __stdcall ___log(const wchar_t* msg);
+
+void __stdcall log(const wchar_t* format, ...);
+
+void printDirectXError(HRESULT hr);
+
+void printDIJOYSTATE2(const DIJOYSTATE2& state);

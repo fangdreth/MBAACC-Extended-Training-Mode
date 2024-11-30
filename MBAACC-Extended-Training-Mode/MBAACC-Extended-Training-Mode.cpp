@@ -4,11 +4,16 @@ int main(int argc, char* argv[])
 {
 
     if (!writeDLL()) {
-        printf("FAILED TO WRITE DLL\n");
-        printf("press any key to exit\n");
+        fprintf(stderr, "FAILED TO WRITE DLL\n");
+        fprintf(stderr, "press any key to exit\n");
         getchar();
         return 1;
     }
+
+    /*while (true) {
+        KeyState::refreshDeviceList();
+        Sleep(16);
+    }*/
 
     timeBeginPeriod(1);
     try
