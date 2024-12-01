@@ -325,17 +325,23 @@ void ResetKeysHeld()
     std::fill(std::begin(arrKeysHeld), std::end(arrKeysHeld), 1);
 }
 
-uint8_t KeyJustPressed()
+int KeyJustPressed()
 {
+
+    // check if any joy inputs are pressed
+    short pressed = KeyState::pressedButtons();
+    if (pressed) {
+        // this should change to support these keys, however i dont know how yall want to do that
+    }
+
+
     //http://www.kbdedit.com/manual/low_level_vk_list.html
 
     // there're some weird collisions between keys
     // like numpad-/ and the arrow keys,
     // but all of the normal keys work as expected.
     // I'm fine with it, personally.
-    uint8_t i = 0;
-    do
-    {
+    for(int i=0; i<256; i++) {
         // key pressed AND key isn't garbage
         if (GetAsyncKeyState(i) & 0x8000 && MapVirtualKeyW(i, MAPVK_VK_TO_VSC) != 0)
         {
@@ -344,8 +350,7 @@ uint8_t KeyJustPressed()
         }
         else
             arrKeysHeld[i] = 0;
-        i++;
-    } while (i);
+    }
 
     return 0;
 }

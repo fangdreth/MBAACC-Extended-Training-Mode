@@ -845,6 +845,10 @@ public:
 
 	static void showControllerState();
 
+	static short pressedButtons();
+
+	static short releasedButtons();
+
 public:
 	int nHeldKeyCounter;
 	int freqHeldCounter = 0;
@@ -854,7 +858,8 @@ private:
 	int nKey = -1;
 	bool prevState = false;
 	bool tempState = false;
-	static XINPUT_STATE xState;
+	static XINPUT_STATE* xState;
+	static XINPUT_STATE* prevxState;
 };
 
 static bool GetOpenSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wstring* pwsFileName)
