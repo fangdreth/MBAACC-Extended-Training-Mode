@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <dinput.h>
 #include <dxerr.h>
+#include <Xinput.h>
+
 
 //void LogInfo(std::string sInfo);
 //void LogError(std::string sError);
@@ -20,6 +22,7 @@
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dxerr.lib")
 #pragma comment(lib, "legacy_stdio_definitions.lib")
+#pragma comment(lib, "XInput.lib")
 
 extern DWORD __frameDoneCount;
 
@@ -726,7 +729,10 @@ const uint8_t nDefaultRNGDecKey = VK_KEY_UNSET;
 const uint8_t nDefaultReversalKey = VK_KEY_UNSET;
 const uint8_t nDefaultSlowKey = VK_KEY_UNSET;
 
-extern IDirectInput8* inputDevice;
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+#define CLAMP(value, min_val, max_val) MAX(MIN((value), (max_val)), (min_val))
+#define SAFEMOD(a, b) (((b) + ((a) % (b))) % (b))
 
 class KeyState
 {
@@ -835,16 +841,20 @@ public:
 		return res;
 	}
 
-	static void refreshDeviceList();
+	static void updateControllers();
+
+	static void showControllerState();
 
 public:
 	int nHeldKeyCounter;
 	int freqHeldCounter = 0;
 private:
 	// lets say that -1 will be a value for when we are using a dinput device instead
+	// or, a value above 0xFF could be used, vkeys are restricted to a byte.
 	int nKey = -1;
 	bool prevState = false;
 	bool tempState = false;
+	static XINPUT_STATE xState;
 };
 
 static bool GetOpenSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wstring* pwsFileName)

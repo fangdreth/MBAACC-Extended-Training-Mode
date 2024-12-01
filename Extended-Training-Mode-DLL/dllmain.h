@@ -42,7 +42,6 @@
 #pragma comment(lib, "legacy_stdio_definitions.lib")
 #pragma comment(lib, "dinput8.lib")
 
-
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define CLAMP(value, min_val, max_val) MAX(MIN((value), (max_val)), (min_val))

@@ -3015,7 +3015,13 @@ __declspec(naked) void _naked_battleResetCallback() {
 bool needTrainingModeReset = false;
 void inputCallback() {
 
+	// does melty update controllers in a thread? and is this inside said thread?
+
 	//replayManager.setInputs();
+
+	profileFunction();
+
+	KeyState::updateControllers(); // this call is taking half a ms, and wtf why am i even caring
 		
 	TASManagerObj.setInputs();
 

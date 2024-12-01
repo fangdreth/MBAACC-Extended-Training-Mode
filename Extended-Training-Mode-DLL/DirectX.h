@@ -11,7 +11,7 @@ extern bool logVerboseFps;
 extern float hitboxOpacity;
 extern bool renderingEnable;
 
-extern IDirectInput8* inputDevice;
+//extern IDirectInput8* inputDevice;
 
 template <typename T, int size>
 class CircularBuffer {

@@ -11,7 +11,8 @@ int main(int argc, char* argv[])
     }
 
     /*while (true) {
-        KeyState::refreshDeviceList();
+        KeyState::updateControllers();
+        KeyState::showControllerState();
         Sleep(16);
     }*/
 

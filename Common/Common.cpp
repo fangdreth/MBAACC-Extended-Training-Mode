@@ -202,140 +202,73 @@ void printDIJOYSTATE2(const DIJOYSTATE2& state) {
 	log(buffer);
 }
 
-IDirectInputDevice8* testController = NULL;
+XINPUT_STATE KeyState::xState;
 
-BOOL CALLBACK directInputControllerCallback(const DIDEVICEINSTANCE* deviceInst, void* pCtx) {
+void KeyState::updateControllers() {
 
-	DWORD* guid = (DWORD*)&deviceInst->guidInstance;
+	// tbh, ideally, this should be called once a frame, and grab the WHOLE keyboard.
 
-	//log(L"found device. ID: %08X%08X%08X%08X name: %s", guid[0], guid[1], guid[2], guid[3], deviceInst->tszInstanceName);
+	XINPUT_STATE tempState;
+	ZeroMemory(&tempState, sizeof(XINPUT_STATE));
+	ZeroMemory(&xState, sizeof(XINPUT_STATE));
 
-	//return DIENUM_CONTINUE;
+	for (int i = 0; i < 4; i++) {
 
-	if (testController != NULL) {
-		testController->Unacquire();
-		testController->Release();
-		testController = NULL;
+		DWORD dwResult = XInputGetState(i, &tempState);
+
+		if (dwResult == ERROR_SUCCESS) {
+
+			// this currently combines all devices into one. there is most likely a better implementation of this!
+			xState.Gamepad.wButtons |= tempState.Gamepad.wButtons;
+
+			xState.Gamepad.bLeftTrigger  = MAX(xState.Gamepad.bLeftTrigger,   tempState.Gamepad.bLeftTrigger);
+			xState.Gamepad.bRightTrigger = MAX(xState.Gamepad.bRightTrigger, tempState.Gamepad.bRightTrigger);
+
+			// i want to be sure to get the max of any stick pos
+			xState.Gamepad.sThumbLX = abs(xState.Gamepad.sThumbLX) > abs(tempState.Gamepad.sThumbLX) ? xState.Gamepad.sThumbLX : tempState.Gamepad.sThumbLX;
+			xState.Gamepad.sThumbLY = abs(xState.Gamepad.sThumbLY) > abs(tempState.Gamepad.sThumbLY) ? xState.Gamepad.sThumbLY : tempState.Gamepad.sThumbLY;
+			xState.Gamepad.sThumbRX = abs(xState.Gamepad.sThumbRX) > abs(tempState.Gamepad.sThumbRX) ? xState.Gamepad.sThumbRX : tempState.Gamepad.sThumbRX;
+			xState.Gamepad.sThumbRY = abs(xState.Gamepad.sThumbRY) > abs(tempState.Gamepad.sThumbRY) ? xState.Gamepad.sThumbRY : tempState.Gamepad.sThumbRY;
+		}
 	}
-
-	HRESULT hr;
-
-	hr = inputDevice->CreateDevice(deviceInst->guidInstance, &testController, NULL);
-
-	if (FAILED(hr)) {
-		log("failed to create IDirectInputDevice8 for game device!");
-		testController = NULL;
-		return DIENUM_STOP;
-	}
-
-	return DIENUM_CONTINUE;
 }
 
-void KeyState::refreshDeviceList() {
-	// this should start a thread for // inputDevice->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoysticksCallback, nullptr, DIEDFL_ATTACHEDONLY);
-	// and add them all to a static list. 
-	
-	HRESULT hr;
-
-#ifndef ISDLL
-	// we are in the console window, and need to actually create our own IDirectInput8
-	if (inputDevice == NULL) {
-		hr = DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&inputDevice, nullptr);
-		if (FAILED(hr)) {
-			log("directinput8create failed in console window");
-			inputDevice = NULL;
-			return;
-		}
-	}
-#endif
-
-
-	//log("refreshDeviceList called");
-
-	if (testController == NULL) {
-		hr = inputDevice->EnumDevices(DI8DEVCLASS_GAMECTRL, directInputControllerCallback, NULL, DIEDFL_ATTACHEDONLY);
-
-		if (FAILED(hr)) {
-			log("EnumDevices failed");
-			testController = NULL;
-			return;
-		}
-
-		if (testController == NULL) {
-			log("testController null");
-			return;
-		}
-
-		// the data format MUST be set before the device can be acquired
-		// the data format CANNOT be changed while the device is acquired
-		// cooplevel MUST be set before acquire 
-
-
-#ifdef ISDLL
-		HWND hwnd = (HWND) * (DWORD*)(0x0074dfac);
-#else
-		HWND hwnd = GetConsoleWindow();
-#endif
-
-		hr = testController->SetCooperativeLevel(hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
-		if (FAILED(hr)) {
-			log("SetCooperativeLevel failed");
-			return;
-		}
-
-		hr = testController->SetDataFormat(&c_dfDIJoystick2);
-		if (FAILED(hr)) {
-			log("SetDataFormat failed");
-			printDirectXError(hr);
-			return;
-		}
-
-		hr = testController->Acquire();
-		if (FAILED(hr)) {
-			log("Acquire failed");
-			printDirectXError(hr);
-			return;
-		}
-
-		log("DEVICE SETUP SUCCEEDED");
-
-	}
-	
-
-	//log("directInput is OK");
-
-	if (testController == NULL) {
-		log("testController was null");
-		return;
-	}
-	
-	hr = testController->Poll();
-	if (FAILED(hr)) {
-		// should i attempt to reacquire the device?
-		//testController->Acquire();
-		log("poll failed");
-		printDirectXError(hr);
-		if (hr == DIERR_INPUTLOST) {
-			log("DIERR_INPUTLOST, im nulling the device");
-			testController->Unacquire();
-			testController = NULL;
-			return;
-		}
-		return;
-	}
-
-	DIJOYSTATE2 joyState = {};
-	memset(&joyState, 0, sizeof(DIJOYSTATE2));
-	hr = testController->GetDeviceState(sizeof(DIJOYSTATE2), &joyState);
-	if (FAILED(hr)) {
-		log("GetDeviceState failed");
-		return;
-	}
+void KeyState::showControllerState() {
 
 	log("CLEAR");
 
-	printDIJOYSTATE2(joyState);
+	short wButtons = xState.Gamepad.wButtons;
 
-	//log("everything worked, somehow");
+	log("A %d", !!(wButtons & XINPUT_GAMEPAD_A));
+	log("B %d", !!(wButtons & XINPUT_GAMEPAD_B));
+	log("X %d", !!(wButtons & XINPUT_GAMEPAD_X));
+	log("Y %d", !!(wButtons & XINPUT_GAMEPAD_Y));
+
+	log("U %d", !!(wButtons & XINPUT_GAMEPAD_DPAD_UP));
+	log("D %d", !!(wButtons & XINPUT_GAMEPAD_DPAD_DOWN));
+	log("L %d", !!(wButtons & XINPUT_GAMEPAD_DPAD_LEFT));
+	log("R %d", !!(wButtons & XINPUT_GAMEPAD_DPAD_RIGHT));
+
+	log("START %d", !!(wButtons & XINPUT_GAMEPAD_START));
+	log("BACK  %d", !!(wButtons & XINPUT_GAMEPAD_BACK));
+
+	log(" ");
+
+	log("left  X %6d", xState.Gamepad.sThumbLX);
+	log("left  Y %6d", xState.Gamepad.sThumbLY);
+	log("thum    %d", !!(wButtons & XINPUT_GAMEPAD_LEFT_THUMB));
+
+	log(" ");
+
+	log("right X %6d", xState.Gamepad.sThumbRX);
+	log("right Y %6d", xState.Gamepad.sThumbRY);
+	log("thumb   %d", !!(wButtons & XINPUT_GAMEPAD_RIGHT_THUMB));
+
+	log(" ");
+
+	log("lTrig %6d", xState.Gamepad.bLeftTrigger);
+	log("lBtn  %d", !!(wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER));
+	log("rTrig %6d", xState.Gamepad.bRightTrigger);
+	log("rBtn  %d", !!(wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER));
 
 }

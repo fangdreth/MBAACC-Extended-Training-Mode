@@ -22,7 +22,7 @@ bool logPowerInfo = false;
 bool logVerboseFps = false;
 float hitboxOpacity = 0.20f;
 bool renderingEnable = true;
-IDirectInput8* inputDevice = NULL;
+//IDirectInput8* inputDevice = NULL;
 
 Point mousePos; // no use getting this multiple times a frame
 
@@ -2734,9 +2734,10 @@ void __stdcall _doDrawCalls() {
 		//printDirectXError(hr);
 		return;
 	}
-	_freqTimerYVal = 0.0f;
+	_freqTimerYVal = 0.0f; 
 
-	KeyState::refreshDeviceList();
+	//tempTest();
+	//KeyState::showControllerState();
 
 	// ok this is going here because i know that being in this func means i am past the code that ill be patching around here
 	// i should move all this to renderingmodifications!
@@ -3275,38 +3276,6 @@ void logDeviceCapability() {
 	log("-----");
 }
 
-// misc 
-
-BOOL CALLBACK initDirectInputCallback(const DIDEVICEINSTANCE* deviceInst, VOID* pContext) {
-	return DIENUM_STOP;
-}
-
-void initDirectInput() {
-
-	HRESULT hr;
-
-	log("attempting to init directinput");
-
-	DWORD temp = *(DWORD*)0x005544e8;
-
-	if (!isAddrValid(temp)) {
-		log("directinput8 failed");
-		return;
-	}
-
-	inputDevice = (IDirectInput8*)temp;
-
-	hr = inputDevice->EnumDevices(DI8DEVCLASS_ALL, initDirectInputCallback, nullptr, DIEDFL_ATTACHEDONLY);
-
-	if (FAILED(hr)) {
-		log("EnumDevices failed");
-		return;
-	}
-
-	log("directInput is OK");
-
-}
-
 // starter
 
 bool HookDirectX() {
@@ -3361,7 +3330,6 @@ bool HookDirectX() {
 	//patchJump(0x0040e499, _naked_linkedListInspect);
 	patchJump(0x0040e499, _naked_linkedListInspect2);
 
-	initDirectInput();
 
 	return true;
 }
