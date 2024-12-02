@@ -33,16 +33,24 @@ Menu<T>::Menu(std::string name_) {
 }
 
 template <typename T>
-Menu<T>::Menu(std::string name_, std::function<void(int, T&)> optionFunc_, std::function<std::string(T)> nameFunc_, std::wstring key_) {
+Menu<T>::Menu(std::string name_, std::function<void(int, T&)> optionFunc_, std::function<std::string(T)> nameFunc_, std::wstring key_, T startVal) {
 	name = name_;
 	optionFunc = optionFunc_;
 	nameFunc = nameFunc_;
 	key = key_;
 
+	optionState = startVal;
+
+	long regRes = 0;
+
 	if (key.size() != 0) {
-		ReadFromRegistry(key, (int*)&optionState);
+		if constexpr (std::is_pointer<T>::value) {
+			regRes = ReadFromRegistry(key, (int*)optionState);
+		} else {
+			regRes = ReadFromRegistry(key, (int*)&optionState);
+		}		
 	}
-	
+
 }
 
 template <typename T>
@@ -58,8 +66,8 @@ void Menu<T>::add(const Menu<U>& newItem) {
 
 template <typename T>
 template <typename U>
-void Menu<T>::add(std::string name_, std::function<void(int, U&)> optionFunc_, std::function<std::string(U)> nameFunc_, std::wstring key_) {
-	items.push_back(Menu<U>(name_, optionFunc_, nameFunc_, key_));
+void Menu<T>::add(std::string name_, std::function<void(int, U&)> optionFunc_, std::function<std::string(U)> nameFunc_, std::wstring key_, U startVal) {
+	items.push_back(Menu<U>(name_, optionFunc_, nameFunc_, key_, startVal));
 }
 
 template <typename T>
@@ -77,12 +85,20 @@ void Menu<T>::draw(Point& p) {
 		if (lClick && inside) {
 			optionFunc(1, optionState);
 			if (key.size() != 0) {
-				SetRegistryValue(key, *(int*)&optionState);
+				if constexpr (std::is_pointer<T>::value) {
+					SetRegistryValue(key, *(int*)optionState);
+				} else {
+					SetRegistryValue(key, *(int*)&optionState);
+				}
 			}
 		} else if (rClick && inside) {
 			optionFunc(-1, optionState);
 			if (key.size() != 0) {
-				SetRegistryValue(key, *(int*)&optionState);
+				if constexpr (std::is_pointer<T>::value) {
+					SetRegistryValue(key, *(int*)optionState);
+				} else {
+					SetRegistryValue(key, *(int*)&optionState);
+				}
 			}
 		}
 
@@ -294,17 +310,30 @@ void initMenu() {
 
 	Menu findWhiskMenu(",,,,,");
 
-	findWhiskMenu.add<int>("enable",
-		getDefaultOnOffOptionFunc(&enableWaraSearch),
-		defaultOnOffNameFunc
+	findWhiskMenu.add<int*>("enable",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 1);
+		},
+		[](int* opt) -> std::string {
+			return *opt ? "ON" : "OFF";
+		},
+		L"ENABLEFINDWHISK",
+		&enableWaraSearch
 	);
 
-	findWhiskMenu.add<int>("search for",
-		getDefaultOnOffOptionFunc(&findWara),
-		[](int opt) -> std::string {
-			return opt ? "wara" : "Whisk";
-		}
+	findWhiskMenu.add<int*>("search for",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 1);
+		},
+		[](int* opt) -> std::string {
+			return *opt ? "wara" : "Whisk";
+		},
+		L"SEARCHFORWARAORWHISK",
+		&findWara
 	);
+
 
 	// i wonder if this would work with pointers
 	// UGH this menu is such a pain when,, idk i either need to have it modify existing values, or read from the menus values
@@ -317,10 +346,15 @@ void initMenu() {
 		},
 		[](int* opt) -> std::string {
 			return std::to_string(*opt);
-		}
+		},
+		L"FINDWHISKCROWDSIZE",
+		&crowdSize
 	);
-	//std::get<Menu<int*>>(findWhiskMenu.items[findWhiskMenu]);
-	findWhiskMenu.getLastItem<int*>().optionState = &crowdSize; // very nice, not ideal, but very nice. i am proud of this code. sucks that it doesnt remember the type, but thats c++ for u
+	
+	// very nice, not ideal, but very nice. i am proud of this code. sucks that it doesnt remember the type, but thats c++ for u
+	// even less proud bc of the issues with registry loading. i did a good job predicting what i would need ahead of time, and ill do better next time
+	// i wonder if there is a way to see if a type is a pointer
+	findWhiskMenu.getLastItem<int*>().optionState = &crowdSize; 
 
 	findWhiskMenu.add<int*>("max crowd velocity",
 		[](int inc, int*& opt) {
@@ -329,7 +363,9 @@ void initMenu() {
 		},
 		[](int* opt) -> std::string {
 			return std::to_string(*opt);
-		}
+		},
+		L"FINDWHISKMAXCROWDVEL", // i really need these to support default values. god im fucking up this code
+		&maxCrowdVel
 	);
 	findWhiskMenu.getLastItem<int*>().optionState = &maxCrowdVel;
 

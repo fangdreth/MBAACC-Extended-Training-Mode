@@ -40,7 +40,7 @@ public:
 
 	Menu(std::string name_);
 
-	Menu(std::string name_, std::function<void(int, T&)> optionFunc_, std::function<std::string(T)> nameFunc_, std::wstring key_ = L"");
+	Menu(std::string name_, std::function<void(int, T&)> optionFunc_, std::function<std::string(T)> nameFunc_, std::wstring key_ = L"", T startVal = 0);
 
 	~Menu();
 
@@ -48,7 +48,7 @@ public:
 	void add(const Menu<U>& newItem);
 
 	template <typename U = int>
-	void add(std::string name_, std::function<void(int, U&)> optionFunc_, std::function<std::string(U)> nameFunc_, std::wstring key_ = L"");
+	void add(std::string name_, std::function<void(int, U&)> optionFunc_, std::function<std::string(U)> nameFunc_, std::wstring key_ = L"", U startVal = 0);
 
 
 	void draw(Point& p);

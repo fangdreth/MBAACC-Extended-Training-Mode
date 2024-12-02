@@ -2659,8 +2659,8 @@ void maintainFPS() {
 	TextDraw(50, 50, 16, 0xFFFFFFFF, "%6.2f %6.2f %6.2f", frameTime, realTime, fabsf(frameTime - realTime) );
 }
 
-bool enableWaraSearch = false;
-bool findWara = false;
+int enableWaraSearch = 0;
+int findWara = 0;
 int crowdSize = 500;
 int maxCrowdVel = 4;
 void drawFindWhisk() {
@@ -2720,7 +2720,7 @@ void drawFindWhisk() {
 	}
 
 	static int prevmaxCrowdVel = maxCrowdVel;
-	if (prevmaxCrowdVel != maxCrowdVel) {
+	if (prevmaxCrowdVel != maxCrowdVel || crowd.size() != crowdSize) {
 		
 		// simple, stupid, works
 		crowd.resize(0);
@@ -2743,8 +2743,6 @@ void drawFindWhisk() {
 		crowd[i].update();
 		crowd[i].draw();
 	}
-
-
 }
 
 void __stdcall _doDrawCalls() {

@@ -11,8 +11,8 @@ extern bool logVerboseFps;
 extern float hitboxOpacity;
 extern bool renderingEnable;
 
-extern bool enableWaraSearch;
-extern bool findWara;
+extern int enableWaraSearch;
+extern int findWara;
 extern int crowdSize;
 extern int maxCrowdVel;
 
