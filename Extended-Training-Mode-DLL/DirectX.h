@@ -11,6 +11,11 @@ extern bool logVerboseFps;
 extern float hitboxOpacity;
 extern bool renderingEnable;
 
+extern bool enableWaraSearch;
+extern bool findWara;
+extern int crowdSize;
+extern int maxCrowdVel;
+
 //extern IDirectInput8* inputDevice;
 
 template <typename T, int size>
@@ -842,8 +847,14 @@ constexpr BYTE BUTTON_DASH_GRAY(0xA0 + 0x05);
 
 constexpr BYTE JOYSTICK(0x90 + 0x07); // double size
 
-constexpr BYTE CURSOR(0x80 + 0x0C); 
+constexpr BYTE CURSOR(0x80 + 0x0C); // a nice memory
 constexpr BYTE CURSOR_LOADING(0x00 + 0x00);
+
+constexpr BYTE ARCICON(0xB0 + 0x00);
+constexpr BYTE MECHICON(0xB0 + 0x01);
+constexpr BYTE HIMEICON(0xB0 + 0x02);
+constexpr BYTE WARAICON(0xB0 + 0x03);
+constexpr BYTE WHISK(0xB0 + 0x04); // double size
 
 inline void scaleVertex(D3DVECTOR& v) {
 	/*

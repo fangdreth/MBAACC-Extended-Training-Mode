@@ -1386,6 +1386,10 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format) {
 		case BUTTON_B_GRAY:
 		case BUTTON_C_GRAY:
 		case BUTTON_D_GRAY:
+		case ARCICON:
+		case MECHICON:
+		case HIMEICON:
+		case WARAICON:
 			charWidthOffset = w;
 			break;
 		case ARROW_0:
@@ -1393,6 +1397,7 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format) {
 			charWidthOffset = w;
 			break;
 		case JOYSTICK:
+		case WHISK:
 			charWidthOffset = w;
 			charW = D3DXVECTOR2(2.0f / 16.0f, 0.0);
 			charH = D3DXVECTOR2(0.0, 2.0f / 16.0f);
@@ -2654,6 +2659,94 @@ void maintainFPS() {
 	TextDraw(50, 50, 16, 0xFFFFFFFF, "%6.2f %6.2f %6.2f", frameTime, realTime, fabsf(frameTime - realTime) );
 }
 
+bool enableWaraSearch = false;
+bool findWara = false;
+int crowdSize = 500;
+int maxCrowdVel = 4;
+void drawFindWhisk() {
+
+	if (!enableWaraSearch) {
+		return;
+	}
+
+	typedef struct WhiskState {
+		short x = rand() % 640;
+		short y = rand() % 480;
+		
+		short xVel = (rand() & 1 ? 1 : -1) * (1 + (rand() % (maxCrowdVel - 1))); // value is made line this since it cannot be 0
+		short yVel = (rand() & 1 ? 1 : -1) * (1 + (rand() % (maxCrowdVel - 1)));
+
+		BYTE icon = ARCICON + (rand() % 3);
+		
+		void update() {
+			
+			short nextX;
+			nextX = x + xVel;
+			if (nextX < 0 || nextX > 640) {
+				xVel = -xVel;
+			} 
+			nextX = x + xVel;
+			x = nextX;
+
+			short nextY;
+			nextY = y + yVel;
+			if (nextY < 0 || nextY > 480) {
+				yVel = -yVel;
+			}
+			nextY = y + yVel;
+			y = nextY;
+
+		}
+
+		void draw() {
+			// i really need (do i already have?) a draw icon func!! "%c", icon is slower due to needing printf
+			static BYTE buffer[2] = { 0, 0 };
+			buffer[0] = icon;
+			TextDraw(x, y, 16, 0xFFFFFFFF, (char*)buffer);
+		}
+
+	} WhiskState;
+
+	static WhiskState whisk;
+
+	static std::vector<WhiskState> crowd(crowdSize);
+
+	static int prevCrowdSize = crowdSize;
+	if (prevCrowdSize != crowdSize) {
+
+		crowd.resize(crowdSize);
+
+		prevCrowdSize = crowdSize;
+	}
+
+	static int prevmaxCrowdVel = maxCrowdVel;
+	if (prevmaxCrowdVel != maxCrowdVel) {
+		
+		// simple, stupid, works
+		crowd.resize(0);
+		crowd.resize(crowdSize);
+
+		whisk = WhiskState();
+		
+		prevmaxCrowdVel = maxCrowdVel;
+	}
+
+	whisk.icon = findWara ? WARAICON : WHISK;
+	whisk.update();
+	whisk.draw();
+
+	for (int i = 0; i < crowdSize; i++) {
+
+		// update each icon, draw it.
+		// this might make my system slow down, a non text func might be needed
+
+		crowd[i].update();
+		crowd[i].draw();
+	}
+
+
+}
+
 void __stdcall _doDrawCalls() {
 
 	/*
@@ -2789,6 +2882,7 @@ void __stdcall _doDrawCalls() {
 	if (logPowerInfo) {
 		drawPowerInfo();
 	}
+	drawFindWhisk();
 	drawFancyInputDisplay();
 	_drawProfiler();
 	_drawLog();

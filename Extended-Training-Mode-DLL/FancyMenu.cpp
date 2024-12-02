@@ -292,6 +292,49 @@ void initMenu() {
 	
 	misc.add(subColorMenu);
 
+	Menu findWhiskMenu(",,,,,");
+
+	findWhiskMenu.add<int>("enable",
+		getDefaultOnOffOptionFunc(&enableWaraSearch),
+		defaultOnOffNameFunc
+	);
+
+	findWhiskMenu.add<int>("search for",
+		getDefaultOnOffOptionFunc(&findWara),
+		[](int opt) -> std::string {
+			return opt ? "wara" : "Whisk";
+		}
+	);
+
+	// i wonder if this would work with pointers
+	// UGH this menu is such a pain when,, idk i either need to have it modify existing values, or read from the menus values
+	// and ideally, its existing, but ugh
+	// i could,,, just add it to the variant?	
+	findWhiskMenu.add<int*>("crowd size",
+		[](int inc, int*& opt) {
+			*opt += inc * 25;
+			*opt = CLAMP(*opt, 0, 10000); // let them have fun. why not
+		},
+		[](int* opt) -> std::string {
+			return std::to_string(*opt);
+		}
+	);
+	//std::get<Menu<int*>>(findWhiskMenu.items[findWhiskMenu]);
+	findWhiskMenu.getLastItem<int*>().optionState = &crowdSize; // very nice, not ideal, but very nice. i am proud of this code. sucks that it doesnt remember the type, but thats c++ for u
+
+	findWhiskMenu.add<int*>("max crowd velocity",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 2, 100); 
+		},
+		[](int* opt) -> std::string {
+			return std::to_string(*opt);
+		}
+	);
+	findWhiskMenu.getLastItem<int*>().optionState = &maxCrowdVel;
+
+	misc.add(findWhiskMenu);
+
 	baseMenu.add(misc);
 
 	Menu debug("Debug");

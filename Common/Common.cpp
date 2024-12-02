@@ -239,8 +239,6 @@ void KeyState::updateControllers() {
 
 void KeyState::showControllerState() {
 
-	
-
 	short wButtons = xState->Gamepad.wButtons;
 	short wprevButtons = prevxState->Gamepad.wButtons;
 

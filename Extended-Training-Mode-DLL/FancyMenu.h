@@ -53,8 +53,13 @@ public:
 
 	void draw(Point& p);
 
-	using MenuVariant = std::variant<Menu<int>, Menu<float>>;
+	using MenuVariant = std::variant<Menu<int>, Menu<float>, Menu<int*>>;
 	std::vector<MenuVariant> items;
+	
+	template <typename U = int> // i wish i didnt need this
+	Menu<U>& getLastItem() {
+		return std::get<Menu<U>>(items[items.size() - 1]);
+	}
 
 	std::string name = "NULL";
 	std::wstring key = L"";
