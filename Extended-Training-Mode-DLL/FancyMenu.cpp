@@ -507,7 +507,9 @@ DragInfo menuDrag = DragInfo(&menuDragPoint.x, &menuDragPoint.y);
 
 void drawFancyMenu() {
 
-	if (mClick) {
+	static KeyState lShiftKey(VK_LSHIFT);
+
+	if (mClick || (lClick && lShiftKey.keyHeld())) {
 		showDebugMenu = !showDebugMenu;
 		SetRegistryValue(L"ShowDebugMenu", showDebugMenu);
 		if (showDebugMenu) {
