@@ -611,7 +611,7 @@ int main(int argc, char* argv[])
                 uint8_t nP2Controlled;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &nP1Controlled, 1, 0);
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &nP2Controlled, 1, 0);
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adInputIndex), &nReadResult, 1, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adDoTrainingAction), &nReadResult, 1, 0);
                 uint8_t nPlayer = nReadResult == 0 ? nP1Controlled : nP2Controlled;
                 uint8_t nDummy = nReadResult == 0 ? nP2Controlled : nP1Controlled;
 
@@ -877,8 +877,8 @@ int main(int argc, char* argv[])
                                 continue;
 
                             // Reset "hits till burst" if status is not manual
-                            if (nEnemyStatusIndex != eEnemyStatus::MANUAL)
-                                nHitsTillBurst = TOO_HIGH_TO_BURST;
+                            //if (nEnemyStatusIndex != eEnemyStatus::MANUAL)
+                            //    nHitsTillBurst = TOO_HIGH_TO_BURST;
 
                             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwSubMenuAddress), &nReadResult, 4, 0);
                             nCurrentSubMenu = nReadResult;
@@ -3478,10 +3478,10 @@ int main(int argc, char* argv[])
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
                                     nThrowRecoveryIndex = 6;
 
-                                    nWriteBuffer = eEnemyStatus::MANUAL;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
-                                    nWriteBuffer = eMagicCircuit::UNLIMITED;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMagicCircuitSetting), &nWriteBuffer, 4, 0);
+                                    //nWriteBuffer = eEnemyStatus::MANUAL;
+                                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
+                                    //nWriteBuffer = eMagicCircuit::UNLIMITED;
+                                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMagicCircuitSetting), &nWriteBuffer, 4, 0);
                                 }
                                 else
                                 {
@@ -3495,10 +3495,10 @@ int main(int argc, char* argv[])
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
                                     nThrowRecoveryIndex = 3;
 
-                                    nWriteBuffer = eEnemyStatus::MANUAL;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
-                                    nWriteBuffer = eMagicCircuit::UNLIMITED;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMagicCircuitSetting), &nWriteBuffer, 4, 0);
+                                    //nWriteBuffer = eEnemyStatus::MANUAL;
+                                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
+                                    //nWriteBuffer = eMagicCircuit::UNLIMITED;
+                                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMagicCircuitSetting), &nWriteBuffer, 4, 0);
                                 }
                                 break;
                             }
@@ -6290,13 +6290,24 @@ int main(int argc, char* argv[])
                     // burst a combo
                     if (nHitsTillBurst != TOO_HIGH_TO_BURST)
                     {
-                        int nComboCount;
+                        int nHitComboCount;
+                        int nBlockComboCount;
                         uint8_t nHitstunRemaining, nHitstopRemaining;
-                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwComboCount), &nComboCount, 4, 0);
-                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstopRemaining, &nHitstopRemaining, 1, nP2Controlled);
-                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nP2Controlled);
-                        if (nComboCount >= nHitsTillBurst && nHitstopRemaining == 0 && nHitstunRemaining != 0)
+                        bool bBurstLock;
+                        //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwComboCount), &nComboCount, 4, 0);
+                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adOnHitCount, &nHitComboCount, 2, nDummy);
+                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adOnBlockCount, &nBlockComboCount, 2, nDummy);
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstopRemaining, &nHitstopRemaining, 1, nDummy);
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nDummy);
+                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adBurstLock, &bBurstLock, 1, nDummy);
+                        if ((nHitComboCount >= nHitsTillBurst || nBlockComboCount >= nHitsTillBurst) && nHitstopRemaining == 0 && nHitstunRemaining != 0 && !bBurstLock)
                         {
+                            uint8_t nStance;
+                            ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adStanceDelayed, &nStance, 1, nDummy);
+                            int nBurstPat = nStance != 1 ? 262 : 263;
+                            int nBurstWrite[3] = { 9, 0, nBurstPat };
+                            WriteCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adIDKFlags, &nBurstWrite, 12, nDummy);
+                            /*
                             while (true)
                             {
                                 ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nP2Controlled);
@@ -6312,6 +6323,7 @@ int main(int argc, char* argv[])
                                 nWriteBuffer = 1;
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2E), &nWriteBuffer, 1, 0);
                             }
+                            */
                         }
                     }
 
@@ -6565,13 +6577,13 @@ int main(int argc, char* argv[])
                         }
                     }
                     
-                    short sBlockHelper = 0;
+                    short sOnHitCount = 0;
                     char cEnemyDefense = 0;
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyDefense), &cEnemyDefense, 1, 0);
                     if (cEnemyDefense == 1 || cEnemyDefense == 2)
                     {
-                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + adP1Base + adBlockHelper, &sBlockHelper, 2, nDummy);
-                        if (sBlockHelper)
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + adP1Base + adOnHitCount, &sOnHitCount, 2, nDummy);
+                        if (sOnHitCount)
                         {
                             char c0 = 0;
                             WriteCharacterMemory(hMBAAHandle, dwBaseAddress + adP1Base + adWillBlock, &c0, 1, nDummy);
