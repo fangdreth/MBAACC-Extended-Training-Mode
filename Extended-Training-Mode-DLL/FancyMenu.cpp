@@ -9,6 +9,8 @@ extern bool randomTAS;
 extern bool regenTAS;
 extern bool useCustomShaders;
 extern bool useDeerMode;
+extern bool useWind;
+extern int xWindVel;
 
 Menu<int> baseMenu("Debug Menu");
 Menu<int>* disableFpsMenuOption = NULL;
@@ -135,7 +137,7 @@ void initMenu() {
 
 	std::function<std::string(int)> defaultOnOffNameFunc = [](int opt) -> std::string {
 		return opt & 0b1 ? "ON" : "OFF";
-	};
+		};
 
 	std::function<std::string(float)> defaultSliderNameFunc = [](float opt) -> std::string {
 		//return std::string("-", (int)(opt * 10.0f)) + std::string("+") + std::string("-", (int)((1.0f - opt) * 10.0f));
@@ -144,7 +146,7 @@ void initMenu() {
 		static char buffer[256];
 		snprintf(buffer, 256, "%5.2f", opt);
 		return std::string(buffer);
-	};
+		};
 
 	// returns a func which modifies the variable passed in
 	std::function<std::function<void(int, int&)>(void*)> getDefaultOnOffOptionFunc = [](void* optPtr) -> std::function<void(int, int&)> {
@@ -153,8 +155,8 @@ void initMenu() {
 			opt &= 0b1;
 
 			*(BYTE*)(optPtr) = opt;
+			};
 		};
-	};
 
 	// -----
 
@@ -258,10 +260,10 @@ void initMenu() {
 			opt = CLAMP(opt, 0.0f, 1.0f);
 
 			hitboxOpacity = opt;
-		}),
+			}),
 		defaultSliderNameFunc
 	);
-	
+
 	// wow thats some syntax
 	std::get<Menu<float>>(hitboxes.items[hitboxes.items.size() - 1]).optionState = 0.20f;
 
@@ -270,7 +272,7 @@ void initMenu() {
 	Menu misc("Misc");
 
 	Menu tasMenu("TAS options");
-	
+
 	tasMenu.add<int>("enable on reset",
 		getDefaultOnOffOptionFunc(&enableTAS),
 		defaultOnOffNameFunc
@@ -286,7 +288,7 @@ void initMenu() {
 		getDefaultOnOffOptionFunc(&randomTAS),
 		defaultOnOffNameFunc
 	);
-	
+
 	misc.add(tasMenu);
 
 	Menu subColorMenu("color options");
@@ -308,7 +310,7 @@ void initMenu() {
 		L"EFFECTHUECOLOR"
 	);
 	effectColorHue = std::get<Menu<float>>(subColorMenu.items[subColorMenu.items.size() - 1]).optionState; // i really need a rewrite on the menu class to allow for more easy access
-	
+
 	subColorMenu.add<int>("enable custom shaders",
 		getDefaultOnOffOptionFunc(&useCustomShaders),
 		defaultOnOffNameFunc,
@@ -365,16 +367,16 @@ void initMenu() {
 		L"FINDWHISKCROWDSIZE",
 		&crowdSize
 	);
-	
+
 	// very nice, not ideal, but very nice. i am proud of this code. sucks that it doesnt remember the type, but thats c++ for u
 	// even less proud bc of the issues with registry loading. i did a good job predicting what i would need ahead of time, and ill do better next time
 	// i wonder if there is a way to see if a type is a pointer
-	findWhiskMenu.getLastItem<int*>().optionState = &crowdSize; 
+	findWhiskMenu.getLastItem<int*>().optionState = &crowdSize;
 
 	findWhiskMenu.add<int*>("max crowd velocity",
 		[](int inc, int*& opt) {
 			*opt += inc;
-			*opt = CLAMP(*opt, 2, 100); 
+			*opt = CLAMP(*opt, 2, 100);
 		},
 		[](int* opt) -> std::string {
 			return std::to_string(*opt);
@@ -385,6 +387,26 @@ void initMenu() {
 	findWhiskMenu.getLastItem<int*>().optionState = &maxCrowdVel;
 
 	misc.add(findWhiskMenu);
+
+	Menu windMenu("wind");
+
+	windMenu.add<int>("enable",
+		getDefaultOnOffOptionFunc(&useWind),
+		defaultOnOffNameFunc
+	);
+
+	windMenu.add<int>("velocity",
+		[](int inc, int& opt) {
+			opt += inc * 10;
+			opt = CLAMP(opt, -500, 500);
+			xWindVel = opt;
+		},
+		[](int opt) -> std::string {
+			return std::to_string(opt);
+		}
+	);
+
+	misc.add(windMenu);
 
 	baseMenu.add(misc);
 

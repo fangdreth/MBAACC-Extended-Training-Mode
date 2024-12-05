@@ -602,3 +602,6 @@ void saveTexture(IDirect3DBaseTexture9* pTex, int i=-1);
 extern bool shouldDebugImportantDraw;
 void debugImportantDraw();
 int getComboCount();
+extern bool useWind;
+extern int xWindVel;
+void setWind();

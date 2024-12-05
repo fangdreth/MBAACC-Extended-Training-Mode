@@ -1562,6 +1562,8 @@ void frameDoneCallback()
 
 	//log("combo: %d", getComboCount());
 
+	setWind();
+
 	if (!isPaused()) {
 		static DWORD prevUnpausedFrameCount = 0;
 		if (prevUnpausedFrameCount != unpausedFrameCount) {

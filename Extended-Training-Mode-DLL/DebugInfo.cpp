@@ -590,3 +590,18 @@ int getComboCount() {
 	return res;
 }
 
+bool useWind = false;
+int xWindVel = 0;
+void setWind() {
+
+	if (!useWind) {
+		return;
+	}
+
+	for (int i = 0; i < 4; i++) {
+		if (playerDataArr[i].exists) {
+			playerDataArr[i].xVelChange = xWindVel; 
+		}
+	}
+
+}
