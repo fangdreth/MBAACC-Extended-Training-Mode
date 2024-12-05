@@ -265,6 +265,32 @@ IDirect3DVertexShader9* createVertexShader(const char* shaderCode) {
 	return res;
 }
 
+IDirect3DPixelShader9* loadPixelShaderFromFile(const std::wstring& filename) {
+	
+	std::ifstream file(filename, std::ios::binary | std::ios::ate);
+
+	if (!file.good()) {
+		log(L"unable to find %s for shader loading", filename.c_str());
+		return NULL;
+	}
+
+	IDirect3DPixelShader9* res = NULL;
+
+	std::streamsize size = file.tellg();
+	file.seekg(0, std::ios::beg);
+
+	char* buffer = (char*)malloc(size + 1);
+	file.read(buffer, size);
+
+	buffer[size] = '\0';
+
+	res = createPixelShader(buffer);
+
+	free(buffer);
+
+	return res;
+}
+
 bool loadResource(int id, BYTE*& buffer, unsigned& bufferSize) {
 
 	HMODULE hModule = GetModuleHandle(TEXT("Extended-Training-Mode-DLL.dll"));

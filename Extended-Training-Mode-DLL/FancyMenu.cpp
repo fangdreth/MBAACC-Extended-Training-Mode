@@ -7,6 +7,8 @@ extern bool shouldDebugImportantDraw;
 extern bool enableTAS;
 extern bool randomTAS;
 extern bool regenTAS;
+extern bool useCustomShaders;
+extern bool useDeerMode;
 
 Menu<int> baseMenu("Debug Menu");
 Menu<int>* disableFpsMenuOption = NULL;
@@ -291,7 +293,8 @@ void initMenu() {
 
 	subColorMenu.add<int>("enable effect colors",
 		getDefaultOnOffOptionFunc(&enableEffectColors),
-		defaultOnOffNameFunc
+		defaultOnOffNameFunc,
+		L"ENABLEEFFECTHUECOLOR"
 	);
 
 	subColorMenu.add<float>("effect hue",
@@ -306,6 +309,18 @@ void initMenu() {
 	);
 	effectColorHue = std::get<Menu<float>>(subColorMenu.items[subColorMenu.items.size() - 1]).optionState; // i really need a rewrite on the menu class to allow for more easy access
 	
+	subColorMenu.add<int>("enable custom shaders",
+		getDefaultOnOffOptionFunc(&useCustomShaders),
+		defaultOnOffNameFunc,
+		L"ENABLECUSTOMSHADERS"
+	);
+	useCustomShaders = subColorMenu.getLastItem<int>().optionState;
+
+	subColorMenu.add<int>("deer mode",
+		getDefaultOnOffOptionFunc(&useDeerMode),
+		defaultOnOffNameFunc
+	);
+
 	misc.add(subColorMenu);
 
 	Menu findWhiskMenu(",,,,,");

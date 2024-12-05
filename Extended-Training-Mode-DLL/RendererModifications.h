@@ -7,6 +7,9 @@
 
 // contains things which modify melty's rendering system internally.
 
+extern bool useCustomShaders;
+extern bool useDeerMode;
+
 bool shouldThisBeColored(BYTE charID, DWORD pattern);
 
 
@@ -35,6 +38,7 @@ void _drawDebugMenu() {
 // key is mystery texture addr, val is its obj offset
 typedef struct LinkedListData {
 	bool shouldColor = false;
+	bool isDeer = false;
 	DWORD object = 0;
 	DWORD caller = 0;
 } LinkedListData;
@@ -43,6 +47,9 @@ std::map<DWORD, LinkedListData> textureToObject;
 bool pixelShaderNeedsReset = false;
 IDirect3DPixelShader9* pPixelShader_backup = NULL;
 IDirect3DPixelShader9* pPixelShader = NULL;
+IDirect3DPixelShader9* pCustomShader = NULL;
+
+void loadCustomShader();
 
 bool hasTextureAddr(DWORD test) {
 	return textureToObject.find(test) != textureToObject.end();
@@ -467,7 +474,7 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 		listAppendHook_objAddr = 0x0061E170 + (listAppendHook_objAddr_hit * 0x60);
 	}
 
-	textureToObject.insert({ listAppendHook_texAddr, { false, listAppendHook_objAddr, listAppendHook_callerAddr } });
+	textureToObject.insert({ listAppendHook_texAddr, { false, false, listAppendHook_objAddr, listAppendHook_callerAddr } });
 
 	if (listAppendHook_effectRetAddr == 0x0045410F || listAppendHook_effectRetAddr_pat == 0x0045410F) {
 
@@ -522,11 +529,21 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 				}
 
 				if (*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x20) != 0x00000101) { // mystery heat detection thingy
-					if (shouldThisBeColored(charID, pattern)) { // tbh would having a seperate map for things to be colored be ideal.
-						textureToObject[listAppendHook_texAddr].shouldColor = true;
+					textureToObject[listAppendHook_texAddr].shouldColor = shouldThisBeColored(charID, pattern); // tbh would having a seperate map for things to be colored be ideal.
+				}
+			}
+
+			if (useDeerMode) {
+
+				EffectData* effect = (EffectData*)(listAppendHook_objAddr - 0x10);
+
+				if (effect->pattern == 103 || (effect->pattern >= 108 && effect->pattern <= 111)) {
+					if (playerDataArr[effect->ownerIndex].charID == 10) { // we are nero.
+						textureToObject[listAppendHook_texAddr].isDeer = true;
 					}
 				}
-			} 
+			}
+
 		}
 	}
 }
@@ -542,19 +559,31 @@ void drawPrimHook() {
 		return;
 	}
 
+
+
 	// set lookups are trash. there has to be some way of,, getting the index of this texture or something??
 	if (skipTextureAddrs.contains(drawPrimHook_texAddr)) {
 		skipTextureDraw = 1;
 	} else if (textureToObject.contains(drawPrimHook_texAddr)) {
 		
-		if (textureToObject[drawPrimHook_texAddr].shouldColor) {
+		if (textureToObject[drawPrimHook_texAddr].isDeer) {
+			device->GetPixelShader(&pPixelShader_backup); // does this inc a refcount?
+
+			pixelShaderNeedsReset = true;
+			device->SetPixelShader(pCustomShader);
+		} else if (textureToObject[drawPrimHook_texAddr].shouldColor) {
 			device->GetPixelShader(&pPixelShader_backup); // does this inc a refcount?
 
 			pixelShaderNeedsReset = true;
 			device->SetPixelShader(pPixelShader);
 		}
-
 	}
+
+	if (useCustomShaders && !enableEffectColors && !useDeerMode) {
+		pixelShaderNeedsReset = true;
+		device->SetPixelShader(pCustomShader);
+	}
+	
 }
 
 void drawPrimCallback() {

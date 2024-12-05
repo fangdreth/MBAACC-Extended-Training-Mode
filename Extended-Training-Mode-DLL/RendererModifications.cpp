@@ -6,6 +6,9 @@ extern float effectColorHue;
 #include <string>
 #include <functional>
 
+bool useCustomShaders = false;
+bool useDeerMode = false;
+
 typedef struct {
 	const WORD charID;
 	const WORD pattern;
@@ -621,6 +624,14 @@ void renderModificationsFrameDone() {
 		return;
 	}
 
+	static D3DXVECTOR4 frameFloatOffset(0.0f, 0.0f, 0.0f, 0.0f);
+	frameFloatOffset.x += (1.0f / 60.0f);
+	if (frameFloatOffset.x > 1.0f) {
+		frameFloatOffset.x = 0.0f;
+	}
+
+	device->SetPixelShaderConstantF(223, (float*)&frameFloatOffset, 1);
+
 	if (!enableEffectColors) {
 		return;
 	}
@@ -692,16 +703,16 @@ float3 HSVtoRGB(float3 hsv)
 
 float4 main(float2 texCoord : TEXCOORD0) : COLOR
 {
+		
 	
 	float4 orig = tex2D(textureSampler, texCoord);
-	
 	float3 hsvVal = RGBtoHSV(orig.rgb);
-
 	hsvVal.x = Hue.x; // input hue from register.
-
 	orig.rgb = HSVtoRGB(hsvVal);
-
 	return orig;
+	
+
+
 }
 
 	)");
@@ -709,4 +720,19 @@ float4 main(float2 texCoord : TEXCOORD0) : COLOR
 	log("rendermodifications inited successfully");
 
 	return true;
+}
+
+void loadCustomShader() {
+
+	if (!useCustomShaders && !useDeerMode) {
+		return;
+	}
+
+	if (pCustomShader != NULL) {
+		pCustomShader->Release();
+		pCustomShader = NULL;
+	}
+
+	pCustomShader = loadPixelShaderFromFile(L"testShader.hlsl");
+
 }

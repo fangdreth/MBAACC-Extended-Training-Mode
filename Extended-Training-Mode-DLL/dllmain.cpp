@@ -21,6 +21,7 @@ void dualInputDisplayReset();
 void doFastReversePenalty();
 void drawFancyMenu();
 void rollFancyInputDisplay(int n);
+void loadCustomShader();
 
 TASManager TASManagerObj;
 
@@ -2999,6 +3000,8 @@ void __stdcall battleResetCallback()
 	dualInputDisplayReset();
 
 	TASManagerObj.load("TAS.txt");
+
+	loadCustomShader();
 
 }
 

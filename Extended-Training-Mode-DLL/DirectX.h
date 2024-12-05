@@ -729,6 +729,8 @@ IDirect3DPixelShader9* createPixelShader(const char* pixelShaderCode);
 
 IDirect3DVertexShader9* createVertexShader(const char* shaderCode);
 
+IDirect3DPixelShader9* loadPixelShaderFromFile(const std::wstring& filename);
+
 inline unsigned scaleNextPow2(unsigned v) {
 	v--;
 	v |= v >> 1;
