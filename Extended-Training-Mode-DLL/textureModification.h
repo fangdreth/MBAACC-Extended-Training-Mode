@@ -37,6 +37,9 @@ float4 main(float2 texCoord : TEXCOORD0) : COLOR
 {
 	
 	float4 orig = tex2D(textureSampler, texCoord);
+
+	texCoord.x = (texCoord.x * 16) % 1;
+	texCoord.y = (texCoord.y * 16) % 1;
 	
 	float4 newCol = tex2D(textureSampler2, texCoord);
 
@@ -1003,6 +1006,13 @@ IDirect3DPixelShader9* pPixelShader_backup_test = nullptr;
 DWORD drawPrimHook_texAddr = 0;
 void drawPrimHook() {
 
+	//log("drawprimhook start");
+	if (leadToDrawPrimHook_ret != 0x004331D9) {
+		// this was grabbbed from the future. im unsure if it helps or fucks this up
+		//log("drawprimhook end");
+		return;
+	}
+
 	//loadBadApple();
 	
 	device->GetPixelShader(&pPixelShader_backup_test);
@@ -1016,12 +1026,20 @@ void drawPrimHook() {
 	if (leadToDrawPrimHook_ret != 0x004331D9) {
 		index = 0;
 		textureAddrs.clear(); // calling this repeatedly is wasteful!
+		//log("drawprimhook end");
 		return;
 	}
 
 	//bool cond = (index >= 5 && index <= 8);
-	if (textureAddrs.contains(drawPrimHook_texAddr)) {
+	if (true || textureAddrs.contains(drawPrimHook_texAddr)) {
 		
+		//log("made it inside the conditional");
+
+		if (!safeWrite()) {
+			//log("drawprimhook end");
+			return;
+		}
+
 		/*device->GetPixelShader(&pPixelShader_backup);
 		if (pPixelShader_backup != NULL) {
 			log("non null shader??");
@@ -1039,6 +1057,8 @@ void drawPrimHook() {
 		static double idekTime = 0.0;
 		static double startSongTime = getSeconds();
 		if (lastTextureFrameCount != textureFrameCount && badAppleFrames.size() != 0) {
+
+			//log("grabbin a new frame");
 
 			lastTextureFrameCount = textureFrameCount;
 
@@ -1114,6 +1134,10 @@ void drawPrimHook() {
 
 		//IDirect3DBaseTexture9* pTex = (IDirect3DBaseTexture9*)drawPrimHook_texAddr;
 		IDirect3DTexture9* pTex = (IDirect3DTexture9*)drawPrimHook_texAddr;
+		if (!isAddrValid(drawPrimHook_texAddr)) {
+			///log("drawprimhook end");
+			return;
+		}
 
 		// bad apple is 480x360, 30fps
 		// i could have used ffmpeg in c++, but then i would have to go deal with library compiler error bs and wish i was on linux
@@ -1138,6 +1162,7 @@ void drawPrimHook() {
 	}
 
 	index++;
+	//log("drawprimhook end");
 }
 
 void drawPrimCallback() {
