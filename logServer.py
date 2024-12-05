@@ -31,10 +31,13 @@ def server(packetQueue):
 				if data:
 					# what are these 12 junk bytes?
 					try:
-						d = data.decode("ascii").strip()
+						d = data.decode("ascii")#.strip()
 					except:
-						packetQueue.put(f"{data}")
-						continue
+						try:
+							d = data.decode("utf-8")#.strip()
+						except:
+							packetQueue.put(f"{data}")
+							continue
 					packetQueue.put(f"{d}")
 			except socket.timeout: # only here so ctrl c works
 				time.sleep(1)
