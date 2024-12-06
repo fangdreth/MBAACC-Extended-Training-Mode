@@ -996,7 +996,7 @@ void drawSimpleMeter()
 	if (fScroll > 0)
 		nResetOffset = 320.0f * fScroll;
 
-	DWORD P1Base = adP1Base + (*(uint8_t*)(adMBAABase + adP1Base + adTagFlag) * dwPlayerStructSize * 2);
+	DWORD P1Base = adP1SubBase + (*(uint8_t*)(adMBAABase + adP1SubBase + adTagFlag) * dwPlayerStructSize * 2);
 	int nP1Meter = *(int*)(adMBAABase + P1Base + adMagicCircuit);
 	int nP1MeterTime = *(int*)(adMBAABase + P1Base + adMagicCircuitTime);
 	uint8_t nP1MeterMode = *(uint8_t*)(adMBAABase + P1Base + adMagicCircuitMode);
@@ -1005,7 +1005,7 @@ void drawSimpleMeter()
 	short sP1CircuitBreakFlag = *(short*)(adMBAABase + P1Base + adBreakOrPenalty);
 	uint8_t nP1Moon = *(uint8_t*)(adMBAABase + dwP1CharMoon);
 
-	DWORD P2Base = adP2Base + (*(uint8_t*)(adMBAABase + adP2Base + adTagFlag) * dwPlayerStructSize * 2);
+	DWORD P2Base = adP2SubBase + (*(uint8_t*)(adMBAABase + adP2SubBase + adTagFlag) * dwPlayerStructSize * 2);
 	int nP2Meter = *(int*)(adMBAABase + P2Base + adMagicCircuit);
 	int nP2MeterTime = *(int*)(adMBAABase + P2Base + adMagicCircuitTime);
 	uint8_t nP2MeterMode = *(uint8_t*)(adMBAABase + P2Base + adMagicCircuitMode);

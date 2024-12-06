@@ -611,7 +611,7 @@ int main(int argc, char* argv[])
                 uint8_t nP2Controlled;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1ControlledCharacter), &nP1Controlled, 1, 0);
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP2ControlledCharacter), &nP2Controlled, 1, 0);
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1Base + adDoTrainingAction), &nReadResult, 1, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adP1SubBase + adDoTrainingAction), &nReadResult, 1, 0);
                 uint8_t nPlayer = nReadResult == 0 ? nP1Controlled : nP2Controlled;
                 uint8_t nDummy = nReadResult == 0 ? nP2Controlled : nP1Controlled;
 
@@ -6295,18 +6295,18 @@ int main(int argc, char* argv[])
                         uint8_t nHitstunRemaining, nHitstopRemaining;
                         bool bBurstLock;
                         //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwComboCount), &nComboCount, 4, 0);
-                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adOnHitCount, &nHitComboCount, 2, nDummy);
-                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adOnBlockCount, &nBlockComboCount, 2, nDummy);
+                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adOnHitCount, &nHitComboCount, 2, nDummy);
+                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adOnBlockCount, &nBlockComboCount, 2, nDummy);
                         ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstopRemaining, &nHitstopRemaining, 1, nDummy);
                         ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nDummy);
-                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adBurstLock, &bBurstLock, 1, nDummy);
+                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adBurstLock, &bBurstLock, 1, nDummy);
                         if ((nHitComboCount >= nHitsTillBurst || nBlockComboCount >= nHitsTillBurst) && nHitstopRemaining == 0 && nHitstunRemaining != 0 && !bBurstLock)
                         {
                             uint8_t nStance;
-                            ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adStanceDelayed, &nStance, 1, nDummy);
+                            ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adStanceDelayed, &nStance, 1, nDummy);
                             int nBurstPat = nStance != 1 ? 262 : 263;
                             int nBurstWrite[3] = { 9, 0, nBurstPat };
-                            WriteCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adIDKFlags, &nBurstWrite, 12, nDummy);
+                            WriteCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adIDKFlags, &nBurstWrite, 12, nDummy);
                             /*
                             while (true)
                             {
@@ -6582,11 +6582,11 @@ int main(int argc, char* argv[])
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyDefense), &cEnemyDefense, 1, 0);
                     if (cEnemyDefense == 1 || cEnemyDefense == 2)
                     {
-                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + adP1Base + adOnHitCount, &sOnHitCount, 2, nDummy);
+                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adOnHitCount, &sOnHitCount, 2, nDummy);
                         if (sOnHitCount)
                         {
                             char c0 = 0;
-                            WriteCharacterMemory(hMBAAHandle, dwBaseAddress + adP1Base + adWillBlock, &c0, 1, nDummy);
+                            WriteCharacterMemory(hMBAAHandle, dwBaseAddress + adP1SubBase + adWillBlock, &c0, 1, nDummy);
                         }
                     }
                   
