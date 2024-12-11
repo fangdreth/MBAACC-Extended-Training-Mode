@@ -6442,7 +6442,7 @@ int main(int argc, char* argv[])
                     if (nHitstunRemaining == 0 && nP2Pattern != 350)
                     {
                         nHealthRefillTimerCount++;
-                        if (nHealthRefillTimerCount == 2) {
+                        if (nHealthRefillTimerCount == 45) { // 6c into kouma AAD causes problems without this
                             nHealthRefillTimerCount = 0;
                             nHealthRefillTimer = 1;
                         }
