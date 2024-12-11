@@ -176,6 +176,9 @@ int main(int argc, char* argv[])
         bool bFrameDataDisplay = false;
 
         int nHitsTillBurst = TOO_HIGH_TO_BURST;
+        int nHitsTillBunker = 0;
+        bool bAlreadyBursted = false;
+        bool bBunkerInsteadOfBurst = false;
 
         bool bInfGuard = true;
     
@@ -905,6 +908,12 @@ int main(int argc, char* argv[])
                                     
                                     break;
                                 }
+                                case STATS_PAGE:
+                                {
+                                    if (nEnemySettingsCursor == 8)
+                                        bBunkerInsteadOfBurst = !bBunkerInsteadOfBurst;
+                                    break;
+                                }
                                 case POSITIONS_PAGE:
                                 {
                                     if (nEnemySettingsCursor == 8)
@@ -1060,7 +1069,14 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcGuardBar_10, 10, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcMeter_6, 6, 0);
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcHealth_7, 7, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcHitsUntilBurst_17, 17, 0);
+                                if (bBunkerInsteadOfBurst)
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcHitsUntilBunker_18, 18, 0);
+                                }
+                                else
+                                {
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcHitsUntilBurst_17, 17, 0);
+                                }
 
                                 break;
                             }
@@ -1342,7 +1358,7 @@ int main(int argc, char* argv[])
                                 }
                                 case 8:
                                 {
-                                    char pcTemp64[64] = "Number of hits into a combo before the will burst.";
+                                    char pcTemp64[64] = "Number of hits before the dummy will burst.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (nHitsTillBurst == TOO_HIGH_TO_BURST)
                                         strcpy_s(pcTemp64, ">Dummy will {not} burst.");
@@ -2407,20 +2423,38 @@ int main(int argc, char* argv[])
                                     SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth, nP1Controlled, nP2Controlled);
                                 }
 
-                                if (nOldThrowRecoveryIndex == -1)
-                                    nOldThrowRecoveryIndex = nThrowRecoveryIndex;
-                                else if (nOldThrowRecoveryIndex > nThrowRecoveryIndex)// left
+                                if (bBunkerInsteadOfBurst)
                                 {
-                                    nHitsTillBurst = max(0, nHitsTillBurst - 1);
-                                    if (nHitsTillBurst == 0)
-                                        nHitsTillBurst = TOO_HIGH_TO_BURST;
+                                    if (nOldThrowRecoveryIndex == -1)
+                                        nOldThrowRecoveryIndex = nThrowRecoveryIndex;
+                                    else if (nOldThrowRecoveryIndex > nThrowRecoveryIndex)// left
+                                    {
+                                        if (nHitsTillBunker > 0)
+                                            nHitsTillBunker--;
+                                    }
+                                    else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
+                                    {
+                                        if (nHitsTillBunker < 99)
+                                            nHitsTillBunker++;
+                                    }
                                 }
-                                else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
+                                else
                                 {
-                                    if (nHitsTillBurst == TOO_HIGH_TO_BURST)
-                                        nHitsTillBurst = 1;
-                                    else
-                                        nHitsTillBurst = min(MAX_BURST, nHitsTillBurst + 1);
+                                    if (nOldThrowRecoveryIndex == -1)
+                                        nOldThrowRecoveryIndex = nThrowRecoveryIndex;
+                                    else if (nOldThrowRecoveryIndex > nThrowRecoveryIndex)// left
+                                    {
+                                        nHitsTillBurst = max(0, nHitsTillBurst - 1);
+                                        if (nHitsTillBurst == 0)
+                                            nHitsTillBurst = TOO_HIGH_TO_BURST;
+                                    }
+                                    else if (nOldThrowRecoveryIndex < nThrowRecoveryIndex)// right
+                                    {
+                                        if (nHitsTillBurst == TOO_HIGH_TO_BURST)
+                                            nHitsTillBurst = 1;
+                                        else
+                                            nHitsTillBurst = min(MAX_BURST, nHitsTillBurst + 1);
+                                    }
                                 }
                                 break;
                             }
@@ -3454,51 +3488,90 @@ int main(int argc, char* argv[])
                                     nDownRecoveryIndex = 2;
                                 }
 
-                                if (nHitsTillBurst == TOO_HIGH_TO_BURST)
+                                if (bBunkerInsteadOfBurst)
                                 {
-                                    char pcTemp[4] = "OFF";
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryNormalString), &pcTemp, 4, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcTemp, 4, 0);
+                                    if (nHitsTillBunker == 0)
+                                    {
+                                        char pcTemp[4] = "OFF";
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryNormalString), &pcTemp, 4, 0);
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcTemp, 4, 0);
 
-                                    nWriteBuffer = 0;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
-                                    nThrowRecoveryIndex = 0;
+                                        nWriteBuffer = 0;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                        nThrowRecoveryIndex = 0;
+                                    }
+                                    else if (nHitsTillBunker == 99)
+                                    {
+                                        char pcTemp[3];
+                                        strcpy_s(pcTemp, std::to_string(nHitsTillBunker).c_str());
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomLateString), &pcTemp, 3, 0);
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomRandomString), &pcTemp, 3, 0);
 
-                                    //nWriteBuffer = eEnemyStatus::STAND;
-                                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
-                                }
-                                else if (nHitsTillBurst == MAX_BURST)
-                                {
-                                    char pcTemp[3];
-                                    strcpy_s(pcTemp, std::to_string(nRoaHiddenCharge).c_str());
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomLateString), &pcTemp, 3, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomRandomString), &pcTemp, 3, 0);
+                                        nWriteBuffer = 6;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                        nThrowRecoveryIndex = 6;
+                                    }
+                                    else
+                                    {
+                                        char pcTemp[3];
+                                        strcpy_s(pcTemp, std::to_string(nHitsTillBunker).c_str());
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllLateString), &pcTemp, 3, 0);
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllRandomString), &pcTemp, 3, 0);
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomFastString), &pcTemp, 3, 0);
 
-                                    nWriteBuffer = 6;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
-                                    nThrowRecoveryIndex = 6;
-
-                                    //nWriteBuffer = eEnemyStatus::MANUAL;
-                                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
-                                    //nWriteBuffer = eMagicCircuit::UNLIMITED;
-                                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMagicCircuitSetting), &nWriteBuffer, 4, 0);
+                                        nWriteBuffer = 3;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                        nThrowRecoveryIndex = 3;
+                                    }
                                 }
                                 else
                                 {
-                                    char pcTemp[3];
-                                    strcpy_s(pcTemp, std::to_string(nHitsTillBurst).c_str());
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllLateString), &pcTemp, 3, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllRandomString), &pcTemp, 3, 0);
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomFastString), &pcTemp, 3, 0);
+                                    if (nHitsTillBurst == TOO_HIGH_TO_BURST)
+                                    {
+                                        char pcTemp[4] = "OFF";
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryNormalString), &pcTemp, 4, 0);
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllFastString), &pcTemp, 4, 0);
 
-                                    nWriteBuffer = 3;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
-                                    nThrowRecoveryIndex = 3;
+                                        nWriteBuffer = 0;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                        nThrowRecoveryIndex = 0;
 
-                                    //nWriteBuffer = eEnemyStatus::MANUAL;
-                                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
-                                    //nWriteBuffer = eMagicCircuit::UNLIMITED;
-                                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMagicCircuitSetting), &nWriteBuffer, 4, 0);
+                                        //nWriteBuffer = eEnemyStatus::STAND;
+                                        //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
+                                    }
+                                    else if (nHitsTillBurst == MAX_BURST)
+                                    {
+                                        char pcTemp[3];
+                                        strcpy_s(pcTemp, std::to_string(nHitsTillBurst).c_str());
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomLateString), &pcTemp, 3, 0);
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomRandomString), &pcTemp, 3, 0);
+
+                                        nWriteBuffer = 6;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                        nThrowRecoveryIndex = 6;
+
+                                        //nWriteBuffer = eEnemyStatus::MANUAL;
+                                        //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
+                                        //nWriteBuffer = eMagicCircuit::UNLIMITED;
+                                        //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMagicCircuitSetting), &nWriteBuffer, 4, 0);
+                                    }
+                                    else
+                                    {
+                                        char pcTemp[3];
+                                        strcpy_s(pcTemp, std::to_string(nHitsTillBurst).c_str());
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllLateString), &pcTemp, 3, 0);
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryAllRandomString), &pcTemp, 3, 0);
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryRandomFastString), &pcTemp, 3, 0);
+
+                                        nWriteBuffer = 3;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryIndex), &nWriteBuffer, 4, 0);
+                                        nThrowRecoveryIndex = 3;
+
+                                        //nWriteBuffer = eEnemyStatus::MANUAL;
+                                        //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyStatusIndex), &nWriteBuffer, 4, 0);
+                                        //nWriteBuffer = eMagicCircuit::UNLIMITED;
+                                        //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwMagicCircuitSetting), &nWriteBuffer, 4, 0);
+                                    }
                                 }
                                 break;
                             }
@@ -6286,44 +6359,43 @@ int main(int argc, char* argv[])
                         nWriteBuffer = 0;
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstopRemaining + dwP2Offset), &nWriteBuffer, 4, 0);
                     }*/
+                    int nHitComboCount;
+                    int nBlockComboCount;
+                    ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adOnHitCount, &nHitComboCount, 2, nDummy);
+                    ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adOnBlockCount, &nBlockComboCount, 2, nDummy);
+
+                    if (nHitComboCount == 0 && nBlockComboCount == 0)
+                        bAlreadyBursted = false;
 
                     // burst a combo
-                    if (nHitsTillBurst != TOO_HIGH_TO_BURST)
+                    if (nHitsTillBurst != TOO_HIGH_TO_BURST && !bAlreadyBursted && !bBunkerInsteadOfBurst)
                     {
-                        int nHitComboCount;
-                        int nBlockComboCount;
                         uint8_t nHitstunRemaining, nHitstopRemaining;
-                        bool bBurstLock;
-                        //ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwComboCount), &nComboCount, 4, 0);
-                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adOnHitCount, &nHitComboCount, 2, nDummy);
-                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adOnBlockCount, &nBlockComboCount, 2, nDummy);
                         ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstopRemaining, &nHitstopRemaining, 1, nDummy);
                         ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nDummy);
-                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adBurstLock, &bBurstLock, 1, nDummy);
-                        if ((nHitComboCount >= nHitsTillBurst || nBlockComboCount >= nHitsTillBurst) && nHitstopRemaining == 0 && nHitstunRemaining != 0 && !bBurstLock)
+                        if ((nHitComboCount >= nHitsTillBurst || nBlockComboCount >= nHitsTillBurst) && nHitstopRemaining <= 2 && nHitstunRemaining != 0)
                         {
-                            uint8_t nStance;
-                            ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adStanceDelayed, &nStance, 1, nDummy);
-                            int nBurstPat = nStance != 1 ? 262 : 263;
-                            int nBurstWrite[3] = { 9, 0, nBurstPat };
-                            WriteCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adIDKFlags, &nBurstWrite, 12, nDummy);
-                            /*
-                            while (true)
-                            {
-                                ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nP2Controlled);
-                                if (nHitstunRemaining == 0)
-                                {
-                                    Sleep(16);  //need to wait 1 frame
-                                    nWriteBuffer = 0;
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwComboCount), &nWriteBuffer, 4, 0);
-                                    break;
-                                }
+                            uint16_t nButtonInputs[3] = { 0, 1, 1 };
+                            WriteCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adAInputBuffer, &nButtonInputs, 6, nDummy);
+                            WriteCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adBInputBuffer, &nButtonInputs, 6, nDummy);
+                            WriteCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adCInputBuffer, &nButtonInputs, 6, nDummy);
+                            bAlreadyBursted = true;
+                        }
+                    }
 
-                                // mash the hell out of E
-                                nWriteBuffer = 1;
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2E), &nWriteBuffer, 1, 0);
-                            }
-                            */
+                    //guard cancel bunker
+                    if (nHitsTillBunker != 0 && bBunkerInsteadOfBurst)
+                    {
+                        uint8_t nHitstunRemaining;
+                        uint8_t nStance;
+                        ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nDummy);
+                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adStanceDelayed, &nStance, 1, nDummy);
+                        if (nBlockComboCount >= nHitsTillBunker && nHitstunRemaining != 0 && nStance != 1)
+                        {
+                            uint16_t nDirInputs[7] = { 2, 2, 1, 1, 1, 4, 1 };
+                            uint16_t nDInputs[5] = { 1, 0, 3, 1, 1 };
+                            WriteCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adDirInputBuffer, &nDirInputs, 14, nDummy);
+                            WriteCharacterMemory(hMBAAHandle, adMBAABase + adP1Base + adDInputBuffer, &nDInputs, 10, nDummy);
                         }
                     }
 

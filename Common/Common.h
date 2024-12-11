@@ -285,6 +285,7 @@ const ADDRESS adP2SubBase = 0x155134 + 1 * dwPlayerStructSize; //0x155C30
 const ADDRESS adP3SubBase = 0x155134 + 2 * dwPlayerStructSize; //0x15672C
 const ADDRESS adP4SubBase = 0x155134 + 3 * dwPlayerStructSize; //0x157228
 
+//Sub Base Addresses
 const ADDRESS adDoTrainingAction = 0x3;
 const ADDRESS adPattern = 0xC;
 const ADDRESS adSave1Offset = 0xC;
@@ -348,6 +349,14 @@ const ADDRESS adConditions_Condition1Pointer = 0x0;
 const ADDRESS adConditions_Condition2Pointer = 0x4;
 const ADDRESS adCondition_Type = 0x0;
 const ADDRESS adCondition_Param1 = 0x4;
+
+//Base Addresses
+const ADDRESS adDirInputBuffer = 0x3E8;
+const ADDRESS adAInputBuffer = 0x4EA;
+const ADDRESS adBInputBuffer = 0x5EC;
+const ADDRESS adCInputBuffer = 0x6EE;
+const ADDRESS adDInputBuffer = 0x7F0;
+const ADDRESS adEInputBuffer = 0x8F2;
 
 const ADDRESS adP1TagFlag = 0x155134 + 0x174; //0x1552A8
 const ADDRESS adP2TagFlag = 0x155134 + 0x174 + 1 * dwPlayerStructSize; //0x155DA4
@@ -507,6 +516,7 @@ const char pcRyougiKnife_13[13] = "RYOUGI KNIFE";
 const char pcP1ControlledChar_19[19] = "P1 CONTROLLED CHAR";
 const char pcP2ControlledChar_19[19] = "P2 CONTROLLED CHAR";
 const char pcHitsUntilBurst_17[17] = "HITS UNTIL BURST";
+const char pcHitsUntilBunker_18[18] = "HITS UNTIL BUNKER";
 const char pcNormal_7[7] = "NORMAL";
 const char pcRepeat_7[7] = "REPEAT";
 const char pcRandom_7[7] = "RANDOM";

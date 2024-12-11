@@ -415,14 +415,14 @@ void LoadState(HANDLE hMBAAHandle, int nSaveSlot, bool bLoadRNG = false)
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2ControlledCharacter), &S.dwSaveP2ControlledCharacter, 4, 0);
 		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2NextControlledCharacter), &S.dwSaveP2NextControlledCharacter, 4, 0);
 
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1Base + adSave1Offset), &S.dwaSave1P1, SAVE_PLAYER_1_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1Base + adSave2Offset), &S.dwaSave2P1, SAVE_PLAYER_2_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2Base + adSave1Offset), &S.dwaSave1P2, SAVE_PLAYER_1_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2Base + adSave2Offset), &S.dwaSave2P2, SAVE_PLAYER_2_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP3Base + adSave1Offset), &S.dwaSave1P3, SAVE_PLAYER_1_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP3Base + adSave2Offset), &S.dwaSave2P3, SAVE_PLAYER_2_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP4Base + adSave1Offset), &S.dwaSave1P4, SAVE_PLAYER_1_SIZE, 0);
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP4Base + adSave2Offset), &S.dwaSave2P4, SAVE_PLAYER_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1SubBase + adSave1Offset), &S.dwaSave1P1, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP1SubBase + adSave2Offset), &S.dwaSave2P1, SAVE_PLAYER_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2SubBase + adSave1Offset), &S.dwaSave1P2, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2SubBase + adSave2Offset), &S.dwaSave2P2, SAVE_PLAYER_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP3SubBase + adSave1Offset), &S.dwaSave1P3, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP3SubBase + adSave2Offset), &S.dwaSave2P3, SAVE_PLAYER_2_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP4SubBase + adSave1Offset), &S.dwaSave1P4, SAVE_PLAYER_1_SIZE, 0);
+		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP4SubBase + adSave2Offset), &S.dwaSave2P4, SAVE_PLAYER_2_SIZE, 0);
 
 		if (bLoadRNG)
 		{

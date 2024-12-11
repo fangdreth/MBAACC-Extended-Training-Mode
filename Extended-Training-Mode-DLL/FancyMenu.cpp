@@ -13,6 +13,10 @@ extern bool useWind;
 extern int xWindVel;
 extern int changeWindDir;
 
+//put these wherever you want in the menu
+extern bool showMinAirdashHeight; // 64 pixels above ground
+extern bool showMinATHeight; // 128 pixels above ground
+
 Menu<int> baseMenu("Debug Menu");
 Menu<int>* disableFpsMenuOption = NULL;
 
