@@ -458,6 +458,14 @@ void saveTexture(IDirect3DBaseTexture9* pTex, int i){ // does this inc the refco
 		return;
 	}
 
+	volatile DWORD tempLevelCount = 0;  // i need to prevent this from being optimized out, possibly
+	__try {
+		tempLevelCount = pTex->GetLevelCount();
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		log("saveTexture tex was invalid!");
+		return;
+	}
+
 	static unsigned imageCounter = 0;
 
 	const char* writePath = "./temp/";
@@ -477,6 +485,8 @@ void saveTexture(IDirect3DBaseTexture9* pTex, int i){ // does this inc the refco
 #pragma pack(push,1)
 typedef struct UnknownDrawData { // ghidra only lets you rerun autocreatestructure if you right click the variable NAME not type. omfg
 	// this struct and its size are mostly guesses from ghidra, assume everything is incorrect
+	// highkey, what do i need? i need a method of getting WHATS being drawn from this struct. nothing else. that saves me that 
+	// map, its lookups, and is everything.
 	union {
 		struct {
 			DWORD unknown1;
@@ -514,7 +524,7 @@ CHECKOFFSET(unknownHasTexture, 0x54);
 CHECKOFFSET(tex, 0x68);
 CHECKOFFSET(unknown9, 0x6C);
 
-static_assert(sizeof(UnknownDrawData) == 0x72, "UnknownDrawData should have size 0x94");
+static_assert(sizeof(UnknownDrawData) == 0x72, "UnknownDrawData should have size 0x72");
 
 #undef CHECKOFFSET
 
@@ -592,15 +602,31 @@ int getComboCount() {
 
 bool useWind = false;
 int xWindVel = 0;
+int changeWindDir = 0;
 void setWind() {
 
 	if (!useWind) {
 		return;
 	}
 
+
+	static bool invertDir = false;
+	static int count = 0;
+	
+	static int what = 0;
+	if (changeWindDir == 0) {
+		invertDir = false;
+	} else {
+		count++;
+		if (count > changeWindDir) {
+			invertDir = !invertDir;
+			count = 0;
+		}
+	}
+
 	for (int i = 0; i < 4; i++) {
 		if (playerDataArr[i].exists) {
-			playerDataArr[i].xVelChange = xWindVel; 
+			playerDataArr[i].xVelChange = invertDir ? -xWindVel : xWindVel;
 		}
 	}
 

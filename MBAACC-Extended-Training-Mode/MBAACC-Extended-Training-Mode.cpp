@@ -6365,9 +6365,16 @@ int main(int argc, char* argv[])
                     ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nP2Controlled);
                     ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1PatternRead, &nP2Pattern, 4, nP2Controlled);
 
+                    static int nHealthRefillTimerCount = 0;
+
                     if (nHitstunRemaining == 0 && nP2Pattern != 350)
                     {
-                        nHealthRefillTimer = 1;
+                        nHealthRefillTimerCount++;
+                        if (nHealthRefillTimerCount == 2) {
+                            nHealthRefillTimerCount = 0;
+                            nHealthRefillTimer = 1;
+                        }
+                        
                         nSionBulletsRefillTimer = 1;
                     
                         // roa needs to be reset a little differently

@@ -604,4 +604,5 @@ void debugImportantDraw();
 int getComboCount();
 extern bool useWind;
 extern int xWindVel;
+extern int changeWindDir;
 void setWind();

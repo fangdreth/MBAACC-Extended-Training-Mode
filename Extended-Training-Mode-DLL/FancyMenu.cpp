@@ -11,6 +11,7 @@ extern bool useCustomShaders;
 extern bool useDeerMode;
 extern bool useWind;
 extern int xWindVel;
+extern int changeWindDir;
 
 Menu<int> baseMenu("Debug Menu");
 Menu<int>* disableFpsMenuOption = NULL;
@@ -400,6 +401,17 @@ void initMenu() {
 			opt += inc * 10;
 			opt = CLAMP(opt, -500, 500);
 			xWindVel = opt;
+		},
+		[](int opt) -> std::string {
+			return std::to_string(opt);
+		}
+	);
+
+	windMenu.add<int>("change dir every n frames",
+		[](int inc, int& opt) {
+			opt += inc * 60;
+			opt = CLAMP(opt, 0, 60 * 60);
+			changeWindDir = opt;
 		},
 		[](int opt) -> std::string {
 			return std::to_string(opt);
