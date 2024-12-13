@@ -376,7 +376,7 @@ void IncrementActive(Player& P)
 {
 	if (P.PlayerData->attackDataPtr && P.PlayerData->hitstop == 0 && P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
 	{
-		P.nActiveCounter += P.PlayerData->heatTimeThisHeat - P.nLastFrameCount;
+		P.nActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 	}
 	else if (P.PlayerData->attackDataPtr == 0)
 	{
@@ -392,7 +392,7 @@ void IncrementFirstActive(Player& P)
 		*(char*)(adMBAABase + adGlobalFreeze) == 0 &&
 		P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
 	{
-		P.nFirstActiveCounter += P.PlayerData->heatTimeThisHeat - P.nLastFrameCount;
+		P.nFirstActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 		bAddPlayerFreeze = true;
 	}
 	if (bAddPlayerFreeze &&
@@ -400,7 +400,7 @@ void IncrementFirstActive(Player& P)
 		*(int*)(adMBAABase + adP2Freeze) != 0) &&
 		P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
 	{
-		P.nFirstActiveCounter += P.PlayerData->heatTimeThisHeat - P.nLastFrameCount;
+		P.nFirstActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 		bAddPlayerFreeze = false;
 	}
 }
