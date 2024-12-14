@@ -19,7 +19,6 @@ bool bIsBarReset = false;
 bool bDoBarReset = false;
 bool bUpdateBar = false;
 bool bDoAdvantage = false;
-bool bAddPlayerFreeze = false;
 
 bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
 bool bDisplayInputs = false;
@@ -60,6 +59,7 @@ struct Player
 	bool bAlreadyGotFirstActive = false;
 	bool bProjectileActive = false;
 	bool bLastProjectileActive = false;
+	bool bAddPlayerFreeze = false;
 };
 
 Player P1{ 0, (PlayerData*)(adMBAABase + adP1Base), adMBAABase + adP1Inaction };
@@ -133,7 +133,10 @@ void CalculateAdvantage(Player& P1, Player& P2)
 		P2.nAdvantageCounter = 0;
 	}
 
-	if (bDoAdvantage && *(int*)(adMBAABase + adFrameCount) != nLastFrameCount && *(char*)(adMBAABase + adGlobalFreeze) == 0)
+	if (bDoAdvantage && *(int*)(adMBAABase + adFrameCount) != nLastFrameCount &&
+		*(int*)(adMBAABase + adP1Freeze) == 0 &&
+		*(int*)(adMBAABase + adP2Freeze) == 0 &&
+		*(char*)(adMBAABase + adGlobalFreeze) == 0)
 	{
 		if (*(int*)(P1.adInaction) == 0 && *(int*)(P2.adInaction) != 0)
 		{
@@ -393,15 +396,15 @@ void IncrementFirstActive(Player& P)
 		P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
 	{
 		P.nFirstActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
-		bAddPlayerFreeze = true;
+		P.bAddPlayerFreeze = true;
 	}
-	if (bAddPlayerFreeze &&
+	if (P.bAddPlayerFreeze &&
 		(*(int*)(adMBAABase + adP1Freeze) != 0 ||
 		*(int*)(adMBAABase + adP2Freeze) != 0) &&
 		P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
 	{
 		P.nFirstActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
-		bAddPlayerFreeze = false;
+		P.bAddPlayerFreeze = false;
 	}
 }
 
