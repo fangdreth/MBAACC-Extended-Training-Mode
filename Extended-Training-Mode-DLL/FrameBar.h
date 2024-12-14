@@ -315,6 +315,10 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		dwColor2 = FB_INVULN;
 	}
+	else if (P.PlayerData->animationDataPtr->highestNonHitboxIndex == 10) //Special Box 1
+	{
+		dwColor2 = FB_COUNTER;
+	}
 
 	if (P.PlayerData->animationDataPtr->stateData->stance == 1) //Airborne
 	{
