@@ -896,14 +896,17 @@ void drawColorGuide()
 	RectDraw(74, 45, 3, 10, FB_INVULN);
 	TextDraw(77, 45, 10, 0xFFFFFFFF, "INVULN");
 	RectDraw(130, 45, 7, 10, FB_INACTIONABLE);
-	RectDraw(130, 44, 7, 2, FB_JUMP);
-	TextDraw(137, 45, 10, 0xFFFFFFFF, "AIRBORNE");
-	RectDraw(210, 45, 7, 10, FB_INACTIONABLE);
-	RectDraw(210, 54, 7, 2, FB_ACTIVE);
-	TextDraw(217, 45, 10, 0xFFFFFFFF, "ACTIVE PROJECTILE");
-	RectDraw(350, 45, 7, 10, FB_INACTIONABLE);
-	RectDraw(350, 54, 7, 2, FB_ASSIST_ACTIVE);
-	TextDraw(357, 45, 10, 0xFFFFFFFF, "ACTIVE ASSIST");
+	RectDraw(134, 45, 3, 10, FB_COUNTER);
+	TextDraw(137, 45, 10, 0xFFFFFFFF, "COUNTER");
+	RectDraw(200, 45, 7, 10, FB_INACTIONABLE);
+	RectDraw(200, 44, 7, 2, FB_JUMP);
+	TextDraw(207, 45, 10, 0xFFFFFFFF, "AIRBORNE");
+	RectDraw(280, 45, 7, 10, FB_INACTIONABLE);
+	RectDraw(280, 54, 7, 2, FB_ACTIVE);
+	TextDraw(287, 45, 10, 0xFFFFFFFF, "ACTIVE PROJECTILE");
+	RectDraw(450, 45, 7, 10, FB_INACTIONABLE);
+	RectDraw(450, 54, 7, 2, FB_ASSIST_ACTIVE);
+	TextDraw(457, 45, 10, 0xFFFFFFFF, "ACTIVE ASSIST");
 }
 
 //In-game frame bar

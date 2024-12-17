@@ -19,7 +19,6 @@ bool bIsBarReset = false;
 bool bDoBarReset = false;
 bool bUpdateBar = false;
 bool bDoAdvantage = false;
-bool bAddPlayerFreeze = false;
 
 bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
 bool bDisplayInputs = false;
@@ -60,6 +59,7 @@ struct Player
 	bool bAlreadyGotFirstActive = false;
 	bool bProjectileActive = false;
 	bool bLastProjectileActive = false;
+	bool bAddPlayerFreeze = false;
 };
 
 Player P1{ 0, (PlayerData*)(adMBAABase + adP1Base), adMBAABase + adP1Inaction };
@@ -133,7 +133,10 @@ void CalculateAdvantage(Player& P1, Player& P2)
 		P2.nAdvantageCounter = 0;
 	}
 
-	if (bDoAdvantage && *(int*)(adMBAABase + adFrameCount) != nLastFrameCount && *(char*)(adMBAABase + adGlobalFreeze) == 0)
+	if (bDoAdvantage && *(int*)(adMBAABase + adFrameCount) != nLastFrameCount &&
+		*(int*)(adMBAABase + adP1Freeze) == 0 &&
+		*(int*)(adMBAABase + adP2Freeze) == 0 &&
+		*(char*)(adMBAABase + adGlobalFreeze) == 0)
 	{
 		if (*(int*)(P1.adInaction) == 0 && *(int*)(P2.adInaction) != 0)
 		{
@@ -312,6 +315,10 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		dwColor2 = FB_INVULN;
 	}
+	else if (P.PlayerData->animationDataPtr->highestNonHitboxIndex == 10) //Special Box 1
+	{
+		dwColor2 = FB_COUNTER;
+	}
 
 	if (P.PlayerData->animationDataPtr->stateData->stance == 1) //Airborne
 	{
@@ -376,7 +383,7 @@ void IncrementActive(Player& P)
 {
 	if (P.PlayerData->attackDataPtr && P.PlayerData->hitstop == 0 && P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
 	{
-		P.nActiveCounter += P.PlayerData->heatTimeThisHeat - P.nLastFrameCount;
+		P.nActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 	}
 	else if (P.PlayerData->attackDataPtr == 0)
 	{
@@ -392,16 +399,16 @@ void IncrementFirstActive(Player& P)
 		*(char*)(adMBAABase + adGlobalFreeze) == 0 &&
 		P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
 	{
-		P.nFirstActiveCounter += P.PlayerData->heatTimeThisHeat - P.nLastFrameCount;
-		bAddPlayerFreeze = true;
+		P.nFirstActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
+		P.bAddPlayerFreeze = true;
 	}
-	if (bAddPlayerFreeze &&
+	if (P.bAddPlayerFreeze &&
 		(*(int*)(adMBAABase + adP1Freeze) != 0 ||
 		*(int*)(adMBAABase + adP2Freeze) != 0) &&
 		P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
 	{
-		P.nFirstActiveCounter += P.PlayerData->heatTimeThisHeat - P.nLastFrameCount;
-		bAddPlayerFreeze = false;
+		P.nFirstActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
+		P.bAddPlayerFreeze = false;
 	}
 }
 

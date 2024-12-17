@@ -729,7 +729,10 @@ void CalculateAdvantage(Player& P1, Player& P2)
 		P2.nAdvantageCounter = 0;
 	}
 
-	if (bDoAdvantage && nFrameCount != nLastFrameCount && cGlobalFreeze == 0)
+	if (bDoAdvantage && nFrameCount != nLastFrameCount && 
+		cP1Freeze == 0 &&
+		cP2Freeze == 0 &&
+		cGlobalFreeze == 0)
 	{
 		if (P1.nInactionableFrames == 0 && P2.nInactionableFrames != 0)
 		{
