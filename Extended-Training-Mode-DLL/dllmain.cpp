@@ -1618,7 +1618,7 @@ void frameDoneCallback()
 
 	static KeyState fKey('F');
 	if (fKey.keyDown()) {
-		setFPSLimiter(!disableFPSLimit);
+		//setFPSLimiter(!disableFPSLimit); // sorry :3
 	}
 
 	renderModificationsFrameDone();
