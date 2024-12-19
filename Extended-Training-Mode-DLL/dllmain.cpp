@@ -1030,6 +1030,11 @@ void drawFrameBar(int nYOverride = -1)
 
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", Main2->nFirstActive % 1000, Main2->nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
 	TextDraw(20, frameBarY + 29, 10, 0xFFFFFFFF, buffer);
+
+	//DEBUG PRINTS
+	//snprintf(buffer, 256, "%i", Main1->nFirstActiveCounter);
+	//TextDraw(20, frameBarY - 23, 10, 0xFFFFFFFF, buffer);
+
 }
 
 void drawSimpleMeter()
