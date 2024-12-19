@@ -74,8 +74,12 @@ void TASManager::parseLine(const std::string& l) {
 
 	// the format of this map is key(string hash), val is the rest of the string not containing the command
 	// constexpr doesnt like maps, which is why im using an array, the size is small enough that it will probs be better that way
-	constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 9> parseArr = {{
-
+	#ifdef _DEBUG
+		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 9> parseArr = {{
+	#else
+		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 9> parseArr = {{
+	#endif
+	
 		{ hashString("pause"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::Pause;
