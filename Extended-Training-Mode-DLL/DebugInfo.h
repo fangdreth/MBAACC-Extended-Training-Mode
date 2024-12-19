@@ -345,6 +345,69 @@ static_assert(sizeof(PatternData) == 0x58, "PatternData must have size 0x58."); 
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
+typedef struct Command {
+	int commandFilePriority;
+	char input[20];
+	int pattern;
+	int specialFlag;
+	int meterSpend;
+	uint8_t vars[4]; //assist, special, dash, unused
+	uint8_t flagsets[4]; //flagset 1, flagset 2, unused, unused
+} Command;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(Command, v) == n, "Command offset incorrect for " #v);
+
+CHECKOFFSET(flagsets, 0x28);
+
+static_assert(sizeof(Command) == 0x2C, "Command must have size 0x2C.");
+#undef CHECKOFFSET
+
+#pragma pack(push,1)
+typedef struct CommandPtrArray {
+	Command* commands[1000];
+} CommandPtrArray;
+#pragma pack(pop)
+
+static_assert(sizeof(CommandPtrArray) == 4000, "CommandPtrArray must have size 4000.");
+
+#pragma pack(push,1)
+typedef struct CommandFileData {
+	UNUSED(0x4);
+	CommandPtrArray* cmdPtrArray;
+	UNUSED(0x4);
+	int maxFilePriority;
+	int maxFilePriorityCopy;
+} CommandFileData;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(CommandFileData, v) == n, "CommandFileData offset incorrect for " #v);
+
+CHECKOFFSET(maxFilePriorityCopy, 0x10);
+
+static_assert(sizeof(CommandFileData) == 0x14, "CommandFileData must have size 0x14.");
+#undef CHECKOFFSET
+
+#pragma pack(push,1)
+typedef struct CommandData {
+	CommandFileData* cmdFileDataPtr;
+	UNUSED(0x14);
+	float guts[4];
+	UNUSED(0x2A);
+	uint16_t groundThrowPat;
+	UNUSED(0x4);
+	uint16_t airThrowPat;
+} CommandData;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(CommandData, v) == n, "CommandData offset incorrect for " #v);
+
+CHECKOFFSET(airThrowPat, 0x58);
+
+static_assert(sizeof(CommandData) == 0x5A, "CommandData must have size 0x5A.");
+#undef CHECKOFFSET
+
+#pragma pack(push,1)
 typedef struct SubHA6Data2 {
 	DWORD isPointerList;
 	PatternData* (*ptrToPatternDataArr)[1000];
@@ -530,7 +593,8 @@ static_assert(sizeof(EffectData) == 0x33C, "EffectData MUST be 0x33C large!");
 // im going off of base 00555130, sorta wish we could switch to 00555134 tho
 #pragma pack(push,1)
 typedef struct PlayerData : public EffectData {
-	UNUSED(0x7C0);
+	CommandData* cmdDataPtr;
+	UNUSED(0x7BC);
 } PlayerData;
 #pragma pack(pop)
 

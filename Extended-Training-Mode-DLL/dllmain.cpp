@@ -909,6 +909,49 @@ void drawColorGuide()
 	TextDraw(457, 45, 10, 0xFFFFFFFF, "ACTIVE ASSIST");
 }
 
+int getPatternFromInput(PlayerData* PD, const char input[20])
+{
+	char buffer[20];
+	char inputCopy[20];
+	char readableInput[20] = {0};
+	for (int i = 0; i < PD->cmdDataPtr->cmdFileDataPtr->maxFilePriority; i++)
+	{
+		if (PD->cmdDataPtr->cmdFileDataPtr->cmdPtrArray->commands[i])
+		{
+			int length = 0;
+			snprintf(inputCopy, 20, "%s", PD->cmdDataPtr->cmdFileDataPtr->cmdPtrArray->commands[i]->input);
+			for (int j = 0; j < 20; j++)
+			{
+				if (inputCopy[j] == '\xFF')
+				{
+					readableInput[j] = 0;
+					length = j;
+					break;
+				}
+				else if (inputCopy[j] >= 0x0 && inputCopy[j] <= 0x9)
+				{
+					readableInput[j] = inputCopy[j] + 0x30;
+				}
+				else
+				{
+					readableInput[j] = inputCopy[j];
+				}
+			}
+			
+			bool isMatch = true;
+			for (int k = 0; k < length; k++)
+			{
+				if (readableInput[k] != input[k]) isMatch = false;
+			}
+			if (isMatch)
+			{
+				return PD->cmdDataPtr->cmdFileDataPtr->cmdPtrArray->commands[i]->pattern;
+			}
+		}
+	}
+	return -1;
+}
+
 //In-game frame bar
 void drawFrameBar(int nYOverride = -1)
 {
@@ -987,7 +1030,6 @@ void drawFrameBar(int nYOverride = -1)
 
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", Main2->nFirstActive % 1000, Main2->nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
 	TextDraw(20, frameBarY + 29, 10, 0xFFFFFFFF, buffer);
-
 }
 
 void drawSimpleMeter()
