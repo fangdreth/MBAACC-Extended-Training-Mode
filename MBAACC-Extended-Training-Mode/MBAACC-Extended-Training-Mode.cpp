@@ -6300,7 +6300,9 @@ int main(int argc, char* argv[])
                     if (nExGuardSetting == eEnemyOffOnRandom::ON || (rand() % 2 == 0 && nExGuardSetting == eEnemyOffOnRandom::RANDOM))
                         nWriteBuffer = 10;
                     //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2ExGuard), &nWriteBuffer, 4, 0);
-                    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nDummy);
+                    ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adDoTrainingAction, &nReadResult, 1, nDummy);
+                    if (nReadResult)
+                        WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nDummy);
 
                     // Disable built-in health recovery
                     nWriteBuffer = 4;
