@@ -16,6 +16,8 @@ extern int findWara;
 extern int crowdSize;
 extern int maxCrowdVel;
 
+extern int showRoaHiddenCharge;
+
 //extern IDirectInput8* inputDevice;
 
 template <typename T, int size>

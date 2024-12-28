@@ -12,6 +12,7 @@ extern bool useDeerMode;
 extern bool useWind;
 extern int xWindVel;
 extern int changeWindDir;
+extern int showRoaHiddenCharge;
 
 //put these wherever you want in the menu
 extern bool showMinAirdashHeight; // 64 pixels above ground
@@ -275,6 +276,22 @@ void initMenu() {
 	baseMenu.add(hitboxes);
 
 	Menu misc("Misc");
+
+	Menu miscMenu("Misc Options");
+
+	miscMenu.add<int*>("Show Roa hidden charge",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 1);
+		},
+		[](int* opt) -> std::string {
+			return *opt ? "ON" : "OFF";
+		},
+		L"SHOWROAHIDDENCHARGE",
+		&showRoaHiddenCharge
+	);
+
+	misc.add(miscMenu);
 
 	Menu tasMenu("TAS options");
 

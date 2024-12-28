@@ -22,6 +22,7 @@ bool logPowerInfo = false;
 bool logVerboseFps = false;
 float hitboxOpacity = 0.20f;
 bool renderingEnable = true;
+
 //IDirectInput8* inputDevice = NULL;
 
 Point mousePos; // no use getting this multiple times a frame
@@ -2771,6 +2772,27 @@ void drawFindWhisk() {
 	}
 }
 
+int showRoaHiddenCharge = 0;
+void drawRoaHiddenCharge() {
+
+	if (!showRoaHiddenCharge) {
+		return;
+	}
+
+	Point p(100, 100);
+	
+	if (*(BYTE*)(0x00555130 + 0x5 + (0 * 0xAFC)) == 31 && *(BYTE*)(0x00555130 + 0xC + (0 * 0xAFC)) == 0) {
+		TextDraw(p, 14, 0xFFFFFFFF, "%02d", *(BYTE*)(adMBAABase + dwP1RoaHiddenCharge));
+	}
+
+	p.x = 640 - p.x - 7;
+
+	if (*(BYTE*)(0x00555130 + 0x5 + (1 * 0xAFC)) == 31 && *(BYTE*)(0x00555130 + 0xC + (1 * 0xAFC)) == 0) {
+		TextDraw(p, 14, 0xFFFFFFFF, "%02d", *(BYTE*)(adMBAABase + dwP2RoaHiddenCharge));
+	}
+
+}
+
 void __stdcall _doDrawCalls() {
 
 	/*
@@ -2859,7 +2881,8 @@ void __stdcall _doDrawCalls() {
 	// ok this is going here because i know that being in this func means i am past the code that ill be patching around here
 	// i should move all this to renderingmodifications!
 	static KeyState tKey('T');
-	if (tKey.keyDown()) {
+	//if (tKey.keyDown()) {
+	if(false) {
 		renderingEnable = !renderingEnable;
 
 		if (renderingEnable) {
@@ -2907,6 +2930,7 @@ void __stdcall _doDrawCalls() {
 		drawPowerInfo();
 	}
 	drawFindWhisk();
+	drawRoaHiddenCharge();
 	drawFancyInputDisplay();
 	_drawProfiler();
 	_drawLog();
