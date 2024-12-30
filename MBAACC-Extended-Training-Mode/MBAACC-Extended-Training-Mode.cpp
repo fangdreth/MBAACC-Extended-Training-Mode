@@ -118,6 +118,11 @@ int main(int argc, char* argv[])
         int nP3TagFlag = 1;
         int nP4TagFlag = 1;
 
+        float fP1FancyInputX = DEFAULT_P1_FANCYINPUT_X;
+        float fP1FancyInputY = DEFAULT_P1_FANCYINPUT_Y;
+        float fP2FancyInputX = DEFAULT_P2_FANCYINPUT_X;
+        float fP2FancyInputY = DEFAULT_P2_FANCYINPUT_Y;
+
         uint8_t nRNGMode = RNG_OFF;
         uint8_t nRNGRate = RNG_EVERY_FRAME;
         uint32_t nCustomSeed = 0;
@@ -394,6 +399,10 @@ int main(int argc, char* argv[])
         ReadFromRegistry(L"IdleHighlight", &nIdleHighlightSetting);
         ReadFromRegistry(L"ArmorHighlight", &nArmorHighlightSetting);
         ReadFromRegistry(L"HighlightToggle", &bHighlight);
+        ReadFromRegistry(L"P1FancyInputX", &fP1FancyInputX);
+        ReadFromRegistry(L"P1FancyInputY", &fP1FancyInputY);
+        ReadFromRegistry(L"P2FancyInputX", &fP2FancyInputX);
+        ReadFromRegistry(L"P2FancyInputY", &fP2FancyInputY);
 
         while (1)
         {
@@ -535,6 +544,11 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedShowStats), &bShowStats, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1InputDisplay), &nP1InputDisplay, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2InputDisplay), &nP2InputDisplay, 1, 0);
+
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1FancyInputX), &fP1FancyInputX, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1FancyInputY), &fP1FancyInputY, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2FancyInputX), &fP2FancyInputX, 4, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2FancyInputY), &fP2FancyInputY, 4, 0);
                     }
                 }
             }
@@ -1028,6 +1042,27 @@ int main(int argc, char* argv[])
                                         Sleep(32);
                                     }
                                     break;
+                                }
+                                case UI_PAGE:
+                                {
+                                    if (nEnemySettingsCursor == 2 && (nP1InputDisplay == INPUT_ARCADE || nP1InputDisplay == INPUT_BOTH))
+                                    {
+                                        fP1FancyInputX = DEFAULT_P1_FANCYINPUT_X;
+                                        fP1FancyInputY = DEFAULT_P1_FANCYINPUT_Y;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1FancyInputX), &fP1FancyInputX, 4, 0);
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1FancyInputY), &fP1FancyInputY, 4, 0);
+                                        SetRegistryValue(L"P1FancyInputX", fP1FancyInputX);
+                                        SetRegistryValue(L"P1FancyInputY", fP1FancyInputY);
+                                    }
+                                    if (nEnemySettingsCursor == 3 && (nP2InputDisplay == INPUT_ARCADE || nP2InputDisplay == INPUT_BOTH))
+                                    {
+                                        fP2FancyInputX = DEFAULT_P2_FANCYINPUT_X;
+                                        fP2FancyInputY = DEFAULT_P2_FANCYINPUT_Y;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2FancyInputX), &fP2FancyInputX, 4, 0);
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2FancyInputY), &fP2FancyInputY, 4, 0);
+                                        SetRegistryValue(L"P2FancyInputX", fP2FancyInputX);
+                                        SetRegistryValue(L"P2FancyInputY", fP2FancyInputY);
+                                    }
                                 }
                                 default:
                                     break;
@@ -1950,7 +1985,11 @@ int main(int argc, char* argv[])
                                 }
                                 case 2:
                                 {
-                                    char pcTemp64[64] = "Show Player 1's inputs.";
+                                    char pcTemp64[64];
+                                    if (nP1InputDisplay == INPUT_ARCADE || nP1InputDisplay == INPUT_BOTH)
+                                        strcpy_s(pcTemp64, "Show Player 1 inputs. (Press A to reset position)");
+                                    else
+                                        strcpy_s(pcTemp64, "Show Player 1 inputs.");
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (nP1InputDisplay == INPUT_OFF)
                                         strcpy_s(pcTemp64, ">Inputs {will not display.");
@@ -1965,7 +2004,11 @@ int main(int argc, char* argv[])
                                 }
                                 case 3:
                                 {
-                                    char pcTemp64[64] = "Show Player 2's inputs.";
+                                    char pcTemp64[64];
+                                    if (nP2InputDisplay == INPUT_ARCADE || nP2InputDisplay == INPUT_BOTH)
+                                        strcpy_s(pcTemp64, "Show Player 2 inputs. (Press A to reset position)");
+                                    else
+                                        strcpy_s(pcTemp64, "Show Player 2 inputs.");
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     if (nP2InputDisplay == INPUT_OFF)
                                         strcpy_s(pcTemp64, ">Inputs {will not display.");
@@ -6323,6 +6366,36 @@ int main(int argc, char* argv[])
                     //    uint8_t nHoldButtons = 0;
                     //    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ButtonHeld, &nHoldButtons, 1, nP2Controlled);
                     //}
+
+
+                    float fTempP1FancyInputX;
+                    float fTempP1FancyInputY;
+                    float fTempP2FancyInputX;
+                    float fTempP2FancyInputY;
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1FancyInputX), &fTempP1FancyInputX, 4, 0);
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1FancyInputY), &fTempP1FancyInputY, 4, 0);
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2FancyInputX), &fTempP2FancyInputX, 4, 0);
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2FancyInputY), &fTempP2FancyInputY, 4, 0);
+                    if (fTempP1FancyInputX != fP1FancyInputX)
+                    {
+                        SetRegistryValue(L"P1FancyInputX", fTempP1FancyInputX);
+                        fP1FancyInputX = fTempP1FancyInputX;
+                    }
+                    if (fTempP1FancyInputY != fP1FancyInputY)
+                    {
+                        SetRegistryValue(L"P1FancyInputY", fTempP1FancyInputY);
+                        fP1FancyInputY = fTempP1FancyInputY;
+                    }
+                    if (fTempP2FancyInputX != fP2FancyInputX)
+                    {
+                        SetRegistryValue(L"P2FancyInputX", fTempP2FancyInputX);
+                        fP2FancyInputX = fTempP2FancyInputX;
+                    }
+                    if (fTempP2FancyInputY != fP2FancyInputY)
+                    {
+                        SetRegistryValue(L"P2FancyInputY", fTempP2FancyInputY);
+                        fP2FancyInputY = fTempP2FancyInputY;
+                    }
 
 
                     // This locks all the code that follows to the framerate of the game

@@ -629,8 +629,8 @@ void dualInputDisplayReset() {
 
 int InputDisplay::hasDrag = 0;
 
-InputDisplay P1InputDisplay(200.0f - 0.0f, 112.0f, 25.0f, 25.0f * 1.2f, &P1InputBar, 1);
-InputDisplay P2InputDisplay(378.0f + 0.0f, 112.0f, 25.0f, 25.0f * 1.2f, &P2InputBar, 2);
+InputDisplay P1InputDisplay(*(float*)(dwBaseAddress + adSharedP1FancyInputX), *(float*)(dwBaseAddress + adSharedP1FancyInputY), 25.0f, 25.0f * 1.2f, &P1InputBar, 1);
+InputDisplay P2InputDisplay(*(float*)(dwBaseAddress + adSharedP2FancyInputX), *(float*)(dwBaseAddress + adSharedP2FancyInputY), 25.0f, 25.0f * 1.2f, &P2InputBar, 2);
 
 void drawFancyInputDisplay() {
 
@@ -638,14 +638,37 @@ void drawFancyInputDisplay() {
 
 	P1InputDisplay.dragInfo.enable = *(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_ARCADE || *(BYTE*)(0x00400000 + adSharedP1InputDisplay) == INPUT_BOTH;
 	P1InputDisplay.dragInfo.enable &= !(!safeWrite() || isPaused());
-	if (P1InputDisplay.dragInfo.enable) {
+	if (P1InputDisplay.dragInfo.enable)
+	{
 		P1InputDisplay.draw();
+		if (!lHeld)
+		{
+			// the exe needs to know the location so it can persist it in the registry
+			*(float*)(dwBaseAddress + adSharedP1FancyInputX) = *P1InputDisplay.dragInfo.dragPointX;
+			*(float*)(dwBaseAddress + adSharedP1FancyInputY) = *P1InputDisplay.dragInfo.dragPointY;
+		}
+	}
+	else
+	{
+		// the exe might change the location while paused, so read it back while paused
+		*P1InputDisplay.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP1FancyInputX);
+		*P1InputDisplay.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP1FancyInputY);
 	}
 
 	P2InputDisplay.dragInfo.enable = *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_ARCADE || *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_BOTH;
 	P2InputDisplay.dragInfo.enable &= !(!safeWrite() || isPaused());
 	if (P2InputDisplay.dragInfo.enable) {
 		P2InputDisplay.draw();
+		if (!lHeld)
+		{
+			*(float*)(dwBaseAddress + adSharedP2FancyInputX) = *P2InputDisplay.dragInfo.dragPointX;
+			*(float*)(dwBaseAddress + adSharedP2FancyInputY) = *P2InputDisplay.dragInfo.dragPointY;
+		}
+	}
+	else
+	{
+		*P2InputDisplay.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP2FancyInputX);
+		*P2InputDisplay.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP2FancyInputY);
 	}
 }
 
