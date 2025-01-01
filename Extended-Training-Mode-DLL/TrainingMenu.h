@@ -59,7 +59,7 @@ CHECKOFFSET(Element, displayedName, 0x24)
 CHECKOFFSET(Element, name, 0x40)
 CHECKSIZE(Element, 0x80)
 
-struct Menu
+struct MenuInfo
 {
 	void* functionTable;
 	void* menuManager;
@@ -79,12 +79,12 @@ struct Menu
 CHECKOFFSET(Menu, ElementList, 0x4c)
 CHECKSIZE(Menu, 0x78)
 
-struct BaseMenu
+struct MenuWindow
 {
 	void* functionTable;
 	int isMenuDisabled;
 	UNUSED(0x8);
-	Menu** TrainingMenu;
+	MenuInfo** TrainingMenu;
 	UNUSED(0x30);
 	int yOffset;
 	int someYOffset;
@@ -110,17 +110,17 @@ struct BaseMenu
 	int textYWidth;
 	int isMenuLit;
 	float dimScreenPercentage;
-	Menu* YesNoMenu;
-	Menu* BattleSettings;
-	Menu* EnemyStatus;
-	Menu* TrainingDisplay;
-	Menu* DummySettings;
+	MenuWindow* YesNoMenu;
+	MenuWindow* BattleSettings;
+	MenuWindow* EnemyStatus;
+	MenuWindow* TrainingDisplay;
+	MenuWindow* DummySettings;
 	int u_hideMenu;
 	void* InformationMenu;
 };
 
-CHECKOFFSET(BaseMenu, isRootMenu, 0x7c)
-CHECKSIZE(BaseMenu, 0xe0)
+CHECKOFFSET(MenuWindow, isRootMenu, 0x7c)
+CHECKSIZE(MenuWindow, 0xe0)
 
 #pragma pack(pop, 1)
 #undef CHECKOFFSET
