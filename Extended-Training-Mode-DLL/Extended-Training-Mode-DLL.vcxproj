@@ -196,6 +196,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="SaveState.h" />
     <ClInclude Include="TASManager.h" />
+    <ClInclude Include="TrainingMenu.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\CharacterData.cpp" />
