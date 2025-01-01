@@ -76,8 +76,8 @@ struct MenuInfo
 	int close;
 };
 
-CHECKOFFSET(Menu, ElementList, 0x4c)
-CHECKSIZE(Menu, 0x78)
+CHECKOFFSET(MenuInfo, ElementList, 0x4c)
+CHECKSIZE(MenuInfo, 0x78)
 
 struct MenuWindow
 {
