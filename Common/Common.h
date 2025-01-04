@@ -485,6 +485,10 @@ const ADDRESS adSharedP1FancyInputX =				adShareBase + 0x200; // 4 bytes (float)
 const ADDRESS adSharedP1FancyInputY =				adShareBase + 0x204; // 4 bytes (float)
 const ADDRESS adSharedP2FancyInputX =				adShareBase + 0x208; // 4 bytes (float)
 const ADDRESS adSharedP2FancyInputY =				adShareBase + 0x20C; // 4 bytes (float)
+const ADDRESS adSharedP1ListInputX =				adShareBase + 0x210; // 4 bytes (float)
+const ADDRESS adSharedP1ListInputY =				adShareBase + 0x214; // 4 bytes (float)
+const ADDRESS adSharedP2ListInputX =				adShareBase + 0x218; // 4 bytes (float)
+const ADDRESS adSharedP2ListInputY =				adShareBase + 0x21C; // 4 bytes (float)
 
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
@@ -517,6 +521,10 @@ const float DEFAULT_P1_FANCYINPUT_X = 200.0f;
 const float DEFAULT_P1_FANCYINPUT_Y = 112.0f;
 const float DEFAULT_P2_FANCYINPUT_X = 378.0f;
 const float DEFAULT_P2_FANCYINPUT_Y = 112.0f;
+const float DEFAULT_P1_LISTINPUT_X = 10.0f;
+const float DEFAULT_P1_LISTINPUT_Y = 124.0f;
+const float DEFAULT_P2_LISTINPUT_X = 545.0f;
+const float DEFAULT_P2_LISTINPUT_Y = 124.0f;
 
 const char pcSionBullets_13[13] = "SION BULLETS";
 const char pcRoaVisibleCharge_19[19] = "ROA VISIBLE CHARGE";

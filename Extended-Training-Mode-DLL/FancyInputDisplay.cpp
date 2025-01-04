@@ -595,8 +595,10 @@ void InputDisplay::draw() {
 
 // -----
 
-InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f, 124.0f, 24);
-InputColumn P2InputBar(0x00555C30 + 0x02E7, 545.0f, 124.0f, 24);
+InputColumn P1InputBar(0x00555134 + 0x02E7, *(float*)(dwBaseAddress + adSharedP1ListInputX), *(float*)(dwBaseAddress + adSharedP1ListInputY), 24);
+InputColumn P2InputBar(0x00555C30 + 0x02E7, *(float*)(dwBaseAddress + adSharedP2ListInputX), *(float*)(dwBaseAddress + adSharedP2ListInputY), 24);
+//InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f, 124.0f, 24);
+//InputColumn P2InputBar(0x00555C30 + 0x02E7, 545.0f, 124.0f, 24);
 
 void dualInputDisplay() {
 
@@ -612,12 +614,32 @@ void dualInputDisplay() {
 	P1InputBar.dragInfo.enable &= !(!safeWrite() || isPaused());
 	if (P1InputBar.dragInfo.enable) {
 		P1InputBar.draw();
+		if (!lHeld)
+		{
+			*(float*)(dwBaseAddress + adSharedP1ListInputX) = *P1InputBar.dragInfo.dragPointX;
+			*(float*)(dwBaseAddress + adSharedP1ListInputY) = *P1InputBar.dragInfo.dragPointY;
+		}
+	}
+	else
+	{
+		*P1InputBar.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP1ListInputX) + 50.0f;
+		*P1InputBar.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP1ListInputY) + 50.0f;
 	}
 
 	P2InputBar.dragInfo.enable = *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_LIST || *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_BOTH;
 	P2InputBar.dragInfo.enable &= !(!safeWrite() || isPaused());
 	if (P2InputBar.dragInfo.enable) {
 		P2InputBar.draw();
+		if (!lHeld)
+		{
+			*(float*)(dwBaseAddress + adSharedP2ListInputX) = *P2InputBar.dragInfo.dragPointX;
+			*(float*)(dwBaseAddress + adSharedP2ListInputY) = *P2InputBar.dragInfo.dragPointY;
+		}
+	}
+	else
+	{
+		*P2InputBar.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP2ListInputX) + 50.0f;
+		*P2InputBar.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP2ListInputY) + 50.0f;
 	}
 
 }
