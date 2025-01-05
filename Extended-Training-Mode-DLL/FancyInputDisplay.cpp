@@ -10,9 +10,6 @@ InputColumn::InputColumn(unsigned addr_, float xVal_, float yVal_, int inputMaxL
 
 		//inputs = std::vector<InputData>(60);
 
-		xVal += 50.0f;
-		yVal += 50.0f;
-
 		dragInfo.dragPointX = &xVal;
 		dragInfo.dragPointY = &yVal;
 		dragManager.add(&dragInfo);
@@ -622,8 +619,8 @@ void dualInputDisplay() {
 	}
 	else
 	{
-		*P1InputBar.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP1ListInputX) + 50.0f;
-		*P1InputBar.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP1ListInputY) + 50.0f;
+		*P1InputBar.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP1ListInputX);
+		*P1InputBar.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP1ListInputY);
 	}
 
 	P2InputBar.dragInfo.enable = *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_LIST || *(BYTE*)(0x00400000 + adSharedP2InputDisplay) == INPUT_BOTH;
@@ -638,8 +635,8 @@ void dualInputDisplay() {
 	}
 	else
 	{
-		*P2InputBar.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP2ListInputX) + 50.0f;
-		*P2InputBar.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP2ListInputY) + 50.0f;
+		*P2InputBar.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP2ListInputX);
+		*P2InputBar.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP2ListInputY);
 	}
 
 }

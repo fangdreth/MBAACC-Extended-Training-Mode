@@ -521,10 +521,10 @@ const float DEFAULT_P1_FANCYINPUT_X = 200.0f;
 const float DEFAULT_P1_FANCYINPUT_Y = 112.0f;
 const float DEFAULT_P2_FANCYINPUT_X = 378.0f;
 const float DEFAULT_P2_FANCYINPUT_Y = 112.0f;
-const float DEFAULT_P1_LISTINPUT_X = 10.0f;
-const float DEFAULT_P1_LISTINPUT_Y = 124.0f;
-const float DEFAULT_P2_LISTINPUT_X = 545.0f;
-const float DEFAULT_P2_LISTINPUT_Y = 124.0f;
+const float DEFAULT_P1_LISTINPUT_X = 60.0f;
+const float DEFAULT_P1_LISTINPUT_Y = 174.0f;
+const float DEFAULT_P2_LISTINPUT_X = 595.0f;
+const float DEFAULT_P2_LISTINPUT_Y = 174.0f;
 
 const char pcSionBullets_13[13] = "SION BULLETS";
 const char pcRoaVisibleCharge_19[19] = "ROA VISIBLE CHARGE";
