@@ -2764,6 +2764,626 @@ __declspec(naked) void _naked_DrawHudMeter() {
 	}
 }
 
+// MENU TESTS
+DWORD ExtendedSettingsMenuItem_PatchAddr = 0x0047d493;
+DWORD operator_new_FuncAddr = 0x004e0177;
+DWORD initNormalElement_FuncAddr = 0x00429140;
+DWORD enterMenuElement_FuncAddr = 0x0042ba50;
+const char* label = "EXTENDED SETTINGS";
+const char* tag = "EXTENDED_SETTING";
+DWORD ad_0047d49a = 0x0047d49a;
+__declspec(naked) void _naked_ExtendedSettingsMenuItem() {
+	__asm {
+		push 0x58;
+		call[operator_new_FuncAddr];
+		mov edi, eax;
+		add esp, 0x04;
+		mov dword ptr[esp + 0x14], edi;
+		test edi, edi;
+		mov byte ptr[esp + 0x68], 0x04;
+		je noInit;
+
+		push 0x00;
+		push tag;
+		push label;
+		push edi;
+		call[initNormalElement_FuncAddr];
+		mov dword ptr[edi + 0x0c], 0x00000001;
+		mov dword ptr[edi + 0x04], 0x00000001;
+		mov dword ptr[edi], 0x0053604c;
+
+		jmp ender;
+
+	noInit:
+		xor edi, edi;
+		jmp ender;
+
+	ender:
+		mov byte ptr[esp + 0x68], 0x01;
+		lea ebx, [esp + 0x14];
+		mov esi, ebp;
+		mov[esp + 0x14], edi;
+		call[enterMenuElement_FuncAddr];
+
+		push 0x58;
+		call[operator_new_FuncAddr];
+		jmp ad_0047d49a;
+	}
+}
+
+DWORD AddExtendedSettingToList_PatchAddr = 0x0047d1ae;
+DWORD FUN_00429020 = 0x00429020;
+DWORD ad_0047d1b4 = 0x0047d1b4;
+__declspec(naked) void _naked_AddExtendedSettingToList() {
+	__asm {
+		push esi;
+		mov edx, tag;
+		call[FUN_00429020];
+
+		push esi;
+		mov edx, 0x005384ac;
+
+		jmp ad_0047d1b4;
+	}
+}
+
+DWORD OpenExtendedSettings_PatchAddr = 0x0047ee5b;
+DWORD compareLabel_FuncAddr = 0x0042bdc0;
+DWORD ad_0047f062 = 0x0047f062;
+DWORD ad_0047ee67 = 0x0047ee67;
+DWORD ad_0047ef96 = 0x0047ef96;
+__declspec(naked) void _naked_OpenExtendedSettings() {
+	__asm {
+		cmp dword ptr[ebp + 0x1c], ebx;
+		je _0047f062;
+		lea edi, [ebp + 0x20];
+		mov ecx, tag;
+		call[compareLabel_FuncAddr];
+		test al, al;
+		je _0047ee67;
+		mov dword ptr[ebp + 0x7c], ebx;
+		mov dword ptr[ebp + 0x88], ebx;
+		mov dword ptr[ebp + 0x84], 0x5;
+		jmp ad_0047ef96;
+
+	_0047f062:
+		jmp ad_0047f062;
+
+	_0047ee67:
+		jmp ad_0047ee67;
+	}
+}
+
+DWORD initMenuInfo_FuncAddr = 0x00429400;
+const char* menuInfoTag = "TRAINING_EXTENDEDSETTING_MENU";
+__declspec(naked) void _naked_InitExtendedSettingsMenuInfo() {
+	__asm {
+		push -0x1;
+		push 0x00515fb8;
+		mov eax, fs: [0x0] ;
+		push eax;
+		push esi;
+		mov eax, [0x0054b458];
+		xor eax, esp;
+		push eax;
+		lea eax, [esp + 0x08];
+		mov fs : [0x0] , eax;
+		mov esi, dword ptr[esp + 0x18];
+		mov eax, dword ptr[esp + 0x1c];
+		push eax;
+		push esi;
+		mov ecx, menuInfoTag;
+		call[initMenuInfo_FuncAddr];
+		mov[esp + 0x10], 0x0;
+		push esi;
+		mov edx, 0x00538320;
+		mov dword ptr[esi], 0x0053885c;
+		call[FUN_00429020];
+		push esi;
+		mov edx, 0x005376e0;
+		call[FUN_00429020];
+		push esi;
+		mov edx, 0x005365a0;
+		call[FUN_00429020];
+		push esi;
+		mov edx, 0x00535e04;
+		call[FUN_00429020];
+		mov eax, esi;
+		mov ecx, dword ptr[esp + 0x08];
+		mov fs : [0x0] , ecx;
+		pop ecx;
+		pop esi;
+		add esp, 0x0c;
+		ret 0x8;
+	}
+
+}
+
+DWORD initSelectElement_FuncAddr = 0x0042f8f0;
+__forceinline void AddSelectElement(const char* inTag, const char* inLabel) {
+	__asm {
+		push 0x70;
+		call[operator_new_FuncAddr];
+		mov esi, eax;
+		add esp, 0x04;
+		mov[esp + 0x18], esi;
+		cmp esi, ebx;
+		je _FAILEDINIT;
+		push 0xa0;
+		push inTag;
+		push esi;
+		mov ecx, inLabel;
+		call[initSelectElement_FuncAddr];
+		mov dword ptr[esi], 0x00536654;
+		jmp _SKIPFAILEDINIT;
+
+	_FAILEDINIT:
+		xor esi, esi;
+
+	_SKIPFAILEDINIT:
+		ret;
+	}
+}
+
+DWORD initSelectItem_FuncAddr = 0x0042f600;
+void AddSelectItem(const char* inTag, const char* inLabel, DWORD inIndex) {
+	__asm {
+		push 0x3c;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x18], eax;
+		cmp eax, ebx;
+		je _FAILEDINIT;
+		push inIndex;
+		push inTag;
+		push inLabel;
+		push eax;
+		call[initSelectItem_FuncAddr];
+		jmp _SKIPFAILEDINIT;
+
+	_FAILEDINIT:
+		xor eax, eax;
+
+	_SKIPFAILEDINIT:
+		mov edx, dword ptr[esi];
+		push eax;
+		mov eax, [edx + 0x44];
+		mov ecx, esi;
+		call eax;
+		ret;
+	}
+}
+
+DWORD initMenuWindow_FuncAddr = 0x004d7b30;
+DWORD readDataFile_FuncAddr = 0x00407c10;
+DWORD FUN_004804a0 = 0x004804a0;
+const char* selectTag = "TEST";
+const char* selectLabel = "TEST";
+const char* selectTag2 = "TEST 2";
+const char* selectLabel2 = "TEST 2";
+const char* itemTag = "1";
+const char* itemLabel = "OPTION 1";
+DWORD itemIndex = 0;
+const char* itemTag2 = "2";
+const char* itemLabel2 = "OPTION 2";
+DWORD itemIndex2 = 1;
+const char* itemTag3 = "3";
+const char* itemLabel3 = "OPTION 3";
+DWORD itemIndex3 = 0;
+const char* itemTag4 = "4";
+const char* itemLabel4 = "OPTION 4";
+DWORD itemIndex4 = 1;
+__declspec(naked) void _naked_InitExtendedSettingsMenu() {
+	__asm {
+		push -0x1;
+		push 0x005173eb;
+		mov eax, fs: [0x0];
+		push eax;
+		sub esp, 0x8;
+		push ebx;
+		push ebp;
+		push esi;
+		push edi;
+		mov eax, [0x0054b458];
+		xor eax, esp;
+		push eax;
+		lea eax, [esp + 0x1c];
+		mov fs : [0x0] , eax;
+		mov ebp, dword ptr[esp + 0x2c];
+		push ebp;
+		call[initMenuWindow_FuncAddr];
+		push 0x13;
+		xor ebx, ebx;
+		//mov dword ptr [esp + 0x28], ebx;
+		push label;
+		lea ecx, [ebp + 0x5c];
+		mov dword ptr[ebp], 0x0053882c;
+		call[readDataFile_FuncAddr];
+		push 0x78;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov[esp + 0x18], eax;
+		cmp eax, ebx;
+		//mov byte ptr[esp + 0x24], 0x1;
+		je _SKIPINFOINIT;
+		push ebp;
+		push eax;
+		call[_naked_InitExtendedSettingsMenuInfo];
+		mov dword ptr[esp + 0x14], eax;
+		jmp _SKIPSKIP;
+
+	_SKIPINFOINIT:
+		mov dword ptr[esp + 0x14], ebx;
+
+	_SKIPSKIP:
+
+	}
+
+	__asm { //select element
+		push 0x70;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		mov esi, eax;
+		add esp, 0x04;
+		mov[esp + 0x18], esi;
+		cmp esi, ebx;
+		//mov byte ptr[esp + 0x24], 0x02;
+		je _FAILEDINIT1;
+		push 0xa0;
+		push selectTag;
+		push esi;
+		mov ecx, selectLabel;
+		call[initSelectElement_FuncAddr];
+		mov dword ptr[esi], 0x00536654;
+		jmp _SKIPFAILEDINIT1;
+
+	_FAILEDINIT1:
+		xor esi, esi;
+
+	_SKIPFAILEDINIT1:
+
+	}
+
+	__asm { //select item
+		push 0x3c;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x18], eax;
+		cmp eax, ebx;
+		//mov byte ptr[esp + 0x24], 0x3;
+		je _FAILEDINIT2;
+		push itemIndex;
+		push itemTag;
+		push itemLabel;
+		push eax;
+		call[initSelectItem_FuncAddr];
+		jmp _SKIPFAILEDINIT2;
+
+	_FAILEDINIT2:
+		xor eax, eax;
+
+	_SKIPFAILEDINIT2:
+		//mov byte ptr[esp + 0x24], bl;
+		mov edx, dword ptr[esi];
+		push eax;
+		mov eax, dword ptr[edx + 0x44];
+		mov ecx, esi;
+		call eax;
+	}
+
+	__asm { //select item
+		push 0x3c;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x18], eax;
+		cmp eax, ebx;
+		//mov byte ptr[esp + 0x24], 0x3;
+		je _FAILEDINIT3;
+		push itemIndex2;
+		push itemTag2;
+		push itemLabel2;
+		push eax;
+		call[initSelectItem_FuncAddr];
+		jmp _SKIPFAILEDINIT3;
+
+	_FAILEDINIT3:
+		xor eax, eax;
+
+	_SKIPFAILEDINIT3:
+		//mov byte ptr[esp + 0x24], bl;
+		mov edx, dword ptr[esi];
+		push eax;
+		mov eax, dword ptr[edx + 0x44];
+		mov ecx, esi;
+		call eax;
+	}
+
+	__asm {
+		mov dword ptr[esp + 0x18], esi;
+		mov esi, dword ptr[esp + 0x14];
+		add esi, 0x48;
+		lea ebx, [esp + 0x18];
+		call[enterMenuElement_FuncAddr];
+	}
+
+	__asm { //select element
+		push 0x70;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		mov esi, eax;
+		add esp, 0x04;
+		mov[esp + 0x18], esi;
+		cmp esi, ebx;
+		//mov byte ptr[esp + 0x24], 0x02;
+		je _FAILEDINIT4;
+		push 0xa0;
+		push selectTag2;
+		push esi;
+		mov ecx, selectLabel2;
+		call[initSelectElement_FuncAddr];
+		mov dword ptr[esi], 0x00536654;
+		jmp _SKIPFAILEDINIT4;
+
+	_FAILEDINIT4:
+		xor esi, esi;
+
+	_SKIPFAILEDINIT4:
+
+	}
+
+	__asm { //select item
+		push 0x3c;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x18], eax;
+		cmp eax, ebx;
+		//mov byte ptr[esp + 0x24], 0x3;
+		je _FAILEDINIT5;
+		push itemIndex3;
+		push itemTag3;
+		push itemLabel3;
+		push eax;
+		call[initSelectItem_FuncAddr];
+		jmp _SKIPFAILEDINIT5;
+
+	_FAILEDINIT5:
+		xor eax, eax;
+
+	_SKIPFAILEDINIT5:
+		//mov byte ptr[esp + 0x24], bl;
+		mov edx, dword ptr[esi];
+		push eax;
+		mov eax, dword ptr[edx + 0x44];
+		mov ecx, esi;
+		call eax;
+	}
+
+	__asm { //select item
+		push 0x3c;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x18], eax;
+		cmp eax, ebx;
+		//mov byte ptr[esp + 0x24], 0x3;
+		je _FAILEDINIT6;
+		push itemIndex4;
+		push itemTag4;
+		push itemLabel4;
+		push eax;
+		call[initSelectItem_FuncAddr];
+		jmp _SKIPFAILEDINIT6;
+
+	_FAILEDINIT6:
+		xor eax, eax;
+
+	_SKIPFAILEDINIT6:
+		//mov byte ptr[esp + 0x24], bl;
+		mov edx, dword ptr[esi];
+		push eax;
+		mov eax, dword ptr[edx + 0x44];
+		mov ecx, esi;
+		call eax;
+	}
+
+	__asm {
+		mov dword ptr[esp + 0x18], esi;
+		mov esi, dword ptr[esp + 0x14];
+		add esi, 0x48;
+		lea ebx, [esp + 0x18];
+		call[enterMenuElement_FuncAddr];
+		mov edi, dword ptr[esp + 0x14];
+		lea esi, [ebp + 0xc];
+		lea ebx, [esp + 0x18];
+		mov dword ptr[esp + 0x18], edi;
+		call[enterMenuElement_FuncAddr];
+		mov edx, dword ptr[edi];
+		mov eax, dword ptr[edx + 0x14];
+		push label;
+		mov ecx, edi;
+		call eax;
+		mov eax, ebp;
+		call[FUN_004804a0];
+		fldz;
+		fstp dword ptr[ebp + 0xc0];
+		mov dword ptr[ebp + 0xa8], 0x2f1;
+		mov dword ptr[ebp + 0xbc], 0x1;
+		mov dword ptr[ebp + 0x9c], 0x0;
+		mov dword ptr[ebp + 0xac], 0x2;
+		mov dword ptr[ebp + 0x4c], 0xfa;
+		mov dword ptr[ebp + 0xb4], 0xe;
+		mov eax, ebp;
+		mov ecx, [esp + 0x1c];
+		mov fs : [0x0] , ecx;
+		pop ecx;
+		pop edi;
+		pop esi;
+		pop ebp;
+		pop ebx;
+		add esp, 0x14;
+		ret 0x4;
+	}
+
+}
+
+DWORD ExtendedSettingsSubmenu_PatchAddr = 0x0047ee54;
+DWORD FUN_004d8810 = 0x004d8810;
+DWORD FUN_0047d030 = 0x0047d030;
+DWORD FUN_0047ce20 = 0x0047ce20;
+const char* TrainingXSMenu = "TRAINING_XS_MENU";
+DWORD ad_0047ee5b = 0x0047ee5b;
+DWORD ad_0047e7ad = 0x0047e7ad;
+__declspec(naked) void _naked_ExtendedSettingsSubmenu() {
+	__asm {
+		cmp eax, 2;
+		je _INITSUBMENU;
+		mov ecx, ebp;
+		call[FUN_004d8810];
+		jmp _BREAK;
+
+	_INITSUBMENU:
+		cmp dword ptr[ebp + 0xe0], ebx;
+		jnz _OPENSUBMENU;
+		push 0xc4;
+		mov dword ptr[ebp + 0xbc], ebx;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x14], eax;
+		cmp eax, ebx;
+		mov dword ptr[esp + 0x98], ebx;
+		je _FAILEDINIT;
+		push eax;
+		call[_naked_InitExtendedSettingsMenu];
+		jmp _INITTAIL;
+
+	_FAILEDINIT:
+		xor eax, eax;
+
+	_INITTAIL:
+		mov dword ptr[esp + 0x98], 0xFFFFFFFF;
+		mov dword ptr[ebp + 0xe0], eax;
+		mov dword ptr[eax + 0x44], 0xbe;
+		mov esi, dword ptr[ebp + 0xe0];
+		mov eax, TrainingXSMenu;
+		call[FUN_0047d030];
+		mov esi, 0x1;
+
+	_OPENSUBMENU:
+		mov eax, dword ptr[ebp + 0xe0];
+		cmp dword ptr[eax + 0x84], 0x4;
+		jne _BREAK;
+		cmp dword ptr[eax + 0x38], 0x10;
+		jb _IDK;
+		mov eax, [eax + 0x24];
+		jmp _MAINOPEN;
+
+	_IDK:
+		add eax, 0x24;
+
+	_MAINOPEN:
+		mov edx, eax;
+		mov ecx, TrainingXSMenu;
+		call[FUN_0047ce20];
+		mov ecx, dword ptr[ebp + 0xe0];
+		mov edi, 0x2;
+		cmp dword ptr[ecx + 0x50], edi;
+		jne _IDK2;
+		mov dword ptr[ebp + 0x50], edi;
+
+	_IDK2:
+		cmp ecx, ebx;
+		je _WRAPUP;
+		mov eax, dword ptr[ecx];
+		mov edx, dword ptr[eax];
+		push esi;
+		call edx;
+		mov dword ptr[ebp + 0xe0], ebx;
+
+	_WRAPUP:
+		jmp ad_0047e7ad;
+
+	_BREAK:
+		jmp ad_0047ee5b;
+	}
+}
+
+DWORD MakeBiggerMenuWindow_PatchAddr = 0x0047815b;
+DWORD ad_00478165 = 0x00478165;
+DWORD ad_0047e1e2 = 0x0047e1e2;
+__declspec(naked) void _naked_MakeBiggerMenuWindow() {
+	__asm {
+		push 0xe4;
+		call[operator_new_FuncAddr];
+
+		jmp ad_00478165;
+	}
+}
+
+DWORD UpdateMenuTrainingSettings_PatchAddr = 0x0047e1da;
+DWORD ad_0047e1fb = 0x0047e1fb;
+DWORD ad_0047e27a = 0x0047e27a;
+__declspec(naked) void _naked_UpdateMenuExtendedSettings() {
+	__asm {
+		cmp dword ptr[edi + 0xe0], ebx;
+		jz _GONEXT;
+		mov eax, dword ptr[esp + 0x64];
+		mov ecx, dword ptr[edi + 0xe0];
+		mov edx, dword ptr[ecx];
+		mov edx, dword ptr[edx + 0x8];
+		push eax;
+		mov eax, dword ptr [esp + 0x64];
+		push eax;
+		call edx;
+		jmp ad_0047e27a;
+
+	_GONEXT:
+		cmp dword ptr[edi + 0xc8], ebx;
+		jz _0047e1fb;
+		jmp ad_0047e1e2;
+
+	_0047e1fb:
+		jmp ad_0047e1fb;
+	}
+}
+
+DWORD RenderExtendedSettings_PatchAddr = 0x0047e52a;
+__declspec(naked) void _naked_RenderExtendedSettings() {
+	__asm {
+		cmp dword ptr[edi + 0xe0], 0x0;
+		jz _EXIT;
+		mov ecx, dword ptr[edi + 0xe0];
+		mov edx, dword ptr[ecx];
+		mov eax, dword ptr[edx + 0x14];
+		call eax;
+
+	_EXIT:
+		pop edi;
+		add esp, 0xc;
+		ret;
+
+	}
+}
+
+DWORD ZeroMenuPointers_PatchAddr = 0x0047dd50;
+DWORD ad_0047dd74 = 0x0047dd74;
+__declspec(naked) void _naked_ZeroMenuPointers() {
+	__asm {
+		mov[edi + 0xc4], ebx;
+		mov[edi + 0xc8], ebx;
+		mov[edi + 0xcc], ebx;
+		mov[edi + 0xd0], ebx;
+		mov[edi + 0xd4], ebx;
+		mov[edi + 0xd8], ebx;
+		mov[edi + 0xe0], ebx;
+		jmp ad_0047dd74;
+	}
+}
+
+//END MENU TESTS
+
 DWORD _naked_DisableShadows_FuncAddr = 0x0041a390;
 __declspec(naked) void _naked_DisableShadows() {
 	__asm {
@@ -3282,6 +3902,18 @@ void initInputCallback() {
 
 }
 
+void initTrainingMenu() {
+
+	patchJump(MakeBiggerMenuWindow_PatchAddr, _naked_MakeBiggerMenuWindow);
+	patchJump(ExtendedSettingsMenuItem_PatchAddr, _naked_ExtendedSettingsMenuItem);
+	patchJump(AddExtendedSettingToList_PatchAddr, _naked_AddExtendedSettingToList);
+	patchJump(ExtendedSettingsSubmenu_PatchAddr, _naked_ExtendedSettingsSubmenu);
+	patchJump(OpenExtendedSettings_PatchAddr, _naked_OpenExtendedSettings);
+	patchJump(ZeroMenuPointers_PatchAddr, _naked_ZeroMenuPointers);
+	patchJump(UpdateMenuTrainingSettings_PatchAddr, _naked_UpdateMenuExtendedSettings);
+	patchJump(RenderExtendedSettings_PatchAddr, _naked_RenderExtendedSettings);
+}
+
 
 // dll thread func
 
@@ -3323,6 +3955,8 @@ void threadFunc()
 	initDualInputDisplay();
 
 	initInputCallback();
+
+	//initTrainingMenu(); //uncomment for experimental new menu
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 

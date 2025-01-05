@@ -117,10 +117,11 @@ struct MenuWindow
 	MenuWindow* DummySettings;
 	int u_hideMenu;
 	void* InformationMenu;
+	MenuWindow* ExtendedSettings;
 };
 
 CHECKOFFSET(MenuWindow, isRootMenu, 0x7c)
-CHECKSIZE(MenuWindow, 0xe0)
+CHECKSIZE(MenuWindow, 0xe4)
 
 #pragma pack(pop, 1)
 #undef CHECKOFFSET
