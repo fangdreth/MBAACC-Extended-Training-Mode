@@ -19,6 +19,23 @@ struct main {
 	DWORD linkedListCounter2;
 }
 
+struct VertElement {
+// im unsure of if i have this class starting at the correct area.
+// check how it ends!
+// texture is after color, and then 3 floats
+
+	float unk;
+	float unk;
+	float unk;
+	float unk;
+	DWORD color; 
+	float unk; 
+	float unk;
+	float unk;
+
+
+} sizeof 0x20
+
 struct LinkedListDataElement { // check out 00415540 and related funcs, eax is base 0 in this
 	// memcpy writes to these frequently. 
 	// is the first list perhaps,,,,
@@ -32,6 +49,10 @@ struct LinkedListDataElement { // check out 00415540 and related funcs, eax is b
 	
 	// theres a pattern of color, 7 floats, color! some of the stuff in there might be padding? 7 is such an odd number
 	
+	// vibes tell me this HAS to be a class which contains 4 verts.
+	// no. why the fuck would it? triangles!!!!!!!!!!
+	// well no it does have 4 verts tho, weird
+	
 	DWORD* unknownPtr1;
 	DWORD* unknownPtr2;
 	
@@ -39,44 +60,40 @@ struct LinkedListDataElement { // check out 00415540 and related funcs, eax is b
 	float unknownFloat;
 	float unknownFloat; // 0x10
 	float unknownFloat;
-	
-	DWORD color;
-	
-	UNKNOWN unknown;
-	
+	DWORD color; // check out 00415c96 for,, possible easier list of colors
+	UNKNOWN fc54544;
 	float unknownFloat; // off 0x20
 	float unk;
+	
 	float unk;
 	float unk;
 	float unk; // 0x30
 	float unk;
-	
 	DWORD color;
-	
 	float unk; // not sure if this is a float or dword, but its always set to 0
 	float unk; // 0x40
 	float unk;
-	float unk;
-	float unk;
 	
+	float unk;
+	float unk;
 	float unk; // 0x50
 	float unk;
 	DWORD color;
 	UNKNOWN unk;
-
 	float unk; // 0x60
 	UNKNOWN unk;
-	UNKNOWN unk;
-	UNKNOWN unk;
 	
+	UNKNOWN unk;
+	UNKNOWN unk;
 	UNKNOWN unk; // 0x70
 	UNKNOWN unk;
+	DWORD color;
 	UNKNOWN unk;
-	UNKNOWN unk;
-	
 	UNKNOWN unk; // 0x80
 	UNKNOWN unk;
+	
 	IDirect3DTexture9* tex; // 0x88, this is correct right?
+	
 	UNKNOWN unk;
 	
 	UNKNOWN unk; // 0x90
