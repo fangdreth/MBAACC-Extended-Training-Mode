@@ -1245,114 +1245,114 @@ void drawStats()
 
 	
 	// on p1 health bar
-	drawRect(114.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
-	drawRect(167.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
-	drawRect(220.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
+	drawRect(114.0f - nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
+	drawRect(167.0f - nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
+	drawRect(220.0f - nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
 
 	uint32_t nP1Health = *(uint32_t*)(dwBaseAddress + dwP1Health); // this works on maids too
 	if (nP1Health >= 8550)
 	{
-		drawRect(61.0f, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(61.0f, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(62, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x0)).c_str());
+		drawRect(61.0f - nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(61.0f - nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(62 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x0)).c_str());
 	}
 	else
 	{
-		drawRect(61.0f, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);			// on vertical bar
-		drawRect(61.0f, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(62, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x0)).c_str());
+		drawRect(61.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);			// on vertical bar
+		drawRect(61.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(62 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x0)).c_str());
 	}
 	if (8550 > nP1Health && nP1Health >= 5700)
 	{
-		drawRect(114.0f, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(114.0f, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(115, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x4)).c_str());
+		drawRect(114.0f - nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(114.0f - nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(115 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x4)).c_str());
 	}
 	else
 	{
-		drawRect(114.0f, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(114.0f, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(115, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x4)).c_str());
+		drawRect(114.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(114.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(115 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x4)).c_str());
 	}
 	if (5700 > nP1Health && nP1Health >= 2850)
 	{
-		drawRect(167.0f, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(167.0f, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(168, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x8)).c_str());
+		drawRect(167.0f - nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(167.0f - nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(168 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x8)).c_str());
 	}
 	else
 	{
-		drawRect(167.0f, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(167.0f, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(168, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x8)).c_str());
+		drawRect(167.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(167.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(168 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x8)).c_str());
 	}
 	if (2850 > nP1Health)
 	{
-		drawRect(220.0f, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(220.0f, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(221, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0xC)).c_str());
+		drawRect(220.0f - nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(220.0f - nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(221 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0xC)).c_str());
 	}
 	else
 	{
-		drawRect(220.0f, 23.0f, 1.0f, 14.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(220.0f, 23.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(221, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0xC)).c_str());
+		drawRect(220.0f - nResetOffset, 23.0f, 1.0f, 14.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(220.0f - nResetOffset, 23.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(221 - nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0xC)).c_str());
 	}
 
 
 	// on p2 health bar
-	drawRect(525.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
+	drawRect(525.0f + nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
 	drawRect(472.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
 	drawRect(419.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
 
 	uint32_t nP2Health = *(uint32_t*)(dwBaseAddress + dwP2Health); // this works on maids too
 	if (nP2Health >= 8550)
 	{
-		drawRect(579.0f, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(540.0f, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(541, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x0)).c_str());
+		drawRect(579.0f + nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(540.0f + nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(541 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x0)).c_str());
 	}
 	else
 	{
-		drawRect(579.0f, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);			// on vertical bar
-		drawRect(555.0f, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(556, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x0)).c_str());
+		drawRect(579.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);			// on vertical bar
+		drawRect(555.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(556 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x0)).c_str());
 	}
 	if (8550 > nP2Health && nP2Health >= 5700)
 	{
-		drawRect(525.0f, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(486.0f, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(486, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x4)).c_str());
+		drawRect(525.0f + nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(486.0f + nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(486 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x4)).c_str());
 	}
 	else
 	{
-		drawRect(525.0f, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(501.0f, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(501, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x4)).c_str());
+		drawRect(525.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(501.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(501 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x4)).c_str());
 	}
 	if (5700 > nP2Health && nP2Health >= 2850)
 	{
-		drawRect(472.0f, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(434.0f, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(432, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x8)).c_str());
+		drawRect(472.0f + nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(434.0f + nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(432 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x8)).c_str());
 	}
 	else
 	{
-		drawRect(472.0f, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(449.0f, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(448, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x8)).c_str());
+		drawRect(472.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(449.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(448 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x8)).c_str());
 	}
 	if (2850 > nP2Health)
 	{
-		drawRect(419.0f, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(380.0f, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(380, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0xC)).c_str());
+		drawRect(419.0f + nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(380.0f + nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(380 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0xC)).c_str());
 	}
 	else
 	{
-		drawRect(419.0f, 23.0f, 1.0f, 14.0f, 0xFFFFFFFF);		// vertical bar
-		drawRect(395.0f, 23.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(395, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0xC)).c_str());
+		drawRect(419.0f + nResetOffset, 23.0f, 1.0f, 14.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(395.0f + nResetOffset, 23.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(395 + nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0xC)).c_str());
 	}
 }
 
