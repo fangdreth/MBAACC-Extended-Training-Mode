@@ -318,6 +318,44 @@ void SetP4X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
     WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1X, &nValue, 4, 3);
 }
 
+void GetP1Guts(float* pP1Guts, uint8_t nCharacter)
+{
+    float f1, f2, f3, f4;
+
+    DWORD dwTempAddress = dwP1Struct + 0xAFC * nCharacter + 0x33C;
+    DWORD dwGutsAddress = 0;
+
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwTempAddress), &dwGutsAddress, 4, 0);
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwGutsAddress + 0x18), &f1, 4, 0);
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwGutsAddress + 0x1C), &f2, 4, 0);
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwGutsAddress + 0x20), &f3, 4, 0);
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwGutsAddress + 0x24), &f4, 4, 0);
+
+    pP1Guts[0] = f1;
+    pP1Guts[1] = f2 * (31.0f / 32.0f);
+    pP1Guts[2] = f3 * (30.0f / 32.0f);
+    pP1Guts[3] = f4 * (29.0f / 32.0f);
+}
+
+void GetP2Guts(float* pP2Guts, uint8_t nCharacter)
+{
+    float f1, f2, f3, f4;
+
+    DWORD dwTempAddress = dwP2Struct * nCharacter + 0x33C;
+    DWORD dwGutsAddress = 0;
+
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwTempAddress), &dwGutsAddress, 4, 0);
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwGutsAddress + 0x18), &f1, 4, 0);
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwGutsAddress + 0x1C), &f2, 4, 0);
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwGutsAddress + 0x20), &f3, 4, 0);
+    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwGutsAddress + 0x24), &f4, 4, 0);
+
+    pP2Guts[0] = f1;
+    pP2Guts[1] = f2 * (31.0f / 32.0f);
+    pP2Guts[2] = f3 * (30.0f / 32.0f);
+    pP2Guts[3] = f4 * (29.0f / 32.0f);
+}
+
 uint8_t arrKeysHeld[256] = { 0 };
 void ResetKeysHeld()
 {

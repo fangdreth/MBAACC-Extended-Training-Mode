@@ -70,6 +70,9 @@ int main(int argc, char* argv[])
         bool bDoingHeldReversal = false;
         bool bRecoverD = false;
 
+        float arrP1Guts[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float arrP2Guts[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
         int nOldEnemyActionIndex = -1;
         int nOldPresetIndex = -1;
         int nOldEnemyDefenseIndex = -1;
@@ -561,6 +564,9 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1ListInputY), &fP1ListInputY, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2ListInputX), &fP2ListInputX, 4, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2ListInputY), &fP2ListInputY, 4, 0);
+
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1Guts), &arrP1Guts, 12, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2Guts), &arrP2Guts, 12, 0);
                     }
                 }
             }
@@ -6460,6 +6466,13 @@ int main(int argc, char* argv[])
                         SetRegistryValue(L"P2ListInputY", fTempP2ListInputY);
                         fP2ListInputY = fTempP2ListInputY;
                     }
+
+
+                    GetP1Guts(arrP1Guts, nP1Controlled);
+                    GetP2Guts(arrP2Guts, nP2Controlled);
+
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP1Guts), &arrP1Guts, 16, 0);
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedP2Guts), &arrP2Guts, 16, 0);
 
 
                     // This locks all the code that follows to the framerate of the game
