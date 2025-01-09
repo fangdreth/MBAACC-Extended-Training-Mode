@@ -4277,6 +4277,11 @@ void initTrainingMenu() {
 	patchJump(RenderExtendedSettings_PatchAddr, _naked_RenderExtendedSettings);
 }
 
+void initCustomHealthRecover() {
+	BYTE tempCode[6] = { 0x8b, 0x15, 0x00, 0x13, 0x78, 0x00 }; //put address of desired custom health amount as last 4 bytes here
+	patchMemcpy(0x004242fa, tempCode, 6); //currently using adShareBase + 0x300 = 0x00781300
+}
+
 
 // dll thread func
 
@@ -4318,6 +4323,8 @@ void threadFunc()
 	initDualInputDisplay();
 
 	initInputCallback();
+
+	initCustomHealthRecover();
 
 	//initTrainingMenu(); //uncomment for experimental new menu
 
