@@ -1,0 +1,116 @@
+
+// for when i actually get to use this
+
+// start at 0x005550A8
+
+// types were found out by breaking on write and seeing the instr type
+// may not have been the most reliable
+// REMEMBER THAT CHEAT ENGINE BREAKS ON THE INSTRUCTION AFTER THE WRITE!
+
+typedef DWORD UNKNOWN; 
+
+struct main {
+	DWORD* linkedList;
+	DWORD linkedListLength;
+	LinkedListData* linkedListData; // calling it this is not a good idea
+	UNUSED(4)
+	DWORD linkedListCounter1;
+	UNUSED(4);
+	DWORD linkedListCounter2;
+}
+
+struct LinkedListDataElement { // check out 00415540 and related funcs, eax is base 0 in this
+	// memcpy writes to these frequently. 
+	// is the first list perhaps,,,,
+	// a list of ALL elements, this list is just the ones being used?
+	// weird they are being copied when they are pointers
+	
+	// i am not that sure, but i think this has size 0x94
+	// ,,, actually,,, based on the difference in values in [linkListData] starting at +20,, seems to be size 0xA0
+	// it might just be the way things were allocated tho
+	// the malloc literally says 94. why the fuck is it bigger than that?
+	
+	// theres a pattern of color, 7 floats, color! some of the stuff in there might be padding? 7 is such an odd number
+	
+	DWORD* unknownPtr1;
+	DWORD* unknownPtr2;
+	
+	float unknownFloat;
+	float unknownFloat;
+	float unknownFloat; // 0x10
+	float unknownFloat;
+	
+	DWORD color;
+	
+	UNKNOWN unknown;
+	
+	float unknownFloat; // off 0x20
+	float unk;
+	float unk;
+	float unk;
+	float unk; // 0x30
+	float unk;
+	
+	DWORD color;
+	
+	float unk; // not sure if this is a float or dword, but its always set to 0
+	float unk; // 0x40
+	float unk;
+	float unk;
+	float unk;
+	
+	float unk; // 0x50
+	float unk;
+	DWORD color;
+	UNKNOWN unk;
+
+	float unk; // 0x60
+	UNKNOWN unk;
+	UNKNOWN unk;
+	UNKNOWN unk;
+	
+	UNKNOWN unk; // 0x70
+	UNKNOWN unk;
+	UNKNOWN unk;
+	UNKNOWN unk;
+	
+	UNKNOWN unk; // 0x80
+	UNKNOWN unk;
+	IDirect3DTexture9* tex; // 0x88, this is correct right?
+	UNKNOWN unk;
+	
+	UNKNOWN unk; // 0x90
+	
+	// these 3 might not exist, but are still sorta there bc of the allocator?!
+	// allocator is going on 0x10 bounds.
+	// perfect place to store our own data maybe?
+	// i wanted to go further, but now i want to try this
+	// another issue, this memory is copied. the copy probs doesnt also take this data
+	// but ill deal with that when i get to that
+	
+	UNKNOWN unk;
+	UNKNOWN unk;
+	UNKNOWN unk;
+
+}
+
+
+
+struct LinkedListData {
+
+	// 00415137 says this should have a size 0x14??? 
+	// it would make a lot of sense if the allocater was allocating things with 
+	// 0x10 as the start. is it?
+
+	DWORD unknownCounter1; // set to 1, maybe an isInited var?
+	LinkedListDataElement* elements; // points to first elem of actualElements
+	DWORD unknownCounter2; // set to 4,,, heaven pierce me,, element size??
+	DWORD unknownCounter3; // 8000. number of elements?
+	DWORD unknownCounter4; // 8000. number of elements?
+	DWORD unknownCounter5; // set to 0
+	DWORD what1; // 47fb1d52
+	DWORD what2; // 080b4022
+	
+	LinkedListDataElement actualElements[8000]; // 8000 is an assumption!
+
+}
