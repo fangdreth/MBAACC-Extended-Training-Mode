@@ -34,7 +34,7 @@ CHECKSIZE(Item, 0x35)
 
 struct Element //listed elements on left
 {
-	void* functionTable;
+	void* vftable;
 	int elementType;
 	int isHovered;
 	int canSelect;
@@ -49,24 +49,27 @@ struct Element //listed elements on left
 	UNUSED(0x4);
 	int selectedItem;
 	int selectItemLabelXOffset;
-	UNUSED(0x4);
-	Item** ItemsList;
-	Item** ItemsListEnd;
-	UNUSED(0x14);
+	int ListInput;
+	Item** ItemList;
+	Item** ItemListEnd;
+	UNUSED(0x04);
 };
 
 CHECKOFFSET(Element, displayedName, 0x24)
 CHECKOFFSET(Element, name, 0x40)
-CHECKSIZE(Element, 0x80)
+CHECKOFFSET(Element, ItemList, 0x64)
+CHECKSIZE(Element, 0x70)
+
+struct MenuWindow;
 
 struct MenuInfo
 {
-	void* functionTable;
-	void* menuManager;
+	void* vftable;
+	MenuWindow* parentWindow;
 	UNUSED(0x38);
 	int selectedElement;
 	int prevSelectedElement;
-	UNUSED(0x4);
+	int ListInput;
 	Element** ElementList;
 	Element** ElementListEnd;
 	UNUSED(0x14);
@@ -81,15 +84,23 @@ CHECKSIZE(MenuInfo, 0x78)
 
 struct MenuWindow
 {
-	void* functionTable;
+	void* vftable;
 	int isMenuDisabled;
-	UNUSED(0x8);
-	MenuInfo** TrainingMenu;
-	UNUSED(0x30);
+	UNUSED(0x4);
+	int ListInput;
+	MenuInfo** MenuInfoList;
+	MenuInfo** MenuInfoListEnd;
+	UNUSED(0x4);
+	int didPress;
+	UNUSED(0x4);
+	int unknown_0x24;
+	UNUSED(0x1C);
 	int yOffset;
 	int someYOffset;
 	int xOffset;
-	UNUSED(0x10);
+	int unknown_0x50;
+	UNUSED(0x8);
+	int unknown_0x5c;
 	char label[20];
 	UNUSED(0x8);
 	int isRootMenu;
@@ -120,7 +131,10 @@ struct MenuWindow
 	MenuWindow* ExtendedSettings;
 };
 
+CHECKOFFSET(MenuWindow, MenuInfoList, 0x10)
+CHECKOFFSET(MenuWindow, unknown_0x5c, 0x5c)
 CHECKOFFSET(MenuWindow, isRootMenu, 0x7c)
+CHECKOFFSET(MenuWindow, dimScreenPercentage, 0xc0)
 CHECKSIZE(MenuWindow, 0xe4)
 
 #pragma pack(pop, 1)

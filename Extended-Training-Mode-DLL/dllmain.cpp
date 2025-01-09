@@ -6,6 +6,7 @@
 #include "ReplayManager.h"
 #include "TASManager.h"
 #include "FancyMenu.h"
+#include "TrainingMenu.h"
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
@@ -3341,12 +3342,260 @@ __declspec(naked) void _naked_InitExtendedSettingsMenu() {
 
 }
 
+MenuWindow* mainWindow;
+
+DWORD MBAA_InitMenuWindow = 0x004d7b30;
+DWORD MBAA_ReadDataFile = 0x00407c10;
+DWORD fun004d8810 = 0x004d8810;
+DWORD MBAA_InitSelectElement = 0x0042f8f0;
+DWORD MBAA_InitItem = 0x0042f600;
+DWORD MBAA_EnterIntoList = 0x0042ba50;
+DWORD MBAA_FUN_00429b00 = 0x00429b00;
+DWORD MBAA_FUN_004804a0 = 0x004804a0;
+DWORD MBAA_FUN_0047d030 = 0x0047d030;
+DWORD MBAA_FUN_0047ce20 = 0x0047ce20;
+DWORD MBAA_MenuDestructor = 0x004d7c70;
+
+void InitMenuWindow(MenuWindow* menuWindow) {
+	//menuWindow should be stack[4]
+	__asm {
+		push menuWindow;
+		call[MBAA_InitMenuWindow];
+	}
+}
+
+void InitExtendedSettingsMenuInfo(MenuInfo* extendedInfo, MenuWindow* extendedWindow) {
+	//menuInfo should be stack[4]
+	//menuWindow should be stack[8]
+	__asm {
+		push extendedWindow;
+		push extendedInfo;
+		call[_naked_InitExtendedSettingsMenuInfo];
+	}
+}
+
+void ReadDataFile(void* dest, const char* name, int nameLength) {
+	//dest should be ecx
+	//name should be stack[4]
+	//nameLength should be stack[8]
+	__asm {
+		mov ecx, dest;
+		push nameLength;
+		push name;
+		call[MBAA_ReadDataFile];
+	}
+}
+
+void InitSelectElement(Element* element, const char* label, const char* tag, int selectItemXOffset) {
+	//label should be ecx
+	//element should be stack[4]
+	//tag should be stack[8]
+	//offset should be stack[c]
+	__asm {
+		mov ecx, label;
+		push selectItemXOffset;
+		push tag;
+		push element;
+		call[MBAA_InitSelectElement];
+	}
+}
+
+void InitItem(Item* item, const char* label, const char* tag, int index) {
+	//item should be stack[4]
+	//label should be stack[8]
+	//tag should be stack[c]
+	//index should be stack[10]
+	__asm {
+		push index;
+		push tag;
+		push label;
+		push item;
+		call[MBAA_InitItem];
+	}
+}
+
+void EnterIntoList(void* list, void* entry) {
+	//entry should be ebx
+	//list should be esi
+	__asm {
+		push entry;
+		mov ebx, esp;
+		mov esi, list;
+		call[MBAA_EnterIntoList];
+		add esp, 0x4;
+	}
+}
+
+void _FUN_00429b00(MenuInfo* menuInfo, const char* label) {
+	//menuInfo should be ecx
+	//label should be stack[4]
+	__asm {
+		mov ecx, menuInfo;
+		push label;
+		call[MBAA_FUN_00429b00];
+	}
+}
+
+void _FUN_004804a0(MenuWindow* menuWindow) {
+	//menuWindow should be eax
+	__asm {
+		mov eax, menuWindow;
+		call[MBAA_FUN_004804a0];
+	}
+}
+
+MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
+	InitMenuWindow(extendedWindow);
+	extendedWindow->vftable = (void*)0x0053882c;
+	ReadDataFile(&extendedWindow->unknown_0x5c, "EXTENDED SETTINGS", 18);
+	MenuInfo* extendedInfo = new MenuInfo;
+	if (extendedInfo != 0x0)
+	{
+		InitExtendedSettingsMenuInfo(extendedInfo, extendedWindow);
+	}
+	Element* element = new Element;
+	InitSelectElement(element, "1", "1", 0xa0);
+	element->vftable = (void*)0x00536654;
+	Item* item = new Item;
+	InitItem(item, "A", "A", 0);
+	EnterIntoList((void*)(&element->ListInput), (void*)(item));
+	item = new Item;
+	InitItem(item, "B", "B", 1);
+	EnterIntoList((void*)(&element->ListInput), (void*)(item));
+	EnterIntoList((void*)(&extendedInfo->ListInput), (void*)(element));
+
+	element = new Element;
+	InitSelectElement(element, "2", "2", 0xa0);
+	element->vftable = (void*)0x00536654;
+	item = new Item;
+	InitItem(item, "A", "A", 0);
+	EnterIntoList((void*)(&element->ListInput), (void*)(item));
+	item = new Item;
+	InitItem(item, "B", "B", 1);
+	EnterIntoList((void*)(&element->ListInput), (void*)(item));
+	EnterIntoList((void*)(&extendedInfo->ListInput), (void*)(element));
+
+	EnterIntoList((void*)(&extendedWindow->ListInput), (void*)(extendedInfo));
+	_FUN_00429b00(extendedInfo, "EXTENDED_SETTING");
+	_FUN_004804a0(extendedWindow);
+	extendedWindow->dimScreenPercentage = 0.0;
+	extendedWindow->u_layer = 0x2f1;
+	extendedWindow->isMenuLit = 1;
+	extendedWindow->isBlurred = 0;
+	extendedWindow->paragraphMode = 2;
+	extendedWindow->xOffset = 0xfa;
+	extendedWindow->textXWidth = 0xe;
+	return extendedWindow;
+}
+
+void _FUN_0047d030(const char* TRAINING_XX_MENU, MenuWindow* menuWindow) {
+	//trainingmenu should be eax
+	//menuWindow should be esi
+	__asm {
+		mov eax, TRAINING_XX_MENU;
+		mov esi, menuWindow;
+		call[MBAA_FUN_0047d030];
+	}
+}
+
+void _FUN_0047ce20(void* field24, const char* TRAINING_XX_MENU) {
+	//field24 should be edx
+	//TRAINING_XX_MENU should be ecx
+	__asm {
+		mov edx, field24;
+		mov ecx, TRAINING_XX_MENU;
+		call[MBAA_FUN_0047ce20];
+	}
+
+}
+
+void SetExtendedSettings(MenuWindow* extendedWindow) {
+
+}
+
+void FreeWindowChildren(MenuWindow* extendedWindow) {
+	MenuInfo* menuInfo = *extendedWindow->MenuInfoList;
+	Element** pElement = menuInfo->ElementList;
+	while (pElement < menuInfo->ElementListEnd) {
+		Element* element = *pElement;
+		Item** pItem = element->ItemList;
+		while (pItem < element->ItemListEnd) {
+			Item* item = *pItem;
+			free(item);
+			pItem += 1;
+		}
+		free(element);
+		pElement += 1;
+	}
+	free(menuInfo);
+}
+
+void CloseExtendedSettings(MenuWindow* extendedWindow) {
+	SetExtendedSettings(extendedWindow);
+	FreeWindowChildren(extendedWindow);
+	free(extendedWindow);
+}
+
+void ExtendedMenuSwitchCase() {
+	if (mainWindow->ExtendedSettings == 0x0) {
+		mainWindow->isMenuLit = 0;
+		MenuWindow* extendedWindow = new MenuWindow;
+		if (extendedWindow != 0x0) {
+			extendedWindow = InitExtendedSettingsMenu(extendedWindow);
+		}
+		mainWindow->ExtendedSettings = extendedWindow;
+		extendedWindow->yOffset = 0xbe;
+		const char* TRAINING_XS_MENU = "TRAINING_XS_MENU";
+		_FUN_0047d030(TRAINING_XS_MENU, extendedWindow);
+	}
+	if (mainWindow->ExtendedSettings->openSubmenuIndex == 4) {
+		_FUN_0047ce20(&mainWindow->ExtendedSettings->unknown_0x24, "TRAINING_XS_MENU");
+		if (mainWindow->ExtendedSettings->unknown_0x50 == 2) {
+			mainWindow->unknown_0x50 = 2;
+		}
+		if (mainWindow->ExtendedSettings != 0x0) {
+			CloseExtendedSettings(mainWindow->ExtendedSettings);
+			mainWindow->ExtendedSettings = 0x0;
+		}
+
+		mainWindow->isMenuLit = 0x1;
+		mainWindow->isRootMenu = 0x1;
+		mainWindow->timeSubmenuOpened = 0x0;
+		mainWindow->openSubmenuIndex = 0x2;
+	}
+
+}
+
+DWORD ad_0047ee5b = 0x0047ee5b;
+
+__declspec(naked) void SwitchCaseTest() {
+	__asm {
+		cmp eax, 2;
+		je _DOEXTENDEDSETTINGS;
+		mov ecx, ebp;
+		call[fun004d8810];
+		jmp _BREAKSWITCH;
+
+	_DOEXTENDEDSETTINGS:
+		mov mainWindow, ebp;
+	}
+
+	PUSH_ALL;
+	ExtendedMenuSwitchCase();
+	POP_ALL;
+
+	__asm {
+	_BREAKSWITCH:
+		jmp ad_0047ee5b;
+	}
+}
+
 DWORD ExtendedSettingsSubmenu_PatchAddr = 0x0047ee54;
 DWORD FUN_004d8810 = 0x004d8810;
 DWORD FUN_0047d030 = 0x0047d030;
 DWORD FUN_0047ce20 = 0x0047ce20;
 const char* TrainingXSMenu = "TRAINING_XS_MENU";
-DWORD ad_0047ee5b = 0x0047ee5b;
+
 DWORD ad_0047e7ad = 0x0047e7ad;
 __declspec(naked) void _naked_ExtendedSettingsSubmenu() {
 	__asm {
@@ -4019,7 +4268,9 @@ void initTrainingMenu() {
 	patchJump(MakeBiggerMenuWindow_PatchAddr, _naked_MakeBiggerMenuWindow);
 	patchJump(ExtendedSettingsMenuItem_PatchAddr, _naked_ExtendedSettingsMenuItem);
 	patchJump(AddExtendedSettingToList_PatchAddr, _naked_AddExtendedSettingToList);
-	patchJump(ExtendedSettingsSubmenu_PatchAddr, _naked_ExtendedSettingsSubmenu);
+
+	patchJump(ExtendedSettingsSubmenu_PatchAddr, SwitchCaseTest);
+
 	patchJump(OpenExtendedSettings_PatchAddr, _naked_OpenExtendedSettings);
 	patchJump(ZeroMenuPointers_PatchAddr, _naked_ZeroMenuPointers);
 	patchJump(UpdateMenuTrainingSettings_PatchAddr, _naked_UpdateMenuExtendedSettings);
