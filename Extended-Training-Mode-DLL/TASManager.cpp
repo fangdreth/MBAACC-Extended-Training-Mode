@@ -287,7 +287,14 @@ void TASManager::setInputs() {
 		DWORD baseAddr = 0x00771398 + (0x2C * playerIndex);
 
 		// dir
-		*(BYTE*)(baseAddr + 0) = tasData[tasIndex].dir;
+		if (*(BYTE*)(0x00555130 + 0x314) == 1) {
+			constexpr uint8_t dirLookup[10] = { 0, 3, 2, 1, 6, 5, 4, 9, 8, 7 };
+			*(BYTE*)(baseAddr + 0) = dirLookup[tasData[tasIndex].dir];
+		} else {
+			*(BYTE*)(baseAddr + 0) = tasData[tasIndex].dir;
+		}
+		
+
 		// ABCD
 		*(BYTE*)(baseAddr + 1) = tasData[tasIndex].a;
 		*(BYTE*)(baseAddr + 2) = tasData[tasIndex].b;
