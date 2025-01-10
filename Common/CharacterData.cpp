@@ -189,6 +189,7 @@ std::string GetPatternNameFromID(int nPattern, int nCharacterID) {
 		if (MBAACC_Map[eCharacterValues::UNIVERSAL][sPatternName] == nPattern || MBAACC_Map[nCharacterID][sPatternName] == nPattern)
 			return sPatternName;
 	}
+	return "";
 }
 
 std::vector<std::string> GetEmptyPatternList() {

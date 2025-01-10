@@ -6,6 +6,7 @@
 #include "ReplayManager.h"
 #include "TASManager.h"
 #include "FancyMenu.h"
+#include "TrainingMenu.h"
 
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
@@ -1046,6 +1047,8 @@ void drawSimpleMeter()
 	if (fScroll > 0)
 		nResetOffset = 320.0f * fScroll;
 
+	int Y = 19;
+
 	DWORD P1Base = adP1SubBase + (*(uint8_t*)(adMBAABase + adP1SubBase + adTagFlag) * dwPlayerStructSize * 2);
 	int nP1Meter = *(int*)(adMBAABase + P1Base + adMagicCircuit);
 	int nP1MeterTime = *(int*)(adMBAABase + P1Base + adMagicCircuitTime);
@@ -1066,7 +1069,7 @@ void drawSimpleMeter()
 
 	static char buffer[8];
 
-	RectDraw(60 - nResetOffset, 19, 214, 12, 0x99000000); //BG
+	RectDraw(60 - nResetOffset, Y, 214, 12, 0x99000000); //BG
 	switch (nP1MeterMode)
 	{
 	case 0: //Normal, out of 30000
@@ -1074,44 +1077,44 @@ void drawSimpleMeter()
 		float fMeterScale = nP1Moon == 2 ? 94.3396 : 141.5094;
 		DWORD dwMeterColor = METER_COLOR_MAP[nP1Meter / 10000];
 		if (nP1Moon == 2 && nP1Meter >= 15000) dwMeterColor = METER_COLOR_MAP[2];
-		RectDraw(61 - nResetOffset, 20, nP1Meter / fMeterScale, 10, dwMeterColor);
+		RectDraw(61 - nResetOffset, Y + 1, nP1Meter / fMeterScale, 10, dwMeterColor);
 		snprintf(buffer, 8, "%3.2f", nP1Meter / 100.0);
-		TextDraw(61 - nResetOffset, 20, 10, 0xFFFFFFFF, buffer);
+		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
 		break;
 	}
 	case 1: //HEAT, out of 550
 	{
-		RectDraw(61 - nResetOffset, 20, nP1MeterTime / 2.5943, 10, HEAT_COLOR);
+		RectDraw(61 - nResetOffset, Y + 1, nP1MeterTime / 2.5943, 10, HEAT_COLOR);
 		snprintf(buffer, 8, "%3i", nP1MeterTime);
-		TextDraw(61 - nResetOffset, 20, 10, 0xFFFFFFFF, buffer);
-		TextDraw(61 + 212 - 4 * 7.7777 - nResetOffset, 20, 10, HEATFONT_COLOR, "HEAT");
+		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(61 + 212 - 4 * 7.7777 - nResetOffset, Y + 1, 10, HEATFONT_COLOR, "HEAT");
 		break;
 	}
 	case 2: //MAX out of 600
 	{
-		RectDraw(61 - nResetOffset, 20, nP1MeterTime / 2.8301, 10, MAX_COLOR);
+		RectDraw(61 - nResetOffset, Y + 1, nP1MeterTime / 2.8301, 10, MAX_COLOR);
 		snprintf(buffer, 8, "%3i", nP1MeterTime);
-		TextDraw(61 - nResetOffset, 20, 10, 0xFFFFFFFF, buffer);
-		TextDraw(61 + 212 - 3 * 7.7777 - nResetOffset, 20, 10, MAXFONT_COLOR, "MAX");
+		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(61 + 212 - 3 * 7.7777 - nResetOffset, Y + 1, 10, MAXFONT_COLOR, "MAX");
 		break;
 	}
 	case 3: //BLOOD HEAT out of 502
 	{
-		RectDraw(61 - nResetOffset, 20, nP1MeterTime / 2.3679, 10, BLOODHEAT_COLOR);
+		RectDraw(61 - nResetOffset, Y + 1, nP1MeterTime / 2.3679, 10, BLOODHEAT_COLOR);
 		snprintf(buffer, 8, "%3i", nP1MeterTime);
-		TextDraw(61 - nResetOffset, 20, 10, 0xFFFFFFFF, buffer);
-		TextDraw(61 + 212 - 10 * 7.7777 - nResetOffset, 20, 10, BLOODHEATFONT_COLOR, "BLOOD HEAT");
+		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(61 + 212 - 10 * 7.7777 - nResetOffset, Y + 1, 10, BLOODHEATFONT_COLOR, "BLOOD HEAT");
 		break;
 	}
 	case 5: //UNLIMITED
 	{
-		RectDraw(61 - nResetOffset, 20, 212, 10, UNLIMITED_COLOR);
-		TextDraw(61 - nResetOffset, 20, 10, UNLIMITEDFONT_COLOR, "UNLIMITED");
+		RectDraw(61 - nResetOffset, Y + 1, 212, 10, UNLIMITED_COLOR);
+		TextDraw(61 - nResetOffset, Y + 1, 10, UNLIMITEDFONT_COLOR, "UNLIMITED");
 		break;
 	}
 	}
 
-	RectDraw(580 - 214 + nResetOffset, 19, 214, 12, 0x99000000); //BG
+	RectDraw(580 - 214 + nResetOffset, Y, 214, 12, 0x99000000); //BG
 	switch (nP2MeterMode)
 	{
 	case 0: //NORMAL
@@ -1119,65 +1122,65 @@ void drawSimpleMeter()
 		float fMeterScale = nP2Moon == 2 ? 94.3396 : 141.5094;
 		DWORD dwMeterColor = METER_COLOR_MAP[nP2Meter / 10000];
 		if (nP2Moon == 2 && nP2Meter >= 15000) dwMeterColor = METER_COLOR_MAP[2];
-		RectDraw(579 - nP2Meter / fMeterScale + nResetOffset, 20, nP2Meter / fMeterScale, 10, dwMeterColor);
+		RectDraw(579 - nP2Meter / fMeterScale + nResetOffset, Y + 1, nP2Meter / fMeterScale, 10, dwMeterColor);
 		snprintf(buffer, 8, "%6.2f", nP2Meter / 100.0);
-		TextDraw(579 - 6 * 7.7777 + nResetOffset, 20, 10, 0xFFFFFFFF, buffer);
+		TextDraw(579 - 6 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
 		break;
 	}
 	case 1: //HEAT
 	{
-		RectDraw(579 - nP2MeterTime / 2.5943 + nResetOffset, 20, nP2MeterTime / 2.5943, 10, HEAT_COLOR);
+		RectDraw(579 - nP2MeterTime / 2.5943 + nResetOffset, Y + 1, nP2MeterTime / 2.5943, 10, HEAT_COLOR);
 		snprintf(buffer, 8, "%3i", nP2MeterTime);
-		TextDraw(579 - 3 * 7.7777 + nResetOffset, 20, 10, 0xFFFFFFFF, buffer);
-		TextDraw(579 - 212 + nResetOffset, 20, 10, HEATFONT_COLOR, "HEAT");
+		TextDraw(579 - 3 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(579 - 212 + nResetOffset, Y + 1, 10, HEATFONT_COLOR, "HEAT");
 		break;
 	}
 	case 2: //MAX
 	{
-		RectDraw(579 - nP2MeterTime / 2.8301 + nResetOffset, 20, nP2MeterTime / 2.8301, 10, MAX_COLOR);
+		RectDraw(579 - nP2MeterTime / 2.8301 + nResetOffset, Y + 1, nP2MeterTime / 2.8301, 10, MAX_COLOR);
 		snprintf(buffer, 8, "%3i", nP2MeterTime);
-		TextDraw(579 - 3 * 7.7777 + nResetOffset, 20, 10, 0xFFFFFFFF, buffer);
-		TextDraw(579 - 212 + nResetOffset, 20, 10, MAXFONT_COLOR, "MAX");
+		TextDraw(579 - 3 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(579 - 212 + nResetOffset, Y + 1, 10, MAXFONT_COLOR, "MAX");
 		break;
 	}
 	case 3: //BLOOD HEAT
 	{
-		RectDraw(579 - nP2MeterTime / 2.3679 + nResetOffset, 20, nP2MeterTime / 2.3679, 10, BLOODHEAT_COLOR);
+		RectDraw(579 - nP2MeterTime / 2.3679 + nResetOffset, Y + 1, nP2MeterTime / 2.3679, 10, BLOODHEAT_COLOR);
 		snprintf(buffer, 8, "%3i", nP2MeterTime);
-		TextDraw(579 - 3 * 7.7777 + nResetOffset, 20, 10, 0xFFFFFFFF, buffer);
-		TextDraw(579 - 212 + nResetOffset, 20, 10, BLOODHEATFONT_COLOR, "BLOOD HEAT");
+		TextDraw(579 - 3 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(579 - 212 + nResetOffset, Y + 1, 10, BLOODHEATFONT_COLOR, "BLOOD HEAT");
 		break;
 	}
 	case 5: //UNLIMITED
 	{
-		RectDraw(579 - 212 + nResetOffset, 20, 212, 10, UNLIMITED_COLOR);
-		TextDraw(579 - 9 * 7.7777 + nResetOffset, 20, 10, UNLIMITEDFONT_COLOR, "UNLIMITED");
+		RectDraw(579 - 212 + nResetOffset, Y + 1, 212, 10, UNLIMITED_COLOR);
+		TextDraw(579 - 9 * 7.7777 + nResetOffset, Y + 1, 10, UNLIMITEDFONT_COLOR, "UNLIMITED");
 		break;
 	}
 	}
 
 	DWORD dwBorderColor = (sP1CircuitBreakTimer && !sP1CircuitBreakFlag) ? CIRCUITBREAK_COLOR : 0xFFFFFFFF;
-	RectDraw(59 - nResetOffset, 17, 216, 2, dwBorderColor);
-	RectDraw(58 - nResetOffset, 18, 2, 14, dwBorderColor);
-	RectDraw(59 - nResetOffset, 31, 216, 2, dwBorderColor);
-	RectDraw(274 - nResetOffset, 18, 2, 14, dwBorderColor);
+	RectDraw(59 - nResetOffset, Y - 2, 216, 2, dwBorderColor);
+	RectDraw(58 - nResetOffset, Y - 1, 2, 14, dwBorderColor);
+	RectDraw(59 - nResetOffset, Y + 12, 216, 2, dwBorderColor);
+	RectDraw(274 - nResetOffset, Y - 1, 2, 14, dwBorderColor);
 	if (sP1CircuitBreakTimer && !sP1CircuitBreakFlag)
 	{
 		snprintf(buffer, 8, "%3i", sP1CircuitBreakTimer);
-		RectDraw(61 - nResetOffset, 20, sP1CircuitBreakTimer / (sP1CircuitBreakTotal / 212.0), 10, CIRCUITBREAK_COLOR & 0x60FFFFFF);
-		TextDraw(61 + 106 - 1.5 * 7.7777 - nResetOffset, 20, 10, CIRCUITBREAKFONT_COLOR, buffer);
+		RectDraw(61 - nResetOffset, Y + 1, sP1CircuitBreakTimer / (sP1CircuitBreakTotal / 212.0), 10, CIRCUITBREAK_COLOR & 0x60FFFFFF);
+		TextDraw(61 + 106 - 1.5 * 7.7777 - nResetOffset, Y + 1, 10, CIRCUITBREAKFONT_COLOR, buffer);
 	}
 
 	dwBorderColor = (sP2CircuitBreakTimer && !sP2CircuitBreakFlag) ? CIRCUITBREAK_COLOR : 0xFFFFFFFF;
-	RectDraw(59 + 306 + nResetOffset, 17, 216, 2, dwBorderColor);
-	RectDraw(58 + 306 + nResetOffset, 18, 2, 14, dwBorderColor);
-	RectDraw(59 + 306 + nResetOffset, 31, 216, 2, dwBorderColor);
-	RectDraw(274 + 306 + nResetOffset, 18, 2, 14, dwBorderColor);
+	RectDraw(59 + 306 + nResetOffset, Y - 2, 216, 2, dwBorderColor);
+	RectDraw(58 + 306 + nResetOffset, Y - 1, 2, 14, dwBorderColor);
+	RectDraw(59 + 306 + nResetOffset, Y + 12, 216, 2, dwBorderColor);
+	RectDraw(274 + 306 + nResetOffset, Y - 1, 2, 14, dwBorderColor);
 	if (sP2CircuitBreakTimer && !sP2CircuitBreakFlag)
 	{
 		snprintf(buffer, 8, "%3i", sP2CircuitBreakTimer);
-		RectDraw(579 - sP2CircuitBreakTimer / (sP2CircuitBreakTotal / 212.0) + nResetOffset, 20, sP2CircuitBreakTimer / (sP2CircuitBreakTotal / 212.0), 10, CIRCUITBREAK_COLOR & 0x60FFFFFF);
-		TextDraw(579 - 106 - 1.5 * 7.7777 + nResetOffset, 20, 10, CIRCUITBREAKFONT_COLOR, buffer);
+		RectDraw(579 - sP2CircuitBreakTimer / (sP2CircuitBreakTotal / 212.0) + nResetOffset, Y + 1, sP2CircuitBreakTimer / (sP2CircuitBreakTotal / 212.0), 10, CIRCUITBREAK_COLOR & 0x60FFFFFF);
+		TextDraw(579 - 106 - 1.5 * 7.7777 + nResetOffset, Y + 1, 10, CIRCUITBREAKFONT_COLOR, buffer);
 	}
 }
 
@@ -1241,6 +1244,118 @@ void drawStats()
 	snprintf(buffer, 256, "%1.3f", *(float*)(dwBaseAddress + dwP2GuardQuality));
 	//drawTextWithBorder(369 + nResetOffset, 67, 6, 9, buffer);
 	TextDraw(367 + nResetOffset, 67, 6, 0xFFFFFFFF, buffer);
+
+	
+	// on p1 health bar
+	drawRect(114.0f - nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
+	drawRect(167.0f - nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
+	drawRect(220.0f - nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
+
+	uint32_t nP1Health = *(uint32_t*)(dwBaseAddress + dwP1Health); // this works on maids too
+	if (nP1Health >= 8550)
+	{
+		drawRect(61.0f - nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(61.0f - nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(62 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x0)).c_str());
+	}
+	else
+	{
+		drawRect(61.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);			// on vertical bar
+		drawRect(61.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(62 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x0)).c_str());
+	}
+	if (8550 > nP1Health && nP1Health >= 5700)
+	{
+		drawRect(114.0f - nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(114.0f - nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(115 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x4)).c_str());
+	}
+	else
+	{
+		drawRect(114.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(114.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(115 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x4)).c_str());
+	}
+	if (5700 > nP1Health && nP1Health >= 2850)
+	{
+		drawRect(167.0f - nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(167.0f - nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(168 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x8)).c_str());
+	}
+	else
+	{
+		drawRect(167.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(167.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(168 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x8)).c_str());
+	}
+	if (2850 > nP1Health)
+	{
+		drawRect(220.0f - nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(220.0f - nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(221 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0xC)).c_str());
+	}
+	else
+	{
+		drawRect(220.0f - nResetOffset, 23.0f, 1.0f, 14.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(220.0f - nResetOffset, 23.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(221 - nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0xC)).c_str());
+	}
+
+
+	// on p2 health bar
+	drawRect(525.0f + nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
+	drawRect(472.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
+	drawRect(419.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
+
+	uint32_t nP2Health = *(uint32_t*)(dwBaseAddress + dwP2Health); // this works on maids too
+	if (nP2Health >= 8550)
+	{
+		drawRect(579.0f + nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(540.0f + nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(541 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x0)).c_str());
+	}
+	else
+	{
+		drawRect(579.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);			// on vertical bar
+		drawRect(555.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(556 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x0)).c_str());
+	}
+	if (8550 > nP2Health && nP2Health >= 5700)
+	{
+		drawRect(525.0f + nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(486.0f + nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(486 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x4)).c_str());
+	}
+	else
+	{
+		drawRect(525.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(501.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(501 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x4)).c_str());
+	}
+	if (5700 > nP2Health && nP2Health >= 2850)
+	{
+		drawRect(472.0f + nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(434.0f + nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(432 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x8)).c_str());
+	}
+	else
+	{
+		drawRect(472.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(449.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(448 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x8)).c_str());
+	}
+	if (2850 > nP2Health)
+	{
+		drawRect(419.0f + nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(380.0f + nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(380 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0xC)).c_str());
+	}
+	else
+	{
+		drawRect(419.0f + nResetOffset, 23.0f, 1.0f, 14.0f, 0xFFFFFFFF);		// vertical bar
+		drawRect(395.0f + nResetOffset, 23.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
+		TextDraw(395 + nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0xC)).c_str());
+	}
 }
 
 void drawFrameData()
@@ -2764,6 +2879,874 @@ __declspec(naked) void _naked_DrawHudMeter() {
 	}
 }
 
+// MENU TESTS
+DWORD ExtendedSettingsMenuItem_PatchAddr = 0x0047d493;
+DWORD operator_new_FuncAddr = 0x004e0177;
+DWORD initNormalElement_FuncAddr = 0x00429140;
+DWORD enterMenuElement_FuncAddr = 0x0042ba50;
+const char* label = "EXTENDED SETTINGS";
+const char* tag = "EXTENDED_SETTING";
+DWORD ad_0047d49a = 0x0047d49a;
+__declspec(naked) void _naked_ExtendedSettingsMenuItem() {
+	__asm {
+		push 0x58;
+		call[operator_new_FuncAddr];
+		mov edi, eax;
+		add esp, 0x04;
+		mov dword ptr[esp + 0x14], edi;
+		test edi, edi;
+		mov byte ptr[esp + 0x68], 0x04;
+		je noInit;
+
+		push 0x00;
+		push tag;
+		push label;
+		push edi;
+		call[initNormalElement_FuncAddr];
+		mov dword ptr[edi + 0x0c], 0x00000001;
+		mov dword ptr[edi + 0x04], 0x00000001;
+		mov dword ptr[edi], 0x0053604c;
+
+		jmp ender;
+
+	noInit:
+		xor edi, edi;
+		jmp ender;
+
+	ender:
+		mov byte ptr[esp + 0x68], 0x01;
+		lea ebx, [esp + 0x14];
+		mov esi, ebp;
+		mov[esp + 0x14], edi;
+		call[enterMenuElement_FuncAddr];
+
+		push 0x58;
+		call[operator_new_FuncAddr];
+		jmp ad_0047d49a;
+	}
+}
+
+DWORD AddExtendedSettingToList_PatchAddr = 0x0047d1ae;
+DWORD FUN_00429020 = 0x00429020;
+DWORD ad_0047d1b4 = 0x0047d1b4;
+__declspec(naked) void _naked_AddExtendedSettingToList() {
+	__asm {
+		push esi;
+		mov edx, tag;
+		call[FUN_00429020];
+
+		push esi;
+		mov edx, 0x005384ac;
+
+		jmp ad_0047d1b4;
+	}
+}
+
+DWORD OpenExtendedSettings_PatchAddr = 0x0047ee5b;
+DWORD compareLabel_FuncAddr = 0x0042bdc0;
+DWORD ad_0047f062 = 0x0047f062;
+DWORD ad_0047ee67 = 0x0047ee67;
+DWORD ad_0047ef96 = 0x0047ef96;
+__declspec(naked) void _naked_OpenExtendedSettings() {
+	__asm {
+		cmp dword ptr[ebp + 0x1c], ebx;
+		je _0047f062;
+		lea edi, [ebp + 0x20];
+		mov ecx, tag;
+		call[compareLabel_FuncAddr];
+		test al, al;
+		je _0047ee67;
+		mov dword ptr[ebp + 0x7c], ebx;
+		mov dword ptr[ebp + 0x88], ebx;
+		mov dword ptr[ebp + 0x84], 0x5;
+		jmp ad_0047ef96;
+
+	_0047f062:
+		jmp ad_0047f062;
+
+	_0047ee67:
+		jmp ad_0047ee67;
+	}
+}
+
+DWORD initMenuInfo_FuncAddr = 0x00429400;
+const char* menuInfoTag = "TRAINING_EXTENDEDSETTING_MENU";
+__declspec(naked) void _naked_InitExtendedSettingsMenuInfo() {
+	__asm {
+		push -0x1;
+		push 0x00515fb8;
+		mov eax, fs: [0x0] ;
+		push eax;
+		push esi;
+		mov eax, [0x0054b458];
+		xor eax, esp;
+		push eax;
+		lea eax, [esp + 0x08];
+		mov fs : [0x0] , eax;
+		mov esi, dword ptr[esp + 0x18];
+		mov eax, dword ptr[esp + 0x1c];
+		push eax;
+		push esi;
+		mov ecx, menuInfoTag;
+		call[initMenuInfo_FuncAddr];
+		mov[esp + 0x10], 0x0;
+		push esi;
+		mov edx, 0x00538320;
+		mov dword ptr[esi], 0x0053885c;
+		call[FUN_00429020];
+		push esi;
+		mov edx, 0x005376e0;
+		call[FUN_00429020];
+		push esi;
+		mov edx, 0x005365a0;
+		call[FUN_00429020];
+		push esi;
+		mov edx, 0x00535e04;
+		call[FUN_00429020];
+		mov eax, esi;
+		mov ecx, dword ptr[esp + 0x08];
+		mov fs : [0x0] , ecx;
+		pop ecx;
+		pop esi;
+		add esp, 0x0c;
+		ret 0x8;
+	}
+
+}
+
+DWORD initSelectElement_FuncAddr = 0x0042f8f0;
+__forceinline void AddSelectElement(const char* inTag, const char* inLabel) {
+	__asm {
+		push 0x70;
+		call[operator_new_FuncAddr];
+		mov esi, eax;
+		add esp, 0x04;
+		mov[esp + 0x18], esi;
+		cmp esi, ebx;
+		je _FAILEDINIT;
+		push 0xa0;
+		push inTag;
+		push esi;
+		mov ecx, inLabel;
+		call[initSelectElement_FuncAddr];
+		mov dword ptr[esi], 0x00536654;
+		jmp _SKIPFAILEDINIT;
+
+	_FAILEDINIT:
+		xor esi, esi;
+
+	_SKIPFAILEDINIT:
+		ret;
+	}
+}
+
+DWORD initSelectItem_FuncAddr = 0x0042f600;
+void AddSelectItem(const char* inTag, const char* inLabel, DWORD inIndex) {
+	__asm {
+		push 0x3c;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x18], eax;
+		cmp eax, ebx;
+		je _FAILEDINIT;
+		push inIndex;
+		push inTag;
+		push inLabel;
+		push eax;
+		call[initSelectItem_FuncAddr];
+		jmp _SKIPFAILEDINIT;
+
+	_FAILEDINIT:
+		xor eax, eax;
+
+	_SKIPFAILEDINIT:
+		mov edx, dword ptr[esi];
+		push eax;
+		mov eax, [edx + 0x44];
+		mov ecx, esi;
+		call eax;
+		ret;
+	}
+}
+
+DWORD initMenuWindow_FuncAddr = 0x004d7b30;
+DWORD readDataFile_FuncAddr = 0x00407c10;
+DWORD FUN_004804a0 = 0x004804a0;
+const char* selectTag = "TEST";
+const char* selectLabel = "TEST";
+const char* selectTag2 = "TEST 2";
+const char* selectLabel2 = "TEST 2";
+const char* itemTag = "1";
+const char* itemLabel = "OPTION 1";
+DWORD itemIndex = 0;
+const char* itemTag2 = "2";
+const char* itemLabel2 = "OPTION 2";
+DWORD itemIndex2 = 1;
+const char* itemTag3 = "3";
+const char* itemLabel3 = "OPTION 3";
+DWORD itemIndex3 = 0;
+const char* itemTag4 = "4";
+const char* itemLabel4 = "OPTION 4";
+DWORD itemIndex4 = 1;
+__declspec(naked) void _naked_InitExtendedSettingsMenu() {
+	__asm {
+		push -0x1;
+		push 0x005173eb;
+		mov eax, fs: [0x0];
+		push eax;
+		sub esp, 0x8;
+		push ebx;
+		push ebp;
+		push esi;
+		push edi;
+		mov eax, [0x0054b458];
+		xor eax, esp;
+		push eax;
+		lea eax, [esp + 0x1c];
+		mov fs : [0x0] , eax;
+		mov ebp, dword ptr[esp + 0x2c];
+		push ebp;
+		call[initMenuWindow_FuncAddr];
+		push 0x13;
+		xor ebx, ebx;
+		//mov dword ptr [esp + 0x28], ebx;
+		push label;
+		lea ecx, [ebp + 0x5c];
+		mov dword ptr[ebp], 0x0053882c;
+		call[readDataFile_FuncAddr];
+		push 0x78;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov[esp + 0x18], eax;
+		cmp eax, ebx;
+		//mov byte ptr[esp + 0x24], 0x1;
+		je _SKIPINFOINIT;
+		push ebp;
+		push eax;
+		call[_naked_InitExtendedSettingsMenuInfo];
+		mov dword ptr[esp + 0x14], eax;
+		jmp _SKIPSKIP;
+
+	_SKIPINFOINIT:
+		mov dword ptr[esp + 0x14], ebx;
+
+	_SKIPSKIP:
+
+	}
+
+	__asm { //select element
+		push 0x70;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		mov esi, eax;
+		add esp, 0x04;
+		mov[esp + 0x18], esi;
+		cmp esi, ebx;
+		//mov byte ptr[esp + 0x24], 0x02;
+		je _FAILEDINIT1;
+		push 0xa0;
+		push selectTag;
+		push esi;
+		mov ecx, selectLabel;
+		call[initSelectElement_FuncAddr];
+		mov dword ptr[esi], 0x00536654;
+		jmp _SKIPFAILEDINIT1;
+
+	_FAILEDINIT1:
+		xor esi, esi;
+
+	_SKIPFAILEDINIT1:
+
+	}
+
+	__asm { //select item
+		push 0x3c;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x18], eax;
+		cmp eax, ebx;
+		//mov byte ptr[esp + 0x24], 0x3;
+		je _FAILEDINIT2;
+		push itemIndex;
+		push itemTag;
+		push itemLabel;
+		push eax;
+		call[initSelectItem_FuncAddr];
+		jmp _SKIPFAILEDINIT2;
+
+	_FAILEDINIT2:
+		xor eax, eax;
+
+	_SKIPFAILEDINIT2:
+		//mov byte ptr[esp + 0x24], bl;
+		mov edx, dword ptr[esi];
+		push eax;
+		mov eax, dword ptr[edx + 0x44];
+		mov ecx, esi;
+		call eax;
+	}
+
+	__asm { //select item
+		push 0x3c;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x18], eax;
+		cmp eax, ebx;
+		//mov byte ptr[esp + 0x24], 0x3;
+		je _FAILEDINIT3;
+		push itemIndex2;
+		push itemTag2;
+		push itemLabel2;
+		push eax;
+		call[initSelectItem_FuncAddr];
+		jmp _SKIPFAILEDINIT3;
+
+	_FAILEDINIT3:
+		xor eax, eax;
+
+	_SKIPFAILEDINIT3:
+		//mov byte ptr[esp + 0x24], bl;
+		mov edx, dword ptr[esi];
+		push eax;
+		mov eax, dword ptr[edx + 0x44];
+		mov ecx, esi;
+		call eax;
+	}
+
+	__asm {
+		mov dword ptr[esp + 0x18], esi;
+		mov esi, dword ptr[esp + 0x14];
+		add esi, 0x48;
+		lea ebx, [esp + 0x18];
+		call[enterMenuElement_FuncAddr];
+	}
+
+	__asm { //select element
+		push 0x70;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		mov esi, eax;
+		add esp, 0x04;
+		mov[esp + 0x18], esi;
+		cmp esi, ebx;
+		//mov byte ptr[esp + 0x24], 0x02;
+		je _FAILEDINIT4;
+		push 0xa0;
+		push selectTag2;
+		push esi;
+		mov ecx, selectLabel2;
+		call[initSelectElement_FuncAddr];
+		mov dword ptr[esi], 0x00536654;
+		jmp _SKIPFAILEDINIT4;
+
+	_FAILEDINIT4:
+		xor esi, esi;
+
+	_SKIPFAILEDINIT4:
+
+	}
+
+	__asm { //select item
+		push 0x3c;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x18], eax;
+		cmp eax, ebx;
+		//mov byte ptr[esp + 0x24], 0x3;
+		je _FAILEDINIT5;
+		push itemIndex3;
+		push itemTag3;
+		push itemLabel3;
+		push eax;
+		call[initSelectItem_FuncAddr];
+		jmp _SKIPFAILEDINIT5;
+
+	_FAILEDINIT5:
+		xor eax, eax;
+
+	_SKIPFAILEDINIT5:
+		//mov byte ptr[esp + 0x24], bl;
+		mov edx, dword ptr[esi];
+		push eax;
+		mov eax, dword ptr[edx + 0x44];
+		mov ecx, esi;
+		call eax;
+	}
+
+	__asm { //select item
+		push 0x3c;
+		//mov byte ptr[esp + 0x28], bl;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x18], eax;
+		cmp eax, ebx;
+		//mov byte ptr[esp + 0x24], 0x3;
+		je _FAILEDINIT6;
+		push itemIndex4;
+		push itemTag4;
+		push itemLabel4;
+		push eax;
+		call[initSelectItem_FuncAddr];
+		jmp _SKIPFAILEDINIT6;
+
+	_FAILEDINIT6:
+		xor eax, eax;
+
+	_SKIPFAILEDINIT6:
+		//mov byte ptr[esp + 0x24], bl;
+		mov edx, dword ptr[esi];
+		push eax;
+		mov eax, dword ptr[edx + 0x44];
+		mov ecx, esi;
+		call eax;
+	}
+
+	__asm {
+		mov dword ptr[esp + 0x18], esi;
+		mov esi, dword ptr[esp + 0x14];
+		add esi, 0x48;
+		lea ebx, [esp + 0x18];
+		call[enterMenuElement_FuncAddr];
+		mov edi, dword ptr[esp + 0x14];
+		lea esi, [ebp + 0xc];
+		lea ebx, [esp + 0x18];
+		mov dword ptr[esp + 0x18], edi;
+		call[enterMenuElement_FuncAddr];
+		mov edx, dword ptr[edi];
+		mov eax, dword ptr[edx + 0x14];
+		push label;
+		mov ecx, edi;
+		call eax;
+		mov eax, ebp;
+		call[FUN_004804a0];
+		fldz;
+		fstp dword ptr[ebp + 0xc0];
+		mov dword ptr[ebp + 0xa8], 0x2f1;
+		mov dword ptr[ebp + 0xbc], 0x1;
+		mov dword ptr[ebp + 0x9c], 0x0;
+		mov dword ptr[ebp + 0xac], 0x2;
+		mov dword ptr[ebp + 0x4c], 0xfa;
+		mov dword ptr[ebp + 0xb4], 0xe;
+		mov eax, ebp;
+		mov ecx, [esp + 0x1c];
+		mov fs : [0x0] , ecx;
+		pop ecx;
+		pop edi;
+		pop esi;
+		pop ebp;
+		pop ebx;
+		add esp, 0x14;
+		ret 0x4;
+	}
+
+}
+
+MenuWindow* mainWindow;
+
+DWORD MBAA_InitMenuWindow = 0x004d7b30;
+DWORD MBAA_ReadDataFile = 0x00407c10;
+DWORD fun004d8810 = 0x004d8810;
+DWORD MBAA_InitSelectElement = 0x0042f8f0;
+DWORD MBAA_InitItem = 0x0042f600;
+DWORD MBAA_EnterIntoList = 0x0042ba50;
+DWORD MBAA_FUN_00429b00 = 0x00429b00;
+DWORD MBAA_FUN_004804a0 = 0x004804a0;
+DWORD MBAA_FUN_0047d030 = 0x0047d030;
+DWORD MBAA_FUN_0047ce20 = 0x0047ce20;
+DWORD MBAA_MenuDestructor = 0x004d7c70;
+
+void InitMenuWindow(MenuWindow* menuWindow) {
+	//menuWindow should be stack[4]
+	__asm {
+		push menuWindow;
+		call[MBAA_InitMenuWindow];
+	}
+}
+
+void InitExtendedSettingsMenuInfo(MenuInfo* extendedInfo, MenuWindow* extendedWindow) {
+	//menuInfo should be stack[4]
+	//menuWindow should be stack[8]
+	__asm {
+		push extendedWindow;
+		push extendedInfo;
+		call[_naked_InitExtendedSettingsMenuInfo];
+	}
+}
+
+void ReadDataFile(void* dest, const char* name, int nameLength) {
+	//dest should be ecx
+	//name should be stack[4]
+	//nameLength should be stack[8]
+	__asm {
+		mov ecx, dest;
+		push nameLength;
+		push name;
+		call[MBAA_ReadDataFile];
+	}
+}
+
+void InitSelectElement(Element* element, const char* label, const char* tag, int selectItemXOffset) {
+	//label should be ecx
+	//element should be stack[4]
+	//tag should be stack[8]
+	//offset should be stack[c]
+	__asm {
+		mov ecx, label;
+		push selectItemXOffset;
+		push tag;
+		push element;
+		call[MBAA_InitSelectElement];
+	}
+}
+
+void InitItem(Item* item, const char* label, const char* tag, int index) {
+	//item should be stack[4]
+	//label should be stack[8]
+	//tag should be stack[c]
+	//index should be stack[10]
+	__asm {
+		push index;
+		push tag;
+		push label;
+		push item;
+		call[MBAA_InitItem];
+	}
+}
+
+void EnterIntoList(void* list, void* entry) {
+	//entry should be ebx
+	//list should be esi
+	__asm {
+		push entry;
+		mov ebx, esp;
+		mov esi, list;
+		call[MBAA_EnterIntoList];
+		add esp, 0x4;
+	}
+}
+
+void _FUN_00429b00(MenuInfo* menuInfo, const char* label) {
+	//menuInfo should be ecx
+	//label should be stack[4]
+	__asm {
+		mov ecx, menuInfo;
+		push label;
+		call[MBAA_FUN_00429b00];
+	}
+}
+
+void _FUN_004804a0(MenuWindow* menuWindow) {
+	//menuWindow should be eax
+	__asm {
+		mov eax, menuWindow;
+		call[MBAA_FUN_004804a0];
+	}
+}
+
+MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
+	InitMenuWindow(extendedWindow);
+	extendedWindow->vftable = (void*)0x0053882c;
+	ReadDataFile(&extendedWindow->unknown_0x5c, "EXTENDED SETTINGS", 18);
+	MenuInfo* extendedInfo = new MenuInfo;
+	if (extendedInfo != 0x0)
+	{
+		InitExtendedSettingsMenuInfo(extendedInfo, extendedWindow);
+	}
+	Element* element = new Element;
+	InitSelectElement(element, "1", "1", 0xa0);
+	element->vftable = (void*)0x00536654;
+	Item* item = new Item;
+	InitItem(item, "A", "A", 0);
+	EnterIntoList((void*)(&element->ListInput), (void*)(item));
+	item = new Item;
+	InitItem(item, "B", "B", 1);
+	EnterIntoList((void*)(&element->ListInput), (void*)(item));
+	EnterIntoList((void*)(&extendedInfo->ListInput), (void*)(element));
+
+	element = new Element;
+	InitSelectElement(element, "2", "2", 0xa0);
+	element->vftable = (void*)0x00536654;
+	item = new Item;
+	InitItem(item, "A", "A", 0);
+	EnterIntoList((void*)(&element->ListInput), (void*)(item));
+	item = new Item;
+	InitItem(item, "B", "B", 1);
+	EnterIntoList((void*)(&element->ListInput), (void*)(item));
+	EnterIntoList((void*)(&extendedInfo->ListInput), (void*)(element));
+
+	EnterIntoList((void*)(&extendedWindow->ListInput), (void*)(extendedInfo));
+	_FUN_00429b00(extendedInfo, "EXTENDED_SETTING");
+	_FUN_004804a0(extendedWindow);
+	extendedWindow->dimScreenPercentage = 0.0;
+	extendedWindow->u_layer = 0x2f1;
+	extendedWindow->isMenuLit = 1;
+	extendedWindow->isBlurred = 0;
+	extendedWindow->paragraphMode = 2;
+	extendedWindow->xOffset = 0xfa;
+	extendedWindow->textXWidth = 0xe;
+	return extendedWindow;
+}
+
+void _FUN_0047d030(const char* TRAINING_XX_MENU, MenuWindow* menuWindow) {
+	//trainingmenu should be eax
+	//menuWindow should be esi
+	__asm {
+		mov eax, TRAINING_XX_MENU;
+		mov esi, menuWindow;
+		call[MBAA_FUN_0047d030];
+	}
+}
+
+void _FUN_0047ce20(void* field24, const char* TRAINING_XX_MENU) {
+	//field24 should be edx
+	//TRAINING_XX_MENU should be ecx
+	__asm {
+		mov edx, field24;
+		mov ecx, TRAINING_XX_MENU;
+		call[MBAA_FUN_0047ce20];
+	}
+
+}
+
+void SetExtendedSettings(MenuWindow* extendedWindow) {
+
+}
+
+void FreeWindowChildren(MenuWindow* extendedWindow) {
+	MenuInfo* menuInfo = *extendedWindow->MenuInfoList;
+	Element** pElement = menuInfo->ElementList;
+	while (pElement < menuInfo->ElementListEnd) {
+		Element* element = *pElement;
+		Item** pItem = element->ItemList;
+		while (pItem < element->ItemListEnd) {
+			Item* item = *pItem;
+			free(item);
+			pItem += 1;
+		}
+		free(element);
+		pElement += 1;
+	}
+	free(menuInfo);
+}
+
+void CloseExtendedSettings(MenuWindow* extendedWindow) {
+	SetExtendedSettings(extendedWindow);
+	FreeWindowChildren(extendedWindow);
+	free(extendedWindow);
+}
+
+void ExtendedMenuSwitchCase() {
+	if (mainWindow->ExtendedSettings == 0x0) {
+		mainWindow->isMenuLit = 0;
+		MenuWindow* extendedWindow = new MenuWindow;
+		if (extendedWindow != 0x0) {
+			extendedWindow = InitExtendedSettingsMenu(extendedWindow);
+		}
+		mainWindow->ExtendedSettings = extendedWindow;
+		extendedWindow->yOffset = 0xbe;
+		const char* TRAINING_XS_MENU = "TRAINING_XS_MENU";
+		_FUN_0047d030(TRAINING_XS_MENU, extendedWindow);
+	}
+	if (mainWindow->ExtendedSettings->openSubmenuIndex == 4) {
+		_FUN_0047ce20(&mainWindow->ExtendedSettings->unknown_0x24, "TRAINING_XS_MENU");
+		if (mainWindow->ExtendedSettings->unknown_0x50 == 2) {
+			mainWindow->unknown_0x50 = 2;
+		}
+		if (mainWindow->ExtendedSettings != 0x0) {
+			CloseExtendedSettings(mainWindow->ExtendedSettings);
+			mainWindow->ExtendedSettings = 0x0;
+		}
+
+		mainWindow->isMenuLit = 0x1;
+		mainWindow->isRootMenu = 0x1;
+		mainWindow->timeSubmenuOpened = 0x0;
+		mainWindow->openSubmenuIndex = 0x2;
+	}
+
+}
+
+DWORD ad_0047ee5b = 0x0047ee5b;
+
+__declspec(naked) void SwitchCaseTest() {
+	__asm {
+		cmp eax, 2;
+		je _DOEXTENDEDSETTINGS;
+		mov ecx, ebp;
+		call[fun004d8810];
+		jmp _BREAKSWITCH;
+
+	_DOEXTENDEDSETTINGS:
+		mov mainWindow, ebp;
+	}
+
+	PUSH_ALL;
+	ExtendedMenuSwitchCase();
+	POP_ALL;
+
+	__asm {
+	_BREAKSWITCH:
+		jmp ad_0047ee5b;
+	}
+}
+
+DWORD ExtendedSettingsSubmenu_PatchAddr = 0x0047ee54;
+DWORD FUN_004d8810 = 0x004d8810;
+DWORD FUN_0047d030 = 0x0047d030;
+DWORD FUN_0047ce20 = 0x0047ce20;
+const char* TrainingXSMenu = "TRAINING_XS_MENU";
+
+DWORD ad_0047e7ad = 0x0047e7ad;
+__declspec(naked) void _naked_ExtendedSettingsSubmenu() {
+	__asm {
+		cmp eax, 2;
+		je _INITSUBMENU;
+		mov ecx, ebp;
+		call[FUN_004d8810];
+		jmp _BREAK;
+
+	_INITSUBMENU:
+		cmp dword ptr[ebp + 0xe0], ebx;
+		jnz _OPENSUBMENU;
+		push 0xc4;
+		mov dword ptr[ebp + 0xbc], ebx;
+		call[operator_new_FuncAddr];
+		add esp, 0x4;
+		mov dword ptr[esp + 0x14], eax;
+		cmp eax, ebx;
+		mov dword ptr[esp + 0x98], ebx;
+		je _FAILEDINIT;
+		push eax;
+		call[_naked_InitExtendedSettingsMenu];
+		jmp _INITTAIL;
+
+	_FAILEDINIT:
+		xor eax, eax;
+
+	_INITTAIL:
+		mov dword ptr[esp + 0x98], 0xFFFFFFFF;
+		mov dword ptr[ebp + 0xe0], eax;
+		mov dword ptr[eax + 0x44], 0xbe;
+		mov esi, dword ptr[ebp + 0xe0];
+		mov eax, TrainingXSMenu;
+		call[FUN_0047d030];
+		mov esi, 0x1;
+
+	_OPENSUBMENU:
+		mov eax, dword ptr[ebp + 0xe0];
+		cmp dword ptr[eax + 0x84], 0x4;
+		jne _BREAK;
+		cmp dword ptr[eax + 0x38], 0x10;
+		jb _IDK;
+		mov eax, [eax + 0x24];
+		jmp _MAINOPEN;
+
+	_IDK:
+		add eax, 0x24;
+
+	_MAINOPEN:
+		mov edx, eax;
+		mov ecx, TrainingXSMenu;
+		call[FUN_0047ce20];
+		mov ecx, dword ptr[ebp + 0xe0];
+		mov edi, 0x2;
+		cmp dword ptr[ecx + 0x50], edi;
+		jne _IDK2;
+		mov dword ptr[ebp + 0x50], edi;
+
+	_IDK2:
+		cmp ecx, ebx;
+		je _WRAPUP;
+		mov eax, dword ptr[ecx];
+		mov edx, dword ptr[eax];
+		push esi;
+		call edx;
+		mov dword ptr[ebp + 0xe0], ebx;
+
+	_WRAPUP:
+		jmp ad_0047e7ad;
+
+	_BREAK:
+		jmp ad_0047ee5b;
+	}
+}
+
+DWORD MakeBiggerMenuWindow_PatchAddr = 0x0047815b;
+DWORD ad_00478165 = 0x00478165;
+DWORD ad_0047e1e2 = 0x0047e1e2;
+__declspec(naked) void _naked_MakeBiggerMenuWindow() {
+	__asm {
+		push 0xe4;
+		call[operator_new_FuncAddr];
+
+		jmp ad_00478165;
+	}
+}
+
+DWORD UpdateMenuTrainingSettings_PatchAddr = 0x0047e1da;
+DWORD ad_0047e1fb = 0x0047e1fb;
+DWORD ad_0047e27a = 0x0047e27a;
+__declspec(naked) void _naked_UpdateMenuExtendedSettings() {
+	__asm {
+		cmp dword ptr[edi + 0xe0], ebx;
+		jz _GONEXT;
+		mov eax, dword ptr[esp + 0x64];
+		mov ecx, dword ptr[edi + 0xe0];
+		mov edx, dword ptr[ecx];
+		mov edx, dword ptr[edx + 0x8];
+		push eax;
+		mov eax, dword ptr [esp + 0x64];
+		push eax;
+		call edx;
+		jmp ad_0047e27a;
+
+	_GONEXT:
+		cmp dword ptr[edi + 0xc8], ebx;
+		jz _0047e1fb;
+		jmp ad_0047e1e2;
+
+	_0047e1fb:
+		jmp ad_0047e1fb;
+	}
+}
+
+DWORD RenderExtendedSettings_PatchAddr = 0x0047e52a;
+__declspec(naked) void _naked_RenderExtendedSettings() {
+	__asm {
+		cmp dword ptr[edi + 0xe0], 0x0;
+		jz _EXIT;
+		mov ecx, dword ptr[edi + 0xe0];
+		mov edx, dword ptr[ecx];
+		mov eax, dword ptr[edx + 0x14];
+		call eax;
+
+	_EXIT:
+		pop edi;
+		add esp, 0xc;
+		ret;
+
+	}
+}
+
+DWORD ZeroMenuPointers_PatchAddr = 0x0047dd50;
+DWORD ad_0047dd74 = 0x0047dd74;
+__declspec(naked) void _naked_ZeroMenuPointers() {
+	__asm {
+		mov[edi + 0xc4], ebx;
+		mov[edi + 0xc8], ebx;
+		mov[edi + 0xcc], ebx;
+		mov[edi + 0xd0], ebx;
+		mov[edi + 0xd4], ebx;
+		mov[edi + 0xd8], ebx;
+		mov[edi + 0xe0], ebx;
+		jmp ad_0047dd74;
+	}
+}
+
+//END MENU TESTS
+
 DWORD _naked_DisableShadows_FuncAddr = 0x0041a390;
 __declspec(naked) void _naked_DisableShadows() {
 	__asm {
@@ -3282,6 +4265,25 @@ void initInputCallback() {
 
 }
 
+void initTrainingMenu() {
+
+	patchJump(MakeBiggerMenuWindow_PatchAddr, _naked_MakeBiggerMenuWindow);
+	patchJump(ExtendedSettingsMenuItem_PatchAddr, _naked_ExtendedSettingsMenuItem);
+	patchJump(AddExtendedSettingToList_PatchAddr, _naked_AddExtendedSettingToList);
+
+	patchJump(ExtendedSettingsSubmenu_PatchAddr, SwitchCaseTest);
+
+	patchJump(OpenExtendedSettings_PatchAddr, _naked_OpenExtendedSettings);
+	patchJump(ZeroMenuPointers_PatchAddr, _naked_ZeroMenuPointers);
+	patchJump(UpdateMenuTrainingSettings_PatchAddr, _naked_UpdateMenuExtendedSettings);
+	patchJump(RenderExtendedSettings_PatchAddr, _naked_RenderExtendedSettings);
+}
+
+void initCustomHealthRecover() {
+	BYTE tempCode[6] = { 0x8b, 0x15, 0x00, 0x13, 0x78, 0x00 }; //put address of desired custom health amount as last 4 bytes here
+	patchMemcpy(0x004242fa, tempCode, 6); //currently using adShareBase + 0x300 = 0x00781300
+}
+
 
 // dll thread func
 
@@ -3323,6 +4325,10 @@ void threadFunc()
 	initDualInputDisplay();
 
 	initInputCallback();
+
+	initCustomHealthRecover();
+
+	//initTrainingMenu(); //uncomment for experimental new menu
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 

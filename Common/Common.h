@@ -481,6 +481,18 @@ const ADDRESS adSharedOnExtendedSettings =			adShareBase + 0x120; // 1 byte
 const ADDRESS adSharedMainInfoText =				adShareBase + 0x121; // 64 bytes
 const ADDRESS adSharedSubInfoText =					adShareBase + 0x161; // 64 bytes
 
+const ADDRESS adSharedP1FancyInputX =				adShareBase + 0x200; // 4 bytes (float)
+const ADDRESS adSharedP1FancyInputY =				adShareBase + 0x204; // 4 bytes (float)
+const ADDRESS adSharedP2FancyInputX =				adShareBase + 0x208; // 4 bytes (float)
+const ADDRESS adSharedP2FancyInputY =				adShareBase + 0x20C; // 4 bytes (float)
+const ADDRESS adSharedP1ListInputX =				adShareBase + 0x210; // 4 bytes (float)
+const ADDRESS adSharedP1ListInputY =				adShareBase + 0x214; // 4 bytes (float)
+const ADDRESS adSharedP2ListInputX =				adShareBase + 0x218; // 4 bytes (float)
+const ADDRESS adSharedP2ListInputY =				adShareBase + 0x21C; // 4 bytes (float)
+
+const ADDRESS adSharedP1Guts =						adShareBase + 0x250; // 16 bytes (float[4])
+const ADDRESS adSharedP2Guts =						adShareBase + 0x260; // 16 bytes (float[4])
+
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
 const std::vector<int> vGuardLevelLookupTable =
@@ -508,6 +520,14 @@ const int OFFSCREEN_LOCATION = 0x10000000;
 const int ONSCREEN_LOCATION = 0x000000A0;
 const int TOO_HIGH_TO_BURST = 10000;
 const int MAX_BURST = 99;
+const float DEFAULT_P1_FANCYINPUT_X = 200.0f;
+const float DEFAULT_P1_FANCYINPUT_Y = 112.0f;
+const float DEFAULT_P2_FANCYINPUT_X = 378.0f;
+const float DEFAULT_P2_FANCYINPUT_Y = 112.0f;
+const float DEFAULT_P1_LISTINPUT_X = 60.0f;
+const float DEFAULT_P1_LISTINPUT_Y = 174.0f;
+const float DEFAULT_P2_LISTINPUT_X = 595.0f;
+const float DEFAULT_P2_LISTINPUT_Y = 174.0f;
 
 const char pcSionBullets_13[13] = "SION BULLETS";
 const char pcRoaVisibleCharge_19[19] = "ROA VISIBLE CHARGE";
@@ -1041,6 +1061,27 @@ static LONG SetRegistryValue(std::wstring sKey, int nValue)
 	return openResult;
 }
 
+static LONG SetRegistryValue(std::wstring sKey, float fValue)
+{
+	LONG openResult = -1;
+
+	try
+	{
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
+
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
+		if (openResult == 0)
+			openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_DWORD, (unsigned char*)&fValue, sizeof(fValue));
+
+		RegCloseKey(hKey);
+	}
+	catch (...)
+	{
+	}
+	return openResult;
+}
+
 static LONG SetRegistryValue(std::wstring sKey, bool bValue)
 {
 	return SetRegistryValue(sKey, bValue ? 1 : 0);
@@ -1095,6 +1136,33 @@ static LONG ReadFromRegistry(std::wstring sKey, std::string* psValue)
 			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&pcValue, &dwSize);
 		if (openResult == 0)
 			*psValue = std::string(pcValue);
+
+		RegCloseKey(hKey);
+	}
+	catch (...)
+	{
+	}
+
+	return openResult;
+}
+
+static LONG ReadFromRegistry(std::wstring sKey, float* pfValue)
+{
+	LONG openResult = -1;
+
+	try
+	{
+		float pfTempValue = 0.0f;
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+		DWORD dwType = REG_DWORD;
+		DWORD dwSize = MAX_PATH;
+
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+		if (openResult == 0)
+			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&pfTempValue, &dwSize);
+		if (openResult == 0)
+			*pfValue = (float)pfTempValue;
 
 		RegCloseKey(hKey);
 	}
