@@ -523,6 +523,7 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedColorBlindMode), &bColorBlindMode, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayHitboxes), &bDisplayHitboxes, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedExtendOrigins), &bExtendOrigins, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adHealthRestore), &MAX_HEALTH, 4, 0);
 
                         //std::array<uint8_t, 4> arrTemp = CreateColorArray2(NO_HIGHLIGHT);
                         std::array<uint8_t, 4> arrTempBlockingHighlight = CreateColorArray2(nBlockingHighlightSetting);
@@ -1426,10 +1427,10 @@ int main(int argc, char* argv[])
                                 }
                                 case 6:
                                 {
-                                    char pcTemp64[64] = "Set a specific health amount.";
+                                    char pcTemp64[64] = "Set a specific health amount (Recover 100% only).";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
                                     int nPercent = (int)((float)nCustomHealth / 11400.0f * 100.0f);
-                                    strcpy_s(pcTemp64, (">" + std::to_string(nPercent) + "%%. {Hold A} for precise numbers.").c_str());
+                                    strcpy_s(pcTemp64, (">" + std::to_string(nPercent) + "%. {Hold A} for precise numbers.").c_str());
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
@@ -2500,12 +2501,14 @@ int main(int argc, char* argv[])
                                 else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
                                 {
                                     nCustomHealth = max(0, nCustomHealth - (bAPressed ? 1 : 100));
-                                    SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth, nP1Controlled, nP2Controlled);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adHealthRestore), &nCustomHealth, 4, 0);
+                                    //SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth, nP1Controlled, nP2Controlled);
                                 }
                                 else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                                 {
                                     nCustomHealth = min(nCustomHealth + (bAPressed ? 1 : 100), MAX_HEALTH);
-                                    SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth, nP1Controlled, nP2Controlled);
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adHealthRestore), &nCustomHealth, 4, 0);
+                                    //SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth, nP1Controlled, nP2Controlled);
                                 }
 
                                 if (bBunkerInsteadOfBurst)
@@ -6298,6 +6301,7 @@ int main(int argc, char* argv[])
                     }
 
                     // BATTLE SETTINGS
+                    /*
                     if (nCurrentSubMenu == eMenu::BATTLE_SETTINGS)
                     {
                         DWORD dwNoRecoverString = GetNoRecoverStringAddress(hMBAAHandle, dwBaseAddress);
@@ -6327,15 +6331,15 @@ int main(int argc, char* argv[])
 
                         // left
                         else if (nOldLifeIndex > nLifeIndex)
-                            bLifeRecover = true;
+                            bLifeRecover = false;
                         // right
                         else if (nOldLifeIndex < nLifeIndex)
-                            bLifeRecover = false;
+                            bLifeRecover = true;
 
                         if (bLifeRecover)
                         {
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwNoRecoverString), &pcRecover_8, 8, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwRecover25String), &pcRecover_8, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwNoRecoverString), &pcRecover_11, 11, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwRecover25String), &pcRecover_11, 11, 0);
 
                             nWriteBuffer = 0;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwLifeIndex), &nWriteBuffer, 4, 0);
@@ -6343,8 +6347,8 @@ int main(int argc, char* argv[])
                         }
                         else
                         {
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwRecover75String), &pcRecover_11, 11, 0);
-                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwRecover100String), &pcRecover_11, 11, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwRecover75String), &pcRecover_8, 8, 0);
+                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwRecover100String), &pcRecover_8, 8, 0);
 
                             nWriteBuffer = 4;
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwLifeIndex), &nWriteBuffer, 4, 0);
@@ -6353,6 +6357,7 @@ int main(int argc, char* argv[])
 
                         nOldLifeIndex = nLifeIndex;
                     }
+                    */
                 }
                 else // not paused
                 {
@@ -6390,8 +6395,8 @@ int main(int argc, char* argv[])
                         WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nDummy);
 
                     // Disable built-in health recovery
-                    nWriteBuffer = 4;
-                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwLifeRecover), &nWriteBuffer, 4, 0);
+                    //nWriteBuffer = 4;
+                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwLifeRecover), &nWriteBuffer, 4, 0);
 
                     // Disable built-in reversal action
                     nWriteBuffer = 0;
@@ -6589,15 +6594,15 @@ int main(int argc, char* argv[])
                     ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1HitstunRemaining, &nHitstunRemaining, 1, nP2Controlled);
                     ReadCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1PatternRead, &nP2Pattern, 4, nP2Controlled);
 
-                    static int nHealthRefillTimerCount = 0;
+                    //static int nHealthRefillTimerCount = 0;
 
                     if (nHitstunRemaining == 0 && nP2Pattern != 350)
                     {
-                        nHealthRefillTimerCount++;
-                        if (nHealthRefillTimerCount == 45) { // 6c into kouma AAD causes problems without this
-                            nHealthRefillTimerCount = 0;
-                            nHealthRefillTimer = 1;
-                        }
+                        //nHealthRefillTimerCount++;
+                        //if (nHealthRefillTimerCount == 45) { // 6c into kouma AAD causes problems without this
+                        //    nHealthRefillTimerCount = 0;
+                        //    nHealthRefillTimer = 1;
+                        //}
                         
                         nSionBulletsRefillTimer = 1;
                     
@@ -6616,18 +6621,18 @@ int main(int argc, char* argv[])
                     }
                     else
                     {
-                        nHealthRefillTimer = 0;
+                        //nHealthRefillTimer = 0;
                         nSionBulletsRefillTimer = 0;
                     }
 
                 
 
                     // refill health if training mode is reset or long enough time has passed
-                    if ((nFrameCounter == 1 && !CheckSave(nSaveSlot)) || (nHealthRefillTimer == 1 && bLifeRecover))
-                    {
-                        SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth, nP1Controlled, nP2Controlled);
-                        nHealthRefillTimer = 0;
-                    }
+                    //if ((nFrameCounter == 1 && !CheckSave(nSaveSlot)) || (nHealthRefillTimer == 1 && bLifeRecover))
+                    //{
+                    //    SetHealth(hMBAAHandle, dwBaseAddress, nCustomHealth, nP1Controlled, nP2Controlled);
+                    //    nHealthRefillTimer = 0;
+                    //}
 
                     // refill character specifics
                     if (!CheckSave(nSaveSlot))
