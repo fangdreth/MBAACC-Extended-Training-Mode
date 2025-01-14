@@ -10,7 +10,7 @@
 typedef DWORD UNKNOWN; 
 
 struct main {
-	DWORD* linkedList;
+	LinkedList* linkedList;
 	DWORD linkedListLength;
 	LinkedListData* linkedListData; // calling it this is not a good idea
 	UNUSED(4)
@@ -19,21 +19,24 @@ struct main {
 	DWORD linkedListCounter2;
 }
 
-struct VertElement {
-// im unsure of if i have this class starting at the correct area.
-// check how it ends!
-// texture is after color, and then 3 floats
+struct VertElement { // check out 0041617f, these might be getting copied
+	// im unsure of if i have this class starting at the correct area.
+	// check how it ends!
+	// texture is after color, and then 3 floats
 
-	float unk;
-	float unk;
-	float unk;
-	float unk;
-	DWORD color; 
-	float unk; 
-	float unk;
-	float unk;
+	// 0x1C4 000111000100
+	// 0x004			0x040				0x080			0x100
+	// D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1
 
-
+	float x;
+	float y;
+	float z;
+	float w;
+	DWORD diffuse; 
+	DWORD specular; 
+	float u;
+	float v;
+	
 } sizeof 0x20
 
 struct LinkedListDataElement { // check out 00415540 and related funcs, eax is base 0 in this
@@ -53,44 +56,19 @@ struct LinkedListDataElement { // check out 00415540 and related funcs, eax is b
 	// no. why the fuck would it? triangles!!!!!!!!!!
 	// well no it does have 4 verts tho, weird
 	
-	DWORD* unknownPtr1;
-	DWORD* unknownPtr2;
+	// these two are COMPLETE guesses. i think the list is circular? maybe?
+	// or at least allows for bidirectional traversal.
+	// which is a circle
 	
-	float unknownFloat;
-	float unknownFloat;
-	float unknownFloat; // 0x10
-	float unknownFloat;
-	DWORD color; // check out 00415c96 for,, possible easier list of colors
-	UNKNOWN fc54544;
-	float unknownFloat; // off 0x20
-	float unk;
+	LinkedList* nextLinkedList; // LinkedList is done on purpoe. these arent elements
+	LinkedList* prevLinkedList;
 	
-	float unk;
-	float unk;
-	float unk; // 0x30
-	float unk;
-	DWORD color;
-	float unk; // not sure if this is a float or dword, but its always set to 0
-	float unk; // 0x40
-	float unk;
-	
-	float unk;
-	float unk;
-	float unk; // 0x50
-	float unk;
-	DWORD color;
-	UNKNOWN unk;
-	float unk; // 0x60
-	UNKNOWN unk;
-	
-	UNKNOWN unk;
-	UNKNOWN unk;
-	UNKNOWN unk; // 0x70
-	UNKNOWN unk;
-	DWORD color;
-	UNKNOWN unk;
-	UNKNOWN unk; // 0x80
-	UNKNOWN unk;
+	struct MeltyQuad {
+		VertElement v0;
+		VertElement v1;
+		VertElement v2;
+		VertElement v3;
+	}
 	
 	IDirect3DTexture9* tex; // 0x88, this is correct right?
 	
@@ -129,5 +107,27 @@ struct LinkedListData {
 	DWORD what2; // 080b4022
 	
 	LinkedListDataElement actualElements[8000]; // 8000 is an assumption!
+
+}
+
+// -----
+
+
+struct LinkedList {
+
+	// basically, if i remember correctly, this is a really fucking weird list 
+	// of lists, where i only do things if the list is valid??
+
+	LinkedListElement* element = points to first element in data
+	DWORD unk; // 0
+	DWORD unk; // 1
+	DWORD unk; // 1600, length 
+}
+
+struct LinkedListElement { 
+	// still so confused over the formats of each list
+	// i swear they must be using some sort of std container
+	// ghidra func ID might be able to help me here? 
+
 
 }

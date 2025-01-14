@@ -1,0 +1,23 @@
+
+im figuring this out.
+i dont have 2v2 and i have an 8 hour trainride
+
+break at 004c04e0
+	ebx loops 0,1,640(dec 1600, length of list)
+	does this mean that on the base linkedlistaddr(005550a8), it is only doing things on those addrs?
+	
+issue:
+	where in the code should i break in order to properly inspect the list each time
+	where is it cleared
+	
+	im going to try breaking at 40e499 (AS IN BEFORE THE CALL)	
+		
+		
+ugh
+checking out 004c02b0
+checks [[listAddr] +0] != 0 && [[listAddr] + 8] == 0
+	weird that it wants +8 to be 0?
+	
+005550B0 is also,,, something. wtf
+i dont understand how the fuck i didnt get that address earlier?? it seems so important
+
