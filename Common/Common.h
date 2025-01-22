@@ -495,6 +495,10 @@ const ADDRESS adSharedP2Guts =						adShareBase + 0x260; // 16 bytes (float[4])
 
 const ADDRESS adHealthRestore =						adShareBase + 0x300; //4 bytes
 
+//extended menu storage
+const ADDRESS adMenuOption1 =						adShareBase + 0x500; //4 bytes
+const ADDRESS adMenuOption2 =						adShareBase + 0x504; //4 bytes
+
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
 const std::vector<int> vGuardLevelLookupTable =

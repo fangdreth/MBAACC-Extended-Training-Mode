@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <vector>
 #include "..\Common\Common.h"
 
 #define CONCATENATE_DETAIL(x, y) x##y
@@ -26,11 +27,13 @@ struct Item //scrolling items on right
 	char label[20];
 	void* effect;
 	char name[20];
-	UNUSED(0x5);
+	UNUSED(0x8);
+	int value;
 };
 
 CHECKOFFSET(Item, effect, 0x18)
-CHECKSIZE(Item, 0x35)
+CHECKOFFSET(Item, value, 0x38)
+CHECKSIZE(Item, 0x3c)
 
 struct Element //listed elements on left
 {
@@ -53,6 +56,26 @@ struct Element //listed elements on left
 	Item** ItemList;
 	Item** ItemListEnd;
 	UNUSED(0x04);
+
+	//vftable[6]
+	int GetItemValue(int itemIndex) {
+		if (ItemList == 0x0 || ItemListEnd - ItemList <= itemIndex) {
+			return 0;
+		}
+		return ItemList[itemIndex]->value;
+	}
+	
+	//vftable[9] sets selectedItem
+
+	//vftable[10] gets selectedItem
+
+	//vftable[11]
+	int GetItemListSize() {
+		if (ItemList == 0x0) {
+			return 0;
+		}
+		return ItemListEnd - ItemList;
+	}
 };
 
 CHECKOFFSET(Element, displayedName, 0x24)
@@ -86,7 +109,7 @@ struct MenuWindow
 {
 	void* vftable;
 	int isMenuDisabled;
-	UNUSED(0x4);
+	int MenuInfoIndex;
 	int ListInput;
 	MenuInfo** MenuInfoList;
 	MenuInfo** MenuInfoListEnd;
@@ -140,3 +163,29 @@ CHECKSIZE(MenuWindow, 0xe4)
 #pragma pack(pop, 1)
 #undef CHECKOFFSET
 #undef CHECKSIZE
+
+//pairs of labels (visible) and tags (invisible no spaces) for each element followed by each item
+std::vector<const char*> Option1 = {
+	"Element", "element",
+	"Item1", "item1",
+	"Item2", "item2"
+};
+
+std::vector<const char*> Option2 = {
+	"Element2", "element2",
+	"Item1", "item1",
+	"Item2", "item2",
+	"Item3", "item3",
+	"Item4", "item4"
+};
+
+std::vector<std::vector<const char*>> Page1 = {
+	Option1, Option2
+};
+
+int* MenuOption1 = (int*)(adMBAABase + adShareBase + 0x500);
+int* MenuOption2 = (int*)(adMBAABase + adShareBase + 0x504);
+
+std::vector<int*> Page1_Settings = {
+	MenuOption1, MenuOption2
+};

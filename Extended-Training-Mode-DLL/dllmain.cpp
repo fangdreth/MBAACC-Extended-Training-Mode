@@ -2880,97 +2880,118 @@ __declspec(naked) void _naked_DrawHudMeter() {
 }
 
 // MENU TESTS
-DWORD ExtendedSettingsMenuItem_PatchAddr = 0x0047d493;
-DWORD operator_new_FuncAddr = 0x004e0177;
-DWORD initNormalElement_FuncAddr = 0x00429140;
-DWORD enterMenuElement_FuncAddr = 0x0042ba50;
+MenuWindow* mainWindow;
+
+DWORD MBAA_FUN_00429020 = 0x00429020;
+DWORD MBAA_FUN_00429b00 = 0x00429b00;
+DWORD MBAA_FUN_0047ce20 = 0x0047ce20;
+DWORD MBAA_FUN_0047d030 = 0x0047d030;
+DWORD MBAA_FUN_004804a0 = 0x004804a0;
+DWORD MBAA_FUN_004d8810 = 0x004d8810;
+
+DWORD MBAA_ReadDataFile =			0x00407c10;
+DWORD MBAA_InitNormalElement =		0x00429140;
+DWORD MBAA_InitMenuInfo =			0x00429400;
+DWORD MBAA_EnterIntoList =			0x0042ba50;
+DWORD MBAA_CompareLabel =			0x0042bdc0;
+DWORD MBAA_InitItem =				0x0042f600;
+DWORD MBAA_InitSelectElement =		0x0042f8f0;
+DWORD MBAA_GetElementPointer =		0x0042fa90;
+DWORD MBAA_GetSetting =				0x0042fb50;
+DWORD MBAA_InitMenuWindow =			0x004d7b30;
+DWORD MBAA_MenuDestructor =			0x004d7c70;
+DWORD MBAA_operator_new =			0x004e0177;
+DWORD MBAA_UnrecoveredJumptable =	0x004e0bf2;
+
 const char* label = "EXTENDED SETTINGS";
 const char* tag = "EXTENDED_SETTING";
-DWORD ad_0047d49a = 0x0047d49a;
+
+DWORD ExtendedSettingsMenuItem_PatchAddr = 0x0047d493;
+//add extended menu element to main menu info
 __declspec(naked) void _naked_ExtendedSettingsMenuItem() {
 	__asm {
 		push 0x58;
-		call[operator_new_FuncAddr];
+		call[MBAA_operator_new];
 		mov edi, eax;
 		add esp, 0x04;
 		mov dword ptr[esp + 0x14], edi;
 		test edi, edi;
 		mov byte ptr[esp + 0x68], 0x04;
-		je noInit;
+		je _NOINIT;
 
 		push 0x00;
 		push tag;
 		push label;
 		push edi;
-		call[initNormalElement_FuncAddr];
+		call[MBAA_InitNormalElement];
 		mov dword ptr[edi + 0x0c], 0x00000001;
 		mov dword ptr[edi + 0x04], 0x00000001;
 		mov dword ptr[edi], 0x0053604c;
 
-		jmp ender;
+		jmp _END;
 
-	noInit:
+	_NOINIT:
 		xor edi, edi;
-		jmp ender;
 
-	ender:
+	_END:
 		mov byte ptr[esp + 0x68], 0x01;
 		lea ebx, [esp + 0x14];
 		mov esi, ebp;
 		mov[esp + 0x14], edi;
-		call[enterMenuElement_FuncAddr];
+		call[MBAA_EnterIntoList];
 
 		push 0x58;
-		call[operator_new_FuncAddr];
-		jmp ad_0047d49a;
+		call[MBAA_operator_new];
+		push 0x0047d49a;
+		ret;
 	}
 }
 
 DWORD AddExtendedSettingToList_PatchAddr = 0x0047d1ae;
-DWORD FUN_00429020 = 0x00429020;
-DWORD ad_0047d1b4 = 0x0047d1b4;
+//idk what this list is exactly
 __declspec(naked) void _naked_AddExtendedSettingToList() {
 	__asm {
 		push esi;
 		mov edx, tag;
-		call[FUN_00429020];
+		call[MBAA_FUN_00429020];
 
 		push esi;
 		mov edx, 0x005384ac;
 
-		jmp ad_0047d1b4;
+		push 0x0047d1b4;
+		ret;
 	}
 }
 
 DWORD OpenExtendedSettings_PatchAddr = 0x0047ee5b;
-DWORD compareLabel_FuncAddr = 0x0042bdc0;
-DWORD ad_0047f062 = 0x0047f062;
-DWORD ad_0047ee67 = 0x0047ee67;
-DWORD ad_0047ef96 = 0x0047ef96;
+//add extended menu to open check if-chain
 __declspec(naked) void _naked_OpenExtendedSettings() {
 	__asm {
 		cmp dword ptr[ebp + 0x1c], ebx;
 		je _0047f062;
 		lea edi, [ebp + 0x20];
 		mov ecx, tag;
-		call[compareLabel_FuncAddr];
+		call[MBAA_CompareLabel];
 		test al, al;
 		je _0047ee67;
 		mov dword ptr[ebp + 0x7c], ebx;
 		mov dword ptr[ebp + 0x88], ebx;
 		mov dword ptr[ebp + 0x84], 0x5;
-		jmp ad_0047ef96;
+		push 0x0047ef96;
+		ret;
 
 	_0047f062:
-		jmp ad_0047f062;
+		push 0x0047f062;
+		ret;
 
 	_0047ee67:
-		jmp ad_0047ee67;
+		push 0x0047ee67;
+		ret;
 	}
 }
 
-DWORD initMenuInfo_FuncAddr = 0x00429400;
 const char* menuInfoTag = "TRAINING_EXTENDEDSETTING_MENU";
+//same as MBAA's InitBattleSettingsMenuInfo but with a different tag
 __declspec(naked) void _naked_InitExtendedSettingsMenuInfo() {
 	__asm {
 		push -0x1;
@@ -2988,21 +3009,21 @@ __declspec(naked) void _naked_InitExtendedSettingsMenuInfo() {
 		push eax;
 		push esi;
 		mov ecx, menuInfoTag;
-		call[initMenuInfo_FuncAddr];
+		call[MBAA_InitMenuInfo];
 		mov[esp + 0x10], 0x0;
 		push esi;
 		mov edx, 0x00538320;
 		mov dword ptr[esi], 0x0053885c;
-		call[FUN_00429020];
+		call[MBAA_FUN_00429020];
 		push esi;
 		mov edx, 0x005376e0;
-		call[FUN_00429020];
+		call[MBAA_FUN_00429020];
 		push esi;
 		mov edx, 0x005365a0;
-		call[FUN_00429020];
+		call[MBAA_FUN_00429020];
 		push esi;
 		mov edx, 0x00535e04;
-		call[FUN_00429020];
+		call[MBAA_FUN_00429020];
 		mov eax, esi;
 		mov ecx, dword ptr[esp + 0x08];
 		mov fs : [0x0] , ecx;
@@ -3014,350 +3035,7 @@ __declspec(naked) void _naked_InitExtendedSettingsMenuInfo() {
 
 }
 
-DWORD initSelectElement_FuncAddr = 0x0042f8f0;
-__forceinline void AddSelectElement(const char* inTag, const char* inLabel) {
-	__asm {
-		push 0x70;
-		call[operator_new_FuncAddr];
-		mov esi, eax;
-		add esp, 0x04;
-		mov[esp + 0x18], esi;
-		cmp esi, ebx;
-		je _FAILEDINIT;
-		push 0xa0;
-		push inTag;
-		push esi;
-		mov ecx, inLabel;
-		call[initSelectElement_FuncAddr];
-		mov dword ptr[esi], 0x00536654;
-		jmp _SKIPFAILEDINIT;
-
-	_FAILEDINIT:
-		xor esi, esi;
-
-	_SKIPFAILEDINIT:
-		ret;
-	}
-}
-
-DWORD initSelectItem_FuncAddr = 0x0042f600;
-void AddSelectItem(const char* inTag, const char* inLabel, DWORD inIndex) {
-	__asm {
-		push 0x3c;
-		call[operator_new_FuncAddr];
-		add esp, 0x4;
-		mov dword ptr[esp + 0x18], eax;
-		cmp eax, ebx;
-		je _FAILEDINIT;
-		push inIndex;
-		push inTag;
-		push inLabel;
-		push eax;
-		call[initSelectItem_FuncAddr];
-		jmp _SKIPFAILEDINIT;
-
-	_FAILEDINIT:
-		xor eax, eax;
-
-	_SKIPFAILEDINIT:
-		mov edx, dword ptr[esi];
-		push eax;
-		mov eax, [edx + 0x44];
-		mov ecx, esi;
-		call eax;
-		ret;
-	}
-}
-
-DWORD initMenuWindow_FuncAddr = 0x004d7b30;
-DWORD readDataFile_FuncAddr = 0x00407c10;
-DWORD FUN_004804a0 = 0x004804a0;
-const char* selectTag = "TEST";
-const char* selectLabel = "TEST";
-const char* selectTag2 = "TEST 2";
-const char* selectLabel2 = "TEST 2";
-const char* itemTag = "1";
-const char* itemLabel = "OPTION 1";
-DWORD itemIndex = 0;
-const char* itemTag2 = "2";
-const char* itemLabel2 = "OPTION 2";
-DWORD itemIndex2 = 1;
-const char* itemTag3 = "3";
-const char* itemLabel3 = "OPTION 3";
-DWORD itemIndex3 = 0;
-const char* itemTag4 = "4";
-const char* itemLabel4 = "OPTION 4";
-DWORD itemIndex4 = 1;
-__declspec(naked) void _naked_InitExtendedSettingsMenu() {
-	__asm {
-		push -0x1;
-		push 0x005173eb;
-		mov eax, fs: [0x0];
-		push eax;
-		sub esp, 0x8;
-		push ebx;
-		push ebp;
-		push esi;
-		push edi;
-		mov eax, [0x0054b458];
-		xor eax, esp;
-		push eax;
-		lea eax, [esp + 0x1c];
-		mov fs : [0x0] , eax;
-		mov ebp, dword ptr[esp + 0x2c];
-		push ebp;
-		call[initMenuWindow_FuncAddr];
-		push 0x13;
-		xor ebx, ebx;
-		//mov dword ptr [esp + 0x28], ebx;
-		push label;
-		lea ecx, [ebp + 0x5c];
-		mov dword ptr[ebp], 0x0053882c;
-		call[readDataFile_FuncAddr];
-		push 0x78;
-		call[operator_new_FuncAddr];
-		add esp, 0x4;
-		mov[esp + 0x18], eax;
-		cmp eax, ebx;
-		//mov byte ptr[esp + 0x24], 0x1;
-		je _SKIPINFOINIT;
-		push ebp;
-		push eax;
-		call[_naked_InitExtendedSettingsMenuInfo];
-		mov dword ptr[esp + 0x14], eax;
-		jmp _SKIPSKIP;
-
-	_SKIPINFOINIT:
-		mov dword ptr[esp + 0x14], ebx;
-
-	_SKIPSKIP:
-
-	}
-
-	__asm { //select element
-		push 0x70;
-		//mov byte ptr[esp + 0x28], bl;
-		call[operator_new_FuncAddr];
-		mov esi, eax;
-		add esp, 0x04;
-		mov[esp + 0x18], esi;
-		cmp esi, ebx;
-		//mov byte ptr[esp + 0x24], 0x02;
-		je _FAILEDINIT1;
-		push 0xa0;
-		push selectTag;
-		push esi;
-		mov ecx, selectLabel;
-		call[initSelectElement_FuncAddr];
-		mov dword ptr[esi], 0x00536654;
-		jmp _SKIPFAILEDINIT1;
-
-	_FAILEDINIT1:
-		xor esi, esi;
-
-	_SKIPFAILEDINIT1:
-
-	}
-
-	__asm { //select item
-		push 0x3c;
-		//mov byte ptr[esp + 0x28], bl;
-		call[operator_new_FuncAddr];
-		add esp, 0x4;
-		mov dword ptr[esp + 0x18], eax;
-		cmp eax, ebx;
-		//mov byte ptr[esp + 0x24], 0x3;
-		je _FAILEDINIT2;
-		push itemIndex;
-		push itemTag;
-		push itemLabel;
-		push eax;
-		call[initSelectItem_FuncAddr];
-		jmp _SKIPFAILEDINIT2;
-
-	_FAILEDINIT2:
-		xor eax, eax;
-
-	_SKIPFAILEDINIT2:
-		//mov byte ptr[esp + 0x24], bl;
-		mov edx, dword ptr[esi];
-		push eax;
-		mov eax, dword ptr[edx + 0x44];
-		mov ecx, esi;
-		call eax;
-	}
-
-	__asm { //select item
-		push 0x3c;
-		//mov byte ptr[esp + 0x28], bl;
-		call[operator_new_FuncAddr];
-		add esp, 0x4;
-		mov dword ptr[esp + 0x18], eax;
-		cmp eax, ebx;
-		//mov byte ptr[esp + 0x24], 0x3;
-		je _FAILEDINIT3;
-		push itemIndex2;
-		push itemTag2;
-		push itemLabel2;
-		push eax;
-		call[initSelectItem_FuncAddr];
-		jmp _SKIPFAILEDINIT3;
-
-	_FAILEDINIT3:
-		xor eax, eax;
-
-	_SKIPFAILEDINIT3:
-		//mov byte ptr[esp + 0x24], bl;
-		mov edx, dword ptr[esi];
-		push eax;
-		mov eax, dword ptr[edx + 0x44];
-		mov ecx, esi;
-		call eax;
-	}
-
-	__asm {
-		mov dword ptr[esp + 0x18], esi;
-		mov esi, dword ptr[esp + 0x14];
-		add esi, 0x48;
-		lea ebx, [esp + 0x18];
-		call[enterMenuElement_FuncAddr];
-	}
-
-	__asm { //select element
-		push 0x70;
-		//mov byte ptr[esp + 0x28], bl;
-		call[operator_new_FuncAddr];
-		mov esi, eax;
-		add esp, 0x04;
-		mov[esp + 0x18], esi;
-		cmp esi, ebx;
-		//mov byte ptr[esp + 0x24], 0x02;
-		je _FAILEDINIT4;
-		push 0xa0;
-		push selectTag2;
-		push esi;
-		mov ecx, selectLabel2;
-		call[initSelectElement_FuncAddr];
-		mov dword ptr[esi], 0x00536654;
-		jmp _SKIPFAILEDINIT4;
-
-	_FAILEDINIT4:
-		xor esi, esi;
-
-	_SKIPFAILEDINIT4:
-
-	}
-
-	__asm { //select item
-		push 0x3c;
-		//mov byte ptr[esp + 0x28], bl;
-		call[operator_new_FuncAddr];
-		add esp, 0x4;
-		mov dword ptr[esp + 0x18], eax;
-		cmp eax, ebx;
-		//mov byte ptr[esp + 0x24], 0x3;
-		je _FAILEDINIT5;
-		push itemIndex3;
-		push itemTag3;
-		push itemLabel3;
-		push eax;
-		call[initSelectItem_FuncAddr];
-		jmp _SKIPFAILEDINIT5;
-
-	_FAILEDINIT5:
-		xor eax, eax;
-
-	_SKIPFAILEDINIT5:
-		//mov byte ptr[esp + 0x24], bl;
-		mov edx, dword ptr[esi];
-		push eax;
-		mov eax, dword ptr[edx + 0x44];
-		mov ecx, esi;
-		call eax;
-	}
-
-	__asm { //select item
-		push 0x3c;
-		//mov byte ptr[esp + 0x28], bl;
-		call[operator_new_FuncAddr];
-		add esp, 0x4;
-		mov dword ptr[esp + 0x18], eax;
-		cmp eax, ebx;
-		//mov byte ptr[esp + 0x24], 0x3;
-		je _FAILEDINIT6;
-		push itemIndex4;
-		push itemTag4;
-		push itemLabel4;
-		push eax;
-		call[initSelectItem_FuncAddr];
-		jmp _SKIPFAILEDINIT6;
-
-	_FAILEDINIT6:
-		xor eax, eax;
-
-	_SKIPFAILEDINIT6:
-		//mov byte ptr[esp + 0x24], bl;
-		mov edx, dword ptr[esi];
-		push eax;
-		mov eax, dword ptr[edx + 0x44];
-		mov ecx, esi;
-		call eax;
-	}
-
-	__asm {
-		mov dword ptr[esp + 0x18], esi;
-		mov esi, dword ptr[esp + 0x14];
-		add esi, 0x48;
-		lea ebx, [esp + 0x18];
-		call[enterMenuElement_FuncAddr];
-		mov edi, dword ptr[esp + 0x14];
-		lea esi, [ebp + 0xc];
-		lea ebx, [esp + 0x18];
-		mov dword ptr[esp + 0x18], edi;
-		call[enterMenuElement_FuncAddr];
-		mov edx, dword ptr[edi];
-		mov eax, dword ptr[edx + 0x14];
-		push label;
-		mov ecx, edi;
-		call eax;
-		mov eax, ebp;
-		call[FUN_004804a0];
-		fldz;
-		fstp dword ptr[ebp + 0xc0];
-		mov dword ptr[ebp + 0xa8], 0x2f1;
-		mov dword ptr[ebp + 0xbc], 0x1;
-		mov dword ptr[ebp + 0x9c], 0x0;
-		mov dword ptr[ebp + 0xac], 0x2;
-		mov dword ptr[ebp + 0x4c], 0xfa;
-		mov dword ptr[ebp + 0xb4], 0xe;
-		mov eax, ebp;
-		mov ecx, [esp + 0x1c];
-		mov fs : [0x0] , ecx;
-		pop ecx;
-		pop edi;
-		pop esi;
-		pop ebp;
-		pop ebx;
-		add esp, 0x14;
-		ret 0x4;
-	}
-
-}
-
-MenuWindow* mainWindow;
-
-DWORD MBAA_InitMenuWindow = 0x004d7b30;
-DWORD MBAA_ReadDataFile = 0x00407c10;
-DWORD fun004d8810 = 0x004d8810;
-DWORD MBAA_InitSelectElement = 0x0042f8f0;
-DWORD MBAA_InitItem = 0x0042f600;
-DWORD MBAA_EnterIntoList = 0x0042ba50;
-DWORD MBAA_FUN_00429b00 = 0x00429b00;
-DWORD MBAA_FUN_004804a0 = 0x004804a0;
-DWORD MBAA_FUN_0047d030 = 0x0047d030;
-DWORD MBAA_FUN_0047ce20 = 0x0047ce20;
-DWORD MBAA_MenuDestructor = 0x004d7c70;
-
+//wrapper for call to initMenuWindow
 void InitMenuWindow(MenuWindow* menuWindow) {
 	//menuWindow should be stack[4]
 	__asm {
@@ -3366,6 +3044,7 @@ void InitMenuWindow(MenuWindow* menuWindow) {
 	}
 }
 
+//wrapper for call to initExtendedSettingsMenuInfo
 void InitExtendedSettingsMenuInfo(MenuInfo* extendedInfo, MenuWindow* extendedWindow) {
 	//menuInfo should be stack[4]
 	//menuWindow should be stack[8]
@@ -3376,6 +3055,7 @@ void InitExtendedSettingsMenuInfo(MenuInfo* extendedInfo, MenuWindow* extendedWi
 	}
 }
 
+//wrapper for call to ReadDataFile (misleading name? pulled straight from ghidra)
 void ReadDataFile(void* dest, const char* name, int nameLength) {
 	//dest should be ecx
 	//name should be stack[4]
@@ -3388,6 +3068,7 @@ void ReadDataFile(void* dest, const char* name, int nameLength) {
 	}
 }
 
+//wrapper for call to InitSelectItem
 void InitSelectElement(Element* element, const char* label, const char* tag, int selectItemXOffset) {
 	//label should be ecx
 	//element should be stack[4]
@@ -3402,6 +3083,7 @@ void InitSelectElement(Element* element, const char* label, const char* tag, int
 	}
 }
 
+//wrapper for call to InitItem
 void InitItem(Item* item, const char* label, const char* tag, int index) {
 	//item should be stack[4]
 	//label should be stack[8]
@@ -3416,6 +3098,7 @@ void InitItem(Item* item, const char* label, const char* tag, int index) {
 	}
 }
 
+//wrapper for call to EnterIntoList
 void EnterIntoList(void* list, void* entry) {
 	//entry should be ebx
 	//list should be esi
@@ -3428,6 +3111,7 @@ void EnterIntoList(void* list, void* entry) {
 	}
 }
 
+//wrapper for call to FUN_00429b00
 void _FUN_00429b00(MenuInfo* menuInfo, const char* label) {
 	//menuInfo should be ecx
 	//label should be stack[4]
@@ -3438,6 +3122,7 @@ void _FUN_00429b00(MenuInfo* menuInfo, const char* label) {
 	}
 }
 
+//wrapper for call to FUN_004804a0
 void _FUN_004804a0(MenuWindow* menuWindow) {
 	//menuWindow should be eax
 	__asm {
@@ -3446,6 +3131,65 @@ void _FUN_004804a0(MenuWindow* menuWindow) {
 	}
 }
 
+//wrapper for call to MBAA_GetElementPointer
+Element* GetElementPointer(MenuInfo* menuInfo, const char* tag) {
+	//menuInfo should be stack[4]
+	//tag should be stack[8]
+	Element* retElement;
+	__asm {
+		push tag;
+		push menuInfo;
+		call[MBAA_GetElementPointer];
+		mov retElement, eax;
+	}
+	return retElement;
+}
+
+//wrapper for call to MBAA_GetSetting
+void GetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
+	Element* element = GetElementPointer(menuInfo, tag);
+	if (element != 0x0 && element->GetItemListSize() != 0x0) {
+		int iterator = 0;
+		while (true) {
+			int CurItemValue = element->GetItemValue(iterator);
+			if (CurItemValue == *setting) break;
+			iterator++;
+			if (element->GetItemListSize() <= iterator) return;
+		}
+		element->selectedItem = iterator;
+	}
+}
+
+//get settings from persistent locations to init menu window
+void GetExtendedSettings(MenuWindow* extendedWindow) {
+	if (extendedWindow->MenuInfoList == 0x0 || extendedWindow->MenuInfoListEnd - extendedWindow->MenuInfoList == 0) {
+		__asm {
+			call[MBAA_UnrecoveredJumptable];
+		}
+	}
+	MenuInfo* extendedInfo = *extendedWindow->MenuInfoList;
+	for (int i = 0; i < size(Page1); i++) {
+		GetSetting(extendedInfo, Page1_Settings[i], Page1[i][1]);
+	}
+}
+
+void AddSelectElement(MenuInfo* menuInfo, std::vector<const char*> elementVector) {
+	int vSize = size(elementVector);
+	if (vSize < 1 || vSize % 2 != 0) return;
+	Element* element = new Element;
+	InitSelectElement(element, elementVector[0], elementVector[1], 0xa0);
+	element->vftable = (void*)0x00536654;
+	int itemIndex = 0;
+	for (int i = 2; i < vSize; i += 2) {
+		Item* item = new Item;
+		InitItem(item, elementVector[i], elementVector[i + 1], itemIndex);
+		EnterIntoList((void*)(&element->ListInput), (void*)(item));
+		itemIndex++;
+	}
+	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
+}
+
+//init extended window, info, elements, and items
 MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 	InitMenuWindow(extendedWindow);
 	extendedWindow->vftable = (void*)0x0053882c;
@@ -3455,31 +3199,14 @@ MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 	{
 		InitExtendedSettingsMenuInfo(extendedInfo, extendedWindow);
 	}
-	Element* element = new Element;
-	InitSelectElement(element, "1", "1", 0xa0);
-	element->vftable = (void*)0x00536654;
-	Item* item = new Item;
-	InitItem(item, "A", "A", 0);
-	EnterIntoList((void*)(&element->ListInput), (void*)(item));
-	item = new Item;
-	InitItem(item, "B", "B", 1);
-	EnterIntoList((void*)(&element->ListInput), (void*)(item));
-	EnterIntoList((void*)(&extendedInfo->ListInput), (void*)(element));
 
-	element = new Element;
-	InitSelectElement(element, "2", "2", 0xa0);
-	element->vftable = (void*)0x00536654;
-	item = new Item;
-	InitItem(item, "A", "A", 0);
-	EnterIntoList((void*)(&element->ListInput), (void*)(item));
-	item = new Item;
-	InitItem(item, "B", "B", 1);
-	EnterIntoList((void*)(&element->ListInput), (void*)(item));
-	EnterIntoList((void*)(&extendedInfo->ListInput), (void*)(element));
+	for (int i = 0; i < size(Page1); i++) {
+		AddSelectElement(extendedInfo, Page1[i]);
+	}
 
 	EnterIntoList((void*)(&extendedWindow->ListInput), (void*)(extendedInfo));
 	_FUN_00429b00(extendedInfo, "EXTENDED_SETTING");
-	_FUN_004804a0(extendedWindow);
+	GetExtendedSettings(extendedWindow);
 	extendedWindow->dimScreenPercentage = 0.0;
 	extendedWindow->u_layer = 0x2f1;
 	extendedWindow->isMenuLit = 1;
@@ -3511,10 +3238,30 @@ void _FUN_0047ce20(void* field24, const char* TRAINING_XX_MENU) {
 
 }
 
-void SetExtendedSettings(MenuWindow* extendedWindow) {
-
+//Sets a single setting to its persistent location
+void SetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
+	Element* element = GetElementPointer(menuInfo, tag);
+	if (element != 0x0) {
+		int selectionIndex = element->selectedItem;
+		int value = element->ItemList[selectionIndex]->value;
+		*setting = value;
+	}
 }
 
+//save settings to persistent locations
+void SetExtendedSettings(MenuWindow* extendedWindow) {
+	if (extendedWindow->MenuInfoList == 0x0 || extendedWindow->MenuInfoListEnd - extendedWindow->MenuInfoList == 0) {
+		__asm {
+			call[MBAA_UnrecoveredJumptable];
+		}
+	}
+	MenuInfo* extendedInfo = *extendedWindow->MenuInfoList;
+	for (int i = 0; i < size(Page1); i++) {
+		SetSetting(extendedInfo, Page1_Settings[i], Page1[i][1]);
+	}
+}
+
+//recursively enter and free info, elements, and items
 void FreeWindowChildren(MenuWindow* extendedWindow) {
 	MenuInfo* menuInfo = *extendedWindow->MenuInfoList;
 	Element** pElement = menuInfo->ElementList;
@@ -3532,13 +3279,15 @@ void FreeWindowChildren(MenuWindow* extendedWindow) {
 	free(menuInfo);
 }
 
+//save settings and free everything
 void CloseExtendedSettings(MenuWindow* extendedWindow) {
 	SetExtendedSettings(extendedWindow);
 	FreeWindowChildren(extendedWindow);
 	free(extendedWindow);
 }
 
-void ExtendedMenuSwitchCase() {
+//init extended menu if not already open, close and free if set to close
+void HandleExtendedMenu() {
 	if (mainWindow->ExtendedSettings == 0x0) {
 		mainWindow->isMenuLit = 0;
 		MenuWindow* extendedWindow = new MenuWindow;
@@ -3568,14 +3317,14 @@ void ExtendedMenuSwitchCase() {
 
 }
 
-DWORD ad_0047ee5b = 0x0047ee5b;
-
-__declspec(naked) void SwitchCaseTest() {
+DWORD TrainingMenuSwitch_PatchAddr = 0x0047ee54;
+//Add check for extended menu to default menu switch case
+__declspec(naked) void _naked_TrainingMenuSwitch() {
 	__asm {
 		cmp eax, 2;
 		je _DOEXTENDEDSETTINGS;
 		mov ecx, ebp;
-		call[fun004d8810];
+		call[MBAA_FUN_004d8810];
 		jmp _BREAKSWITCH;
 
 	_DOEXTENDEDSETTINGS:
@@ -3583,111 +3332,30 @@ __declspec(naked) void SwitchCaseTest() {
 	}
 
 	PUSH_ALL;
-	ExtendedMenuSwitchCase();
+	HandleExtendedMenu();
 	POP_ALL;
 
 	__asm {
 	_BREAKSWITCH:
-		jmp ad_0047ee5b;
+		push 0x0047ee5b;
+		ret;
 	}
 }
 
-DWORD ExtendedSettingsSubmenu_PatchAddr = 0x0047ee54;
-DWORD FUN_004d8810 = 0x004d8810;
-DWORD FUN_0047d030 = 0x0047d030;
-DWORD FUN_0047ce20 = 0x0047ce20;
-const char* TrainingXSMenu = "TRAINING_XS_MENU";
-
-DWORD ad_0047e7ad = 0x0047e7ad;
-__declspec(naked) void _naked_ExtendedSettingsSubmenu() {
-	__asm {
-		cmp eax, 2;
-		je _INITSUBMENU;
-		mov ecx, ebp;
-		call[FUN_004d8810];
-		jmp _BREAK;
-
-	_INITSUBMENU:
-		cmp dword ptr[ebp + 0xe0], ebx;
-		jnz _OPENSUBMENU;
-		push 0xc4;
-		mov dword ptr[ebp + 0xbc], ebx;
-		call[operator_new_FuncAddr];
-		add esp, 0x4;
-		mov dword ptr[esp + 0x14], eax;
-		cmp eax, ebx;
-		mov dword ptr[esp + 0x98], ebx;
-		je _FAILEDINIT;
-		push eax;
-		call[_naked_InitExtendedSettingsMenu];
-		jmp _INITTAIL;
-
-	_FAILEDINIT:
-		xor eax, eax;
-
-	_INITTAIL:
-		mov dword ptr[esp + 0x98], 0xFFFFFFFF;
-		mov dword ptr[ebp + 0xe0], eax;
-		mov dword ptr[eax + 0x44], 0xbe;
-		mov esi, dword ptr[ebp + 0xe0];
-		mov eax, TrainingXSMenu;
-		call[FUN_0047d030];
-		mov esi, 0x1;
-
-	_OPENSUBMENU:
-		mov eax, dword ptr[ebp + 0xe0];
-		cmp dword ptr[eax + 0x84], 0x4;
-		jne _BREAK;
-		cmp dword ptr[eax + 0x38], 0x10;
-		jb _IDK;
-		mov eax, [eax + 0x24];
-		jmp _MAINOPEN;
-
-	_IDK:
-		add eax, 0x24;
-
-	_MAINOPEN:
-		mov edx, eax;
-		mov ecx, TrainingXSMenu;
-		call[FUN_0047ce20];
-		mov ecx, dword ptr[ebp + 0xe0];
-		mov edi, 0x2;
-		cmp dword ptr[ecx + 0x50], edi;
-		jne _IDK2;
-		mov dword ptr[ebp + 0x50], edi;
-
-	_IDK2:
-		cmp ecx, ebx;
-		je _WRAPUP;
-		mov eax, dword ptr[ecx];
-		mov edx, dword ptr[eax];
-		push esi;
-		call edx;
-		mov dword ptr[ebp + 0xe0], ebx;
-
-	_WRAPUP:
-		jmp ad_0047e7ad;
-
-	_BREAK:
-		jmp ad_0047ee5b;
-	}
-}
-
-DWORD MakeBiggerMenuWindow_PatchAddr = 0x0047815b;
-DWORD ad_00478165 = 0x00478165;
-DWORD ad_0047e1e2 = 0x0047e1e2;
-__declspec(naked) void _naked_MakeBiggerMenuWindow() {
+DWORD NewExtMainMenuWindow_PatchAddr = 0x0047815b;
+//allocate space for extended menu pointer (size from 0xe0 -> 0xe4)
+__declspec(naked) void _naked_NewExtMainMenuWindow() {
 	__asm {
 		push 0xe4;
-		call[operator_new_FuncAddr];
+		call[MBAA_operator_new];
 
-		jmp ad_00478165;
+		push 0x00478165;
+		ret;
 	}
 }
 
 DWORD UpdateMenuTrainingSettings_PatchAddr = 0x0047e1da;
-DWORD ad_0047e1fb = 0x0047e1fb;
-DWORD ad_0047e27a = 0x0047e27a;
+//add extended menu to update if-chain
 __declspec(naked) void _naked_UpdateMenuExtendedSettings() {
 	__asm {
 		cmp dword ptr[edi + 0xe0], ebx;
@@ -3700,19 +3368,23 @@ __declspec(naked) void _naked_UpdateMenuExtendedSettings() {
 		mov eax, dword ptr [esp + 0x64];
 		push eax;
 		call edx;
-		jmp ad_0047e27a;
+		push 0x0047e27a;
+		ret;
 
 	_GONEXT:
 		cmp dword ptr[edi + 0xc8], ebx;
-		jz _0047e1fb;
-		jmp ad_0047e1e2;
+		jz _GONEXTNEXT;
+		push 0x0047e1e2;
+		ret;
 
-	_0047e1fb:
-		jmp ad_0047e1fb;
+	_GONEXTNEXT:
+		push 0x0047e1fb;
+		ret;
 	}
 }
 
 DWORD RenderExtendedSettings_PatchAddr = 0x0047e52a;
+//add extended menu to render if-chain
 __declspec(naked) void _naked_RenderExtendedSettings() {
 	__asm {
 		cmp dword ptr[edi + 0xe0], 0x0;
@@ -3731,7 +3403,7 @@ __declspec(naked) void _naked_RenderExtendedSettings() {
 }
 
 DWORD ZeroMenuPointers_PatchAddr = 0x0047dd50;
-DWORD ad_0047dd74 = 0x0047dd74;
+//need to zero extended menu pointer on menu close
 __declspec(naked) void _naked_ZeroMenuPointers() {
 	__asm {
 		mov[edi + 0xc4], ebx;
@@ -3741,7 +3413,8 @@ __declspec(naked) void _naked_ZeroMenuPointers() {
 		mov[edi + 0xd4], ebx;
 		mov[edi + 0xd8], ebx;
 		mov[edi + 0xe0], ebx;
-		jmp ad_0047dd74;
+		push 0x0047dd74;
+		ret;
 	}
 }
 
@@ -4267,11 +3940,11 @@ void initInputCallback() {
 
 void initTrainingMenu() {
 
-	patchJump(MakeBiggerMenuWindow_PatchAddr, _naked_MakeBiggerMenuWindow);
+	patchJump(NewExtMainMenuWindow_PatchAddr, _naked_NewExtMainMenuWindow);
 	patchJump(ExtendedSettingsMenuItem_PatchAddr, _naked_ExtendedSettingsMenuItem);
 	patchJump(AddExtendedSettingToList_PatchAddr, _naked_AddExtendedSettingToList);
 
-	patchJump(ExtendedSettingsSubmenu_PatchAddr, SwitchCaseTest);
+	patchJump(TrainingMenuSwitch_PatchAddr, _naked_TrainingMenuSwitch);
 
 	patchJump(OpenExtendedSettings_PatchAddr, _naked_OpenExtendedSettings);
 	patchJump(ZeroMenuPointers_PatchAddr, _naked_ZeroMenuPointers);
