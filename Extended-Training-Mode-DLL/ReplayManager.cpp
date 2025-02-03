@@ -1,6 +1,7 @@
 
 #include "DirectX.h"
 #include "ReplayManager.h"
+#include "DebugInfo.h"
 
 /*
 
@@ -24,69 +25,173 @@ std::string InputItem::getButtonString(BYTE b) {
 }
 
 void InputItem::logItem() {
-	log("len:%4d dir:%d hld:%5s prs:%5s rel:%5s", length, dir, getButtonString(held).c_str() , getButtonString(pressed).c_str(), getButtonString(released).c_str());
+	log("\t\tlen:%4d dir:%d hld:%5s prs:%5s rel:%5s", length, dir, getButtonString(held).c_str(), getButtonString(pressed).c_str(), getButtonString(released).c_str());
+}
+
+void InputItem::setMeltyInput(int playerIndex) {
+
+	DWORD baseAddr = 0x00771398 + (0x2C * playerIndex);
+
+	BYTE tempDir = dir;
+	BYTE facingLeft = playerDataArr[playerIndex].facingLeft; // facingLeft/isOpponentToLeft ugh THIS IS A MAJOR THING THAT NEEDS TO BE FIGURED OUT
+
+	if (facingLeft) {
+		constexpr int dirLookup[] = { 0, 3, 2, 1, 6, 5, 4, 9, 8, 7 };
+		tempDir = dirLookup[tempDir];
+	}
+
+	// dir
+	*(BYTE*)(baseAddr + 0) = tempDir;
+	// ABCDE
+	*(BYTE*)(baseAddr + 1) = !!((held | pressed) & 0b00001);
+	*(BYTE*)(baseAddr + 2) = !!((held | pressed) & 0b00010);
+	*(BYTE*)(baseAddr + 3) = !!((held | pressed) & 0b00100);
+	*(BYTE*)(baseAddr + 4) = !!((held | pressed) & 0b01000);
+	*(BYTE*)(baseAddr + 5) = !!((held | pressed) & 0b10000);
+
 }
 
 // -----
 
-ReplayInputs::ReplayInputs(BYTE* replayData, int playerIndex_) {
-	size = *(DWORD*)replayData;
-	inputItems = (InputItem*)(replayData + 4);
-	playerIndex = playerIndex_;
-	reset();
-}
+BYTE* Round::load(BYTE* dataStart) {
 
-InputItem* ReplayInputs::getNextInput() {
-	
-	if (index >= size) {
-		return NULL;
+	dataStart += 0x8C;
+
+	for (int i = 0; i < 4; i++) {
+		inputItemsSize[i] = *(DWORD*)(dataStart);
+		dataStart += 4;
+		inputItems[i] = (InputItem*)dataStart;
+		inputItems[i] = (InputItem*)dataStart;
+		dataStart += 6 * inputItemsSize[i];
 	}
 
-	InputItem* res = &inputItems[index];
-	indexLength++;
-	if (indexLength > inputItems[index].length) {
-		index++;
-		indexLength = 0;
-	}
-	return res;
+	unknownDataLen = *(DWORD*)(dataStart); // rng?? has to be right
+	dataStart += 4;
+	unknownDataPtr = dataStart;
+	dataStart += (4 * unknownDataLen);
+
+	// some sort of footer. not sure
+	dataStart += 4 * 36;
+
+	return dataStart;
+
 }
 
-void ReplayInputs::setNextInput() {
+void Round::logItem() {
 
+	for (int playerIndex = 0; playerIndex < 4; playerIndex++) {
+		if (inputItemsSize[playerIndex] == 0) {
+			continue;
+		}
+
+		log("\tP%d", playerIndex);
+
+		for (int i = 0; i < inputItemsSize[playerIndex]; i++) {
+			inputItems[playerIndex][i].logItem();
+		}
+
+	}
+
+
+}
+
+void Round::rollForward(int i) {
+
+	if (currentItemIndex[i] == inputItemsSize[i]) {
+		return;
+	}
+
+	currentItemLength[i]++;
+
+	if (currentItemLength[i] >= inputItems[i][currentItemIndex[i]].length) {
+		currentItemLength[i] = 0;
+		currentItemIndex[i]++;
+	}
+
+
+}
+
+void Round::rollBack(int i) {
+
+	if (currentItemIndex[i] == 0 && currentItemLength[i] == 0) {
+		return;
+	}
+
+	currentItemLength[i]--;
+
+	if (currentItemLength[i] < 0) {
+
+		currentItemIndex[i]--;
+
+		if (currentItemIndex[i] < 0) {
+			currentItemLength[i] = 0;
+			currentItemIndex[i] = 0;
+			return;
+		}
+
+		currentItemLength[i] = inputItems[i][currentItemIndex[i]].length;
+
+	}
+
+}
+
+void Round::rollForward() {
+	for (int i = 0; i < 4; i++) {
+		rollForward(i);
+	}
+}
+
+void Round::rollBack() {
+	for (int i = 0; i < 4; i++) {
+		rollBack(i);
+	}
+}
+
+void Round::setInputs() {
+
+	/*
 	if (resetFrames > 0) {
 		resetFrames--;
 		return;
 	}
+	*/
 
-	InputItem* item = getNextInput();
-	if (item == NULL) {
-		return;
+	for (int i = 0; i < 4; i++) {
+
+		if (currentItemIndex[i] == inputItemsSize[i]) {
+			continue;
+		}
+
+		//log("attempting p%d index %5d len %5d", i, currentItemIndex[i], currentItemLength[i]);
+
+		inputItems[i][currentItemIndex[i]].setMeltyInput(i);
+
+		//rollForward(i);
+
 	}
-
-	DWORD baseAddr = 0x00771398 + (0x2C * playerIndex);
-
-	// dir
-	*(BYTE*)(baseAddr + 0) = item->dir;
-	// ABCDE
-	*(BYTE*)(baseAddr + 1) = !!((item->held | item->pressed ) & 0b00001);
-	*(BYTE*)(baseAddr + 2) = !!((item->held | item->pressed ) & 0b00010); 
-	*(BYTE*)(baseAddr + 3) = !!((item->held | item->pressed ) & 0b00100);
-	*(BYTE*)(baseAddr + 4) = !!((item->held | item->pressed ) & 0b01000);
-	*(BYTE*)(baseAddr + 5) = !!((item->held | item->pressed ) & 0b10000);
 
 }
 
-void ReplayInputs::reset() {
-	index = 0;
-	indexLength = 0;
+void Round::reset() {
+
 	resetFrames = 60;
+
+	memset(currentItemIndex, 0, 4 * sizeof(currentItemIndex[0]));
+	memset(currentItemLength, 0, 4 * sizeof(currentItemLength[0]));
+
 }
 
 // -----
 
-Replay::Replay(const char* filePath_) {
-	
-	filePath = filePath_;
+Replay::~Replay() {
+	free(buffer);
+	buffer = NULL;
+}
+
+void Replay::load(const char* filePath) {
+
+
+	int bufferSize = 0;
 
 	if (filePath == NULL) {
 		log("replay filepath cannot be null");
@@ -106,73 +211,112 @@ Replay::Replay(const char* filePath_) {
 
 	file.read((char*)buffer, bufferSize);
 
-	// look, there is def some way to read these files in a way that isnt trash, but this is all i have rn
-	// i really need to spend more time on the replay file format
 
-	BYTE* p1ReplayData = NULL;
-	BYTE* p2ReplayData = NULL;
+	ReplayFile* r = (ReplayFile*)buffer;
 
-	for (int i = 0; i < bufferSize - 8; i++) {
-		if (*(uint64_t*)(buffer + i) == 0x000000FF000000FF) {
-			if (p1ReplayData == NULL) {
-				p1ReplayData = buffer + i + 8;
-			} else if (p2ReplayData == NULL) {
-				p2ReplayData = buffer + i + 8;
-				break;
-			} else {
-				log("replay somehow found more than 2 player input buffers??");
-				return;
-			}
-		}
+	log("p0Char %d", r->p0Char);
+	log("p1Char %d", r->p1Char);
+
+	log("rounds: %d", r->roundCount);
+
+	//printf("%08X\n", ((BYTE*)&r->roundCount) - buffer);
+
+	BYTE* data = buffer + 0x60; // past the header or whatever
+
+	for (int round = 0; round < r->roundCount; round++) {
+		Round nextRound;
+		data = nextRound.load(data);
+		rounds.push_back(nextRound);
 	}
 
-	if (p1ReplayData == NULL || p2ReplayData == NULL) {
-		log("replay was unable to find 2 player input buffers");
+	log("loading %s succeeded", filePath);
+
+}
+
+void Replay::logItem() {
+	for (int i = 0; i < rounds.size(); i++) {
+		log("round %d", i);
+		rounds[i].logItem();
+	}
+}
+
+void Replay::setInputs() {
+	if (rounds.size() == 0) {
 		return;
 	}
 
-	//log("replay p1:%08X p2:%08X", *(DWORD*)p1ReplayData, *(DWORD*)p2ReplayData);
-
-	p1Inputs = ReplayInputs(p1ReplayData, 0);
-	p2Inputs = ReplayInputs(p2ReplayData, 1);
-
-	log("loaded replay successfully");
-
-}
-
-Replay::~Replay() {
-	if (buffer != NULL) {
-		free(buffer);
+	if (currentRound < 0 || currentRound >= rounds.size()) {
+		log("%d invalid in Replay::setInputs there are only %d rounds", currentRound, rounds.size());
+		return;
 	}
-}
 
-void Replay::inputReader() {
-	p1Inputs.setNextInput();
-	p2Inputs.setNextInput();
+	rounds[currentRound].setInputs();
 }
 
 void Replay::reset() {
-	p1Inputs.reset();
-	p2Inputs.reset();
+	if (rounds.size() == 0) {
+		return;
+	}
+
+	if (currentRound < 0 || currentRound >= rounds.size()) {
+		log("%d invalid in Replay::reset", currentRound);
+		return;
+	}
+
+	rounds[currentRound].reset();
 }
+
+void Replay::rollForward() {
+	if (rounds.size() == 0) {
+		return;
+	}
+
+	if (currentRound < 0 || currentRound >= rounds.size()) {
+		log("%d invalid in Replay::rollForward", currentRound);
+		return;
+	}
+
+	rounds[currentRound].rollForward();
+}
+
+void Replay::rollBack() {
+	if (rounds.size() == 0) {
+		return;
+	}
+
+	if (currentRound < 0 || currentRound >= rounds.size()) {
+		log("%d invalid in Replay::rollBack", currentRound);
+		return;
+	}
+
+	rounds[currentRound].rollBack();
+}
+
 
 // -----
 
 ReplayManager replayManager;
 
 ReplayManager::~ReplayManager() {
-	for (Replay* r : replays) {
-		if (r != NULL) {
-			free(r);
-		}
+	for (int i = 0; i < replays.size(); i++) {
+		replays[i]->~Replay();
 	}
 	replays.clear();
 }
 
 void ReplayManager::load(const char* filePath) {
 
-	Replay* r = new Replay(filePath);
-	replays.push_back(r);
+	log("loading replay %s", filePath);
+
+	replays.clear();
+
+	Replay* replay = new Replay();
+
+	replay->load(filePath);
+
+	//replay.logItem();
+
+	replays.push_back(replay);
 	activeReplay = replays.size() - 1;
 
 	log("replay manager load called");
@@ -180,15 +324,20 @@ void ReplayManager::load(const char* filePath) {
 }
 
 void ReplayManager::setInputs() {
-	
+
 	if (replays.size() == 0) {
+		return;
+	}
+
+	if (activeReplay < 0 || activeReplay >= replays.size()) {
+		log("%d invalid in ReplayManager::setInputs", activeReplay);
 		return;
 	}
 
 	// this sets the enemy status thing. this is temporary, and needs to be removed/made better
 	*(BYTE*)0x0077C1E8 = MANUAL;
 
-	replays[activeReplay]->inputReader();
+	replays[activeReplay]->setInputs();
 
 }
 
@@ -197,5 +346,43 @@ void ReplayManager::reset() {
 		return;
 	}
 
+	if (activeReplay < 0 || activeReplay >= replays.size()) {
+		log("%d invalid in ReplayManager::reset", activeReplay);
+		return;
+	}
+
 	replays[activeReplay]->reset();
 }
+
+void ReplayManager::rollForward() {
+	if (replays.size() == 0) {
+		return;
+	}
+
+	if (activeReplay < 0 || activeReplay >= replays.size()) {
+		log("%d invalid in ReplayManager::rollForward", activeReplay);
+		return;
+	}
+
+	static int idk = 0;
+	log("rolling forward! %d", idk++);
+
+	replays[activeReplay]->rollForward();
+}
+
+void ReplayManager::rollBack() {
+	if (replays.size() == 0) {
+		return;
+	}
+
+	if (activeReplay < 0 || activeReplay >= replays.size()) {
+		log("%d invalid in ReplayManager::rollBack", activeReplay);
+		return;
+	}
+
+	static int idk = 0;
+	log("rolling backward! %d", idk++);
+
+	replays[activeReplay]->rollBack();
+}
+

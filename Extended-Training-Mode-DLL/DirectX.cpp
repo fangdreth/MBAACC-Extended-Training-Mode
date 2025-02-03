@@ -2880,9 +2880,9 @@ void __stdcall _doDrawCalls() {
 
 	// ok this is going here because i know that being in this func means i am past the code that ill be patching around here
 	// i should move all this to renderingmodifications!
+	static KeyState lShiftKey(VK_LSHIFT);
 	static KeyState tKey('T');
-	//if (tKey.keyDown()) {
-	if(false) {
+	if (lShiftKey.keyHeld() && tKey.keyDown()) {
 		renderingEnable = !renderingEnable;
 
 		if (renderingEnable) {

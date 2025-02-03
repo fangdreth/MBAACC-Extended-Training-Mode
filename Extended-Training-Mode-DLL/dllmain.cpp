@@ -1721,6 +1721,8 @@ void frameDoneCallback()
 {
 	profileFunction();
 
+	static KeyState lShiftKey(VK_LSHIFT);
+
 	//Sleep(8);
 
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
@@ -1747,31 +1749,41 @@ void frameDoneCallback()
 
 		if (UpKey.keyDownHeldFreq<4, 24>()) {
 			bool needNewFrame = saveStateManager.load(1);
-			if (!needNewFrame) {
+			if (needNewFrame) {
+
+			} else {
+				replayManager.rollForward();
 				rollFancyInputDisplay(1);
 			}
+			
+			
 		} else if (DownKey.keyDownHeldFreq<4, 24>()) {
 			saveStateManager.load(-1);
 			rollFancyInputDisplay(-1);
+			replayManager.rollBack();
 		}
 
 		if (logSaveState) {
 			saveStateManager.log();
 		}
 	}
-	
-	static bool replayLoaded = false;
-	if (!replayLoaded) {
-		//replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_241015104442.rep");
-		//replayManager.load("./ReplayVS/RED_ARCUEIDxRED_ARCUEID_241017190233.rep");
-		replayLoaded = true;
-	}
 
 	static KeyState rKey('R');
-	if (rKey.keyDown()) {
+	if (lShiftKey.keyHeld() && rKey.keyDown()) {
 		
-		log("RKEY hit");
-		//replayManager.reset();
+		//log("RKEY hit");
+		
+		needTrainingModeReset = true;
+
+		//replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_250203130642.rep");
+		replayManager.load("./ReplayVS/RED_ARCUEIDxRED_ARCUEID_241231183621_usethis.rep");
+		//replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_250203130642.rep");
+
+		//replayManager.load("./ReplayVS/RED_ARCUEIDxRED_ARCUEID_250203161138.rep");
+
+		replayManager.reset();
+
+
 		//TASManagerObj.load("TAS.txt");
 		//needTrainingModeReset = true;
 	}
@@ -1782,8 +1794,8 @@ void frameDoneCallback()
 	}
 
 	static KeyState fKey('F');
-	if (fKey.keyDown()) {
-		//setFPSLimiter(!disableFPSLimit); // sorry :3
+	if (lShiftKey.keyHeld() && fKey.keyDown()) {
+		setFPSLimiter(!disableFPSLimit); // sorry :3
 	}
 
 	renderModificationsFrameDone();
@@ -2330,7 +2342,9 @@ void newPauseCallback2()
 	if (!_naked_newPauseCallback2_IsPaused) {
 		unpausedFrameCount++;
 		TASManagerObj.incInputs();
+		replayManager.rollForward();
 	}
+
 }
 
 DWORD _naked_pauseInputDisplay2_FUN_004790a0 = 0x004790a0;
@@ -3728,13 +3742,12 @@ void inputCallback() {
 
 	// does melty update controllers in a thread? and is this inside said thread?
 
-	//replayManager.setInputs();
-
 	profileFunction();
 
 	KeyState::updateControllers(); // this call is taking half a ms, and wtf why am i even caring
 		
 	TASManagerObj.setInputs();
+	replayManager.setInputs();
 
 	if (needTrainingModeReset) {
 		needTrainingModeReset = false;
