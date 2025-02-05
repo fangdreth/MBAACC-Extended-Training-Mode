@@ -3,6 +3,17 @@
 #include "ReplayManager.h"
 #include "DebugInfo.h"
 
+#include <filesystem>
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+#define CLAMP(value, min_val, max_val) MAX(MIN((value), (max_val)), (min_val))
+#define SAFEMOD(a, b) (((b) + ((a) % (b))) % (b))
+
+namespace fs = std::filesystem;
+
+extern DWORD showCSS;
+
 /*
 
 one could, in theory, run/render a whole game headless in order to get a whole replay file loaded fast?
@@ -33,7 +44,7 @@ void InputItem::setMeltyInput(int playerIndex) {
 	DWORD baseAddr = 0x00771398 + (0x2C * playerIndex);
 
 	BYTE tempDir = dir;
-	BYTE facingLeft = playerDataArr[playerIndex].facingLeft; // facingLeft/isOpponentToLeft ugh THIS IS A MAJOR THING THAT NEEDS TO BE FIGURED OUT
+	BYTE facingLeft = playerDataArr[playerIndex].facingLeft;
 
 	if (facingLeft) {
 		constexpr int dirLookup[] = { 0, 3, 2, 1, 6, 5, 4, 9, 8, 7 };
@@ -55,23 +66,28 @@ void InputItem::setMeltyInput(int playerIndex) {
 
 BYTE* Round::load(BYTE* dataStart) {
 
-	dataStart += 0x8C;
+	__try {
+		dataStart += 0x8C;
 
-	for (int i = 0; i < 4; i++) {
-		inputItemsSize[i] = *(DWORD*)(dataStart);
+		for (int i = 0; i < 4; i++) {
+			inputItemsSize[i] = *(DWORD*)(dataStart);
+			dataStart += 4;
+			inputItems[i] = (InputItem*)dataStart;
+			inputItems[i] = (InputItem*)dataStart;
+			dataStart += 6 * inputItemsSize[i];
+		}
+
+		unknownDataLen = *(DWORD*)(dataStart); // rng?? has to be right
 		dataStart += 4;
-		inputItems[i] = (InputItem*)dataStart;
-		inputItems[i] = (InputItem*)dataStart;
-		dataStart += 6 * inputItemsSize[i];
+		unknownDataPtr = dataStart;
+		dataStart += (4 * unknownDataLen);
+
+		// some sort of footer. not sure
+		dataStart += 4 * 36;
+
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		return NULL;
 	}
-
-	unknownDataLen = *(DWORD*)(dataStart); // rng?? has to be right
-	dataStart += 4;
-	unknownDataPtr = dataStart;
-	dataStart += (4 * unknownDataLen);
-
-	// some sort of footer. not sure
-	dataStart += 4 * 36;
 
 	return dataStart;
 
@@ -188,20 +204,21 @@ Replay::~Replay() {
 	buffer = NULL;
 }
 
-void Replay::load(const char* filePath) {
+bool Replay::load(const std::string& filePath_) {
 
+	filePath = filePath_;
 
 	int bufferSize = 0;
 
-	if (filePath == NULL) {
+	if (filePath == "") {
 		log("replay filepath cannot be null");
-		return;
+		return false;
 	}
 
 	std::ifstream file(filePath, std::ios::binary | std::ios::ate);
 	if (!file.good()) {
 		log("couldnt find %s", filePath);
-		return;
+		return false;
 	}
 
 	bufferSize = file.tellg();
@@ -211,6 +228,7 @@ void Replay::load(const char* filePath) {
 
 	file.read((char*)buffer, bufferSize);
 
+	file.close();
 
 	ReplayFile* r = (ReplayFile*)buffer;
 
@@ -226,10 +244,33 @@ void Replay::load(const char* filePath) {
 	for (int round = 0; round < r->roundCount; round++) {
 		Round nextRound;
 		data = nextRound.load(data);
+		if (data == NULL) {
+			return false;
+		}
 		rounds.push_back(nextRound);
 	}
 
-	log("loading %s succeeded", filePath);
+	log("loading %s succeeded", filePath.c_str());
+
+
+	replayTime = 0;
+	replayTime += ((long long)r->second) * (1);
+	replayTime += ((long long)r->minute) * (1 * 60);
+	replayTime += ((long long)r->hour  ) * (1 * 60 * 60);
+	replayTime += ((long long)r->day   ) * (1 * 60 * 60 * 24);
+	replayTime += ((long long)r->month ) * (1 * 60 * 60 * 24 * 31);
+	replayTime += ((long long)(r->year) - 2009) * (1 * 60 * 60 * 24 * 31 * 366);
+
+	//log("%016X %d", replayTime, r->year);
+
+	//log("%4d-%2d-%2d %2d:%2d:%2d %016X %I64", r->year, r->month, r->day, r->hour, r->minute, r->second, replayTime, replayTime);
+
+	char buffer[64];
+	snprintf(buffer, 64, "%04d-%02d-%02d %02d:%02d:%02d", r->year, r->month, r->day, r->hour, r->minute, r->second); // i really should just copy caster's format func
+
+	timeString = std::string(buffer);
+
+	return true;
 
 }
 
@@ -298,28 +339,40 @@ void Replay::rollBack() {
 ReplayManager replayManager;
 
 ReplayManager::~ReplayManager() {
-	for (int i = 0; i < replays.size(); i++) {
-		replays[i]->~Replay();
+	for(Replay* r : replays) {
+		r->~Replay();
 	}
 	replays.clear();
 }
 
-void ReplayManager::load(const char* filePath) {
+void ReplayManager::load(const std::string& filePath_) {
 
-	log("loading replay %s", filePath);
-
-	replays.clear();
+	log("loading replay %s", filePath_.c_str());
 
 	Replay* replay = new Replay();
 
-	replay->load(filePath);
+	bool res = replay->load(filePath_);
+
+	if (!res) {
+		log("failed to load %s", filePath_.c_str());
+	}
 
 	//replay.logItem();
 
-	replays.push_back(replay);
-	activeReplay = replays.size() - 1;
+	replays.insert(replay);
+	//activeReplay = replays.size() - 1;
+	
+	log("replay manager load succeeded");
 
-	log("replay manager load called");
+}
+
+void ReplayManager::initReplay(Replay* r) {
+
+	if (r == NULL) {
+		return;
+	}
+
+	log("%s", r->filePath.c_str());
 
 }
 
@@ -329,15 +382,14 @@ void ReplayManager::setInputs() {
 		return;
 	}
 
-	if (activeReplay < 0 || activeReplay >= replays.size()) {
-		log("%d invalid in ReplayManager::setInputs", activeReplay);
+	if (activeReplay == NULL) {
 		return;
 	}
 
 	// this sets the enemy status thing. this is temporary, and needs to be removed/made better
 	*(BYTE*)0x0077C1E8 = MANUAL;
 
-	replays[activeReplay]->setInputs();
+	activeReplay->setInputs();
 
 }
 
@@ -346,12 +398,12 @@ void ReplayManager::reset() {
 		return;
 	}
 
-	if (activeReplay < 0 || activeReplay >= replays.size()) {
-		log("%d invalid in ReplayManager::reset", activeReplay);
+	if (activeReplay == NULL) {
 		return;
 	}
 
-	replays[activeReplay]->reset();
+
+	activeReplay->reset();
 }
 
 void ReplayManager::rollForward() {
@@ -359,15 +411,14 @@ void ReplayManager::rollForward() {
 		return;
 	}
 
-	if (activeReplay < 0 || activeReplay >= replays.size()) {
-		log("%d invalid in ReplayManager::rollForward", activeReplay);
+	if (activeReplay == NULL) {
 		return;
 	}
 
-	static int idk = 0;
-	log("rolling forward! %d", idk++);
+	//static int idk = 0;
+	//log("rolling forward! %d", idk++);
 
-	replays[activeReplay]->rollForward();
+	activeReplay->rollForward();
 }
 
 void ReplayManager::rollBack() {
@@ -375,14 +426,167 @@ void ReplayManager::rollBack() {
 		return;
 	}
 
-	if (activeReplay < 0 || activeReplay >= replays.size()) {
-		log("%d invalid in ReplayManager::rollBack", activeReplay);
+	if (activeReplay == NULL) {
 		return;
 	}
 
-	static int idk = 0;
-	log("rolling backward! %d", idk++);
+	//static int idk = 0;
+	//log("rolling backward! %d", idk++);
 
-	replays[activeReplay]->rollBack();
+	activeReplay->rollForward();
+}
+
+Replay* ReplayManager::getReplay(int index) {
+
+	// hopefully this func doesnt take too long
+
+	if (index < 0 || index >= replays.size()) {
+		return NULL;
+	}
+
+	auto it = std::next(replays.begin(), index);
+
+	return *it; 
+
+}
+
+void ReplayManager::loadAllReplays() {
+
+	log("reloading all replays");
+
+	for (Replay* r : replays) {
+		r->~Replay();
+	}
+	replays.clear();
+
+	std::string path = "./ReplayVS/"; // Change to your target directory
+
+	std::regex filePattern(R"((.*\.rep)$)", std::regex::icase);
+
+	for (const auto& entry : fs::directory_iterator(path)) {
+		std::string stringPath = std::string(entry.path().string());
+		std::smatch match;
+		if (std::regex_match(stringPath, match, filePattern)) {
+			std::string fileName = match[1].str();
+			load(fileName.c_str());
+		}
+	}
+
+	replayPage = 0;
+	pageCount = (replays.size() + replaysPerPage - 1) / replaysPerPage; // round up to nearest pageCount
+}
+
+std::string ReplayManager::getReplayList() {
+
+	std::string res = "\n";
+
+	int startIndex = replayPage * replaysPerPage;
+	int endIndex = MIN(startIndex + replaysPerPage, replays.size());
+
+	std::regex filePattern(R"((.*\.rep)$)", std::regex::icase);
+
+	/*
+	for (const auto& entry : fs::directory_iterator(path)) {
+		std::string stringPath = std::string(entry.path().string());
+		std::smatch match;
+		if (std::regex_match(stringPath, match, filePattern)) {
+			*/
+
+	for (int i = startIndex; i < endIndex; i++) {
+
+		Replay* r = getReplay(i);
+		std::string temp = r->filePath;
+
+		size_t pos = temp.find_last_of("/");
+		temp = (pos == std::string::npos) ? temp : temp.substr(pos + 1);
+
+		//res += std::to_string(r->replayTime) + " ";]
+		res += r->timeString;
+		res += " ";
+		res += temp;
+
+		if (i != endIndex - 1) {
+			res += "\n";
+		}
+
+	}
+
+
+	return res;
+
+}
+
+void ReplayManager::initMenu() {
+	
+	if (wasMenuInit) {
+		return;
+	}
+
+	wasMenuInit = true;
+
+	replayMenu.add<int>("Reload Replays",
+		[this](int inc, int& opt) mutable -> void {
+			this->loadAllReplays();
+		},
+		[this](int opt) mutable -> std::string {
+			return std::to_string(this->replays.size());
+		},
+		std::wstring(L"P1InputDisplay")
+	);
+
+	replayMenu.add<int>("Page:",
+		[this](int inc, int& opt) mutable -> void {
+			this->replayPage = SAFEMOD(this->replayPage + inc, this->pageCount);
+		},
+		[this](int opt) mutable -> std::string {
+			return std::to_string(this->replayPage + 1);
+		},
+		std::wstring(L"P1InputDisplay")
+	);
+
+	replayMenu.add<int>("Replays:",
+		[this](int inc, int& opt) mutable -> void {
+
+			float testMouseY = mousePos.y - 75.0f;
+
+			testMouseY *= 0.1f;
+
+			int replaySelectIndex = (int)testMouseY;
+
+			int replayIndex = replaySelectIndex + (this->replaysPerPage * this->replayPage);
+			Replay* r = getReplay(replayIndex);
+
+			this->initReplay(r);
+
+		},
+		[this](int opt) mutable -> std::string {
+			return this->getReplayList();
+		},
+		std::wstring(L"P1InputDisplay")
+	);
+
+}
+
+void ReplayManager::drawMenu() {
+
+	initMenu();
+
+	Point dupe = anchorPoint;
+
+	showCSS = !replayMenu.unfolded;
+
+	if (replayMenu.unfolded && firstUnfold) {
+		firstUnfold = false;
+		loadAllReplays();
+	}
+
+	replayMenu.draw(dupe);
+
+}
+
+// -----
+
+void drawReplayMenu() {
+	replayManager.drawMenu();
 }
 

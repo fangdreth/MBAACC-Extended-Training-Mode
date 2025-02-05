@@ -134,6 +134,8 @@ void Menu<T>::draw(Point& p) {
 		col = 0xFF00FFFF;
 	}
 
+	//log("%s %f %f %f %f", name.c_str(), bounds.x1, bounds.y1, bounds.x2, bounds.y2);
+
 	BorderDraw(bounds, col);
 }
 
@@ -543,6 +545,16 @@ void initMenu() {
 	debug.add<int>("Show ImportantDraw Hex",
 		getDefaultOnOffOptionFunc(&shouldDebugImportantDraw),
 		defaultOnOffNameFunc
+	);
+
+	debug.add<int>("Mouse:",
+		[](int inc, int& opt) {
+		},
+		[](int opt) -> std::string {
+			char buffer[64];
+			snprintf(buffer, 64, "%7.3f, %7.3f", mousePos.x, mousePos.y);
+			return std::string(buffer);
+		}
 	);
 	
 

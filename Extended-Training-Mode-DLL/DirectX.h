@@ -710,7 +710,7 @@ extern VertexData<PosColVert, 3 * 2048> posColVertData;//(D3DFVF_XYZ | D3DFVF_DI
 extern VertexData<PosTexVert, 3 * 2048> posTexVertData;//(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
 // need to rework font rendering, 4096 is just horrid
 //extern VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData;// (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
-extern VertexData<PosColTexVert, 3 * 4096 * 16> posColTexVertData;// (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
+extern VertexData<PosColTexVert, 3 * 4096 * 16 * 2> posColTexVertData;// (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 
 extern VertexData<MeltyVert, 3 * 4096 * 2> meltyVertData;// (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 extern VertexData<MeltyVert, 2 * 16384, D3DPT_LINELIST> meltyLineData;// (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty); // 8192 is overkill
@@ -934,8 +934,8 @@ Rect TextDraw(const Point& p, float size, DWORD ARGB, const char* format);
 template<typename... Args>
 Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format, Args... args) {
 
-	static char buffer[1024];
-	snprintf(buffer, 1024, format, args...);
+	static char buffer[4096];
+	snprintf(buffer, 4096, format, args...);
 
 	return TextDraw(x, y, size, ARGB, buffer);
 }

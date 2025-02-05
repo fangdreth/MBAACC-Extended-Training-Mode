@@ -59,6 +59,7 @@ int nFrameDataDisplayKey;
 int nHighlightsOnKey;
 int nSaveStateKey;
 
+DWORD showCSS = 1;
 int showDebugMenu = 0;
 bool bFreeze = false;
 bool bSlow = false;
@@ -1733,11 +1734,17 @@ void frameDoneCallback()
 
 	if (!isPaused()) {
 		static DWORD prevUnpausedFrameCount = 0;
+
+		bool alreadyRolledReplayManager = false;
+
 		if (prevUnpausedFrameCount != unpausedFrameCount) {
 			//long long startTime = getMicroSec();
 
 			saveStateManager.save();
 			unpausedFrameCount = prevUnpausedFrameCount;
+			//log("calling rollforward 1");
+			//replayManager.rollForward();
+			alreadyRolledReplayManager = true;
 
 			//long long endTime = getMicroSec();
 			//long long totalTime = endTime - startTime;
@@ -1749,14 +1756,14 @@ void frameDoneCallback()
 
 		if (UpKey.keyDownHeldFreq<4, 24>()) {
 			bool needNewFrame = saveStateManager.load(1);
-			if (needNewFrame) {
-
-			} else {
-				replayManager.rollForward();
-				rollFancyInputDisplay(1);
+			if (!alreadyRolledReplayManager) {
+				//log("calling rollforward 2");
+				//replayManager.rollForward();
 			}
 			
-			
+			if (!needNewFrame) {
+				rollFancyInputDisplay(1);
+			}
 		} else if (DownKey.keyDownHeldFreq<4, 24>()) {
 			saveStateManager.load(-1);
 			rollFancyInputDisplay(-1);
@@ -2342,7 +2349,15 @@ void newPauseCallback2()
 	if (!_naked_newPauseCallback2_IsPaused) {
 		unpausedFrameCount++;
 		TASManagerObj.incInputs();
-		replayManager.rollForward();
+	}
+
+	if (!_naked_newPauseCallback2_IsPaused && needPause != 2) {
+		
+		if (!isPaused()) {
+			//log("calling rollforward 3");
+			replayManager.rollForward();
+		}
+		
 	}
 
 }
@@ -3772,6 +3787,28 @@ __declspec(naked) void _naked_inputCallback() {
 
 }
 
+__declspec(naked) void _naked_showCssHook() {
+
+	__asm {
+
+		cmp showCSS, 1;
+
+		JE continueToShowCSS;
+
+		ret 4;
+
+	continueToShowCSS:
+		// overwritten asm
+		push ebp;
+		mov ebp, esp;
+		and esp, 0fffffff8h;
+
+	}
+
+	emitJump(0x0048bb86);
+
+}
+
 // init funcs
 
 void initFrameDoneCallback()
@@ -3970,6 +4007,9 @@ void initCustomHealthRecover() {
 	patchMemcpy(0x004242fa, tempCode, 6); //currently using adShareBase + 0x300 = 0x00781300
 }
 
+void initShowCssHook() {
+	patchJump(0x0048bb80, _naked_showCssHook);
+}
 
 // dll thread func
 
@@ -4013,6 +4053,8 @@ void threadFunc()
 	initInputCallback();
 
 	initCustomHealthRecover();
+
+	initShowCssHook();
 
 	//initTrainingMenu(); //uncomment for experimental new menu
 

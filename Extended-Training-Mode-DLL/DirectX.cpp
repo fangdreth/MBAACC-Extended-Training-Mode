@@ -13,6 +13,7 @@ void displayDebugInfo();
 void debugImportantDraw();
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
+void drawReplayMenu();
 
 //void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 void cursorDraw();
@@ -158,7 +159,7 @@ VertexData<PosColVert, 3 * 2048> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
 // need to rework font rendering, 4096 is just horrid
 //VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
-VertexData<PosColTexVert, 3 * 4096 * 16> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
+VertexData<PosColTexVert, 3 * 4096 * 16 * 2> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 
 VertexData<MeltyVert, 3 * 4096 * 2> meltyVertData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 VertexData<MeltyVert, 2 * 16384, D3DPT_LINELIST> meltyLineData(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty); // 8192 is overkill
@@ -1292,6 +1293,9 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format) {
 
 	Rect res(Point(x, y), Point(x, y + size));
 
+	float rectOrigXVal = x;
+	int maxX2Value = res.x2;
+
 	size *= 2.0f;
 
 	x /= 480.0f;
@@ -1346,6 +1350,8 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format) {
 		switch (c) {
 		case '\r':
 		case '\n':
+			maxX2Value = MAX(maxX2Value, 480 * x);
+			res.x2 = rectOrigXVal;
 			x = origX;
 			origY += charHeightOffset;
 			res.y2 += (480.0f * charHeightOffset);
@@ -1357,6 +1363,7 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format) {
 			str++;
 			continue;
 		case '\t': // please dont use tabs. please
+			TempARGB = 0xFF42e5f4;
 			str++;
 			continue;
 		case '{': // blue
@@ -1465,6 +1472,8 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format) {
 		str++;
 	}
 
+	res.x2 = MAX(res.x2, maxX2Value);
+
 	//device->SetTexture(0, NULL);
 
 	//device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
@@ -1487,11 +1496,11 @@ void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format
 	y /= 480.0f;
 	size /= 480.0f;
 
-	static char buffer[1024];
+	static char buffer[4096];
 
 	va_list args;
 	va_start(args, format);
-	vsnprintf(buffer, 1024, format, args);
+	vsnprintf(buffer, 4096, format, args);
 	va_end(args);
 
 
@@ -2923,7 +2932,8 @@ void __stdcall _doDrawCalls() {
 		drawCalls.clear();
 		return;
 	}
-	
+
+	drawReplayMenu();
 
 	// predraw stuff goes here.
 	if (logPowerInfo) {

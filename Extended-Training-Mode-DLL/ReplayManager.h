@@ -8,6 +8,12 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <regex>
+#include <set>
+
+#include "FancyMenu.h"
+
+#include "DirectX.h"
 
 #pragma pack(push,1)
 typedef struct InputItem {
@@ -104,8 +110,13 @@ public:
 
 	BYTE* buffer = NULL;
 
-	void load(const char* filePath);
+	std::string filePath;
+
+	bool load(const std::string& filePath_);
 	void logItem();
+
+	std::string timeString = "Unknown";
+	long long replayTime = -1;
 
 	int currentRound = 0;
 	std::vector<Round> rounds;
@@ -116,15 +127,23 @@ public:
 	void rollForward();
 	void rollBack();
 
+};
 
+struct ReplayComparator {
+	bool operator()(const Replay* a, const Replay* b) const {
+		return a->replayTime > b->replayTime;
+	}
 };
 
 class ReplayManager {
 public:
 
+	ReplayManager() {}
 	~ReplayManager();
 
-	void load(const char* filePath);
+	void load(const std::string& filePath);
+
+	void initReplay(Replay* r);
 
 	void setInputs();
 	void reset();
@@ -132,9 +151,28 @@ public:
 	void rollForward();
 	void rollBack();
 
-	int activeReplay = -1;
-	std::vector<Replay*> replays; // this is done because a move will call the destructor on the replay file!!!
+	bool wasMenuInit = false;
+	void initMenu();
+
+	void loadAllReplays();
+
+	std::string getReplayList();
+
+	void drawMenu();
+		
+	int replayPage = 0;
+	int pageCount = 0;
+	int replaysPerPage = 25;
+	Replay* activeReplay = NULL;
+	Replay* getReplay(int index);
+	std::set<Replay*, ReplayComparator> replays; // this is done because a move will call the destructor on the replay file!!!
+
+	bool firstUnfold = true;
+	Point anchorPoint = Point(175, 35);
+	Menu<int> replayMenu = Menu<int>("Replays");
 
 };
 
 extern ReplayManager replayManager;
+
+void drawReplayMenu();

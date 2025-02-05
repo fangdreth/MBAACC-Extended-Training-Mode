@@ -159,6 +159,8 @@ extern bool bFreeze;
 
 extern int showDebugMenu;
 
+extern DWORD showCSS;
+
 class TASManager;
 extern TASManager TASManagerObj;
 
