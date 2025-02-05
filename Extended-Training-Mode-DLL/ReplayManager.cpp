@@ -587,6 +587,6 @@ void ReplayManager::drawMenu() {
 // -----
 
 void drawReplayMenu() {
-	replayManager.drawMenu();
+	//replayManager.drawMenu();
 }
 
