@@ -1741,7 +1741,7 @@ IDirect3DPixelShader9* getOutlinePixelShader() {
 
 						tempColor = tex2D(textureSampler, offsets[i]);
 						if(tempColor.a == 0) {
-							return float4(texColor.rgb, 0.875); // putting this alpha at 0.75 might be a bit whack, but will help with overlay
+							return float4(texColor.rgb, 0.875); // putting this alpha at 0.75 might be a bit wack, but will help with overlay
 						}
 
 					}

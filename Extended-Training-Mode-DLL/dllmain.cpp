@@ -3850,7 +3850,7 @@ void initCasterMods()
 
 	/*
 	
-	for reasons only known to madsci, caster does some whack things in regards to fps, busy waiting, the whole 9 yards of ugh
+	for reasons only known to madsci, caster does some wack things in regards to fps, busy waiting, the whole 9 yards of ugh
 	i do not want to fuck with this shit,, hell if i were to release a caster update this is what i would fix
 	but like,,, omfg
 	the fps value is so fucking weird
