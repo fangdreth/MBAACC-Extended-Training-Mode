@@ -170,7 +170,7 @@ void initMenu() {
 
 	Menu ui("UI");
 
-	// whack syntax. should honestly be able to be inferred.
+	// wack syntax. should honestly be able to be inferred.
 	ui.add<int>("P1 Input Display",
 		[](int inc, int& opt) mutable -> void {
 			opt += inc;
@@ -349,7 +349,7 @@ void initMenu() {
 
 	misc.add(subColorMenu);
 
-	Menu findWhiskMenu(",,,,,");
+	Menu findWhiskMenu("find wara");
 
 	findWhiskMenu.add<int*>("enable",
 		[](int inc, int*& opt) {
