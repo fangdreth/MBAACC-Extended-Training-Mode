@@ -2928,12 +2928,53 @@ DWORD MBAA_InitSelectElement =		0x0042f8f0;
 DWORD MBAA_GetElementPointer =		0x0042fa90;
 DWORD MBAA_GetSetting =				0x0042fb50;
 DWORD MBAA_InitMenuWindow =			0x004d7b30;
+DWORD MBAA_DefaultMenuFreeAll =		0x004d7c50;
 DWORD MBAA_MenuDestructor =			0x004d7c70;
 DWORD MBAA_operator_new =			0x004e0177;
 DWORD MBAA_UnrecoveredJumptable =	0x004e0bf2;
 
 const char* label = "EXTENDED SETTINGS";
 const char* tag = "EXTENDED_SETTING";
+
+void* NEW_ITEM() {
+	__asm {
+		push 0x3c;
+		call[MBAA_operator_new];
+		add esp, 0x4;
+	}
+}
+
+void* NEW_SELECT_ELEMENT() {
+	__asm {
+		push 0x70;
+		call[MBAA_operator_new];
+		add esp, 0x4;
+	}
+}
+
+void* NEW_NORMAL_ELEMENT() {
+	__asm {
+		push 0x58;
+		call[MBAA_operator_new];
+		add esp, 0x4;
+	}
+}
+
+void* NEW_MENU_INFO() {
+	__asm {
+		push 0x78;
+		call[MBAA_operator_new];
+		add esp, 0x4;
+	}
+}
+
+void* NEW_MENU_WINDOW() {
+	__asm {
+		push 0xc4;
+		call[MBAA_operator_new];
+		add esp, 0x4;
+	}
+}
 
 DWORD ExtendedSettingsMenuItem_PatchAddr = 0x0047d493;
 //add extended menu element to main menu info
@@ -3042,7 +3083,7 @@ __declspec(naked) void _naked_InitExtendedSettingsMenuInfo() {
 		mov[esp + 0x10], 0x0;
 		push esi;
 		mov edx, 0x00538320;
-		mov dword ptr[esi], 0x0053885c;
+		//mov dword ptr[esi], 0x0053885c;
 		call[MBAA_FUN_00429020];
 		push esi;
 		mov edx, 0x005376e0;
@@ -3127,6 +3168,21 @@ void InitItem(Item* item, const char* label, const char* tag, int index) {
 	}
 }
 
+//wrapper for call to InitNormalElement
+void InitNormalElement(Element* element, const char* label, const char* tag, int elementType) {
+	//element should be stack[4]
+	//label should be stack[8]
+	//tag should be stack[c]
+	//elementType should be stack[10]
+	__asm {
+		push elementType;
+		push tag;
+		push label;
+		push element;
+		call[MBAA_InitNormalElement];
+	}
+}
+
 //wrapper for call to EnterIntoList
 void EnterIntoList(void* list, void* entry) {
 	//entry should be ebx
@@ -3175,13 +3231,13 @@ Element* GetElementPointer(MenuInfo* menuInfo, const char* tag) {
 }
 
 //wrapper for call to MBAA_GetSetting
-void GetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
+void GetSetting(MenuInfo* menuInfo, int setting, const char* tag) {
 	Element* element = GetElementPointer(menuInfo, tag);
 	if (element != 0x0 && element->GetItemListSize() != 0x0) {
 		int iterator = 0;
 		while (true) {
 			int CurItemValue = element->GetItemValue(iterator);
-			if (CurItemValue == *setting) break;
+			if (CurItemValue == setting) break;
 			iterator++;
 			if (element->GetItemListSize() <= iterator) return;
 		}
@@ -3196,45 +3252,94 @@ void GetExtendedSettings(MenuWindow* extendedWindow) {
 			call[MBAA_UnrecoveredJumptable];
 		}
 	}
-	MenuInfo* extendedInfo = *extendedWindow->MenuInfoList;
-	for (int i = 0; i < size(Page1); i++) {
-		GetSetting(extendedInfo, Page1_Settings[i], Page1[i][1]);
+	char tempTag[8];
+	MenuInfo* extendedInfo;
+	for (int pageNum = 0; pageNum < size(Page_Options); pageNum++) {
+		extendedInfo = extendedWindow->MenuInfoList[pageNum];
+		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
+			snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
+			GetSetting(extendedInfo, Page_Settings[pageNum][elementNum], tempTag);
+		}
 	}
+	
+	extendedWindow->menuInfoIndex = nEXTENDED_SETTINGS_PAGE;
+	extendedWindow->MenuInfoList[nEXTENDED_SETTINGS_PAGE]->selectedElement = nEXTENDED_SETTINGS_CURSOR;
 }
 
-void AddSelectElement(MenuInfo* menuInfo, std::vector<const char*> elementVector) {
+void AddSelectElement(MenuInfo* menuInfo, int pageNum, int elementNum) {
+	std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
 	int vSize = size(elementVector);
-	if (vSize < 1 || vSize % 2 != 0) return;
-	Element* element = new Element;
-	InitSelectElement(element, elementVector[0], elementVector[1], 0xa0);
+	Element* element = (Element*)NEW_SELECT_ELEMENT();
+	char tempTag[8];
+	snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
+	InitSelectElement(element, elementVector[0], tempTag, 0xa0);
 	element->vftable = (void*)0x00536654;
-	int itemIndex = 0;
-	for (int i = 2; i < vSize; i += 2) {
-		Item* item = new Item;
-		InitItem(item, elementVector[i], elementVector[i + 1], itemIndex);
+	for (int i = 1; i < vSize; i++) {
+		Item* item = (Item*)NEW_ITEM();
+		snprintf(tempTag, 8, "%i_%i_%i", pageNum, elementNum, i);
+		InitItem(item, elementVector[i], tempTag, i-1);
 		EnterIntoList((void*)(&element->ListInput), (void*)(item));
-		itemIndex++;
 	}
+	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
+}
+
+void AddNormalElement(MenuInfo* menuInfo, int pageNum, int elementNum) {
+	std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
+	Element* element = (Element*)NEW_NORMAL_ELEMENT();
+	char tempTag[8];
+	snprintf(tempTag, 8, "%i_%i_0_n", pageNum, elementNum);
+	InitNormalElement(element, elementVector[0], tempTag, 0);
+	element->canSelect = 1;
+	element->elementType = 1;
+	element->vftable = (void*)0x0053604c;
+	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
+}
+
+void AddSpaceElement(MenuInfo* menuInfo, int pageNum, int elementNum) {
+	Element* element = (Element*)NEW_NORMAL_ELEMENT();
+	char tempTag[8];
+	snprintf(tempTag, 8, "%i_%i_0_s", pageNum, elementNum);
+	InitNormalElement(element, "", "", 0);
+	element->canSelect = 0;
+	element->elementType = 2;
+	element->bottomMargin = 8;
+	element->vftable = (void*)0x00536094;
 	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
 }
 
 //init extended window, info, elements, and items
 MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 	InitMenuWindow(extendedWindow);
-	extendedWindow->vftable = (void*)0x0053882c;
+	//extendedWindow->vftable = (void*)0x0053882c;
 	ReadDataFile(&extendedWindow->unknown_0x5c, "EXTENDED SETTINGS", 18);
-	MenuInfo* extendedInfo = new MenuInfo;
-	if (extendedInfo != 0x0)
+	MenuInfo* extendedInfo;
+	for (int pageNum = 0; pageNum < size(Page_Options); pageNum++)
 	{
-		InitExtendedSettingsMenuInfo(extendedInfo, extendedWindow);
+		MenuInfo* extendedInfo = (MenuInfo*)NEW_MENU_INFO();
+		if (extendedInfo != 0x0)
+		{
+			InitExtendedSettingsMenuInfo(extendedInfo, extendedWindow);
+		}
+		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
+			std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
+			int vSize = size(elementVector);
+			switch (vSize)
+			{
+			case 0:
+				AddSpaceElement(extendedInfo, pageNum, elementNum);
+				break;
+			case 1:
+				AddNormalElement(extendedInfo, pageNum, elementNum);
+				break;
+			default:
+				AddSelectElement(extendedInfo, pageNum, elementNum);
+				break;
+			}
+		}
+		EnterIntoList((void*)(&extendedWindow->ListInput), (void*)(extendedInfo));
+		_FUN_00429b00(extendedInfo, "EXTENDED_SETTING");
 	}
 
-	for (int i = 0; i < size(Page1); i++) {
-		AddSelectElement(extendedInfo, Page1[i]);
-	}
-
-	EnterIntoList((void*)(&extendedWindow->ListInput), (void*)(extendedInfo));
-	_FUN_00429b00(extendedInfo, "EXTENDED_SETTING");
 	GetExtendedSettings(extendedWindow);
 	extendedWindow->dimScreenPercentage = 0.0;
 	extendedWindow->u_layer = 0x2f1;
@@ -3268,12 +3373,12 @@ void _FUN_0047ce20(void* field24, const char* TRAINING_XX_MENU) {
 }
 
 //Sets a single setting to its persistent location
-void SetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
+void SetSetting(MenuInfo* menuInfo, int& setting, const char* tag) {
 	Element* element = GetElementPointer(menuInfo, tag);
 	if (element != 0x0) {
 		int selectionIndex = element->selectedItem;
 		int value = element->ItemList[selectionIndex]->value;
-		*setting = value;
+		setting = value;
 	}
 }
 
@@ -3284,42 +3389,42 @@ void SetExtendedSettings(MenuWindow* extendedWindow) {
 			call[MBAA_UnrecoveredJumptable];
 		}
 	}
-	MenuInfo* extendedInfo = *extendedWindow->MenuInfoList;
-	for (int i = 0; i < size(Page1); i++) {
-		SetSetting(extendedInfo, Page1_Settings[i], Page1[i][1]);
-	}
-}
-
-//recursively enter and free info, elements, and items
-void FreeWindowChildren(MenuWindow* extendedWindow) {
-	MenuInfo* menuInfo = *extendedWindow->MenuInfoList;
-	Element** pElement = menuInfo->ElementList;
-	while (pElement < menuInfo->ElementListEnd) {
-		Element* element = *pElement;
-		Item** pItem = element->ItemList;
-		while (pItem < element->ItemListEnd) {
-			Item* item = *pItem;
-			free(item);
-			pItem += 1;
+	char tempTag[8];
+	MenuInfo* extendedInfo;
+	for (int pageNum = 0; pageNum < size(Page_Options); pageNum++) {
+		extendedInfo = extendedWindow->MenuInfoList[pageNum];
+		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
+			snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
+			SetSetting(extendedInfo, Page_Settings[pageNum][elementNum], tempTag);
 		}
-		free(element);
-		pElement += 1;
 	}
-	free(menuInfo);
+
+	nEXTENDED_SETTINGS_PAGE = extendedWindow->menuInfoIndex;
+	nEXTENDED_SETTINGS_CURSOR = extendedWindow->MenuInfoList[nEXTENDED_SETTINGS_PAGE]->selectedElement;
 }
 
 //save settings and free everything
 void CloseExtendedSettings(MenuWindow* extendedWindow) {
 	SetExtendedSettings(extendedWindow);
-	FreeWindowChildren(extendedWindow);
-	free(extendedWindow);
+
+	__asm {
+		mov ecx, extendedWindow;
+	}
+	PUSH_ALL;
+	__asm {
+		mov eax, dword ptr[ecx];
+		mov edx, dword ptr[eax];
+		push 1;
+		call edx;
+	}
+	POP_ALL;
 }
 
 //init extended menu if not already open, close and free if set to close
 void HandleExtendedMenu() {
 	if (mainWindow->ExtendedSettings == 0x0) {
 		mainWindow->isMenuLit = 0;
-		MenuWindow* extendedWindow = new MenuWindow;
+		MenuWindow* extendedWindow = (MenuWindow*)NEW_MENU_WINDOW();
 		if (extendedWindow != 0x0) {
 			extendedWindow = InitExtendedSettingsMenu(extendedWindow);
 		}
@@ -3383,6 +3488,37 @@ __declspec(naked) void _naked_NewExtMainMenuWindow() {
 	}
 }
 
+void ExtendedMenuInputChecking() {
+	MenuWindow* extendedWindow;
+	__asm {
+		mov extendedWindow, ecx;
+	}
+	switch (extendedWindow->menuInfoIndex) {
+	case 1:
+		break;
+	case 2:
+		break;
+	}
+
+	bool CurFN1Input = *(bool*)(adMBAABase + adP1FN1Input);
+	if (CurFN1Input && !bOldFN1Input) {
+		extendedWindow->menuInfoIndex++;
+		if (extendedWindow->menuInfoIndex > size(Page_Options) - 1) {
+			extendedWindow->menuInfoIndex = 0;
+		}
+	}
+	bOldFN1Input = CurFN1Input;
+
+	bool CurFN2Input = *(bool*)(adMBAABase + adP1FN2Input);
+	if (CurFN2Input && !bOldFN2Input) {
+		extendedWindow->menuInfoIndex--;
+		if (extendedWindow->menuInfoIndex < 0) {
+			extendedWindow->menuInfoIndex = size(Page_Options) - 1;
+		}
+	}
+	bOldFN2Input = CurFN2Input;
+}
+
 DWORD UpdateMenuTrainingSettings_PatchAddr = 0x0047e1da;
 //add extended menu to update if-chain
 __declspec(naked) void _naked_UpdateMenuExtendedSettings() {
@@ -3394,9 +3530,16 @@ __declspec(naked) void _naked_UpdateMenuExtendedSettings() {
 		mov edx, dword ptr[ecx];
 		mov edx, dword ptr[edx + 0x8];
 		push eax;
-		mov eax, dword ptr [esp + 0x64];
+		mov eax, dword ptr[esp + 0x64];
 		push eax;
-		call edx;
+		call edx; //u_InitSubmenus
+	}
+
+	PUSH_ALL;
+	ExtendedMenuInputChecking();
+	POP_ALL;
+
+	__asm {
 		push 0x0047e27a;
 		ret;
 
