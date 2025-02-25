@@ -1034,7 +1034,7 @@ void drawFrameBar(int nYOverride = -1)
 	TextDraw(20, frameBarY + 29, 10, 0xFFFFFFFF, buffer);
 
 	//DEBUG PRINTS
-	//snprintf(buffer, 256, "%i", Main1->nFirstActiveCounter);
+	//snprintf(buffer, 256, "%i", nREVERSAL_TYPE);
 	//TextDraw(20, frameBarY - 23, 10, 0xFFFFFFFF, buffer);
 
 }
@@ -3231,13 +3231,13 @@ Element* GetElementPointer(MenuInfo* menuInfo, const char* tag) {
 }
 
 //wrapper for call to MBAA_GetSetting
-bool GetSetting(MenuInfo* menuInfo, int setting, const char* tag) {
+bool GetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
 	Element* element = GetElementPointer(menuInfo, tag);
 	if (element != 0x0 && element->GetItemListSize() != 0x0) {
 		int iterator = 0;
 		while (true) {
 			int CurItemValue = element->GetItemValue(iterator);
-			if (CurItemValue == setting) break;
+			if (CurItemValue == *setting) break;
 			iterator++;
 			if (element->GetItemListSize() <= iterator) return false;
 		}
@@ -3378,12 +3378,12 @@ void _FUN_0047ce20(void* field24, const char* TRAINING_XX_MENU) {
 }
 
 //Sets a single setting to its persistent location
-bool SetSetting(MenuInfo* menuInfo, int& setting, const char* tag) {
+bool SetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
 	Element* element = GetElementPointer(menuInfo, tag);
 	if (element != 0x0) {
 		int selectionIndex = element->selectedItem;
 		int value = element->ItemList[selectionIndex]->value;
-		setting = value;
+		*setting = value;
 		return true;
 	}
 	return false;

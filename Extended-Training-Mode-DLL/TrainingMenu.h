@@ -214,8 +214,8 @@ int nREVERSAL_SLOT_3 = 0;
 int nREVERSAL_SLOT_4 = 0;
 int nREVERSAL_DELAY = 0;
 
-std::vector<int> P1_Settings = {
-	nREVERSAL_TYPE, nREVERSAL_SLOT_1, nREVERSAL_SLOT_2, nREVERSAL_SLOT_3, nREVERSAL_SLOT_4, nREVERSAL_DELAY
+std::vector<int*> P1_Settings = {
+	&nREVERSAL_TYPE, &nREVERSAL_SLOT_1, &nREVERSAL_SLOT_2, &nREVERSAL_SLOT_3, &nREVERSAL_SLOT_4, &nREVERSAL_DELAY
 };
 
 //Page 2
@@ -260,8 +260,8 @@ int nMETER = 0;
 int nHEALTH = 0;
 int nHITS_UNTIL_BURST;
 
-std::vector<int> P2_Settings = {
-	nPENALTY_RESET, nEX_GUARD, nGUARD_BAR, nMETER, nHEALTH, nHITS_UNTIL_BURST
+std::vector<int*> P2_Settings = {
+	&nPENALTY_RESET, &nEX_GUARD, &nGUARD_BAR, &nMETER, &nHEALTH, &nHITS_UNTIL_BURST
 };
 
 //Page 3
@@ -306,8 +306,8 @@ int nARMOR = 0;
 int nTHROW_PROTECTION = 0;
 int nIDLE = 0;
 
-std::vector<int> P3_Settings = {
-	nHIGHLIGHTS, nGUARD, nHIT, nARMOR, nTHROW_PROTECTION, nIDLE
+std::vector<int*> P3_Settings = {
+	&nHIGHLIGHTS, &nGUARD, &nHIT, &nARMOR, &nTHROW_PROTECTION, &nIDLE
 };
 
 //Page 4
@@ -338,8 +338,8 @@ int nRESET_TO_POSITIONS = 0;
 int nP1_X_LOC = 0;
 int nP2_X_LOC = 0;
 
-std::vector<int> P4_Settings = {
-	nRESET_TO_POSITIONS, nP1_X_LOC, nP2_X_LOC
+std::vector<int*> P4_Settings = {
+	&nRESET_TO_POSITIONS, &nP1_X_LOC, &nP2_X_LOC
 };
 
 //Page 5
@@ -378,8 +378,8 @@ int nROA_HIDDEN_CHARGE = 1;
 int nF_MAIDS_HEARTS = 1;
 int nRYOUGI_KNIFE = 0;
 
-std::vector<int> P5_Settings = {
-	nSION_BULLETS, nROA_VISIBLE_CHARGE, nROA_HIDDEN_CHARGE, nF_MAIDS_HEARTS, nRYOUGI_KNIFE
+std::vector<int*> P5_Settings = {
+	&nSION_BULLETS, &nROA_VISIBLE_CHARGE, &nROA_HIDDEN_CHARGE, &nF_MAIDS_HEARTS, &nRYOUGI_KNIFE
 };
 
 //Page 6
@@ -418,8 +418,8 @@ int nCOLOR_BLIND_MODE = 0;
 int nORIGIN_STYLE = 0;
 int nDRAW_GROUND = 0;
 
-std::vector<int> P6_Settings = {
-	nDISPLAY_HITBOXES, nHITBOX_STYLE, nCOLOR_BLIND_MODE, nORIGIN_STYLE, nDRAW_GROUND
+std::vector<int*> P6_Settings = {
+	&nDISPLAY_HITBOXES, &nHITBOX_STYLE, &nCOLOR_BLIND_MODE, &nORIGIN_STYLE, &nDRAW_GROUND
 };
 
 //Page 7
@@ -454,9 +454,10 @@ std::vector<std::vector<const char*>> P7_Options = {
 };
 
 int nSAVE_STATE_SLOT = 1;
+int nLOAD_RNG = 0;
 
-std::vector<int> P7_Settings = {
-	nSAVE_STATE_SLOT
+std::vector<int*> P7_Settings = {
+	&nSAVE_STATE_SLOT, &nLOAD_RNG
 };
 
 //Page 8
@@ -499,8 +500,8 @@ int nSHOW_FREEZE_AND_INPUTS = 0;
 int nSHOW_CANCEL_WINDOWS = 0;
 int nSCROLL_DISPLAY = 3;
 
-std::vector<int> P8_Settings = {
-	nFRAME_DATA, nIN_GAME_FRAMEBAR, nSHOW_FREEZE_AND_INPUTS, nSHOW_CANCEL_WINDOWS, nSCROLL_DISPLAY
+std::vector<int*> P8_Settings = {
+	&nFRAME_DATA, &nIN_GAME_FRAMEBAR, &nSHOW_FREEZE_AND_INPUTS, &nSHOW_CANCEL_WINDOWS, &nSCROLL_DISPLAY
 };
 
 //Page 9
@@ -527,8 +528,8 @@ int nCUSTOM_RNG = 0;
 int nRATE = 0;
 int nSEED = 0;
 
-std::vector<int> P9_Settings = {
-	nCUSTOM_RNG, nRATE, nSEED
+std::vector<int*> P9_Settings = {
+	&nCUSTOM_RNG, &nRATE, &nSEED
 };
 
 //Page 10
@@ -567,8 +568,8 @@ int nP2_INPUT_DISPLAY = 0;
 int nFRAME_DISPLAY_Y = 0;
 int nATTACK_DISPLAY = 0;
 
-std::vector<int> P10_Settings = {
-	nSHOW_STATS, nP1_INPUT_DISPLAY, nP2_INPUT_DISPLAY, nFRAME_DISPLAY_Y, nATTACK_DISPLAY
+std::vector<int*> P10_Settings = {
+	&nSHOW_STATS, &nP1_INPUT_DISPLAY, &nP2_INPUT_DISPLAY, &nFRAME_DISPLAY_Y, &nATTACK_DISPLAY
 };
 
 //Page 11
@@ -607,8 +608,8 @@ int nHIDE_SHADOWS = 0;
 int nHIDE_EXTRAS = 0;
 int nBACKGROUND = 0;
 
-std::vector<int> P11_Settings = {
-	nSLOW_MOTION, nHIDE_HUD, nHIDE_SHADOWS, nHIDE_EXTRAS, nBACKGROUND
+std::vector<int*> P11_Settings = {
+	&nSLOW_MOTION, &nHIDE_HUD, &nHIDE_SHADOWS, &nHIDE_EXTRAS, &nBACKGROUND
 };
 
 //All pages
@@ -616,7 +617,7 @@ std::vector<std::vector<std::vector<const char*>>> Page_Options = {
 	P1_Options, P2_Options, P3_Options, P4_Options, P5_Options, P6_Options, P7_Options, P8_Options, P9_Options, P10_Options, P11_Options
 };
 
-std::vector<std::vector<int>> Page_Settings = {
+std::vector<std::vector<int*>> Page_Settings = {
 	P1_Settings, P2_Settings, P3_Settings, P4_Settings, P5_Settings, P6_Settings, P7_Settings, P8_Settings, P9_Settings, P10_Settings, P11_Settings
 };
 
