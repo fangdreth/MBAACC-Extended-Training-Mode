@@ -3231,7 +3231,7 @@ Element* GetElementPointer(MenuInfo* menuInfo, const char* tag) {
 }
 
 //wrapper for call to MBAA_GetSetting
-void GetSetting(MenuInfo* menuInfo, int setting, const char* tag) {
+bool GetSetting(MenuInfo* menuInfo, int setting, const char* tag) {
 	Element* element = GetElementPointer(menuInfo, tag);
 	if (element != 0x0 && element->GetItemListSize() != 0x0) {
 		int iterator = 0;
@@ -3239,10 +3239,12 @@ void GetSetting(MenuInfo* menuInfo, int setting, const char* tag) {
 			int CurItemValue = element->GetItemValue(iterator);
 			if (CurItemValue == setting) break;
 			iterator++;
-			if (element->GetItemListSize() <= iterator) return;
+			if (element->GetItemListSize() <= iterator) return false;
 		}
 		element->selectedItem = iterator;
+		return true;
 	}
+	return false;
 }
 
 //get settings from persistent locations to init menu window
@@ -3256,9 +3258,12 @@ void GetExtendedSettings(MenuWindow* extendedWindow) {
 	MenuInfo* extendedInfo;
 	for (int pageNum = 0; pageNum < size(Page_Options); pageNum++) {
 		extendedInfo = extendedWindow->MenuInfoList[pageNum];
+		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
 			snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
-			GetSetting(extendedInfo, Page_Settings[pageNum][elementNum], tempTag);
+			if (GetSetting(extendedInfo, Page_Settings[pageNum][settingNum], tempTag)) {
+				settingNum++;
+			};
 		}
 	}
 	
@@ -3373,13 +3378,15 @@ void _FUN_0047ce20(void* field24, const char* TRAINING_XX_MENU) {
 }
 
 //Sets a single setting to its persistent location
-void SetSetting(MenuInfo* menuInfo, int& setting, const char* tag) {
+bool SetSetting(MenuInfo* menuInfo, int& setting, const char* tag) {
 	Element* element = GetElementPointer(menuInfo, tag);
 	if (element != 0x0) {
 		int selectionIndex = element->selectedItem;
 		int value = element->ItemList[selectionIndex]->value;
 		setting = value;
+		return true;
 	}
+	return false;
 }
 
 //save settings to persistent locations
@@ -3393,9 +3400,12 @@ void SetExtendedSettings(MenuWindow* extendedWindow) {
 	MenuInfo* extendedInfo;
 	for (int pageNum = 0; pageNum < size(Page_Options); pageNum++) {
 		extendedInfo = extendedWindow->MenuInfoList[pageNum];
+		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
 			snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
-			SetSetting(extendedInfo, Page_Settings[pageNum][elementNum], tempTag);
+			if (SetSetting(extendedInfo, Page_Settings[pageNum][settingNum], tempTag)) {
+				settingNum++;
+			};
 		}
 	}
 
@@ -3502,18 +3512,18 @@ void ExtendedMenuInputChecking() {
 
 	bool CurFN1Input = *(bool*)(adMBAABase + adP1FN1Input);
 	if (CurFN1Input && !bOldFN1Input) {
-		extendedWindow->menuInfoIndex++;
-		if (extendedWindow->menuInfoIndex > size(Page_Options) - 1) {
-			extendedWindow->menuInfoIndex = 0;
+		extendedWindow->menuInfoIndex--;
+		if (extendedWindow->menuInfoIndex < 0) {
+			extendedWindow->menuInfoIndex = size(Page_Options) - 1;
 		}
 	}
 	bOldFN1Input = CurFN1Input;
 
 	bool CurFN2Input = *(bool*)(adMBAABase + adP1FN2Input);
 	if (CurFN2Input && !bOldFN2Input) {
-		extendedWindow->menuInfoIndex--;
-		if (extendedWindow->menuInfoIndex < 0) {
-			extendedWindow->menuInfoIndex = size(Page_Options) - 1;
+		extendedWindow->menuInfoIndex++;
+		if (extendedWindow->menuInfoIndex > size(Page_Options) - 1) {
+			extendedWindow->menuInfoIndex = 0;
 		}
 	}
 	bOldFN2Input = CurFN2Input;
