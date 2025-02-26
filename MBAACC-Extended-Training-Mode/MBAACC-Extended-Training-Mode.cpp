@@ -161,6 +161,7 @@ int main(int argc, char* argv[])
         int nHotkeyPage = 1;
 
         int nGameMode = 0;
+        int nVersusCheck = 0;
 
         bool bPositionsLocked = false;
         int nP1X = P1_DEFAULT_X;
@@ -473,17 +474,16 @@ int main(int argc, char* argv[])
             }
 
             // check this to prevent attaching to netplay
-            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwGameMode), &nReadResult, 4, 0);
-            nGameMode = nReadResult;
-            //if (nGameMode != 4112)
-            if(false)
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwGameMode), &nGameMode, 4, 0);
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwVersusCheck), &nVersusCheck, 4, 0);
+            if(nGameMode == 1 && nVersusCheck == 1) //Versus
             {
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
                 std::cout << "Cannot attach to versus mode....\x1b[K";
                 //LogInfo("MBAA is in versus mode");
                 continue;
             }
-            else
+            else if (nGameMode == 4112 || (nGameMode == 1 && nVersusCheck == 2)) //Training OR Replay
             {
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });               
                 std::cout << "Attached to MBAA.exe\x1b[K" << "\n\x1b[K\n";
