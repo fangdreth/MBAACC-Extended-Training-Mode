@@ -3,6 +3,19 @@ import time
 import threading
 import queue
 
+from colorama import init, Fore, Back, Style
+
+init(convert=True)
+
+RED = Fore.RED 
+YELLOW = Fore.YELLOW
+GREEN = Fore.GREEN 
+CYAN = Fore.CYAN
+WHITE = Fore.WHITE
+MAGENTA = Fore.MAGENTA
+
+RESET = Style.RESET_ALL
+
 startTime = time.time()
 def getTime():
 	return f"{time.time() - startTime:.2f}"
@@ -62,7 +75,23 @@ def writerFunc(packetQueue):
 			print(chr(27) + "[H")
 			continue
 			
-		print(f'{data}')
+		if data[0] == "`":
+			
+			count = 1
+			
+			for i in range(1, len(data)):
+				if data[i] == "`":
+					count += 1
+					continue
+				break
+			
+			colorLookup = [RED, GREEN, CYAN, YELLOW, MAGENTA]
+			
+			count = min(len(colorLookup) - 1, count-1)
+		
+			print(colorLookup[count] + f'{data[count+1:]}' + RESET)
+		else:
+			print(f'{data}')
 
 		pass
 	
