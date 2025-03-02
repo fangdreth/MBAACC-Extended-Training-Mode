@@ -23,15 +23,18 @@
 
 struct Item //scrolling items on right
 {
-	void* resource;
-	char label[20];
-	void* effect;
-	char name[20];
-	UNUSED(0x8);
+	void* vftable;
+	char label[0x10]; // becomes pointer if size > 0xf
+	int labelLength;
+	int labelMaxLength;
+	int nameBase;
+	char tag[0x10]; // becomes pointer if size > 0xf
+	int tagLength;
+	int tagMaxLength;
 	int value;
 };
 
-CHECKOFFSET(Item, effect, 0x18)
+CHECKOFFSET(Item, tag, 0x20)
 CHECKOFFSET(Item, value, 0x38)
 CHECKSIZE(Item, 0x3c)
 
@@ -45,11 +48,14 @@ struct Element //listed elements on left
 	int timeNotHovered;
 	int bottomMargin;
 	float textOpacity;
-	UNUSED(0x4);
-	char displayedName[20];
-	UNUSED(0x8);
-	char name[20];
-	UNUSED(0x4);
+	int labelBase;
+	char label[0x10]; // becomes pointer if size > 0xf
+	int labelLength;
+	int labelMaxLength;
+	int tagBase;
+	char tag[0x10]; // becomes pointer if size > 0xf
+	int tagLength;
+	int tagMaxLength;
 	int selectedItem;
 	int selectItemLabelXOffset;
 	int ListInput;
@@ -78,8 +84,8 @@ struct Element //listed elements on left
 	}
 };
 
-CHECKOFFSET(Element, displayedName, 0x24)
-CHECKOFFSET(Element, name, 0x40)
+CHECKOFFSET(Element, label, 0x24)
+CHECKOFFSET(Element, tag, 0x40)
 CHECKOFFSET(Element, ItemList, 0x64)
 CHECKSIZE(Element, 0x70)
 
@@ -89,19 +95,31 @@ struct MenuInfo
 {
 	void* vftable;
 	MenuWindow* parentWindow;
-	UNUSED(0x38);
+	int tagBase;
+	char tag[0x10]; // becomes pointer if size > 0xf
+	int tagLength;
+	int tagMaxLength;
+	int blankBase;
+	char blank[0x10]; // becomes pointer if size > 0xf
+	int blankLength;
+	int blankMaxLength;
 	int selectedElement;
 	int prevSelectedElement;
 	int ListInput;
 	Element** ElementList;
 	Element** ElementListEnd;
-	UNUSED(0x14);
+	int field_0x54;
+	int field_0x58;
+	int field_0x5c;
+	int field_0x60;
+	int field_0x64;
 	int finishedDrawing;
 	int timeDisplayed;
-	UNUSED(0x4);
+	int field_0x70;
 	int close;
 };
 
+CHECKOFFSET(MenuInfo, tagMaxLength, 0x20)
 CHECKOFFSET(MenuInfo, ElementList, 0x4c)
 CHECKSIZE(MenuInfo, 0x78)
 
@@ -109,23 +127,29 @@ struct MenuWindow
 {
 	void* vftable;
 	int menuInfoIndex;
-	UNUSED(0x4);
+	int field_0x8;
 	int ListInput;
 	MenuInfo** MenuInfoList;
 	MenuInfo** MenuInfoListEnd;
-	UNUSED(0x4);
+	int field_0x18;
 	int didPress;
-	UNUSED(0x4);
-	int unknown_0x24;
-	UNUSED(0x1C);
+	int hoveredTagBase;
+	char hoveredTag[0x10]; // becomes pointer if size > 0xf
+	int hoveredTagLength;
+	int hoveredTagMaxLength;
+	int field_0x3c;
+	int field_0x40;
 	int yOffset;
 	int someYOffset;
 	int xOffset;
-	int unknown_0x50;
-	UNUSED(0x8);
-	int unknown_0x5c;
-	char label[20];
-	UNUSED(0x8);
+	int field_0x50;
+	int field_0x54;
+	int field_0x58;
+	int labelBase;
+	char label[0x10]; // becomes pointer if size > 0xf
+	int labelLength;
+	int labelMaxLength;
+	int playerInControl;
 	int isRootMenu;
 	int timeOpened;
 	int openSubmenuIndex;
@@ -135,11 +159,11 @@ struct MenuWindow
 	float progressionRate;
 	float degressionRate;
 	int isBlurred;
-	UNUSED(0x4);
+	int field_0xa0;
 	int isMenuBackgroundDisplayed;
 	int u_layer;
 	int paragraphMode;
-	UNUSED(0x4);
+	int field_0xb0;
 	int textXWidth;
 	int textYWidth;
 	int isMenuLit;
@@ -152,13 +176,14 @@ struct MenuWindow
 	int u_hideMenu;
 	void* InformationMenu;
 	MenuWindow* ExtendedSettings;
+	MenuWindow* HotkeySettings;
 };
 
 CHECKOFFSET(MenuWindow, MenuInfoList, 0x10)
-CHECKOFFSET(MenuWindow, unknown_0x5c, 0x5c)
+CHECKOFFSET(MenuWindow, labelBase, 0x5c)
 CHECKOFFSET(MenuWindow, isRootMenu, 0x7c)
 CHECKOFFSET(MenuWindow, dimScreenPercentage, 0xc0)
-CHECKSIZE(MenuWindow, 0xe4)
+CHECKSIZE(MenuWindow, 0xe8)
 
 #pragma pack(pop, 1)
 #undef CHECKOFFSET
@@ -622,7 +647,119 @@ std::vector<std::vector<int*>> Page_Settings = {
 };
 
 uint8_t nEXTENDED_SETTINGS_PAGE = 0;
-uint8_t nEXTENDED_SETTINGS_CURSOR = 0;
+uint8_t nEXTENDED_SETTINGS_CURSOR[11] = { 0 };
 
 bool bOldFN1Input = 0;
 bool bOldFN2Input = 0;
+
+//Hotkey settings
+
+//Page 1
+std::vector<const char*> vFREEZE = {
+	"FREEZE",
+	"X"
+};
+
+std::vector<const char*> vSTEP_FRAME = {
+	"STEP FRAME",
+	"X"
+};
+
+std::vector<const char*> vTOGGLE_HITBOXES = {
+	"TOGGLE HITBOXES",
+	"X"
+};
+
+std::vector<const char*> vTOGGLE_FRAME_BAR = {
+	"TOGGLE FRAME BAR",
+	"X"
+};
+
+std::vector<const char*> vTOGGLE_HIGHLIGHTS = {
+	"TOGGLE HIGHLIGHTS",
+	"X"
+};
+
+std::vector<const char*> vQUEUE_REVERSAL = {
+	"QUEUE REVERSAL",
+	"X"
+};
+
+std::vector<const char*> vINCREMENT_RNG = {
+	"INCREMENT RNG",
+	"X"
+};
+
+std::vector<const char*> vDECREMENT_RNG = {
+	"DECREMENT RNG",
+	"X"
+};
+
+std::vector<std::vector<const char*>> HK_P1_Options = {
+	vFREEZE, vSTEP_FRAME, vTOGGLE_HITBOXES, vTOGGLE_FRAME_BAR, vTOGGLE_HIGHLIGHTS, vQUEUE_REVERSAL, vINCREMENT_RNG, vDECREMENT_RNG
+};
+
+int nFREEZE = 0;
+int nSTEP_FRAME = 0;
+int nTOGGLE_HITBOXES = 0;
+int nTOGGLE_FRAME_BAR = 0;
+int nTOGGLE_HIGHLIGHTS = 0;
+int nQUEUE_REVERSAL = 0;
+int nINCREMENT_RNG = 0;
+int nDECREMENT_RNG = 0;
+
+std::vector<int*> HK_P1_Settings = {
+	&nFREEZE, &nSTEP_FRAME, &nTOGGLE_HITBOXES, &nTOGGLE_FRAME_BAR, &nTOGGLE_HIGHLIGHTS, &nQUEUE_REVERSAL, &nINCREMENT_RNG, &nDECREMENT_RNG
+};
+
+//Page 2
+std::vector<const char*> vSAVE_STATE_HK = {
+	"SAVE STATE",
+	"X"
+};
+
+std::vector<const char*> vPREV_SAVE_SLOT = {
+	"PREV SAVE SLOT",
+	"X"
+};
+
+std::vector<const char*> vNEXT_SAVE_SLOT = {
+	"NEXT SAVE SLOT",
+	"X"
+};
+
+std::vector<const char*> vFRAME_BAR_LEFT = {
+	"FRAME BAR LEFT",
+	"X"
+};
+
+std::vector<const char*> vFRAME_BAR_RIGHT = {
+	"FRAME BAR RIGHT",
+	"X"
+};
+
+std::vector<std::vector<const char*>> HK_P2_Options = {
+	vSAVE_STATE_HK, vPREV_SAVE_SLOT, vNEXT_SAVE_SLOT, vFRAME_BAR_LEFT, vFRAME_BAR_RIGHT
+};
+
+int nSAVE_STATE = 0;
+int nPREV_SAVE_SLOT = 0;
+int nNEXT_SAVE_SLOT = 0;
+int nFRAME_BAR_LEFT = 0;
+int nFRAME_BAR_RIGHT = 0;
+
+std::vector<int*> HK_P2_Settings = {
+	&nSAVE_STATE, &nPREV_SAVE_SLOT, &nNEXT_SAVE_SLOT, &nFRAME_BAR_LEFT, &nFRAME_BAR_RIGHT
+};
+
+//All pages
+std::vector<std::vector<std::vector<const char*>>> HK_Page_Options = {
+	HK_P1_Options, HK_P2_Options
+};
+
+std::vector<std::vector<int*>> HK_Page_Settings = {
+	HK_P1_Settings, HK_P2_Settings
+};
+
+uint8_t nHOTKEY_SETTINGS_PAGE = 0;
+uint8_t nHOTKEY_SETTINGS_CURSOR[2] = { 0 };

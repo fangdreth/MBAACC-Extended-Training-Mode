@@ -2933,10 +2933,12 @@ DWORD MBAA_MenuDestructor =			0x004d7c70;
 DWORD MBAA_operator_new =			0x004e0177;
 DWORD MBAA_UnrecoveredJumptable =	0x004e0bf2;
 
-const char* label = "EXTENDED SETTINGS";
-const char* tag = "EXTENDED_SETTING";
+const char* pcEXTENDED_SETTINGS = "EXTENDED SETTINGS";
+const char* pcEXTENDED_SETTING = "EXTENDED_SETTING";
+const char* pcHOTKEY_SETTINGS = "HOTKEY SETTINGS";
+const char* pcHOTKEY_SETTING = "HOTKEY_SETTING";
 
-void* NEW_ITEM() {
+Item* NEW_ITEM() {
 	__asm {
 		push 0x3c;
 		call[MBAA_operator_new];
@@ -2944,7 +2946,7 @@ void* NEW_ITEM() {
 	}
 }
 
-void* NEW_SELECT_ELEMENT() {
+Element* NEW_SELECT_ELEMENT() {
 	__asm {
 		push 0x70;
 		call[MBAA_operator_new];
@@ -2952,7 +2954,7 @@ void* NEW_SELECT_ELEMENT() {
 	}
 }
 
-void* NEW_NORMAL_ELEMENT() {
+Element* NEW_NORMAL_ELEMENT() {
 	__asm {
 		push 0x58;
 		call[MBAA_operator_new];
@@ -2960,7 +2962,7 @@ void* NEW_NORMAL_ELEMENT() {
 	}
 }
 
-void* NEW_MENU_INFO() {
+MenuInfo* NEW_MENU_INFO() {
 	__asm {
 		push 0x78;
 		call[MBAA_operator_new];
@@ -2968,160 +2970,11 @@ void* NEW_MENU_INFO() {
 	}
 }
 
-void* NEW_MENU_WINDOW() {
+MenuWindow* NEW_MENU_WINDOW() {
 	__asm {
 		push 0xc4;
 		call[MBAA_operator_new];
 		add esp, 0x4;
-	}
-}
-
-DWORD ExtendedSettingsMenuItem_PatchAddr = 0x0047d493;
-//add extended menu element to main menu info
-__declspec(naked) void _naked_ExtendedSettingsMenuItem() {
-	__asm {
-		push 0x58;
-		call[MBAA_operator_new];
-		mov edi, eax;
-		add esp, 0x04;
-		mov dword ptr[esp + 0x14], edi;
-		test edi, edi;
-		mov byte ptr[esp + 0x68], 0x04;
-		je _NOINIT;
-
-		push 0x00;
-		push tag;
-		push label;
-		push edi;
-		call[MBAA_InitNormalElement];
-		mov dword ptr[edi + 0x0c], 0x00000001;
-		mov dword ptr[edi + 0x04], 0x00000001;
-		mov dword ptr[edi], 0x0053604c;
-
-		jmp _END;
-
-	_NOINIT:
-		xor edi, edi;
-
-	_END:
-		mov byte ptr[esp + 0x68], 0x01;
-		lea ebx, [esp + 0x14];
-		mov esi, ebp;
-		mov[esp + 0x14], edi;
-		call[MBAA_EnterIntoList];
-
-		push 0x58;
-		call[MBAA_operator_new];
-		push 0x0047d49a;
-		ret;
-	}
-}
-
-DWORD AddExtendedSettingToList_PatchAddr = 0x0047d1ae;
-//idk what this list is exactly
-__declspec(naked) void _naked_AddExtendedSettingToList() {
-	__asm {
-		push esi;
-		mov edx, tag;
-		call[MBAA_FUN_00429020];
-
-		push esi;
-		mov edx, 0x005384ac;
-
-		push 0x0047d1b4;
-		ret;
-	}
-}
-
-DWORD OpenExtendedSettings_PatchAddr = 0x0047ee5b;
-//add extended menu to open check if-chain
-__declspec(naked) void _naked_OpenExtendedSettings() {
-	__asm {
-		cmp dword ptr[ebp + 0x1c], ebx;
-		je _0047f062;
-		lea edi, [ebp + 0x20];
-		mov ecx, tag;
-		call[MBAA_CompareLabel];
-		test al, al;
-		je _0047ee67;
-		mov dword ptr[ebp + 0x7c], ebx;
-		mov dword ptr[ebp + 0x88], ebx;
-		mov dword ptr[ebp + 0x84], 0x5;
-		push 0x0047ef96;
-		ret;
-
-	_0047f062:
-		push 0x0047f062;
-		ret;
-
-	_0047ee67:
-		push 0x0047ee67;
-		ret;
-	}
-}
-
-const char* menuInfoTag = "TRAINING_EXTENDEDSETTING_MENU";
-//same as MBAA's InitBattleSettingsMenuInfo but with a different tag
-__declspec(naked) void _naked_InitExtendedSettingsMenuInfo() {
-	__asm {
-		push -0x1;
-		push 0x00515fb8;
-		mov eax, fs: [0x0] ;
-		push eax;
-		push esi;
-		mov eax, [0x0054b458];
-		xor eax, esp;
-		push eax;
-		lea eax, [esp + 0x08];
-		mov fs : [0x0] , eax;
-		mov esi, dword ptr[esp + 0x18];
-		mov eax, dword ptr[esp + 0x1c];
-		push eax;
-		push esi;
-		mov ecx, menuInfoTag;
-		call[MBAA_InitMenuInfo];
-		mov[esp + 0x10], 0x0;
-		push esi;
-		mov edx, 0x00538320;
-		//mov dword ptr[esi], 0x0053885c;
-		call[MBAA_FUN_00429020];
-		push esi;
-		mov edx, 0x005376e0;
-		call[MBAA_FUN_00429020];
-		push esi;
-		mov edx, 0x005365a0;
-		call[MBAA_FUN_00429020];
-		push esi;
-		mov edx, 0x00535e04;
-		call[MBAA_FUN_00429020];
-		mov eax, esi;
-		mov ecx, dword ptr[esp + 0x08];
-		mov fs : [0x0] , ecx;
-		pop ecx;
-		pop esi;
-		add esp, 0x0c;
-		ret 0x8;
-	}
-
-}
-
-//wrapper for call to initMenuWindow
-void InitMenuWindow(MenuWindow* menuWindow) {
-	//menuWindow should be stack[4]
-	__asm {
-		push menuWindow;
-		call[MBAA_InitMenuWindow];
-	}
-}
-
-//wrapper for call to initExtendedSettingsMenuInfo
-void InitExtendedSettingsMenuInfo(MenuInfo* extendedInfo, MenuWindow* extendedWindow) {
-	//menuInfo should be stack[4]
-	//menuWindow should be stack[8]
-	__asm {
-		push extendedWindow;
-		push extendedInfo;
-		call[_naked_InitExtendedSettingsMenuInfo];
 	}
 }
 
@@ -3135,6 +2988,21 @@ void ReadDataFile(void* dest, const char* name, int nameLength) {
 		push nameLength;
 		push name;
 		call[MBAA_ReadDataFile];
+	}
+}
+
+//wrapper for call to InitNormalElement
+void InitNormalElement(Element* element, const char* label, const char* tag, int elementType) {
+	//element should be stack[4]
+	//label should be stack[8]
+	//tag should be stack[c]
+	//elementType should be stack[10]
+	__asm {
+		push elementType;
+		push tag;
+		push label;
+		push element;
+		call[MBAA_InitNormalElement];
 	}
 }
 
@@ -3168,21 +3036,6 @@ void InitItem(Item* item, const char* label, const char* tag, int index) {
 	}
 }
 
-//wrapper for call to InitNormalElement
-void InitNormalElement(Element* element, const char* label, const char* tag, int elementType) {
-	//element should be stack[4]
-	//label should be stack[8]
-	//tag should be stack[c]
-	//elementType should be stack[10]
-	__asm {
-		push elementType;
-		push tag;
-		push label;
-		push element;
-		call[MBAA_InitNormalElement];
-	}
-}
-
 //wrapper for call to EnterIntoList
 void EnterIntoList(void* list, void* entry) {
 	//entry should be ebx
@@ -3194,6 +3047,114 @@ void EnterIntoList(void* list, void* entry) {
 		call[MBAA_EnterIntoList];
 		add esp, 0x4;
 	}
+}
+
+MenuInfo* InitMenuInfo(MenuInfo* menuInfo, MenuWindow* menuWindow, const char* tag) {
+	menuInfo->vftable = (void*)0x00535ec8;
+	menuInfo->parentWindow = menuWindow;
+	menuInfo->tag[0] = 0;
+	menuInfo->tagLength = 0;
+	menuInfo->tagMaxLength = 0xf;
+	menuInfo->blank[0] = 0;
+	menuInfo->blankLength = 0;
+	menuInfo->blankMaxLength = 0xf;
+	menuInfo->selectedElement = 0;
+	menuInfo->prevSelectedElement = 0;
+	menuInfo->ElementList = 0;
+	menuInfo->ElementListEnd = 0;
+	menuInfo->field_0x54 = 0;
+	menuInfo->field_0x5c = 0;
+	menuInfo->field_0x60 = 0;
+	menuInfo->field_0x64 = 0;
+	menuInfo->finishedDrawing = 0;
+	menuInfo->timeDisplayed = 0;
+	menuInfo->field_0x70 = 99999;
+	menuInfo->close = 0;
+	ReadDataFile(&menuInfo->tagBase, tag, strlen(tag));
+	ReadDataFile(&menuInfo->blankBase, "", 0);
+	return menuInfo;
+}
+
+MenuWindow* InitMenuWindow(MenuWindow* menuWindow) {
+	menuWindow->MenuInfoList = 0;
+	menuWindow->MenuInfoListEnd = 0;
+	menuWindow->field_0x18 = 0;
+	menuWindow->hoveredTagLength = 0;
+	menuWindow->hoveredTagMaxLength = 0xf;
+	menuWindow->hoveredTag[0] = 0;
+	menuWindow->menuInfoIndex = 0;
+	menuWindow->field_0x8 = 0;
+	menuWindow->someYOffset = 0x10;
+	menuWindow->field_0x50 = 0;
+	menuWindow->didPress = 0;
+	menuWindow->field_0x3c = 0;
+	menuWindow->xOffset = 0x140;
+	menuWindow->vftable = (void*)0x0053d3c0;
+	menuWindow->labelMaxLength = 0xf;
+	menuWindow->labelLength = 0;
+	menuWindow->label[0] = 0;
+	menuWindow->progressionRate = 0.0625;
+	menuWindow->degressionRate = -0.0625;
+	menuWindow->isRootMenu = 0;
+	menuWindow->timeOpened = 0;
+	menuWindow->closeAnimProgress = 0.0;
+	menuWindow->openSubmenuIndex = 0;
+	menuWindow->menuOpacity = 1.0;
+	menuWindow->field_0xa0 = 0;
+	menuWindow->playerInControl = 0;
+	menuWindow->isBlurred = 1;
+	menuWindow->isMenuBackgroundDisplayed = 1;
+	menuWindow->u_layer = 0x2f0;
+	menuWindow->field_0x58 = 0;
+	menuWindow->field_0x40 = 0;
+	menuWindow->yOffset = 0xf0;
+	menuWindow->textXWidth = 0x10;
+	menuWindow->textYWidth = 0x10;
+	ReadDataFile(&menuWindow->labelBase, "", 0);
+	menuWindow->paragraphMode = 0;
+	menuWindow->field_0xb0 = 0;
+	return menuWindow;
+}
+
+void AddSelectElement(MenuInfo* menuInfo, std::vector<const char*> elementVector, int pageNum, int elementNum) {
+	//std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
+	int vSize = size(elementVector);
+	Element* element = NEW_SELECT_ELEMENT();
+	char tempTag[8];
+	snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
+	InitSelectElement(element, elementVector[0], tempTag, 0xa0);
+	element->vftable = (void*)0x00536654;
+	for (int i = 1; i < vSize; i++) {
+		Item* item = (Item*)NEW_ITEM();
+		snprintf(tempTag, 8, "%i_%i_%i", pageNum, elementNum, i);
+		InitItem(item, elementVector[i], tempTag, i - 1);
+		EnterIntoList((void*)(&element->ListInput), (void*)(item));
+	}
+	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
+}
+
+void AddNormalElement(MenuInfo* menuInfo, std::vector<const char*> elementVector, int pageNum, int elementNum) {
+	//std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
+	Element* element = NEW_NORMAL_ELEMENT();
+	char tempTag[8];
+	snprintf(tempTag, 8, "%i_%i_0_n", pageNum, elementNum);
+	InitNormalElement(element, elementVector[0], tempTag, 0);
+	element->canSelect = 1;
+	element->elementType = 1;
+	element->vftable = (void*)0x0053604c;
+	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
+}
+
+void AddSpaceElement(MenuInfo* menuInfo, int pageNum, int elementNum) {
+	Element* element = NEW_NORMAL_ELEMENT();
+	char tempTag[8];
+	snprintf(tempTag, 8, "%i_%i_0_s", pageNum, elementNum);
+	InitNormalElement(element, "", "", 0);
+	element->canSelect = 0;
+	element->elementType = 2;
+	element->bottomMargin = 8;
+	element->vftable = (void*)0x00536094;
+	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
 }
 
 //wrapper for call to FUN_00429b00
@@ -3216,6 +3177,16 @@ void _FUN_004804a0(MenuWindow* menuWindow) {
 	}
 }
 
+void InitExtendedSettingsMenuInfo(MenuInfo* extendedInfo, MenuWindow* extendedWindow) {
+	InitMenuInfo(extendedInfo, extendedWindow, "TRAINING_EXTENDEDSETTING_MENU");
+	return;
+}
+
+void InitHotkeySettingsMenuInfo(MenuInfo* hotkeyInfo, MenuWindow* hotkeyWindow) {
+	InitMenuInfo(hotkeyInfo, hotkeyWindow, "TRAINING_HOTKEYSETTING_MENU");
+	return;
+}
+
 //wrapper for call to MBAA_GetElementPointer
 Element* GetElementPointer(MenuInfo* menuInfo, const char* tag) {
 	//menuInfo should be stack[4]
@@ -3230,7 +3201,7 @@ Element* GetElementPointer(MenuInfo* menuInfo, const char* tag) {
 	return retElement;
 }
 
-//wrapper for call to MBAA_GetSetting
+//get a single setting from persistent location
 bool GetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
 	Element* element = GetElementPointer(menuInfo, tag);
 	if (element != 0x0 && element->GetItemListSize() != 0x0) {
@@ -3268,59 +3239,45 @@ void GetExtendedSettings(MenuWindow* extendedWindow) {
 	}
 	
 	extendedWindow->menuInfoIndex = nEXTENDED_SETTINGS_PAGE;
-	extendedWindow->MenuInfoList[nEXTENDED_SETTINGS_PAGE]->selectedElement = nEXTENDED_SETTINGS_CURSOR;
-}
-
-void AddSelectElement(MenuInfo* menuInfo, int pageNum, int elementNum) {
-	std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
-	int vSize = size(elementVector);
-	Element* element = (Element*)NEW_SELECT_ELEMENT();
-	char tempTag[8];
-	snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
-	InitSelectElement(element, elementVector[0], tempTag, 0xa0);
-	element->vftable = (void*)0x00536654;
-	for (int i = 1; i < vSize; i++) {
-		Item* item = (Item*)NEW_ITEM();
-		snprintf(tempTag, 8, "%i_%i_%i", pageNum, elementNum, i);
-		InitItem(item, elementVector[i], tempTag, i-1);
-		EnterIntoList((void*)(&element->ListInput), (void*)(item));
+	for (int i = 0; i < size(Page_Options); i++) {
+		extendedWindow->MenuInfoList[i]->selectedElement = nEXTENDED_SETTINGS_CURSOR[i];
 	}
-	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
 }
 
-void AddNormalElement(MenuInfo* menuInfo, int pageNum, int elementNum) {
-	std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
-	Element* element = (Element*)NEW_NORMAL_ELEMENT();
+//get settings from persistent locations to init menu window
+void GetHotkeySettings(MenuWindow* hotkeyWindow) {
+	if (hotkeyWindow->MenuInfoList == 0x0 || hotkeyWindow->MenuInfoListEnd - hotkeyWindow->MenuInfoList == 0) {
+		__asm {
+			call[MBAA_UnrecoveredJumptable];
+		}
+	}
 	char tempTag[8];
-	snprintf(tempTag, 8, "%i_%i_0_n", pageNum, elementNum);
-	InitNormalElement(element, elementVector[0], tempTag, 0);
-	element->canSelect = 1;
-	element->elementType = 1;
-	element->vftable = (void*)0x0053604c;
-	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
-}
+	MenuInfo* hotkeyInfo;
+	for (int pageNum = 0; pageNum < size(HK_Page_Options); pageNum++) {
+		hotkeyInfo = hotkeyWindow->MenuInfoList[pageNum];
+		int settingNum = 0;
+		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
+			snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
+			if (GetSetting(hotkeyInfo, HK_Page_Settings[pageNum][settingNum], tempTag)) {
+				settingNum++;
+			};
+		}
+	}
 
-void AddSpaceElement(MenuInfo* menuInfo, int pageNum, int elementNum) {
-	Element* element = (Element*)NEW_NORMAL_ELEMENT();
-	char tempTag[8];
-	snprintf(tempTag, 8, "%i_%i_0_s", pageNum, elementNum);
-	InitNormalElement(element, "", "", 0);
-	element->canSelect = 0;
-	element->elementType = 2;
-	element->bottomMargin = 8;
-	element->vftable = (void*)0x00536094;
-	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
+	hotkeyWindow->menuInfoIndex = nHOTKEY_SETTINGS_PAGE;
+	for (int i = 0; i < size(HK_Page_Options); i++) {
+		hotkeyWindow->MenuInfoList[i]->selectedElement = nHOTKEY_SETTINGS_CURSOR[i];
+	}
 }
 
 //init extended window, info, elements, and items
 MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 	InitMenuWindow(extendedWindow);
-	//extendedWindow->vftable = (void*)0x0053882c;
-	ReadDataFile(&extendedWindow->unknown_0x5c, "EXTENDED SETTINGS", 18);
+	ReadDataFile(&extendedWindow->labelBase, "EXTENDED SETTINGS", 18);
 	MenuInfo* extendedInfo;
 	for (int pageNum = 0; pageNum < size(Page_Options); pageNum++)
 	{
-		MenuInfo* extendedInfo = (MenuInfo*)NEW_MENU_INFO();
+		MenuInfo* extendedInfo = NEW_MENU_INFO();
 		if (extendedInfo != 0x0)
 		{
 			InitExtendedSettingsMenuInfo(extendedInfo, extendedWindow);
@@ -3334,15 +3291,15 @@ MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 				AddSpaceElement(extendedInfo, pageNum, elementNum);
 				break;
 			case 1:
-				AddNormalElement(extendedInfo, pageNum, elementNum);
+				AddNormalElement(extendedInfo, elementVector, pageNum, elementNum);
 				break;
 			default:
-				AddSelectElement(extendedInfo, pageNum, elementNum);
+				AddSelectElement(extendedInfo, elementVector, pageNum, elementNum);
 				break;
 			}
 		}
 		EnterIntoList((void*)(&extendedWindow->ListInput), (void*)(extendedInfo));
-		_FUN_00429b00(extendedInfo, "EXTENDED_SETTING");
+		//_FUN_00429b00(extendedInfo, "EXTENDED_SETTING");
 	}
 
 	GetExtendedSettings(extendedWindow);
@@ -3356,8 +3313,50 @@ MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 	return extendedWindow;
 }
 
+//init extended window, info, elements, and items
+MenuWindow* InitHotkeySettingsMenu(MenuWindow* hotkeyWindow) {
+	InitMenuWindow(hotkeyWindow);
+	ReadDataFile(&hotkeyWindow->labelBase, "HOTKEY SETTINGS", 18);
+	MenuInfo* hotkeyInfo;
+	for (int pageNum = 0; pageNum < size(HK_Page_Options); pageNum++)
+	{
+		MenuInfo* hotkeyInfo = NEW_MENU_INFO();
+		if (hotkeyInfo != 0x0)
+		{
+			InitHotkeySettingsMenuInfo(hotkeyInfo, hotkeyWindow);
+		}
+		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
+			std::vector<const char*> elementVector = HK_Page_Options[pageNum][elementNum];
+			int vSize = size(elementVector);
+			switch (vSize)
+			{
+			case 0:
+				AddSpaceElement(hotkeyInfo, pageNum, elementNum);
+				break;
+			case 1:
+				AddNormalElement(hotkeyInfo, elementVector, pageNum, elementNum);
+				break;
+			default:
+				AddSelectElement(hotkeyInfo, elementVector, pageNum, elementNum);
+				break;
+			}
+		}
+		EnterIntoList((void*)(&hotkeyWindow->ListInput), (void*)(hotkeyInfo));
+	}
+
+	GetHotkeySettings(hotkeyWindow);
+	hotkeyWindow->dimScreenPercentage = 0.0;
+	hotkeyWindow->u_layer = 0x2f1;
+	hotkeyWindow->isMenuLit = 1;
+	hotkeyWindow->isBlurred = 0;
+	hotkeyWindow->paragraphMode = 2;
+	hotkeyWindow->xOffset = 0xfa;
+	hotkeyWindow->textXWidth = 0xe;
+	return hotkeyWindow;
+}
+
 void _FUN_0047d030(const char* TRAINING_XX_MENU, MenuWindow* menuWindow) {
-	//trainingmenu should be eax
+	//TRAINING_XX_MENU should be eax
 	//menuWindow should be esi
 	__asm {
 		mov eax, TRAINING_XX_MENU;
@@ -3366,9 +3365,9 @@ void _FUN_0047d030(const char* TRAINING_XX_MENU, MenuWindow* menuWindow) {
 	}
 }
 
-void _FUN_0047ce20(void* field24, const char* TRAINING_XX_MENU) {
-	//field24 should be edx
+void _FUN_0047ce20(const char* TRAINING_XX_MENU, void* field24) {
 	//TRAINING_XX_MENU should be ecx
+	//field24 should be edx
 	__asm {
 		mov edx, field24;
 		mov ecx, TRAINING_XX_MENU;
@@ -3389,7 +3388,7 @@ bool SetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
 	return false;
 }
 
-//save settings to persistent locations
+//save extended settings to persistent locations
 void SetExtendedSettings(MenuWindow* extendedWindow) {
 	if (extendedWindow->MenuInfoList == 0x0 || extendedWindow->MenuInfoListEnd - extendedWindow->MenuInfoList == 0) {
 		__asm {
@@ -3410,10 +3409,38 @@ void SetExtendedSettings(MenuWindow* extendedWindow) {
 	}
 
 	nEXTENDED_SETTINGS_PAGE = extendedWindow->menuInfoIndex;
-	nEXTENDED_SETTINGS_CURSOR = extendedWindow->MenuInfoList[nEXTENDED_SETTINGS_PAGE]->selectedElement;
+	for (int i = 0; i < size(Page_Options); i++) {
+		nEXTENDED_SETTINGS_CURSOR[i] = extendedWindow->MenuInfoList[i]->selectedElement;
+	}
 }
 
-//save settings and free everything
+//save hotkey settings to persistent locations
+void SetHotkeySettings(MenuWindow* hotkeyWindow) {
+	if (hotkeyWindow->MenuInfoList == 0x0 || hotkeyWindow->MenuInfoListEnd - hotkeyWindow->MenuInfoList == 0) {
+		__asm {
+			call[MBAA_UnrecoveredJumptable];
+		}
+	}
+	char tempTag[8];
+	MenuInfo* hotkeyInfo;
+	for (int pageNum = 0; pageNum < size(HK_Page_Options); pageNum++) {
+		hotkeyInfo = hotkeyWindow->MenuInfoList[pageNum];
+		int settingNum = 0;
+		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
+			snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
+			if (SetSetting(hotkeyInfo, HK_Page_Settings[pageNum][settingNum], tempTag)) {
+				settingNum++;
+			};
+		}
+	}
+
+	nHOTKEY_SETTINGS_PAGE = hotkeyWindow->menuInfoIndex;
+	for (int i = 0; i < size(HK_Page_Options); i++) {
+		nHOTKEY_SETTINGS_CURSOR[i] = hotkeyWindow->MenuInfoList[i]->selectedElement;
+	}
+}
+
+//save extended settings and free everything
 void CloseExtendedSettings(MenuWindow* extendedWindow) {
 	SetExtendedSettings(extendedWindow);
 
@@ -3430,23 +3457,39 @@ void CloseExtendedSettings(MenuWindow* extendedWindow) {
 	POP_ALL;
 }
 
+//save hotkey settings and free everything
+void CloseHotkeySettings(MenuWindow* hotkeyWindow) {
+	SetHotkeySettings(hotkeyWindow);
+
+	__asm {
+		mov ecx, hotkeyWindow;
+	}
+	PUSH_ALL;
+	__asm {
+		mov eax, dword ptr[ecx];
+		mov edx, dword ptr[eax];
+		push 1;
+		call edx;
+	}
+	POP_ALL;
+}
+
 //init extended menu if not already open, close and free if set to close
 void HandleExtendedMenu() {
 	if (mainWindow->ExtendedSettings == 0x0) {
 		mainWindow->isMenuLit = 0;
-		MenuWindow* extendedWindow = (MenuWindow*)NEW_MENU_WINDOW();
+		MenuWindow* extendedWindow = NEW_MENU_WINDOW();
 		if (extendedWindow != 0x0) {
 			extendedWindow = InitExtendedSettingsMenu(extendedWindow);
 		}
 		mainWindow->ExtendedSettings = extendedWindow;
 		extendedWindow->yOffset = 0xbe;
-		const char* TRAINING_XS_MENU = "TRAINING_XS_MENU";
-		_FUN_0047d030(TRAINING_XS_MENU, extendedWindow);
+		//_FUN_0047d030("TRAINING_XS_MENU", mainWindow->ExtendedSettings);
 	}
 	if (mainWindow->ExtendedSettings->openSubmenuIndex == 4) {
-		_FUN_0047ce20(&mainWindow->ExtendedSettings->unknown_0x24, "TRAINING_XS_MENU");
-		if (mainWindow->ExtendedSettings->unknown_0x50 == 2) {
-			mainWindow->unknown_0x50 = 2;
+		//_FUN_0047ce20("TRAINING_XS_MENU", &mainWindow->ExtendedSettings->hoveredTag);
+		if (mainWindow->ExtendedSettings->field_0x50 == 2) {
+			mainWindow->field_0x50 = 2;
 		}
 		if (mainWindow->ExtendedSettings != 0x0) {
 			CloseExtendedSettings(mainWindow->ExtendedSettings);
@@ -3461,52 +3504,15 @@ void HandleExtendedMenu() {
 
 }
 
-DWORD TrainingMenuSwitch_PatchAddr = 0x0047ee54;
-//Add check for extended menu to default menu switch case
-__declspec(naked) void _naked_TrainingMenuSwitch() {
-	__asm {
-		cmp eax, 2;
-		je _DOEXTENDEDSETTINGS;
-		mov ecx, ebp;
-		call[MBAA_FUN_004d8810];
-		jmp _BREAKSWITCH;
-
-	_DOEXTENDEDSETTINGS:
-		mov mainWindow, ebp;
-	}
-
-	PUSH_ALL;
-	HandleExtendedMenu();
-	POP_ALL;
-
-	__asm {
-	_BREAKSWITCH:
-		push 0x0047ee5b;
-		ret;
-	}
-}
-
-DWORD NewExtMainMenuWindow_PatchAddr = 0x0047815b;
-//allocate space for extended menu pointer (size from 0xe0 -> 0xe4)
-__declspec(naked) void _naked_NewExtMainMenuWindow() {
-	__asm {
-		push 0xe4;
-		call[MBAA_operator_new];
-
-		push 0x00478165;
-		ret;
-	}
-}
-
 void ExtendedMenuInputChecking() {
 	MenuWindow* extendedWindow;
 	__asm {
 		mov extendedWindow, ecx;
 	}
 	switch (extendedWindow->menuInfoIndex) {
-	case 1:
+	case 0:
 		break;
-	case 2:
+	case 1:
 		break;
 	}
 
@@ -3529,12 +3535,263 @@ void ExtendedMenuInputChecking() {
 	bOldFN2Input = CurFN2Input;
 }
 
-DWORD UpdateMenuTrainingSettings_PatchAddr = 0x0047e1da;
-//add extended menu to update if-chain
-__declspec(naked) void _naked_UpdateMenuExtendedSettings() {
+//init hotkey menu if not already open, close and free if set to close
+void HandleHotkeyMenu() {
+	if (mainWindow->HotkeySettings == 0x0) {
+		mainWindow->isMenuLit = 0;
+		MenuWindow* hotkeyWindow = NEW_MENU_WINDOW();
+		if (hotkeyWindow != 0x0) {
+			hotkeyWindow = InitHotkeySettingsMenu(hotkeyWindow);
+		}
+		mainWindow->HotkeySettings = hotkeyWindow;
+		hotkeyWindow->yOffset = 0xbe;
+	}
+	if (mainWindow->HotkeySettings->openSubmenuIndex == 4) {
+		if (mainWindow->HotkeySettings->field_0x50 == 2) {
+			mainWindow->field_0x50 = 2;
+		}
+		if (mainWindow->HotkeySettings != 0x0) {
+			CloseHotkeySettings(mainWindow->HotkeySettings);
+			mainWindow->HotkeySettings = 0x0;
+		}
+
+		mainWindow->isMenuLit = 0x1;
+		mainWindow->isRootMenu = 0x1;
+		mainWindow->timeSubmenuOpened = 0x0;
+		mainWindow->openSubmenuIndex = 0x2;
+	}
+
+}
+
+void HotkeyMenuInputChecking() {
+	MenuWindow* hotkeyWindow;
+	__asm {
+		mov hotkeyWindow, ecx;
+	}
+	switch (hotkeyWindow->menuInfoIndex) {
+	case 0:
+		break;
+	case 1:
+		break;
+	}
+
+	bool CurFN1Input = *(bool*)(adMBAABase + adP1FN1Input);
+	if (CurFN1Input && !bOldFN1Input) {
+		hotkeyWindow->menuInfoIndex--;
+		if (hotkeyWindow->menuInfoIndex < 0) {
+			hotkeyWindow->menuInfoIndex = size(HK_Page_Options) - 1;
+		}
+	}
+	bOldFN1Input = CurFN1Input;
+
+	bool CurFN2Input = *(bool*)(adMBAABase + adP1FN2Input);
+	if (CurFN2Input && !bOldFN2Input) {
+		hotkeyWindow->menuInfoIndex++;
+		if (hotkeyWindow->menuInfoIndex > size(HK_Page_Options) - 1) {
+			hotkeyWindow->menuInfoIndex = 0;
+		}
+	}
+	bOldFN2Input = CurFN2Input;
+}
+
+DWORD ExtendedSettingsMenuItem_PatchAddr = 0x0047d493;
+//add extended menu element to main menu info
+__declspec(naked) void _naked_ExtendedSettingsMenuItem() {
+	__asm {
+		push 0x58;
+		call[MBAA_operator_new];
+		mov edi, eax;
+		add esp, 0x04;
+		mov dword ptr[esp + 0x14], edi;
+		test edi, edi;
+		mov byte ptr[esp + 0x68], 0x04;
+		je _NOINIT;
+
+		push 0x00;
+		push pcEXTENDED_SETTING;
+		push pcEXTENDED_SETTINGS;
+		push edi;
+		call[MBAA_InitNormalElement];
+		mov dword ptr[edi + 0x0c], 0x00000001;
+		mov dword ptr[edi + 0x04], 0x00000001;
+		mov dword ptr[edi], 0x0053604c;
+
+		jmp _END;
+
+	_NOINIT:
+		xor edi, edi;
+
+	_END:
+		mov byte ptr[esp + 0x68], 0x01;
+		lea ebx, [esp + 0x14];
+		mov esi, ebp;
+		mov[esp + 0x14], edi;
+		call[MBAA_EnterIntoList];
+
+		push 0x58;
+		call[MBAA_operator_new];
+		push 0x0047d49a;
+		ret;
+	}
+}
+
+DWORD HotkeySettingsMenuItem_PatchAddr = 0x0047db08;
+//add hotkey menu element to main menu info
+__declspec(naked) void _naked_HotkeySettingsMenuItem() {
+	__asm {
+		push 0x58;
+		call[MBAA_operator_new];
+		mov edi, eax;
+		add esp, 0x04;
+		mov dword ptr[esp + 0x14], edi;
+		test edi, edi;
+		mov byte ptr[esp + 0x68], 0x04;
+		je _NOINIT;
+
+		push 0x00;
+		push pcHOTKEY_SETTING;
+		push pcHOTKEY_SETTINGS;
+		push edi;
+		call[MBAA_InitNormalElement];
+		mov dword ptr[edi + 0x0c], 0x00000001;
+		mov dword ptr[edi + 0x04], 0x00000001;
+		mov dword ptr[edi], 0x0053604c;
+
+		jmp _END;
+
+	_NOINIT:
+		xor edi, edi;
+
+	_END:
+		mov byte ptr[esp + 0x68], 0x01;
+		lea ebx, [esp + 0x14];
+		mov esi, ebp;
+		mov[esp + 0x14], edi;
+		call[MBAA_EnterIntoList];
+
+		push 0x58;
+		call[MBAA_operator_new];
+		push 0x0047db0f;
+		ret;
+	}
+}
+
+DWORD TrainingMenuSwitch_PatchAddr = 0x0047ee54;
+//Add check for extended menu to default menu switch case
+__declspec(naked) void _naked_TrainingMenuSwitch() {
+	__asm {
+		cmp eax, 0xe;
+		je _DOEXTENDEDSETTINGS;
+		cmp eax, 0xf;
+		je _DOHOTKEYSETTINGS;
+		mov ecx, ebp;
+		call[MBAA_FUN_004d8810];
+		jmp _BREAKSWITCH;
+
+	_DOEXTENDEDSETTINGS:
+		mov mainWindow, ebp;
+	}
+
+	PUSH_ALL;
+	HandleExtendedMenu();
+	POP_ALL;
+
+	__asm {
+		jmp _BREAKSWITCH;
+
+	_DOHOTKEYSETTINGS:
+		mov mainWindow, ebp;
+	}
+
+	PUSH_ALL;
+	HandleHotkeyMenu();
+	POP_ALL;
+
+	__asm {
+	_BREAKSWITCH:
+		push 0x0047ee5b;
+		ret;
+	}
+}
+
+DWORD AddExtendedSettingToList_PatchAddr = 0x0047d1ae;
+//enables the menu option to be selected
+__declspec(naked) void _naked_AddExtendedSettingToList() {
+	__asm {
+		push esi;
+		mov edx, pcEXTENDED_SETTING;
+		call[MBAA_FUN_00429020];
+
+		push esi;
+		mov edx, 0x005384ac;
+
+		push 0x0047d1b4;
+		ret;
+	}
+}
+
+DWORD AddHotkeySettingToList_PatchAddr = 0x0047d1f0;
+//enables the menu option to be selected
+__declspec(naked) void _naked_AddHotkeySettingToList() {
+	__asm {
+		push esi;
+		mov edx, pcHOTKEY_SETTING;
+		call[MBAA_FUN_00429020];
+
+		push esi;
+		mov edx, 0x00537718;
+
+		push 0x0047d1f6;
+		ret;
+	}
+}
+
+DWORD CheckOpenNewSettings_PatchAddr = 0x0047ee5b;
+//add extended menu to open check if-chain
+__declspec(naked) void _naked_CheckOpenNewSettings() {
+	__asm {
+		cmp dword ptr[ebp + 0x1c], ebx;
+		je _NO_PRESS;
+		lea edi, [ebp + 0x20];
+		mov ecx, pcEXTENDED_SETTING;
+		call[MBAA_CompareLabel];
+		test al, al;
+		je _HOTKEY_CHECK;
+		mov dword ptr[ebp + 0x7c], ebx;
+		mov dword ptr[ebp + 0x88], ebx;
+		mov dword ptr[ebp + 0x84], 0x11;
+		jmp _SET_HOVERED;
+
+	_HOTKEY_CHECK:
+		mov ecx, pcHOTKEY_SETTING;
+		call[MBAA_CompareLabel];
+		test al, al;
+		je _BATTLE_CHECK;
+		mov dword ptr[ebp + 0x7c], ebx;
+		mov dword ptr[ebp + 0x88], ebx;
+		mov dword ptr[ebp + 0x84], 0x12;
+		jmp _SET_HOVERED;
+
+	_BATTLE_CHECK:
+		push 0x0047ee67;
+		ret;
+
+	_SET_HOVERED:
+		push 0x0047ef96;
+		ret;
+
+	_NO_PRESS:
+		push 0x0047f062;
+		ret;
+	}
+}
+
+DWORD UpdateMenus_PatchAddr = 0x0047e1da;
+//add menus to update if-chain
+__declspec(naked) void _naked_UpdateMenus() {
 	__asm {
 		cmp dword ptr[edi + 0xe0], ebx;
-		jz _GONEXT;
+		jz _CHECK_HOTKEY;
 		mov eax, dword ptr[esp + 0x64];
 		mov ecx, dword ptr[edi + 0xe0];
 		mov edx, dword ptr[ecx];
@@ -3550,28 +3807,57 @@ __declspec(naked) void _naked_UpdateMenuExtendedSettings() {
 	POP_ALL;
 
 	__asm {
-		push 0x0047e27a;
-		ret;
+		jmp _EXIT_CHAIN;
 
-	_GONEXT:
+	_CHECK_HOTKEY:
+		cmp dword ptr[edi + 0xe4], ebx;
+		jz _CHECK_BATTLE;
+		mov eax, dword ptr[esp + 0x64];
+		mov ecx, dword ptr[edi + 0xe4];
+		mov edx, dword ptr[ecx];
+		mov edx, dword ptr[edx + 0x8];
+		push eax;
+		mov eax, dword ptr[esp + 0x64];
+		push eax;
+		call edx; //u_InitSubmenus
+	}
+
+	PUSH_ALL;
+	HotkeyMenuInputChecking();
+	POP_ALL;
+
+	__asm {
+	_CHECK_BATTLE:
 		cmp dword ptr[edi + 0xc8], ebx;
-		jz _GONEXTNEXT;
+		jz _CHECK_ENEMY;
 		push 0x0047e1e2;
 		ret;
 
-	_GONEXTNEXT:
+	_CHECK_ENEMY:
 		push 0x0047e1fb;
+		ret;
+
+	_EXIT_CHAIN:
+		push 0x0047e27a;
 		ret;
 	}
 }
 
-DWORD RenderExtendedSettings_PatchAddr = 0x0047e52a;
-//add extended menu to render if-chain
-__declspec(naked) void _naked_RenderExtendedSettings() {
+DWORD RenderSettings_PatchAddr = 0x0047e52a;
+//add menus to render if-chain
+__declspec(naked) void _naked_RenderSettings() {
 	__asm {
 		cmp dword ptr[edi + 0xe0], 0x0;
-		jz _EXIT;
+		jz _CHECK_HOTKEY;
 		mov ecx, dword ptr[edi + 0xe0];
+		mov edx, dword ptr[ecx];
+		mov eax, dword ptr[edx + 0x14];
+		call eax;
+
+	_CHECK_HOTKEY:
+		cmp dword ptr[edi + 0xe4], 0x0;
+		jz _EXIT;
+		mov ecx, dword ptr[edi + 0xe4];
 		mov edx, dword ptr[ecx];
 		mov eax, dword ptr[edx + 0x14];
 		call eax;
@@ -3595,7 +3881,20 @@ __declspec(naked) void _naked_ZeroMenuPointers() {
 		mov[edi + 0xd4], ebx;
 		mov[edi + 0xd8], ebx;
 		mov[edi + 0xe0], ebx;
+		mov[edi + 0xe4], ebx;
 		push 0x0047dd74;
+		ret;
+	}
+}
+
+DWORD NewExtMainMenuWindow_PatchAddr = 0x0047815b;
+//allocate space for extended menu pointer (size from 0xe0 -> 0xe8)
+__declspec(naked) void _naked_NewExtMainMenuWindow() {
+	__asm {
+		push 0xe8;
+		call[MBAA_operator_new];
+
+		push 0x00478165;
 		ret;
 	}
 }
@@ -4142,17 +4441,18 @@ void initInputCallback() {
 }
 
 void initTrainingMenu() {
-
-	patchJump(NewExtMainMenuWindow_PatchAddr, _naked_NewExtMainMenuWindow);
 	patchJump(ExtendedSettingsMenuItem_PatchAddr, _naked_ExtendedSettingsMenuItem);
+	patchJump(HotkeySettingsMenuItem_PatchAddr, _naked_HotkeySettingsMenuItem);
+
 	patchJump(AddExtendedSettingToList_PatchAddr, _naked_AddExtendedSettingToList);
+	patchJump(AddHotkeySettingToList_PatchAddr, _naked_AddHotkeySettingToList);
 
+	patchJump(RenderSettings_PatchAddr, _naked_RenderSettings);
+	patchJump(UpdateMenus_PatchAddr, _naked_UpdateMenus);
+	patchJump(CheckOpenNewSettings_PatchAddr, _naked_CheckOpenNewSettings);
+	patchJump(NewExtMainMenuWindow_PatchAddr, _naked_NewExtMainMenuWindow);
 	patchJump(TrainingMenuSwitch_PatchAddr, _naked_TrainingMenuSwitch);
-
-	patchJump(OpenExtendedSettings_PatchAddr, _naked_OpenExtendedSettings);
 	patchJump(ZeroMenuPointers_PatchAddr, _naked_ZeroMenuPointers);
-	patchJump(UpdateMenuTrainingSettings_PatchAddr, _naked_UpdateMenuExtendedSettings);
-	patchJump(RenderExtendedSettings_PatchAddr, _naked_RenderExtendedSettings);
 }
 
 void initCustomHealthRecover() {
