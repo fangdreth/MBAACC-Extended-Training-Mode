@@ -651,6 +651,31 @@ extern EffectData* effectDataArr;
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
+typedef struct PlayerAuxData {
+	int controlledCharacter;
+	UNUSED(0x1C);
+	int proration;
+	UNUSED(0x20);
+	int comboCount;
+	int comboCount2;
+	UNUSED(0x58);
+	int calc_comboCount;
+	UNUSED(0x8);
+	int calc_proration;
+	UNUSED(0x154);
+	int inactionableFrames;
+} PlayerAuxData;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(PlayerAuxData, v) == n, "PlayerAuxData offset incorrect for " #v);
+
+CHECKOFFSET(calc_comboCount, 0xA4);
+CHECKOFFSET(inactionableFrames, 0x208);
+
+static_assert(sizeof(PlayerAuxData) == 0x20C, "PlayerAuxData must have size 0x5A.");
+#undef CHECKOFFSET
+
+#pragma pack(push,1)
 typedef struct HitEffectData {
 
 } HitEffectData; // remember when i reversed this whole thing and then proceded to accidentally wipe all my work?

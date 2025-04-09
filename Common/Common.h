@@ -365,6 +365,12 @@ const ADDRESS adP2TagFlag = 0x155134 + 0x174 + 1 * dwPlayerStructSize; //0x155DA
 const ADDRESS adP3TagFlag = 0x155134 + 0x174 + 2 * dwPlayerStructSize; //0x1568A0
 const ADDRESS adP4TagFlag = 0x155134 + 0x174 + 3 * dwPlayerStructSize; //0x15739C
 
+const DWORD dwPlayerDataStructSize = 0x20C;
+const ADDRESS adP1DataBase = 0x157DB8; //0x157DB8
+const ADDRESS adP2DataBase = 0x157DB8 + 1 * dwPlayerDataStructSize; //0x157FC4
+const ADDRESS adP3DataBase = 0x157DB8 + 2 * dwPlayerDataStructSize; //0x1571D0
+const ADDRESS adP4DataBase = 0x157DB8 + 3 * dwPlayerDataStructSize; //0x1583DC
+
 const ADDRESS adP1ControlledCharacter = 0x157DB8;
 const ADDRESS adP1NextControlledCharacter = 0x157DBC;
 const ADDRESS adSaveAttackDisplayInfo = 0x157DD8;
@@ -403,8 +409,12 @@ const ADDRESS adEffectSource = 0x4;
 const ADDRESS adEffectStatus = 0x5;
 
 const ADDRESS adDummyState = 0x34D7F8;
+const ADDRESS adP1AInput = 0x371399;
 const ADDRESS adP1FN1Input = 0x37144C;
 const ADDRESS adP1FN2Input = 0x37144D;
+
+//Vanilla training menu
+const ADDRESS adBS_MAGIC_CIRCUIT = 0x37C1FC;
 
 //FrameBar Constants
 const int DISPLAY_RANGE = 75;

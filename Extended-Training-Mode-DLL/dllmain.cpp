@@ -81,6 +81,12 @@ uint8_t nRNGRate = RNG_EVERY_FRAME;
 uint32_t nCustomSeed = 0;
 uint32_t nCustomRN = 0;
 
+std::vector<std::string> vPatternNames = GetEmptyPatternList();
+std::vector<int> vAirReversals;
+std::vector<int> vGroundReversals;
+
+int nP2CharacterID = 0;
+
 DWORD _naked_newPauseCallback2_IsPaused = 0;
 
 std::array<uint8_t, 4> arrDefaultHighlightSetting({ 255, 255, 255, 0 });
@@ -1569,6 +1575,103 @@ void SetRN(uint32_t nRN)
 	}
 }
 
+//Handle all extended training gameplay effects
+PlayerData* sP1 = (PlayerData*)(adMBAABase + adP1Base);
+PlayerData* sP2 = (PlayerData*)(adMBAABase + adP2Base);
+PlayerData* sP3 = (PlayerData*)(adMBAABase + adP3Base);
+PlayerData* sP4 = (PlayerData*)(adMBAABase + adP4Base);
+
+PlayerAuxData* sP1Data = (PlayerAuxData*)(adMBAABase + adP1DataBase);
+PlayerAuxData* sP2Data = (PlayerAuxData*)(adMBAABase + adP2DataBase);
+PlayerAuxData* sP3Data = (PlayerAuxData*)(adMBAABase + adP3DataBase);
+PlayerAuxData* sP4Data = (PlayerAuxData*)(adMBAABase + adP4DataBase);
+
+int nP2LastInactionableFrames = 0;
+int bDoReversal = true;
+
+void HandleReversals() {
+	PlayerData* ReversalPlayer = (PlayerData*)(adMBAABase + adP1Base + sP2Data->controlledCharacter * dwPlayerStructSize);
+	std::vector<int> vValidReversals = (ReversalPlayer->yPos == 0 ? vGroundReversals : vAirReversals);
+	RemoveShieldReversals(&vValidReversals, nP2CharacterID);
+	if (vValidReversals.size() == 0) return;
+	switch (nREVERSAL_TYPE) {
+	case 0:
+		break;
+	case 1:
+		if (sP2Data->inactionableFrames == 0 && nP2LastInactionableFrames != 0) {
+			if (bDoReversal) {
+				int totalWeight = 0;
+				for (int i = 0; i < nNUM_REVERSALS; i++) {
+					if (*nTRUE_REVS[i] != 0 && vValidReversals[i] != 0) totalWeight += *nREV_WEIGHTS[i];
+				}
+				int randomWeight = floor(rand() % totalWeight + 1);
+				int validIndex = 0;
+				for (int i = 0; i < nNUM_REVERSALS; i++) {
+					if (*nTRUE_REVS[i] == 0 || vValidReversals[i] == 0) continue;
+					randomWeight -= *nREV_WEIGHTS[i];
+					if (randomWeight <= 0) {
+						validIndex = i;
+						break;
+					}
+				}
+
+				ReversalPlayer->inputEvent = vValidReversals[validIndex];
+				bDoReversal = false;
+			}
+			else
+			{
+				bDoReversal = true;
+			}
+		}
+	}
+
+	nP2LastInactionableFrames = sP2Data->inactionableFrames;
+}
+
+void HandleMeters() {
+	if (*(int*)(adMBAABase + adFrameCount) == 1 && nSAVE_STATE_SLOT == 0) {
+		if (*(int*)(adMBAABase + adBS_MAGIC_CIRCUIT) == 0) {
+			sP1->magicCircuit = nTRUE_METER;
+			sP2->magicCircuit = nTRUE_METER;
+		}
+
+	}
+}
+
+void HandleHighlights() {
+
+}
+
+void HandlePositions() {
+
+}
+
+void HandleCharResources() {
+
+}
+
+void HandleBoxVisuals() {
+
+}
+
+void HandleSaves() {
+
+}
+
+void HandleExtendedTrainingEffects() {
+	HandleReversals();			//page 1
+	HandleMeters();				//page 2
+	HandleHighlights();			//page 3
+	HandlePositions();			//page 4
+	HandleCharResources();		//page 5
+	HandleBoxVisuals();			//page 6
+	HandleSaves();				//page 7
+	//framebar done elsewhere	//page 8
+	//rng done elsewhere		//page 9
+	//inputs done elsewhere		//page 10
+	//misc done elsewhere		//page 11
+}
+
 void __stdcall legacyPauseCallback(DWORD dwMilliseconds)
 {
 
@@ -2261,6 +2364,8 @@ void frameDoneCallback()
 		TextDraw(47.5f, 393.5f, 16.0f, 0xFFFFFFFF, pcMainInfoText);
 		TextDraw(66.5f, 420.5f, 16.0f, 0xFFFFFFFF, pcSubInfoText);
 	}
+
+	HandleExtendedTrainingEffects();
 }
 
 __declspec(naked) void nakedFrameDoneCallback()
@@ -2918,7 +3023,6 @@ DWORD MBAA_FUN_0047d030 = 0x0047d030;
 DWORD MBAA_FUN_004804a0 = 0x004804a0;
 DWORD MBAA_FUN_004d8810 = 0x004d8810;
 
-DWORD MBAA_ReadDataFile =			0x00407c10;
 DWORD MBAA_InitNormalElement =		0x00429140;
 DWORD MBAA_InitMenuInfo =			0x00429400;
 DWORD MBAA_EnterIntoList =			0x0042ba50;
@@ -2975,19 +3079,6 @@ MenuWindow* NEW_MENU_WINDOW() {
 		push 0xc4;
 		call[MBAA_operator_new];
 		add esp, 0x4;
-	}
-}
-
-//wrapper for call to ReadDataFile (misleading name? pulled straight from ghidra)
-void ReadDataFile(void* dest, const char* name, int nameLength) {
-	//dest should be ecx
-	//name should be stack[4]
-	//nameLength should be stack[8]
-	__asm {
-		mov ecx, dest;
-		push nameLength;
-		push name;
-		call[MBAA_ReadDataFile];
 	}
 }
 
@@ -3504,13 +3595,69 @@ void HandleExtendedMenu() {
 
 }
 
+void CustomScrolling(Element* element, int neutralIndex, int &storage, int min, int max, bool doLooping) {
+	if (element->selectedItem == neutralIndex - 1) { //left
+		storage--;
+		if (storage < min) storage = doLooping ? max - 1 : min;
+	}
+	else if (element->selectedItem == neutralIndex + 1) { //right
+		storage++;
+		if (storage >= max) storage = doLooping ? min : max - 1;
+	}
+	element->selectedItem = neutralIndex;
+}
+
 void ExtendedMenuInputChecking() {
 	MenuWindow* extendedWindow;
+	MenuInfo* curMenuInfo;
+	Element* curElement;
 	__asm {
 		mov extendedWindow, ecx;
 	}
+	bool bA = *(bool*)(adMBAABase + adP1AInput) && extendedWindow->openSubmenuIndex == 2;
+	curMenuInfo = extendedWindow->MenuInfoList[extendedWindow->menuInfoIndex];
 	switch (extendedWindow->menuInfoIndex) {
-	case 0:
+	case 0: //reversals
+		if (vPatternNames.size() == 1)
+		{
+			int nP2CharacterNumber = *(int*)(adMBAABase + dwP2CharNumber);
+			int nP2Moon = *(int*)(adMBAABase + dwP2CharMoon);
+			nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
+			vPatternNames = GetPatternList(nP2CharacterID);
+		}
+
+		curMenuInfo->ElementList[2]->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_1].c_str(), 1);
+		curMenuInfo->ElementList[4]->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_2].c_str(), 1);
+		curMenuInfo->ElementList[6]->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_3].c_str(), 1);
+		curMenuInfo->ElementList[8]->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_4].c_str(), 1);
+
+		curElement = curMenuInfo->ElementList[curMenuInfo->selectedElement];
+		switch (curMenuInfo->selectedElement) {
+		case 2: //reversal slot 1
+			CustomScrolling(curElement, 1, nTRUE_REVERSAL_SLOT_1, 0, vPatternNames.size(), true);
+			if (bA) nTRUE_REVERSAL_SLOT_1 = 0;
+			curElement->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_1].c_str(), 1);
+			break;
+		case 4:
+			CustomScrolling(curElement, 1, nTRUE_REVERSAL_SLOT_2, 0, vPatternNames.size(), true);
+			if (bA) nTRUE_REVERSAL_SLOT_2 = 0;
+			curElement->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_2].c_str(), 1);
+			break;
+		case 6:
+			CustomScrolling(curElement, 1, nTRUE_REVERSAL_SLOT_3, 0, vPatternNames.size(), true);
+			if (bA) nTRUE_REVERSAL_SLOT_3 = 0;
+			curElement->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_3].c_str(), 1);
+			break;
+		case 8:
+			CustomScrolling(curElement, 1, nTRUE_REVERSAL_SLOT_4, 0, vPatternNames.size(), true);
+			if (bA) nTRUE_REVERSAL_SLOT_4 = 0;
+			curElement->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_4].c_str(), 1);
+			break;
+		}
+
+		PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames,
+			nTRUE_REVERSAL_SLOT_1, nTRUE_REVERSAL_SLOT_2, nTRUE_REVERSAL_SLOT_3, nTRUE_REVERSAL_SLOT_4);
+
 		break;
 	case 1:
 		break;
@@ -4509,7 +4656,7 @@ void threadFunc()
 
 	initShowCssHook();
 
-	//initTrainingMenu(); //uncomment for experimental new menu
+	initTrainingMenu(); //uncomment for experimental new menu
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 

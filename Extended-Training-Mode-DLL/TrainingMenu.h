@@ -3,6 +3,21 @@
 #include <vector>
 #include "..\Common\Common.h"
 
+DWORD MBAA_ReadDataFile = 0x00407c10;
+//wrapper for call to ReadDataFile (misleading name? pulled straight from ghidra)
+//subtract 4 bytes from actual destination to get dest input
+void ReadDataFile(void* dest, const char* name, int nameLength) {
+	//dest should be ecx
+	//name should be stack[4]
+	//nameLength should be stack[8]
+	__asm {
+		mov ecx, dest;
+		push nameLength;
+		push name;
+		call[MBAA_ReadDataFile];
+	}
+}
+
 #define CONCATENATE_DETAIL(x, y) x##y
 #define CONCATENATE(x, y) CONCATENATE_DETAIL(x, y)
 #define LINE_NAME CONCATENATE(LINE, __LINE__)
@@ -13,13 +28,6 @@
 #define CHECKSIZE(s, n) static_assert(sizeof(s) == n, #s " size must be " #n);
 
 #pragma pack(push, 1)
-
-/*
-* Most of this is copied directly from Ghidra
-* Currently unused
-* Could be used for editing the menus if the menu functionality is ever moved to the dll
-* Could also potentially be used to create and implement new menus from scratch but good luck with that
-*/
 
 struct Item //scrolling items on right
 {
@@ -62,6 +70,14 @@ struct Element //listed elements on left
 	Item** ItemList;
 	Item** ItemListEnd;
 	UNUSED(0x04);
+
+	void SetItemLabel(const char* newLabel, int itemIndex) {
+		if (ItemList == 0x0 || ItemListEnd - ItemList <= itemIndex) {
+			return;
+		}
+		Item* targetItem = ItemList[itemIndex];
+		ReadDataFile((void*)(targetItem), newLabel, strlen(newLabel));
+	}
 
 	//vftable[6]
 	int GetItemValue(int itemIndex) {
@@ -204,43 +220,86 @@ std::vector<const char*> vREVERSAL_TYPE = {
 
 std::vector<const char*> vREVERSAL_SLOT_1 = {
 	"REVERSAL SLOT 1",
-	"OFF", "X1", "X2", "X3"
+	"X1", "OFF", "X3"
+};
+
+std::vector<const char*> vREV_SLOT_1_WEIGHT = {
+	"WEIGHT 1",
+	"0", "1", "2" ,"3", "4", "5", "6" ,"7", "8", "9", "10"
 };
 
 std::vector<const char*> vREVERSAL_SLOT_2 = {
 	"REVERSAL SLOT 2",
-	"OFF", "X1", "X2", "X3"
+	"X1", "OFF", "X3"
+};
+
+std::vector<const char*> vREV_SLOT_2_WEIGHT = {
+	"WEIGHT 2",
+	"0", "1", "2" ,"3", "4", "5", "6" ,"7", "8", "9", "10"
 };
 
 std::vector<const char*> vREVERSAL_SLOT_3 = {
 	"REVERSAL SLOT 3",
-	"OFF", "X1", "X2", "X3"
+	"X1", "OFF", "X3"
+};
+
+std::vector<const char*> vREV_SLOT_3_WEIGHT = {
+	"WEIGHT 3",
+	"0", "1", "2" ,"3", "4", "5", "6" ,"7", "8", "9", "10"
 };
 
 std::vector<const char*> vREVERSAL_SLOT_4 = {
 	"REVERSAL SLOT 4",
-	"OFF",
-	"X1", "X2", "X3"
+	"X1", "OFF", "X3"
+};
+
+std::vector<const char*> vREV_SLOT_4_WEIGHT = {
+	"WEIGHT 4",
+	"0", "1", "2" ,"3", "4", "5", "6" ,"7", "8", "9", "10"
 };
 
 std::vector<const char*> vREVERSAL_DELAY = {
 	"REVERSAL DELAY",
-	"0", "X1", "X2", "X3"
+	"0", "X2", "X3"
 };
 
 std::vector<std::vector<const char*>> P1_Options = {
-	vREVERSAL_TYPE, vSPACE_ELEMENT, vREVERSAL_SLOT_1, vREVERSAL_SLOT_2, vREVERSAL_SLOT_3, vREVERSAL_SLOT_4, vSPACE_ELEMENT, vREVERSAL_DELAY
+	vREVERSAL_TYPE, vSPACE_ELEMENT,
+	vREVERSAL_SLOT_1, vREV_SLOT_1_WEIGHT,
+	vREVERSAL_SLOT_2, vREV_SLOT_2_WEIGHT,
+	vREVERSAL_SLOT_3, vREV_SLOT_3_WEIGHT,
+	vREVERSAL_SLOT_4, vREV_SLOT_4_WEIGHT,
+	vSPACE_ELEMENT, vREVERSAL_DELAY
 };
 
 int nREVERSAL_TYPE = 1;
-int nREVERSAL_SLOT_1 = 0;
-int nREVERSAL_SLOT_2 = 0;
-int nREVERSAL_SLOT_3 = 0;
-int nREVERSAL_SLOT_4 = 0;
+int nREVERSAL_SLOT_1 = 1;
+int nREV_SLOT_1_WEIGHT = 1;
+int nREVERSAL_SLOT_2 = 1;
+int nREV_SLOT_2_WEIGHT = 1;
+int nREVERSAL_SLOT_3 = 1;
+int nREV_SLOT_3_WEIGHT = 1;
+int nREVERSAL_SLOT_4 = 1;
+int nREV_SLOT_4_WEIGHT = 1;
 int nREVERSAL_DELAY = 0;
 
+int nTRUE_REVERSAL_SLOT_1 = 0;
+int nTRUE_REVERSAL_SLOT_2 = 0;
+int nTRUE_REVERSAL_SLOT_3 = 0;
+int nTRUE_REVERSAL_SLOT_4 = 0;
+int nTRUE_REVERSAL_DELAY = 0;
+
+const int nNUM_REVERSALS = 4;
+int* nREV_WEIGHTS[nNUM_REVERSALS] = { &nREV_SLOT_1_WEIGHT, &nREV_SLOT_2_WEIGHT , &nREV_SLOT_3_WEIGHT , &nREV_SLOT_4_WEIGHT };
+int* nTRUE_REVS[nNUM_REVERSALS] = { &nTRUE_REVERSAL_SLOT_1, &nTRUE_REVERSAL_SLOT_2, &nTRUE_REVERSAL_SLOT_3, &nTRUE_REVERSAL_SLOT_4 };
+
 std::vector<int*> P1_Settings = {
-	&nREVERSAL_TYPE, &nREVERSAL_SLOT_1, &nREVERSAL_SLOT_2, &nREVERSAL_SLOT_3, &nREVERSAL_SLOT_4, &nREVERSAL_DELAY
+	&nREVERSAL_TYPE,
+	&nREVERSAL_SLOT_1, &nREV_SLOT_1_WEIGHT,
+	&nREVERSAL_SLOT_2, &nREV_SLOT_2_WEIGHT,
+	&nREVERSAL_SLOT_3, &nREV_SLOT_3_WEIGHT,
+	&nREVERSAL_SLOT_4, &nREV_SLOT_4_WEIGHT,
+	&nREVERSAL_DELAY
 };
 
 //Page 2
@@ -283,7 +342,11 @@ int nEX_GUARD = 0;
 int nGUARD_BAR = 0;
 int nMETER = 0;
 int nHEALTH = 0;
-int nHITS_UNTIL_BURST;
+int nHITS_UNTIL_BURST = 0;
+
+int nTRUE_METER = 15000;
+int nTRUE_HEALTH = 11400;
+int nTRUE_HITS_UNTIL_BURST = 0;
 
 std::vector<int*> P2_Settings = {
 	&nPENALTY_RESET, &nEX_GUARD, &nGUARD_BAR, &nMETER, &nHEALTH, &nHITS_UNTIL_BURST

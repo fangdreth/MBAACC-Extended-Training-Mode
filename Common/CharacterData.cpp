@@ -174,7 +174,7 @@ std::string GetCharacterNameFromID(int nCharacterID) {
 }
 
 std::vector<std::string> GetPatternList(int nCharacterID) {
-	std::vector<std::string> vReturnList = { "None" };
+	std::vector<std::string> vReturnList = { "OFF" };
 
 	for (std::string& sPatternName : vEveryPatternName) {
 		if (MBAACC_Map[eCharacterValues::UNIVERSAL][sPatternName] != 0 || MBAACC_Map[nCharacterID][sPatternName] != 0)
