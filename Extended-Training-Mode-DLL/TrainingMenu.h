@@ -215,12 +215,14 @@ std::vector<const char*> vSPACE_ELEMENT = {};
 //Page 1
 std::vector<const char*> vREVERSAL_TYPE = {
 	"REVERSAL TYPE",
-	"OFF", "NORMAL", "RANDOM", "SHIELD", "REPEAT"
+	"OFF", "NORMAL", "REPEAT"
 };
+
+enum eREVERSAL_TYPE { revOFF, revNORMAL, revREPEAT };
 
 std::vector<const char*> vREVERSAL_SLOT_1 = {
 	"REVERSAL SLOT 1",
-	"X1", "OFF", "X3"
+	"X1", "X2", "X3"
 };
 
 std::vector<const char*> vREV_SLOT_1_WEIGHT = {
@@ -230,7 +232,7 @@ std::vector<const char*> vREV_SLOT_1_WEIGHT = {
 
 std::vector<const char*> vREVERSAL_SLOT_2 = {
 	"REVERSAL SLOT 2",
-	"X1", "OFF", "X3"
+	"X1", "X2", "X3"
 };
 
 std::vector<const char*> vREV_SLOT_2_WEIGHT = {
@@ -240,7 +242,7 @@ std::vector<const char*> vREV_SLOT_2_WEIGHT = {
 
 std::vector<const char*> vREVERSAL_SLOT_3 = {
 	"REVERSAL SLOT 3",
-	"X1", "OFF", "X3"
+	"X1", "X2", "X3"
 };
 
 std::vector<const char*> vREV_SLOT_3_WEIGHT = {
@@ -250,7 +252,7 @@ std::vector<const char*> vREV_SLOT_3_WEIGHT = {
 
 std::vector<const char*> vREVERSAL_SLOT_4 = {
 	"REVERSAL SLOT 4",
-	"X1", "OFF", "X3"
+	"X1", "X2", "X3"
 };
 
 std::vector<const char*> vREV_SLOT_4_WEIGHT = {
@@ -258,18 +260,27 @@ std::vector<const char*> vREV_SLOT_4_WEIGHT = {
 	"0", "1", "2" ,"3", "4", "5", "6" ,"7", "8", "9", "10"
 };
 
+std::vector<const char*> vNO_REV_WEIGHT = {
+	"NO REVERSAL WEIGHT",
+	"0", "1", "2" ,"3", "4", "5", "6" ,"7", "8", "9", "10"
+};
+
 std::vector<const char*> vREVERSAL_DELAY = {
 	"REVERSAL DELAY",
-	"0", "X2", "X3"
+	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
 };
 
 std::vector<std::vector<const char*>> P1_Options = {
-	vREVERSAL_TYPE, vSPACE_ELEMENT,
+	vREVERSAL_TYPE,
+	vSPACE_ELEMENT,
 	vREVERSAL_SLOT_1, vREV_SLOT_1_WEIGHT,
 	vREVERSAL_SLOT_2, vREV_SLOT_2_WEIGHT,
 	vREVERSAL_SLOT_3, vREV_SLOT_3_WEIGHT,
 	vREVERSAL_SLOT_4, vREV_SLOT_4_WEIGHT,
-	vSPACE_ELEMENT, vREVERSAL_DELAY
+	vSPACE_ELEMENT,
+	vNO_REV_WEIGHT,
+	vSPACE_ELEMENT,
+	vREVERSAL_DELAY
 };
 
 int nREVERSAL_TYPE = 1;
@@ -281,17 +292,17 @@ int nREVERSAL_SLOT_3 = 1;
 int nREV_SLOT_3_WEIGHT = 1;
 int nREVERSAL_SLOT_4 = 1;
 int nREV_SLOT_4_WEIGHT = 1;
+int nNO_REV_WEIGHT = 0;
 int nREVERSAL_DELAY = 0;
 
-int nTRUE_REVERSAL_SLOT_1 = 0;
-int nTRUE_REVERSAL_SLOT_2 = 0;
-int nTRUE_REVERSAL_SLOT_3 = 0;
-int nTRUE_REVERSAL_SLOT_4 = 0;
-int nTRUE_REVERSAL_DELAY = 0;
+int nREV_ID_1 = 0;
+int nREV_ID_2 = 0;
+int nREV_ID_3 = 0;
+int nREV_ID_4 = 0;
 
-const int nNUM_REVERSALS = 4;
-int* nREV_WEIGHTS[nNUM_REVERSALS] = { &nREV_SLOT_1_WEIGHT, &nREV_SLOT_2_WEIGHT , &nREV_SLOT_3_WEIGHT , &nREV_SLOT_4_WEIGHT };
-int* nTRUE_REVS[nNUM_REVERSALS] = { &nTRUE_REVERSAL_SLOT_1, &nTRUE_REVERSAL_SLOT_2, &nTRUE_REVERSAL_SLOT_3, &nTRUE_REVERSAL_SLOT_4 };
+const int NUM_REVERSALS = 4;
+int* nREV_WEIGHTS[NUM_REVERSALS] = { &nREV_SLOT_1_WEIGHT, &nREV_SLOT_2_WEIGHT , &nREV_SLOT_3_WEIGHT , &nREV_SLOT_4_WEIGHT };
+int* nREV_IDs[NUM_REVERSALS] = { &nREV_ID_1, &nREV_ID_2, &nREV_ID_3, &nREV_ID_4 };
 
 std::vector<int*> P1_Settings = {
 	&nREVERSAL_TYPE,
@@ -299,6 +310,7 @@ std::vector<int*> P1_Settings = {
 	&nREVERSAL_SLOT_2, &nREV_SLOT_2_WEIGHT,
 	&nREVERSAL_SLOT_3, &nREV_SLOT_3_WEIGHT,
 	&nREVERSAL_SLOT_4, &nREV_SLOT_4_WEIGHT,
+	&nNO_REV_WEIGHT,
 	&nREVERSAL_DELAY
 };
 

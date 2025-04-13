@@ -1587,41 +1587,39 @@ PlayerAuxData* sP3Data = (PlayerAuxData*)(adMBAABase + adP3DataBase);
 PlayerAuxData* sP4Data = (PlayerAuxData*)(adMBAABase + adP4DataBase);
 
 int nP2LastInactionableFrames = 0;
-int bDoReversal = true;
+bool bDoReversal = true;
+int nReversalElapsedDelayFrames = 0;
 
 void HandleReversals() {
+	if (nREVERSAL_TYPE == revOFF) return;
 	PlayerData* ReversalPlayer = (PlayerData*)(adMBAABase + adP1Base + sP2Data->controlledCharacter * dwPlayerStructSize);
 	std::vector<int> vValidReversals = (ReversalPlayer->yPos == 0 ? vGroundReversals : vAirReversals);
-	RemoveShieldReversals(&vValidReversals, nP2CharacterID);
 	if (vValidReversals.size() == 0) return;
-	switch (nREVERSAL_TYPE) {
-	case 0:
-		break;
-	case 1:
-		if (sP2Data->inactionableFrames == 0 && nP2LastInactionableFrames != 0) {
-			if (bDoReversal) {
-				int totalWeight = 0;
-				for (int i = 0; i < nNUM_REVERSALS; i++) {
-					if (*nTRUE_REVS[i] != 0 && vValidReversals[i] != 0) totalWeight += *nREV_WEIGHTS[i];
+	if (sP2Data->inactionableFrames == 0 && nP2LastInactionableFrames != 0) {
+		nReversalElapsedDelayFrames++;
+		if (bDoReversal && nReversalElapsedDelayFrames > nREVERSAL_DELAY) {
+			int totalWeight = 0;
+			for (int i = 0; i < NUM_REVERSALS; i++) {
+				if (*nREV_IDs[i] != 0 && vValidReversals[i] != 0) totalWeight += *nREV_WEIGHTS[i];
+			}
+			totalWeight += nNO_REV_WEIGHT;
+			int randomWeight = rand() % totalWeight + 1;
+			int validIndex = -1;
+			for (int i = 0; i < NUM_REVERSALS; i++) {
+				if (*nREV_IDs[i] == 0 || vValidReversals[i] == 0) continue;
+				randomWeight -= *nREV_WEIGHTS[i];
+				if (randomWeight <= 0) {
+					validIndex = i;
+					break;
 				}
-				int randomWeight = floor(rand() % totalWeight + 1);
-				int validIndex = 0;
-				for (int i = 0; i < nNUM_REVERSALS; i++) {
-					if (*nTRUE_REVS[i] == 0 || vValidReversals[i] == 0) continue;
-					randomWeight -= *nREV_WEIGHTS[i];
-					if (randomWeight <= 0) {
-						validIndex = i;
-						break;
-					}
-				}
+			}
 
-				ReversalPlayer->inputEvent = vValidReversals[validIndex];
-				bDoReversal = false;
-			}
-			else
-			{
-				bDoReversal = true;
-			}
+			if (validIndex > -1) ReversalPlayer->inputEvent = vValidReversals[validIndex] % 1000;
+			bDoReversal = false;
+		}
+		else
+		{
+			bDoReversal = true;
 		}
 	}
 
@@ -1821,6 +1819,16 @@ void setFPSLimiter(bool b) {
 	
 }
 
+// VOLUME TEST
+DWORD MBAA_Change_Volume = 0x00418030;
+void ChangeVolume() {
+	PUSH_ALL;
+	__asm {
+		call[MBAA_Change_Volume];
+	}
+	POP_ALL;
+}
+
 void frameDoneCallback()
 {
 	profileFunction();
@@ -1906,6 +1914,25 @@ void frameDoneCallback()
 	static KeyState fKey('F');
 	if (lShiftKey.keyHeld() && fKey.keyDown()) {
 		setFPSLimiter(!disableFPSLimit); // sorry :3
+	}
+
+	static KeyState oKey('O');
+	if (lShiftKey.keyHeld() && oKey.keyDown()) {
+		int i = *(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144);
+		i--;
+		if (i < 0) i = 0;
+		if (i > 19) i = 19;
+		*(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144) = i;
+		ChangeVolume();
+	}
+
+	static KeyState pKey('P');
+	if (lShiftKey.keyHeld() && pKey.keyDown()) {
+		int i = *(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144);
+		i++;
+		if (i > 19) i = 21;
+		*(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144) = i;
+		ChangeVolume();
 	}
 
 	renderModificationsFrameDone();
@@ -3626,37 +3653,41 @@ void ExtendedMenuInputChecking() {
 			vPatternNames = GetPatternList(nP2CharacterID);
 		}
 
-		curMenuInfo->ElementList[2]->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_1].c_str(), 1);
-		curMenuInfo->ElementList[4]->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_2].c_str(), 1);
-		curMenuInfo->ElementList[6]->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_3].c_str(), 1);
-		curMenuInfo->ElementList[8]->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_4].c_str(), 1);
+		curMenuInfo->ElementList[2]->SetItemLabel(vPatternNames[nREV_ID_1].c_str(), 1);
+		curMenuInfo->ElementList[3]->textOpacity = nREV_ID_1 == 0 ? 0.5f : 1.0f;
+		curMenuInfo->ElementList[4]->SetItemLabel(vPatternNames[nREV_ID_2].c_str(), 1);
+		curMenuInfo->ElementList[5]->textOpacity = nREV_ID_2 == 0 ? 0.5f : 1.0f;
+		curMenuInfo->ElementList[6]->SetItemLabel(vPatternNames[nREV_ID_3].c_str(), 1);
+		curMenuInfo->ElementList[7]->textOpacity = nREV_ID_3 == 0 ? 0.5f : 1.0f;
+		curMenuInfo->ElementList[8]->SetItemLabel(vPatternNames[nREV_ID_4].c_str(), 1);
+		curMenuInfo->ElementList[9]->textOpacity = nREV_ID_4 == 0 ? 0.5f : 1.0f;
 
 		curElement = curMenuInfo->ElementList[curMenuInfo->selectedElement];
 		switch (curMenuInfo->selectedElement) {
 		case 2: //reversal slot 1
-			CustomScrolling(curElement, 1, nTRUE_REVERSAL_SLOT_1, 0, vPatternNames.size(), true);
-			if (bA) nTRUE_REVERSAL_SLOT_1 = 0;
-			curElement->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_1].c_str(), 1);
+			CustomScrolling(curElement, 1, nREV_ID_1, 0, vPatternNames.size(), true);
+			if (bA) nREV_ID_1 = 0;
+			curElement->SetItemLabel(vPatternNames[nREV_ID_1].c_str(), 1);
 			break;
 		case 4:
-			CustomScrolling(curElement, 1, nTRUE_REVERSAL_SLOT_2, 0, vPatternNames.size(), true);
-			if (bA) nTRUE_REVERSAL_SLOT_2 = 0;
-			curElement->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_2].c_str(), 1);
+			CustomScrolling(curElement, 1, nREV_ID_2, 0, vPatternNames.size(), true);
+			if (bA) nREV_ID_2 = 0;
+			curElement->SetItemLabel(vPatternNames[nREV_ID_2].c_str(), 1);
 			break;
 		case 6:
-			CustomScrolling(curElement, 1, nTRUE_REVERSAL_SLOT_3, 0, vPatternNames.size(), true);
-			if (bA) nTRUE_REVERSAL_SLOT_3 = 0;
-			curElement->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_3].c_str(), 1);
+			CustomScrolling(curElement, 1, nREV_ID_3, 0, vPatternNames.size(), true);
+			if (bA) nREV_ID_3 = 0;
+			curElement->SetItemLabel(vPatternNames[nREV_ID_3].c_str(), 1);
 			break;
 		case 8:
-			CustomScrolling(curElement, 1, nTRUE_REVERSAL_SLOT_4, 0, vPatternNames.size(), true);
-			if (bA) nTRUE_REVERSAL_SLOT_4 = 0;
-			curElement->SetItemLabel(vPatternNames[nTRUE_REVERSAL_SLOT_4].c_str(), 1);
+			CustomScrolling(curElement, 1, nREV_ID_4, 0, vPatternNames.size(), true);
+			if (bA) nREV_ID_4 = 0;
+			curElement->SetItemLabel(vPatternNames[nREV_ID_4].c_str(), 1);
 			break;
 		}
 
 		PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames,
-			nTRUE_REVERSAL_SLOT_1, nTRUE_REVERSAL_SLOT_2, nTRUE_REVERSAL_SLOT_3, nTRUE_REVERSAL_SLOT_4);
+			nREV_ID_1, nREV_ID_2, nREV_ID_3, nREV_ID_4);
 
 		break;
 	case 1:
