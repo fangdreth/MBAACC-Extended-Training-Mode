@@ -225,6 +225,29 @@ void initMenu() {
 		L"P2InputDisplay"
 	);
 
+	ui.add<int>("Show Stats",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			*(BYTE*)(dwBaseAddress + adSharedShowStats) = opt;
+		},
+		defaultOnOffNameFunc,
+		L"",
+		1
+	);
+
+	ui.add<int>("Hide Extras",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			*(BYTE*)(dwBaseAddress + adSharedHideFPS) = opt;
+			*(BYTE*)(dwBaseAddress + adSharedHideBuildInfo) = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
 	baseMenu.add(ui);
 
 	Menu hitboxes("Hitboxes");

@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
         uint8_t nBackgroundStyle = false;
         bool bDrawGround = false;
         bool bDisableShadow = false;
-        DWORD dwDisableExtras = 0x00000000;
+        WORD dwDisableExtras = 0x0000;
 
         int nFrameBarY = 400;
         bool bShowStats = true;
@@ -549,7 +549,7 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBackgroundStyle), &nBackgroundStyle, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDrawGround), &bDrawGround, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisableShadow), &bDisableShadow, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHideFPS), &dwDisableExtras, 3, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHideFPS), &dwDisableExtras, 2, 0);
 
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplay), &bFrameDataDisplay, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFastReversePenalty), &bFastReversePenalty, 1, 0);
@@ -3147,15 +3147,15 @@ int main(int argc, char* argv[])
                                     nOldDownRecoveryIndex = nDownRecoveryIndex;
                                 else if (nOldDownRecoveryIndex > nDownRecoveryIndex)// left
                                 {
-                                    dwDisableExtras = 0x00000000;
-                                    char temp[3] = { 0, 0, 0 };
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHideFPS), &dwDisableExtras, 3, 0);
+                                    dwDisableExtras = 0x0;
+                                    char temp[2] = { 0, 0 };
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHideFPS), &dwDisableExtras, 2, 0);
                                 }
                                 else if (nOldDownRecoveryIndex < nDownRecoveryIndex)// right
                                 {
-                                    dwDisableExtras = 0x01010101;
-                                    char temp[3] = { 1, 1, 1 };
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHideFPS), &dwDisableExtras, 3, 0);
+                                    dwDisableExtras = 0x0101;
+                                    char temp[2] = { 1, 1 };
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHideFPS), &dwDisableExtras, 2, 0);
                                 }
 
                                 break;

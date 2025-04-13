@@ -454,7 +454,6 @@ const ADDRESS adSharedTimer =						adShareBase + 0x28; // 4 bytes
 const ADDRESS adSharedColorGuide =					adShareBase + 0x2C; // 1 byte
 const ADDRESS adSharedHideFPS =						adShareBase + 0x2D; // 1 byte
 const ADDRESS adSharedHideBuildInfo =				adShareBase + 0x2E; // 1 byte
-const ADDRESS adSharedHideFancyMenu =				adShareBase + 0x2F; // 1 byte
 
 const ADDRESS adSharedFreezeKey =					adShareBase + 0x30;	// 1 byte
 const ADDRESS adSharedFrameStepKey =				adShareBase + 0x31;	// 1 byte
