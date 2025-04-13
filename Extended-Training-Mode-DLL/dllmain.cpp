@@ -1718,6 +1718,16 @@ void setFPSLimiter(bool b) {
 	
 }
 
+int nVolTextTimer = 0;
+DWORD MBAA_Change_Volume = 0x00418030;
+void ChangeVolume() {
+	PUSH_ALL;
+	__asm {
+		call[MBAA_Change_Volume];
+	}
+	POP_ALL;
+}
+
 void frameDoneCallback()
 {
 	profileFunction();
@@ -1803,6 +1813,36 @@ void frameDoneCallback()
 	static KeyState fKey('F');
 	if (lShiftKey.keyHeld() && fKey.keyDown()) {
 		setFPSLimiter(!disableFPSLimit); // sorry :3
+	}
+
+	static KeyState oKey('O');
+	if (lShiftKey.keyHeld() && oKey.keyDown()) {
+		int i = *(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144);
+		i--;
+		if (i < 0) i = 0;
+		if (i > 19) i = 19;
+		*(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144) = i;
+		ChangeVolume();
+		nVolTextTimer = 20;
+	}
+
+	static KeyState pKey('P');
+	if (lShiftKey.keyHeld() && pKey.keyDown()) {
+		int i = *(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144);
+		i++;
+		if (i > 19) i = 21;
+		*(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144) = i;
+		ChangeVolume();
+		nVolTextTimer = 20;
+	}
+
+	if (nVolTextTimer > 0) {
+		int i = *(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144);
+		int volume = 20 - i;
+		char buffer[8];
+		snprintf(buffer, 8, "%i", volume);
+		TextDraw(315, 10, 10, 0xFFFFFFFF, buffer);
+		nVolTextTimer--;
 	}
 
 	renderModificationsFrameDone();
