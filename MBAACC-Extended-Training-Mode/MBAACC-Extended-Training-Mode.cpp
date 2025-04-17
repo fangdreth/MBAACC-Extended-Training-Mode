@@ -679,22 +679,6 @@ int main(int argc, char* argv[])
                         nOldThrowRecoveryIndex = -1;
                         nOldReduceDamageIndex = -1;
                         nOldLifeIndex = -1;
-
-                        // restore the Battle Settings menu after clobbering it in EXTENDED SETTINGS
-                        nWriteBuffer = nStoredEnemyDefense;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyDefense), &nWriteBuffer, 4, 0);
-                        nWriteBuffer = nStoredEnemyDefenseType;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyDefenseType), &nWriteBuffer, 4, 0);
-                        nWriteBuffer = nStoredEnemyAction;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyAction), &nWriteBuffer, 4, 0);
-                        nWriteBuffer = nStoredAirRecovery;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwAirRecovery), &nWriteBuffer, 4, 0);
-                        nWriteBuffer = nStoredDownRecovery;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwDownRecovery), &nWriteBuffer, 4, 0);
-                        nWriteBuffer = nStoredThrowRecovery;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwThrowRecovery), &nWriteBuffer, 4, 0);
-                        nWriteBuffer = nStoredReduceDamage;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwReduceRecovery), &nWriteBuffer, 4, 0);
  
                         // Replace the RETURN TO MAIN MENU option with fancy scrolling text
                         // this is 100% unnecessary but I did it for fun
@@ -763,15 +747,6 @@ int main(int argc, char* argv[])
                     bInExtendedSettings = false;
                     nOldCurrentSubMenu = -1;
                     nCurrentSubMenu = eMenu::MAIN;
-
-                    // Enable Ex Guard.  randomly if applicable
-                    nWriteBuffer = 1;
-                    if (nExGuardSetting == eEnemyOffOnRandom::ON || (rand() % 2 == 0 && nExGuardSetting == eEnemyOffOnRandom::RANDOM))
-                        nWriteBuffer = 10;
-                    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2ExGuard), &nWriteBuffer, 4, 0);
-                    ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adDoTrainingAction, &nReadResult, 1, nDummy);
-                    if (nReadResult)
-                        WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1ExGuard, &nWriteBuffer, 4, nDummy);
 
                     // Disable built-in health recovery
                     //nWriteBuffer = 4;
@@ -940,7 +915,6 @@ int main(int argc, char* argv[])
                     nCustomGuard = nReadResult;
                     if (nFrameCounter == 1 && !CheckSave(nSaveSlot))
                     {
-                        SetMeter(hMBAAHandle, dwBaseAddress, nCustomMeter, nP1Moon, nP2Moon, nP1Controlled, nP2Controlled);
                         SetGuard(hMBAAHandle, dwBaseAddress, nCustomGuard, nP1Moon, nP2Moon, nP1Controlled, nP2Controlled);
                         SetGuard(hMBAAHandle, dwBaseAddress, 0, nP1Moon, nP2Moon, nP1Controlled, nP2Controlled);
 
@@ -956,10 +930,6 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP4X), &nWriteBuffer, 4, 0);
                         }
                     }
-
-                    // infinite guard bar
-                    if (bInfGuard)
-                        SetGuard(hMBAAHandle, dwBaseAddress, 0, nP1Moon, nP2Moon, nP1Controlled, nP2Controlled);
 
                     // increase the counter every frame p2 is standing idle to delay regenerating health and char specifics
                     // taking an extra step to cap these at 20 to avoid any unexpected behavior if tmode is left running forever
@@ -1189,19 +1159,6 @@ int main(int argc, char* argv[])
                             }
                             else
                                 nTempReversalDelayFrames--;
-                        }
-                    }
-                    
-                    short sOnHitCount = 0;
-                    char cEnemyDefense = 0;
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyDefense), &cEnemyDefense, 1, 0);
-                    if (cEnemyDefense == 1 || cEnemyDefense == 2)
-                    {
-                        ReadCharacterMemory(hMBAAHandle, adMBAABase + adP1SubBase + adOnHitCount, &sOnHitCount, 2, nDummy);
-                        if (sOnHitCount)
-                        {
-                            char c0 = 0;
-                            WriteCharacterMemory(hMBAAHandle, dwBaseAddress + adP1SubBase + adWillBlock, &c0, 1, nDummy);
                         }
                     }
                   

@@ -79,7 +79,7 @@ void UpdatePlayers() //Called after bar handling
 	for (int i = 0; i < 4; i++) {
 		Player& P = *paPlayerArray[i];
 		P.nLastInactionableFrames = *(int*)(P.adInaction);
-		P.nLastFrameCount = P.PlayerData->heatTimeThisHeat;
+		P.nLastFrameCount = P.PlayerData->heatTimeCounter;
 		P.bLastOnRight = P.PlayerData->isOpponentToLeft;
 		P.dwLastActivePointer = (DWORD)P.PlayerData->attackDataPtr;
 		P.cLastHitstop = P.PlayerData->hitstop;
@@ -381,7 +381,7 @@ void UpdateBars(Player& P, Player& Assist)
 
 void IncrementActive(Player& P)
 {
-	if (P.PlayerData->attackDataPtr && P.PlayerData->hitstop == 0 && P.PlayerData->heatTimeThisHeat != P.nLastFrameCount)
+	if (P.PlayerData->attackDataPtr && P.PlayerData->hitstop == 0 && P.PlayerData->heatTimeCounter != P.nLastFrameCount)
 	{
 		P.nActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 	}
@@ -397,8 +397,8 @@ void IncrementFirstActive(Player& P1, Player& P2)
 		//*(int*)(adMBAABase + adP1Freeze) == 0 &&
 		//*(int*)(adMBAABase + adP2Freeze) == 0 &&
 		//*(char*)(adMBAABase + adGlobalFreeze) == 0 &&
-		P1.PlayerData->heatTimeThisHeat != P1.nLastFrameCount &&
-		P2.PlayerData->heatTimeThisHeat != P2.nLastFrameCount)
+		P1.PlayerData->heatTimeCounter != P1.nLastFrameCount &&
+		P2.PlayerData->heatTimeCounter != P2.nLastFrameCount)
 	{
 		P1.nFirstActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 		//P1.bAddPlayerFreeze = true;

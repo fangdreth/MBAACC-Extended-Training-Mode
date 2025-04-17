@@ -447,7 +447,7 @@ typedef struct EffectData {
 	BYTE index;
 	BYTE charID;
 	BYTE charIDCopy;
-	BYTE recording;
+	BYTE doTrainingAction;
 	UNUSED(1);
 	BYTE someFlag;
 	BYTE palette;
@@ -477,15 +477,15 @@ typedef struct EffectData {
 	BYTE guardQualityStop;
 	UNUSED(1);
 	float quardQuality;
-	BYTE exMoveMeterPenaltyTiimer;
-	UNUSED(3);
+	WORD exMoveMeterPenaltyTiimer;
+	UNUSED(2);
 	DWORD magicCircuit;
 	DWORD heatTimeLeft;
-	WORD magicCircuitState;
-	UNUSED(4);
-	BYTE magicCircuitPause;
-	UNUSED(1);
-	DWORD heatTimeThisHeat;
+	BYTE magicCircuitState;
+	UNUSED(3);
+	WORD maxHeatTime;
+	WORD magicCircuitPause;
+	DWORD heatTimeCounter;
 	UNUSED(4);
 	DWORD storedMeterUsage;
 	DWORD storedMeterCircuitState;
@@ -614,7 +614,7 @@ CHECKOFFSET(exMoveMeterPenaltyTiimer, 0xDC)
 CHECKOFFSET(magicCircuit, 0xE0)
 CHECKOFFSET(magicCircuitState, 0xE8)
 CHECKOFFSET(magicCircuitPause, 0xEE)
-CHECKOFFSET(heatTimeThisHeat, 0xF0)
+CHECKOFFSET(heatTimeCounter, 0xF0)
 CHECKOFFSET(storedMeterUsage, 0xF8)
 CHECKOFFSET(circuitBreakExPenaltyTimer, 0x100)
 CHECKOFFSET(xPos, 0x108)
@@ -652,7 +652,7 @@ extern EffectData* effectDataArr;
 
 #pragma pack(push,1)
 typedef struct PlayerAuxData {
-	int controlledCharacter;
+	int activeCharacter;
 	UNUSED(0x1C);
 	int proration;
 	UNUSED(0x20);

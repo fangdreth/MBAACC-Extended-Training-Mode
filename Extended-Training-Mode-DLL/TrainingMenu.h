@@ -79,6 +79,15 @@ struct Element //listed elements on left
 		ReadDataFile((void*)(targetItem), newLabel, strlen(newLabel));
 	}
 
+	void SetCurItemLabel(const char* newLabel) {
+		int itemIndex = selectedItem;
+		if (ItemList == 0x0 || ItemListEnd - ItemList <= itemIndex) {
+			return;
+		}
+		Item* targetItem = ItemList[itemIndex];
+		ReadDataFile((void*)(targetItem), newLabel, strlen(newLabel));
+	}
+
 	//vftable[6]
 	int GetItemValue(int itemIndex) {
 		if (ItemList == 0x0 || ItemListEnd - ItemList <= itemIndex) {
@@ -214,8 +223,8 @@ std::vector<const char*> vSPACE_ELEMENT = {};
 
 //Page 1
 std::vector<const char*> vREVERSAL_TYPE = {
-	"REVERSAL TYPE",
-	"OFF", "NORMAL", "REPEAT"
+	"DO REVERSALS",
+	"OFF", "ON"
 };
 
 enum eREVERSAL_TYPE { revOFF, revNORMAL, revREPEAT };
@@ -320,48 +329,66 @@ std::vector<const char*> vPENALTY_RESET = {
 	"NORMAL", "INSTANT",
 };
 
+std::vector<const char*> vGUARD_BAR_RESET = {
+	"GUARD BAR RESET",
+	"NORMAL", "INSTANT",
+};
+
 std::vector<const char*> vEX_GUARD = {
 	"EX GUARD",
 	"OFF", "ON", "RANDOM",
 };
 
-std::vector<const char*> vGUARD_BAR = {
-	"GUARD BAR",
-	"NORMAL", "INFINITE",
-};
-
-std::vector<const char*> vMETER = {
-	"METER",
+std::vector<const char*> vP1_METER = {
+	"P1 METER",
 	"X1", "X2", "X3",
 };
 
-std::vector<const char*> vHEALTH = {
-	"HEALTH",
+std::vector<const char*> vP2_METER = {
+	"P2 METER",
+	"X1", "X2", "X3",
+};
+
+std::vector<const char*> vP1_HEALTH = {
+	"P1 HEALTH",
+	"X1", "X2", "X3",
+};
+
+std::vector<const char*> vP2_HEALTH = {
+	"P2 HEALTH",
 	"X1", "X2", "X3",
 };
 
 std::vector<const char*> vHITS_UNTIL_BURST = {
 	"HITS UNTIL BURST",
-	"OFF", "X1", "X2", "X3"
+	"X1", "X2", "X3"
 };
 
 std::vector<std::vector<const char*>> P2_Options = {
-	vPENALTY_RESET, vSPACE_ELEMENT, vEX_GUARD, vGUARD_BAR, vSPACE_ELEMENT, vMETER, vHEALTH, vSPACE_ELEMENT, vHITS_UNTIL_BURST
+	vPENALTY_RESET, vGUARD_BAR_RESET, vSPACE_ELEMENT,
+	vEX_GUARD, vSPACE_ELEMENT,
+	vP1_METER, vP2_METER, vSPACE_ELEMENT,
+	vP1_HEALTH, vP2_HEALTH, vSPACE_ELEMENT,
+	vHITS_UNTIL_BURST
 };
 
 int nPENALTY_RESET = 0;
+int nGUARD_BAR_RESET = 0;
 int nEX_GUARD = 0;
-int nGUARD_BAR = 0;
-int nMETER = 0;
-int nHEALTH = 0;
-int nHITS_UNTIL_BURST = 0;
+int nP1_METER = 1;
+int nP2_METER = 1;
+int nP1_HEALTH = 2;
+int nP2_HEALTH = 2;
+int nHITS_UNTIL_BURST = 1;
 
-int nTRUE_METER = 15000;
-int nTRUE_HEALTH = 11400;
+int nTRUE_P1_METER = 10000;
+int nTRUE_P2_METER = 10000;
+int nTRUE_P1_HEALTH = 11400;
+int nTRUE_P2_HEALTH = 11400;
 int nTRUE_HITS_UNTIL_BURST = 0;
 
 std::vector<int*> P2_Settings = {
-	&nPENALTY_RESET, &nEX_GUARD, &nGUARD_BAR, &nMETER, &nHEALTH, &nHITS_UNTIL_BURST
+	&nPENALTY_RESET, &nGUARD_BAR_RESET, &nEX_GUARD, &nP1_METER, &nP2_METER, &nP1_HEALTH, &nP2_HEALTH, &nHITS_UNTIL_BURST
 };
 
 //Page 3

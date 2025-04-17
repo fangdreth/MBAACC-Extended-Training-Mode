@@ -1576,28 +1576,36 @@ void SetRN(uint32_t nRN)
 }
 
 //Handle all extended training gameplay effects
-PlayerData* sP1 = (PlayerData*)(adMBAABase + adP1Base);
-PlayerData* sP2 = (PlayerData*)(adMBAABase + adP2Base);
-PlayerData* sP3 = (PlayerData*)(adMBAABase + adP3Base);
-PlayerData* sP4 = (PlayerData*)(adMBAABase + adP4Base);
 
-PlayerAuxData* sP1Data = (PlayerAuxData*)(adMBAABase + adP1DataBase);
-PlayerAuxData* sP2Data = (PlayerAuxData*)(adMBAABase + adP2DataBase);
-PlayerAuxData* sP3Data = (PlayerAuxData*)(adMBAABase + adP3DataBase);
-PlayerAuxData* sP4Data = (PlayerAuxData*)(adMBAABase + adP4DataBase);
+PlayerData* pP1 = (PlayerData*)(adMBAABase + adP1Base);
+PlayerData* pP2 = (PlayerData*)(adMBAABase + adP2Base);
+PlayerData* pP3 = (PlayerData*)(adMBAABase + adP3Base);
+PlayerData* pP4 = (PlayerData*)(adMBAABase + adP4Base);
 
-int nP2LastInactionableFrames = 0;
-bool bDoReversal = true;
-int nReversalElapsedDelayFrames = 0;
+PlayerData* pPlayerArray[4] = { pP1, pP2, pP3, pP4 };
+
+PlayerAuxData* pdP1Data = (PlayerAuxData*)(adMBAABase + adP1DataBase);
+PlayerAuxData* pdP2Data = (PlayerAuxData*)(adMBAABase + adP2DataBase);
+PlayerAuxData* pdP3Data = (PlayerAuxData*)(adMBAABase + adP3DataBase);
+PlayerAuxData* pdP4Data = (PlayerAuxData*)(adMBAABase + adP4DataBase);
+
+PlayerAuxData* pdPlayerDataArray[4] = {pdP1Data , pdP2Data , pdP3Data , pdP4Data};
+
+PlayerData* pActiveP1 = pP1;
+PlayerData* pActiveP2 = pP2;
+bool isP1Controlled = 1;
+PlayerData* pPlayer = pP1;
+PlayerData* pDummy = pP2;
+
+bool bDoReversal = false;
+int nReversalDelayFramesLeft = 0;
 
 void HandleReversals() {
-	if (nREVERSAL_TYPE == revOFF) return;
-	PlayerData* ReversalPlayer = (PlayerData*)(adMBAABase + adP1Base + sP2Data->controlledCharacter * dwPlayerStructSize);
-	std::vector<int> vValidReversals = (ReversalPlayer->yPos == 0 ? vGroundReversals : vAirReversals);
+	if (nREVERSAL_TYPE == revOFF || pActiveP2->doTrainingAction != 1) return;
+	std::vector<int> vValidReversals = (pActiveP2->yPos == 0 ? vGroundReversals : vAirReversals);
 	if (vValidReversals.size() == 0) return;
-	if (sP2Data->inactionableFrames == 0 && nP2LastInactionableFrames != 0) {
-		nReversalElapsedDelayFrames++;
-		if (bDoReversal && nReversalElapsedDelayFrames > nREVERSAL_DELAY) {
+	if (bDoReversal && pdP2Data->inactionableFrames == 0) {
+		if (nReversalDelayFramesLeft == 0) {
 			int totalWeight = 0;
 			for (int i = 0; i < NUM_REVERSALS; i++) {
 				if (*nREV_IDs[i] != 0 && vValidReversals[i] != 0) totalWeight += *nREV_WEIGHTS[i];
@@ -1614,25 +1622,37 @@ void HandleReversals() {
 				}
 			}
 
-			if (validIndex > -1) ReversalPlayer->inputEvent = vValidReversals[validIndex] % 1000;
+			if (validIndex > -1) pActiveP2->inputEvent = vValidReversals[validIndex] % 1000;
 			bDoReversal = false;
 		}
-		else
-		{
-			bDoReversal = true;
+		else {
+			nReversalDelayFramesLeft--;
 		}
 	}
-
-	nP2LastInactionableFrames = sP2Data->inactionableFrames;
+	
+	if (pActiveP2->hitstunTimeRemaining != 0) {
+		bDoReversal = true;
+		nReversalDelayFramesLeft = nREVERSAL_DELAY;
+	}
 }
 
 void HandleMeters() {
-	if (*(int*)(adMBAABase + adFrameCount) == 1 && nSAVE_STATE_SLOT == 0) {
-		if (*(int*)(adMBAABase + adBS_MAGIC_CIRCUIT) == 0) {
-			sP1->magicCircuit = nTRUE_METER;
-			sP2->magicCircuit = nTRUE_METER;
-		}
+	if (nPENALTY_RESET == 1) {
+		doFastReversePenalty();
+	}
 
+	if (nGUARD_BAR_RESET == 1) {
+		int maxGauges[3] = { 8000, 7000, 10500 };
+		if (pP1->inBlockstun == 0) pP1->guardGauge = maxGauges[pP1->moon];
+		if (pP2->inBlockstun == 0) pP2->guardGauge = maxGauges[pP2->moon];
+		if (pP3->exists && pP1->inBlockstun == 0) pP3->guardGauge = maxGauges[pP3->moon];
+		if (pP4->exists && pP1->inBlockstun == 0) pP4->guardGauge = maxGauges[pP4->moon];
+	}
+
+	if (nEX_GUARD == 1 || (nEX_GUARD == 2 && rand() % 2 == 0)) {
+		if (pDummy->doTrainingAction) {
+			pDummy->exGuard = 10;
+		}
 	}
 }
 
@@ -1657,6 +1677,11 @@ void HandleSaves() {
 }
 
 void HandleExtendedTrainingEffects() {
+	pActiveP1 = (PlayerData*)(adMBAABase + adP1Base + pdP1Data->activeCharacter * dwPlayerStructSize);
+	pActiveP2 = (PlayerData*)(adMBAABase + adP1Base + pdP2Data->activeCharacter * dwPlayerStructSize);
+	isP1Controlled = pP1->doTrainingAction == 0;
+	pPlayer = isP1Controlled ? pActiveP1 : pActiveP2;
+	pDummy = isP1Controlled ? pActiveP2 : pActiveP1;
 	HandleReversals();			//page 1
 	HandleMeters();				//page 2
 	HandleHighlights();			//page 3
@@ -1819,7 +1844,6 @@ void setFPSLimiter(bool b) {
 	
 }
 
-// VOLUME TEST
 DWORD MBAA_Change_Volume = 0x00418030;
 void ChangeVolume() {
 	PUSH_ALL;
@@ -2040,8 +2064,6 @@ void frameDoneCallback()
 		bHighlightsOn = true;
 	else
 		bHighlightsOn = false;
-
-	doFastReversePenalty();
 	
 	//drawTextWithBorder(300, 300, 36, 48	, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
 
@@ -2414,6 +2436,110 @@ __declspec(naked) void nakedFrameDoneCallback_RAW() {
 		ret;
 	}
 }
+
+// reset funcs
+
+void ResetCallback() {
+	if (nSAVE_STATE_SLOT == 0) {
+		if (*(int*)(adMBAABase + adBS_MAGIC_CIRCUIT) == 0) {
+			for (int i = 0; i < 4; i++) {
+				PlayerData* curPlayer = pPlayerArray[i];
+				if (!curPlayer->exists) continue;
+				int USE_METER = i % 2 == 0 ? nTRUE_P1_METER : nTRUE_P2_METER;
+				switch (curPlayer->moon) {
+				case 0:
+					switch (USE_METER) {
+					case 30000:
+						curPlayer->magicCircuit = 20000;
+						curPlayer->heatTimeLeft = 600;
+						curPlayer->magicCircuitState = 2;
+						curPlayer->maxHeatTime = 600;
+						curPlayer->magicCircuitPause = 10;
+						break;
+					case 30001:
+						curPlayer->magicCircuit = 0;
+						curPlayer->heatTimeLeft = 550;
+						curPlayer->magicCircuitState = 1;
+						curPlayer->maxHeatTime = 550;
+						curPlayer->magicCircuitPause = 10;
+						break;
+					case 30002:
+						curPlayer->magicCircuit = 0;
+						curPlayer->heatTimeLeft = 500;
+						curPlayer->magicCircuitState = 3;
+						curPlayer->maxHeatTime = 500;
+						curPlayer->magicCircuitPause = 60;
+						break;
+					default:
+						curPlayer->magicCircuit = USE_METER;
+						break;
+					}
+					break;
+				case 1:
+					switch (USE_METER) {
+					case 30000:
+						curPlayer->magicCircuit = 20000;
+						curPlayer->heatTimeLeft = 600;
+						curPlayer->magicCircuitState = 2;
+						curPlayer->maxHeatTime = 600;
+						curPlayer->magicCircuitPause = 10;
+						break;
+					case 30001:
+						curPlayer->magicCircuit = 0;
+						curPlayer->heatTimeLeft = 550;
+						curPlayer->magicCircuitState = 1;
+						curPlayer->maxHeatTime = 550;
+						curPlayer->magicCircuitPause = 10;
+						break;
+					case 30002:
+						curPlayer->magicCircuit = 0;
+						curPlayer->heatTimeLeft = 750;
+						curPlayer->magicCircuitState = 3;
+						curPlayer->maxHeatTime = 750;
+						curPlayer->magicCircuitPause = 60;
+						break;
+					default:
+						curPlayer->magicCircuit = USE_METER;
+						break;
+					}
+					break;
+				case 2:
+					if (USE_METER == 20000) {
+						curPlayer->magicCircuit = 0;
+						curPlayer->heatTimeLeft = 550;
+						curPlayer->magicCircuitState = 1;
+						curPlayer->maxHeatTime = 550;
+						curPlayer->magicCircuitPause = 10;
+					}
+					else
+					{
+						curPlayer->magicCircuit = USE_METER;
+					}
+					break;
+				}
+			}
+		}
+	}
+}
+
+DWORD MBAA_ResetBattleMode = 0x00423380;
+DWORD ResetCallback_PatchAddr = 0x0042357c;
+__declspec(naked) void _naked_ResetCallback() {
+	__asm {
+		push esi;
+		call[MBAA_ResetBattleMode];
+	}
+
+	PUSH_ALL;
+	ResetCallback();
+	POP_ALL;
+
+	__asm {
+		push 0x00423582;
+		ret;
+	}
+}
+
 
 // pause funcs
 
@@ -3622,16 +3748,227 @@ void HandleExtendedMenu() {
 
 }
 
-void CustomScrolling(Element* element, int neutralIndex, int &storage, int min, int max, bool doLooping) {
+void LoopingScrolling(Element* element, int& storage, int min, int max, int interval = 1) {
+	int neutralIndex = 1;
 	if (element->selectedItem == neutralIndex - 1) { //left
-		storage--;
-		if (storage < min) storage = doLooping ? max - 1 : min;
+		storage -= interval;
+		if (storage < min) {
+			storage = max;
+		}
 	}
 	else if (element->selectedItem == neutralIndex + 1) { //right
-		storage++;
-		if (storage >= max) storage = doLooping ? min : max - 1;
+		storage += interval;
+		if (storage > max) {
+			storage = min;
+		}
 	}
 	element->selectedItem = neutralIndex;
+}
+
+void NormalScrolling(Element* element, int& storage, int min, int max, int interval = 1) {
+	int neutralIndex = 1;
+	int targetIndex = neutralIndex;
+	if (storage == max)
+	{
+		if (element->selectedItem == neutralIndex) { //left
+			storage -= interval;
+		}
+	}
+	else if (storage == min)
+	{
+		if (element->selectedItem == neutralIndex) { //right
+			storage += interval;
+		}
+	}
+	else
+	{
+		if (element->selectedItem == neutralIndex - 1) { //left
+			storage = max(storage - interval, min);
+		}
+		else if (element->selectedItem == neutralIndex + 1) { //right
+			storage = min(storage + interval, max);
+		}
+	}
+
+	if (storage == max) targetIndex = neutralIndex + 1;
+	if (storage == min) targetIndex = neutralIndex - 1;
+	element->selectedItem = targetIndex;
+}
+
+int MeterScrollAccelTimer = 0;
+int MeterScrollAccelTimerResetTimer = 0;
+void CFMeterScrolling(Element* element, int& storage, bool toggle) {
+	int neutralIndex = 1;
+	int targetIndex = neutralIndex;
+	int interval = 100;
+	if (!toggle) {
+		if (MeterScrollAccelTimerResetTimer > 10) {
+			MeterScrollAccelTimer = 0;
+		}
+		if (MeterScrollAccelTimer > 10) {
+			interval = 100 * (int)(MeterScrollAccelTimer / 4);
+		}
+
+		switch (storage) {
+		case 30002: //BLOOD HEAT
+			if (element->selectedItem == neutralIndex) storage--;
+			break;
+		case 30001: //HEAT
+			if (element->selectedItem == neutralIndex - 1) storage--;
+			if (element->selectedItem == neutralIndex + 1) storage++;
+			break;
+		case 30000: //MAX
+			if (element->selectedItem == neutralIndex - 1) storage -= 100;
+			if (element->selectedItem == neutralIndex + 1) storage++;
+			break;
+		case 0:
+			if (element->selectedItem == neutralIndex) storage += 100;
+			break;
+		default:
+			if (element->selectedItem == neutralIndex - 1) storage = max(storage - interval, 0);
+			if (element->selectedItem == neutralIndex + 1) storage = min(storage + interval, 30000);
+			
+			if (element->selectedItem != neutralIndex) {
+				MeterScrollAccelTimer++;
+				MeterScrollAccelTimerResetTimer = 0;
+			}
+			else {
+				MeterScrollAccelTimerResetTimer++;
+			}
+			break;
+		}
+	}
+	else
+	{
+		interval = 1;
+		if (MeterScrollAccelTimerResetTimer > 10) {
+			MeterScrollAccelTimer = 0;
+		}
+		if (MeterScrollAccelTimer > 10) {
+			interval = min(1 * (int)(MeterScrollAccelTimer / 4), 20);
+		}
+		switch (storage) {
+		case 30002: //BLOOD HEAT
+			if (element->selectedItem == neutralIndex) storage--;
+			break;
+		case 30001: //HEAT
+			if (element->selectedItem == neutralIndex - 1) storage--;
+			if (element->selectedItem == neutralIndex + 1) storage++;
+			break;
+		case 30000: //MAX
+			if (element->selectedItem == neutralIndex - 1) storage--;
+			if (element->selectedItem == neutralIndex + 1) storage++;
+			break;
+		case 0:
+			if (element->selectedItem == neutralIndex) storage += 1;
+			break;
+		default:
+			if (element->selectedItem == neutralIndex - 1) {
+				if (storage % 100 - interval < 0) {
+					interval -= 100;
+				}
+				storage -= interval;
+			}
+			if (element->selectedItem == neutralIndex + 1) {
+				if (storage % 100 + interval > 99) {
+					interval -= 100;
+				}
+				storage += interval;
+			}
+
+			if (element->selectedItem != neutralIndex) {
+				MeterScrollAccelTimer++;
+				MeterScrollAccelTimerResetTimer = 0;
+			}
+			else {
+				MeterScrollAccelTimerResetTimer++;
+			}
+			break;
+		}
+	}
+	if (storage == 30002) targetIndex = neutralIndex + 1;
+	if (storage == 0) targetIndex = neutralIndex - 1;
+	element->selectedItem = targetIndex;
+	
+}
+
+void HMeterScrolling(Element* element, int& storage, bool toggle) {
+	int neutralIndex = 1;
+	int targetIndex = neutralIndex;
+	int interval = 100;
+	if (!toggle) {
+		if (MeterScrollAccelTimerResetTimer > 10) {
+			MeterScrollAccelTimer = 0;
+		}
+		if (MeterScrollAccelTimer > 10) {
+			interval = 100 * (int)(MeterScrollAccelTimer / 4);
+		}
+
+		switch (storage) {
+		case 20000: //BLOOD HEAT
+			if (element->selectedItem == neutralIndex) storage--;
+			break;
+		case 0:
+			if (element->selectedItem == neutralIndex) storage += 100;
+			break;
+		default:
+			if (element->selectedItem == neutralIndex - 1) storage = max(storage - interval, 0);
+			if (element->selectedItem == neutralIndex + 1) storage = min(storage + interval, 20000);
+
+			if (element->selectedItem != neutralIndex) {
+				MeterScrollAccelTimer++;
+				MeterScrollAccelTimerResetTimer = 0;
+			}
+			else {
+				MeterScrollAccelTimerResetTimer++;
+			}
+			break;
+		}
+	}
+	else
+	{
+		interval = 1;
+		if (MeterScrollAccelTimerResetTimer > 10) {
+			MeterScrollAccelTimer = 0;
+		}
+		if (MeterScrollAccelTimer > 10) {
+			interval = min(1 * (int)(MeterScrollAccelTimer / 4), 20);
+		}
+		switch (storage) {
+		case 20000: //BLOOD HEAT
+			if (element->selectedItem == neutralIndex) storage--;
+			break;
+		case 0:
+			if (element->selectedItem == neutralIndex) storage += 1;
+			break;
+		default:
+			if (element->selectedItem == neutralIndex - 1) {
+				if (storage % 100 - interval < 0) {
+					interval -= 100;
+				}
+				storage -= interval;
+			}
+			if (element->selectedItem == neutralIndex + 1) {
+				if (storage % 100 + interval > 99) {
+					interval -= 100;
+				}
+				storage += interval;
+			}
+
+			if (element->selectedItem != neutralIndex) {
+				MeterScrollAccelTimer++;
+				MeterScrollAccelTimerResetTimer = 0;
+			}
+			else {
+				MeterScrollAccelTimerResetTimer++;
+			}
+			break;
+		}
+	}
+	if (storage == 20000) targetIndex = neutralIndex + 1;
+	if (storage == 0) targetIndex = neutralIndex - 1;
+	element->selectedItem = targetIndex;
+
 }
 
 void ExtendedMenuInputChecking() {
@@ -3641,8 +3978,10 @@ void ExtendedMenuInputChecking() {
 	__asm {
 		mov extendedWindow, ecx;
 	}
+	char labelBuf[8];
 	bool bA = *(bool*)(adMBAABase + adP1AInput) && extendedWindow->openSubmenuIndex == 2;
 	curMenuInfo = extendedWindow->MenuInfoList[extendedWindow->menuInfoIndex];
+	curElement = curMenuInfo->ElementList[curMenuInfo->selectedElement];
 	switch (extendedWindow->menuInfoIndex) {
 	case 0: //reversals
 		if (vPatternNames.size() == 1)
@@ -3653,34 +3992,33 @@ void ExtendedMenuInputChecking() {
 			vPatternNames = GetPatternList(nP2CharacterID);
 		}
 
-		curMenuInfo->ElementList[2]->SetItemLabel(vPatternNames[nREV_ID_1].c_str(), 1);
+		curMenuInfo->ElementList[2]->SetCurItemLabel(vPatternNames[nREV_ID_1].c_str());
 		curMenuInfo->ElementList[3]->textOpacity = nREV_ID_1 == 0 ? 0.5f : 1.0f;
-		curMenuInfo->ElementList[4]->SetItemLabel(vPatternNames[nREV_ID_2].c_str(), 1);
+		curMenuInfo->ElementList[4]->SetCurItemLabel(vPatternNames[nREV_ID_2].c_str());
 		curMenuInfo->ElementList[5]->textOpacity = nREV_ID_2 == 0 ? 0.5f : 1.0f;
-		curMenuInfo->ElementList[6]->SetItemLabel(vPatternNames[nREV_ID_3].c_str(), 1);
+		curMenuInfo->ElementList[6]->SetCurItemLabel(vPatternNames[nREV_ID_3].c_str());
 		curMenuInfo->ElementList[7]->textOpacity = nREV_ID_3 == 0 ? 0.5f : 1.0f;
-		curMenuInfo->ElementList[8]->SetItemLabel(vPatternNames[nREV_ID_4].c_str(), 1);
+		curMenuInfo->ElementList[8]->SetCurItemLabel(vPatternNames[nREV_ID_4].c_str());
 		curMenuInfo->ElementList[9]->textOpacity = nREV_ID_4 == 0 ? 0.5f : 1.0f;
 
-		curElement = curMenuInfo->ElementList[curMenuInfo->selectedElement];
 		switch (curMenuInfo->selectedElement) {
 		case 2: //reversal slot 1
-			CustomScrolling(curElement, 1, nREV_ID_1, 0, vPatternNames.size(), true);
+			LoopingScrolling(curElement, nREV_ID_1, 0, vPatternNames.size() - 1);
 			if (bA) nREV_ID_1 = 0;
 			curElement->SetItemLabel(vPatternNames[nREV_ID_1].c_str(), 1);
 			break;
 		case 4:
-			CustomScrolling(curElement, 1, nREV_ID_2, 0, vPatternNames.size(), true);
+			LoopingScrolling(curElement, nREV_ID_2, 0, vPatternNames.size() - 1);
 			if (bA) nREV_ID_2 = 0;
 			curElement->SetItemLabel(vPatternNames[nREV_ID_2].c_str(), 1);
 			break;
 		case 6:
-			CustomScrolling(curElement, 1, nREV_ID_3, 0, vPatternNames.size(), true);
+			LoopingScrolling(curElement, nREV_ID_3, 0, vPatternNames.size() - 1);
 			if (bA) nREV_ID_3 = 0;
 			curElement->SetItemLabel(vPatternNames[nREV_ID_3].c_str(), 1);
 			break;
 		case 8:
-			CustomScrolling(curElement, 1, nREV_ID_4, 0, vPatternNames.size(), true);
+			LoopingScrolling(curElement, nREV_ID_4, 0, vPatternNames.size() - 1);
 			if (bA) nREV_ID_4 = 0;
 			curElement->SetItemLabel(vPatternNames[nREV_ID_4].c_str(), 1);
 			break;
@@ -3691,6 +4029,90 @@ void ExtendedMenuInputChecking() {
 
 		break;
 	case 1:
+		switch (curMenuInfo->selectedElement) {
+		case 5: //P1 meter
+			if (pP1->moon != 2) {
+				CFMeterScrolling(curElement, nTRUE_P1_METER, bA);
+			}
+			else {
+				HMeterScrolling(curElement, nTRUE_P1_METER, bA);
+			}
+			break;
+		case 6: //P2 meter
+			if (pP2->moon != 2) {
+				CFMeterScrolling(curElement, nTRUE_P2_METER, bA);
+			}
+			else {
+				HMeterScrolling(curElement, nTRUE_P2_METER, bA);
+			}
+			break;
+		case 8: //P1 health
+			NormalScrolling(curElement, nTRUE_P1_HEALTH, 0, 11400, 570);
+			break;
+		case 9: //P2 health
+			NormalScrolling(curElement, nTRUE_P2_HEALTH, 0, 11400, 570);
+			break;
+		}
+
+		if (pP1->moon != 2) {
+			switch (nTRUE_P1_METER) {
+			case 30000:
+				curMenuInfo->ElementList[5]->SetCurItemLabel("MAX");
+				break;
+			case 30001:
+				curMenuInfo->ElementList[5]->SetCurItemLabel("HEAT");
+				break;
+			case 30002:
+				curMenuInfo->ElementList[5]->SetCurItemLabel("BLOOD HEAT");
+				break;
+			default:
+				snprintf(labelBuf, 8, "%i.%02i%%", nTRUE_P1_METER / 100, nTRUE_P1_METER % 100);
+				curMenuInfo->ElementList[5]->SetCurItemLabel(labelBuf);
+			}
+		}
+		else {
+			switch (nTRUE_P1_METER) {
+			case 20000:
+				curMenuInfo->ElementList[5]->SetCurItemLabel("HEAT");
+				break;
+			default:
+				snprintf(labelBuf, 8, "%i.%02i%%", nTRUE_P1_METER / 100, nTRUE_P1_METER % 100);
+				curMenuInfo->ElementList[5]->SetCurItemLabel(labelBuf);
+			}
+		}
+		
+		if (pP2->moon != 2) {
+			switch (nTRUE_P2_METER) {
+			case 30000:
+				curMenuInfo->ElementList[6]->SetCurItemLabel("MAX");
+				break;
+			case 30001:
+				curMenuInfo->ElementList[6]->SetCurItemLabel("HEAT");
+				break;
+			case 30002:
+				curMenuInfo->ElementList[6]->SetCurItemLabel("BLOOD HEAT");
+				break;
+			default:
+				snprintf(labelBuf, 8, "%i.%02i%%", nTRUE_P2_METER / 100, nTRUE_P2_METER % 100);
+				curMenuInfo->ElementList[6]->SetCurItemLabel(labelBuf);
+			}
+		}
+		else {
+			switch (nTRUE_P2_METER) {
+			case 20000:
+				curMenuInfo->ElementList[6]->SetCurItemLabel("HEAT");
+				break;
+			default:
+				snprintf(labelBuf, 8, "%i.%02i%%", nTRUE_P2_METER / 100, nTRUE_P2_METER % 100);
+				curMenuInfo->ElementList[6]->SetCurItemLabel(labelBuf);
+			}
+		}
+
+		snprintf(labelBuf, 8, "%i", nTRUE_P1_HEALTH);
+		curMenuInfo->ElementList[8]->SetCurItemLabel(labelBuf);
+		snprintf(labelBuf, 8, "%i", nTRUE_P2_HEALTH);
+		curMenuInfo->ElementList[9]->SetCurItemLabel(labelBuf);
+
 		break;
 	}
 
@@ -4100,9 +4522,9 @@ __declspec(naked) void _naked_DisableShadows() {
 
 void doFastReversePenalty() {
 
-	if (fastReversePenalty == 0) {
-		return;
-	}
+	//if (fastReversePenalty == 0) {
+	//	return;
+	//}
 
 	static DWORD prevComboStates[4];
 
@@ -4439,6 +4861,37 @@ __declspec(naked) void _naked_showCssHook() {
 
 }
 
+DWORD CustomHealthRegen_PatchAddr = 0x004242fa;
+//overwrites 100% health regen
+__declspec(naked) void _naked_CustomHealthRegen() {
+	__asm {
+		push 0x00424302;
+		cmp esi, 0x555c2c;
+		jl __P1;
+		cmp esi, 0x556728;
+		jl __P2;
+		cmp esi, 0x557224;
+		jl __P3;
+
+	__P4:
+		mov edx, nTRUE_P2_HEALTH;
+		mov[esi], edx;
+		ret;
+	__P1:
+		mov edx, nTRUE_P1_HEALTH;
+		mov[esi], edx;
+		ret;
+	__P2:
+		mov edx, nTRUE_P2_HEALTH;
+		mov[esi], edx;
+		ret;
+	__P3:
+		mov edx, nTRUE_P1_HEALTH;
+		mov[esi], edx;
+		ret;
+	}
+}
+
 // init funcs
 
 void initFrameDoneCallback()
@@ -4634,12 +5087,17 @@ void initTrainingMenu() {
 }
 
 void initCustomHealthRecover() {
-	BYTE tempCode[6] = { 0x8b, 0x15, 0x00, 0x13, 0x78, 0x00 }; //put address of desired custom health amount as last 4 bytes here
-	patchMemcpy(0x004242fa, tempCode, 6); //currently using adShareBase + 0x300 = 0x00781300
+	//BYTE tempCode[6] = { 0x8b, 0x15, 0x00, 0x13, 0x78, 0x00 }; //put address of desired custom health amount as last 4 bytes here
+	//patchMemcpy(0x004242fa, tempCode, 6); //currently using adShareBase + 0x300 = 0x00781300
+	patchJump(CustomHealthRegen_PatchAddr, _naked_CustomHealthRegen);
 }
 
 void initShowCssHook() {
 	patchJump(0x0048bb80, _naked_showCssHook);
+}
+
+void initResetCallback() {
+	patchJump(ResetCallback_PatchAddr, _naked_ResetCallback);
 }
 
 // dll thread func
@@ -4687,7 +5145,9 @@ void threadFunc()
 
 	initShowCssHook();
 
-	initTrainingMenu(); //uncomment for experimental new menu
+	initTrainingMenu();
+
+	initResetCallback();
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 
