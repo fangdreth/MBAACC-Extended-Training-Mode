@@ -1379,8 +1379,8 @@ void drawFrameData()
 
 	drawObject(0x00555130 + (0xAFC * 0), false, 0); // P1
 	drawObject(0x00555130 + (0xAFC * 1), false, 1); // P2
-	drawObject(0x00555130 + (0xAFC * 2), false, 2); // P3
-	drawObject(0x00555130 + (0xAFC * 3), false, 3); // P4
+	if (*(bool*)(0x00555130 + (0xAFC * 2))) drawObject(0x00555130 + (0xAFC * 2), false, 2); // P3
+	if (*(bool*)(0x00555130 + (0xAFC * 3))) drawObject(0x00555130 + (0xAFC * 3), false, 3); // P4
 
 	// draw all effects
 
