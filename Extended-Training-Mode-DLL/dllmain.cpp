@@ -922,12 +922,12 @@ int getPatternFromInput(PlayerData* PD, const char input[20])
 	char buffer[20];
 	char inputCopy[20];
 	char readableInput[20] = {0};
-	for (int i = 0; i < PD->cmdDataPtr->cmdFileDataPtr->maxFilePriority; i++)
+	for (int i = 0; i < PD->cmdFileDataPtr->cmdDataPtr->maxID; i++)
 	{
-		if (PD->cmdDataPtr->cmdFileDataPtr->cmdPtrArray->commands[i])
+		if (PD->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i])
 		{
 			int length = 0;
-			snprintf(inputCopy, 20, "%s", PD->cmdDataPtr->cmdFileDataPtr->cmdPtrArray->commands[i]->input);
+			snprintf(inputCopy, 20, "%s", PD->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->input);
 			for (int j = 0; j < 20; j++)
 			{
 				if (inputCopy[j] == '\xFF')
@@ -953,11 +953,153 @@ int getPatternFromInput(PlayerData* PD, const char input[20])
 			}
 			if (isMatch)
 			{
-				return PD->cmdDataPtr->cmdFileDataPtr->cmdPtrArray->commands[i]->pattern;
+				return PD->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->pattern;
 			}
 		}
 	}
 	return -1;
+}
+
+int getIDFromPattern(PlayerData* pPlayer, int nPattern, int nthMatch = 1)
+{
+	int retVal = -1;
+	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i])
+		{
+			if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->pattern == nPattern) {
+				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->ID;
+				nthMatch--;
+				if (nthMatch == 0) return retVal;
+				//return pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->ID;
+			};
+		}
+	}
+	return -1;
+}
+
+DWORD MBAA_CheckCmdVars = 0x0046d430;
+bool checkCmdVars(PlayerData* pPlayer, int ID) {
+	__asm {
+		mov ecx, ID;
+		mov eax, pPlayer;
+		call[MBAA_CheckCmdVars];
+	}
+	return;
+}
+
+DWORD MBAA_CheckValidCommandConditions = 0x0046cea0;
+bool tryCmdID(PlayerData* pPlayer, int ID) {
+	__asm {
+		push ID;
+		mov eax, pPlayer;
+		call[MBAA_CheckValidCommandConditions];
+		add esp, 0x4;
+	}
+
+	return;
+}
+
+bool tryCmdPattern(PlayerData* pPlayer, int nPattern) {
+	if (nPattern < 41) return false;
+	int id = -1;
+	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i])
+		{
+			if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->pattern == nPattern) {
+				id = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->ID;
+				if (checkCmdVars(pPlayer, id) && tryCmdID(pPlayer, id)) return true;
+			};
+		}
+	}
+	return false;
+}
+
+DWORD MBAA_UniversalCommands = 0x004666b0;
+void tryUnivCmd(PlayerData* pPlayer, byte buttons, byte directions) {
+	__asm {
+		mov ecx, pPlayer;
+		add ecx, 0x4;
+		push directions;
+		push buttons;
+		call[MBAA_UniversalCommands];
+		add esp, 0x8;
+	}
+}
+
+//returns AND of 1 for held shield and 2 for ex shield
+byte getShieldCancel(PlayerData* pPlayer, int pat) {
+	byte exOnly = pPlayer->moon == 0 ? 0x2 : 0x0;
+	byte retVal = 0x0;
+	if (pat == pPlayer->cmdFileDataPtr->ShieldCounter_Ground ||
+		pat == pPlayer->cmdFileDataPtr->ShieldCounter_Air ||
+		pat == pPlayer->cmdFileDataPtr->ShieldCounter_Crouch) {
+		return 0x3;
+	}
+	if (pat <= 40) return exOnly;
+	int ID = getIDFromPattern(pPlayer, pat, 1);
+	if (ID == -1) return 0x0;
+	WORD flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[ID]->flagsets;
+	int specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[ID]->specialFlag;
+	if (flagsets & 0x8) { // if no cancel
+		if (flagsets & 0x40 && !(flagsets & 0x1000)) { //if guard/shield cancel and not guard cancel only (covers D > D)
+			retVal = 0x3;
+		}
+		else {
+			retVal = 0x0;
+		}
+	}
+	else if (specialFlag == 1 || specialFlag == 2) { //if special or ex
+		retVal = 0x3;
+	}
+	else if (specialFlag == 0) { //if normal or movement
+		retVal = exOnly;
+	}
+	
+	ID = getIDFromPattern(pPlayer, pat, 2);
+	if (ID == -1) return retVal;
+	flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[ID]->flagsets;
+	specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[ID]->specialFlag;
+	if (flagsets & 0x8) {
+		if (flagsets & 0x40 && !(flagsets & 0x1000)) {
+			retVal = 0x3;
+		}
+		else {
+			retVal = 0x0;
+		}
+	}
+	else if (specialFlag == 1 || specialFlag == 2) {
+		retVal |= 0x3;
+	}
+	else if (specialFlag == 0) {
+		retVal |= exOnly;
+	}
+	return retVal;
+}
+
+//returns AND of 1 = stand, 2 = airborne, 4 = crouch
+byte getCmdStance(PlayerData* pPlayer, int ID) {
+	return pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[ID]->flagsets[0] & 0x7;
+}
+
+//returns AND of 1 = stand, 2 = airborne, 4 = crouch
+byte getPatStance(PlayerData* pPlayer, int pat) {
+	if ((0 <= pat && pat <= 6) || (35 <= pat && pat <= 37)) {
+		return 0x5;
+	}
+	else if ((7 <= pat && pat <= 9) || (38 <= pat && pat <= 40)) {
+		return 0x2;
+	}
+	else if (pat == pPlayer->cmdFileDataPtr->ShieldCounter_Ground || pat == pPlayer->cmdFileDataPtr->ShieldCounter_Crouch) {
+		int retVal = 0x0;
+		retVal += 0x1 * (pat == pPlayer->cmdFileDataPtr->ShieldCounter_Ground);
+		retVal += 0x4 * (pat == pPlayer->cmdFileDataPtr->ShieldCounter_Crouch);
+		return retVal;
+	}
+	else if (pat == pPlayer->cmdFileDataPtr->ShieldCounter_Air) {
+		return 0x2;
+	}
+	int ID = getIDFromPattern(pPlayer, pat);
+	return getCmdStance(pPlayer, ID);
 }
 
 //In-game frame bar
@@ -1385,8 +1527,8 @@ void drawFrameData()
 
 	drawObject(0x00555130 + (0xAFC * 0), false, 0); // P1
 	drawObject(0x00555130 + (0xAFC * 1), false, 1); // P2
-	drawObject(0x00555130 + (0xAFC * 2), false, 2); // P3
-	drawObject(0x00555130 + (0xAFC * 3), false, 3); // P4
+	if (*(bool*)(0x00555130 + (0xAFC * 2))) drawObject(0x00555130 + (0xAFC * 2), false, 2); // P3
+	if (*(bool*)(0x00555130 + (0xAFC * 3))) drawObject(0x00555130 + (0xAFC * 3), false, 3); // P4
 
 	// draw all effects
 
@@ -1599,12 +1741,20 @@ PlayerData* pDummy = pP2;
 
 bool bDoReversal = false;
 int nReversalDelayFramesLeft = 0;
+bool bHoldButtons = false;
+bool bHoldShield = false;
+bool bDidShield = false;
+int nSaveShieldRevIndex = 0;
 
 void HandleReversals() {
 	if (nREVERSAL_TYPE == revOFF || pActiveP2->doTrainingAction != 1) return;
+	if (pdP2Data->inactionableFrames == 0) {
+		bHoldButtons = false;
+		bHoldShield = false;
+	}
 	std::vector<int> vValidReversals = (pActiveP2->yPos == 0 ? vGroundReversals : vAirReversals);
-	if (vValidReversals.size() == 0) return;
-	if (bDoReversal && pdP2Data->inactionableFrames == 0) {
+	int pat;
+	if (vValidReversals.size() != 0 && bDoReversal && pdP2Data->inactionableFrames == 0) {
 		if (nReversalDelayFramesLeft == 0) {
 			int totalWeight = 0;
 			for (int i = 0; i < NUM_REVERSALS; i++) {
@@ -1622,17 +1772,81 @@ void HandleReversals() {
 				}
 			}
 
-			if (validIndex > -1) pActiveP2->inputEvent = vValidReversals[validIndex] % 1000;
+			if (validIndex > -1) {
+				int pat = vValidReversals[validIndex];
+				if (*nREV_SHIELDS[validIndex] != 0) {
+					nSaveShieldRevIndex = validIndex;
+					int nP2CharacterNumber = *(int*)(adMBAABase + dwP2CharNumber);
+					int nP2Moon = *(int*)(adMBAABase + dwP2CharMoon);
+					int nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
+					pat = -1;
+					switch (*nREV_SHIELDS[validIndex]) {
+					case 1:
+						pat = GetPattern(nP2CharacterID, "5D");
+						break;
+					case 2:
+						pat = GetPattern(nP2CharacterID, "5D");
+						bHoldShield = true;
+						break;
+					case 3:
+						pat = GetPattern(nP2CharacterID, "2D");
+						break;
+					case 4:
+						pat = GetPattern(nP2CharacterID, "2D");
+						bHoldShield = true;
+						break;
+					case 5:
+						pat = GetPattern(nP2CharacterID, "j.D");
+						break;
+					case 6:
+						pat = GetPattern(nP2CharacterID, "j.D");
+						bHoldShield = true;
+						break;
+					}
+					if (tryCmdPattern(pActiveP2, pat)) bDidShield = true;
+				}
+				else if (pat > 40) {
+					tryCmdPattern(pActiveP2, vValidReversals[validIndex] % 1000);
+				}
+				else {
+					pActiveP2->inputEvent = vValidReversals[validIndex] % 1000;
+				}
+
+				if (vValidReversals[validIndex] > 999) {
+					bHoldButtons = true;
+				}
+			}
 			bDoReversal = false;
 		}
 		else {
 			nReversalDelayFramesLeft--;
 		}
 	}
+
+	if (bDidShield && pActiveP2->shieldType != 0) {
+		bHoldButtons = false;
+		bHoldShield = false;
+		pat = vValidReversals[nSaveShieldRevIndex];
+		if (pat > 40 &&
+			!(pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Ground ||
+			pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Air ||
+			pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Crouch)) {
+			tryCmdPattern(pActiveP2, vValidReversals[nSaveShieldRevIndex] % 1000);
+		}
+		else {
+			pActiveP2->inputEvent = vValidReversals[nSaveShieldRevIndex] % 1000;
+		}
+		if (vValidReversals[nSaveShieldRevIndex] > 999) {
+			bHoldButtons = true;
+		}
+		bDidShield = false;
+	}
 	
 	if (pActiveP2->hitstunTimeRemaining != 0) {
 		bDoReversal = true;
 		nReversalDelayFramesLeft = nREVERSAL_DELAY;
+		bHoldButtons = false;
+		bDidShield = false;
 	}
 }
 
@@ -1908,6 +2122,8 @@ void frameDoneCallback()
 		if (logSaveState) {
 			saveStateManager.log();
 		}
+
+		HandleExtendedTrainingEffects();
 	}
 
 	static KeyState rKey('R');
@@ -2413,8 +2629,6 @@ void frameDoneCallback()
 		TextDraw(47.5f, 393.5f, 16.0f, 0xFFFFFFFF, pcMainInfoText);
 		TextDraw(66.5f, 420.5f, 16.0f, 0xFFFFFFFF, pcSubInfoText);
 	}
-
-	HandleExtendedTrainingEffects();
 }
 
 __declspec(naked) void nakedFrameDoneCallback()
@@ -2540,6 +2754,34 @@ __declspec(naked) void _naked_ResetCallback() {
 	}
 }
 
+// char input funcs
+
+void CharInputCallback() {
+	if (bHoldButtons) {
+		pActiveP2->buttonHeld = 0x70;
+	}
+	if (bHoldShield) {
+		pActiveP2->buttonHeld = 0x80;
+	}
+}
+
+DWORD CharInputCallback_PatchAddr = 0x0046dc1a;
+DWORD MBAA_ReadCharacterInputs = 0x0046d7a0;
+DWORD MBAA_FUN_004412c0 = 0x004412c0;
+__declspec(naked) void _naked_CharInputCallback() {
+	__asm {
+		call[MBAA_ReadCharacterInputs];
+	}
+	PUSH_ALL;
+	CharInputCallback();
+	POP_ALL;
+
+	__asm {
+		call[MBAA_FUN_004412c0];
+		push 0x0046dc24;
+		ret;
+	}
+}
 
 // pause funcs
 
@@ -3748,44 +3990,53 @@ void HandleExtendedMenu() {
 
 }
 
-void LoopingScrolling(Element* element, int& storage, int min, int max, int interval = 1) {
+bool LoopingScrolling(Element* element, int& storage, int min, int max, int interval = 1) {
+	bool retVal = false;
 	int neutralIndex = 1;
 	if (element->selectedItem == neutralIndex - 1) { //left
+		retVal = true;
 		storage -= interval;
 		if (storage < min) {
 			storage = max;
 		}
 	}
 	else if (element->selectedItem == neutralIndex + 1) { //right
+		retVal = true;
 		storage += interval;
 		if (storage > max) {
 			storage = min;
 		}
 	}
 	element->selectedItem = neutralIndex;
+	return retVal;
 }
 
-void NormalScrolling(Element* element, int& storage, int min, int max, int interval = 1) {
+bool NormalScrolling(Element* element, int& storage, int min, int max, int interval = 1) {
+	bool retVal = false;
 	int neutralIndex = 1;
 	int targetIndex = neutralIndex;
 	if (storage == max)
 	{
 		if (element->selectedItem == neutralIndex) { //left
+			retVal = true;
 			storage -= interval;
 		}
 	}
 	else if (storage == min)
 	{
 		if (element->selectedItem == neutralIndex) { //right
+			retVal = true;
 			storage += interval;
 		}
 	}
 	else
 	{
 		if (element->selectedItem == neutralIndex - 1) { //left
+			retVal = true;
 			storage = max(storage - interval, min);
 		}
 		else if (element->selectedItem == neutralIndex + 1) { //right
+			retVal = true;
 			storage = min(storage + interval, max);
 		}
 	}
@@ -3793,6 +4044,7 @@ void NormalScrolling(Element* element, int& storage, int min, int max, int inter
 	if (storage == max) targetIndex = neutralIndex + 1;
 	if (storage == min) targetIndex = neutralIndex - 1;
 	element->selectedItem = targetIndex;
+	return retVal;
 }
 
 int MeterScrollAccelTimer = 0;
@@ -3971,6 +4223,8 @@ void HMeterScrolling(Element* element, int& storage, bool toggle) {
 
 }
 
+bool bAPrev = false;
+bool bDPrev = false;
 void ExtendedMenuInputChecking() {
 	MenuWindow* extendedWindow;
 	MenuInfo* curMenuInfo;
@@ -3980,6 +4234,9 @@ void ExtendedMenuInputChecking() {
 	}
 	char labelBuf[8];
 	bool bA = *(bool*)(adMBAABase + adP1AInput) && extendedWindow->openSubmenuIndex == 2;
+	bool bAPos = bA && !bAPrev;
+	bool bD = *(bool*)(adMBAABase + adP1DInput) && extendedWindow->openSubmenuIndex == 2;
+	bool bDPos = bD && !bDPrev;
 	curMenuInfo = extendedWindow->MenuInfoList[extendedWindow->menuInfoIndex];
 	curElement = curMenuInfo->ElementList[curMenuInfo->selectedElement];
 	switch (extendedWindow->menuInfoIndex) {
@@ -3992,37 +4249,145 @@ void ExtendedMenuInputChecking() {
 			vPatternNames = GetPatternList(nP2CharacterID);
 		}
 
-		curMenuInfo->ElementList[2]->SetCurItemLabel(vPatternNames[nREV_ID_1].c_str());
-		curMenuInfo->ElementList[3]->textOpacity = nREV_ID_1 == 0 ? 0.5f : 1.0f;
-		curMenuInfo->ElementList[4]->SetCurItemLabel(vPatternNames[nREV_ID_2].c_str());
-		curMenuInfo->ElementList[5]->textOpacity = nREV_ID_2 == 0 ? 0.5f : 1.0f;
-		curMenuInfo->ElementList[6]->SetCurItemLabel(vPatternNames[nREV_ID_3].c_str());
-		curMenuInfo->ElementList[7]->textOpacity = nREV_ID_3 == 0 ? 0.5f : 1.0f;
-		curMenuInfo->ElementList[8]->SetCurItemLabel(vPatternNames[nREV_ID_4].c_str());
-		curMenuInfo->ElementList[9]->textOpacity = nREV_ID_4 == 0 ? 0.5f : 1.0f;
-
+		int pat;
+		int ID;
+		byte stance;
+		byte shieldCancel;
+		bool exShield;
+		bool heldShield;
+		bool isSC;
 		switch (curMenuInfo->selectedElement) {
 		case 2: //reversal slot 1
-			LoopingScrolling(curElement, nREV_ID_1, 0, vPatternNames.size() - 1);
-			if (bA) nREV_ID_1 = 0;
-			curElement->SetItemLabel(vPatternNames[nREV_ID_1].c_str(), 1);
+			if (LoopingScrolling(curElement, nREV_ID_1, 0, vPatternNames.size() - 1)) {
+				nREV_SHIELD_1 = 0;
+			}
+			pat = GetPattern(nP2CharacterID, vPatternNames[nREV_ID_1]) % 1000;
+			isSC = (pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Ground ||
+				pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Air ||
+				pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Crouch);
+			if (isSC && nREV_SHIELD_1 == 0) bDPos = true;
+			if (bAPos) {
+				nREV_ID_1 = 0;
+				nREV_SHIELD_1 = 0;
+			}
+			if (bDPos && nREV_ID_1 != 0) {
+				nREV_SHIELD_1 = (nREV_SHIELD_1 + 1) % 7;
+				stance = getPatStance(pActiveP2, pat);
+				shieldCancel = getShieldCancel(pActiveP2, pat);
+				if (pActiveP2->moon == 2) shieldCancel &= 0x2;
+				exShield = shieldCancel & 0x2;
+				heldShield = shieldCancel & 0x1;
+				byte validShields[7] = { !isSC, (stance & 0x1) * exShield, (stance & 0x1) * heldShield,
+					(stance & 0x4) * exShield, (stance & 0x4) * heldShield,
+					(stance & 0x2) * exShield, (stance & 0x2) * heldShield };
+				while (!validShields[nREV_SHIELD_1]) {
+					nREV_SHIELD_1 = (nREV_SHIELD_1 + 1) % 7;
+				}
+			}
 			break;
 		case 4:
-			LoopingScrolling(curElement, nREV_ID_2, 0, vPatternNames.size() - 1);
-			if (bA) nREV_ID_2 = 0;
-			curElement->SetItemLabel(vPatternNames[nREV_ID_2].c_str(), 1);
+			if (LoopingScrolling(curElement, nREV_ID_2, 0, vPatternNames.size() - 1)) {
+				nREV_SHIELD_2 = 0;
+			}
+			pat = GetPattern(nP2CharacterID, vPatternNames[nREV_ID_2]) % 1000;
+			isSC = (pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Ground ||
+				pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Air ||
+				pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Crouch);
+			if (isSC && nREV_SHIELD_2 == 0) bDPos = true;
+			if (bAPos) {
+				nREV_ID_2 = 0;
+				nREV_SHIELD_2 = 0;
+			}
+			if (bDPos && nREV_ID_2 != 0) {
+				nREV_SHIELD_2 = (nREV_SHIELD_2 + 1) % 7;
+				stance = getPatStance(pActiveP2, pat);
+				shieldCancel = getShieldCancel(pActiveP2, pat);
+				if (pActiveP2->moon == 2) shieldCancel &= 0x2;
+				exShield = shieldCancel & 0x2;
+				heldShield = shieldCancel & 0x1;
+				byte validShields[7] = { !isSC, (stance & 0x1) * exShield, (stance & 0x1) * heldShield,
+					(stance & 0x4) * exShield, (stance & 0x4) * heldShield,
+					(stance & 0x2) * exShield, (stance & 0x2) * heldShield };
+				while (!validShields[nREV_SHIELD_2]) {
+					nREV_SHIELD_2 = (nREV_SHIELD_2 + 1) % 7;
+				}
+			}
 			break;
 		case 6:
-			LoopingScrolling(curElement, nREV_ID_3, 0, vPatternNames.size() - 1);
-			if (bA) nREV_ID_3 = 0;
-			curElement->SetItemLabel(vPatternNames[nREV_ID_3].c_str(), 1);
+			if (LoopingScrolling(curElement, nREV_ID_3, 0, vPatternNames.size() - 1)) {
+				nREV_SHIELD_3 = 0;
+			}
+			pat = GetPattern(nP2CharacterID, vPatternNames[nREV_ID_3]) % 1000;
+			isSC = (pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Ground ||
+				pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Air ||
+				pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Crouch);
+			if (isSC && nREV_SHIELD_3 == 0) bDPos = true;
+			if (bAPos) {
+				nREV_ID_3 = 0;
+				nREV_SHIELD_3 = 0;
+			}
+			if (bDPos && nREV_ID_3 != 0) {
+				nREV_SHIELD_3 = (nREV_SHIELD_3 + 1) % 7;
+				stance = getPatStance(pActiveP2, pat);
+				shieldCancel = getShieldCancel(pActiveP2, pat);
+				if (pActiveP2->moon == 2) shieldCancel &= 0x2;
+				exShield = shieldCancel & 0x2;
+				heldShield = shieldCancel & 0x1;
+				byte validShields[7] = { !isSC, (stance & 0x1) * exShield, (stance & 0x1) * heldShield,
+					(stance & 0x4) * exShield, (stance & 0x4) * heldShield,
+					(stance & 0x2) * exShield, (stance & 0x2) * heldShield };
+				while (!validShields[nREV_SHIELD_3]) {
+					nREV_SHIELD_3 = (nREV_SHIELD_3 + 1) % 7;
+				}
+			}
 			break;
 		case 8:
-			LoopingScrolling(curElement, nREV_ID_4, 0, vPatternNames.size() - 1);
-			if (bA) nREV_ID_4 = 0;
-			curElement->SetItemLabel(vPatternNames[nREV_ID_4].c_str(), 1);
+			if (LoopingScrolling(curElement, nREV_ID_4, 0, vPatternNames.size() - 1)) {
+				nREV_SHIELD_4 = 0;
+			}
+			pat = GetPattern(nP2CharacterID, vPatternNames[nREV_ID_4]) % 1000;
+			isSC = (pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Ground ||
+				pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Air ||
+				pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Crouch);
+			if (isSC && nREV_SHIELD_4 == 0) bDPos = true;
+			if (bAPos) {
+				nREV_ID_4 = 0;
+				nREV_SHIELD_4 = 0;
+			}
+			if (bDPos && nREV_ID_4 != 0) {
+				nREV_SHIELD_4 = (nREV_SHIELD_4 + 1) % 7;
+				stance = getPatStance(pActiveP2, pat);
+				shieldCancel = getShieldCancel(pActiveP2, pat);
+				if (pActiveP2->moon == 2) shieldCancel &= 0x2;
+				exShield = shieldCancel & 0x2;
+				heldShield = shieldCancel & 0x1;
+				byte validShields[7] = { !isSC, (stance & 0x1) * exShield, (stance & 0x1) * heldShield,
+					(stance & 0x4) * exShield, (stance & 0x4) * heldShield,
+					(stance & 0x2) * exShield, (stance & 0x2) * heldShield };
+				while (!validShields[nREV_SHIELD_4]) {
+					nREV_SHIELD_4 = (nREV_SHIELD_4 + 1) % 7;
+				}
+			}
 			break;
 		}
+
+		char buffer[31];
+
+		snprintf(buffer, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_1], vPatternNames[nREV_ID_1].c_str());
+		curMenuInfo->ElementList[2]->SetCurItemLabel(buffer);
+		curMenuInfo->ElementList[3]->textOpacity = nREV_ID_1 == 0 ? 0.5f : 1.0f;
+
+		snprintf(buffer, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_2], vPatternNames[nREV_ID_2].c_str());
+		curMenuInfo->ElementList[4]->SetCurItemLabel(buffer);
+		curMenuInfo->ElementList[5]->textOpacity = nREV_ID_2 == 0 ? 0.5f : 1.0f;
+
+		snprintf(buffer, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_3], vPatternNames[nREV_ID_3].c_str());
+		curMenuInfo->ElementList[6]->SetCurItemLabel(buffer);
+		curMenuInfo->ElementList[7]->textOpacity = nREV_ID_3 == 0 ? 0.5f : 1.0f;
+
+		snprintf(buffer, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_4], vPatternNames[nREV_ID_4].c_str());
+		curMenuInfo->ElementList[8]->SetCurItemLabel(buffer);
+		curMenuInfo->ElementList[9]->textOpacity = nREV_ID_4 == 0 ? 0.5f : 1.0f;
 
 		PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames,
 			nREV_ID_1, nREV_ID_2, nREV_ID_3, nREV_ID_4);
@@ -4133,6 +4498,9 @@ void ExtendedMenuInputChecking() {
 		}
 	}
 	bOldFN2Input = CurFN2Input;
+
+	bAPrev = bA;
+	bDPrev = bD;
 }
 
 //init hotkey menu if not already open, close and free if set to close
@@ -5100,6 +5468,10 @@ void initResetCallback() {
 	patchJump(ResetCallback_PatchAddr, _naked_ResetCallback);
 }
 
+void initCharInputCallback() {
+	patchJump(CharInputCallback_PatchAddr, _naked_CharInputCallback);
+}
+
 // dll thread func
 
 void threadFunc() 
@@ -5148,6 +5520,8 @@ void threadFunc()
 	initTrainingMenu();
 
 	initResetCallback();
+
+	initCharInputCallback();
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 

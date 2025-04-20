@@ -311,12 +311,14 @@ CHECKOFFSET(stateData, 0x38);
 CHECKOFFSET(highestNonHitboxIndex, 0x42);
 CHECKOFFSET(nonHitboxData, 0x4C);
 
-static_assert(sizeof(AnimationData) == 0x54, "AnimationDataMUST be 0x50 large!");
+static_assert(sizeof(AnimationData) == 0x54, "AnimationData MUST be 0x50 large!");
 #undef CHECKOFFSET
 
-typedef struct AnimationDataArr {
+typedef struct AnimationDataContainer {
 	UNUSED(4);
 	AnimationData* animationDataArr;
+	int animationDataSize;
+	int animationDataArraySize;
 } AnimationDataArr;
 
 #pragma pack(push,1)
@@ -330,7 +332,7 @@ typedef struct PatternData {
 	DWORD level;
 	DWORD PFLG;
 	UNUSED(4);
-	AnimationDataArr* ptrToAnimationDataArr;
+	AnimationDataContainer* animationDataContainer;
 	UNUSED(0x20);
 } PatternData;
 #pragma pack(pop)
@@ -339,14 +341,14 @@ typedef struct PatternData {
 
 CHECKOFFSET(PSTS, 0x24);
 CHECKOFFSET(PFLG, 0x2C);
-CHECKOFFSET(ptrToAnimationDataArr, 0x34);
+CHECKOFFSET(animationDataContainer, 0x34);
 
 static_assert(sizeof(PatternData) == 0x58, "PatternData must have size 0x58."); // i am pretty confident on this number, but it could be off.
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
 typedef struct Command {
-	int commandFilePriority;
+	int ID;
 	char input[20];
 	int pattern;
 	int specialFlag;
@@ -372,60 +374,72 @@ typedef struct CommandPtrArray {
 static_assert(sizeof(CommandPtrArray) == 4000, "CommandPtrArray must have size 4000.");
 
 #pragma pack(push,1)
-typedef struct CommandFileData {
+typedef struct CommandData {
 	UNUSED(0x4);
 	CommandPtrArray* cmdPtrArray;
 	UNUSED(0x4);
-	int maxFilePriority;
-	int maxFilePriorityCopy;
-} CommandFileData;
-#pragma pack(pop)
-
-#define CHECKOFFSET(v, n) static_assert(offsetof(CommandFileData, v) == n, "CommandFileData offset incorrect for " #v);
-
-CHECKOFFSET(maxFilePriorityCopy, 0x10);
-
-static_assert(sizeof(CommandFileData) == 0x14, "CommandFileData must have size 0x14.");
-#undef CHECKOFFSET
-
-#pragma pack(push,1)
-typedef struct CommandData {
-	CommandFileData* cmdFileDataPtr;
-	UNUSED(0x14);
-	float guts[4];
-	UNUSED(0x2A);
-	uint16_t groundThrowPat;
-	UNUSED(0x4);
-	uint16_t airThrowPat;
+	int maxID;
+	int maxIDCopy;
 } CommandData;
 #pragma pack(pop)
 
-#define CHECKOFFSET(v, n) static_assert(offsetof(CommandData, v) == n, "CommandData offset incorrect for " #v);
+#define CHECKOFFSET(v, n) static_assert(offsetof(CommandData, v) == n, "CommandFileData offset incorrect for " #v);
 
-CHECKOFFSET(airThrowPat, 0x58);
+CHECKOFFSET(maxIDCopy, 0x10);
 
-static_assert(sizeof(CommandData) == 0x5A, "CommandData must have size 0x5A.");
+static_assert(sizeof(CommandData) == 0x14, "CommandFileData must have size 0x14.");
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
-typedef struct SubHA6Data2 {
+typedef struct CommandFileData {
+	CommandData* cmdDataPtr;
+	UNUSED(0x14);
+	float guts[4];
+	UNUSED(0x8);
+	int ShieldCounter_Ground;
+	int ShieldCounter_Air;
+	int ShieldCounter_Crouch;
+	UNUSED(0x8);
+	int CancelSparkPat_Ground; //unused
+	int CancelSparkPat_Air;
+	int CancelHighJumpPat;
+	UNUSED(0x2);
+	short groundThrowPat;
+	short groundThrowRange;
+	UNUSED(0x2);
+	short airThrowPat;
+	short airThrowRange;
+	UNUSED(0xC);
+} CommandFileData;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(CommandFileData, v) == n, "CommandData offset incorrect for " #v);
+
+CHECKOFFSET(airThrowPat, 0x58);
+
+static_assert(sizeof(CommandFileData) == 0x68, "CommandData must have size 0x5A.");
+#undef CHECKOFFSET
+
+#pragma pack(push,1)
+typedef struct PatternContainer {
 	DWORD isPointerList;
 	PatternData* (*ptrToPatternDataArr)[1000];
 	DWORD elementSize;
 	DWORD count;
 	DWORD capacity;
-} SubHA6Data2;
+} PatternContainer;
 #pragma pack(pop)
 
-static_assert(sizeof(SubHA6Data2) == 0x14, "SubHA6Data2 must have a size of 0x14");
+static_assert(sizeof(PatternContainer) == 0x14, "PatternContainer must have a size of 0x14");
 
 #pragma pack(push,1)
-typedef struct SubHA6Data1 {
+typedef struct HA6Data {
 	DWORD isStaticSize;
-	SubHA6Data2* subData2;
-} SubHA6Data1;
+	PatternContainer* patternContainer;
+} HA6Data;
 #pragma pack(pop)
 
+/*
 #pragma pack(push,1)
 typedef struct HA6Data { 
 	// out of all the structs, i understand this one the least.
@@ -434,6 +448,7 @@ typedef struct HA6Data {
 	SubHA6Data1* subData1;
 } HA6Data;
 #pragma pack(pop)
+*/
 
 #pragma pack(push,1)
 typedef struct EffectData {
@@ -576,7 +591,7 @@ typedef struct EffectData {
 	AttackData* attackDataPtr;
 	EffectData* selfPtr;
 	UNUSED(4); // i have never seen a more suspicious 4 bytes in my life
-	HA6Data* ha6DataPtr;
+	HA6Data** ha6DataPtr;
 	DWORD framesIntoCurrentPattern;
 	UNUSED(4);
 } EffectData;
@@ -593,8 +608,17 @@ static_assert(sizeof(EffectData) == 0x33C, "EffectData MUST be 0x33C large!");
 // im going off of base 00555130, sorta wish we could switch to 00555134 tho
 #pragma pack(push,1)
 typedef struct PlayerData : public EffectData {
-	CommandData* cmdDataPtr;
-	UNUSED(0x7BC);
+	CommandFileData* cmdFileDataPtr;
+	UNUSED(0x8);
+	int reduceFlag;
+	int reduceCounter;
+	UNUSED(0x4);
+	int usedNormalsInString;
+	UNUSED(0x80);
+	int inputCmdID;
+	UNUSED(0x4);
+	int chainedCmdsCounter;
+	UNUSED(0x718);
 } PlayerData;
 #pragma pack(pop)
 
@@ -642,6 +666,7 @@ CHECKOFFSET(delayedStandAirbornCrouchState, 0x31B);
 CHECKOFFSET(patternDataPtr, 0x31C);
 CHECKOFFSET(selfPtr, 0x328);
 CHECKOFFSET(ha6DataPtr, 0x330);
+CHECKOFFSET(chainedCmdsCounter, 0x3e0);
 
 static_assert(sizeof(PlayerData) == 0xAFC, "PlayerData MUST be 0xAFC large!");
 

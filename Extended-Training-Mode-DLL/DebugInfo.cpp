@@ -29,8 +29,13 @@ void EffectData::describe(char* buffer, int bufLen) {
 PatternData* EffectData::getPatternDataPtr(int p) {
 	// doing this in a more normal way could never get me the results i wanted
 	__try {
-		DWORD temp = (DWORD)(playerDataArr[0].ha6DataPtr->subData1->subData2->ptrToPatternDataArr);
-		return (PatternData*)*(DWORD*)(temp + (4 * playerDataArr[0].pattern));
+		HA6Data* ha6 = *playerDataArr[0].ha6DataPtr;
+		if (!ha6) return 0;
+		PatternContainer* patCont = ha6->patternContainer;
+		if (!patCont || patCont->count < p) return 0;
+		PatternData* pat = (*patCont->ptrToPatternDataArr)[p];
+		if (!pat) return 0;
+		return pat;
 	} __except (EXCEPTION_EXECUTE_HANDLER) {
 		return NULL;
 	}
@@ -41,7 +46,7 @@ AnimationData* EffectData::getAnimationDataPtr(int p, int s) {
 		PatternData* pattern = getPatternDataPtr(p);
 		//DWORD temp = (DWORD)pattern->ptrToAnimationDataArr->animationDataArr;
 		//return (AnimationData*)(temp + (0x54 * s));
-		return &(pattern->ptrToAnimationDataArr->animationDataArr[s]);
+		return &(pattern->animationDataContainer->animationDataArr[s]);
 	} __except (EXCEPTION_EXECUTE_HANDLER) {
 		return NULL;
 	}

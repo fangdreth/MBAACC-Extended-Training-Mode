@@ -309,9 +309,17 @@ int nREV_ID_2 = 0;
 int nREV_ID_3 = 0;
 int nREV_ID_4 = 0;
 
+int nREV_SHIELD_1 = 0; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
+int nREV_SHIELD_2 = 0; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
+int nREV_SHIELD_3 = 0; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
+int nREV_SHIELD_4 = 0; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
+
+const char* REV_SHIELD_PREFIX[7] = { "", "5D > ", "5[D] > ", "2D > ", "2[D] > ", "j.D > ", "j.[D] > "};
+
 const int NUM_REVERSALS = 4;
 int* nREV_WEIGHTS[NUM_REVERSALS] = { &nREV_SLOT_1_WEIGHT, &nREV_SLOT_2_WEIGHT , &nREV_SLOT_3_WEIGHT , &nREV_SLOT_4_WEIGHT };
 int* nREV_IDs[NUM_REVERSALS] = { &nREV_ID_1, &nREV_ID_2, &nREV_ID_3, &nREV_ID_4 };
+int* nREV_SHIELDS[NUM_REVERSALS] = { &nREV_SHIELD_1, &nREV_SHIELD_2, &nREV_SHIELD_3, &nREV_SHIELD_4 };
 
 std::vector<int*> P1_Settings = {
 	&nREVERSAL_TYPE,

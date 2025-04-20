@@ -410,6 +410,7 @@ const ADDRESS adEffectStatus = 0x5;
 
 const ADDRESS adDummyState = 0x34D7F8;
 const ADDRESS adP1AInput = 0x371399;
+const ADDRESS adP1DInput = 0x37139C;
 const ADDRESS adP1FN1Input = 0x37144C;
 const ADDRESS adP1FN2Input = 0x37144D;
 

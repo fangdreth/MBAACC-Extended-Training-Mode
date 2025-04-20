@@ -1216,7 +1216,7 @@ const std::map<std::string, int> CVSION_Map =
 	{ "6C", 225 },
 	{ "6[C]", 1225 },
 	{ "3C", 61 },
-	{ "j.6A", 20 },
+	//{ "j.6A", 20 },
 	{ "j.2B", 80 },
 	{ "BUNKER", 85 },
 	{ "5D", 65 },
