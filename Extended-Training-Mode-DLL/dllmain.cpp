@@ -970,7 +970,36 @@ int getIDFromPattern(PlayerData* pPlayer, int nPattern, int nthMatch = 1)
 				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->ID;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
-				//return pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->ID;
+			};
+		}
+	}
+	return -1;
+}
+
+int getIDFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
+	int retVal = -1;
+	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i])
+		{
+			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->input) == 0) {
+				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->ID;
+				nthMatch--;
+				if (nthMatch == 0) return retVal;
+			};
+		}
+	}
+	return -1;
+}
+
+int getPatternFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
+	int retVal = -1;
+	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i])
+		{
+			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->input) == 0) {
+				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->pattern;
+				nthMatch--;
+				if (nthMatch == 0) return retVal;
 			};
 		}
 	}
@@ -1024,6 +1053,66 @@ void tryUnivCmd(PlayerData* pPlayer, byte buttons, byte directions) {
 		call[MBAA_UniversalCommands];
 		add esp, 0x8;
 	}
+}
+
+DWORD MBAA_SetBurstFlags = 0x00464390;
+void SetBurstFlags(PlayerData* pPlayer) {
+	__asm {
+		mov ecx, pPlayer;
+		add ecx, 0x4;
+		call[MBAA_SetBurstFlags];
+	}
+}
+
+bool tryBurst(PlayerData* pPlayer) {
+	if (pPlayer->hitstunTimeRemaining != 0 && pPlayer->burstLock == 0 && pPlayer->hitstop == 0) {
+		int stance = pPlayer->animationDataPtr->stateData->stance;
+		if (stance == 0 || stance == 2) {
+			if (pPlayer->hitstunTimeRemaining < 0) {
+				return 0;
+			}
+		}
+		else if (stance == 1) {
+			if (9 < pPlayer->untechTimeElapsed) {
+				return 0;
+			}
+			if (pPlayer->isKnockedDown != 0) {
+				return 0;
+			}
+		}
+		SetBurstFlags(pPlayer);
+		return 1;
+	}
+	return 0;
+}
+
+void setBuffer(PlayerData* pPlayer, WORD* dir, WORD buttons[4]) {
+	WORD dirCount = dir[0] * 2 + 3;
+	memcpy(pPlayer->dirInputs, dir, dirCount * 0x2);
+	pPlayer->aInputs[0] = 0;
+	pPlayer->aInputs[1] = buttons[0];
+	pPlayer->aInputs[2] = 1;
+
+	pPlayer->bInputs[0] = 0;
+	pPlayer->bInputs[1] = buttons[1];
+	pPlayer->bInputs[2] = 1;
+
+	pPlayer->cInputs[0] = 0;
+	pPlayer->cInputs[1] = buttons[2];
+	pPlayer->cInputs[2] = 1;
+
+	pPlayer->dInputs[0] = 0;
+	pPlayer->dInputs[1] = buttons[3];
+	pPlayer->dInputs[2] = 1;
+}
+
+DWORD MBAA_GetHighestPriorityValidCommand = 0x0046d510;
+bool tryBufferCmd(PlayerData* pPlayer) {
+	__asm {
+		mov eax, pPlayer;
+		call[MBAA_GetHighestPriorityValidCommand];
+	}
+	return;
 }
 
 //returns AND of 1 for held shield and 2 for ex shield
@@ -1809,7 +1898,7 @@ void HandleReversals() {
 					tryCmdPattern(pActiveP2, vValidReversals[validIndex] % 1000);
 				}
 				else {
-					pActiveP2->inputEvent = vValidReversals[validIndex] % 1000;
+					pActiveP2->targetPattern = vValidReversals[validIndex] % 1000;
 				}
 
 				if (vValidReversals[validIndex] > 999) {
@@ -1834,7 +1923,7 @@ void HandleReversals() {
 			tryCmdPattern(pActiveP2, vValidReversals[nSaveShieldRevIndex] % 1000);
 		}
 		else {
-			pActiveP2->inputEvent = vValidReversals[nSaveShieldRevIndex] % 1000;
+			pActiveP2->targetPattern = vValidReversals[nSaveShieldRevIndex] % 1000;
 		}
 		if (vValidReversals[nSaveShieldRevIndex] > 999) {
 			bHoldButtons = true;
@@ -1849,6 +1938,10 @@ void HandleReversals() {
 		bDidShield = false;
 	}
 }
+
+
+bool bDoBurst = true;
+bool bDoBunker = true;
 
 void HandleMeters() {
 	if (nPENALTY_RESET == 1) {
@@ -1866,6 +1959,33 @@ void HandleMeters() {
 	if (nEX_GUARD == 1 || (nEX_GUARD == 2 && rand() % 2 == 0)) {
 		if (pDummy->doTrainingAction) {
 			pDummy->exGuard = 10;
+		}
+	}
+
+	if (nTRUE_HITS_UNTIL_BURST != 0) {
+		if (bDoBurst &&
+			(pActiveP2->onBlockComboCount >= nTRUE_HITS_UNTIL_BURST ||
+			pActiveP2->onHitComboCount >= nTRUE_HITS_UNTIL_BURST)) {
+ 			if(tryBurst(pActiveP2)) bDoBurst = false;
+		}
+
+		if (!bDoBurst && pActiveP2->onBlockComboCount == 0 && pActiveP2->onHitComboCount == 0) {
+			bDoBurst = true;
+		}
+	}
+
+	if (nTRUE_HITS_UNTIL_BUNKER != 0) {
+		if (bDoBunker && pActiveP2->onBlockComboCount >= nTRUE_HITS_UNTIL_BUNKER) {
+			int bunkerPat = getPatternFromCmd(pActiveP2, "\2\1\4D\xff");
+			pActiveP2->targetPattern = bunkerPat;
+			DWORD bunkerFlags[7] = { 4, 0, 0, 0, 0, 0, 0 };
+			memcpy(pActiveP2->flags, bunkerFlags, 7 * 0x4);
+			pActiveP2->hitstunTimeRemaining = 0;
+			bDoBunker = false;
+		}
+
+		if (!bDoBunker && pActiveP2->onBlockComboCount == 0) {
+			bDoBunker = true;
 		}
 	}
 }
@@ -4417,6 +4537,12 @@ void ExtendedMenuInputChecking() {
 		case 9: //P2 health
 			NormalScrolling(curElement, nTRUE_P2_HEALTH, 0, 11400, 570);
 			break;
+		case 11: //Hits until burst
+			NormalScrolling(curElement, nTRUE_HITS_UNTIL_BURST, 0, 101);
+			break;
+		case 12: //Hits until bunker
+			NormalScrolling(curElement, nTRUE_HITS_UNTIL_BUNKER, 0, 101);
+			break;
 		}
 
 		if (pP1->moon != 2) {
@@ -4477,6 +4603,11 @@ void ExtendedMenuInputChecking() {
 		curMenuInfo->ElementList[8]->SetCurItemLabel(labelBuf);
 		snprintf(labelBuf, 8, "%i", nTRUE_P2_HEALTH);
 		curMenuInfo->ElementList[9]->SetCurItemLabel(labelBuf);
+
+		snprintf(labelBuf, 8, "%i", nTRUE_HITS_UNTIL_BURST);
+		curMenuInfo->ElementList[11]->SetCurItemLabel(labelBuf);
+		snprintf(labelBuf, 8, "%i", nTRUE_HITS_UNTIL_BUNKER);
+		curMenuInfo->ElementList[12]->SetCurItemLabel(labelBuf);
 
 		break;
 	}

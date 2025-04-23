@@ -83,7 +83,7 @@ void UpdatePlayers() //Called after bar handling
 		P.bLastOnRight = P.PlayerData->isOpponentToLeft;
 		P.dwLastActivePointer = (DWORD)P.PlayerData->attackDataPtr;
 		P.cLastHitstop = P.PlayerData->hitstop;
-		if (P.PlayerData->inputEvent != 0xFFFF) {
+		if (P.PlayerData->targetPattern != 0xFFFF) {
 			P.bAlreadyGotFirstActive = false;
 			P.nFirstActiveCounter = 0;
 		}
