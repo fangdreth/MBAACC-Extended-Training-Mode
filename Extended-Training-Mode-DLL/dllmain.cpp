@@ -1656,19 +1656,12 @@ void highlightStates()
 	}
 	nOldFrameTimer = nFrameTimer;
 
-	if (!bHighlightsOn)
-	{
-		arrIdleHighlightSetting = { 255, 255, 255, 0 };
-		arrBlockingHighlightSetting = { 255, 255, 255, 0 };
-		arrHitHighlightSetting = { 255, 255, 255, 0 };
-		arrArmorHighlightSetting = { 255, 255, 255, 0 };
-		arrThrowProtectionHighlightSetting = { 255, 255, 255, 0 };
-	}
-
 	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState, DWORD notInCombo, BYTE armorTimer, DWORD throwInvuln) -> void
 		{
 			// the order of this if block denotes the priority for each highlight
-			if (arrBlockingHighlightSetting[3] == 1 && blockState == 1)	// BLOCKING
+			if (nHIGHLIGHTS == 0)
+				patchMemcpy(animDataAddr + 0x18, arrDefaultHighlightSetting.data(), 3);
+			else if (arrBlockingHighlightSetting[3] == 1 && blockState == 1)	// BLOCKING
 				patchMemcpy(animDataAddr + 0x18, arrBlockingHighlightSetting.data(), 3);
 			else if (arrArmorHighlightSetting[3] == 1 && armorTimer != 0)
 				patchMemcpy(animDataAddr + 0x18, arrArmorHighlightSetting.data(), 3);
@@ -4110,9 +4103,25 @@ void HandleExtendedMenu() {
 
 }
 
-bool LoopingScrolling(Element* element, int& storage, int min, int max, int interval = 1) {
+int ScrollAccelTimer = 0;
+int ScrollAccelTimerResetTimer = 0;
+bool LoopingScrolling(Element* element, int& storage, int min, int max, int interval = 1, int accel = 0) {
 	bool retVal = false;
 	int neutralIndex = 1;
+
+	if (accel != 0) {
+		if (ScrollAccelTimerResetTimer > 10) {
+			ScrollAccelTimer = 0;
+		}
+		if (ScrollAccelTimer > 10) {
+			interval *= (int)(accel * ScrollAccelTimer / 24);
+		}
+	}
+	else {
+		ScrollAccelTimer = 0;
+		ScrollAccelTimerResetTimer = 0;
+	}
+
 	if (element->selectedItem == neutralIndex - 1) { //left
 		retVal = true;
 		storage -= interval;
@@ -4127,14 +4136,38 @@ bool LoopingScrolling(Element* element, int& storage, int min, int max, int inte
 			storage = min;
 		}
 	}
+
+	if (accel != 0 && element->selectedItem != neutralIndex) {
+		ScrollAccelTimer++;
+		ScrollAccelTimerResetTimer = 0;
+	}
+	else {
+		ScrollAccelTimerResetTimer++;
+	}
+
 	element->selectedItem = neutralIndex;
 	return retVal;
 }
 
-bool NormalScrolling(Element* element, int& storage, int min, int max, int interval = 1) {
+
+bool NormalScrolling(Element* element, int& storage, int min, int max, int interval = 1, int accel = 0) {
 	bool retVal = false;
 	int neutralIndex = 1;
 	int targetIndex = neutralIndex;
+
+	if (accel != 0) {
+		if (ScrollAccelTimerResetTimer > 10) {
+			ScrollAccelTimer = 0;
+		}
+		if (ScrollAccelTimer > 10) {
+			interval *= (int)(accel * ScrollAccelTimer / 24);
+		}
+	}
+	else {
+		ScrollAccelTimer = 0;
+		ScrollAccelTimerResetTimer = 0;
+	}
+
 	if (storage == max)
 	{
 		if (element->selectedItem == neutralIndex) { //left
@@ -4159,6 +4192,15 @@ bool NormalScrolling(Element* element, int& storage, int min, int max, int inter
 			retVal = true;
 			storage = min(storage + interval, max);
 		}
+
+		if (accel != 0 && element->selectedItem != neutralIndex) {
+			ScrollAccelTimer++;
+			ScrollAccelTimerResetTimer = 0;
+		}
+		else {
+			ScrollAccelTimerResetTimer++;
+		}
+
 	}
 
 	if (storage == max) targetIndex = neutralIndex + 1;
@@ -4167,18 +4209,16 @@ bool NormalScrolling(Element* element, int& storage, int min, int max, int inter
 	return retVal;
 }
 
-int MeterScrollAccelTimer = 0;
-int MeterScrollAccelTimerResetTimer = 0;
 void CFMeterScrolling(Element* element, int& storage, bool toggle) {
 	int neutralIndex = 1;
 	int targetIndex = neutralIndex;
 	int interval = 100;
 	if (!toggle) {
-		if (MeterScrollAccelTimerResetTimer > 10) {
-			MeterScrollAccelTimer = 0;
+		if (ScrollAccelTimerResetTimer > 10) {
+			ScrollAccelTimer = 0;
 		}
-		if (MeterScrollAccelTimer > 10) {
-			interval = 100 * (int)(MeterScrollAccelTimer / 4);
+		if (ScrollAccelTimer > 10) {
+			interval = 100 * (int)(ScrollAccelTimer / 4);
 		}
 
 		switch (storage) {
@@ -4201,11 +4241,11 @@ void CFMeterScrolling(Element* element, int& storage, bool toggle) {
 			if (element->selectedItem == neutralIndex + 1) storage = min(storage + interval, 30000);
 			
 			if (element->selectedItem != neutralIndex) {
-				MeterScrollAccelTimer++;
-				MeterScrollAccelTimerResetTimer = 0;
+				ScrollAccelTimer++;
+				ScrollAccelTimerResetTimer = 0;
 			}
 			else {
-				MeterScrollAccelTimerResetTimer++;
+				ScrollAccelTimerResetTimer++;
 			}
 			break;
 		}
@@ -4213,11 +4253,11 @@ void CFMeterScrolling(Element* element, int& storage, bool toggle) {
 	else
 	{
 		interval = 1;
-		if (MeterScrollAccelTimerResetTimer > 10) {
-			MeterScrollAccelTimer = 0;
+		if (ScrollAccelTimerResetTimer > 10) {
+			ScrollAccelTimer = 0;
 		}
-		if (MeterScrollAccelTimer > 10) {
-			interval = min(1 * (int)(MeterScrollAccelTimer / 4), 20);
+		if (ScrollAccelTimer > 10) {
+			interval = min(1 * (int)(ScrollAccelTimer / 4), 20);
 		}
 		switch (storage) {
 		case 30002: //BLOOD HEAT
@@ -4249,11 +4289,11 @@ void CFMeterScrolling(Element* element, int& storage, bool toggle) {
 			}
 
 			if (element->selectedItem != neutralIndex) {
-				MeterScrollAccelTimer++;
-				MeterScrollAccelTimerResetTimer = 0;
+				ScrollAccelTimer++;
+				ScrollAccelTimerResetTimer = 0;
 			}
 			else {
-				MeterScrollAccelTimerResetTimer++;
+				ScrollAccelTimerResetTimer++;
 			}
 			break;
 		}
@@ -4269,11 +4309,11 @@ void HMeterScrolling(Element* element, int& storage, bool toggle) {
 	int targetIndex = neutralIndex;
 	int interval = 100;
 	if (!toggle) {
-		if (MeterScrollAccelTimerResetTimer > 10) {
-			MeterScrollAccelTimer = 0;
+		if (ScrollAccelTimerResetTimer > 10) {
+			ScrollAccelTimer = 0;
 		}
-		if (MeterScrollAccelTimer > 10) {
-			interval = 100 * (int)(MeterScrollAccelTimer / 4);
+		if (ScrollAccelTimer > 10) {
+			interval = 100 * (int)(ScrollAccelTimer / 4);
 		}
 
 		switch (storage) {
@@ -4288,11 +4328,11 @@ void HMeterScrolling(Element* element, int& storage, bool toggle) {
 			if (element->selectedItem == neutralIndex + 1) storage = min(storage + interval, 20000);
 
 			if (element->selectedItem != neutralIndex) {
-				MeterScrollAccelTimer++;
-				MeterScrollAccelTimerResetTimer = 0;
+				ScrollAccelTimer++;
+				ScrollAccelTimerResetTimer = 0;
 			}
 			else {
-				MeterScrollAccelTimerResetTimer++;
+				ScrollAccelTimerResetTimer++;
 			}
 			break;
 		}
@@ -4300,11 +4340,11 @@ void HMeterScrolling(Element* element, int& storage, bool toggle) {
 	else
 	{
 		interval = 1;
-		if (MeterScrollAccelTimerResetTimer > 10) {
-			MeterScrollAccelTimer = 0;
+		if (ScrollAccelTimerResetTimer > 10) {
+			ScrollAccelTimer = 0;
 		}
-		if (MeterScrollAccelTimer > 10) {
-			interval = min(1 * (int)(MeterScrollAccelTimer / 4), 20);
+		if (ScrollAccelTimer > 10) {
+			interval = min(1 * (int)(ScrollAccelTimer / 4), 20);
 		}
 		switch (storage) {
 		case 20000: //BLOOD HEAT
@@ -4328,11 +4368,11 @@ void HMeterScrolling(Element* element, int& storage, bool toggle) {
 			}
 
 			if (element->selectedItem != neutralIndex) {
-				MeterScrollAccelTimer++;
-				MeterScrollAccelTimerResetTimer = 0;
+				ScrollAccelTimer++;
+				ScrollAccelTimerResetTimer = 0;
 			}
 			else {
-				MeterScrollAccelTimerResetTimer++;
+				ScrollAccelTimerResetTimer++;
 			}
 			break;
 		}
@@ -4341,6 +4381,33 @@ void HMeterScrolling(Element* element, int& storage, bool toggle) {
 	if (storage == 0) targetIndex = neutralIndex - 1;
 	element->selectedItem = targetIndex;
 
+}
+
+void HighlightSwitch(int option, std::array<uint8_t, 4>& array) {
+	switch (option) {
+	default:
+	case NO_HIGHLIGHT:
+		array = { 255, 255, 255, 0 };
+		break;
+	case RED_HIGHLIGHT:
+		array = { 255, 90, 90, 1 };
+		break;
+	case YELLOW_HIGHLIGHT:
+		array = { 255, 255, 0, 1 };
+		break;
+	case GREEN_HIGHLIGHT:
+		array = { 60, 255, 60, 1 };
+		break;
+	case BLUE_HIGHLIGHT:
+		array = { 90, 90, 255, 1 };
+		break;
+	case PURPLE_HIGHLIGHT:
+		array = { 255, 90, 255, 1 };
+		break;
+	case BLACK_HIGHLIGHT:
+		array = { 60, 60, 60, 1 };
+		break;
+	}
 }
 
 bool bAPrev = false;
@@ -4361,6 +4428,7 @@ void ExtendedMenuInputChecking() {
 	curElement = curMenuInfo->ElementList[curMenuInfo->selectedElement];
 	switch (extendedWindow->menuInfoIndex) {
 	case 0: //reversals
+	{
 		if (vPatternNames.size() == 1)
 		{
 			int nP2CharacterNumber = *(int*)(adMBAABase + dwP2CharNumber);
@@ -4513,7 +4581,11 @@ void ExtendedMenuInputChecking() {
 			nREV_ID_1, nREV_ID_2, nREV_ID_3, nREV_ID_4);
 
 		break;
+	}
 	case 1:
+	{
+		int healthInterval = bA ? 1 : 950;
+		int healthAccel = bA ? 6 : 0;
 		switch (curMenuInfo->selectedElement) {
 		case 5: //P1 meter
 			if (pP1->moon != 2) {
@@ -4532,10 +4604,10 @@ void ExtendedMenuInputChecking() {
 			}
 			break;
 		case 8: //P1 health
-			NormalScrolling(curElement, nTRUE_P1_HEALTH, 0, 11400, 570);
+			NormalScrolling(curElement, nTRUE_P1_HEALTH, 0, 11400, healthInterval, healthAccel);
 			break;
 		case 9: //P2 health
-			NormalScrolling(curElement, nTRUE_P2_HEALTH, 0, 11400, 570);
+			NormalScrolling(curElement, nTRUE_P2_HEALTH, 0, 11400, healthInterval, healthAccel);
 			break;
 		case 11: //Hits until burst
 			NormalScrolling(curElement, nTRUE_HITS_UNTIL_BURST, 0, 101);
@@ -4610,6 +4682,29 @@ void ExtendedMenuInputChecking() {
 		curMenuInfo->ElementList[12]->SetCurItemLabel(labelBuf);
 
 		break;
+	}
+	case 2:
+	{
+		switch (curMenuInfo->selectedElement) {
+		case 1:
+			HighlightSwitch(curElement->selectedItem, arrBlockingHighlightSetting);
+			break;
+		case 2:
+			HighlightSwitch(curElement->selectedItem, arrHitHighlightSetting);
+			break;
+		case 3:
+			HighlightSwitch(curElement->selectedItem, arrArmorHighlightSetting);
+			break;
+		case 4:
+			HighlightSwitch(curElement->selectedItem, arrThrowProtectionHighlightSetting);
+			break;
+		case 5:
+			HighlightSwitch(curElement->selectedItem, arrIdleHighlightSetting);
+			break;
+		}
+
+		break;
+	}
 	}
 
 	bool CurFN1Input = *(bool*)(adMBAABase + adP1FN1Input);
@@ -5672,6 +5767,7 @@ void threadFunc()
 	//timeMeltyCall(0x0040e500, "FUN_004be8b0");
 	//timeMeltyCall(0x0040e505, "FUN_0040e220");
 
+	/*
 	while (true) 
 	{
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrIdleHighlightSetting, 4, 0);
@@ -5681,6 +5777,7 @@ void threadFunc()
 		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrThrowProtectionHighlightSetting, 4, 0);
 		Sleep(8);
 	}
+	*/
 }
 
 BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved) 

@@ -440,7 +440,7 @@ std::vector<const char*> vIDLE = {
 };
 
 std::vector<std::vector<const char*>> P3_Options = {
-	vHIGHLIGHTS, vGUARD, vHIT, vARMOR, vTHROW_PROTECTION, vIDLE
+	vHIGHLIGHTS, vSPACE_ELEMENT, vGUARD, vHIT, vARMOR, vTHROW_PROTECTION, vIDLE
 };
 
 int nHIGHLIGHTS = 0;
