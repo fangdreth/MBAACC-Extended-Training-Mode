@@ -204,20 +204,6 @@ static_assert(sizeof(IF) == 0x28, "IF MUST be 0x28 large!");
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
-typedef struct IFData { // List of Conditions
-	IF* IFs[4];
-} IFData;
-#pragma pack(pop)
-
-#define CHECKOFFSET(v, n) static_assert(offsetof(IFData, v) == n, "IFData offset incorrect for " #v);
-
-CHECKOFFSET(IFs, 0x0);
-
-static_assert(sizeof(IFData) == 0x10, "IFData MUST be 0x10 large!");
-
-#undef CHECKOFFSET
-
-#pragma pack(push,1)
 typedef struct RawBoxData {
 	short x1;
 	short y1;
@@ -296,8 +282,8 @@ typedef struct AnimationData {
 	BYTE highestEFIndex;
 	BYTE highestNonHitboxIndex;
 	BYTE highestHitboxIndex;
-	IFData* IFDataPtr;
-	DWORD EFDataPtr;
+	IF** IFs;
+	DWORD EFs;
 	NonHitboxData* nonHitboxData;
 	HitboxData* hitboxData;
 } AnimationData;
@@ -366,17 +352,9 @@ static_assert(sizeof(Command) == 0x2C, "Command must have size 0x2C.");
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
-typedef struct CommandPtrArray {
-	Command* commands[1000];
-} CommandPtrArray;
-#pragma pack(pop)
-
-static_assert(sizeof(CommandPtrArray) == 4000, "CommandPtrArray must have size 4000.");
-
-#pragma pack(push,1)
 typedef struct CommandData {
 	UNUSED(0x4);
-	CommandPtrArray* cmdPtrArray;
+	Command** commandPtrArr;
 	UNUSED(0x4);
 	int maxID;
 	int maxIDCopy;
@@ -423,7 +401,7 @@ static_assert(sizeof(CommandFileData) == 0x68, "CommandData must have size 0x5A.
 #pragma pack(push,1)
 typedef struct PatternContainer {
 	DWORD isPointerList;
-	PatternData* (*ptrToPatternDataArr)[1000];
+	PatternData** ptrToPatternDataArr;
 	DWORD elementSize;
 	DWORD count;
 	DWORD capacity;
@@ -439,16 +417,16 @@ typedef struct HA6Data {
 } HA6Data;
 #pragma pack(pop)
 
-/*
+
 #pragma pack(push,1)
-typedef struct HA6Data { 
+typedef struct SomeData { 
 	// out of all the structs, i understand this one the least.
 	// the important thing, is that it eventually leads to 0x31C patternDataPtr, and so in most cases, you can and should probs just use that
 	// this however, can be used to see all paterns in a char. seems very nice to have
-	SubHA6Data1* subData1;
-} HA6Data;
+	HA6Data* ha6DataPtr;
+	UNUSED(0x8);
+} SomeData;
 #pragma pack(pop)
-*/
 
 #pragma pack(push,1)
 typedef struct EffectData {
@@ -564,7 +542,7 @@ typedef struct EffectData {
 	BYTE recievedHitstop;
 	UNUSED(3);
 	DWORD hitstunBlockstunTimeElapsed;
-	int hitstunTimeRemaining; // -2 if airborn
+	int hitstunTimeRemaining; // -2 if airborne
 	BYTE isKnockedDown;
 	UNUSED(0x6);
 	BYTE jumpVariable;
@@ -608,8 +586,8 @@ typedef struct EffectData {
 	AnimationData* animationDataPtr;
 	AttackData* attackDataPtr;
 	EffectData* selfPtr;
-	UNUSED(0x4); // i have never seen a more suspicious 4 bytes in my life
-	HA6Data** ha6DataPtr;
+	void* partnerPtr; //points to sub-base (base + 4)
+	SomeData* someDataPtr;
 	DWORD framesIntoCurrentPattern;
 	UNUSED(4);
 } EffectData;
@@ -617,7 +595,7 @@ typedef struct EffectData {
 
 #define CHECKOFFSET(v, n) static_assert(offsetof(EffectData, v) == n, "EffectData offset incorrect for " #v);
 
-CHECKOFFSET(ha6DataPtr, 0x330);
+CHECKOFFSET(someDataPtr, 0x330);
 
 #undef CHECKOFFSET
 
@@ -691,7 +669,7 @@ CHECKOFFSET(facingLeft, 0x314);
 CHECKOFFSET(delayedStandAirbornCrouchState, 0x31B);
 CHECKOFFSET(patternDataPtr, 0x31C);
 CHECKOFFSET(selfPtr, 0x328);
-CHECKOFFSET(ha6DataPtr, 0x330);
+CHECKOFFSET(someDataPtr, 0x330);
 CHECKOFFSET(chainedCmdsCounter, 0x3e0);
 
 static_assert(sizeof(PlayerData) == 0xAFC, "PlayerData MUST be 0xAFC large!");

@@ -29,11 +29,11 @@ void EffectData::describe(char* buffer, int bufLen) {
 PatternData* EffectData::getPatternDataPtr(int p) {
 	// doing this in a more normal way could never get me the results i wanted
 	__try {
-		HA6Data* ha6 = *playerDataArr[0].ha6DataPtr;
+		HA6Data* ha6 = playerDataArr[0].someDataPtr->ha6DataPtr;
 		if (!ha6) return 0;
 		PatternContainer* patCont = ha6->patternContainer;
 		if (!patCont || patCont->count < p) return 0;
-		PatternData* pat = (*patCont->ptrToPatternDataArr)[p];
+		PatternData* pat = (patCont->ptrToPatternDataArr)[p];
 		if (!pat) return 0;
 		return pat;
 	} __except (EXCEPTION_EXECUTE_HANDLER) {

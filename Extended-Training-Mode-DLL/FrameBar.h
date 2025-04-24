@@ -244,21 +244,18 @@ void UpdateBars(Player& P, Player& Assist)
 		}
 	}
 
-	char cCondition1Type = 0;
-	char cCondition2Type = 0;
+	bool bIsShield = false;
+	bool bIsThrow = false;
 	if (P.PlayerData->animationDataPtr->highestIFIndex > 0)
 	{
-		if (P.PlayerData->animationDataPtr->IFDataPtr != 0)
-		{
-			if (P.PlayerData->animationDataPtr->IFDataPtr->IFs[0] != 0)
-			{
-				cCondition1Type = P.PlayerData->animationDataPtr->IFDataPtr->IFs[0]->IFTP;
-			}
-			if (P.PlayerData->animationDataPtr->highestIFIndex > 1)
-			{
-				if (P.PlayerData->animationDataPtr->IFDataPtr->IFs[1] != 0)
-				{
-					cCondition2Type = P.PlayerData->animationDataPtr->IFDataPtr->IFs[1]->IFTP;
+		AnimationData* animData = P.PlayerData->animationDataPtr;
+		for (int i = 0; i < animData->highestIFIndex; i++) {
+			if (animData->IFs[i] != 0) {
+				if (animData->IFs[i]->IFTP == 52) {
+					bIsThrow = true;
+				}
+				else if (animData->IFs[i]->IFTP == 51) {
+					bIsShield = true;
 				}
 			}
 		}
@@ -291,11 +288,11 @@ void UpdateBars(Player& P, Player& Assist)
 			nNumber = -1;
 		}
 	}
-	else if (cCondition1Type == 51) //Shield
+	else if (bIsShield)
 	{
 		dwColor = FB_SHIELD;
 	}
-	else if (cCondition1Type == 52 || cCondition2Type == 52) //Throw
+	else if (bIsThrow)
 	{
 		if (!P.bAlreadyGotFirstActive)
 		{

@@ -772,30 +772,15 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 		}
 	}
 
-	if (!isProjectile) {
-		char cCondition1Type = 0;
-		char cCondition2Type = 0;
-		if (*(char*)(animDataPtr + adAnimationData_ConditionCount) > 0)
-		{
-			DWORD dwPointer = *(DWORD*)(animDataPtr + adAnimationData_ConditionsPointer);
-			if (dwPointer != 0)
-			{
-				DWORD dwC1Pointer = *(DWORD*)(dwPointer + adConditions_Condition1Pointer);
-				if (dwC1Pointer != 0)
-				{
-					cCondition1Type = *(char*)(dwC1Pointer + adCondition_Type);
-				}
-				if (*(char*)(animDataPtr + adAnimationData_ConditionCount) > 1)
-				{
-					DWORD dwC2Pointer = *(DWORD*)(dwPointer + adConditions_Condition2Pointer);
-					if (dwC2Pointer != 0)
-					{
-						cCondition2Type = *(char*)(dwC2Pointer + adCondition_Type);
-					}
-				}
+	bool bIsThrow = false;
+	if (!isProjectile && animationData->highestIFIndex > 0) {
+		for (int i = 0; i < animationData->highestIFIndex; i++) {
+			if (animationData->IFs[i] != 0 && animationData->IFs[i]->IFTP == 52) {
+				bIsThrow = true;
 			}
 		}
-		if (cCondition1Type == 52 || cCondition2Type == 52) //Throw boxes
+
+		if (bIsThrow) //Throw boxes
 		{
 			if (*(char*)(*(DWORD*)(animDataPtr + adAnimationData_StateDataPointer) + adStateData_Stance) == 1)
 			{
@@ -924,10 +909,10 @@ int getPatternFromInput(PlayerData* PD, const char input[20])
 	char readableInput[20] = {0};
 	for (int i = 0; i < PD->cmdFileDataPtr->cmdDataPtr->maxID; i++)
 	{
-		if (PD->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i])
+		if (PD->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i] != 0)
 		{
 			int length = 0;
-			snprintf(inputCopy, 20, "%s", PD->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->input);
+			snprintf(inputCopy, 20, "%s", PD->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->input);
 			for (int j = 0; j < 20; j++)
 			{
 				if (inputCopy[j] == '\xFF')
@@ -953,7 +938,7 @@ int getPatternFromInput(PlayerData* PD, const char input[20])
 			}
 			if (isMatch)
 			{
-				return PD->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->pattern;
+				return PD->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->pattern;
 			}
 		}
 	}
@@ -964,10 +949,10 @@ int getIDFromPattern(PlayerData* pPlayer, int nPattern, int nthMatch = 1)
 {
 	int retVal = -1;
 	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i])
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i])
 		{
-			if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->pattern == nPattern) {
-				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->ID;
+			if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->pattern == nPattern) {
+				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->ID;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
 			};
@@ -979,10 +964,10 @@ int getIDFromPattern(PlayerData* pPlayer, int nPattern, int nthMatch = 1)
 int getIDFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
 	int retVal = -1;
 	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i])
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i])
 		{
-			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->input) == 0) {
-				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->ID;
+			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->input) == 0) {
+				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->ID;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
 			};
@@ -994,10 +979,10 @@ int getIDFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
 int getPatternFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
 	int retVal = -1;
 	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i])
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i])
 		{
-			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->input) == 0) {
-				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->pattern;
+			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->input) == 0) {
+				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->pattern;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
 			};
@@ -1032,10 +1017,10 @@ bool tryCmdPattern(PlayerData* pPlayer, int nPattern) {
 	if (nPattern < 41) return false;
 	int id = -1;
 	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i])
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i])
 		{
-			if (pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->pattern == nPattern) {
-				id = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[i]->ID;
+			if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->pattern == nPattern) {
+				id = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->ID;
 				if (checkCmdVars(pPlayer, id) && tryCmdID(pPlayer, id)) return true;
 			};
 		}
@@ -1127,8 +1112,8 @@ byte getShieldCancel(PlayerData* pPlayer, int pat) {
 	if (pat <= 40) return exOnly;
 	int ID = getIDFromPattern(pPlayer, pat, 1);
 	if (ID == -1) return 0x0;
-	WORD flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[ID]->flagsets;
-	int specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[ID]->specialFlag;
+	WORD flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[ID]->flagsets;
+	int specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[ID]->specialFlag;
 	if (flagsets & 0x8) { // if no cancel
 		if (flagsets & 0x40 && !(flagsets & 0x1000)) { //if guard/shield cancel and not guard cancel only (covers D > D)
 			retVal = 0x3;
@@ -1146,8 +1131,8 @@ byte getShieldCancel(PlayerData* pPlayer, int pat) {
 	
 	ID = getIDFromPattern(pPlayer, pat, 2);
 	if (ID == -1) return retVal;
-	flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[ID]->flagsets;
-	specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[ID]->specialFlag;
+	flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[ID]->flagsets;
+	specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[ID]->specialFlag;
 	if (flagsets & 0x8) {
 		if (flagsets & 0x40 && !(flagsets & 0x1000)) {
 			retVal = 0x3;
@@ -1167,7 +1152,7 @@ byte getShieldCancel(PlayerData* pPlayer, int pat) {
 
 //returns AND of 1 = stand, 2 = airborne, 4 = crouch
 byte getCmdStance(PlayerData* pPlayer, int ID) {
-	return pPlayer->cmdFileDataPtr->cmdDataPtr->cmdPtrArray->commands[ID]->flagsets[0] & 0x7;
+	return pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[ID]->flagsets[0] & 0x7;
 }
 
 //returns AND of 1 = stand, 2 = airborne, 4 = crouch
@@ -2236,7 +2221,7 @@ void frameDoneCallback()
 			saveStateManager.log();
 		}
 
-		HandleExtendedTrainingEffects();
+		//HandleExtendedTrainingEffects();
 	}
 
 	static KeyState rKey('R');
@@ -2766,6 +2751,12 @@ __declspec(naked) void nakedFrameDoneCallback_RAW() {
 
 // reset funcs
 
+int nTempP1MeterGain = 0;
+int nTempP2MeterGain = 0;
+int nP1MeterGain = 0;
+int nP2MeterGain = 0;
+DWORD prevComboPtr = 0;
+
 void ResetCallback() {
 	if (nSAVE_STATE_SLOT == 0) {
 		if (*(int*)(adMBAABase + adBS_MAGIC_CIRCUIT) == 0) {
@@ -2847,6 +2838,18 @@ void ResetCallback() {
 			}
 		}
 	}
+
+	nTempP1MeterGain = 0;
+	nTempP2MeterGain = 0;
+	nP1MeterGain = 0;
+	nP2MeterGain = 0;
+	prevComboPtr = 0;
+
+	dualInputDisplayReset();
+
+	TASManagerObj.load("TAS.txt");
+
+	loadCustomShader();
 }
 
 DWORD MBAA_ResetBattleMode = 0x00423380;
@@ -2901,6 +2904,8 @@ __declspec(naked) void _naked_CharInputCallback() {
 int needPause = false;
 void newPauseCallback2()
 {
+
+	HandleExtendedTrainingEffects();
 
 	if (oFreezeKey.keyDown()) {
 		bFreeze = !bFreeze;
@@ -5140,11 +5145,6 @@ void doFastReversePenalty() {
 	}
 }
 
-int nTempP1MeterGain = 0;
-int nTempP2MeterGain = 0;
-int nP1MeterGain = 0;
-int nP2MeterGain = 0;
-DWORD prevComboPtr = 0;
 void attackMeterDisplayCallback()
 {
 
@@ -5370,33 +5370,6 @@ __declspec(naked) void _naked_dualInputDisplay() {
 	emitJump(0x00477f25);
 }
 
-// reset funcs
-
-void __stdcall battleResetCallback()
-{
-	nTempP1MeterGain = 0;
-	nTempP2MeterGain = 0;
-	nP1MeterGain = 0;
-	nP2MeterGain = 0;
-	prevComboPtr = 0;
-
-	dualInputDisplayReset();
-
-	TASManagerObj.load("TAS.txt");
-
-	loadCustomShader();
-
-}
-
-__declspec(naked) void _naked_battleResetCallback() {
-	PUSH_ALL;
-	battleResetCallback();
-	POP_ALL;
-	__asm {
-		ret;
-	}
-}
-
 // input funcs
 bool needTrainingModeReset = false;
 void inputCallback() {
@@ -5585,20 +5558,6 @@ void initMeterGainHook()
 	patchJump(0x00476ce0, _naked_meterGainHook);
 }
 
-void initBattleResetCallback()
-{
-	// this func rets early, this jump prevents that 
-	void* patchAddr = (void*)0x004234b9;
-	patchJump(patchAddr, 0x004234e1);
-
-	void* funcAddr = (void*)0x004234e4;
-	patchFunction(funcAddr, _naked_battleResetCallback);
-
-	// this patch is a bit funky, since we need to have ret dec the stack pointer
-	BYTE tempCode[3] = {0xc2, 0x04, 0x00};
-	patchMemcpy(((BYTE*)funcAddr) + 5, tempCode, 3);
-}
-
 void initPauseCallback()
 {
 
@@ -5729,7 +5688,6 @@ void threadFunc()
 	// when not running with caster, they arent even there, so this is fine to run regardless of caster 
 	initAttackMeterDisplay();
 	initMeterGainHook();
-	initBattleResetCallback();
 	initNewAttackDisplay();
 
 	initNewPauseCallback();
@@ -5766,18 +5724,6 @@ void threadFunc()
 	//timeMeltyCall(0x0040e4fb, "FUN_00406680");
 	//timeMeltyCall(0x0040e500, "FUN_004be8b0");
 	//timeMeltyCall(0x0040e505, "FUN_0040e220");
-
-	/*
-	while (true) 
-	{
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedIdleHighlight), &arrIdleHighlightSetting, 4, 0);
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedBlockingHighlight), &arrBlockingHighlightSetting, 4, 0);
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedHitHighlight), &arrHitHighlightSetting, 4, 0);
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedArmorHighlight), &arrArmorHighlightSetting, 4, 0);
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedThrowProtectionHighlight), &arrThrowProtectionHighlightSetting, 4, 0);
-		Sleep(8);
-	}
-	*/
 }
 
 BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved) 
