@@ -1177,20 +1177,14 @@ byte getPatStance(PlayerData* pPlayer, int pat) {
 }
 
 //In-game frame bar
-void drawFrameBar(int nYOverride = -1)
+void drawFrameBar(int frameBarY)
 {
 	if (!safeWrite())
 		return;
 
-	frameBarY = *(int*)(adMBAABase + adSharedFrameBarY);
-	if (nYOverride != -1)
-	{
-		frameBarY = nYOverride;
-	}
-
 	FrameBar(P1, P2, P3, P4);
 
-	if (!bFrameDataDisplay)
+	if (!nIN_GAME_FRAME_DISPLAY)
 		return;
 
 	int nBarDrawCounter = 0;
@@ -1968,16 +1962,60 @@ void HandleMeters() {
 	}
 }
 
-void HandleHighlights() {
-
-}
-
-void HandlePositions() {
-
-}
-
 void HandleCharResources() {
+	switch (pActiveP1->charID) {
+	case 0: //sion
+		if (nSION_BULLETS == 0 && pActiveP1->animationDataPtr->stateData->canMove) {
+			pActiveP1->extraVariables[1] = 0;
+		}
+		break;
+	case 4: //maids
+		if (nF_MAIDS_HEARTS == 0 && pActiveP1->animationDataPtr->stateData->canMove) {
+			pP1->extraVariables[4] = 0;
+			pP3->extraVariables[5] = 0;
+		}
+		break;
+	case 31: //roa
+		if (nROA_HIDDEN_CHARGE == 0 && pActiveP1->animationDataPtr->stateData->canMove) {
+			pActiveP1->extraVariables[6] = 9;
+		}
+		if (nROA_VISIBLE_CHARGE == 0 && pActiveP1->animationDataPtr->stateData->canMove) {
+			pActiveP1->extraVariables[7] = 9;
+		}
+		break;
+	case 33: //ryougi
+		if (nRYOUGI_KNIFE == 0 && pActiveP1->animationDataPtr->stateData->canMove) {
+			pActiveP1->specialVariables[0] = 0;
+		}
+		break;
+	}
 
+	switch (pActiveP2->charID) {
+	case 0: //sion
+		if (nSION_BULLETS == 0 && pActiveP2->animationDataPtr->stateData->canMove) {
+			pActiveP2->extraVariables[1] = 0;
+		}
+		break;
+	case 4: //maids
+		if (nF_MAIDS_HEARTS == 0 && pActiveP2->animationDataPtr->stateData->canMove) {
+			pP2->extraVariables[4] = 0;
+			pP4->extraVariables[5] = 0;
+		}
+		break;
+	case 31: //roa
+		if (nROA_HIDDEN_CHARGE == 0 && pActiveP2->animationDataPtr->stateData->canMove) {
+			pActiveP2->extraVariables[6] = 9;
+		}
+		if (nROA_VISIBLE_CHARGE == 0 && pActiveP2->animationDataPtr->stateData->canMove) {
+			pActiveP2->extraVariables[7] = 9;
+		}
+		break;
+	case 33: //ryougi
+		if (nRYOUGI_KNIFE == 0 && pActiveP2->animationDataPtr->stateData->canMove) {
+			pActiveP2->specialVariables[0] = 0;
+		}
+		break;
+	}
 }
 
 void HandleBoxVisuals() {
@@ -1996,8 +2034,8 @@ void HandleExtendedTrainingEffects() {
 	pDummy = isP1Controlled ? pActiveP2 : pActiveP1;
 	HandleReversals();			//page 1
 	HandleMeters();				//page 2
-	HandleHighlights();			//page 3
-	HandlePositions();			//page 4
+	//highlights done elsewhere	//page 3
+	//positions on reset only	//page 4
 	HandleCharResources();		//page 5
 	HandleBoxVisuals();			//page 6
 	HandleSaves();				//page 7
@@ -2281,11 +2319,9 @@ void frameDoneCallback()
 	setAllKeys();
 
 	shouldDrawBackground = *(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle) == BG_NORMAL;
-	shouldDrawHud = !*(bool*)(dwBaseAddress + adSharedDisableHUD);
-	shouldDrawGroundLine = *(bool*)(dwBaseAddress + adSharedDrawGround);
-	shouldDrawShadow = !*(bool*)(dwBaseAddress + adSharedDisableShadow);
-	fastReversePenalty = *(bool*)(dwBaseAddress + adSharedFastReversePenalty);
-	bFrameDataDisplay = *(bool*)(dwBaseAddress + adSharedFrameDataDisplay);
+	shouldDrawHud = !nHIDE_HUD;
+	shouldDrawGroundLine = nDRAW_GROUND;
+	shouldDrawShadow = !nHIDE_SHADOWS;
 
 	switch (*(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle))
 	{
@@ -2450,10 +2486,9 @@ void frameDoneCallback()
 
 	if (oFrameDataDisplayKey.keyDown())
 	{
-		bFrameDataDisplay = !bFrameDataDisplay;
-		*(bool*)(dwBaseAddress + adSharedFrameDataDisplay) = bFrameDataDisplay;
+		nIN_GAME_FRAME_DISPLAY = !nIN_GAME_FRAME_DISPLAY;
 		nDrawTextTimer = TEXT_TIMER;
-		if (bFrameDataDisplay)
+		if (nIN_GAME_FRAME_DISPLAY)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "FRAME DATA ON");
 		else
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "FRAME DATA OFF");
@@ -2662,18 +2697,13 @@ void frameDoneCallback()
 	//ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
 	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12)) {
 		
-		drawFrameBar();
+		drawFrameBar(nTRUE_FRAME_DISPLAY_Y);
 
-		if (bHitboxesDisplay)
+		if (nDISPLAY_HITBOXES)
 			drawFrameData();
 
 		if (!shouldDrawMeter)
 			drawSimpleMeter();
-		
-		/*if (bFrameDataDisplay)
-		{
-			drawFrameBar();
-		}*/	
 
 		if (*(bool*)(dwBaseAddress + adSharedShowStats))
 			drawStats();
@@ -2684,7 +2714,7 @@ void frameDoneCallback()
 	}
 	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 2 && *(bool*)(dwBaseAddress + adSharedOnExtendedSettings))
 	{
-		drawFrameBar();
+		drawFrameBar(nTRUE_FRAME_DISPLAY_Y);
 	}
 
 	if (*(bool*)(dwBaseAddress + adSharedColorGuide))
@@ -2692,7 +2722,7 @@ void frameDoneCallback()
 		drawColorGuide();
 	}
 
-	if (bFrameDataDisplay && frameBarY > 400)
+	if (nIN_GAME_FRAME_DISPLAY && frameBarY > 400)
 	{
 		shouldDrawMeter = 0;
 	}
@@ -2837,6 +2867,77 @@ void ResetCallback() {
 				}
 			}
 		}
+
+		if (nRESET_TO_POSITIONS) {
+			pP1->xPos = nTRUE_P1_X_LOC;
+			pP2->xPos = nTRUE_P2_X_LOC;
+			bool p1LookLeft = pP1->xPos > pP2->xPos;
+			pP1->facingLeft = p1LookLeft;
+			pP1->isOpponentToLeft = p1LookLeft;
+			pP2->facingLeft = !p1LookLeft;
+			pP2->isOpponentToLeft = !p1LookLeft;
+
+			if (pP3->exists && pP3->charID != 51) {
+				pP3->xPos = nTRUE_P1_ASSIST_X_LOC;
+
+				bool p3LookLeft = pP3->xPos > pP2->xPos;
+				pP3->facingLeft = p3LookLeft;
+				pP3->isOpponentToLeft = p3LookLeft;
+			}
+
+			if (pP4->exists && pP4->charID != 51) {
+				pP4->xPos = nTRUE_P2_ASSIST_X_LOC;
+
+				bool p4LookLeft = pP4->xPos > pP1->xPos;
+				pP4->facingLeft = p4LookLeft;
+				pP4->isOpponentToLeft = p4LookLeft;
+			}
+		}
+
+		switch (pActiveP1->charID) {
+		case 0: //sion
+			if (nSION_BULLETS > 1) {
+				pActiveP1->extraVariables[1] = 14 - nSION_BULLETS;
+			}
+			break;
+		case 4: //maids
+			if (nF_MAIDS_HEARTS > 1) { //maids
+				pP1->extraVariables[4] = nF_MAIDS_HEARTS - 1;
+				pP3->extraVariables[5] = nF_MAIDS_HEARTS - 1;
+			}
+			break;
+		case 31: //roa
+			if (nROA_HIDDEN_CHARGE > 1) {
+				pActiveP1->extraVariables[6] = nROA_HIDDEN_CHARGE - 1;
+			}
+			if (nROA_VISIBLE_CHARGE > 1) {
+				pActiveP1->extraVariables[7] = nROA_VISIBLE_CHARGE - 1;
+			}
+			break;
+		}
+
+		switch (pActiveP2->charID) {
+		case 0: //sion
+			if (nSION_BULLETS > 1) {
+				pActiveP2->extraVariables[1] = 14 - nSION_BULLETS;
+			}
+			break;
+		case 4: //maids
+			if (nF_MAIDS_HEARTS > 1) { //maids
+				pP2->extraVariables[4] = nF_MAIDS_HEARTS - 1;
+				pP4->extraVariables[5] = nF_MAIDS_HEARTS - 1;
+			}
+			break;
+		case 31: //roa
+			if (nROA_HIDDEN_CHARGE > 1) {
+				pActiveP2->extraVariables[6] = nROA_HIDDEN_CHARGE - 1;
+			}
+			if (nROA_VISIBLE_CHARGE > 1) {
+				pActiveP2->extraVariables[7] = nROA_VISIBLE_CHARGE - 1;
+			}
+			break;
+		}
+
 	}
 
 	nTempP1MeterGain = 0;
@@ -3724,15 +3825,18 @@ void AddSelectElement(MenuInfo* menuInfo, std::vector<const char*> elementVector
 	//std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
 	int vSize = size(elementVector);
 	Element* element = NEW_SELECT_ELEMENT();
-	char tempTag[8];
-	snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
+	char tempTag[16];
+	snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
 	InitSelectElement(element, elementVector[0], tempTag, 0xa0);
 	element->vftable = (void*)0x00536654;
 	for (int i = 1; i < vSize; i++) {
 		Item* item = (Item*)NEW_ITEM();
-		snprintf(tempTag, 8, "%i_%i_%i", pageNum, elementNum, i);
+		snprintf(tempTag, 15, "%i_%i_%i", pageNum, elementNum, i);
 		InitItem(item, elementVector[i], tempTag, i - 1);
 		EnterIntoList((void*)(&element->ListInput), (void*)(item));
+	}
+	if (elementVector[0] == " ") {
+		element->selectItemLabelXOffset = 64;
 	}
 	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
 }
@@ -3740,8 +3844,8 @@ void AddSelectElement(MenuInfo* menuInfo, std::vector<const char*> elementVector
 void AddNormalElement(MenuInfo* menuInfo, std::vector<const char*> elementVector, int pageNum, int elementNum) {
 	//std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
 	Element* element = NEW_NORMAL_ELEMENT();
-	char tempTag[8];
-	snprintf(tempTag, 8, "%i_%i_0_n", pageNum, elementNum);
+	char tempTag[16];
+	snprintf(tempTag, 15, "%i_%i_0_n", pageNum, elementNum);
 	InitNormalElement(element, elementVector[0], tempTag, 0);
 	element->canSelect = 1;
 	element->elementType = 1;
@@ -3751,8 +3855,8 @@ void AddNormalElement(MenuInfo* menuInfo, std::vector<const char*> elementVector
 
 void AddSpaceElement(MenuInfo* menuInfo, int pageNum, int elementNum) {
 	Element* element = NEW_NORMAL_ELEMENT();
-	char tempTag[8];
-	snprintf(tempTag, 8, "%i_%i_0_s", pageNum, elementNum);
+	char tempTag[16];
+	snprintf(tempTag, 15, "%i_%i_0_s", pageNum, elementNum);
 	InitNormalElement(element, "", "", 0);
 	element->canSelect = 0;
 	element->elementType = 2;
@@ -3829,13 +3933,13 @@ void GetExtendedSettings(MenuWindow* extendedWindow) {
 			call[MBAA_UnrecoveredJumptable];
 		}
 	}
-	char tempTag[8];
+	char tempTag[16];
 	MenuInfo* extendedInfo;
 	for (int pageNum = 0; pageNum < size(Page_Options); pageNum++) {
 		extendedInfo = extendedWindow->MenuInfoList[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
+			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
 			if (GetSetting(extendedInfo, Page_Settings[pageNum][settingNum], tempTag)) {
 				settingNum++;
 			};
@@ -3855,13 +3959,13 @@ void GetHotkeySettings(MenuWindow* hotkeyWindow) {
 			call[MBAA_UnrecoveredJumptable];
 		}
 	}
-	char tempTag[8];
+	char tempTag[16];
 	MenuInfo* hotkeyInfo;
 	for (int pageNum = 0; pageNum < size(HK_Page_Options); pageNum++) {
 		hotkeyInfo = hotkeyWindow->MenuInfoList[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
+			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
 			if (GetSetting(hotkeyInfo, HK_Page_Settings[pageNum][settingNum], tempTag)) {
 				settingNum++;
 			};
@@ -3999,13 +4103,13 @@ void SetExtendedSettings(MenuWindow* extendedWindow) {
 			call[MBAA_UnrecoveredJumptable];
 		}
 	}
-	char tempTag[8];
+	char tempTag[16];
 	MenuInfo* extendedInfo;
 	for (int pageNum = 0; pageNum < size(Page_Options); pageNum++) {
 		extendedInfo = extendedWindow->MenuInfoList[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
+			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
 			if (SetSetting(extendedInfo, Page_Settings[pageNum][settingNum], tempTag)) {
 				settingNum++;
 			};
@@ -4025,13 +4129,13 @@ void SetHotkeySettings(MenuWindow* hotkeyWindow) {
 			call[MBAA_UnrecoveredJumptable];
 		}
 	}
-	char tempTag[8];
+	char tempTag[16];
 	MenuInfo* hotkeyInfo;
 	for (int pageNum = 0; pageNum < size(HK_Page_Options); pageNum++) {
 		hotkeyInfo = hotkeyWindow->MenuInfoList[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 8, "%i_%i_0", pageNum, elementNum);
+			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
 			if (SetSetting(hotkeyInfo, HK_Page_Settings[pageNum][settingNum], tempTag)) {
 				settingNum++;
 			};
@@ -4415,6 +4519,107 @@ void HighlightSwitch(int option, std::array<uint8_t, 4>& array) {
 	}
 }
 
+void PositionScrolling(Element* element, int& storage, bool toggle) {
+	int neutralIndex = 1;
+	int targetIndex = neutralIndex;
+	int interval = 0x80;
+	storage += 0x10000;
+	if (!toggle) {
+		if (ScrollAccelTimerResetTimer > 10) {
+			ScrollAccelTimer = 0;
+		}
+		if (ScrollAccelTimer > 10) {
+			interval = 0x80 * (int)(ScrollAccelTimer / 4);
+		}
+
+		switch (storage) {
+		case 0x20000:
+			if (element->selectedItem == neutralIndex) storage -= interval;
+			break;
+		case 0x0:
+			if (element->selectedItem == neutralIndex) storage += interval;
+			break;
+		default:
+			if (element->selectedItem == neutralIndex - 1) storage = max(storage - interval, 0x0);
+			if (element->selectedItem == neutralIndex + 1) storage = min(storage + interval, 0x20000);
+
+			if (element->selectedItem != neutralIndex) {
+				ScrollAccelTimer++;
+				ScrollAccelTimerResetTimer = 0;
+			}
+			else {
+				ScrollAccelTimerResetTimer++;
+			}
+			break;
+		}
+	}
+	else
+	{
+		interval = 1;
+		if (ScrollAccelTimerResetTimer > 10) {
+			ScrollAccelTimer = 0;
+		}
+		if (ScrollAccelTimer > 10) {
+			interval = min(1 * (int)(ScrollAccelTimer / 4), 20);
+		}
+		switch (storage) {
+		case 0x20000:
+			if (element->selectedItem == neutralIndex) storage--;
+			break;
+		case 0x0:
+			if (element->selectedItem == neutralIndex) storage++;
+			break;
+		default:
+			if (element->selectedItem == neutralIndex - 1) {
+				if (storage % 0x80 - interval < 0) {
+					interval -= 0x80;
+				}
+				storage -= interval;
+			}
+			if (element->selectedItem == neutralIndex + 1) {
+				if (storage % 0x80 + interval >= 0x80) {
+					interval -= 0x80;
+				}
+				storage += interval;
+			}
+
+			if (element->selectedItem != neutralIndex) {
+				ScrollAccelTimer++;
+				ScrollAccelTimerResetTimer = 0;
+			}
+			else {
+				ScrollAccelTimerResetTimer++;
+			}
+			break;
+		}
+	}
+	if (storage == 0x20000) targetIndex = neutralIndex + 1;
+	if (storage == 0x0) targetIndex = neutralIndex - 1;
+	element->selectedItem = targetIndex;
+	storage -= 0x10000;
+}
+
+bool PageScrolling(Element* element, MenuWindow* window) {
+	bool retVal = false;
+	int neutralIndex = 1;
+	int destInfo = window->menuInfoIndex;
+
+	if (element->selectedItem == neutralIndex - 1) { //left
+		retVal = true;
+		destInfo = window->menuInfoIndex - 1;
+		if (destInfo < 0) destInfo = XS_NUM_PAGES - 1;
+	}
+	else if (element->selectedItem == neutralIndex + 1) { //right
+		retVal = true;
+		destInfo = window->menuInfoIndex + 1;
+		if (destInfo > XS_NUM_PAGES - 1) destInfo = 0;
+	}
+
+	element->selectedItem = neutralIndex;
+	window->menuInfoIndex = destInfo;
+	return retVal;
+}
+
 bool bAPrev = false;
 bool bDPrev = false;
 void ExtendedMenuInputChecking() {
@@ -4424,7 +4629,7 @@ void ExtendedMenuInputChecking() {
 	__asm {
 		mov extendedWindow, ecx;
 	}
-	char labelBuf[8];
+	char labelBuf[32];
 	bool bA = *(bool*)(adMBAABase + adP1AInput) && extendedWindow->openSubmenuIndex == 2;
 	bool bAPos = bA && !bAPrev;
 	bool bD = *(bool*)(adMBAABase + adP1DInput) && extendedWindow->openSubmenuIndex == 2;
@@ -4562,24 +4767,25 @@ void ExtendedMenuInputChecking() {
 				}
 			}
 			break;
+		case 18:
+			PageScrolling(curElement, extendedWindow);
+			break;
 		}
 
-		char buffer[31];
-
-		snprintf(buffer, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_1], vPatternNames[nREV_ID_1].c_str());
-		curMenuInfo->ElementList[2]->SetCurItemLabel(buffer);
+		snprintf(labelBuf, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_1], vPatternNames[nREV_ID_1].c_str());
+		curMenuInfo->ElementList[2]->SetCurItemLabel(labelBuf);
 		curMenuInfo->ElementList[3]->textOpacity = nREV_ID_1 == 0 ? 0.5f : 1.0f;
 
-		snprintf(buffer, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_2], vPatternNames[nREV_ID_2].c_str());
-		curMenuInfo->ElementList[4]->SetCurItemLabel(buffer);
+		snprintf(labelBuf, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_2], vPatternNames[nREV_ID_2].c_str());
+		curMenuInfo->ElementList[4]->SetCurItemLabel(labelBuf);
 		curMenuInfo->ElementList[5]->textOpacity = nREV_ID_2 == 0 ? 0.5f : 1.0f;
 
-		snprintf(buffer, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_3], vPatternNames[nREV_ID_3].c_str());
-		curMenuInfo->ElementList[6]->SetCurItemLabel(buffer);
+		snprintf(labelBuf, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_3], vPatternNames[nREV_ID_3].c_str());
+		curMenuInfo->ElementList[6]->SetCurItemLabel(labelBuf);
 		curMenuInfo->ElementList[7]->textOpacity = nREV_ID_3 == 0 ? 0.5f : 1.0f;
 
-		snprintf(buffer, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_4], vPatternNames[nREV_ID_4].c_str());
-		curMenuInfo->ElementList[8]->SetCurItemLabel(buffer);
+		snprintf(labelBuf, 31, "%s%s", REV_SHIELD_PREFIX[nREV_SHIELD_4], vPatternNames[nREV_ID_4].c_str());
+		curMenuInfo->ElementList[8]->SetCurItemLabel(labelBuf);
 		curMenuInfo->ElementList[9]->textOpacity = nREV_ID_4 == 0 ? 0.5f : 1.0f;
 
 		PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames,
@@ -4587,7 +4793,7 @@ void ExtendedMenuInputChecking() {
 
 		break;
 	}
-	case 1:
+	case 1: //meters
 	{
 		int healthInterval = bA ? 1 : 950;
 		int healthAccel = bA ? 6 : 0;
@@ -4620,6 +4826,9 @@ void ExtendedMenuInputChecking() {
 		case 12: //Hits until bunker
 			NormalScrolling(curElement, nTRUE_HITS_UNTIL_BUNKER, 0, 101);
 			break;
+		case 17:
+			PageScrolling(curElement, extendedWindow);
+			break;
 		}
 
 		if (pP1->moon != 2) {
@@ -4634,7 +4843,7 @@ void ExtendedMenuInputChecking() {
 				curMenuInfo->ElementList[5]->SetCurItemLabel("BLOOD HEAT");
 				break;
 			default:
-				snprintf(labelBuf, 8, "%i.%02i%%", nTRUE_P1_METER / 100, nTRUE_P1_METER % 100);
+				snprintf(labelBuf, 31, "%i.%02i%%", nTRUE_P1_METER / 100, nTRUE_P1_METER % 100);
 				curMenuInfo->ElementList[5]->SetCurItemLabel(labelBuf);
 			}
 		}
@@ -4644,7 +4853,7 @@ void ExtendedMenuInputChecking() {
 				curMenuInfo->ElementList[5]->SetCurItemLabel("HEAT");
 				break;
 			default:
-				snprintf(labelBuf, 8, "%i.%02i%%", nTRUE_P1_METER / 100, nTRUE_P1_METER % 100);
+				snprintf(labelBuf, 31, "%i.%02i%%", nTRUE_P1_METER / 100, nTRUE_P1_METER % 100);
 				curMenuInfo->ElementList[5]->SetCurItemLabel(labelBuf);
 			}
 		}
@@ -4661,7 +4870,7 @@ void ExtendedMenuInputChecking() {
 				curMenuInfo->ElementList[6]->SetCurItemLabel("BLOOD HEAT");
 				break;
 			default:
-				snprintf(labelBuf, 8, "%i.%02i%%", nTRUE_P2_METER / 100, nTRUE_P2_METER % 100);
+				snprintf(labelBuf, 31, "%i.%02i%%", nTRUE_P2_METER / 100, nTRUE_P2_METER % 100);
 				curMenuInfo->ElementList[6]->SetCurItemLabel(labelBuf);
 			}
 		}
@@ -4671,24 +4880,24 @@ void ExtendedMenuInputChecking() {
 				curMenuInfo->ElementList[6]->SetCurItemLabel("HEAT");
 				break;
 			default:
-				snprintf(labelBuf, 8, "%i.%02i%%", nTRUE_P2_METER / 100, nTRUE_P2_METER % 100);
+				snprintf(labelBuf, 31, "%i.%02i%%", nTRUE_P2_METER / 100, nTRUE_P2_METER % 100);
 				curMenuInfo->ElementList[6]->SetCurItemLabel(labelBuf);
 			}
 		}
 
-		snprintf(labelBuf, 8, "%i", nTRUE_P1_HEALTH);
+		snprintf(labelBuf, 31, "%i", nTRUE_P1_HEALTH);
 		curMenuInfo->ElementList[8]->SetCurItemLabel(labelBuf);
-		snprintf(labelBuf, 8, "%i", nTRUE_P2_HEALTH);
+		snprintf(labelBuf, 31, "%i", nTRUE_P2_HEALTH);
 		curMenuInfo->ElementList[9]->SetCurItemLabel(labelBuf);
 
-		snprintf(labelBuf, 8, "%i", nTRUE_HITS_UNTIL_BURST);
+		snprintf(labelBuf, 31, "%i", nTRUE_HITS_UNTIL_BURST);
 		curMenuInfo->ElementList[11]->SetCurItemLabel(labelBuf);
-		snprintf(labelBuf, 8, "%i", nTRUE_HITS_UNTIL_BUNKER);
+		snprintf(labelBuf, 31, "%i", nTRUE_HITS_UNTIL_BUNKER);
 		curMenuInfo->ElementList[12]->SetCurItemLabel(labelBuf);
 
 		break;
 	}
-	case 2:
+	case 2: //highlights
 	{
 		switch (curMenuInfo->selectedElement) {
 		case 1:
@@ -4705,6 +4914,163 @@ void ExtendedMenuInputChecking() {
 			break;
 		case 5:
 			HighlightSwitch(curElement->selectedItem, arrIdleHighlightSetting);
+			break;
+		case 11:
+			PageScrolling(curElement, extendedWindow);
+			break;
+		}
+
+		break;
+	}
+	case 3: //positions
+	{
+		switch (curMenuInfo->selectedElement) {
+		case 2:
+			PositionScrolling(curElement, nTRUE_P1_X_LOC, bA);
+			break;
+		case 3:
+			PositionScrolling(curElement, nTRUE_P1_ASSIST_X_LOC, bA);
+			break;
+		case 5:
+			PositionScrolling(curElement, nTRUE_P2_X_LOC, bA);
+			break;
+		case 6:
+			PositionScrolling(curElement, nTRUE_P2_ASSIST_X_LOC, bA);
+			break;
+		case 8: //move to positions
+			if (bAPos) {
+				pP1->xPos = nTRUE_P1_X_LOC;
+				pP2->xPos = nTRUE_P2_X_LOC;
+				bool p1LookLeft = pP1->xPos > pP2->xPos;
+				pP1->facingLeft = p1LookLeft;
+				pP1->isOpponentToLeft = p1LookLeft;
+				pP2->facingLeft = !p1LookLeft;
+				pP2->isOpponentToLeft = !p1LookLeft;
+
+				if (pP3->exists && pP3->charID != 51) {
+					pP3->xPos = nTRUE_P1_ASSIST_X_LOC;
+
+					bool p3LookLeft = pP3->xPos > pP2->xPos;
+					pP3->facingLeft = p3LookLeft;
+					pP3->isOpponentToLeft = p3LookLeft;
+				}
+
+				if (pP4->exists && pP4->charID != 51) {
+					pP4->xPos = nTRUE_P2_ASSIST_X_LOC;
+
+					bool p4LookLeft = pP4->xPos > pP1->xPos;
+					pP4->facingLeft = p4LookLeft;
+					pP4->isOpponentToLeft = p4LookLeft;
+				}
+			}
+			break;
+		case 9: //invert
+			if (bAPos) {
+				int temp = nTRUE_P1_X_LOC;
+				nTRUE_P1_X_LOC = nTRUE_P2_X_LOC;
+				nTRUE_P2_X_LOC = temp;
+
+				temp = nTRUE_P1_ASSIST_X_LOC;
+				nTRUE_P1_ASSIST_X_LOC = nTRUE_P2_ASSIST_X_LOC;
+				nTRUE_P2_ASSIST_X_LOC = temp;
+			}
+			break;
+		case 14:
+			PageScrolling(curElement, extendedWindow);
+			break;
+		}
+
+		snprintf(labelBuf, 31, "%i %i", nTRUE_P1_X_LOC >> 7, (nTRUE_P1_X_LOC + 0x10000) % 0x80);
+		curMenuInfo->ElementList[2]->SetCurItemLabel(labelBuf);
+		snprintf(labelBuf, 31, "%i %i", nTRUE_P1_ASSIST_X_LOC >> 7, (nTRUE_P1_ASSIST_X_LOC + 0x10000) % 0x80);
+		curMenuInfo->ElementList[3]->SetCurItemLabel(labelBuf);
+		curMenuInfo->ElementList[3]->textOpacity = pP3->exists ? 1.0f : 0.5f;
+
+		snprintf(labelBuf, 31, "%i %i", nTRUE_P2_X_LOC >> 7, (nTRUE_P2_X_LOC + 0x10000) % 0x80);
+		curMenuInfo->ElementList[5]->SetCurItemLabel(labelBuf);
+		snprintf(labelBuf, 31, "%i %i", nTRUE_P2_ASSIST_X_LOC >> 7, (nTRUE_P2_ASSIST_X_LOC + 0x10000) % 0x80);
+		curMenuInfo->ElementList[6]->SetCurItemLabel(labelBuf);
+		curMenuInfo->ElementList[6]->textOpacity = pP4->exists ? 1.0f : 0.5f;
+
+		break;
+	}
+	case 4: //char specifics
+	{
+		switch (curMenuInfo->selectedElement) {
+		case 12:
+			PageScrolling(curElement, extendedWindow);
+			break;
+		}
+
+		break;
+	}
+	case 5: //hitbox
+	{
+		switch (curMenuInfo->selectedElement) {
+		case 11:
+			PageScrolling(curElement, extendedWindow);
+			break;
+		}
+
+		break;
+	}
+	case 6: //save state
+	{
+		switch (curMenuInfo->selectedElement) {
+		case 13:
+			PageScrolling(curElement, extendedWindow);
+			break;
+		}
+
+		break;
+	}
+	case 7: //frame data
+	{
+		switch (curMenuInfo->selectedElement) {
+		case 6: //scroll
+			NormalScrolling(curElement, nTRUE_SCROLL_DISPLAY, -400, 0);
+			break;
+		case 13:
+			PageScrolling(curElement, extendedWindow);
+			break;
+		}
+
+		break;
+	}
+	case 8: //RNG
+	{
+		switch (curMenuInfo->selectedElement) {
+		case 3: //seed
+			NormalScrolling(curElement, nTRUE_SEED, 0, 0xffffffff, 1, 24);
+			break;
+		case 8:
+			PageScrolling(curElement, extendedWindow);
+			break;
+		}
+
+		break;
+	}
+	case 9: //displays
+	{
+		switch (curMenuInfo->selectedElement) {
+		case 5: //framedisplay y
+			NormalScrolling(curElement, nTRUE_FRAME_DISPLAY_Y, 0, 440, 10);
+			break;
+		case 12:
+			PageScrolling(curElement, extendedWindow);
+			break;
+		}
+
+		snprintf(labelBuf, 31, "%i", nTRUE_FRAME_DISPLAY_Y);
+		curMenuInfo->ElementList[5]->SetCurItemLabel(labelBuf);
+
+		break;
+	}
+	case 10: //misc
+	{
+		switch (curMenuInfo->selectedElement) {
+		case 10:
+			PageScrolling(curElement, extendedWindow);
 			break;
 		}
 

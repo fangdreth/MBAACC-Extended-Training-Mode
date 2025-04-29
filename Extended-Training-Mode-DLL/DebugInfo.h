@@ -546,7 +546,7 @@ typedef struct EffectData {
 	BYTE isKnockedDown;
 	UNUSED(0x6);
 	BYTE jumpVariable;
-	BYTE specialVariable[10];
+	BYTE specialVariables[10];
 	WORD dashVariable;
 	WORD extraVariables[10];
 	WORD xVelStorage;

@@ -214,12 +214,27 @@ CHECKSIZE(MenuWindow, 0xe8)
 #undef CHECKOFFSET
 #undef CHECKSIZE
 
-//Vectors guide
-//Empty vectors are blank spaces(only need the one defined)
+// --- Vectors guide ---
+//Empty vectors are blank spaces (only need the one defined)
 //Vectors with one value are elements with only a label (like the vanilla "default" and "return" elements)
 //Vectors with more than one value are elements with selectable options
 
 std::vector<const char*> vSPACE_ELEMENT = {};
+
+std::vector<const char*> vDEFAULT_ELEMENT = {
+	"DEFAULT"
+};
+
+std::vector<const char*> vPAGE_ELEMENT = {
+	" ",
+	"X1", "X2", "X3"
+};
+
+int nPAGE = 1;
+
+std::vector<const char*> vRETURN_ELEMENT = {
+	"RETURN"
+};
 
 //Page 1
 std::vector<const char*> vREVERSAL_TYPE = {
@@ -279,17 +294,21 @@ std::vector<const char*> vREVERSAL_DELAY = {
 	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
 };
 
+std::vector<const char*> vP1_PAGE = {
+	" ",
+	"X1", "PAGE 1", "X3"
+};
+
 std::vector<std::vector<const char*>> P1_Options = {
-	vREVERSAL_TYPE,
-	vSPACE_ELEMENT,
+	vREVERSAL_TYPE, vSPACE_ELEMENT,
 	vREVERSAL_SLOT_1, vREV_SLOT_1_WEIGHT,
 	vREVERSAL_SLOT_2, vREV_SLOT_2_WEIGHT,
 	vREVERSAL_SLOT_3, vREV_SLOT_3_WEIGHT,
-	vREVERSAL_SLOT_4, vREV_SLOT_4_WEIGHT,
-	vSPACE_ELEMENT,
-	vNO_REV_WEIGHT,
-	vSPACE_ELEMENT,
-	vREVERSAL_DELAY
+	vREVERSAL_SLOT_4, vREV_SLOT_4_WEIGHT, vSPACE_ELEMENT,
+	vNO_REV_WEIGHT, vSPACE_ELEMENT,
+	vREVERSAL_DELAY, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vP1_PAGE
 };
 
 int nREVERSAL_TYPE = 1;
@@ -328,7 +347,8 @@ std::vector<int*> P1_Settings = {
 	&nREVERSAL_SLOT_3, &nREV_SLOT_3_WEIGHT,
 	&nREVERSAL_SLOT_4, &nREV_SLOT_4_WEIGHT,
 	&nNO_REV_WEIGHT,
-	&nREVERSAL_DELAY
+	&nREVERSAL_DELAY,
+	&nPAGE
 };
 
 //Page 2
@@ -377,35 +397,60 @@ std::vector<const char*> vHITS_UNTIL_BUNKER = {
 	"X1", "X2", "X3"
 };
 
+std::vector<const char*> vP2_PAGE = {
+	" ",
+	"X1", "PAGE 2", "X3"
+};
+
 std::vector<std::vector<const char*>> P2_Options = {
 	vPENALTY_RESET, vGUARD_BAR_RESET, vSPACE_ELEMENT,
 	vEX_GUARD, vSPACE_ELEMENT,
 	vP1_METER, vP2_METER, vSPACE_ELEMENT,
 	vP1_HEALTH, vP2_HEALTH, vSPACE_ELEMENT,
-	vHITS_UNTIL_BURST, vHITS_UNTIL_BUNKER
+	vHITS_UNTIL_BURST, vHITS_UNTIL_BUNKER, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vP2_PAGE
 };
 
-int nPENALTY_RESET = 0;
-int nGUARD_BAR_RESET = 0;
-int nEX_GUARD = 0;
-int nP1_METER = 1;
-int nP2_METER = 1;
-int nP1_HEALTH = 2;
-int nP2_HEALTH = 2;
-int nHITS_UNTIL_BURST = 0;
-int nHITS_UNTIL_BUNKER = 0;
+const int defPEN_RESET = 0;
+const int defGUARD_RESET = 0;
+const int defEX_GUARD = 0;
+const int defP1_METER = 1;
+const int defP2_METER = 1;
+const int defP1_HEALTH = 2;
+const int defP2_HEALTH = 2;
+const int defHITS_BURST = 0;
+const int defHITS_BUNKER = 0;
 
-int nTRUE_P1_METER = 10000;
-int nTRUE_P2_METER = 10000;
-int nTRUE_P1_HEALTH = 11400;
-int nTRUE_P2_HEALTH = 11400;
-int nTRUE_HITS_UNTIL_BURST = 0;
-int nTRUE_HITS_UNTIL_BUNKER = 0;
+int nPENALTY_RESET = defPEN_RESET;
+int nGUARD_BAR_RESET = defGUARD_RESET;
+int nEX_GUARD = defEX_GUARD;
+int nP1_METER = defP1_METER;
+int nP2_METER = defP2_METER;
+int nP1_HEALTH = defP1_HEALTH;
+int nP2_HEALTH = defP2_HEALTH;
+int nHITS_UNTIL_BURST = defHITS_BURST;
+int nHITS_UNTIL_BUNKER = defHITS_BUNKER;
+
+const int defTRUE_P1_METER = 10000;
+const int defTRUE_P2_METER = 10000;
+const int defTRUE_P1_HEALTH = 11400;
+const int defTRUE_P2_HEALTH = 11400;
+const int defTRUE_HITS_BURST = 0;
+const int defTRUE_HITS_BUNKER = 0;
+
+int nTRUE_P1_METER = defTRUE_P1_METER;
+int nTRUE_P2_METER = defTRUE_P2_METER;
+int nTRUE_P1_HEALTH = defTRUE_P1_HEALTH;
+int nTRUE_P2_HEALTH = defTRUE_P2_HEALTH;
+int nTRUE_HITS_UNTIL_BURST = defTRUE_HITS_BURST;
+int nTRUE_HITS_UNTIL_BUNKER = defTRUE_HITS_BUNKER;
 
 std::vector<int*> P2_Settings = {
 	&nPENALTY_RESET, &nGUARD_BAR_RESET, &nEX_GUARD,
 	&nP1_METER, &nP2_METER, &nP1_HEALTH, &nP2_HEALTH,
-	&nHITS_UNTIL_BURST, &nHITS_UNTIL_BUNKER
+	&nHITS_UNTIL_BURST, &nHITS_UNTIL_BUNKER,
+	&nPAGE
 };
 
 //Page 3
@@ -439,19 +484,34 @@ std::vector<const char*> vIDLE = {
 	"OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK"
 };
 
-std::vector<std::vector<const char*>> P3_Options = {
-	vHIGHLIGHTS, vSPACE_ELEMENT, vGUARD, vHIT, vARMOR, vTHROW_PROTECTION, vIDLE
+std::vector<const char*> vP3_PAGE = {
+	" ",
+	"X1", "PAGE 3", "X3"
 };
 
-int nHIGHLIGHTS = 0;
-int nGUARD = 0;
-int nHIT = 0;
-int nARMOR = 0;
-int nTHROW_PROTECTION = 0;
-int nIDLE = 0;
+std::vector<std::vector<const char*>> P3_Options = {
+	vHIGHLIGHTS, vSPACE_ELEMENT, vGUARD, vHIT, vARMOR, vTHROW_PROTECTION, vIDLE, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vP3_PAGE
+};
+
+const int defHIGHLIGHTS = 0;
+const int defGUARD = 0;
+const int defHIT = 0;
+const int defARMOR = 0;
+const int defTHROW_PROT = 0;
+const int defIDLE = 0;
+
+int nHIGHLIGHTS = defHIGHLIGHTS;
+int nGUARD = defGUARD;
+int nHIT = defHIT;
+int nARMOR = defARMOR;
+int nTHROW_PROTECTION = defTHROW_PROT;
+int nIDLE = defIDLE;
 
 std::vector<int*> P3_Settings = {
-	&nHIGHLIGHTS, &nGUARD, &nHIT, &nARMOR, &nTHROW_PROTECTION, &nIDLE
+	&nHIGHLIGHTS, &nGUARD, &nHIT, &nARMOR, &nTHROW_PROTECTION, &nIDLE,
+	&nPAGE
 };
 
 //Page 4
@@ -465,65 +525,124 @@ std::vector<const char*> vP1_X_LOC = {
 	"X1", "X2", "X3"
 };
 
+std::vector<const char*> vP1_ASSIST_X_LOC = {
+	"P1 ASSIST X-LOC",
+	"X1", "X2", "X3"
+};
+
 std::vector<const char*> vP2_X_LOC = {
 	"P2 X-LOC",
 	"X1", "X2", "X3"
+};
+
+std::vector<const char*> vP2_ASSIST_X_LOC = {
+	"P2 ASSIST X-LOC",
+	"X1", "X2", "X3"
+};
+
+std::vector<const char*> vMOVE_TO_POSITIONS = {
+	"MOVE TO POSITIONS"
 };
 
 std::vector<const char*> vINVERT = {
 	"INVERT"
 };
 
-std::vector<std::vector<const char*>> P4_Options = {
-	vRESET_TO_POSITIONS, vSPACE_ELEMENT, vP1_X_LOC, vP2_X_LOC, vSPACE_ELEMENT, vINVERT
+std::vector<const char*> vP4_PAGE = {
+	" ",
+	"X1", "PAGE 4", "X3"
 };
 
-int nRESET_TO_POSITIONS = 0;
-int nP1_X_LOC = 0;
-int nP2_X_LOC = 0;
+std::vector<std::vector<const char*>> P4_Options = {
+	vRESET_TO_POSITIONS, vSPACE_ELEMENT,
+	vP1_X_LOC, vP1_ASSIST_X_LOC, vSPACE_ELEMENT,
+	vP2_X_LOC, vP2_ASSIST_X_LOC, vSPACE_ELEMENT,
+	vMOVE_TO_POSITIONS, vINVERT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vP4_PAGE
+};
+
+const int defRESET_POS = 0;
+const int defP1_X = 1;
+const int defP1_ASSIST_X = 1;
+const int defP2_X = 1;
+const int defP2_ASSIST_X = 1;
+
+int nRESET_TO_POSITIONS = defRESET_POS;
+int nP1_X_LOC = defP1_X;
+int nP1_ASSIST_X_LOC = defP1_ASSIST_X;
+int nP2_X_LOC = defP2_X;
+int nP2_ASSIST_X_LOC = defP2_ASSIST_X;
+
+const int defTRUE_P1_X = -0x4000;
+const int defTRUE_P1_ASSIST_X = -0x7200;
+const int defTRUE_P2_X = 0x4000;
+const int defTRUE_P2_ASSIST_X = 0x7200;
+
+int nTRUE_P1_X_LOC = defTRUE_P1_X;
+int nTRUE_P1_ASSIST_X_LOC = defTRUE_P1_ASSIST_X;
+int nTRUE_P2_X_LOC = defTRUE_P2_X;
+int nTRUE_P2_ASSIST_X_LOC = defTRUE_P2_ASSIST_X;
 
 std::vector<int*> P4_Settings = {
-	&nRESET_TO_POSITIONS, &nP1_X_LOC, &nP2_X_LOC
+	&nRESET_TO_POSITIONS, &nP1_X_LOC, &nP1_ASSIST_X_LOC, &nP2_X_LOC, &nP2_ASSIST_X_LOC,
+	&nPAGE
 };
 
 //Page 5
 std::vector<const char*> vSION_BULLETS = {
 	"SION BULLETS",
-	"INFINITE", "NORMAL", "X1", "X2", "X3"
+	"INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"
 };
 
 std::vector<const char*> vROA_VISIBLE_CHARGE = {
 	"ROA VISIBLE CHARGE",
-	"INFINITE", "NORMAL", "X1", "X2", "X3"
+	"INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 };
 
 std::vector<const char*> vROA_HIDDEN_CHARGE = {
 	"ROA HIDDEN CHARGE",
-	"INFINITE", "NORMAL", "X1", "X2", "X3"
+	"INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 };
 
 std::vector<const char*> vF_MAIDS_HEARTS = {
 	"F-MAIDS HEARTS",
-	"INFINITE", "5", "4", "3", "2", "1" ,"0"
+	"INFINITE", "NORMAL", "4", "3", "2", "1" ,"0"
 };
 
 std::vector<const char*> vRYOUGI_KNIFE = {
 	"RYOUGI KNIFE",
-	"NORMAL", "INFINITE"
+	"INFINITE", "NORMAL"
+};
+
+std::vector<const char*> vP5_PAGE = {
+	" ",
+	"X1", "PAGE 5", "X3"
 };
 
 std::vector<std::vector<const char*>> P5_Options = {
-	vSION_BULLETS, vSPACE_ELEMENT, vROA_VISIBLE_CHARGE, vROA_HIDDEN_CHARGE, vSPACE_ELEMENT, vF_MAIDS_HEARTS, vSPACE_ELEMENT, vRYOUGI_KNIFE
+	vSION_BULLETS, vSPACE_ELEMENT, vROA_VISIBLE_CHARGE, vROA_HIDDEN_CHARGE, vSPACE_ELEMENT,
+	vF_MAIDS_HEARTS, vSPACE_ELEMENT,
+	vRYOUGI_KNIFE, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vP5_PAGE
 };
 
-int nSION_BULLETS = 1;
-int nROA_VISIBLE_CHARGE = 1;
-int nROA_HIDDEN_CHARGE = 1;
-int nF_MAIDS_HEARTS = 1;
-int nRYOUGI_KNIFE = 0;
+const int defSION_BULLETS = 1;
+const int defROA_VISIBLE = 1;
+const int defROA_HIDDEN = 1;
+const int defMAIDS_HEARTS = 1;
+const int defRYOUGI_KNIFE = 1;
+
+int nSION_BULLETS = defSION_BULLETS;
+int nROA_VISIBLE_CHARGE = defROA_VISIBLE;
+int nROA_HIDDEN_CHARGE = defROA_HIDDEN;
+int nF_MAIDS_HEARTS = defMAIDS_HEARTS;
+int nRYOUGI_KNIFE = defRYOUGI_KNIFE;
 
 std::vector<int*> P5_Settings = {
-	&nSION_BULLETS, &nROA_VISIBLE_CHARGE, &nROA_HIDDEN_CHARGE, &nF_MAIDS_HEARTS, &nRYOUGI_KNIFE
+	&nSION_BULLETS, &nROA_VISIBLE_CHARGE, &nROA_HIDDEN_CHARGE, &nF_MAIDS_HEARTS, &nRYOUGI_KNIFE,
+	&nPAGE
 };
 
 //Page 6
@@ -552,18 +671,34 @@ std::vector<const char*> vDRAW_GROUND = {
 	"OFF", "ON"
 };
 
-std::vector<std::vector<const char*>> P6_Options = {
-	vDISPLAY_HITBOXES, vHITBOX_STYLE, vCOLOR_BLIND_MODE, vSPACE_ELEMENT, vORIGIN_STYLE, vSPACE_ELEMENT, vDRAW_GROUND
+std::vector<const char*> vP6_PAGE = {
+	" ",
+	"X1", "PAGE 6", "X3"
 };
 
-int nDISPLAY_HITBOXES = 0;
-int nHITBOX_STYLE = 0;
-int nCOLOR_BLIND_MODE = 0;
-int nORIGIN_STYLE = 0;
-int nDRAW_GROUND = 0;
+std::vector<std::vector<const char*>> P6_Options = {
+	vDISPLAY_HITBOXES, vHITBOX_STYLE, vCOLOR_BLIND_MODE, vSPACE_ELEMENT,
+	vORIGIN_STYLE, vSPACE_ELEMENT,
+	vDRAW_GROUND, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vP6_PAGE
+};
+
+const int defDISPLAY_HITBOXES = 0;
+const int defHITBOX_STYLE = 0;
+const int defCOLOR_BLIND = 0;
+const int defORIGIN_STYLE = 0;
+const int defDRAW_GROUND = 0;
+
+int nDISPLAY_HITBOXES = defDISPLAY_HITBOXES;
+int nHITBOX_STYLE = defHITBOX_STYLE;
+int nCOLOR_BLIND_MODE = defCOLOR_BLIND;
+int nORIGIN_STYLE = defORIGIN_STYLE;
+int nDRAW_GROUND = defDRAW_GROUND;
 
 std::vector<int*> P6_Settings = {
-	&nDISPLAY_HITBOXES, &nHITBOX_STYLE, &nCOLOR_BLIND_MODE, &nORIGIN_STYLE, &nDRAW_GROUND
+	&nDISPLAY_HITBOXES, &nHITBOX_STYLE, &nCOLOR_BLIND_MODE, &nORIGIN_STYLE, &nDRAW_GROUND,
+	&nPAGE
 };
 
 //Page 7
@@ -593,15 +728,29 @@ std::vector<const char*> vLOAD_RNG = {
 	"OFF", "ON"
 };
 
-std::vector<std::vector<const char*>> P7_Options = {
-	vSAVE_STATE_SLOT, vSPACE_ELEMENT, vSAVE_STATE, vCLEAR_ALL_SAVES, vSPACE_ELEMENT, vIMPORT_SAVE, vEXPORT_SAVE, vSPACE_ELEMENT, vLOAD_RNG
+std::vector<const char*> vP7_PAGE = {
+	" ",
+	"X1", "PAGE 7", "X3"
 };
 
-int nSAVE_STATE_SLOT = 1;
-int nLOAD_RNG = 0;
+std::vector<std::vector<const char*>> P7_Options = {
+	vSAVE_STATE_SLOT, vSPACE_ELEMENT,
+	vSAVE_STATE, vCLEAR_ALL_SAVES, vSPACE_ELEMENT,
+	vIMPORT_SAVE, vEXPORT_SAVE, vSPACE_ELEMENT,
+	vLOAD_RNG, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vP7_PAGE
+};
+
+const int defSAVE_SLOT = 1;
+const int defLOAD_RNG = 0;
+
+int nSAVE_STATE_SLOT = defSAVE_SLOT;
+int nLOAD_RNG = defLOAD_RNG;
 
 std::vector<int*> P7_Settings = {
-	&nSAVE_STATE_SLOT, &nLOAD_RNG
+	&nSAVE_STATE_SLOT, &nLOAD_RNG,
+	&nPAGE
 };
 
 //Page 8
@@ -610,8 +759,8 @@ std::vector<const char*> vFRAME_DATA = {
 	"NORMAL", "ADVANCED"
 };
 
-std::vector<const char*> vIN_GAME_FRAMEBAR = {
-	"IN-GAME FRAMEBAR",
+std::vector<const char*> vIN_GAME_FRAME_DISPLAY = {
+	"IN-GAME FRAME DISPLAY",
 	"OFF", "ON"
 };
 
@@ -627,25 +776,46 @@ std::vector<const char*> vSHOW_CANCEL_WINDOWS = {
 
 std::vector<const char*> vSCROLL_DISPLAY = {
 	"SCROLL DISPLAY",
-	"X1", "X2", "X3", "0"
+	"X1", "X2", "X3"
 };
 
 std::vector<const char*> vCOLOR_GUIDE = {
 	"COLOR GUIDE"
 };
 
-std::vector<std::vector<const char*>> P8_Options = {
-	vFRAME_DATA, vIN_GAME_FRAMEBAR, vSPACE_ELEMENT, vSHOW_FREEZE_AND_INPUTS, vSHOW_CANCEL_WINDOWS, vSPACE_ELEMENT, vSCROLL_DISPLAY, vSPACE_ELEMENT, vCOLOR_GUIDE
+std::vector<const char*> vP8_PAGE = {
+	" ",
+	"X1", "PAGE 8", "X3"
 };
 
-int nFRAME_DATA = 0;
-int nIN_GAME_FRAMEBAR = 0;
-int nSHOW_FREEZE_AND_INPUTS = 0;
-int nSHOW_CANCEL_WINDOWS = 0;
-int nSCROLL_DISPLAY = 3;
+std::vector<std::vector<const char*>> P8_Options = {
+	vFRAME_DATA, vIN_GAME_FRAME_DISPLAY, vSPACE_ELEMENT,
+	vSHOW_FREEZE_AND_INPUTS, vSHOW_CANCEL_WINDOWS, vSPACE_ELEMENT,
+	vSCROLL_DISPLAY, vSPACE_ELEMENT,
+	vCOLOR_GUIDE, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vP8_PAGE
+};
+
+const int defFRAME_DATA = 0;
+const int defIN_GAME_FRAME_DISPLAY = 0;
+const int defSHOW_FREEZE_INPUTS = 0;
+const int defSHOW_CANCEL = 0;
+const int defSCROLL_DISPLAY = 2;
+
+int nFRAME_DATA = defFRAME_DATA;
+int nIN_GAME_FRAME_DISPLAY = defIN_GAME_FRAME_DISPLAY;
+int nSHOW_FREEZE_AND_INPUTS = defSHOW_FREEZE_INPUTS;
+int nSHOW_CANCEL_WINDOWS = defSHOW_CANCEL;
+int nSCROLL_DISPLAY = defSCROLL_DISPLAY;
+
+const int defTRUE_SCROLL_DISPLAY = 0;
+
+int nTRUE_SCROLL_DISPLAY = defTRUE_SCROLL_DISPLAY;
 
 std::vector<int*> P8_Settings = {
-	&nFRAME_DATA, &nIN_GAME_FRAMEBAR, &nSHOW_FREEZE_AND_INPUTS, &nSHOW_CANCEL_WINDOWS, &nSCROLL_DISPLAY
+	&nFRAME_DATA, &nIN_GAME_FRAME_DISPLAY, &nSHOW_FREEZE_AND_INPUTS, &nSHOW_CANCEL_WINDOWS, &nSCROLL_DISPLAY,
+	&nPAGE
 };
 
 //Page 9
@@ -664,16 +834,33 @@ std::vector<const char*> vSEED = {
 	"X1", "X2", "X3"
 };
 
-std::vector<std::vector<const char*>> P9_Options = {
-	vCUSTOM_RNG, vSPACE_ELEMENT, vRATE, vSEED
+std::vector<const char*> vP9_PAGE = {
+	" ",
+	"X1", "PAGE 9", "X3"
 };
 
-int nCUSTOM_RNG = 0;
-int nRATE = 0;
-int nSEED = 0;
+std::vector<std::vector<const char*>> P9_Options = {
+	vCUSTOM_RNG, vSPACE_ELEMENT,
+	vRATE, vSEED, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vP9_PAGE
+};
+
+const int defCUSTOM_RNG = 0;
+const int defRATE = 0;
+const int defSEED = 0;
+
+int nCUSTOM_RNG = defCUSTOM_RNG;
+int nRATE = defRATE;
+int nSEED = defSEED;
+
+const int defTRUE_SEED = 0;
+
+int nTRUE_SEED = defTRUE_SEED;
 
 std::vector<int*> P9_Settings = {
-	&nCUSTOM_RNG, &nRATE, &nSEED
+	&nCUSTOM_RNG, &nRATE, &nSEED,
+	&nPAGE
 };
 
 //Page 10
@@ -697,23 +884,36 @@ std::vector<const char*> vFRAME_DISPLAY_Y = {
 	"X1", "X2", "X3"
 };
 
-std::vector<const char*> vATTACK_DISPLAY = {
-	"ATTACK DISPLAY",
-	"OFF", "ON"
+std::vector<const char*> vP10_PAGE = {
+	" ",
+	"X1", "PAGE 10", "X3"
 };
 
 std::vector<std::vector<const char*>> P10_Options = {
-	vSHOW_STATS, vSPACE_ELEMENT, vP1_INPUT_DISPLAY, vP2_INPUT_DISPLAY, vSPACE_ELEMENT, vFRAME_DISPLAY_Y, vSPACE_ELEMENT, vATTACK_DISPLAY
+	vSHOW_STATS, vSPACE_ELEMENT,
+	vP1_INPUT_DISPLAY, vP2_INPUT_DISPLAY, vSPACE_ELEMENT,
+	vFRAME_DISPLAY_Y, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vP10_PAGE
 };
 
-int nSHOW_STATS = 0;
-int nP1_INPUT_DISPLAY = 0;
-int nP2_INPUT_DISPLAY = 0;
-int nFRAME_DISPLAY_Y = 0;
-int nATTACK_DISPLAY = 0;
+const int defSHOW_STATS = 1;
+const int defP1_INPUT = 0;
+const int defP2_INPUT = 0;
+const int defFRAME_DISPLAY_Y = 1;
+
+int nSHOW_STATS = defSHOW_STATS;
+int nP1_INPUT_DISPLAY = defP1_INPUT;
+int nP2_INPUT_DISPLAY = defP2_INPUT;
+int nFRAME_DISPLAY_Y = defFRAME_DISPLAY_Y;
+
+const int defTRUE_FRAME_DISPLAY_Y = 400;
+
+int nTRUE_FRAME_DISPLAY_Y = defTRUE_FRAME_DISPLAY_Y;
 
 std::vector<int*> P10_Settings = {
-	&nSHOW_STATS, &nP1_INPUT_DISPLAY, &nP2_INPUT_DISPLAY, &nFRAME_DISPLAY_Y, &nATTACK_DISPLAY
+	&nSHOW_STATS, &nP1_INPUT_DISPLAY, &nP2_INPUT_DISPLAY, &nFRAME_DISPLAY_Y,
+	&nPAGE
 };
 
 //Page 11
@@ -742,18 +942,34 @@ std::vector<const char*> vBACKGROUND = {
 	"NORMAL", "WHITE", "BLACK", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE"
 };
 
-std::vector<std::vector<const char*>> P11_Options = {
-	vSLOW_MOTION, vSPACE_ELEMENT, vHIDE_HUD, vHIDE_SHADOWS, vHIDE_EXTRAS, vSPACE_ELEMENT, vBACKGROUND
+std::vector<const char*> vP11_PAGE = {
+	" ",
+	"X1", "PAGE 11", "X3"
 };
 
-int nSLOW_MOTION = 0;
-int nHIDE_HUD = 0;
-int nHIDE_SHADOWS = 0;
-int nHIDE_EXTRAS = 0;
-int nBACKGROUND = 0;
+std::vector<std::vector<const char*>> P11_Options = {
+	vSLOW_MOTION, vSPACE_ELEMENT,
+	vHIDE_HUD, vHIDE_SHADOWS, vHIDE_EXTRAS, vSPACE_ELEMENT,
+	vBACKGROUND, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vP11_PAGE
+};
+
+const int defSLOW_MOTION = 0;
+const int defHIDE_HUD = 0;
+const int defHIDE_SHADOWS = 0;
+const int defHIDE_EXTRAS = 0;
+const int defBACKGROUND = 0;
+
+int nSLOW_MOTION = defSLOW_MOTION;
+int nHIDE_HUD = defHIDE_HUD;
+int nHIDE_SHADOWS = defHIDE_SHADOWS;
+int nHIDE_EXTRAS = defHIDE_EXTRAS;
+int nBACKGROUND = defBACKGROUND;
 
 std::vector<int*> P11_Settings = {
-	&nSLOW_MOTION, &nHIDE_HUD, &nHIDE_SHADOWS, &nHIDE_EXTRAS, &nBACKGROUND
+	&nSLOW_MOTION, &nHIDE_HUD, &nHIDE_SHADOWS, &nHIDE_EXTRAS, &nBACKGROUND,
+	&nPAGE
 };
 
 //All pages
@@ -765,8 +981,10 @@ std::vector<std::vector<int*>> Page_Settings = {
 	P1_Settings, P2_Settings, P3_Settings, P4_Settings, P5_Settings, P6_Settings, P7_Settings, P8_Settings, P9_Settings, P10_Settings, P11_Settings
 };
 
+const int XS_NUM_PAGES = 11;
+
 uint8_t nEXTENDED_SETTINGS_PAGE = 0;
-uint8_t nEXTENDED_SETTINGS_CURSOR[11] = { 0 };
+uint8_t nEXTENDED_SETTINGS_CURSOR[XS_NUM_PAGES] = { 0 };
 
 bool bOldFN1Input = 0;
 bool bOldFN2Input = 0;
