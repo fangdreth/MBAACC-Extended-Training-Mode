@@ -45,7 +45,7 @@ enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, YELLOW_HIGHLIGHT, GREEN_H
 enum eRNGMode { RNG_OFF, RNG_SEED, RNG_RN };
 enum eRNGRate { RNG_EVERY_FRAME, RNG_EVERY_RESET };
 enum eHitboxStyle { HITBOX_DRAW_ALL = 0, HITBOX_BLEND = 1 };
-enum eBackground { BG_NORMAL, BG_WHITE, BG_GRAY, BG_BLACK, BG_RED, BG_GREEN, BG_BLUE, BG_PURPLE, BG_YELLOW };
+enum eBackground { BG_NORMAL, BG_WHITE, BG_GRAY, BG_BLACK, BG_RED, BG_YELLOW, BG_GREEN, BG_BLUE, BG_PURPLE };
 enum eSlow { SLOW_THREE_FOURTHS = 3, SLOW_ONE_HALF = 2, SLOW_ONE_FOURTH = 1 };
 enum eInputDisplay { INPUT_OFF = 0, INPUT_LIST = 1, INPUT_ARCADE = 2, INPUT_BOTH = 3 };
 
@@ -508,8 +508,17 @@ const ADDRESS adSharedP2Guts =						adShareBase + 0x260; // 16 bytes (float[4])
 const ADDRESS adHealthRestore =						adShareBase + 0x300; //4 bytes
 
 //extended menu storage
-const ADDRESS adMenuOption1 =						adShareBase + 0x500; //4 bytes
-const ADDRESS adMenuOption2 =						adShareBase + 0x504; //4 bytes
+const ADDRESS adXS_hitboxStyle =						adShareBase + 0x500; //1 byte
+const ADDRESS adXS_colorblind =							adShareBase + 0x501; //1 byte
+const ADDRESS adXS_originStyle =						adShareBase + 0x502; //1 byte
+const ADDRESS adXS_frameData =							adShareBase + 0x503; //1 byte
+const ADDRESS adXS_showFreezeInputs =					adShareBase + 0x504; //1 byte
+const ADDRESS adXS_showCancel =							adShareBase + 0x505; //1 byte
+const ADDRESS adXS_frameScroll =						adShareBase + 0x506; //2 bytes
+const ADDRESS adXS_colorGuide =							adShareBase + 0x508; //1 byte
+const ADDRESS adXS_P1InputDisplay =						adShareBase + 0x509; //1 byte
+const ADDRESS adXS_P2InputDisplay =						adShareBase + 0x50A; //1 byte
+const ADDRESS adXS_hideExtras =							adShareBase + 0x50B; //1 byte
 
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough

@@ -234,7 +234,7 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adSharedHitboxStyle) = opt;
+			*(BYTE*)(dwBaseAddress + adXS_hitboxStyle) = opt;
 		},
 		[](int opt) -> std::string {
 
@@ -257,7 +257,7 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adSharedColorBlindMode) = opt;
+			*(BYTE*)(dwBaseAddress + adXS_colorblind) = opt;
 		},
 		defaultOnOffNameFunc
 	);

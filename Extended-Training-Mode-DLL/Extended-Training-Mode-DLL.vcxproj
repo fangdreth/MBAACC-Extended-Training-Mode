@@ -212,6 +212,7 @@
     <ClCompile Include="ReplayManager.cpp" />
     <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="TASManager.cpp" />
+    <ClCompile Include="TrainingMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DLLAsmFuncs.asm">

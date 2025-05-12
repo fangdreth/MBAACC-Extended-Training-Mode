@@ -75,6 +75,8 @@ DWORD fastReversePenalty = 0;
 DWORD shouldDrawMeter = 1;
 DWORD frameBarY = 400;
 bool bDoResetBars = true;
+bool bShowFrameBarPreview = false;
+bool bShowFrameBarYPreview = false;
 
 uint8_t nRNGMode = RNG_OFF;
 uint8_t nRNGRate = RNG_EVERY_FRAME;
@@ -1184,9 +1186,6 @@ void drawFrameBar(int frameBarY)
 
 	FrameBar(P1, P2, P3, P4);
 
-	if (!nIN_GAME_FRAME_DISPLAY)
-		return;
-
 	int nBarDrawCounter = 0;
 
 	nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
@@ -1248,10 +1247,6 @@ void drawFrameBar(int frameBarY)
 
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", Main2->nFirstActive % 1000, Main2->nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
 	TextDraw(20, frameBarY + 29, 10, 0xFFFFFFFF, buffer);
-
-	//DEBUG PRINTS
-	//snprintf(buffer, 256, "%i", nREVERSAL_TYPE);
-	//TextDraw(20, frameBarY - 23, 10, 0xFFFFFFFF, buffer);
 
 }
 
@@ -1808,7 +1803,7 @@ bool bDidShield = false;
 int nSaveShieldRevIndex = 0;
 
 void HandleReversals() {
-	if (nREVERSAL_TYPE == revOFF || pActiveP2->doTrainingAction != 1) return;
+	if (nREVERSAL_TYPE == 0 || pActiveP2->doTrainingAction != 1) return;
 	if (pdP2Data->inactionableFrames == 0) {
 		bHoldButtons = false;
 		bHoldShield = false;
@@ -2323,7 +2318,7 @@ void frameDoneCallback()
 	shouldDrawGroundLine = nDRAW_GROUND;
 	shouldDrawShadow = !nHIDE_SHADOWS;
 
-	switch (*(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle))
+	switch (nBACKGROUND)
 	{
 	case BG_NORMAL:
 		shouldDrawBackground = true;
@@ -2475,8 +2470,7 @@ void frameDoneCallback()
 
 	if (oHitboxesDisplayKey.keyDown())
 	{
-		bHitboxesDisplay = !*(bool*)(dwBaseAddress + adSharedDisplayHitboxes);
-		*(bool*)(dwBaseAddress + adSharedDisplayHitboxes) = bHitboxesDisplay;
+		nDISPLAY_HITBOXES = !nDISPLAY_HITBOXES;
 		nDrawTextTimer = TEXT_TIMER;
 		if (bHitboxesDisplay)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HITBOXES ON");
@@ -2496,8 +2490,7 @@ void frameDoneCallback()
 
 	if (oHighlightsOnKey.keyDown())
 	{
-		bHighlightsOn = !bHighlightsOn;
-		*(bool*)(dwBaseAddress + adSharedHighlight) = bHighlightsOn;
+		nHIGHLIGHTS = !nHIGHLIGHTS;
 		nDrawTextTimer = TEXT_TIMER;
 		if (bHighlightsOn)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HIGHLIGHTS ON");
@@ -2697,7 +2690,8 @@ void frameDoneCallback()
 	//ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
 	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12)) {
 		
-		drawFrameBar(nTRUE_FRAME_DISPLAY_Y);
+		if (nIN_GAME_FRAME_DISPLAY)
+			drawFrameBar(nTRUE_FRAME_DISPLAY_Y);
 
 		if (nDISPLAY_HITBOXES)
 			drawFrameData();
@@ -2708,16 +2702,16 @@ void frameDoneCallback()
 		if (*(bool*)(dwBaseAddress + adSharedShowStats))
 			drawStats();
 	}
-	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 1 && *(bool*)(dwBaseAddress + adSharedOnExtendedSettings))
+	else if (bShowFrameBarPreview)
 	{
-		drawFrameBar(325);
+		drawFrameBar(420);
 	}
-	else if (*(bool*)(dwBaseAddress + adSharedHoveringScroll) == 2 && *(bool*)(dwBaseAddress + adSharedOnExtendedSettings))
+	else if (bShowFrameBarYPreview)
 	{
 		drawFrameBar(nTRUE_FRAME_DISPLAY_Y);
 	}
 
-	if (*(bool*)(dwBaseAddress + adSharedColorGuide))
+	if (bCOLOR_GUIDE)
 	{
 		drawColorGuide();
 	}
@@ -2940,6 +2934,11 @@ void ResetCallback() {
 
 	}
 
+	bDoReversal = false;
+	bHoldButtons = false;
+	bHoldShield = false;
+	bDidShield = false;
+
 	nTempP1MeterGain = 0;
 	nTempP2MeterGain = 0;
 	nP1MeterGain = 0;
@@ -3028,7 +3027,7 @@ void newPauseCallback2()
 
 	if (!bFreeze)
 	{
-		if (*(uint8_t*)(dwBaseAddress + adSharedSlowSpeed))
+		if (nGAME_SPEED)
 		{
 			bSlow = true;
 			_naked_newPauseCallback2_IsPaused = true;
@@ -3051,7 +3050,7 @@ void newPauseCallback2()
 		oFrameStepKey.nHeldKeyCounter++;
 	else
 		oFrameStepKey.nHeldKeyCounter = 0;
-	if (_naked_newPauseCallback2_IsPaused && (oFrameStepKey.keyDown() || oFrameStepKey.nHeldKeyCounter >= 20 || (bSlow && nFrameNumber % 4 < *(uint8_t*)(dwBaseAddress + adSharedSlowSpeed))))
+	if (_naked_newPauseCallback2_IsPaused && (oFrameStepKey.keyDown() || oFrameStepKey.nHeldKeyCounter >= 20 || (bSlow && nFrameNumber % 4 >= nGAME_SPEED)))
 	{
 		needPause = true;
 		_naked_newPauseCallback2_IsPaused = false;
@@ -4152,6 +4151,11 @@ void SetHotkeySettings(MenuWindow* hotkeyWindow) {
 void CloseExtendedSettings(MenuWindow* extendedWindow) {
 	SetExtendedSettings(extendedWindow);
 
+	bCOLOR_GUIDE = false;
+	*(bool*)(adMBAABase + adXS_colorGuide) = bCOLOR_GUIDE;
+	bShowFrameBarPreview = false;
+	bShowFrameBarYPreview = false;
+
 	__asm {
 		mov ecx, extendedWindow;
 	}
@@ -4634,6 +4638,8 @@ void ExtendedMenuInputChecking() {
 	bool bAPos = bA && !bAPrev;
 	bool bD = *(bool*)(adMBAABase + adP1DInput) && extendedWindow->openSubmenuIndex == 2;
 	bool bDPos = bD && !bDPrev;
+	bShowFrameBarPreview = false;
+	bShowFrameBarYPreview = false;
 	curMenuInfo = extendedWindow->MenuInfoList[extendedWindow->menuInfoIndex];
 	curElement = curMenuInfo->ElementList[curMenuInfo->selectedElement];
 	switch (extendedWindow->menuInfoIndex) {
@@ -5007,6 +5013,15 @@ void ExtendedMenuInputChecking() {
 	case 5: //hitbox
 	{
 		switch (curMenuInfo->selectedElement) {
+		case 1:
+			*(byte*)(adMBAABase + adXS_hitboxStyle) = curElement->selectedItem;
+			break;
+		case 2:
+			*(byte*)(adMBAABase + adXS_colorblind) = curElement->selectedItem;
+			break;
+		case 4:
+			*(byte*)(adMBAABase + adXS_originStyle) = curElement->selectedItem;
+			break;
 		case 11:
 			PageScrolling(curElement, extendedWindow);
 			break;
@@ -5027,13 +5042,33 @@ void ExtendedMenuInputChecking() {
 	case 7: //frame data
 	{
 		switch (curMenuInfo->selectedElement) {
+		case 0:
+			*(byte*)(adMBAABase + adXS_frameData) = curElement->selectedItem;
+			break;
+		case 3:
+			*(byte*)(adMBAABase + adXS_showFreezeInputs) = curElement->selectedItem;
+			break;
+		case 4:
+			*(byte*)(adMBAABase + adXS_showCancel) = curElement->selectedItem;
+			break;
 		case 6: //scroll
 			NormalScrolling(curElement, nTRUE_SCROLL_DISPLAY, -400, 0);
+			*(short*)(adMBAABase + adXS_frameScroll) = -nTRUE_SCROLL_DISPLAY;
+			bShowFrameBarPreview = true;
+			break;
+		case 8:
+			if (bAPos) {
+				bCOLOR_GUIDE = !bCOLOR_GUIDE;
+				*(bool*)(adMBAABase + adXS_colorGuide) = bCOLOR_GUIDE;
+			}
 			break;
 		case 13:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
+
+		snprintf(labelBuf, 31, "%i", nTRUE_SCROLL_DISPLAY);
+		curMenuInfo->ElementList[6]->SetCurItemLabel(labelBuf);
 
 		break;
 	}
@@ -5055,6 +5090,7 @@ void ExtendedMenuInputChecking() {
 		switch (curMenuInfo->selectedElement) {
 		case 5: //framedisplay y
 			NormalScrolling(curElement, nTRUE_FRAME_DISPLAY_Y, 0, 440, 10);
+			bShowFrameBarYPreview = true;
 			break;
 		case 12:
 			PageScrolling(curElement, extendedWindow);
@@ -5069,6 +5105,9 @@ void ExtendedMenuInputChecking() {
 	case 10: //misc
 	{
 		switch (curMenuInfo->selectedElement) {
+		case 4:
+			*(byte*)(adMBAABase + adXS_hideExtras) = curElement->selectedItem;
+			break;
 		case 10:
 			PageScrolling(curElement, extendedWindow);
 			break;

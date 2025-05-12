@@ -41,6 +41,7 @@ bool bLockInput = false;
 static bool bEnableFN2Load = false;
 static bool bInExtendedSettings = false;
 
+static bool bAdvancedFrameData = false;
 static bool bSimpleFrameInfo = true;
 static bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
 static bool bDisplayInputs = false;
@@ -774,7 +775,7 @@ void ResetBars(HANDLE hMBAAHandle)
 			P.sBar5[j][4] = "";
 		}
 	}
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedScrolling), &nBarScrolling, 2, 0);
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameScroll), &nBarScrolling, 2, 0);
 	std::cout << "\x1b[J";
 }
 
@@ -1208,7 +1209,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 	}
 	
 	nLastBarScrolling = nBarScrolling;
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedScrolling), &nBarScrolling, 2, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameScroll), &nBarScrolling, 4, 0);
 	short sAdjustedScroll = min(min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange), nBarScrolling);
 
 	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - sAdjustedScroll;
@@ -1339,12 +1340,12 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 	int nXPixelDistance = (int)abs(floor(P1.nXPosition / 128.0) - floor(P2.nXPosition / 128.0));
 	int nYPixelDistance = (int)abs(floor(P1.nYPosition / 128.0) - floor(P2.nYPosition / 128.0));
 
-	if (bSimpleFrameInfo)
+	if (!bAdvancedFrameData)
 	{
 		writeBuffer("\x1b[0m" "Total %3i / Advantage %3i / Distance %3i" "\n", P1.nInactionableMemory, nPlayerAdvantage, nXPixelDistance);
 	}
 
-	if (!bSimpleFrameInfo)
+	if (bAdvancedFrameData)
 	{
 		writeBuffer("\x1b[0m" "(%6i, %6i)" "\x1b[7m" "(%4i, %4i)" "\x1b[0m" "pat %3i [%2i]" "\x1b[7m"
 			"x-spd %5i" "\x1b[0m" "x-acc %5i" "\x1b[7m" "y-spd %5i" "\x1b[0m" "y-acc %5i" "\x1b[7m" "hp %5i" "\x1b[0m" "mc %5i" "\x1b[0m\x1b[K\n"
@@ -1360,7 +1361,7 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 
 	writeBuffer("%s%s%s%s%s%s%s", sColumnHeader.c_str(), P1.sBarString1.c_str(), P1.sBarString2.c_str(), P1.sBarString3.c_str(), P2.sBarString1.c_str(), P2.sBarString2.c_str(), P2.sBarString3.c_str());
 
-	if (!bSimpleFrameInfo)
+	if (bAdvancedFrameData)
 	{
 		writeBuffer("\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %3i [%2i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i" "\x1b[0m\x1b[K\n"
 			"\x1b[0m" "ex %2i" "\x1b[7m" "ch %c" "\x1b[0m" "partner %3i [%2i]" "\x1b[7m" "scaling %3i [%2i+%i]" "\x1b[0m" "rhp %5i" "\x1b[7m" "gg %5i [%.3f]" "\x1b[0m" "total %3i"  "\x1b[0m\x1b[K\n",
@@ -1378,6 +1379,16 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 
 void FrameDisplay(HANDLE hMBAAHandle)
 {
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameData), &bAdvancedFrameData, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_showFreezeInputs), &bDisplayFreeze, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_showFreezeInputs), &bDisplayInputs, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_showCancel), &bDisplayCancels, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameScroll), &nBarScrolling, 2, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_colorGuide), &bPrintColorGuide, 1, 0);
+
+	cLastDisplayOptions = cDisplayOptions;
+	cDisplayOptions = 8 * bAdvancedFrameData + 4 * bDisplayFreeze + 2 * bDisplayInputs + 1 * bPrintColorGuide;
+
 	CheckGameState(hMBAAHandle);
 
 	if (cGameState != 1) //If not in game (any gamemode)
@@ -1391,49 +1402,12 @@ void FrameDisplay(HANDLE hMBAAHandle)
 	CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screenBufferInfo);
 	nBarDisplayRange = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left) / 2;
-	if (nBarDisplayRange != nLastBarDisplayRange)
+	if (nBarDisplayRange != nLastBarDisplayRange || cDisplayOptions != cLastDisplayOptions)
 	{
 		std::cout << "\x1b[J";
 	}
 
 	UpdateGlobals(hMBAAHandle);
-
-	bool bDoSave = false;
-	bool bDoClearSave = false;
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedDoSave), &bDoSave, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedDoClearSave), &bDoClearSave, 1, 0);
-	if (bDoSave)
-	{
-		SaveState(hMBAAHandle, nSaveSlot);
-		char c5 = 5;
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adGlobalFreeze), &c5, 1, 0);
-
-		char c0 = 0;
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedDoSave), &c0, 1, 0);
-	}
-	else if (bDoClearSave)
-	{
-		ClearSave(nSaveSlot);
-
-		char c0 = 0;
-		WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedDoClearSave), &c0, 1, 0);
-	}
-	else if (cP1FN2Input > 0 && bEnableFN2Load && !bInExtendedSettings)
-	{
-		if (!bLockInput)
-		{
-			bLockInput = true;
-			if (cDummyState == 5 || cDummyState == -1)
-			{
-				char cFF = 0xFF;
-				WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + 0x15DEC3), &cFF, 1, 0);
-			}
-		}
-	}
-	else if (bLockInput)
-	{
-		bLockInput = false;
-	}
 
 	Main1 = &P1;
 	Main2 = &P2;
@@ -1480,8 +1454,6 @@ void FrameDisplay(HANDLE hMBAAHandle)
 		}
 	}
 
-	cLastDisplayOptions = cDisplayOptions;
-	cDisplayOptions = 8 * bSimpleFrameInfo + 4 * bDisplayFreeze + 2 * bDisplayInputs + 1 * bPrintColorGuide;
 	if (cDisplayOptions != cLastDisplayOptions || nBarScrolling != nLastBarScrolling || nBarDisplayRange != nLastBarDisplayRange)
 	{
 		if (bPrintColorGuide)
