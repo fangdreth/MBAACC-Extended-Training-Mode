@@ -85,6 +85,8 @@ void SaveState::save() {
 		memcpy((void*)&effects.data[index], (void*)(0x0067BDE8 + (0x33C * index)), 0x33C * chunkSize);
 		effects.size += chunkSize;// what am i doing
 	}
+
+	IsSaved = true;
 }
 
 void SaveState::load() {
@@ -141,6 +143,10 @@ void SaveState::load() {
 		addr += 0x33C;
 	}
 
+}
+
+void SaveState::unsave() {
+	IsSaved = false;
 }
 
 int SaveState::totalMemory() {

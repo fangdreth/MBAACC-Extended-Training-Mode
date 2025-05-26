@@ -65,8 +65,12 @@ typedef struct SaveState {
 	int FrameTimer;
 	int TrueFrameTimer;
 
+	bool IsSaved;
+
 	void save();
 	void load();
+
+	void unsave();
 
 	int totalMemory();
 
@@ -91,6 +95,8 @@ public:
 	// i would prefer something more not-externally-managed, but this is fine. if performance takes a hit, use circ buffer
 	// tbh i should just use circbuffer for this, but i dont want to alloc all the memory upfront
 	std::deque<SaveState*> states; 
+
+	SaveState* ManualSaves[MAX_SAVES] = {new SaveState(), new SaveState(), new SaveState()};
 
 	// my thought is that a typical round is what,, 1:30? so why not store that many
 	const int maxStates = 60 * 90;

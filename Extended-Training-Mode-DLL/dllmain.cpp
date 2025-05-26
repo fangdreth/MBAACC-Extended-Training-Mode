@@ -2017,10 +2017,6 @@ void HandleBoxVisuals() {
 
 }
 
-void HandleSaves() {
-
-}
-
 void HandleExtendedTrainingEffects() {
 	pActiveP1 = (PlayerData*)(adMBAABase + adP1Base + pdP1Data->activeCharacter * dwPlayerStructSize);
 	pActiveP2 = (PlayerData*)(adMBAABase + adP1Base + pdP2Data->activeCharacter * dwPlayerStructSize);
@@ -2033,7 +2029,7 @@ void HandleExtendedTrainingEffects() {
 	//positions on reset only	//page 4
 	HandleCharResources();		//page 5
 	HandleBoxVisuals();			//page 6
-	HandleSaves();				//page 7
+	//saves done elsewhere		//page 7
 	//framebar done elsewhere	//page 8
 	//rng done elsewhere		//page 9
 	//inputs done elsewhere		//page 10
@@ -2505,22 +2501,25 @@ void frameDoneCallback()
 
 	if (oSaveStateKey.keyDown() && safeWrite())
 	{
-		*(char*)(dwBaseAddress + adSharedDoSave) = 1;
+		//*(char*)(dwBaseAddress + adSharedDoSave) = 1;
+		if (nSAVE_STATE_SLOT > 0) {
+			saveStateManager.ManualSaves[nSAVE_STATE_SLOT - 1]->save();
+		}
 		nDrawTextTimer = TEXT_TIMER;
-		if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
+		if (nSAVE_STATE_SLOT == 0)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "NO SLOT SELECTED");
 		else
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SAVED SLOT", *(char*)(dwBaseAddress + adSharedSaveSlot));
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SAVED SLOT", nSAVE_STATE_SLOT);
 	}
 
-	if (oSaveStateKey.keyHeld() && safeWrite() && *(char*)(dwBaseAddress + adSharedSaveSlot) != 0)
+	if (oSaveStateKey.keyHeld() && safeWrite() && nSAVE_STATE_SLOT != 0)
 	{
 		nClearSaveTimer++;
 		if (nClearSaveTimer == SAVE_RESET_TIME)
 		{
-			*(char*)(dwBaseAddress + adSharedDoClearSave) = 1;
+			saveStateManager.ManualSaves[nSAVE_STATE_SLOT - 1]->unsave();
 			nDrawTextTimer = TEXT_TIMER;
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "CLEARED SAVE", *(char*)(dwBaseAddress + adSharedSaveSlot));
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "CLEARED SAVE", nSAVE_STATE_SLOT);
 		}
 	}
 	else
@@ -2530,27 +2529,21 @@ void frameDoneCallback()
 
 	if (oPrevSaveSlotKey.keyDown())
 	{
-		uint8_t nTempSaveSlot;
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-		nTempSaveSlot = max(0, nTempSaveSlot - 1);
-		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+		nSAVE_STATE_SLOT = max(0, nSAVE_STATE_SLOT - 1);
 		nDrawTextTimer = TEXT_TIMER;
-		if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
+		if (nSAVE_STATE_SLOT == 0)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "NO SLOT SELECTED");
 		else
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SELECTED SAVE", *(char*)(dwBaseAddress + adSharedSaveSlot));
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SELECTED SAVE", nSAVE_STATE_SLOT);
 	}
 	if (oNextSaveSlotKey.keyDown())
 	{
-		uint8_t nTempSaveSlot;
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-		nTempSaveSlot = min(nTempSaveSlot + 1, MAX_SAVES);
-		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
+		nSAVE_STATE_SLOT = min(nSAVE_STATE_SLOT + 1, MAX_SAVES);
 		nDrawTextTimer = TEXT_TIMER;
-		if (*(char*)(dwBaseAddress + adSharedSaveSlot) == 0)
+		if (nSAVE_STATE_SLOT == 0)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "NO SLOT SELECTED");
 		else
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SELECTED SAVE", *(char*)(dwBaseAddress + adSharedSaveSlot));
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "SELECTED SAVE", nSAVE_STATE_SLOT);
 	}
 
 	if (oIncRNG.keyHeld())
@@ -2966,6 +2959,35 @@ __declspec(naked) void _naked_ResetCallback() {
 
 	__asm {
 		push 0x00423582;
+		ret;
+	}
+}
+
+// roundcall funcs
+
+void RoundcallCallback() {
+	if (saveStateManager.ManualSaves[nSAVE_STATE_SLOT - 1]->IsSaved)
+	{
+		saveStateManager.ManualSaves[nSAVE_STATE_SLOT - 1]->load();
+		PlayerData* tempPlayer;
+		for (int i = 0; i < 4; i++) {
+			tempPlayer = pPlayerArray[i];
+			if (tempPlayer->attackingObjPtr != 0) {
+				PlayerData* attackingPlayer = (PlayerData*)(tempPlayer->attackingObjPtr - 0x4);
+				tempPlayer->recievingAttackDataPtr = attackingPlayer->attackDataPtr;
+			}
+		}
+	}
+}
+
+DWORD RoundcallCallback_PatchAddr = 0x00472964;
+__declspec(naked) void _naked_RoundcallCallback() {
+	
+	PUSH_ALL;
+	RoundcallCallback();
+	POP_ALL;
+
+	__asm {
 		ret;
 	}
 }
@@ -3626,7 +3648,7 @@ __declspec(naked) void _naked_DrawHudMeter() {
 	}
 }
 
-// MENU TESTS
+// training menu funcs
 MenuWindow* mainWindow;
 
 DWORD MBAA_FUN_00429020 = 0x00429020;
@@ -4634,10 +4656,10 @@ void ExtendedMenuInputChecking() {
 		mov extendedWindow, ecx;
 	}
 	char labelBuf[32];
-	bool bA = *(bool*)(adMBAABase + adP1AInput) && extendedWindow->openSubmenuIndex == 2;
-	bool bAPos = bA && !bAPrev;
-	bool bD = *(bool*)(adMBAABase + adP1DInput) && extendedWindow->openSubmenuIndex == 2;
-	bool bDPos = bD && !bDPrev;
+	bool bA = *(bool*)(adMBAABase + adP1AInput) && extendedWindow->openSubmenuIndex == 2; //A is pressed
+	bool bAPos = bA && !bAPrev; //A Press Positive Edge
+	bool bD = *(bool*)(adMBAABase + adP1DInput) && extendedWindow->openSubmenuIndex == 2; //D is pressed
+	bool bDPos = bD && !bDPrev; //D Press Positive Edge
 	bShowFrameBarPreview = false;
 	bShowFrameBarYPreview = false;
 	curMenuInfo = extendedWindow->MenuInfoList[extendedWindow->menuInfoIndex];
@@ -5032,6 +5054,12 @@ void ExtendedMenuInputChecking() {
 	case 6: //save state
 	{
 		switch (curMenuInfo->selectedElement) {
+		case 1:
+			nSAVE_STATE_SLOT = curElement->selectedItem;
+		case 2:
+			if (bAPos && nSAVE_STATE_SLOT > 0) {
+				saveStateManager.ManualSaves[nSAVE_STATE_SLOT - 1]->save();
+			}
 		case 13:
 			PageScrolling(curElement, extendedWindow);
 			break;
@@ -5169,9 +5197,16 @@ void HandleHotkeyMenu() {
 
 void HotkeyMenuInputChecking() {
 	MenuWindow* hotkeyWindow;
+	MenuInfo* curMenuInfo;
+	Element* curElement;
 	__asm {
 		mov hotkeyWindow, ecx;
 	}
+	char labelBuf[32];
+	bool bA = *(bool*)(adMBAABase + adP1AInput) && hotkeyWindow->openSubmenuIndex == 2; //A is pressed
+	bool bAPos = bA && !bAPrev; //A Press Positive Edge
+	curMenuInfo = hotkeyWindow->MenuInfoList[hotkeyWindow->menuInfoIndex];
+	curElement = curMenuInfo->ElementList[curMenuInfo->selectedElement];
 	switch (hotkeyWindow->menuInfoIndex) {
 	case 0:
 		break;
@@ -5503,7 +5538,26 @@ __declspec(naked) void _naked_NewExtMainMenuWindow() {
 	}
 }
 
-//END MENU TESTS
+//CSS funcs
+
+void CSSCallback() {
+	for (int i = 0; i < MAX_SAVES; i++)
+		saveStateManager.ManualSaves[i]->IsSaved = false;
+}
+
+DWORD CSSCallback_PatchAddr = 0x004271e0;
+__declspec(naked) void _naked_CSSCallback() {
+
+	PUSH_ALL;
+	CSSCallback();
+	POP_ALL;
+
+	__asm {
+		ret;
+	}
+}
+
+// ---
 
 DWORD _naked_DisableShadows_FuncAddr = 0x0041a390;
 __declspec(naked) void _naked_DisableShadows() {
@@ -6058,8 +6112,16 @@ void initResetCallback() {
 	patchJump(ResetCallback_PatchAddr, _naked_ResetCallback);
 }
 
+void initRoundcallCallback() {
+	patchJump(RoundcallCallback_PatchAddr, _naked_RoundcallCallback);
+}
+
 void initCharInputCallback() {
 	patchJump(CharInputCallback_PatchAddr, _naked_CharInputCallback);
+}
+
+void initCSSCallback() {
+	patchJump(CSSCallback_PatchAddr, _naked_CSSCallback);
 }
 
 // dll thread func
@@ -6110,7 +6172,11 @@ void threadFunc()
 
 	initResetCallback();
 
+	initRoundcallCallback();
+
 	initCharInputCallback();
+
+	initCSSCallback();
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 

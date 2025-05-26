@@ -1438,12 +1438,6 @@ void FrameDisplay(HANDLE hMBAAHandle)
 		nLastFrameCount = nFrameCount;
 		nLastTrueFrameCount = nTrueFrameCount;
 
-		if (nTrueFrameCount == 1 && CheckSave(nSaveSlot) && bEnableFN2Load)
-		{
-			ResetBars(hMBAAHandle);
-			LoadState(hMBAAHandle, nSaveSlot, bLoadRNG);
-		}
-
 		if (bPrintColorGuide)
 		{
 			PrintColorGuide();
