@@ -4533,10 +4533,10 @@ void threadFunc()
 	InitializeCharacterMaps();
 	// when running with caster, the prints to this area are disabled
 	// when not running with caster, they arent even there, so this is fine to run regardless of caster 
-	initAttackMeterDisplay();
+	//initAttackMeterDisplay();
 	initMeterGainHook();
 	initBattleResetCallback();
-	initNewAttackDisplay();
+	//initNewAttackDisplay();
 
 	initNewPauseCallback();
 	initDrawBackground();

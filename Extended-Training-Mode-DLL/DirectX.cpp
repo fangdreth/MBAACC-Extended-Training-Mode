@@ -3050,7 +3050,7 @@ __declspec(naked) void _naked_PresentHook() {
 	//maintainFPS(); // feels snappy? but good. caster puts theirs here
 	//frameStartCallback();
 	// this should stay here, as logging the fps right after a new frame is presented is correct
-	logFPS();
+	//logFPS();
 	/*if (maintainFPSState == 2) {
 		maintainFPS();
 	}*/
