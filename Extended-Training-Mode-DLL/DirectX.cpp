@@ -2933,6 +2933,15 @@ void __stdcall _doDrawCalls() {
 		return;
 	}
 
+	// reload dummy files. i still worry over these key calls being done too often, possibly causing slowdown
+	static KeyState lKey('L');
+	static KeyState ctrlKey(VK_CONTROL);
+	if (ctrlKey.keyHeld() && lKey.keyDown()) {
+		PUSH_ALL;
+		emitCall(0x004783A0);
+		POP_ALL;
+	}
+
 	drawReplayMenu();
 
 	// predraw stuff goes here.
