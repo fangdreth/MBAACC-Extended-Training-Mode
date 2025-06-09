@@ -6489,6 +6489,14 @@ int main(int argc, char* argv[])
                         continue;
                     nOldFrameCounter = nFrameCounter;
 
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwSomeDummyPlaybackFlag2), &nReadResult, 4, 0);
+                    if (nReadResult == 2) {
+                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwSomeDummyPlaybackFlag), &nReadResult, 4, 0);
+                        if (nReadResult == 0) {
+                            continue; //skip stuff if in replay mode
+                        }
+                    }
+
                     // populate the reversal patterns list and character data
                     // may be able to remove the timer condition, since CSS clears patternname list
                     if (nFrameCounter == 0 || vPatternNames.size() == 1)
