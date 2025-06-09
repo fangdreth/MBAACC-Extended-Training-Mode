@@ -2501,9 +2501,8 @@ void frameDoneCallback()
 
 	if (oSaveStateKey.keyDown() && safeWrite())
 	{
-		//*(char*)(dwBaseAddress + adSharedDoSave) = 1;
 		if (nSAVE_STATE_SLOT > 0) {
-			saveStateManager.ManualSaves[nSAVE_STATE_SLOT - 1]->save();
+			saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->save();
 		}
 		nDrawTextTimer = TEXT_TIMER;
 		if (nSAVE_STATE_SLOT == 0)
@@ -2517,7 +2516,7 @@ void frameDoneCallback()
 		nClearSaveTimer++;
 		if (nClearSaveTimer == SAVE_RESET_TIME)
 		{
-			saveStateManager.ManualSaves[nSAVE_STATE_SLOT - 1]->unsave();
+			saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->unsave();
 			nDrawTextTimer = TEXT_TIMER;
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "CLEARED SAVE", nSAVE_STATE_SLOT);
 		}
@@ -2966,9 +2965,9 @@ __declspec(naked) void _naked_ResetCallback() {
 // roundcall funcs
 
 void RoundcallCallback() {
-	if (saveStateManager.ManualSaves[nSAVE_STATE_SLOT - 1]->IsSaved)
+	if (saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)
 	{
-		saveStateManager.ManualSaves[nSAVE_STATE_SLOT - 1]->load();
+		saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->load(nLOAD_RNG);
 		PlayerData* tempPlayer;
 		for (int i = 0; i < 4; i++) {
 			tempPlayer = pPlayerArray[i];
@@ -4795,6 +4794,9 @@ void ExtendedMenuInputChecking() {
 				}
 			}
 			break;
+		case 15:
+			if (bAPos) DefaultP1();
+			break;
 		case 18:
 			PageScrolling(curElement, extendedWindow);
 			break;
@@ -4853,6 +4855,9 @@ void ExtendedMenuInputChecking() {
 			break;
 		case 12: //Hits until bunker
 			NormalScrolling(curElement, nTRUE_HITS_UNTIL_BUNKER, 0, 101);
+			break;
+		case 14:
+			if (bAPos) DefaultP2();
 			break;
 		case 17:
 			PageScrolling(curElement, extendedWindow);
@@ -4943,6 +4948,9 @@ void ExtendedMenuInputChecking() {
 		case 5:
 			HighlightSwitch(curElement->selectedItem, arrIdleHighlightSetting);
 			break;
+		case 8:
+			if (bAPos) DefaultP3();
+			break;
 		case 11:
 			PageScrolling(curElement, extendedWindow);
 			break;
@@ -5003,6 +5011,9 @@ void ExtendedMenuInputChecking() {
 				nTRUE_P2_ASSIST_X_LOC = temp;
 			}
 			break;
+		case 11:
+			if (bAPos) DefaultP4();
+			break;
 		case 14:
 			PageScrolling(curElement, extendedWindow);
 			break;
@@ -5025,6 +5036,9 @@ void ExtendedMenuInputChecking() {
 	case 4: //char specifics
 	{
 		switch (curMenuInfo->selectedElement) {
+		case 9:
+			if (bAPos) DefaultP5();
+			break;
 		case 12:
 			PageScrolling(curElement, extendedWindow);
 			break;
@@ -5044,6 +5058,9 @@ void ExtendedMenuInputChecking() {
 		case 4:
 			*(byte*)(adMBAABase + adXS_originStyle) = curElement->selectedItem;
 			break;
+		case 8:
+			if (bAPos) DefaultP6();
+			break;
 		case 11:
 			PageScrolling(curElement, extendedWindow);
 			break;
@@ -5054,15 +5071,50 @@ void ExtendedMenuInputChecking() {
 	case 6: //save state
 	{
 		switch (curMenuInfo->selectedElement) {
-		case 1:
+		case 0:
 			nSAVE_STATE_SLOT = curElement->selectedItem;
+			if (bAPos) {
+				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->unsave();
+			}
+			break;
 		case 2:
 			if (bAPos && nSAVE_STATE_SLOT > 0) {
-				saveStateManager.ManualSaves[nSAVE_STATE_SLOT - 1]->save();
+				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->save();
 			}
+			break;
+		case 3:
+			if (bAPos) {
+				for (int i = 0; i < MAX_SAVES; i++) {
+					saveStateManager.FullSaves[i]->unsave();
+				}
+			}
+			break;
+		case 5: //import
+			if (bAPos) {
+				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->loadFromFile();
+			}
+			break;
+		case 6: //export
+			if (bAPos) {
+				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->saveToFile();
+			}
+			break;
+		case 10:
+			if (bAPos) DefaultP7();
+			break;
 		case 13:
 			PageScrolling(curElement, extendedWindow);
 			break;
+		}
+
+		for (int i = 0; i < MAX_SAVES; i++) {
+			if (saveStateManager.FullSaves[i]->IsSaved) {
+				snprintf(labelBuf, 31, "%s %02i (%s)", "SLOT", i + 1, "SAVED");
+			}
+			else {
+				snprintf(labelBuf, 31, "%s %02i (%s)", "SLOT", i + 1, "NOT SAVED");
+			}
+			curMenuInfo->ElementList[0]->SetItemLabel(labelBuf, i + 1);
 		}
 
 		break;
@@ -5090,6 +5142,9 @@ void ExtendedMenuInputChecking() {
 				*(bool*)(adMBAABase + adXS_colorGuide) = bCOLOR_GUIDE;
 			}
 			break;
+		case 10:
+			if (bAPos) DefaultP8();
+			break;
 		case 13:
 			PageScrolling(curElement, extendedWindow);
 			break;
@@ -5106,6 +5161,9 @@ void ExtendedMenuInputChecking() {
 		case 3: //seed
 			NormalScrolling(curElement, nTRUE_SEED, 0, 0xffffffff, 1, 24);
 			break;
+		case 5:
+			if (bAPos) DefaultP9();
+			break;
 		case 8:
 			PageScrolling(curElement, extendedWindow);
 			break;
@@ -5119,6 +5177,9 @@ void ExtendedMenuInputChecking() {
 		case 5: //framedisplay y
 			NormalScrolling(curElement, nTRUE_FRAME_DISPLAY_Y, 0, 440, 10);
 			bShowFrameBarYPreview = true;
+			break;
+		case 9:
+			if (bAPos) DefaultP10();
 			break;
 		case 12:
 			PageScrolling(curElement, extendedWindow);
@@ -5135,6 +5196,9 @@ void ExtendedMenuInputChecking() {
 		switch (curMenuInfo->selectedElement) {
 		case 4:
 			*(byte*)(adMBAABase + adXS_hideExtras) = curElement->selectedItem;
+			break;
+		case 7:
+			if (bAPos) DefaultP11();
 			break;
 		case 10:
 			PageScrolling(curElement, extendedWindow);
@@ -5542,7 +5606,7 @@ __declspec(naked) void _naked_NewExtMainMenuWindow() {
 
 void CSSCallback() {
 	for (int i = 0; i < MAX_SAVES; i++)
-		saveStateManager.ManualSaves[i]->IsSaved = false;
+		saveStateManager.FullSaves[i]->IsSaved = false;
 }
 
 DWORD CSSCallback_PatchAddr = 0x004271e0;

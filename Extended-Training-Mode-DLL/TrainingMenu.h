@@ -333,6 +333,8 @@ const std::vector<int*> P1_Settings = {
 	&nPAGE
 };
 
+void DefaultP1();
+
 //Page 2
 const std::vector<const char*> vPENALTY_RESET = {
 	"PENALTY RESET",
@@ -435,6 +437,8 @@ const std::vector<int*> P2_Settings = {
 	&nPAGE
 };
 
+void DefaultP2();
+
 //Page 3
 const std::vector<const char*> vHIGHLIGHTS = {
 	"HIGHLIGHTS",
@@ -495,6 +499,8 @@ const std::vector<int*> P3_Settings = {
 	&nHIGHLIGHTS, &nGUARD, &nHIT, &nARMOR, &nTHROW_PROTECTION, &nIDLE,
 	&nPAGE
 };
+
+void DefaultP3();
 
 //Page 4
 const std::vector<const char*> vRESET_TO_POSITIONS = {
@@ -571,6 +577,8 @@ const std::vector<int*> P4_Settings = {
 	&nPAGE
 };
 
+void DefaultP4();
+
 //Page 5
 const std::vector<const char*> vSION_BULLETS = {
 	"SION BULLETS",
@@ -626,6 +634,8 @@ const std::vector<int*> P5_Settings = {
 	&nSION_BULLETS, &nROA_VISIBLE_CHARGE, &nROA_HIDDEN_CHARGE, &nF_MAIDS_HEARTS, &nRYOUGI_KNIFE,
 	&nPAGE
 };
+
+void DefaultP5();
 
 //Page 6
 const std::vector<const char*> vDISPLAY_HITBOXES = {
@@ -683,6 +693,8 @@ const std::vector<int*> P6_Settings = {
 	&nPAGE
 };
 
+void DefaultP6();
+
 //Page 7
 const std::vector<const char*> vSAVE_STATE_SLOT = {
 	"SAVE STATE SLOT",
@@ -734,6 +746,8 @@ const std::vector<int*> P7_Settings = {
 	&nSAVE_STATE_SLOT, &nLOAD_RNG,
 	&nPAGE
 };
+
+void DefaultP7();
 
 //Page 8
 const std::vector<const char*> vFRAME_DATA = {
@@ -804,6 +818,8 @@ const std::vector<int*> P8_Settings = {
 	&nPAGE
 };
 
+void DefaultP8();
+
 //Page 9
 const std::vector<const char*> vCUSTOM_RNG = {
 	"CUSTOM RNG",
@@ -848,6 +864,8 @@ const std::vector<int*> P9_Settings = {
 	&nCUSTOM_RNG, &nRATE, &nSEED,
 	&nPAGE
 };
+
+void DefaultP9();
 
 //Page 10
 const std::vector<const char*> vSHOW_STATS = {
@@ -901,6 +919,8 @@ const std::vector<int*> P10_Settings = {
 	&nSHOW_STATS, &nP1_INPUT_DISPLAY, &nP2_INPUT_DISPLAY, &nFRAME_DISPLAY_Y,
 	&nPAGE
 };
+
+void DefaultP10();
 
 //Page 11
 const std::vector<const char*> vGAME_SPEED = {
@@ -957,6 +977,8 @@ const std::vector<int*> P11_Settings = {
 	&nGAME_SPEED, &nHIDE_HUD, &nHIDE_SHADOWS, &nHIDE_EXTRAS, &nBACKGROUND,
 	&nPAGE
 };
+
+void DefaultP11();
 
 //All pages
 const std::vector<std::vector<std::vector<const char*>>> Page_Options = {
