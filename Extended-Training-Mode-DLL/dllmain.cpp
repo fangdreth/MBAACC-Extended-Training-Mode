@@ -77,6 +77,7 @@ DWORD frameBarY = 400;
 bool bDoResetBars = true;
 bool bShowFrameBarPreview = false;
 bool bShowFrameBarYPreview = false;
+bool bForceGuard = false;
 
 uint8_t nRNGMode = RNG_OFF;
 uint8_t nRNGRate = RNG_EVERY_FRAME;
@@ -1954,6 +1955,13 @@ void HandleMeters() {
 		if (!bDoBunker && pActiveP2->onBlockComboCount == 0) {
 			bDoBunker = true;
 		}
+	}
+
+	if (nTRUE_HITS_UNTIL_FORCE_GUARD != 0 && pActiveP2->onBlockComboCount >= nTRUE_HITS_UNTIL_FORCE_GUARD && pActiveP2->animationDataPtr->stateData->stance != 1) {
+		bForceGuard = true;
+	}
+	else {
+		bForceGuard = false;
 	}
 }
 
@@ -4856,10 +4864,13 @@ void ExtendedMenuInputChecking() {
 		case 12: //Hits until bunker
 			NormalScrolling(curElement, nTRUE_HITS_UNTIL_BUNKER, 0, 101);
 			break;
-		case 14:
+		case 13: //Hits until force guard
+			NormalScrolling(curElement, nTRUE_HITS_UNTIL_FORCE_GUARD, 0, 101);
+			break;
+		case 16:
 			if (bAPos) DefaultP2();
 			break;
-		case 17:
+		case 19:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
@@ -4927,6 +4938,8 @@ void ExtendedMenuInputChecking() {
 		curMenuInfo->ElementList[11]->SetCurItemLabel(labelBuf);
 		snprintf(labelBuf, 31, "%i", nTRUE_HITS_UNTIL_BUNKER);
 		curMenuInfo->ElementList[12]->SetCurItemLabel(labelBuf);
+		snprintf(labelBuf, 31, "%i", nTRUE_HITS_UNTIL_FORCE_GUARD);
+		curMenuInfo->ElementList[13]->SetCurItemLabel(labelBuf);
 
 		break;
 	}
@@ -5982,6 +5995,26 @@ __declspec(naked) void _naked_CustomHealthRegen() {
 	}
 }
 
+DWORD ForceDummyGuard_PatchAddr = 0x004710a3;
+DWORD MBAA_GetTrainingDummyBlockType = 0x004703e0;
+__declspec(naked) void _naked_ForceDummyGuard() {
+	__asm {
+		mov edx, edi;
+		mov eax, ebp;
+		call[MBAA_GetTrainingDummyBlockType];
+	}
+	if (bForceGuard) {
+		__asm {
+			mov eax, nFORCE_GUARD_STANCE;
+			add eax, 0x1;
+		}
+	}
+	__asm {
+		push 0x004710ac;
+		ret;
+	}
+}
+
 // init funcs
 
 void initFrameDoneCallback()
@@ -6188,6 +6221,10 @@ void initCSSCallback() {
 	patchJump(CSSCallback_PatchAddr, _naked_CSSCallback);
 }
 
+void initForceDummyGuard() {
+	patchJump(ForceDummyGuard_PatchAddr, _naked_ForceDummyGuard);
+}
+
 // dll thread func
 
 void threadFunc() 
@@ -6241,6 +6278,8 @@ void threadFunc()
 	initCharInputCallback();
 
 	initCSSCallback();
+
+	initForceDummyGuard();
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 

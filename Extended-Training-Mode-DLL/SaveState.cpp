@@ -1,5 +1,6 @@
 
 #include "SaveState.h"
+#include <shobjidl.h> 
 
 SaveStateManager saveStateManager;
 
@@ -274,52 +275,67 @@ void FullSave::load(bool LoadRNG) {
 	memcpy((void*)(0x0067BDE8), Effects, 0x33C * 1000);
 }
 
-static bool LoadFileExplorer(std::wstring* pwsFileName)
+static bool LoadFileExplorer(std::wstring& filePath)
 {
-	char pcFileName[MAX_PATH];
+	IFileOpenDialog* pFileOpen;
+	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
 
-	OPENFILENAME ofn;
-	ZeroMemory(pcFileName, sizeof(pcFileName));
-	ZeroMemory(&ofn, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = NULL;
-	ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
-	ofn.lpstrFile = (LPWSTR)pcFileName;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrTitle = (LPWSTR)L"Open Save State";
-	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
-
-	bool bResult = GetOpenFileNameW(&ofn);
-	if (bResult)
+	if (SUCCEEDED(hr))
 	{
-		*pwsFileName = std::wstring(ofn.lpstrFile);
-		return true;
+		hr = pFileOpen->Show(NULL); // Display the dialog
+		if (SUCCEEDED(hr))
+		{
+			IShellItem* pItem;
+			hr = pFileOpen->GetResult(&pItem);
+			if (SUCCEEDED(hr))
+			{
+				PWSTR pszFilePath;
+				hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+				if (SUCCEEDED(hr))
+				{
+					filePath = pszFilePath;
+					CoTaskMemFree(pszFilePath);
+					pItem->Release();
+					pFileOpen->Release();
+					return true;
+				}
+				pItem->Release();
+			}
+		}
+		pFileOpen->Release();
 	}
 	return false;
 }
 
-static bool SaveFileExplorer(std::wstring* pwsFileName)
+static bool SaveFileExplorer(std::wstring& filePath)
 {
-	char pcFileName[MAX_PATH];
+    IFileSaveDialog* pFileSave;
+    HRESULT hr = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_INPROC_SERVER, IID_IFileSaveDialog, reinterpret_cast<void**>(&pFileSave));
 
-	OPENFILENAME ofn;
-	ZeroMemory(pcFileName, sizeof(pcFileName));
-	ZeroMemory(&ofn, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = NULL;
-	ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
-	ofn.lpstrFile = (LPWSTR)pcFileName;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrTitle = (LPWSTR)L"Create Save State";
-	ofn.lpstrDefExt = L"sav";
-	ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT;
-
-	bool bResult = GetSaveFileNameW(&ofn);
-	if (bResult)
-	{
-		*pwsFileName = std::wstring(ofn.lpstrFile);
-		return true;
-	}
+    if (SUCCEEDED(hr))
+    {
+        hr = pFileSave->Show(NULL); // Display the dialog
+        if (SUCCEEDED(hr))
+        {
+            IShellItem* pItem;
+            hr = pFileSave->GetResult(&pItem);
+            if (SUCCEEDED(hr))
+            {
+                PWSTR pszFilePath;
+                hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+                if (SUCCEEDED(hr))
+                {
+					filePath = pszFilePath;
+                    CoTaskMemFree(pszFilePath);
+					pItem->Release();
+					pFileSave->Release();
+					return true;
+                }
+                pItem->Release();
+            }
+        }
+		pFileSave->Release();
+    }
 	return false;
 }
 
@@ -328,7 +344,7 @@ void FullSave::saveToFile() {
 	try
 	{
 		std::wstring wsFileName;
-		if (SaveFileExplorer(&wsFileName))
+		if (SaveFileExplorer(wsFileName))
 		{
 			std::ofstream SaveOutFile;
 			SaveOutFile.open(wsFileName);
@@ -347,7 +363,7 @@ void FullSave::loadFromFile() {
 	try
 	{
 		std::wstring wsFileName;
-		if (LoadFileExplorer(&wsFileName))
+		if (LoadFileExplorer(wsFileName))
 		{
 			std::ifstream SaveInFile;
 			SaveInFile.open(wsFileName);

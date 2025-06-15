@@ -381,6 +381,16 @@ const std::vector<const char*> vHITS_UNTIL_BUNKER = {
 	"X1", "X2", "X3"
 };
 
+const std::vector<const char*> vHITS_UNTIL_FORCE_GUARD = {
+	"HITS UNTIL FORCE GUARD",
+	"X1", "X2", "X3"
+};
+
+const std::vector<const char*> vFORCE_GUARD_STANCE = {
+	"FORCE GUARD STANCE",
+	"STAND", "CROUCH"
+};
+
 const std::vector<const char*> vP2_PAGE = {
 	" ",
 	"X1", "PAGE 2", "X3"
@@ -391,7 +401,7 @@ const std::vector<std::vector<const char*>> P2_Options = {
 	vEX_GUARD, vSPACE_ELEMENT,
 	vP1_METER, vP2_METER, vSPACE_ELEMENT,
 	vP1_HEALTH, vP2_HEALTH, vSPACE_ELEMENT,
-	vHITS_UNTIL_BURST, vHITS_UNTIL_BUNKER, vSPACE_ELEMENT,
+	vHITS_UNTIL_BURST, vHITS_UNTIL_BUNKER, vHITS_UNTIL_FORCE_GUARD, vFORCE_GUARD_STANCE, vSPACE_ELEMENT,
 	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP2_PAGE
 };
@@ -405,6 +415,8 @@ const int defP1_HEALTH = 2;
 const int defP2_HEALTH = 2;
 const int defHITS_BURST = 0;
 const int defHITS_BUNKER = 0;
+const int defHITS_FORCE_GUARD = 0;
+const int defFORCE_GUARD_STANCE = 0;
 
 extern int nPENALTY_RESET;
 extern int nGUARD_BAR_RESET;
@@ -415,6 +427,8 @@ extern int nP1_HEALTH;
 extern int nP2_HEALTH;
 extern int nHITS_UNTIL_BURST;
 extern int nHITS_UNTIL_BUNKER;
+extern int nHITS_UNTIL_FORCE_GUARD;
+extern int nFORCE_GUARD_STANCE;
 
 const int defTRUE_P1_METER = 10000;
 const int defTRUE_P2_METER = 10000;
@@ -422,6 +436,7 @@ const int defTRUE_P1_HEALTH = 11400;
 const int defTRUE_P2_HEALTH = 11400;
 const int defTRUE_HITS_BURST = 0;
 const int defTRUE_HITS_BUNKER = 0;
+const int defTRUE_HITS_FORCE_GUARD = 0;
 
 extern int nTRUE_P1_METER;
 extern int nTRUE_P2_METER;
@@ -429,11 +444,13 @@ extern int nTRUE_P1_HEALTH;
 extern int nTRUE_P2_HEALTH;
 extern int nTRUE_HITS_UNTIL_BURST;
 extern int nTRUE_HITS_UNTIL_BUNKER;
+extern int nTRUE_HITS_UNTIL_FORCE_GUARD;
 
 const std::vector<int*> P2_Settings = {
 	&nPENALTY_RESET, &nGUARD_BAR_RESET, &nEX_GUARD,
 	&nP1_METER, &nP2_METER, &nP1_HEALTH, &nP2_HEALTH,
 	&nHITS_UNTIL_BURST, &nHITS_UNTIL_BUNKER,
+	&nHITS_UNTIL_FORCE_GUARD, &nFORCE_GUARD_STANCE,
 	&nPAGE
 };
 
