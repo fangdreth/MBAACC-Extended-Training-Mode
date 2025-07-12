@@ -272,8 +272,26 @@ const std::vector<std::vector<const char*>> P1_Options = {
 	vREVERSAL_SLOT_4, vREV_SLOT_4_WEIGHT, vSPACE_ELEMENT,
 	vNO_REV_WEIGHT, vSPACE_ELEMENT,
 	vREVERSAL_DELAY, vSPACE_ELEMENT,
-	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP1_PAGE
+};
+
+enum class eREVERSALS {
+	REVERSAL_TYPE = 0,
+	REVERSAL_SLOT_1 = 2,
+	WEIGHT_1 = 3,
+	REVERSAL_SLOT_2 = 4,
+	WEIGHT_2 = 5,
+	REVERSAL_SLOT_3 = 6,
+	WEIGHT_3 = 7,
+	REVERSAL_SLOT_4 = 8,
+	WEIGHT_4 = 9,
+	NO_REVERSAL_WEIGHT = 11,
+	REVERSAL_DELAY = 13,
+	DEFAULT = 15,
+	RETURN = 17,
+	PAGE = 19
 };
 
 const int defREVERSAL_TYPE = 1;
@@ -333,7 +351,7 @@ const std::vector<int*> P1_Settings = {
 	&nPAGE
 };
 
-void DefaultP1();
+void DefaultP1(MenuInfo* menuInfo);
 
 //Page 2
 const std::vector<const char*> vPENALTY_RESET = {
@@ -402,8 +420,26 @@ const std::vector<std::vector<const char*>> P2_Options = {
 	vP1_METER, vP2_METER, vSPACE_ELEMENT,
 	vP1_HEALTH, vP2_HEALTH, vSPACE_ELEMENT,
 	vHITS_UNTIL_BURST, vHITS_UNTIL_BUNKER, vHITS_UNTIL_FORCE_GUARD, vFORCE_GUARD_STANCE, vSPACE_ELEMENT,
-	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP2_PAGE
+};
+
+enum class eTRAINING {
+	PENALTY_RESET = 0,
+	GUARD_BAR_RESET = 1,
+	EX_GUARD = 3,
+	P1_METER = 5,
+	P2_METER = 6,
+	P1_HEALTH = 8,
+	P2_HEALTH = 9,
+	HITS_UNTIL_BURST = 11,
+	HITS_UNTIL_BUNKER = 12,
+	HITS_UNTIL_FORCE_GUARD = 13,
+	FORCE_GUARD_STANCE = 14,
+	DEFAULT = 16,
+	RETURN = 18,
+	PAGE = 20
 };
 
 const int defPEN_RESET = 0;
@@ -454,7 +490,7 @@ const std::vector<int*> P2_Settings = {
 	&nPAGE
 };
 
-void DefaultP2();
+void DefaultP2(MenuInfo* menuInfo);
 
 //Page 3
 const std::vector<const char*> vHIGHLIGHTS = {
@@ -494,8 +530,21 @@ const std::vector<const char*> vP3_PAGE = {
 
 const std::vector<std::vector<const char*>> P3_Options = {
 	vHIGHLIGHTS, vSPACE_ELEMENT, vGUARD, vHIT, vARMOR, vTHROW_PROTECTION, vIDLE, vSPACE_ELEMENT,
-	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP3_PAGE
+};
+
+enum class eHIGHLIGHTS {
+	HIGHLIGHTS = 0,
+	GUARD = 2,
+	HIT = 3,
+	ARMOR = 4,
+	THROW_PROTECTION = 5,
+	IDLE = 6,
+	DEFAULT = 8,
+	RETURN = 10,
+	PAGE = 12
 };
 
 const int defHIGHLIGHTS = 0;
@@ -525,23 +574,23 @@ const std::vector<const char*> vRESET_TO_POSITIONS = {
 	"NO", "YES"
 };
 
-const std::vector<const char*> vP1_X_LOC = {
-	"P1 X-LOC",
+const std::vector<const char*> vP1_POSITION = {
+	"P1 POSITION",
 	"X1", "X2", "X3"
 };
 
-const std::vector<const char*> vP1_ASSIST_X_LOC = {
-	"P1 ASSIST X-LOC",
+const std::vector<const char*> vP1_ASSIST_POSITION = {
+	"P1 ASSIST POSITION",
 	"X1", "X2", "X3"
 };
 
-const std::vector<const char*> vP2_X_LOC = {
-	"P2 X-LOC",
+const std::vector<const char*> vP2_POSITION = {
+	"P2 POSITION",
 	"X1", "X2", "X3"
 };
 
-const std::vector<const char*> vP2_ASSIST_X_LOC = {
-	"P2 ASSIST X-LOC",
+const std::vector<const char*> vP2_ASSIST_POSITION = {
+	"P2 ASSIST POSITION",
 	"X1", "X2", "X3"
 };
 
@@ -560,11 +609,25 @@ const std::vector<const char*> vP4_PAGE = {
 
 const std::vector<std::vector<const char*>> P4_Options = {
 	vRESET_TO_POSITIONS, vSPACE_ELEMENT,
-	vP1_X_LOC, vP1_ASSIST_X_LOC, vSPACE_ELEMENT,
-	vP2_X_LOC, vP2_ASSIST_X_LOC, vSPACE_ELEMENT,
+	vP1_POSITION, vP1_ASSIST_POSITION, vSPACE_ELEMENT,
+	vP2_POSITION, vP2_ASSIST_POSITION, vSPACE_ELEMENT,
 	vMOVE_TO_POSITIONS, vINVERT, vSPACE_ELEMENT,
-	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP4_PAGE
+};
+
+enum class ePOSITIONS {
+	RESET_TO_POSITIONS = 0,
+	P1_POSITION = 2,
+	P1_ASSIST_POSITION = 3,
+	P2_POSITION = 5,
+	P2_ASSIST_POSITION = 6,
+	MOVE_TO_POSITIONS = 8,
+	INVERT = 9,
+	DEFAULT = 11,
+	RETURN = 13,
+	PAGE = 15
 };
 
 const int defRESET_POS = 0;
@@ -631,8 +694,20 @@ const std::vector<std::vector<const char*>> P5_Options = {
 	vSION_BULLETS, vSPACE_ELEMENT, vROA_VISIBLE_CHARGE, vROA_HIDDEN_CHARGE, vSPACE_ELEMENT,
 	vF_MAIDS_HEARTS, vSPACE_ELEMENT,
 	vRYOUGI_KNIFE, vSPACE_ELEMENT,
-	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP5_PAGE
+};
+
+enum class eCHARACTER {
+	SION_BULLETS = 0,
+	ROA_VISIBLE_CHARGES = 2,
+	ROA_HIDDEN_CHARGES = 3,
+	F_MAIDS_HEARTS = 5,
+	RYOUGI_KNIFE = 7,
+	DEFAULT = 9,
+	RETURN = 11,
+	PAGE = 13
 };
 
 const int defSION_BULLETS = 1;
@@ -689,8 +764,20 @@ const std::vector<std::vector<const char*>> P6_Options = {
 	vDISPLAY_HITBOXES, vHITBOX_STYLE, vCOLOR_BLIND_MODE, vSPACE_ELEMENT,
 	vORIGIN_STYLE, vSPACE_ELEMENT,
 	vDRAW_GROUND, vSPACE_ELEMENT,
-	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP6_PAGE
+};
+
+enum class eHITBOXES {
+	DISPLAY_HITBOXES = 0,
+	HITBOX_STYLE = 1,
+	COLOR_BLIND_MODE = 2,
+	ORIGIN_STYLE = 4,
+	DRAW_GROUND = 5,
+	DEFAULT = 7,
+	RETURN = 9,
+	PAGE = 11
 };
 
 const int defDISPLAY_HITBOXES = 0;
@@ -749,8 +836,21 @@ const std::vector<std::vector<const char*>> P7_Options = {
 	vSAVE_STATE, vCLEAR_ALL_SAVES, vSPACE_ELEMENT,
 	vIMPORT_SAVE, vEXPORT_SAVE, vSPACE_ELEMENT,
 	vLOAD_RNG, vSPACE_ELEMENT,
-	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP7_PAGE
+};
+
+enum class eSAVE_STATES {
+	SAVE_STATE_SLOT = 0,
+	SAVE_STATE = 2,
+	CLEAR_ALL_SAVES = 3,
+	IMPORT_SAVE = 5,
+	EXPORT_SAVE = 6,
+	LOAD_RNG = 8,
+	DEFAULT = 10,
+	RETURN = 12,
+	PAGE = 14
 };
 
 const int defSAVE_SLOT = 1;
@@ -806,8 +906,21 @@ const std::vector<std::vector<const char*>> P8_Options = {
 	vSHOW_FREEZE_AND_INPUTS, vSHOW_CANCEL_WINDOWS, vSPACE_ELEMENT,
 	vSCROLL_DISPLAY, vSPACE_ELEMENT,
 	vCOLOR_GUIDE, vSPACE_ELEMENT,
-	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP8_PAGE
+};
+
+enum class eFRAME_DATA {
+	FRAME_DATA = 0,
+	IN_GAME_FRAME_DISPLAY = 1,
+	SHOW_FREEZE_AND_INPUTS = 3,
+	SHOW_CANCEL_WINDOWS = 4,
+	SCROLL_DISPLAY = 6,
+	COLOR_GUIDE = 8,
+	DEFAULT = 10,
+	RETURN = 12,
+	PAGE = 14
 };
 
 const int defFRAME_DATA = 0;
@@ -861,8 +974,18 @@ const std::vector<const char*> vP9_PAGE = {
 const std::vector<std::vector<const char*>> P9_Options = {
 	vCUSTOM_RNG, vSPACE_ELEMENT,
 	vRATE, vSEED, vSPACE_ELEMENT,
-	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP9_PAGE
+};
+
+enum class eRNG {
+	CUSTOM_RNG = 0,
+	RATE = 2,
+	SEED = 3,
+	DEFAULT = 5,
+	RETURN = 7,
+	PAGE = 9
 };
 
 const int defCUSTOM_RNG = 0;
@@ -914,8 +1037,19 @@ const std::vector<std::vector<const char*>> P10_Options = {
 	vSHOW_STATS, vSPACE_ELEMENT,
 	vP1_INPUT_DISPLAY, vP2_INPUT_DISPLAY, vSPACE_ELEMENT,
 	vFRAME_DISPLAY_Y, vSPACE_ELEMENT,
-	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP10_PAGE
+};
+
+enum class eUI {
+	SHOW_STATS = 0,
+	P1_INPUT_DISPLAY = 2,
+	P2_INPUT_DISPLAY = 3,
+	FRAME_DISPLAY_Y = 5,
+	DEFAULT = 7,
+	RETURN = 9,
+	PAGE = 11
 };
 
 const int defSHOW_STATS = 1;
@@ -974,8 +1108,20 @@ const std::vector<std::vector<const char*>> P11_Options = {
 	vGAME_SPEED, vSPACE_ELEMENT,
 	vHIDE_HUD, vHIDE_SHADOWS, vHIDE_EXTRAS, vSPACE_ELEMENT,
 	vBACKGROUND, vSPACE_ELEMENT,
-	vDEFAULT_ELEMENT, vRETURN_ELEMENT, vSPACE_ELEMENT,
+	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP11_PAGE
+};
+
+enum class eSYSTEM {
+	GAME_SPEED = 0,
+	HIDE_HUD = 2,
+	HIDE_SHADOWS = 3,
+	HIDE_EXTRAS = 4,
+	BACKGROUND = 6,
+	DEFAULT = 8,
+	RETURN = 10,
+	PAGE = 12
 };
 
 const int defGAME_SPEED = 0;
@@ -1007,6 +1153,20 @@ const std::vector<std::vector<int*>> Page_Settings = {
 };
 
 const int XS_NUM_PAGES = 11;
+
+const enum class eXS_PAGES {
+	REVERSALS = 0,
+	TRAINING = 1,
+	HIGHLIGHTS = 2,
+	POSITIONS = 3,
+	CHARACTER = 4,
+	HITBOXES = 5,
+	SAVE_STATES = 6,
+	FRAME_DATA = 7,
+	RNG = 8,
+	UI = 9,
+	SYSTEM = 10
+};
 
 extern uint8_t nEXTENDED_SETTINGS_PAGE;
 extern uint8_t nEXTENDED_SETTINGS_CURSOR[XS_NUM_PAGES];

@@ -79,7 +79,7 @@ int nREV_SHIELD_2 = defREV_SHIELD; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
 int nREV_SHIELD_3 = defREV_SHIELD; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
 int nREV_SHIELD_4 = defREV_SHIELD; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
 
-void DefaultP1() {
+void DefaultP1(MenuInfo* menuInfo) {
 	nREVERSAL_TYPE = defREVERSAL_TYPE;
 	nREVERSAL_SLOT_1 = defREVERSAL_SLOT_1;
 	nREV_SLOT_1_WEIGHT = defREV_SLOT_1_WEIGHT;
@@ -101,6 +101,18 @@ void DefaultP1() {
 	nREV_SHIELD_2 = defREV_SHIELD;
 	nREV_SHIELD_3 = defREV_SHIELD;
 	nREV_SHIELD_4 = defREV_SHIELD;
+
+	menuInfo->ElementList[0]->selectedItem = defREVERSAL_TYPE;
+	menuInfo->ElementList[2]->selectedItem = defREVERSAL_SLOT_1;
+	menuInfo->ElementList[3]->selectedItem = defREV_SLOT_1_WEIGHT;
+	menuInfo->ElementList[4]->selectedItem = defREVERSAL_SLOT_2;
+	menuInfo->ElementList[5]->selectedItem = defREV_SLOT_2_WEIGHT;
+	menuInfo->ElementList[6]->selectedItem = defREVERSAL_SLOT_3;
+	menuInfo->ElementList[7]->selectedItem = defREV_SLOT_3_WEIGHT;
+	menuInfo->ElementList[8]->selectedItem = defREVERSAL_SLOT_4;
+	menuInfo->ElementList[9]->selectedItem = defREV_SLOT_4_WEIGHT;
+	menuInfo->ElementList[11]->selectedItem = defNO_REV_WEIGHT;
+	menuInfo->ElementList[13]->selectedItem = defREVERSAL_DELAY;
 }
 
 //Page 2
@@ -124,7 +136,7 @@ int nTRUE_HITS_UNTIL_BURST = defTRUE_HITS_BURST;
 int nTRUE_HITS_UNTIL_BUNKER = defTRUE_HITS_BUNKER;
 int nTRUE_HITS_UNTIL_FORCE_GUARD = defTRUE_HITS_FORCE_GUARD;
 
-void DefaultP2() {
+void DefaultP2(MenuInfo* menuInfo) {
 	nPENALTY_RESET = defPEN_RESET;
 	nGUARD_BAR_RESET = defGUARD_RESET;
 	nEX_GUARD = defEX_GUARD;
@@ -144,6 +156,18 @@ void DefaultP2() {
 	nTRUE_HITS_UNTIL_BURST = defTRUE_HITS_BURST;
 	nTRUE_HITS_UNTIL_BUNKER = defTRUE_HITS_BUNKER;
 	nTRUE_HITS_UNTIL_FORCE_GUARD = defTRUE_HITS_FORCE_GUARD;
+
+	menuInfo->ElementList[0]->selectedItem = defPEN_RESET;
+	menuInfo->ElementList[1]->selectedItem = defGUARD_RESET;
+	menuInfo->ElementList[3]->selectedItem = defEX_GUARD;
+	menuInfo->ElementList[5]->selectedItem = defP1_METER;
+	menuInfo->ElementList[6]->selectedItem = defP2_METER;
+	menuInfo->ElementList[8]->selectedItem = defP1_HEALTH;
+	menuInfo->ElementList[9]->selectedItem = defP2_HEALTH;
+	menuInfo->ElementList[11]->selectedItem = defHITS_BURST;
+	menuInfo->ElementList[12]->selectedItem = defHITS_BUNKER;
+	menuInfo->ElementList[13]->selectedItem = defHITS_FORCE_GUARD;
+	menuInfo->ElementList[14]->selectedItem = defFORCE_GUARD_STANCE;
 }
 
 //Page 3

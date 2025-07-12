@@ -2782,7 +2782,7 @@ int nP2MeterGain = 0;
 DWORD prevComboPtr = 0;
 
 void ResetCallback() {
-	if (nSAVE_STATE_SLOT == 0) {
+	if (nSAVE_STATE_SLOT == 0 || !(saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)) {
 		if (*(int*)(adMBAABase + adBS_MAGIC_CIRCUIT) == 0) {
 			for (int i = 0; i < 4; i++) {
 				PlayerData* curPlayer = pPlayerArray[i];
@@ -2973,7 +2973,7 @@ __declspec(naked) void _naked_ResetCallback() {
 // roundcall funcs
 
 void RoundcallCallback() {
-	if (saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)
+	if (nSAVE_STATE_SLOT > 0 && saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)
 	{
 		saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->load(nLOAD_RNG);
 		PlayerData* tempPlayer;
@@ -4671,8 +4671,8 @@ void ExtendedMenuInputChecking() {
 	bShowFrameBarYPreview = false;
 	curMenuInfo = extendedWindow->MenuInfoList[extendedWindow->menuInfoIndex];
 	curElement = curMenuInfo->ElementList[curMenuInfo->selectedElement];
-	switch (extendedWindow->menuInfoIndex) {
-	case 0: //reversals
+	switch ((eXS_PAGES)extendedWindow->menuInfoIndex) {
+	case eXS_PAGES::REVERSALS:
 	{
 		if (vPatternNames.size() == 1)
 		{
@@ -4689,8 +4689,8 @@ void ExtendedMenuInputChecking() {
 		bool exShield;
 		bool heldShield;
 		bool isSC;
-		switch (curMenuInfo->selectedElement) {
-		case 2: //reversal slot 1
+		switch ((eREVERSALS)curMenuInfo->selectedElement) {
+		case eREVERSALS::REVERSAL_SLOT_1:
 			if (LoopingScrolling(curElement, nREV_ID_1, 0, vPatternNames.size() - 1)) {
 				nREV_SHIELD_1 = 0;
 			}
@@ -4718,7 +4718,7 @@ void ExtendedMenuInputChecking() {
 				}
 			}
 			break;
-		case 4:
+		case eREVERSALS::REVERSAL_SLOT_2:
 			if (LoopingScrolling(curElement, nREV_ID_2, 0, vPatternNames.size() - 1)) {
 				nREV_SHIELD_2 = 0;
 			}
@@ -4746,7 +4746,7 @@ void ExtendedMenuInputChecking() {
 				}
 			}
 			break;
-		case 6:
+		case eREVERSALS::REVERSAL_SLOT_3:
 			if (LoopingScrolling(curElement, nREV_ID_3, 0, vPatternNames.size() - 1)) {
 				nREV_SHIELD_3 = 0;
 			}
@@ -4774,7 +4774,7 @@ void ExtendedMenuInputChecking() {
 				}
 			}
 			break;
-		case 8:
+		case eREVERSALS::REVERSAL_SLOT_4:
 			if (LoopingScrolling(curElement, nREV_ID_4, 0, vPatternNames.size() - 1)) {
 				nREV_SHIELD_4 = 0;
 			}
@@ -4802,10 +4802,10 @@ void ExtendedMenuInputChecking() {
 				}
 			}
 			break;
-		case 15:
-			if (bAPos) DefaultP1();
+		case eREVERSALS::DEFAULT:
+			if (bAPos) DefaultP1(curMenuInfo);
 			break;
-		case 18:
+		case eREVERSALS::PAGE:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
@@ -4831,12 +4831,12 @@ void ExtendedMenuInputChecking() {
 
 		break;
 	}
-	case 1: //meters
+	case eXS_PAGES::TRAINING:
 	{
 		int healthInterval = bA ? 1 : 950;
 		int healthAccel = bA ? 6 : 0;
-		switch (curMenuInfo->selectedElement) {
-		case 5: //P1 meter
+		switch ((eTRAINING)curMenuInfo->selectedElement) {
+		case eTRAINING::P1_METER:
 			if (pP1->moon != 2) {
 				CFMeterScrolling(curElement, nTRUE_P1_METER, bA);
 			}
@@ -4844,7 +4844,7 @@ void ExtendedMenuInputChecking() {
 				HMeterScrolling(curElement, nTRUE_P1_METER, bA);
 			}
 			break;
-		case 6: //P2 meter
+		case eTRAINING::P2_METER:
 			if (pP2->moon != 2) {
 				CFMeterScrolling(curElement, nTRUE_P2_METER, bA);
 			}
@@ -4852,25 +4852,26 @@ void ExtendedMenuInputChecking() {
 				HMeterScrolling(curElement, nTRUE_P2_METER, bA);
 			}
 			break;
-		case 8: //P1 health
+		case eTRAINING::P1_HEALTH:
 			NormalScrolling(curElement, nTRUE_P1_HEALTH, 0, 11400, healthInterval, healthAccel);
 			break;
-		case 9: //P2 health
+		case eTRAINING::P2_HEALTH:
 			NormalScrolling(curElement, nTRUE_P2_HEALTH, 0, 11400, healthInterval, healthAccel);
 			break;
-		case 11: //Hits until burst
+		case eTRAINING::HITS_UNTIL_BURST:
 			NormalScrolling(curElement, nTRUE_HITS_UNTIL_BURST, 0, 101);
 			break;
-		case 12: //Hits until bunker
+		case eTRAINING::HITS_UNTIL_BUNKER:
 			NormalScrolling(curElement, nTRUE_HITS_UNTIL_BUNKER, 0, 101);
 			break;
-		case 13: //Hits until force guard
+		case eTRAINING::HITS_UNTIL_FORCE_GUARD:
 			NormalScrolling(curElement, nTRUE_HITS_UNTIL_FORCE_GUARD, 0, 101);
 			break;
-		case 16:
-			if (bAPos) DefaultP2();
+		case eTRAINING::DEFAULT:
+			if (bA)
+				DefaultP2(curMenuInfo);
 			break;
-		case 19:
+		case eTRAINING::PAGE:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
@@ -4943,50 +4944,50 @@ void ExtendedMenuInputChecking() {
 
 		break;
 	}
-	case 2: //highlights
+	case eXS_PAGES::HIGHLIGHTS:
 	{
-		switch (curMenuInfo->selectedElement) {
-		case 1:
+		switch ((eHIGHLIGHTS)curMenuInfo->selectedElement) {
+		case eHIGHLIGHTS::GUARD:
 			HighlightSwitch(curElement->selectedItem, arrBlockingHighlightSetting);
 			break;
-		case 2:
+		case eHIGHLIGHTS::HIT:
 			HighlightSwitch(curElement->selectedItem, arrHitHighlightSetting);
 			break;
-		case 3:
+		case eHIGHLIGHTS::ARMOR:
 			HighlightSwitch(curElement->selectedItem, arrArmorHighlightSetting);
 			break;
-		case 4:
+		case eHIGHLIGHTS::THROW_PROTECTION:
 			HighlightSwitch(curElement->selectedItem, arrThrowProtectionHighlightSetting);
 			break;
-		case 5:
+		case eHIGHLIGHTS::IDLE:
 			HighlightSwitch(curElement->selectedItem, arrIdleHighlightSetting);
 			break;
-		case 8:
+		case eHIGHLIGHTS::DEFAULT:
 			if (bAPos) DefaultP3();
 			break;
-		case 11:
+		case eHIGHLIGHTS::PAGE:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
 
 		break;
 	}
-	case 3: //positions
+	case eXS_PAGES::POSITIONS:
 	{
-		switch (curMenuInfo->selectedElement) {
-		case 2:
+		switch ((ePOSITIONS)curMenuInfo->selectedElement) {
+		case ePOSITIONS::P1_POSITION:
 			PositionScrolling(curElement, nTRUE_P1_X_LOC, bA);
 			break;
-		case 3:
+		case ePOSITIONS::P1_ASSIST_POSITION:
 			PositionScrolling(curElement, nTRUE_P1_ASSIST_X_LOC, bA);
 			break;
-		case 5:
+		case ePOSITIONS::P2_POSITION:
 			PositionScrolling(curElement, nTRUE_P2_X_LOC, bA);
 			break;
-		case 6:
+		case ePOSITIONS::P2_ASSIST_POSITION:
 			PositionScrolling(curElement, nTRUE_P2_ASSIST_X_LOC, bA);
 			break;
-		case 8: //move to positions
+		case ePOSITIONS::MOVE_TO_POSITIONS:
 			if (bAPos) {
 				pP1->xPos = nTRUE_P1_X_LOC;
 				pP2->xPos = nTRUE_P2_X_LOC;
@@ -5013,7 +5014,7 @@ void ExtendedMenuInputChecking() {
 				}
 			}
 			break;
-		case 9: //invert
+		case ePOSITIONS::INVERT: //invert
 			if (bAPos) {
 				int temp = nTRUE_P1_X_LOC;
 				nTRUE_P1_X_LOC = nTRUE_P2_X_LOC;
@@ -5024,10 +5025,10 @@ void ExtendedMenuInputChecking() {
 				nTRUE_P2_ASSIST_X_LOC = temp;
 			}
 			break;
-		case 11:
+		case ePOSITIONS::DEFAULT:
 			if (bAPos) DefaultP4();
 			break;
-		case 14:
+		case ePOSITIONS::PAGE:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
@@ -5046,76 +5047,76 @@ void ExtendedMenuInputChecking() {
 
 		break;
 	}
-	case 4: //char specifics
+	case eXS_PAGES::CHARACTER:
 	{
-		switch (curMenuInfo->selectedElement) {
-		case 9:
+		switch ((eCHARACTER)curMenuInfo->selectedElement) {
+		case eCHARACTER::DEFAULT:
 			if (bAPos) DefaultP5();
 			break;
-		case 12:
+		case eCHARACTER::PAGE:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
 
 		break;
 	}
-	case 5: //hitbox
+	case eXS_PAGES::HITBOXES:
 	{
-		switch (curMenuInfo->selectedElement) {
-		case 1:
+		switch ((eHITBOXES)curMenuInfo->selectedElement) {
+		case eHITBOXES::HITBOX_STYLE:
 			*(byte*)(adMBAABase + adXS_hitboxStyle) = curElement->selectedItem;
 			break;
-		case 2:
+		case eHITBOXES::COLOR_BLIND_MODE:
 			*(byte*)(adMBAABase + adXS_colorblind) = curElement->selectedItem;
 			break;
-		case 4:
+		case eHITBOXES::ORIGIN_STYLE:
 			*(byte*)(adMBAABase + adXS_originStyle) = curElement->selectedItem;
 			break;
-		case 8:
+		case eHITBOXES::DEFAULT:
 			if (bAPos) DefaultP6();
 			break;
-		case 11:
+		case eHITBOXES::PAGE:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
 
 		break;
 	}
-	case 6: //save state
+	case eXS_PAGES::SAVE_STATES:
 	{
-		switch (curMenuInfo->selectedElement) {
-		case 0:
+		switch ((eSAVE_STATES)curMenuInfo->selectedElement) {
+		case eSAVE_STATES::SAVE_STATE_SLOT:
 			nSAVE_STATE_SLOT = curElement->selectedItem;
 			if (bAPos) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->unsave();
 			}
 			break;
-		case 2:
+		case eSAVE_STATES::SAVE_STATE:
 			if (bAPos && nSAVE_STATE_SLOT > 0) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->save();
 			}
 			break;
-		case 3:
+		case eSAVE_STATES::CLEAR_ALL_SAVES:
 			if (bAPos) {
 				for (int i = 0; i < MAX_SAVES; i++) {
 					saveStateManager.FullSaves[i]->unsave();
 				}
 			}
 			break;
-		case 5: //import
+		case eSAVE_STATES::IMPORT_SAVE: //import
 			if (bAPos) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->loadFromFile();
 			}
 			break;
-		case 6: //export
+		case eSAVE_STATES::EXPORT_SAVE: //export
 			if (bAPos) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->saveToFile();
 			}
 			break;
-		case 10:
+		case eSAVE_STATES::DEFAULT:
 			if (bAPos) DefaultP7();
 			break;
-		case 13:
+		case eSAVE_STATES::PAGE:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
@@ -5132,33 +5133,33 @@ void ExtendedMenuInputChecking() {
 
 		break;
 	}
-	case 7: //frame data
+	case eXS_PAGES::FRAME_DATA:
 	{
-		switch (curMenuInfo->selectedElement) {
-		case 0:
+		switch ((eFRAME_DATA)curMenuInfo->selectedElement) {
+		case eFRAME_DATA::FRAME_DATA:
 			*(byte*)(adMBAABase + adXS_frameData) = curElement->selectedItem;
 			break;
-		case 3:
+		case eFRAME_DATA::SHOW_FREEZE_AND_INPUTS:
 			*(byte*)(adMBAABase + adXS_showFreezeInputs) = curElement->selectedItem;
 			break;
-		case 4:
+		case eFRAME_DATA::SHOW_CANCEL_WINDOWS:
 			*(byte*)(adMBAABase + adXS_showCancel) = curElement->selectedItem;
 			break;
-		case 6: //scroll
+		case eFRAME_DATA::SCROLL_DISPLAY:
 			NormalScrolling(curElement, nTRUE_SCROLL_DISPLAY, -400, 0);
 			*(short*)(adMBAABase + adXS_frameScroll) = -nTRUE_SCROLL_DISPLAY;
 			bShowFrameBarPreview = true;
 			break;
-		case 8:
+		case eFRAME_DATA::COLOR_GUIDE:
 			if (bAPos) {
 				bCOLOR_GUIDE = !bCOLOR_GUIDE;
 				*(bool*)(adMBAABase + adXS_colorGuide) = bCOLOR_GUIDE;
 			}
 			break;
-		case 10:
+		case eFRAME_DATA::DEFAULT:
 			if (bAPos) DefaultP8();
 			break;
-		case 13:
+		case eFRAME_DATA::PAGE:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
@@ -5168,33 +5169,33 @@ void ExtendedMenuInputChecking() {
 
 		break;
 	}
-	case 8: //RNG
+	case eXS_PAGES::RNG:
 	{
-		switch (curMenuInfo->selectedElement) {
-		case 3: //seed
+		switch ((eRNG)curMenuInfo->selectedElement) {
+		case eRNG::SEED:
 			NormalScrolling(curElement, nTRUE_SEED, 0, 0xffffffff, 1, 24);
 			break;
-		case 5:
+		case eRNG::DEFAULT:
 			if (bAPos) DefaultP9();
 			break;
-		case 8:
+		case eRNG::PAGE:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
 
 		break;
 	}
-	case 9: //displays
+	case eXS_PAGES::UI:
 	{
-		switch (curMenuInfo->selectedElement) {
-		case 5: //framedisplay y
+		switch ((eUI)curMenuInfo->selectedElement) {
+		case eUI::FRAME_DISPLAY_Y: //framedisplay y
 			NormalScrolling(curElement, nTRUE_FRAME_DISPLAY_Y, 0, 440, 10);
 			bShowFrameBarYPreview = true;
 			break;
-		case 9:
+		case eUI::DEFAULT:
 			if (bAPos) DefaultP10();
 			break;
-		case 12:
+		case eUI::PAGE:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
@@ -5204,16 +5205,16 @@ void ExtendedMenuInputChecking() {
 
 		break;
 	}
-	case 10: //misc
+	case eXS_PAGES::SYSTEM:
 	{
-		switch (curMenuInfo->selectedElement) {
-		case 4:
+		switch ((eSYSTEM)curMenuInfo->selectedElement) {
+		case eSYSTEM::HIDE_EXTRAS:
 			*(byte*)(adMBAABase + adXS_hideExtras) = curElement->selectedItem;
 			break;
-		case 7:
+		case eSYSTEM::DEFAULT:
 			if (bAPos) DefaultP11();
 			break;
-		case 10:
+		case eSYSTEM::PAGE:
 			PageScrolling(curElement, extendedWindow);
 			break;
 		}
