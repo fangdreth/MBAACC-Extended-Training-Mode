@@ -45,7 +45,10 @@ uint8_t nFrameBarScrollRightKey = nDefaultFrameBarScrollRightKey;
 uint8_t nRNGIncKey = nDefaultRNGIncKey;
 uint8_t nRNGDecKey = nDefaultRNGIncKey;
 uint8_t nReversalKey = nDefaultReversalKey;
-uint8_t nSlowKey = nSlowKey;
+uint8_t nSlowKey = nDefaultSlowKey;
+uint8_t nNextFrameKey = nDefaultNextFrameKey;
+uint8_t nPrevFrameKey = nDefaultPrevFrameKey;
+uint8_t nResetKey = nDefaultResetKey;
 
 bool bFreezeKeySet = false;
 bool bFrameStepKeySet = false;
@@ -61,6 +64,9 @@ bool bRNGIncKeySet = false;
 bool bRNGDecKeySet = false;
 bool bReversalKeySet = false;
 bool bSlowKeySet = false;
+bool bNextFrameKeySet = false;
+bool bPrevFrameKeySet = false;
+bool bResetKeySet = false;
 
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;
@@ -408,6 +414,20 @@ void ReplaceKey(uint8_t nKey, int nKeyNameEnum)
         bFrameStepKeySet = false;
         SetRegistryValue(L"FrameStepKey", nFrameStepKey);
         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameStepKey), &nFrameStepKey, 1, 0);
+    }
+    else if (nPrevFrameKey == nKey && nKeyNameEnum != KEY_PREVFRAME)
+    {
+        nPrevFrameKey = nDefaultPrevFrameKey;
+        bPrevFrameKeySet = false;
+        SetRegistryValue(L"PrevFrameKey", nPrevFrameKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevFrameKey), &nPrevFrameKey, 1, 0);
+    }
+    else if (nResetKey == nKey && nKeyNameEnum != KEY_RESET)
+    {
+        nResetKey = nDefaultResetKey;
+        bResetKeySet = false;
+        SetRegistryValue(L"ResetKey", nResetKey);
+        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedResetKey), &nResetKey, 1, 0);
     }
     else if (nHitboxDisplayKey == nKey && nKeyNameEnum != KEY_HITBOX)
     {

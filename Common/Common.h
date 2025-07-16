@@ -38,7 +38,7 @@ enum eEnemyStance { STANDING = 0, STANDGUARDING = 17, CROUCHING = 13 };
 enum ePresetSettings { DEFAULT, FUZZY, BLOCKSTRING, HEATOS, FUZZYMASH, FUZZYJUMP, CUSTOM };
 enum eEnemyGuardLevelSettings { INF, ONEHUNDRED, SEVENTYFIVE, FIFTY, TWENTYFIVE, ZERO };
 enum eSettingsPages { REVERSALS_PAGE = 1, STATS_PAGE, HIGHLIGHT_PAGE, POSITIONS_PAGE, CHARACTER_SPECIFICS, HITBOXES_PAGE, SAVE_STATE_PAGE, FRAME_TOOL, RNG_PAGE, UI_PAGE, SYSTEM_PAGE };
-enum eHotkeyPages { GENERIC_HOTKEYS_PAGE = 1, FRAME_TOOL_HOTKEYS_PAGE, RNG_HOTKEYS_PAGE };
+enum eHotkeyPages { GENERIC_HOTKEYS_PAGE = 1, FRAME_TOOL_HOTKEYS_PAGE, RNG_HOTKEYS_PAGE, REVERSALS_HOTKEY_PAGE };
 enum eReversalType { REVERSAL_OFF, REVERSAL_NORMAL, REVERSAL_RANDOM, REVERSAL_SHIELD, /*REVERSAL_SEQUENCE,*/ REVERSAL_REPEAT };
 enum eFrameDataDisplay { FRAMEDISPLAY_NORMAL, FRAMEDISPLAY_ADVANCED };
 enum eHighlightSettings { NO_HIGHLIGHT, RED_HIGHLIGHT, YELLOW_HIGHLIGHT, GREEN_HIGHLIGHT, BLUE_HIGHLIGHT, PURPLE_HIGHLIGHT, BLACK_HIGHLIGHT };
@@ -471,6 +471,9 @@ const ADDRESS adSharedRNGIncKey =					adShareBase + 0x3A; // 1 byte
 const ADDRESS adSharedRNGDecKey =					adShareBase + 0x3B; // 1 byte
 const ADDRESS adSharedReversalKey =					adShareBase + 0x3C; // 1 byte
 const ADDRESS adSharedSlowKey =						adShareBase + 0x3D; // 1 byte
+const ADDRESS adSharedNextFrameKey =				adShareBase + 0x3E; // 1 byte
+const ADDRESS adSharedPrevFrameKey =			adShareBase + 0x3F; // 1 byte
+const ADDRESS adSharedResetKey =					adShareBase + 0x40; // 1 byte
 
 const ADDRESS adSharedIdleHighlight =				adShareBase + 0x50; // 4 bytes
 const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x54; // 4 bytes
@@ -514,7 +517,7 @@ const int MAX_REVERSAL_DELAY = 99;
 const int MAX_HEALTH = 11400;
 const int MAX_METER = 30000;
 const int MAX_SETTINGS_PAGES = 11;
-const int MAX_HOTKEY_PAGES = 3;
+const int MAX_HOTKEY_PAGES = 4;
 const int MAX_BULLETS = 13; //14:normal 15:infinite
 const int MAX_CHARGE = 9;
 const int MAX_HEARTS = 5; //6:normal 7:infinite
@@ -620,6 +623,7 @@ const char pcHighlights_11[11] = "HIGHLIGHTS";
 const char pcRNG_4[4] = "RNG";
 const char pcSystem_8[8] = "SYSTEM";
 const char pcUI_3[3] = "UI";
+const char pcReversalsHotkeys_10[10] = "REVERSALS";
 const char pcGeneralHotkeys_16[16] = "GENERAL HOTKEYS";
 const char pcFrameDataHotkeys_19[19] = "FRAME DATA HOTKEYS";
 const char pcRNGHotkeys_12[12] = "RNG HOTKEYS";
@@ -710,7 +714,8 @@ const char pcDrawGround_12[12] = "DRAW GROUND";
 const char pcHideExtras_12[12] = "HIDE EXTRAS";
 
 const char pcFreeze_11[11] = "FREEZE KEY";
-const char pcNextStep_14[14] = "NEXT STEP KEY";
+const char pcNextFrame_15[15] = "NEXT FRAME KEY";
+const char pcPreviousFrame_15[15] = "PREV FRAME KEY";
 const char pcHitboxes_13[13] = "HITBOXES KEY";
 const char pcFrameDisplay_18[18] = "FRAME DISPLAY KEY";
 const char pcHighlights_15[15] = "HIGHLIGHTS KEY";
@@ -762,7 +767,7 @@ const char pcPrevRNG_13[13] = "PREV RNG KEY";
 #define VK_KEY_Y 0x59
 #define VK_KEY_Z 0x5A
 
-enum eKeyNames { KEY_FREEZE, KEY_FRAMESTEP, KEY_HITBOX, KEY_FRAMEDATA, KEY_HIGHLIGHT, KEY_SAVESTATE, KEY_PREVSAVE, KEY_NEXTSAVE, KEY_FRAMEBARLEFT, KEY_FRAMEBARRIGHT, KEY_RNGINC, KEY_RNGDEC, KEY_REVERSAL };
+enum eKeyNames { KEY_FREEZE, KEY_FRAMESTEP, KEY_HITBOX, KEY_FRAMEDATA, KEY_HIGHLIGHT, KEY_SAVESTATE, KEY_PREVSAVE, KEY_NEXTSAVE, KEY_FRAMEBARLEFT, KEY_FRAMEBARRIGHT, KEY_RNGINC, KEY_RNGDEC, KEY_REVERSAL, KEY_PREVFRAME, KEY_RESET };
 
 const uint8_t nDefaultFreezeKey = VK_KEY_UNSET;
 const uint8_t nDefaultFrameStepKey = VK_KEY_UNSET;
@@ -778,6 +783,9 @@ const uint8_t nDefaultRNGIncKey = VK_KEY_UNSET;
 const uint8_t nDefaultRNGDecKey = VK_KEY_UNSET;
 const uint8_t nDefaultReversalKey = VK_KEY_UNSET;
 const uint8_t nDefaultSlowKey = VK_KEY_UNSET;
+const uint8_t nDefaultNextFrameKey = VK_KEY_UNSET;
+const uint8_t nDefaultPrevFrameKey = VK_KEY_UNSET;
+const uint8_t nDefaultResetKey = VK_KEY_UNSET;
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))

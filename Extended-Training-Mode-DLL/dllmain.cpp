@@ -104,11 +104,17 @@ static KeyState oDecRNG;
 static KeyState oIncRNG;
 static KeyState oReversalKey;
 static KeyState oSlowKey;
+static KeyState oNextFrameKey;
+static KeyState oPrevFrameKey;
+static KeyState oResetKey;
 void setAllKeys()
 {
 	oSaveStateKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedSaveStateKey));
 	oPrevSaveSlotKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedPrevSaveSlotKey));
 	oNextSaveSlotKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedNextSaveSlotKey));
+	oNextFrameKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedNextFrameKey));
+	oPrevFrameKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedPrevFrameKey));
+	oResetKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedResetKey));
 	
 	oFreezeKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFreezeKey));
 	oFrameStepKey.setKey(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey));
@@ -1734,6 +1740,9 @@ void frameDoneCallback()
 
 	static KeyState lShiftKey(VK_LSHIFT);
 
+	static uint8_t nFrameCount = 0;
+	nFrameCount = (nFrameCount + 1) % 255;
+
 	//Sleep(8);
 
 	//log("%4d %4d", __frameDoneCount, *reinterpret_cast<int*>(dwBaseAddress + adFrameCount));
@@ -1766,7 +1775,7 @@ void frameDoneCallback()
 
 		if (bFreeze)
 		{
-			if (UpKey.keyDownHeldFreq<4, 24>()) {
+			/*if (UpKey.keyDownHeldFreq<4, 24>()) {
 				bool needNewFrame = saveStateManager.load(1);
 				if (!alreadyRolledReplayManager) {
 					//log("calling rollforward 2");
@@ -1777,7 +1786,7 @@ void frameDoneCallback()
 					rollFancyInputDisplay(1);
 				}
 			}
-			else if (DownKey.keyDownHeldFreq<4, 24>()) {
+			else */if (oPrevFrameKey.keyDownHeldFreq<4, 24>()) {
 				saveStateManager.load(-1);
 				rollFancyInputDisplay(-1);
 				replayManager.rollBack();
@@ -1810,7 +1819,9 @@ void frameDoneCallback()
 	}
 
 	static KeyState mKey('M');
-	if (mKey.keyDown()) {
+	if (mKey.keyDown())
+	//if (oResetKey.keyDown())
+	{
 		needTrainingModeReset = true;
 	}
 
@@ -1818,6 +1829,7 @@ void frameDoneCallback()
 	if (lShiftKey.keyHeld() && fKey.keyDown()) {
 		setFPSLimiter(!disableFPSLimit); // sorry :3
 	}
+	////setFPSLimiter(bDisableFPSLimit);
 
 	static KeyState oKey('O');
 	if (lShiftKey.keyHeld() && oKey.keyDown()) {
@@ -1976,21 +1988,40 @@ void frameDoneCallback()
 			TextDraw(100.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Freeze Key: <corrupt>");
 		}
 
-		try
+		if (nFrameCount % 240 > 120)
 		{
-			char pcFrameStepKey[256];
-			char pcName[19];
-			UINT scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey), MAPVK_VK_TO_VSC);
-			LONG lParamValue = (scanCode << 16);
-			GetKeyNameTextA(lParamValue, pcName, 19);
-			snprintf(pcFrameStepKey, sizeof(pcFrameStepKey), "Frame Step Key: %s", pcName);
-			TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcFrameStepKey);
+			try
+			{
+				char pcFrameStepKey[256];
+				char pcName[19];
+				UINT scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey), MAPVK_VK_TO_VSC);
+				LONG lParamValue = (scanCode << 16);
+				GetKeyNameTextA(lParamValue, pcName, 19);
+				snprintf(pcFrameStepKey, sizeof(pcFrameStepKey), "Next Frame: %s", pcName);
+				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcFrameStepKey);
+			}
+			catch (...)
+			{
+				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
+			}
 		}
-		catch (...)
+		else
 		{
-			TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
+			try
+			{
+				char pcPrevFrameKey[256];
+				char pcName[19];
+				UINT scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedPrevFrameKey), MAPVK_VK_TO_VSC);
+				LONG lParamValue = (scanCode << 16);
+				GetKeyNameTextA(lParamValue, pcName, 19);
+				snprintf(pcPrevFrameKey, sizeof(pcPrevFrameKey), "Prev Frame: %s", pcName);
+				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcPrevFrameKey);
+			}
+			catch (...)
+			{
+				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Prev Frame: <corrupt>");
+			}
 		}
-			
 	}
 
 	if (oFrameBarLeftScrollKey.keyHeld())
@@ -2344,7 +2375,7 @@ void newPauseCallback2()
 			_naked_newPauseCallback2_IsPaused = false;
 	}
 
-	else if (!bFreeze && oFrameStepKey.keyDown())
+	else if (!bFreeze && (oFrameStepKey.keyDown() || oPrevFrameKey.keyDown()))
 	{
 		bFreeze = true;
 		bSlow = false;

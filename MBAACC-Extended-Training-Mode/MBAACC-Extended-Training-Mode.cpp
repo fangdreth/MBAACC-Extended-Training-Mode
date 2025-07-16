@@ -389,6 +389,21 @@ int main(int argc, char* argv[])
             nSlowKey = nDefaultSlowKey;
         else
             bSlowKeySet = true;
+        ReadFromRegistry(L"NextFrameKey", &nNextFrameKey);
+        if (MapVirtualKeyW(nNextFrameKey, MAPVK_VK_TO_VSC) == 0)
+            nNextFrameKey = nDefaultNextFrameKey;
+        else
+            bNextFrameKeySet = true;
+        ReadFromRegistry(L"PrevFrameKey", &nPrevFrameKey);
+        if (MapVirtualKeyW(nPrevFrameKey, MAPVK_VK_TO_VSC) == 0)
+            nPrevFrameKey = nDefaultPrevFrameKey;
+        else
+            bPrevFrameKeySet = true;
+        ReadFromRegistry(L"ResetKey", &nResetKey);
+        if (MapVirtualKeyW(nResetKey, MAPVK_VK_TO_VSC) == 0)
+            nResetKey = nDefaultResetKey;
+        else
+            bResetKeySet = true;
         ReadFromRegistry(L"FrameDisplay", &nFrameData);
         if (nFrameData == FRAMEDISPLAY_NORMAL)
             bSimpleFrameInfo = true;
@@ -512,6 +527,9 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedReversalKey), &nReversalKey, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedReversalKeyHeld), &bTrue, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSlowKey), &nSlowKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedNextFrameKey), &nNextFrameKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevFrameKey), &nPrevFrameKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedResetKey), &nResetKey, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSlowSpeed), &bSlow, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayFreeze), &bDisplayFreeze, 1, 0);
@@ -5105,6 +5123,18 @@ int main(int argc, char* argv[])
                             {
                                 switch (nHotkeyPage)
                                 {
+                                case REVERSALS_HOTKEY_PAGE:
+                                {
+                                    if (nEnemySettingsCursor == 0)
+                                    {
+                                        ResetKeysHeld();
+                                        bReversalKeySet = false;
+                                        nReversalKey = 0;
+                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedReversalKey), &nReversalKey, 1, 0);
+                                        SetRegistryValue(L"ReversalKey", nReversalKey);
+                                    }
+                                    break;
+                                }
                                 case GENERIC_HOTKEYS_PAGE:
                                 {
                                     if (nEnemySettingsCursor == 0)
@@ -5123,7 +5153,7 @@ int main(int argc, char* argv[])
                                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameStepKey), &nFrameStepKey, 1, 0);
                                         SetRegistryValue(L"FrameStepKey", nFrameStepKey);
                                     }
-                                    else if (nEnemySettingsCursor == 3)
+                                    else if (nEnemySettingsCursor == 5)
                                     {
                                         ResetKeysHeld();
                                         bHitboxDisplayKeySet = false;
@@ -5131,7 +5161,7 @@ int main(int argc, char* argv[])
                                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxesDisplayKey), &nHitboxDisplayKey, 1, 0);
                                         SetRegistryValue(L"HitboxesDisplayKey", nHitboxDisplayKey);
                                     }
-                                    else if (nEnemySettingsCursor == 5)
+                                    else if (nEnemySettingsCursor == 6)
                                     {
                                         ResetKeysHeld();
                                         bFrameDataDisplayKeySet = false;
@@ -5139,21 +5169,13 @@ int main(int argc, char* argv[])
                                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplayKey), &nFrameDataDisplayKey, 1, 0);
                                         SetRegistryValue(L"FrameDataDisplayKey", nFrameDataDisplayKey);
                                     }
-                                    else if (nEnemySettingsCursor == 6)
+                                    else if (nEnemySettingsCursor == 8)
                                     {
                                         ResetKeysHeld();
                                         bHighlightsOnKeySet = false;
                                         nHighlightsOnKey = 0;
                                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlightsOnKey), &nHighlightsOnKey, 1, 0);
                                         SetRegistryValue(L"HighlightsOnKey", nHighlightsOnKey);
-                                    }
-                                    else if (nEnemySettingsCursor == 8)
-                                    {
-                                        ResetKeysHeld();
-                                        bReversalKeySet = false;
-                                        nReversalKey = 0;
-                                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedReversalKey), &nReversalKey, 1, 0);
-                                        SetRegistryValue(L"ReversalKey", nReversalKey);
                                     }
                                     break;
                                 }
@@ -5233,16 +5255,28 @@ int main(int argc, char* argv[])
                             WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDefaultString), &pcBlank_1, 1, 0);
                             switch (nHotkeyPage)
                             {
+                            case REVERSALS_HOTKEY_PAGE:
+                            {
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcReversalsHotkeys_10, 16, 0);
+
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcReversal_9, 9, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcBlank_1, 1, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcBlank_1, 1, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcBlank_1, 1, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcBlank_1, 1, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcBlank_1, 1, 0);
+                                break;
+                            }
                             case GENERIC_HOTKEYS_PAGE:
                             {
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsMenuTitle), &pcGeneralHotkeys_16, 16, 0);
 
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionString), &pcFreeze_11, 11, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcNextStep_14, 14, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcHitboxes_13, 13, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcFrameDisplay_18, 18, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcHighlights_15, 15, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcReversal_9, 9, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseString), &pcNextFrame_15, 15, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeStringAddress), &pcPreviousFrame_15, 15, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryString), &pcHitboxes_13, 13, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryString), &pcFrameDisplay_18, 18, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryString), &pcHighlights_15, 15, 0);
                                 break;
                             }
                             case FRAME_TOOL_HOTKEYS_PAGE:
@@ -5282,6 +5316,24 @@ int main(int argc, char* argv[])
                             // Replace Main Info text
                             switch (nHotkeyPage)
                             {
+                            case REVERSALS_HOTKEY_PAGE:
+                            {
+                                switch (nEnemySettingsCursor)
+                                {
+                                case 0:
+                                {
+                                    char pcTemp64[64] = "Execute an {enemy reversal.";
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
+
+                                    if (bHighlightsOnKeySet)
+                                        strcpy_s(pcTemp64, ">{Press A} to change the key.");
+                                    else
+                                        strcpy_s(pcTemp64, ">{Press any key} to set the key.");
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
+                                    break;
+                                }
+                                }
+                            }
                             case GENERIC_HOTKEYS_PAGE:
                             {
                                 switch (nEnemySettingsCursor)
@@ -5312,6 +5364,18 @@ int main(int argc, char* argv[])
                                 }
                                 case 3:
                                 {
+                                    char pcTemp64[64] = "Rewind the game by one frame while frozen.";
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
+
+                                    if (bFrameStepKeySet)
+                                        strcpy_s(pcTemp64, ">{Press A} to change the key.");
+                                    else
+                                        strcpy_s(pcTemp64, ">{Press any key} to set the key.");
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
+                                    break;
+                                }
+                                case 5:
+                                {
                                     char pcTemp64[64] = "Turn {hitboxes} on or off.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
 
@@ -5322,7 +5386,7 @@ int main(int argc, char* argv[])
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
-                                case 5:
+                                case 6:
                                 {
                                     char pcTemp64[64] = "Turn {in-game frame data} on or off";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
@@ -5334,21 +5398,9 @@ int main(int argc, char* argv[])
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
                                     break;
                                 }
-                                case 6:
-                                {
-                                    char pcTemp64[64] = "Turn {character highlighting} on or off.";
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
-
-                                    if (bHighlightsOnKeySet)
-                                        strcpy_s(pcTemp64, ">{Press A} to change the key.");
-                                    else
-                                        strcpy_s(pcTemp64, ">{Press any key} to set the key.");
-                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcTemp64, 64, 0);
-                                    break;
-                                }
                                 case 8:
                                 {
-                                    char pcTemp64[64] = "Execute an {enemy reversal.";
+                                    char pcTemp64[64] = "Turn {character highlighting} on or off.";
                                     WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcTemp64, 64, 0);
 
                                     if (bHighlightsOnKeySet)
@@ -5525,6 +5577,24 @@ int main(int argc, char* argv[])
                             // Skipping blank menu items
                             switch (nHotkeyPage)
                             {
+                            case REVERSALS_HOTKEY_PAGE:
+                            {
+                                if (nOldEnemySettingsCursor == 0 && nEnemySettingsCursor == 2)
+                                {
+                                    nWriteBuffer = 10;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                    nEnemySettingsCursor = 10;
+                                    nOldEnemySettingsCursor = 10;
+                                }
+                                else if (nEnemySettingsCursor > 0 && nEnemySettingsCursor < 10)
+                                {
+                                    nWriteBuffer = 0;
+                                    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemySettingsCursor), &nWriteBuffer, 4, 0);
+                                    nEnemySettingsCursor = 0;
+                                    nOldEnemySettingsCursor = 0;
+                                }
+                                break;
+                            }
                             case GENERIC_HOTKEYS_PAGE:
                             {
                                 /*if (nOldEnemySettingsCursor == 6 && nEnemySettingsCursor == 8)
@@ -5607,6 +5677,7 @@ int main(int argc, char* argv[])
                             // left-right handlers
                             switch (nHotkeyPage)
                             {
+                            case REVERSALS_HOTKEY_PAGE:
                             case GENERIC_HOTKEYS_PAGE:
                             case FRAME_TOOL_HOTKEYS_PAGE:
                             case RNG_HOTKEYS_PAGE:
@@ -5661,6 +5732,59 @@ int main(int argc, char* argv[])
                             // dynamic menu items
                             switch (nHotkeyPage)
                             {
+                            case REVERSALS_HOTKEY_PAGE:
+                            {
+                                nWriteBuffer = ONSCREEN_LOCATION;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionOptionX), &nWriteBuffer, 4, 0);
+
+                                nWriteBuffer = OFFSCREEN_LOCATION;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseOptionX), &nWriteBuffer, 4, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeOptionX), &nWriteBuffer, 4, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryOptionX), &nWriteBuffer, 4, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryOptionX), &nWriteBuffer, 4, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwThrowRecoveryOptionX), &nWriteBuffer, 4, 0);
+
+                                char pcTemp[19];
+
+                                // REVERSAL
+                                if (!bReversalKeySet)
+                                {
+                                    uint8_t nKeyJustPressed = 0;
+                                    if (nEnemySettingsCursor == 0)
+                                        nKeyJustPressed = KeyJustPressed();
+
+                                    strcpy_s(pcTemp, "PRESS ANY KEY");
+                                    if (nKeyJustPressed != 0)
+                                    {
+                                        if (IsControllerNeutral())
+                                        {
+                                            bReversalKeySet = true;
+                                            nReversalKey = nKeyJustPressed;
+                                            SetRegistryValue(L"ReversalKey", nReversalKey);
+                                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedReversalKey), &nReversalKey, 1, 0);
+                                            ReplaceKey(nReversalKey, KEY_REVERSAL);
+                                        }
+                                    }
+                                }
+                                if (bReversalKeySet)
+                                {
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nReversalKey, MAPVK_VK_TO_VSC);
+                                    LONG lParamValue = (scanCode << 16);
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
+                                }
+
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionAString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionBString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionCString), &pcTemp, 19, 0);
+
+                                nWriteBuffer = 2;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyActionIndex), &nWriteBuffer, 4, 0);
+                                nEnemyActionIndex = 2;
+
+                                break;
+                            }
                             case GENERIC_HOTKEYS_PAGE:
                             {
                                 nWriteBuffer = ONSCREEN_LOCATION;
@@ -5746,11 +5870,48 @@ int main(int argc, char* argv[])
                                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseIndex), &nWriteBuffer, 4, 0);
                                 nEnemyDefenseIndex = 2;
 
+                                // PREV FRAME
+                                if (!bPrevFrameKeySet)
+                                {
+                                    uint8_t nKeyJustPressed = 0;
+                                    if (nEnemySettingsCursor == 3)
+                                        nKeyJustPressed = KeyJustPressed();
+
+                                    strcpy_s(pcTemp, "PRESS ANY KEY");
+                                    if (nKeyJustPressed != 0)
+                                    {
+                                        if (IsControllerNeutral())
+                                        {
+                                            bPrevFrameKeySet = true;
+                                            nPrevFrameKey = nKeyJustPressed;
+                                            SetRegistryValue(L"PrevFrameKey", nPrevFrameKey);
+                                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevFrameKey), &nPrevFrameKey, 1, 0);
+                                            ReplaceKey(nPrevFrameKey, KEY_PREVFRAME);
+                                        }
+                                    }
+                                }
+                                if (bPrevFrameKeySet)
+                                {
+                                    char pcName[19];
+                                    UINT scanCode = MapVirtualKeyA(nPrevFrameKey, MAPVK_VK_TO_VSC);
+                                    LONG lParamValue = (scanCode << 16);
+                                    GetKeyNameTextA(lParamValue, pcName, 19);
+                                    strcpy_s(pcTemp, pcName);
+                                }
+
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 19, 0);
+
+                                nWriteBuffer = 1;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
+                                nEnemyDefenseTypeIndex = 1;
+
                                 // HITBOX
                                 if (!bHitboxDisplayKeySet)
                                 {
                                     uint8_t nKeyJustPressed = 0;
-                                    if (nEnemySettingsCursor == 3)
+                                    if (nEnemySettingsCursor == 5)
                                         nKeyJustPressed = KeyJustPressed();
 
                                     strcpy_s(pcTemp, "PRESS ANY KEY");
@@ -5775,19 +5936,19 @@ int main(int argc, char* argv[])
                                     strcpy_s(pcTemp, pcName);
                                 }
 
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeNormalStringAddress), &pcTemp, 19, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeComboStringAddress), &pcTemp, 19, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeRandomStringAddress), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryBackString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryForwardString), &pcTemp, 19, 0);
 
-                                nWriteBuffer = 1;
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwEnemyDefenseTypeIndex), &nWriteBuffer, 4, 0);
-                                nEnemyDefenseTypeIndex = 1;
+                                nWriteBuffer = 2;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
+                                nAirRecoveryIndex = 2;
 
                                 // FRAME BAR
                                 if (!bFrameDataDisplayKeySet)
                                 {
                                     uint8_t nKeyJustPressed = 0;
-                                    if (nEnemySettingsCursor == 5)
+                                    if (nEnemySettingsCursor == 6)
                                         nKeyJustPressed = KeyJustPressed();
 
                                     strcpy_s(pcTemp, "PRESS ANY KEY");
@@ -5812,19 +5973,19 @@ int main(int argc, char* argv[])
                                     strcpy_s(pcTemp, pcName);
                                 }
 
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryNeutralString), &pcTemp, 19, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryBackString), &pcTemp, 19, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryForwardString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryBackString), &pcTemp, 19, 0);
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryForwardString), &pcTemp, 19, 0);
 
                                 nWriteBuffer = 2;
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwAirRecoveryIndex), &nWriteBuffer, 4, 0);
-                                nAirRecoveryIndex = 2;
+                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
+                                nDownRecoveryIndex = 2;
 
                                 // HIGHLIGHT
                                 if (!bHighlightsOnKeySet)
                                 {
                                     uint8_t nKeyJustPressed = 0;
-                                    if (nEnemySettingsCursor == 6)
+                                    if (nEnemySettingsCursor == 8)
                                         nKeyJustPressed = KeyJustPressed();
 
                                     strcpy_s(pcTemp, "PRESS ANY KEY");
@@ -5844,43 +6005,6 @@ int main(int argc, char* argv[])
                                 {
                                     char pcName[19];
                                     UINT scanCode = MapVirtualKeyA(nHighlightsOnKey, MAPVK_VK_TO_VSC);
-                                    LONG lParamValue = (scanCode << 16);
-                                    GetKeyNameTextA(lParamValue, pcName, 19);
-                                    strcpy_s(pcTemp, pcName);
-                                }
-
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryNeutralString), &pcTemp, 19, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryBackString), &pcTemp, 19, 0);
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryForwardString), &pcTemp, 19, 0);
-
-                                nWriteBuffer = 2;
-                                WriteProcessMemory(hMBAAHandle, (LPVOID)(dwDownRecoveryIndex), &nWriteBuffer, 4, 0);
-                                nDownRecoveryIndex = 2;
-
-                                // REVERSAL
-                                if (!bReversalKeySet)
-                                {
-                                    uint8_t nKeyJustPressed = 0;
-                                    if (nEnemySettingsCursor == 8)
-                                        nKeyJustPressed = KeyJustPressed();
-
-                                    strcpy_s(pcTemp, "PRESS ANY KEY");
-                                    if (nKeyJustPressed != 0)
-                                    {
-                                        if (IsControllerNeutral())
-                                        {
-                                            bReversalKeySet = true;
-                                            nReversalKey = nKeyJustPressed;
-                                            SetRegistryValue(L"ReversalKey", nReversalKey);
-                                            WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedReversalKey), &nReversalKey, 1, 0);
-                                            ReplaceKey(nReversalKey, KEY_REVERSAL);
-                                        }
-                                    }
-                                }
-                                if (bReversalKeySet)
-                                {
-                                    char pcName[19];
-                                    UINT scanCode = MapVirtualKeyA(nReversalKey, MAPVK_VK_TO_VSC);
                                     LONG lParamValue = (scanCode << 16);
                                     GetKeyNameTextA(lParamValue, pcName, 19);
                                     strcpy_s(pcTemp, pcName);
