@@ -1764,20 +1764,24 @@ void frameDoneCallback()
 		static KeyState UpKey(VK_UP);
 		static KeyState DownKey(VK_DOWN);
 
-		if (UpKey.keyDownHeldFreq<4, 24>()) {
-			bool needNewFrame = saveStateManager.load(1);
-			if (!alreadyRolledReplayManager) {
-				//log("calling rollforward 2");
-				//replayManager.rollForward();
+		if (bFreeze)
+		{
+			if (UpKey.keyDownHeldFreq<4, 24>()) {
+				bool needNewFrame = saveStateManager.load(1);
+				if (!alreadyRolledReplayManager) {
+					//log("calling rollforward 2");
+					//replayManager.rollForward();
+				}
+
+				if (!needNewFrame) {
+					rollFancyInputDisplay(1);
+				}
 			}
-			
-			if (!needNewFrame) {
-				rollFancyInputDisplay(1);
+			else if (DownKey.keyDownHeldFreq<4, 24>()) {
+				saveStateManager.load(-1);
+				rollFancyInputDisplay(-1);
+				replayManager.rollBack();
 			}
-		} else if (DownKey.keyDownHeldFreq<4, 24>()) {
-			saveStateManager.load(-1);
-			rollFancyInputDisplay(-1);
-			replayManager.rollBack();
 		}
 
 		if (logSaveState) {
