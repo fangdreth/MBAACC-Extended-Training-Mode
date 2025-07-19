@@ -741,6 +741,22 @@ const char pcFrameBarRight_17[17] = "FRAME BAR RIGHT";
 const char pcNextRNG_13[13] = "NEXT RNG KEY";
 const char pcPrevRNG_13[13] = "PREV RNG KEY";
 
+const LPCTSTR sFREEZE_KEY_REG = L"HOTKEY_Freeze";
+const LPCTSTR sNEXT_FRAME_KEY_REG = L"HOTKEY_NextFrame";
+const LPCTSTR sPREV_FRAME_KEY_REG = L"HOTKEY_PrevFrame";
+const LPCTSTR sTOGGLE_HITBOXES_KEY_REG = L"HOTKEY_ToggleHitboxes";
+const LPCTSTR sTOGGLE_FRAME_BAR_KEY_REG = L"HOTKEY_ToggleFrameBar";
+const LPCTSTR sTOGGLE_HIGHLIGHTS_KEY_REG = L"HOTKEY_ToggleHighlights";
+const LPCTSTR sQUEUE_REVERSAL_KEY_REG = L"HOTKEY_QueueReversal";
+const LPCTSTR sINCREMENT_RNG_KEY_REG = L"HOTKEY_IncrementRNG";
+const LPCTSTR sDECREMENT_RNG_KEY_REG = L"HOTKEY_DecrementRNG";
+
+const LPCTSTR sSAVE_STATE_KEY_REG = L"HOTKEY_SaveState";
+const LPCTSTR sPREV_SAVE_SLOT_KEY_REG = L"HOTKEY_PrevSaveSlot";
+const LPCTSTR sNEXT_SAVE_SLOT_KEY_REG = L"HOTKEY_NextSaveSlot";
+const LPCTSTR sFRAME_BAR_LEFT_KEY_REG = L"HOTKEY_FrameBarLeft";
+const LPCTSTR sFRAME_BAR_RIGHT_KEY_REG = L"HOTKEY_FrameBarRight";
+
 #define VK_KEY_UNSET 0x0;
 
 #define VK_KEY_0 0x30
@@ -830,6 +846,11 @@ public:
 			prevState = true;
 			nKey = vKey_;
 		}
+	}
+
+	int getKey() const
+	{
+		return nKey;
 	}
 
 	bool isFocused()

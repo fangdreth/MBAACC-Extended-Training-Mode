@@ -16,6 +16,60 @@ void ReadDataFile(void* dest, const char* name, int nameLength) {
 	}
 }
 
+int GetHotkeyPressed()
+{
+	//http://www.kbdedit.com/manual/low_level_vk_list.html
+
+	// there're some weird collisions between keys
+	// like numpad-/ and the arrow keys,
+	// but all of the normal keys work as expected.
+	// I'm fine with it, personally.
+	for (int i = 0; i < 256; i++) {
+		// key pressed AND key isn't garbage
+		if (GetAsyncKeyState(i) & 0x8000 && MapVirtualKeyW(i, MAPVK_VK_TO_VSC) != 0)
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+void CheckNewHotkey(bool bAPress, KeyState& oHotkey, LPCTSTR sRegKey) {
+	if (bAPress && nHOTKEY_CD_TIMER == 0) {
+		SetRegistryValue(sRegKey, 0);
+		nHOTKEY_CD_TIMER = 10;
+		if (oHotkey.getKey() == 0) {
+			oHotkey.setKey(-1); // using -1 to indicate awaiting input
+		}
+		else if (oHotkey.getKey() > 0) {
+			oHotkey.setKey(0);
+		}
+	}
+	else if (oHotkey.getKey() == -1 && nHOTKEY_CD_TIMER == 0) {
+		int temp;
+		if (temp = GetHotkeyPressed()) {
+			oHotkey.setKey(temp);
+			SetRegistryValue(sRegKey, temp);
+			nHOTKEY_CD_TIMER = 10;
+		}
+	}
+}
+
+void GetKeyStateName(char* buffer, KeyState oHotkey) {
+	if (oHotkey.getKey() > 0) {
+		UINT scanCode = MapVirtualKeyA(oHotkey.getKey(), MAPVK_VK_TO_VSC);
+		LONG lParamValue = (scanCode << 16);
+		GetKeyNameTextA(lParamValue, buffer, 19);
+	}
+	else if (oHotkey.getKey() < 0) {
+		snprintf(buffer, 32, "...");
+	}
+	else if (oHotkey.getKey() == 0) {
+		snprintf(buffer, 32, "PRESS A TO SET KEY");
+	}
+}
+
 void Element::SetItemLabel(const char* newLabel, int itemIndex) {
 	if (ItemList == 0x0 || ItemListEnd - ItemList <= itemIndex) {
 		return;
@@ -49,6 +103,10 @@ int Element::GetItemListSize() {
 	return ItemListEnd - ItemList;
 }
 
+void MenuWindow::SetLabel(const char* newLabel) {
+	ReadDataFile((void*)(&labelBase), newLabel, strlen(newLabel));
+}
+
 // --- Vectors guide ---
 //Empty vectors are blank spaces (only need the one defined)
 //Vectors with one value are elements with only a label (like the vanilla "default" and "return" elements)
@@ -74,11 +132,6 @@ int nREV_ID_2 = defREV_ID;
 int nREV_ID_3 = defREV_ID;
 int nREV_ID_4 = defREV_ID;
 
-int nREV_SHIELD_1 = defREV_SHIELD; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
-int nREV_SHIELD_2 = defREV_SHIELD; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
-int nREV_SHIELD_3 = defREV_SHIELD; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
-int nREV_SHIELD_4 = defREV_SHIELD; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
-
 void DefaultP1(MenuInfo* menuInfo) {
 	nREVERSAL_TYPE = defREVERSAL_TYPE;
 	nREVERSAL_SLOT_1 = defREVERSAL_SLOT_1;
@@ -97,22 +150,17 @@ void DefaultP1(MenuInfo* menuInfo) {
 	nREV_ID_3 = defREV_ID;
 	nREV_ID_4 = defREV_ID;
 
-	nREV_SHIELD_1 = defREV_SHIELD;
-	nREV_SHIELD_2 = defREV_SHIELD;
-	nREV_SHIELD_3 = defREV_SHIELD;
-	nREV_SHIELD_4 = defREV_SHIELD;
-
-	menuInfo->ElementList[0]->selectedItem = defREVERSAL_TYPE;
-	menuInfo->ElementList[2]->selectedItem = defREVERSAL_SLOT_1;
-	menuInfo->ElementList[3]->selectedItem = defREV_SLOT_1_WEIGHT;
-	menuInfo->ElementList[4]->selectedItem = defREVERSAL_SLOT_2;
-	menuInfo->ElementList[5]->selectedItem = defREV_SLOT_2_WEIGHT;
-	menuInfo->ElementList[6]->selectedItem = defREVERSAL_SLOT_3;
-	menuInfo->ElementList[7]->selectedItem = defREV_SLOT_3_WEIGHT;
-	menuInfo->ElementList[8]->selectedItem = defREVERSAL_SLOT_4;
-	menuInfo->ElementList[9]->selectedItem = defREV_SLOT_4_WEIGHT;
-	menuInfo->ElementList[11]->selectedItem = defNO_REV_WEIGHT;
-	menuInfo->ElementList[13]->selectedItem = defREVERSAL_DELAY;
+	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_TYPE]->selectedItem = defREVERSAL_TYPE;
+	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_1]->selectedItem = defREVERSAL_SLOT_1;
+	menuInfo->ElementList[(int)eREVERSALS::WEIGHT_1]->selectedItem = defREV_SLOT_1_WEIGHT;
+	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_2]->selectedItem = defREVERSAL_SLOT_2;
+	menuInfo->ElementList[(int)eREVERSALS::WEIGHT_2]->selectedItem = defREV_SLOT_2_WEIGHT;
+	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_3]->selectedItem = defREVERSAL_SLOT_3;
+	menuInfo->ElementList[(int)eREVERSALS::WEIGHT_3]->selectedItem = defREV_SLOT_3_WEIGHT;
+	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_4]->selectedItem = defREVERSAL_SLOT_4;
+	menuInfo->ElementList[(int)eREVERSALS::WEIGHT_4]->selectedItem = defREV_SLOT_4_WEIGHT;
+	menuInfo->ElementList[(int)eREVERSALS::NO_REVERSAL_WEIGHT]->selectedItem = defNO_REV_WEIGHT;
+	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_DELAY]->selectedItem = defREVERSAL_DELAY;
 }
 
 //Page 2
@@ -157,17 +205,17 @@ void DefaultP2(MenuInfo* menuInfo) {
 	nTRUE_HITS_UNTIL_BUNKER = defTRUE_HITS_BUNKER;
 	nTRUE_HITS_UNTIL_FORCE_GUARD = defTRUE_HITS_FORCE_GUARD;
 
-	menuInfo->ElementList[0]->selectedItem = defPEN_RESET;
-	menuInfo->ElementList[1]->selectedItem = defGUARD_RESET;
-	menuInfo->ElementList[3]->selectedItem = defEX_GUARD;
-	menuInfo->ElementList[5]->selectedItem = defP1_METER;
-	menuInfo->ElementList[6]->selectedItem = defP2_METER;
-	menuInfo->ElementList[8]->selectedItem = defP1_HEALTH;
-	menuInfo->ElementList[9]->selectedItem = defP2_HEALTH;
-	menuInfo->ElementList[11]->selectedItem = defHITS_BURST;
-	menuInfo->ElementList[12]->selectedItem = defHITS_BUNKER;
-	menuInfo->ElementList[13]->selectedItem = defHITS_FORCE_GUARD;
-	menuInfo->ElementList[14]->selectedItem = defFORCE_GUARD_STANCE;
+	menuInfo->ElementList[(int)eTRAINING::PENALTY_RESET]->selectedItem = defPEN_RESET;
+	menuInfo->ElementList[(int)eTRAINING::GUARD_BAR_RESET]->selectedItem = defGUARD_RESET;
+	menuInfo->ElementList[(int)eTRAINING::EX_GUARD]->selectedItem = defEX_GUARD;
+	menuInfo->ElementList[(int)eTRAINING::P1_METER]->selectedItem = defP1_METER;
+	menuInfo->ElementList[(int)eTRAINING::P2_METER]->selectedItem = defP2_METER;
+	menuInfo->ElementList[(int)eTRAINING::P1_HEALTH]->selectedItem = defP1_HEALTH;
+	menuInfo->ElementList[(int)eTRAINING::P2_HEALTH]->selectedItem = defP2_HEALTH;
+	menuInfo->ElementList[(int)eTRAINING::HITS_UNTIL_BURST]->selectedItem = defHITS_BURST;
+	menuInfo->ElementList[(int)eTRAINING::HITS_UNTIL_BUNKER]->selectedItem = defHITS_BUNKER;
+	menuInfo->ElementList[(int)eTRAINING::HITS_UNTIL_FORCE_GUARD]->selectedItem = defHITS_FORCE_GUARD;
+	menuInfo->ElementList[(int)eTRAINING::FORCE_GUARD_STANCE]->selectedItem = defFORCE_GUARD_STANCE;
 }
 
 //Page 3
@@ -178,13 +226,20 @@ int nARMOR = defARMOR;
 int nTHROW_PROTECTION = defTHROW_PROT;
 int nIDLE = defIDLE;
 
-void DefaultP3() {
+void DefaultP3(MenuInfo* menuInfo) {
 	nHIGHLIGHTS = defHIGHLIGHTS;
 	nGUARD = defGUARD;
 	nHIT = defHIT;
 	nARMOR = defARMOR;
 	nTHROW_PROTECTION = defTHROW_PROT;
 	nIDLE = defIDLE;
+
+	menuInfo->ElementList[(int)eHIGHLIGHTS::HIGHLIGHTS]->selectedItem = defHIGHLIGHTS;
+	menuInfo->ElementList[(int)eHIGHLIGHTS::GUARD]->selectedItem = defGUARD;
+	menuInfo->ElementList[(int)eHIGHLIGHTS::HIT]->selectedItem = defHIT;
+	menuInfo->ElementList[(int)eHIGHLIGHTS::ARMOR]->selectedItem = defARMOR;
+	menuInfo->ElementList[(int)eHIGHLIGHTS::THROW_PROTECTION]->selectedItem = defTHROW_PROT;
+	menuInfo->ElementList[(int)eHIGHLIGHTS::IDLE]->selectedItem = defIDLE;
 }
 
 //Page 4
@@ -199,7 +254,7 @@ int nTRUE_P1_ASSIST_X_LOC = defTRUE_P1_ASSIST_X;
 int nTRUE_P2_X_LOC = defTRUE_P2_X;
 int nTRUE_P2_ASSIST_X_LOC = defTRUE_P2_ASSIST_X;
 
-void DefaultP4() {
+void DefaultP4(MenuInfo* menuInfo) {
 	nRESET_TO_POSITIONS = defRESET_POS;
 	nP1_X_LOC = defP1_X;
 	nP1_ASSIST_X_LOC = defP1_ASSIST_X;
@@ -210,6 +265,12 @@ void DefaultP4() {
 	nTRUE_P1_ASSIST_X_LOC = defTRUE_P1_ASSIST_X;
 	nTRUE_P2_X_LOC = defTRUE_P2_X;
 	nTRUE_P2_ASSIST_X_LOC = defTRUE_P2_ASSIST_X;
+
+	menuInfo->ElementList[(int)ePOSITIONS::RESET_TO_POSITIONS]->selectedItem = defRESET_POS;
+	menuInfo->ElementList[(int)ePOSITIONS::P1_POSITION]->selectedItem = defP1_X;
+	menuInfo->ElementList[(int)ePOSITIONS::P1_ASSIST_POSITION]->selectedItem = defP1_ASSIST_X;
+	menuInfo->ElementList[(int)ePOSITIONS::P2_POSITION]->selectedItem = defP2_X;
+	menuInfo->ElementList[(int)ePOSITIONS::P2_ASSIST_POSITION]->selectedItem = defP2_ASSIST_X;
 }
 
 //Page 5
@@ -219,12 +280,18 @@ int nROA_HIDDEN_CHARGE = defROA_HIDDEN;
 int nF_MAIDS_HEARTS = defMAIDS_HEARTS;
 int nRYOUGI_KNIFE = defRYOUGI_KNIFE;
 
-void DefaultP5() {
+void DefaultP5(MenuInfo* menuInfo) {
 	nSION_BULLETS = defSION_BULLETS;
 	nROA_VISIBLE_CHARGE = defROA_VISIBLE;
 	nROA_HIDDEN_CHARGE = defROA_HIDDEN;
 	nF_MAIDS_HEARTS = defMAIDS_HEARTS;
 	nRYOUGI_KNIFE = defRYOUGI_KNIFE;
+
+	menuInfo->ElementList[(int)eCHARACTER::SION_BULLETS]->selectedItem = defSION_BULLETS;
+	menuInfo->ElementList[(int)eCHARACTER::ROA_VISIBLE_CHARGES]->selectedItem = defROA_VISIBLE;
+	menuInfo->ElementList[(int)eCHARACTER::ROA_HIDDEN_CHARGES]->selectedItem = defROA_HIDDEN;
+	menuInfo->ElementList[(int)eCHARACTER::F_MAIDS_HEARTS]->selectedItem = defMAIDS_HEARTS;
+	menuInfo->ElementList[(int)eCHARACTER::RYOUGI_KNIFE]->selectedItem = defRYOUGI_KNIFE;
 }
 
 //Page 6
@@ -234,21 +301,30 @@ int nCOLOR_BLIND_MODE = defCOLOR_BLIND;
 int nORIGIN_STYLE = defORIGIN_STYLE;
 int nDRAW_GROUND = defDRAW_GROUND;
 
-void DefaultP6() {
+void DefaultP6(MenuInfo* menuInfo) {
 	nDISPLAY_HITBOXES = defDISPLAY_HITBOXES;
 	nHITBOX_STYLE = defHITBOX_STYLE;
 	nCOLOR_BLIND_MODE = defCOLOR_BLIND;
 	nORIGIN_STYLE = defORIGIN_STYLE;
 	nDRAW_GROUND = defDRAW_GROUND;
+
+	menuInfo->ElementList[(int)eHITBOXES::DISPLAY_HITBOXES]->selectedItem = defDISPLAY_HITBOXES;
+	menuInfo->ElementList[(int)eHITBOXES::HITBOX_STYLE]->selectedItem = defHITBOX_STYLE;
+	menuInfo->ElementList[(int)eHITBOXES::COLOR_BLIND_MODE]->selectedItem = defCOLOR_BLIND;
+	menuInfo->ElementList[(int)eHITBOXES::ORIGIN_STYLE]->selectedItem = defORIGIN_STYLE;
+	menuInfo->ElementList[(int)eHITBOXES::DRAW_GROUND]->selectedItem = defDRAW_GROUND;
 }
 
 //Page 7
 int nSAVE_STATE_SLOT = defSAVE_SLOT;
 int nLOAD_RNG = defLOAD_RNG;
 
-void DefaultP7() {
+void DefaultP7(MenuInfo* menuInfo) {
 	nSAVE_STATE_SLOT = defSAVE_SLOT;
 	nLOAD_RNG = defLOAD_RNG;
+
+	menuInfo->ElementList[(int)eSAVE_STATES::SAVE_STATE_SLOT]->selectedItem = defSAVE_SLOT;
+	menuInfo->ElementList[(int)eSAVE_STATES::LOAD_RNG]->selectedItem = defLOAD_RNG;
 }
 
 //Page 8
@@ -262,7 +338,7 @@ bool bCOLOR_GUIDE = defCOLOR_GUIDE;
 
 int nTRUE_SCROLL_DISPLAY = defTRUE_SCROLL_DISPLAY;
 
-void DefaultP8() {
+void DefaultP8(MenuInfo* menuInfo) {
 	nFRAME_DATA = defFRAME_DATA;
 	nIN_GAME_FRAME_DISPLAY = defIN_GAME_FRAME_DISPLAY;
 	nSHOW_FREEZE_AND_INPUTS = defSHOW_FREEZE_INPUTS;
@@ -272,6 +348,12 @@ void DefaultP8() {
 	bCOLOR_GUIDE = defCOLOR_GUIDE;
 
 	nTRUE_SCROLL_DISPLAY = defTRUE_SCROLL_DISPLAY;
+
+	menuInfo->ElementList[(int)eFRAME_DATA::FRAME_DATA]->selectedItem = defFRAME_DATA;
+	menuInfo->ElementList[(int)eFRAME_DATA::IN_GAME_FRAME_DISPLAY]->selectedItem = defIN_GAME_FRAME_DISPLAY;
+	menuInfo->ElementList[(int)eFRAME_DATA::SHOW_FREEZE_AND_INPUTS]->selectedItem = defSHOW_FREEZE_INPUTS;
+	menuInfo->ElementList[(int)eFRAME_DATA::SHOW_CANCEL_WINDOWS]->selectedItem = defSHOW_CANCEL;
+	menuInfo->ElementList[(int)eFRAME_DATA::SCROLL_DISPLAY]->selectedItem = defSCROLL_DISPLAY;
 }
 
 //Page 9
@@ -281,12 +363,16 @@ int nSEED = defSEED;
 
 int nTRUE_SEED = defTRUE_SEED;
 
-void DefaultP9() {
+void DefaultP9(MenuInfo* menuInfo) {
 	nCUSTOM_RNG = defCUSTOM_RNG;
 	nRATE = defRATE;
 	nSEED = defSEED;
 
 	nTRUE_SEED = defTRUE_SEED;
+
+	menuInfo->ElementList[(int)eRNG::CUSTOM_RNG]->selectedItem = defCUSTOM_RNG;
+	menuInfo->ElementList[(int)eRNG::RATE]->selectedItem = defRATE;
+	menuInfo->ElementList[(int)eRNG::SEED]->selectedItem = defSEED;
 }
 
 //Page 10
@@ -297,13 +383,18 @@ int nFRAME_DISPLAY_Y = defFRAME_DISPLAY_Y;
 
 int nTRUE_FRAME_DISPLAY_Y = defTRUE_FRAME_DISPLAY_Y;
 
-void DefaultP10() {
+void DefaultP10(MenuInfo* menuInfo) {
 	nSHOW_STATS = defSHOW_STATS;
 	nP1_INPUT_DISPLAY = defP1_INPUT;
 	nP2_INPUT_DISPLAY = defP2_INPUT;
 	nFRAME_DISPLAY_Y = defFRAME_DISPLAY_Y;
 
 	nTRUE_FRAME_DISPLAY_Y = defTRUE_FRAME_DISPLAY_Y;
+
+	menuInfo->ElementList[(int)eUI::SHOW_STATS]->selectedItem = defSHOW_STATS;
+	menuInfo->ElementList[(int)eUI::P1_INPUT_DISPLAY]->selectedItem = defP1_INPUT;
+	menuInfo->ElementList[(int)eUI::P2_INPUT_DISPLAY]->selectedItem = defP2_INPUT;
+	menuInfo->ElementList[(int)eUI::FRAME_DISPLAY_Y]->selectedItem = defFRAME_DISPLAY_Y;
 }
 
 //Page 11
@@ -313,17 +404,23 @@ int nHIDE_SHADOWS = defHIDE_SHADOWS;
 int nHIDE_EXTRAS = defHIDE_EXTRAS;
 int nBACKGROUND = defBACKGROUND;
 
-void DefaultP11() {
+void DefaultP11(MenuInfo* menuInfo) {
 	nGAME_SPEED = defGAME_SPEED;
 	nHIDE_HUD = defHIDE_HUD;
 	nHIDE_SHADOWS = defHIDE_SHADOWS;
 	nHIDE_EXTRAS = defHIDE_EXTRAS;
 	nBACKGROUND = defBACKGROUND;
+
+	menuInfo->ElementList[(int)eSYSTEM::GAME_SPEED]->selectedItem = defGAME_SPEED;
+	menuInfo->ElementList[(int)eSYSTEM::HIDE_HUD]->selectedItem = defHIDE_HUD;
+	menuInfo->ElementList[(int)eSYSTEM::HIDE_SHADOWS]->selectedItem = defHIDE_SHADOWS;
+	menuInfo->ElementList[(int)eSYSTEM::HIDE_EXTRAS]->selectedItem = defHIDE_EXTRAS;
+	menuInfo->ElementList[(int)eSYSTEM::BACKGROUND]->selectedItem = defBACKGROUND;
 }
 
 //All pages
 uint8_t nEXTENDED_SETTINGS_PAGE = 0;
-uint8_t nEXTENDED_SETTINGS_CURSOR[XS_NUM_PAGES] = { 0 };
+uint8_t nEXTENDED_SETTINGS_CURSOR[XS_NUM_PAGES + 1] = { 0 };
 
 bool bOldFN1Input = 0;
 bool bOldFN2Input = 0;
@@ -331,22 +428,28 @@ bool bOldFN2Input = 0;
 //Hotkey settings
 
 //Page 1
-int nFREEZE = 0;
-int nSTEP_FRAME = 0;
-int nTOGGLE_HITBOXES = 0;
-int nTOGGLE_FRAME_BAR = 0;
-int nTOGGLE_HIGHLIGHTS = 0;
-int nQUEUE_REVERSAL = 0;
-int nINCREMENT_RNG = 0;
-int nDECREMENT_RNG = 0;
+int nHOTKEYS = 0; //The hotkey menu elements dont need to save their index, but they still need a location to save to
+
+KeyState oFreezeHotkey(0);
+KeyState oNextFrameHotkey(0);
+KeyState oPrevFrameHotkey(0);
+KeyState oToggleHitboxesHotkey(0);
+KeyState oToggleFrameBarHotkey(0);
+KeyState oToggleHighlightsHotkey(0);
+KeyState oQueueReversalHotkey(0);
+KeyState oIncrementRNGHotkey(0);
+KeyState oDecrementRNGHotkey(0);
 
 //Page 2
-int nSAVE_STATE = 0;
-int nPREV_SAVE_SLOT = 0;
-int nNEXT_SAVE_SLOT = 0;
-int nFRAME_BAR_LEFT = 0;
-int nFRAME_BAR_RIGHT = 0;
+
+KeyState oSaveStateHotkey(0);
+KeyState oPrevSaveSlotHotkey(0);
+KeyState oNextSaveSlotHotkey(0);
+KeyState oFrameBarLeftHotkey(0);
+KeyState oFrameBarRightHotkey(0);
 
 //All pages
 uint8_t nHOTKEY_SETTINGS_PAGE = 0;
-uint8_t nHOTKEY_SETTINGS_CURSOR[2] = { 0 };
+uint8_t nHOTKEY_SETTINGS_CURSOR[HK_NUM_PAGES + 1] = { 0 };
+
+int nHOTKEY_CD_TIMER = 0;

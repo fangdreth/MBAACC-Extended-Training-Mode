@@ -8,6 +8,12 @@ const DWORD MBAA_ReadDataFile = 0x00407c10;
 //subtract 4 bytes from actual destination to get dest input
 void ReadDataFile(void* dest, const char* name, int nameLength);
 
+int GetHotkeyPressed();
+
+void CheckNewHotkey(bool bReset, KeyState& oHotkey, LPCTSTR sRegKey);
+
+void GetKeyStateName(char* buffer, KeyState oHotkey);
+
 #define CONCATENATE_DETAIL(x, y) x##y
 #define CONCATENATE(x, y) CONCATENATE_DETAIL(x, y)
 #define LINE_NAME CONCATENATE(LINE, __LINE__)
@@ -169,6 +175,8 @@ struct MenuWindow
 	void* InformationMenu;
 	MenuWindow* ExtendedSettings;
 	MenuWindow* HotkeySettings;
+
+	void SetLabel(const char* newLabel);
 };
 
 CHECKOFFSET(MenuWindow, MenuInfoList, 0x10)
@@ -190,11 +198,6 @@ const std::vector<const char*> vSPACE_ELEMENT = {};
 
 const std::vector<const char*> vDEFAULT_ELEMENT = {
 	"DEFAULT"
-};
-
-const std::vector<const char*> vPAGE_ELEMENT = {
-	" ",
-	"X1", "X2", "X3"
 };
 
 extern int nPAGE;
@@ -278,20 +281,26 @@ const std::vector<std::vector<const char*>> P1_Options = {
 };
 
 enum class eREVERSALS {
-	REVERSAL_TYPE = 0,
-	REVERSAL_SLOT_1 = 2,
-	WEIGHT_1 = 3,
-	REVERSAL_SLOT_2 = 4,
-	WEIGHT_2 = 5,
-	REVERSAL_SLOT_3 = 6,
-	WEIGHT_3 = 7,
-	REVERSAL_SLOT_4 = 8,
-	WEIGHT_4 = 9,
-	NO_REVERSAL_WEIGHT = 11,
-	REVERSAL_DELAY = 13,
-	DEFAULT = 15,
-	RETURN = 17,
-	PAGE = 19
+	REVERSAL_TYPE,
+	S0,
+	REVERSAL_SLOT_1,
+	WEIGHT_1,
+	REVERSAL_SLOT_2,
+	WEIGHT_2,
+	REVERSAL_SLOT_3,
+	WEIGHT_3,
+	REVERSAL_SLOT_4,
+	WEIGHT_4,
+	S1,
+	NO_REVERSAL_WEIGHT,
+	S2,
+	REVERSAL_DELAY,
+	S3,
+	DEFAULT,
+	S4,
+	RETURN,
+	S5,
+	PAGE
 };
 
 const int defREVERSAL_TYPE = 1;
@@ -325,20 +334,12 @@ extern int nREV_ID_2;
 extern int nREV_ID_3;
 extern int nREV_ID_4;
 
-const int defREV_SHIELD = 0;
-
-extern int nREV_SHIELD_1; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
-extern int nREV_SHIELD_2; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
-extern int nREV_SHIELD_3; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
-extern int nREV_SHIELD_4; //0 = no shield, D, [D], 2D, 2[D], jD, j[D]
-
 const char* const REV_SHIELD_PREFIX[7] = { "", "5D > ", "5[D] > ", "2D > ", "2[D] > ", "j.D > ", "j.[D] > "};
 
 const int NUM_REVERSALS = 4;
 
 const int* const nREV_WEIGHTS[NUM_REVERSALS] = { &nREV_SLOT_1_WEIGHT, &nREV_SLOT_2_WEIGHT , &nREV_SLOT_3_WEIGHT , &nREV_SLOT_4_WEIGHT };
 const int* const nREV_IDs[NUM_REVERSALS] = { &nREV_ID_1, &nREV_ID_2, &nREV_ID_3, &nREV_ID_4 };
-const int* const nREV_SHIELDS[NUM_REVERSALS] = { &nREV_SHIELD_1, &nREV_SHIELD_2, &nREV_SHIELD_3, &nREV_SHIELD_4 };
 
 const std::vector<int*> P1_Settings = {
 	&nREVERSAL_TYPE,
@@ -415,8 +416,7 @@ const std::vector<const char*> vP2_PAGE = {
 };
 
 const std::vector<std::vector<const char*>> P2_Options = {
-	vPENALTY_RESET, vGUARD_BAR_RESET, vSPACE_ELEMENT,
-	vEX_GUARD, vSPACE_ELEMENT,
+	vPENALTY_RESET, vGUARD_BAR_RESET, vEX_GUARD, vSPACE_ELEMENT,
 	vP1_METER, vP2_METER, vSPACE_ELEMENT,
 	vP1_HEALTH, vP2_HEALTH, vSPACE_ELEMENT,
 	vHITS_UNTIL_BURST, vHITS_UNTIL_BUNKER, vHITS_UNTIL_FORCE_GUARD, vFORCE_GUARD_STANCE, vSPACE_ELEMENT,
@@ -426,20 +426,26 @@ const std::vector<std::vector<const char*>> P2_Options = {
 };
 
 enum class eTRAINING {
-	PENALTY_RESET = 0,
-	GUARD_BAR_RESET = 1,
-	EX_GUARD = 3,
-	P1_METER = 5,
-	P2_METER = 6,
-	P1_HEALTH = 8,
-	P2_HEALTH = 9,
-	HITS_UNTIL_BURST = 11,
-	HITS_UNTIL_BUNKER = 12,
-	HITS_UNTIL_FORCE_GUARD = 13,
-	FORCE_GUARD_STANCE = 14,
-	DEFAULT = 16,
-	RETURN = 18,
-	PAGE = 20
+	PENALTY_RESET,
+	GUARD_BAR_RESET,
+	EX_GUARD,
+	S1,
+	P1_METER,
+	P2_METER,
+	S2,
+	P1_HEALTH,
+	P2_HEALTH,
+	S3,
+	HITS_UNTIL_BURST,
+	HITS_UNTIL_BUNKER,
+	HITS_UNTIL_FORCE_GUARD,
+	FORCE_GUARD_STANCE,
+	S4,
+	DEFAULT,
+	S5,
+	RETURN,
+	S6,
+	PAGE
 };
 
 const int defPEN_RESET = 0;
@@ -536,15 +542,19 @@ const std::vector<std::vector<const char*>> P3_Options = {
 };
 
 enum class eHIGHLIGHTS {
-	HIGHLIGHTS = 0,
-	GUARD = 2,
-	HIT = 3,
-	ARMOR = 4,
-	THROW_PROTECTION = 5,
-	IDLE = 6,
-	DEFAULT = 8,
-	RETURN = 10,
-	PAGE = 12
+	HIGHLIGHTS,
+	S0,
+	GUARD,
+	HIT,
+	ARMOR,
+	THROW_PROTECTION,
+	IDLE,
+	S1,
+	DEFAULT,
+	S2,
+	RETURN,
+	S3,
+	PAGE
 };
 
 const int defHIGHLIGHTS = 0;
@@ -566,7 +576,7 @@ const std::vector<int*> P3_Settings = {
 	&nPAGE
 };
 
-void DefaultP3();
+void DefaultP3(MenuInfo* menuInfo);
 
 //Page 4
 const std::vector<const char*> vRESET_TO_POSITIONS = {
@@ -618,16 +628,22 @@ const std::vector<std::vector<const char*>> P4_Options = {
 };
 
 enum class ePOSITIONS {
-	RESET_TO_POSITIONS = 0,
-	P1_POSITION = 2,
-	P1_ASSIST_POSITION = 3,
-	P2_POSITION = 5,
-	P2_ASSIST_POSITION = 6,
-	MOVE_TO_POSITIONS = 8,
-	INVERT = 9,
-	DEFAULT = 11,
-	RETURN = 13,
-	PAGE = 15
+	RESET_TO_POSITIONS,
+	S0,
+	P1_POSITION,
+	P1_ASSIST_POSITION,
+	S1,
+	P2_POSITION,
+	P2_ASSIST_POSITION,
+	S2,
+	MOVE_TO_POSITIONS,
+	INVERT,
+	S3,
+	DEFAULT,
+	S4,
+	RETURN,
+	S5,
+	PAGE
 };
 
 const int defRESET_POS = 0;
@@ -657,7 +673,7 @@ const std::vector<int*> P4_Settings = {
 	&nPAGE
 };
 
-void DefaultP4();
+void DefaultP4(MenuInfo* menuInfo);
 
 //Page 5
 const std::vector<const char*> vSION_BULLETS = {
@@ -700,14 +716,20 @@ const std::vector<std::vector<const char*>> P5_Options = {
 };
 
 enum class eCHARACTER {
-	SION_BULLETS = 0,
-	ROA_VISIBLE_CHARGES = 2,
-	ROA_HIDDEN_CHARGES = 3,
-	F_MAIDS_HEARTS = 5,
-	RYOUGI_KNIFE = 7,
-	DEFAULT = 9,
-	RETURN = 11,
-	PAGE = 13
+	SION_BULLETS,
+	S0,
+	ROA_VISIBLE_CHARGES,
+	ROA_HIDDEN_CHARGES,
+	S1,
+	F_MAIDS_HEARTS,
+	S2,
+	RYOUGI_KNIFE,
+	S3,
+	DEFAULT,
+	S4,
+	RETURN,
+	S5,
+	PAGE
 };
 
 const int defSION_BULLETS = 1;
@@ -727,7 +749,7 @@ const std::vector<int*> P5_Settings = {
 	&nPAGE
 };
 
-void DefaultP5();
+void DefaultP5(MenuInfo* menuInfo);
 
 //Page 6
 const std::vector<const char*> vDISPLAY_HITBOXES = {
@@ -770,14 +792,19 @@ const std::vector<std::vector<const char*>> P6_Options = {
 };
 
 enum class eHITBOXES {
-	DISPLAY_HITBOXES = 0,
-	HITBOX_STYLE = 1,
-	COLOR_BLIND_MODE = 2,
-	ORIGIN_STYLE = 4,
-	DRAW_GROUND = 5,
-	DEFAULT = 7,
-	RETURN = 9,
-	PAGE = 11
+	DISPLAY_HITBOXES,
+	HITBOX_STYLE,
+	COLOR_BLIND_MODE,
+	S0,
+	ORIGIN_STYLE,
+	S1,
+	DRAW_GROUND,
+	S2,
+	DEFAULT,
+	S3,
+	RETURN,
+	S4,
+	PAGE
 };
 
 const int defDISPLAY_HITBOXES = 0;
@@ -797,7 +824,7 @@ const std::vector<int*> P6_Settings = {
 	&nPAGE
 };
 
-void DefaultP6();
+void DefaultP6(MenuInfo* menuInfo);
 
 //Page 7
 const std::vector<const char*> vSAVE_STATE_SLOT = {
@@ -842,15 +869,21 @@ const std::vector<std::vector<const char*>> P7_Options = {
 };
 
 enum class eSAVE_STATES {
-	SAVE_STATE_SLOT = 0,
-	SAVE_STATE = 2,
-	CLEAR_ALL_SAVES = 3,
-	IMPORT_SAVE = 5,
-	EXPORT_SAVE = 6,
-	LOAD_RNG = 8,
-	DEFAULT = 10,
-	RETURN = 12,
-	PAGE = 14
+	SAVE_STATE_SLOT,
+	S0,
+	SAVE_STATE,
+	CLEAR_ALL_SAVES,
+	S1,
+	IMPORT_SAVE,
+	EXPORT_SAVE,
+	S2,
+	LOAD_RNG,
+	S3,
+	DEFAULT,
+	S4,
+	RETURN,
+	S5,
+	PAGE
 };
 
 const int defSAVE_SLOT = 1;
@@ -864,7 +897,7 @@ const std::vector<int*> P7_Settings = {
 	&nPAGE
 };
 
-void DefaultP7();
+void DefaultP7(MenuInfo* menuInfo);
 
 //Page 8
 const std::vector<const char*> vFRAME_DATA = {
@@ -912,15 +945,21 @@ const std::vector<std::vector<const char*>> P8_Options = {
 };
 
 enum class eFRAME_DATA {
-	FRAME_DATA = 0,
-	IN_GAME_FRAME_DISPLAY = 1,
-	SHOW_FREEZE_AND_INPUTS = 3,
-	SHOW_CANCEL_WINDOWS = 4,
-	SCROLL_DISPLAY = 6,
-	COLOR_GUIDE = 8,
-	DEFAULT = 10,
-	RETURN = 12,
-	PAGE = 14
+	FRAME_DATA,
+	IN_GAME_FRAME_DISPLAY,
+	S0,
+	SHOW_FREEZE_AND_INPUTS,
+	SHOW_CANCEL_WINDOWS,
+	S1,
+	SCROLL_DISPLAY,
+	S2,
+	COLOR_GUIDE,
+	S3,
+	DEFAULT,
+	S4,
+	RETURN,
+	S5,
+	PAGE
 };
 
 const int defFRAME_DATA = 0;
@@ -948,7 +987,7 @@ const std::vector<int*> P8_Settings = {
 	&nPAGE
 };
 
-void DefaultP8();
+void DefaultP8(MenuInfo* menuInfo);
 
 //Page 9
 const std::vector<const char*> vCUSTOM_RNG = {
@@ -962,7 +1001,7 @@ const std::vector<const char*> vRATE = {
 };
 
 const std::vector<const char*> vSEED = {
-	"SEED",
+	"SEED / VALUE",
 	"X1", "X2", "X3"
 };
 
@@ -980,17 +1019,21 @@ const std::vector<std::vector<const char*>> P9_Options = {
 };
 
 enum class eRNG {
-	CUSTOM_RNG = 0,
-	RATE = 2,
-	SEED = 3,
-	DEFAULT = 5,
-	RETURN = 7,
-	PAGE = 9
+	CUSTOM_RNG,
+	S0,
+	RATE,
+	SEED,
+	S1,
+	DEFAULT,
+	S2,
+	RETURN,
+	S3,
+	PAGE
 };
 
 const int defCUSTOM_RNG = 0;
 const int defRATE = 0;
-const int defSEED = 0;
+const int defSEED = 1;
 
 extern int nCUSTOM_RNG;
 extern int nRATE;
@@ -1005,7 +1048,7 @@ const std::vector<int*> P9_Settings = {
 	&nPAGE
 };
 
-void DefaultP9();
+void DefaultP9(MenuInfo* menuInfo);
 
 //Page 10
 const std::vector<const char*> vSHOW_STATS = {
@@ -1043,13 +1086,18 @@ const std::vector<std::vector<const char*>> P10_Options = {
 };
 
 enum class eUI {
-	SHOW_STATS = 0,
-	P1_INPUT_DISPLAY = 2,
-	P2_INPUT_DISPLAY = 3,
-	FRAME_DISPLAY_Y = 5,
-	DEFAULT = 7,
-	RETURN = 9,
-	PAGE = 11
+	SHOW_STATS,
+	S0,
+	P1_INPUT_DISPLAY,
+	P2_INPUT_DISPLAY,
+	S1,
+	FRAME_DISPLAY_Y,
+	S2,
+	DEFAULT,
+	S3,
+	RETURN,
+	S4,
+	PAGE
 };
 
 const int defSHOW_STATS = 1;
@@ -1071,7 +1119,7 @@ const std::vector<int*> P10_Settings = {
 	&nPAGE
 };
 
-void DefaultP10();
+void DefaultP10(MenuInfo* menuInfo);
 
 //Page 11
 const std::vector<const char*> vGAME_SPEED = {
@@ -1114,14 +1162,19 @@ const std::vector<std::vector<const char*>> P11_Options = {
 };
 
 enum class eSYSTEM {
-	GAME_SPEED = 0,
-	HIDE_HUD = 2,
-	HIDE_SHADOWS = 3,
-	HIDE_EXTRAS = 4,
-	BACKGROUND = 6,
-	DEFAULT = 8,
-	RETURN = 10,
-	PAGE = 12
+	GAME_SPEED,
+	S0,
+	HIDE_HUD,
+	HIDE_SHADOWS,
+	HIDE_EXTRAS,
+	S1,
+	BACKGROUND,
+	S2,
+	DEFAULT,
+	S3,
+	RETURN,
+	S4,
+	PAGE
 };
 
 const int defGAME_SPEED = 0;
@@ -1141,7 +1194,7 @@ const std::vector<int*> P11_Settings = {
 	&nPAGE
 };
 
-void DefaultP11();
+void DefaultP11(MenuInfo* menuInfo);
 
 //All pages
 const std::vector<std::vector<std::vector<const char*>>> Page_Options = {
@@ -1152,24 +1205,28 @@ const std::vector<std::vector<int*>> Page_Settings = {
 	P1_Settings, P2_Settings, P3_Settings, P4_Settings, P5_Settings, P6_Settings, P7_Settings, P8_Settings, P9_Settings, P10_Settings, P11_Settings
 };
 
-const int XS_NUM_PAGES = 11;
-
-const enum class eXS_PAGES {
-	REVERSALS = 0,
-	TRAINING = 1,
-	HIGHLIGHTS = 2,
-	POSITIONS = 3,
-	CHARACTER = 4,
-	HITBOXES = 5,
-	SAVE_STATES = 6,
-	FRAME_DATA = 7,
-	RNG = 8,
-	UI = 9,
-	SYSTEM = 10
+const std::vector<const char*> Page_Labels = {
+	"REVERSALS", "TRAINING", "HIGHLIGHTS", "POSITIONS", "CHARACTER", "HITBOXES", "SAVE STATES", "FRAME DATA", "RNG", "UI", "SYSTEM"
 };
 
+const enum class eXS_PAGES {
+	REVERSALS,
+	TRAINING,
+	HIGHLIGHTS,
+	POSITIONS,
+	CHARACTER,
+	HITBOXES,
+	SAVE_STATES,
+	FRAME_DATA,
+	RNG,
+	UI,
+	SYSTEM
+};
+
+const int XS_NUM_PAGES = (int)eXS_PAGES::SYSTEM; // 0 indexed
+
 extern uint8_t nEXTENDED_SETTINGS_PAGE;
-extern uint8_t nEXTENDED_SETTINGS_CURSOR[XS_NUM_PAGES];
+extern uint8_t nEXTENDED_SETTINGS_CURSOR[XS_NUM_PAGES + 1];
 
 extern bool bOldFN1Input;
 extern bool bOldFN2Input;
@@ -1182,8 +1239,13 @@ const std::vector<const char*> vFREEZE = {
 	"X"
 };
 
-const std::vector<const char*> vSTEP_FRAME = {
-	"STEP FRAME",
+const std::vector<const char*> vNEXT_FRAME = {
+	"NEXT FRAME",
+	"X"
+};
+
+const std::vector<const char*> vPREV_FRAME = {
+	"PREV FRAME",
 	"X"
 };
 
@@ -1218,21 +1280,38 @@ const std::vector<const char*> vDECREMENT_RNG = {
 };
 
 const std::vector<std::vector<const char*>> HK_P1_Options = {
-	vFREEZE, vSTEP_FRAME, vTOGGLE_HITBOXES, vTOGGLE_FRAME_BAR, vTOGGLE_HIGHLIGHTS, vQUEUE_REVERSAL, vINCREMENT_RNG, vDECREMENT_RNG, vSPACE_ELEMENT,
+	vFREEZE, vNEXT_FRAME, vPREV_FRAME, vTOGGLE_HITBOXES, vTOGGLE_FRAME_BAR, vTOGGLE_HIGHLIGHTS, vQUEUE_REVERSAL, vINCREMENT_RNG, vDECREMENT_RNG, vSPACE_ELEMENT,
 	vP1_PAGE
 };
 
-extern int nFREEZE;
-extern int nSTEP_FRAME;
-extern int nTOGGLE_HITBOXES;
-extern int nTOGGLE_FRAME_BAR;
-extern int nTOGGLE_HIGHLIGHTS;
-extern int nQUEUE_REVERSAL;
-extern int nINCREMENT_RNG;
-extern int nDECREMENT_RNG;
+extern int nHOTKEYS;
+
+extern KeyState oFreezeHotkey;
+extern KeyState oNextFrameHotkey;
+extern KeyState oPrevFrameHotkey;
+extern KeyState oToggleHitboxesHotkey;
+extern KeyState oToggleFrameBarHotkey;
+extern KeyState oToggleHighlightsHotkey;
+extern KeyState oQueueReversalHotkey;
+extern KeyState oIncrementRNGHotkey;
+extern KeyState oDecrementRNGHotkey;
 
 const std::vector<int*> HK_P1_Settings = {
-	&nFREEZE, &nSTEP_FRAME, &nTOGGLE_HITBOXES, &nTOGGLE_FRAME_BAR, &nTOGGLE_HIGHLIGHTS, &nQUEUE_REVERSAL, &nINCREMENT_RNG, &nDECREMENT_RNG, &nPAGE
+	&nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nPAGE
+};
+
+enum class eHK_PAGE1 {
+	FREEZE,
+	NEXT_FRAME,
+	PREV_FRAME,
+	TOGGLE_HITBOXES,
+	TOGGLE_FRAME_BAR,
+	TOGGLE_HIGHLIGHTS,
+	QUEUE_REVERSAL,
+	INCREMENT_RNG,
+	DECREMENT_RNG,
+	S0,
+	PAGE
 };
 
 //Page 2
@@ -1266,14 +1345,24 @@ const std::vector<std::vector<const char*>> HK_P2_Options = {
 	vP2_PAGE
 };
 
-extern int nSAVE_STATE;
-extern int nPREV_SAVE_SLOT;
-extern int nNEXT_SAVE_SLOT;
-extern int nFRAME_BAR_LEFT;
-extern int nFRAME_BAR_RIGHT;
+extern KeyState oSaveStateHotkey;
+extern KeyState oPrevSaveSlotHotkey;
+extern KeyState oNextSaveSlotHotkey;
+extern KeyState oFrameBarLeftHotkey;
+extern KeyState oFrameBarRightHotkey;
 
 const std::vector<int*> HK_P2_Settings = {
-	&nSAVE_STATE, &nPREV_SAVE_SLOT, &nNEXT_SAVE_SLOT, &nFRAME_BAR_LEFT, &nFRAME_BAR_RIGHT, &nPAGE
+	&nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nPAGE
+};
+
+enum class eHK_PAGE2 {
+	SAVE_STATE,
+	PREV_SAVE_SLOT,
+	NEXT_SAVE_SLOT,
+	FRAME_BAR_LEFT,
+	FRAME_BAR_RIGHT,
+	S0,
+	PAGE
 };
 
 //All pages
@@ -1285,5 +1374,9 @@ const std::vector<std::vector<int*>> HK_Page_Settings = {
 	HK_P1_Settings, HK_P2_Settings
 };
 
+const int HK_NUM_PAGES = 1; // 0 indexed
+
 extern uint8_t nHOTKEY_SETTINGS_PAGE;
-extern uint8_t nHOTKEY_SETTINGS_CURSOR[2];
+extern uint8_t nHOTKEY_SETTINGS_CURSOR[HK_NUM_PAGES + 1];
+
+extern int nHOTKEY_CD_TIMER;
