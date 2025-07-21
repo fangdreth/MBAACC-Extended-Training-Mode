@@ -12,7 +12,7 @@ int GetHotkeyPressed();
 
 void CheckNewHotkey(bool bReset, KeyState& oHotkey, LPCTSTR sRegKey);
 
-void GetKeyStateName(char* buffer, KeyState oHotkey);
+void GetKeyStateMenuLabel(char* buffer, KeyState oHotkey);
 
 #define CONCATENATE_DETAIL(x, y) x##y
 #define CONCATENATE(x, y) CONCATENATE_DETAIL(x, y)

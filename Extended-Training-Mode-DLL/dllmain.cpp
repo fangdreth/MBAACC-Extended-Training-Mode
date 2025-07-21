@@ -101,36 +101,21 @@ std::array<uint8_t, 4> arrThrowProtectionHighlightSetting({ 255, 255, 255, 0 });
 
 void initHotkeys()
 {
-	int temp = 0;
-	ReadFromRegistry(sFREEZE_KEY_REG, &temp);
-	oFreezeHotkey.setKey(temp);
-	ReadFromRegistry(sNEXT_FRAME_KEY_REG, &temp);
-	oNextFrameHotkey.setKey(temp);
-	ReadFromRegistry(sPREV_FRAME_KEY_REG, &temp);
-	oPrevFrameHotkey.setKey(temp);
-	ReadFromRegistry(sTOGGLE_HITBOXES_KEY_REG, &temp);
-	oToggleHitboxesHotkey.setKey(temp);
-	ReadFromRegistry(sTOGGLE_FRAME_BAR_KEY_REG, &temp);
-	oToggleFrameBarHotkey.setKey(temp);
-	ReadFromRegistry(sTOGGLE_HIGHLIGHTS_KEY_REG, &temp);
-	oToggleHighlightsHotkey.setKey(temp);
-	ReadFromRegistry(sQUEUE_REVERSAL_KEY_REG, &temp);
-	oQueueReversalHotkey.setKey(temp);
-	ReadFromRegistry(sINCREMENT_RNG_KEY_REG, &temp);
-	oIncrementRNGHotkey.setKey(temp);
-	ReadFromRegistry(sDECREMENT_RNG_KEY_REG, &temp);
-	oDecrementRNGHotkey.setKey(temp);
+	oFreezeHotkey.setKeyFromRegistry(sFREEZE_KEY_REG);
+	oNextFrameHotkey.setKeyFromRegistry(sNEXT_FRAME_KEY_REG);
+	oPrevFrameHotkey.setKeyFromRegistry(sPREV_FRAME_KEY_REG);
+	oToggleHitboxesHotkey.setKeyFromRegistry(sTOGGLE_HITBOXES_KEY_REG);
+	oToggleFrameBarHotkey.setKeyFromRegistry(sTOGGLE_FRAME_BAR_KEY_REG);
+	oToggleHighlightsHotkey.setKeyFromRegistry(sTOGGLE_HIGHLIGHTS_KEY_REG);
+	oQueueReversalHotkey.setKeyFromRegistry(sQUEUE_REVERSAL_KEY_REG);
+	oIncrementRNGHotkey.setKeyFromRegistry(sINCREMENT_RNG_KEY_REG);
+	oDecrementRNGHotkey.setKeyFromRegistry(sDECREMENT_RNG_KEY_REG);
 
-	ReadFromRegistry(sSAVE_STATE_KEY_REG, &temp);
-	oSaveStateHotkey.setKey(temp);
-	ReadFromRegistry(sPREV_SAVE_SLOT_KEY_REG, &temp);
-	oPrevSaveSlotHotkey.setKey(temp);
-	ReadFromRegistry(sNEXT_SAVE_SLOT_KEY_REG, &temp);
-	oNextSaveSlotHotkey.setKey(temp);
-	ReadFromRegistry(sFRAME_BAR_LEFT_KEY_REG, &temp);
-	oFrameBarLeftHotkey.setKey(temp);
-	ReadFromRegistry(sFRAME_BAR_RIGHT_KEY_REG, &temp);
-	oFrameBarRightHotkey.setKey(temp);
+	oSaveStateHotkey.setKeyFromRegistry(sSAVE_STATE_KEY_REG);
+	oPrevSaveSlotHotkey.setKeyFromRegistry(sPREV_SAVE_SLOT_KEY_REG);
+	oNextSaveSlotHotkey.setKeyFromRegistry(sNEXT_SAVE_SLOT_KEY_REG);
+	oFrameBarLeftHotkey.setKeyFromRegistry(sFRAME_BAR_LEFT_KEY_REG);
+	oFrameBarRightHotkey.setKeyFromRegistry(sFRAME_BAR_RIGHT_KEY_REG);
 
 }
 
@@ -2183,6 +2168,7 @@ void setFPSLimiter(bool b) {
 	
 }
 
+int nVolTextTimer = 0;
 DWORD MBAA_Change_Volume = 0x00418030;
 void ChangeVolume() {
 	PUSH_ALL;
@@ -2197,6 +2183,9 @@ void frameDoneCallback()
 	profileFunction();
 
 	static KeyState lShiftKey(VK_LSHIFT);
+
+	static uint8_t nFrameCount = 0;
+	nFrameCount = (nFrameCount + 1) % 255;
 
 	//Sleep(8);
 
@@ -2228,20 +2217,24 @@ void frameDoneCallback()
 		static KeyState UpKey(VK_UP);
 		static KeyState DownKey(VK_DOWN);
 
-		if (UpKey.keyDownHeldFreq<4, 24>()) {
-			bool needNewFrame = saveStateManager.load(1);
-			if (!alreadyRolledReplayManager) {
-				//log("calling rollforward 2");
-				//replayManager.rollForward();
+		if (bFreeze)
+		{
+			/*if (UpKey.keyDownHeldFreq<4, 24>()) {
+				bool needNewFrame = saveStateManager.load(1);
+				if (!alreadyRolledReplayManager) {
+					//log("calling rollforward 2");
+					//replayManager.rollForward();
+				}
+
+				if (!needNewFrame) {
+					rollFancyInputDisplay(1);
+				}
 			}
-			
-			if (!needNewFrame) {
-				rollFancyInputDisplay(1);
+			else */if (oPrevFrameHotkey.keyDownHeldFreq<4, 24>()) {
+				saveStateManager.load(-1);
+				rollFancyInputDisplay(-1);
+				replayManager.rollBack();
 			}
-		} else if (DownKey.keyDownHeldFreq<4, 24>()) {
-			saveStateManager.load(-1);
-			rollFancyInputDisplay(-1);
-			replayManager.rollBack();
 		}
 
 		if (logSaveState) {
@@ -2272,7 +2265,9 @@ void frameDoneCallback()
 	}
 
 	static KeyState mKey('M');
-	if (mKey.keyDown()) {
+	if (mKey.keyDown())
+	//if (oResetKey.keyDown())
+	{
 		needTrainingModeReset = true;
 	}
 
@@ -2280,6 +2275,7 @@ void frameDoneCallback()
 	if (lShiftKey.keyHeld() && fKey.keyDown()) {
 		setFPSLimiter(!disableFPSLimit); // sorry :3
 	}
+	////setFPSLimiter(bDisableFPSLimit);
 
 	static KeyState oKey('O');
 	if (lShiftKey.keyHeld() && oKey.keyDown()) {
@@ -2289,6 +2285,7 @@ void frameDoneCallback()
 		if (i > 19) i = 19;
 		*(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144) = i;
 		ChangeVolume();
+		nVolTextTimer = 20;
 	}
 
 	static KeyState pKey('P');
@@ -2298,6 +2295,16 @@ void frameDoneCallback()
 		if (i > 19) i = 21;
 		*(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144) = i;
 		ChangeVolume();
+		nVolTextTimer = 20;
+	}
+
+	if (nVolTextTimer > 0) {
+		int i = *(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144);
+		int volume = 20 - i;
+		char buffer[8];
+		snprintf(buffer, 8, "%i", volume);
+		TextDraw(315, 10, 10, 0xFFFFFFFF, buffer);
+		nVolTextTimer--;
 	}
 
 	renderModificationsFrameDone();
@@ -2421,21 +2428,36 @@ void frameDoneCallback()
 			TextDraw(100.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Freeze Key: <corrupt>");
 		}
 
-		try
+		if (nFrameCount % 240 > 120)
 		{
-			char pcFrameStepKey[256];
-			char pcName[19];
-			UINT scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedFrameStepKey), MAPVK_VK_TO_VSC);
-			LONG lParamValue = (scanCode << 16);
-			GetKeyNameTextA(lParamValue, pcName, 19);
-			snprintf(pcFrameStepKey, sizeof(pcFrameStepKey), "Frame Step Key: %s", pcName);
-			TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcFrameStepKey);
+			try
+			{
+				char pcFrameStepKey[256];
+				char pcName[19];
+				oNextFrameHotkey.getKeyName(pcName);
+				snprintf(pcFrameStepKey, sizeof(pcFrameStepKey), "Next Frame: %s", pcName);
+				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcFrameStepKey);
+			}
+			catch (...)
+			{
+				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
+			}
 		}
-		catch (...)
+		else
 		{
-			TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
+			try
+			{
+				char pcPrevFrameKey[256];
+				char pcName[19];
+				oPrevFrameHotkey.getKeyName(pcName);
+				snprintf(pcPrevFrameKey, sizeof(pcPrevFrameKey), "Prev Frame: %s", pcName);
+				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcPrevFrameKey);
+			}
+			catch (...)
+			{
+				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Prev Frame: <corrupt>");
+			}
 		}
-			
 	}
 
 	if (oFrameBarLeftHotkey.keyHeld())
@@ -3043,7 +3065,7 @@ void newPauseCallback2()
 			_naked_newPauseCallback2_IsPaused = false;
 	}
 
-	else if (!bFreeze && oNextFrameHotkey.keyDown())
+	else if (!bFreeze && (oNextFrameHotkey.keyDown() || oPrevFrameHotkey.keyDown()))
 	{
 		bFreeze = true;
 		bSlow = false;
@@ -5129,8 +5151,17 @@ void ExtendedMenuInputChecking() {
 	case eXS_PAGES::SYSTEM:
 	{
 		switch ((eSYSTEM)curMenuInfo->selectedElement) {
+		case eSYSTEM::HIDE_HUD: // set these options in-menu for live preview
+			nHIDE_HUD = curElement->selectedItem;
+			break;
+		case eSYSTEM::HIDE_SHADOWS:
+			nHIDE_SHADOWS = curElement->selectedItem;
+			break;
 		case eSYSTEM::HIDE_EXTRAS:
-			*(byte*)(adMBAABase + adXS_hideExtras) = curElement->selectedItem;
+			nHIDE_EXTRAS = curElement->selectedItem;
+			break;
+		case eSYSTEM::BACKGROUND:
+			nBACKGROUND = curElement->selectedItem;
 			break;
 		case eSYSTEM::DEFAULT:
 			if (bAPos) DefaultP11(curMenuInfo);
@@ -5139,6 +5170,9 @@ void ExtendedMenuInputChecking() {
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
 			break;
 		}
+
+		curMenuInfo->ElementList[(int)eSYSTEM::HIDE_EXTRAS]->textOpacity = nHIDE_HUD ? 0.5f : 1.0f;
+
 
 		break;
 	}
@@ -5243,23 +5277,23 @@ void HotkeyMenuInputChecking() {
 			break;
 		}
 
-		GetKeyStateName(labelBuf, oFreezeHotkey);
+		GetKeyStateMenuLabel(labelBuf, oFreezeHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE1::FREEZE]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oNextFrameHotkey);
+		GetKeyStateMenuLabel(labelBuf, oNextFrameHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE1::NEXT_FRAME]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oPrevFrameHotkey);
+		GetKeyStateMenuLabel(labelBuf, oPrevFrameHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE1::PREV_FRAME]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oToggleHitboxesHotkey);
+		GetKeyStateMenuLabel(labelBuf, oToggleHitboxesHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE1::TOGGLE_HITBOXES]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oToggleFrameBarHotkey);
+		GetKeyStateMenuLabel(labelBuf, oToggleFrameBarHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE1::TOGGLE_FRAME_BAR]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oToggleHighlightsHotkey);
+		GetKeyStateMenuLabel(labelBuf, oToggleHighlightsHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE1::TOGGLE_HIGHLIGHTS]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oQueueReversalHotkey);
+		GetKeyStateMenuLabel(labelBuf, oQueueReversalHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE1::QUEUE_REVERSAL]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oIncrementRNGHotkey);
+		GetKeyStateMenuLabel(labelBuf, oIncrementRNGHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE1::INCREMENT_RNG]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oDecrementRNGHotkey);
+		GetKeyStateMenuLabel(labelBuf, oDecrementRNGHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE1::DECREMENT_RNG]->SetCurItemLabel(labelBuf);
 
 		break;
@@ -5285,15 +5319,15 @@ void HotkeyMenuInputChecking() {
 			break;
 		}
 
-		GetKeyStateName(labelBuf, oSaveStateHotkey);
+		GetKeyStateMenuLabel(labelBuf, oSaveStateHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE2::SAVE_STATE]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oPrevSaveSlotHotkey);
+		GetKeyStateMenuLabel(labelBuf, oPrevSaveSlotHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE2::PREV_SAVE_SLOT]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oNextSaveSlotHotkey);
+		GetKeyStateMenuLabel(labelBuf, oNextSaveSlotHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE2::NEXT_SAVE_SLOT]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oFrameBarLeftHotkey);
+		GetKeyStateMenuLabel(labelBuf, oFrameBarLeftHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE2::FRAME_BAR_LEFT]->SetCurItemLabel(labelBuf);
-		GetKeyStateName(labelBuf, oFrameBarRightHotkey);
+		GetKeyStateMenuLabel(labelBuf, oFrameBarRightHotkey);
 		curMenuInfo->ElementList[(int)eHK_PAGE2::FRAME_BAR_RIGHT]->SetCurItemLabel(labelBuf);
 
 		break;
@@ -6264,9 +6298,9 @@ void threadFunc()
 	InitializeCharacterMaps();
 	// when running with caster, the prints to this area are disabled
 	// when not running with caster, they arent even there, so this is fine to run regardless of caster 
-	initAttackMeterDisplay();
+	//initAttackMeterDisplay();
 	initMeterGainHook();
-	initNewAttackDisplay();
+	//initNewAttackDisplay();
 
 	initNewPauseCallback();
 	initDrawBackground();

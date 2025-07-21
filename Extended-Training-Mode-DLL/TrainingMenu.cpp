@@ -56,7 +56,7 @@ void CheckNewHotkey(bool bAPress, KeyState& oHotkey, LPCTSTR sRegKey) {
 	}
 }
 
-void GetKeyStateName(char* buffer, KeyState oHotkey) {
+void GetKeyStateMenuLabel(char* buffer, KeyState oHotkey) {
 	if (oHotkey.getKey() > 0) {
 		UINT scanCode = MapVirtualKeyA(oHotkey.getKey(), MAPVK_VK_TO_VSC);
 		LONG lParamValue = (scanCode << 16);

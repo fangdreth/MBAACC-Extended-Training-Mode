@@ -225,6 +225,51 @@ void initMenu() {
 		L"P2InputDisplay"
 	);
 
+	ui.add<int>("Show Framebar",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			*(BYTE*)(dwBaseAddress + adSharedFrameDataDisplay) = opt;
+		},
+		defaultOnOffNameFunc,
+		L"FrameDisplay"
+	);
+
+	ui.add<int>("Framebar Y",
+		[](int inc, int& opt) {
+			opt += (inc * 10.0f);
+			opt = CLAMP(opt, 10.0f, 440.0f);
+
+			*(BYTE*)(dwBaseAddress + adSharedFrameBarY) = opt;
+		},
+		defaultSliderNameFunc,
+		L"FrameBarY"
+	);
+
+	ui.add<int>("Show Stats",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			*(BYTE*)(dwBaseAddress + adSharedShowStats) = opt;
+		},
+		defaultOnOffNameFunc,
+		L"",
+		1
+	);
+
+	ui.add<int>("Hide Extras",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			*(BYTE*)(dwBaseAddress + adSharedHideFPS) = opt;
+			*(BYTE*)(dwBaseAddress + adSharedHideBuildInfo) = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
 	baseMenu.add(ui);
 
 	Menu hitboxes("Hitboxes");

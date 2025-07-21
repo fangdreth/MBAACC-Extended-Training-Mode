@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
         uint8_t nBackgroundStyle = false;
         bool bDrawGround = false;
         bool bDisableShadow = false;
-        DWORD dwDisableExtras = 0x00000000;
+        WORD dwDisableExtras = 0x0000;
 
         int nFrameBarY = 400;
         bool bShowStats = true;
@@ -389,6 +389,21 @@ int main(int argc, char* argv[])
             nSlowKey = nDefaultSlowKey;
         else
             bSlowKeySet = true;
+        ReadFromRegistry(L"NextFrameKey", &nNextFrameKey);
+        if (MapVirtualKeyW(nNextFrameKey, MAPVK_VK_TO_VSC) == 0)
+            nNextFrameKey = nDefaultNextFrameKey;
+        else
+            bNextFrameKeySet = true;
+        ReadFromRegistry(L"PrevFrameKey", &nPrevFrameKey);
+        if (MapVirtualKeyW(nPrevFrameKey, MAPVK_VK_TO_VSC) == 0)
+            nPrevFrameKey = nDefaultPrevFrameKey;
+        else
+            bPrevFrameKeySet = true;
+        ReadFromRegistry(L"ResetKey", &nResetKey);
+        if (MapVirtualKeyW(nResetKey, MAPVK_VK_TO_VSC) == 0)
+            nResetKey = nDefaultResetKey;
+        else
+            bResetKeySet = true;
         ReadFromRegistry(L"FrameDisplay", &nFrameData);
         if (nFrameData == FRAMEDISPLAY_NORMAL)
             bSimpleFrameInfo = true;
@@ -512,6 +527,9 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedReversalKey), &nReversalKey, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedReversalKeyHeld), &bTrue, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSlowKey), &nSlowKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedNextFrameKey), &nNextFrameKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevFrameKey), &nPrevFrameKey, 1, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedResetKey), &nResetKey, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSlowSpeed), &bSlow, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nSaveSlot, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisplayFreeze), &bDisplayFreeze, 1, 0);
@@ -549,7 +567,7 @@ int main(int argc, char* argv[])
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedBackgroundStyle), &nBackgroundStyle, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDrawGround), &bDrawGround, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedDisableShadow), &bDisableShadow, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHideFPS), &dwDisableExtras, 3, 0);
+                        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHideFPS), &dwDisableExtras, 2, 0);
 
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplay), &bFrameDataDisplay, 1, 0);
                         WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFastReversePenalty), &bFastReversePenalty, 1, 0);
@@ -841,6 +859,14 @@ int main(int argc, char* argv[])
                     if (nFrameCounter == nOldFrameCounter)
                         continue;
                     nOldFrameCounter = nFrameCounter;
+
+                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwSomeDummyPlaybackFlag2), &nReadResult, 4, 0);
+                    if (nReadResult == 2) {
+                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwSomeDummyPlaybackFlag), &nReadResult, 4, 0);
+                        if (nReadResult == 0) {
+                            continue; //skip stuff if in replay mode
+                        }
+                    }
 
                     // populate the reversal patterns list and character data
                     // may be able to remove the timer condition, since CSS clears patternname list
