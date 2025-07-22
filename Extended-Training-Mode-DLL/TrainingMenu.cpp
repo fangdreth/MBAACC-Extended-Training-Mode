@@ -330,7 +330,8 @@ void DefaultP7(MenuInfo* menuInfo) {
 //Page 8
 int nFRAME_DATA = defFRAME_DATA;
 int nIN_GAME_FRAME_DISPLAY = defIN_GAME_FRAME_DISPLAY;
-int nSHOW_FREEZE_AND_INPUTS = defSHOW_FREEZE_INPUTS;
+int nSHOW_HITSTOP_AND_FREEZE = defSHOW_HITSTOP_AND_FREEZE;
+int nSHOW_INPUTS = defSHOW_INPUTS;
 int nSHOW_CANCEL_WINDOWS = defSHOW_CANCEL;
 int nSCROLL_DISPLAY = defSCROLL_DISPLAY;
 
@@ -341,7 +342,8 @@ int nTRUE_SCROLL_DISPLAY = defTRUE_SCROLL_DISPLAY;
 void DefaultP8(MenuInfo* menuInfo) {
 	nFRAME_DATA = defFRAME_DATA;
 	nIN_GAME_FRAME_DISPLAY = defIN_GAME_FRAME_DISPLAY;
-	nSHOW_FREEZE_AND_INPUTS = defSHOW_FREEZE_INPUTS;
+	nSHOW_HITSTOP_AND_FREEZE = defSHOW_HITSTOP_AND_FREEZE;
+	nSHOW_INPUTS = defSHOW_INPUTS;
 	nSHOW_CANCEL_WINDOWS = defSHOW_CANCEL;
 	nSCROLL_DISPLAY = defSCROLL_DISPLAY;
 
@@ -351,7 +353,8 @@ void DefaultP8(MenuInfo* menuInfo) {
 
 	menuInfo->ElementList[(int)eFRAME_DATA::FRAME_DATA]->selectedItem = defFRAME_DATA;
 	menuInfo->ElementList[(int)eFRAME_DATA::IN_GAME_FRAME_DISPLAY]->selectedItem = defIN_GAME_FRAME_DISPLAY;
-	menuInfo->ElementList[(int)eFRAME_DATA::SHOW_FREEZE_AND_INPUTS]->selectedItem = defSHOW_FREEZE_INPUTS;
+	menuInfo->ElementList[(int)eFRAME_DATA::SHOW_HITSTOP_AND_FREEZE]->selectedItem = defSHOW_HITSTOP_AND_FREEZE;
+	menuInfo->ElementList[(int)eFRAME_DATA::SHOW_INPUTS]->selectedItem = defSHOW_INPUTS;
 	menuInfo->ElementList[(int)eFRAME_DATA::SHOW_CANCEL_WINDOWS]->selectedItem = defSHOW_CANCEL;
 	menuInfo->ElementList[(int)eFRAME_DATA::SCROLL_DISPLAY]->selectedItem = defSCROLL_DISPLAY;
 }

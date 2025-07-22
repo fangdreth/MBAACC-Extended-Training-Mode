@@ -339,7 +339,10 @@ typedef struct Command {
 	int pattern;
 	int specialFlag;
 	int meterSpend;
-	uint8_t vars[4]; //assist, special, dash, unused
+	byte assistVar;
+	byte specialVar;
+	byte dashVar;
+	UNUSED(1);
 	uint8_t flagsets[4]; //flagset 1, flagset 2, unused, unused
 } Command;
 #pragma pack(pop)
@@ -353,9 +356,9 @@ static_assert(sizeof(Command) == 0x2C, "Command must have size 0x2C.");
 
 #pragma pack(push,1)
 typedef struct CommandData {
-	UNUSED(0x4);
+	int isPtrArray;
 	Command** commandPtrArr;
-	UNUSED(0x4);
+	int entrySize;
 	int maxID;
 	int maxIDCopy;
 } CommandData;

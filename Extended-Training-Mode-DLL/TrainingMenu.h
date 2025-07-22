@@ -910,8 +910,13 @@ const std::vector<const char*> vIN_GAME_FRAME_DISPLAY = {
 	"OFF", "ON"
 };
 
-const std::vector<const char*> vSHOW_FREEZE_AND_INPUTS = {
-	"SHOW FREEZE & INPUTS",
+const std::vector<const char*> vSHOW_HITSTOP_AND_FREEZE = {
+	"SHOW HITSTOP & FREEZE",
+	"OFF", "ON"
+};
+
+const std::vector<const char*> vSHOW_INPUTS = {
+	"SHOW INPUTS",
 	"OFF", "ON"
 };
 
@@ -936,7 +941,7 @@ const std::vector<const char*> vP8_PAGE = {
 
 const std::vector<std::vector<const char*>> P8_Options = {
 	vFRAME_DATA, vIN_GAME_FRAME_DISPLAY, vSPACE_ELEMENT,
-	vSHOW_FREEZE_AND_INPUTS, vSHOW_CANCEL_WINDOWS, vSPACE_ELEMENT,
+	vSHOW_HITSTOP_AND_FREEZE, vSHOW_INPUTS, vSHOW_CANCEL_WINDOWS, vSPACE_ELEMENT,
 	vSCROLL_DISPLAY, vSPACE_ELEMENT,
 	vCOLOR_GUIDE, vSPACE_ELEMENT,
 	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
@@ -948,7 +953,8 @@ enum class eFRAME_DATA {
 	FRAME_DATA,
 	IN_GAME_FRAME_DISPLAY,
 	S0,
-	SHOW_FREEZE_AND_INPUTS,
+	SHOW_HITSTOP_AND_FREEZE,
+	SHOW_INPUTS,
 	SHOW_CANCEL_WINDOWS,
 	S1,
 	SCROLL_DISPLAY,
@@ -964,13 +970,15 @@ enum class eFRAME_DATA {
 
 const int defFRAME_DATA = 0;
 const int defIN_GAME_FRAME_DISPLAY = 0;
-const int defSHOW_FREEZE_INPUTS = 0;
+const int defSHOW_HITSTOP_AND_FREEZE = 0;
+const int defSHOW_INPUTS = 0;
 const int defSHOW_CANCEL = 0;
 const int defSCROLL_DISPLAY = 2;
 
 extern int nFRAME_DATA;
 extern int nIN_GAME_FRAME_DISPLAY;
-extern int nSHOW_FREEZE_AND_INPUTS;
+extern int nSHOW_HITSTOP_AND_FREEZE;
+extern int nSHOW_INPUTS;
 extern int nSHOW_CANCEL_WINDOWS;
 extern int nSCROLL_DISPLAY;
 
@@ -983,7 +991,7 @@ const int defTRUE_SCROLL_DISPLAY = 0;
 extern int nTRUE_SCROLL_DISPLAY;
 
 const std::vector<int*> P8_Settings = {
-	&nFRAME_DATA, &nIN_GAME_FRAME_DISPLAY, &nSHOW_FREEZE_AND_INPUTS, &nSHOW_CANCEL_WINDOWS, &nSCROLL_DISPLAY,
+	&nFRAME_DATA, &nIN_GAME_FRAME_DISPLAY, &nSHOW_HITSTOP_AND_FREEZE, &nSHOW_INPUTS, &nSHOW_CANCEL_WINDOWS, &nSCROLL_DISPLAY,
 	&nPAGE
 };
 

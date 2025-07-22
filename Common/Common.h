@@ -534,236 +534,17 @@ const ADDRESS adSharedTimer =						adShareBase + 0x28; // 4 bytes - can maybe be
 //const ADDRESS adXS_colorblind =							adShareBase + 0x501; //1 byte
 //const ADDRESS adXS_originStyle =						adShareBase + 0x502; //1 byte
 const ADDRESS adXS_frameData =							adShareBase + 0x503; //1 byte - remaining are used to communicate with console framebar
-const ADDRESS adXS_showFreezeInputs =					adShareBase + 0x504; //1 byte - pending split into freeze and inputs
-const ADDRESS adXS_showCancel =							adShareBase + 0x505; //1 byte
-const ADDRESS adXS_frameScroll =						adShareBase + 0x506; //2 bytes
-const ADDRESS adXS_colorGuide =							adShareBase + 0x508; //1 byte
+const ADDRESS adXS_showHitstopAndFreeze =				adShareBase + 0x504; //1 byte
+const ADDRESS adXS_showInputs =							adShareBase + 0x505; //1 byte
+const ADDRESS adXS_showCancel =							adShareBase + 0x506; //1 byte
+const ADDRESS adXS_frameScroll =						adShareBase + 0x507; //2 bytes
+const ADDRESS adXS_colorGuide =							adShareBase + 0x509; //1 byte
 //const ADDRESS adXS_P1InputDisplay =						adShareBase + 0x509; //1 byte
 //const ADDRESS adXS_P2InputDisplay =						adShareBase + 0x50A; //1 byte
 //const ADDRESS adXS_hideExtras =							adShareBase + 0x50B; //1 byte
 
-// integer representations of raw float values
-// not interested in messing with converting them when a table is good enough
-const std::vector<int> vGuardLevelLookupTable =
-{
-	1174011904/*C 100*/, 1169915904/*C 75*/, 1165623296/*C 50*/, 1157234688/*C 25*/, 0/*C 0*/,
-	1171963904/*F 100*/, 1168379904/*F 75*/, 1163575296/*F 50*/, 1155186688/*F 25*/, 0/*F 0*/,
-	1176768512/*H 100*/, 1173755904/*H 75*/, 1168379904/*H 50*/, 1159991296/*H 25*/, 0/*H 0*/
-};
-
-const int MAX_REVERSAL_DELAY = 99;
-const int MAX_HEALTH = 11400;
-const int MAX_METER = 30000;
-const int MAX_SETTINGS_PAGES = 11;
-const int MAX_HOTKEY_PAGES = 4;
-const int MAX_BULLETS = 13; //14:normal 15:infinite
-const int MAX_CHARGE = 9;
-const int MAX_HEARTS = 5; //6:normal 7:infinite
-const int MIN_X = -65536;
-const int MAX_X = 65536;
-const int P1_DEFAULT_X = -16384;
-const int P2_DEFAULT_X = 16384;
-const int P3_DEFAULT_X = -29184;
-const int P4_DEFAULT_X = 29184;
-const int OFFSCREEN_LOCATION = 0x10000000;
-const int ONSCREEN_LOCATION = 0x000000A0;
-const int TOO_HIGH_TO_BURST = 10000;
-const int MAX_BURST = 99;
-const float DEFAULT_P1_FANCYINPUT_X = 200.0f;
-const float DEFAULT_P1_FANCYINPUT_Y = 112.0f;
-const float DEFAULT_P2_FANCYINPUT_X = 378.0f;
-const float DEFAULT_P2_FANCYINPUT_Y = 112.0f;
-const float DEFAULT_P1_LISTINPUT_X = 60.0f;
-const float DEFAULT_P1_LISTINPUT_Y = 174.0f;
-const float DEFAULT_P2_LISTINPUT_X = 595.0f;
-const float DEFAULT_P2_LISTINPUT_Y = 174.0f;
-
-const char pcSionBullets_13[13] = "SION BULLETS";
-const char pcRoaVisibleCharge_19[19] = "ROA VISIBLE CHARGE";
-const char pcRoaHiddenCharge_19[19] = "ROA HIDDEN CHARGE";
-const char pcFMaidsHearts_15[15] = "F-MAIDS HEARTS";
-const char pcRyougiKnife_13[13] = "RYOUGI KNIFE";
-const char pcP1ControlledChar_19[19] = "P1 CONTROLLED CHAR";
-const char pcP2ControlledChar_19[19] = "P2 CONTROLLED CHAR";
-const char pcHitsUntilBurst_17[17] = "HITS UNTIL BURST";
-const char pcHitsUntilBunker_18[18] = "HITS UNTIL BUNKER";
-const char pcNormal_7[7] = "NORMAL";
-const char pcRepeat_7[7] = "REPEAT";
-const char pcRandom_7[7] = "RANDOM";
-const char pcShield_7[7] = "SHIELD";
-const char pcInfinite_10[10] = "INFINITE";
-const char pcOne_2[2] = "1";
-const char pcMain_5[5] = "MAIN";
-const char pcAssist_7[7] = "ASSIST";
-const char pcHisui_6[6] = "HISUI";
-const char pcKohaku_8[8] = "KOHAKU";
-
-const char pcASlow_12[12] = "[A]->SLOWER";
-const char pcP1XLoc_11[11] = "P1 X-LOC";
-const char pcP2XLoc_11[11] = "P2 X-LOC";
-const char pcAssistLoc_13[13] = "ASSIST X-LOC";
-const char pcInvert_7[7] = "INVERT";
-const char pcUnstable_11[11] = "(UNSTABLE)";
-
-const char pcReversalSlot1_16[16] = "REVERSAL SLOT 1";
-const char pcReversalSlot2_16[16] = "REVERSAL SLOT 2";
-const char pcReversalSlot3_16[16] = "REVERSAL SLOT 3";
-const char pcReversalSlot4_16[16] = "REVERSAL SLOT 4";
-const char pcReversalType_14[14] = "REVERSAL TYPE";
-const char pcPenaltyReset_14[14] = "PENALTY RESET";
-const char pcInstant_8[8] = "INSTANT";
-const char pcExGuard_9[9] = "EX GUARD";
-const char pcReversalDelay_15[15] = "REVERSAL DELAY";
-const char pcMeter_6[6] = "METER";
-const char pcHealth_7[7] = "HEALTH";
-const char pcGuardBar_10[10] = "GUARD BAR";
-const char pcBlank_1[1] = "";
-const char pcHotkeys_8[8] = "HOTKEYS";
-const char pcCustomRNG_11[11] = "CUSTOM RNG";
-const char pcSeed_5[5] = "SEED";
-const char pcRate_5[5] = "RATE";
-const char pcEveryFrame_13[13] = "EVERY FRAME";
-const char pcEveryReset_13[13] = "EVERY RESET";
-const char pcValue_6[6] = "VALUE";
-const char pcBlank_32[32] = "";
-const char pcBlank_64[64] = "";
-const char pcPressA_32[32] = "PRESS A";
-const char pcHoldA_32[32] = "HOLD A";
-const char pcDisplayHitboxes_17[17] = "DISPLAY HITBOXES";
-const char pcHitboxStyle_13[13] = "HITBOX STYLE";
-const char pcColorBlindMode_17[17] = "COLOR BLIND MODE";
-const char pcBlended_8[8] = "BLENDED";
-const char pcLayered_8[8] = "LAYERED";
-const char pcOriginStyle_13[13] = "ORIGIN STYLE";
-const char pcStandard_9[9] = "STANDARD";
-const char pcExtended_9[9] = "EXTENDED";
-const char pcReversal_9[9] = "REVERSAL";
-const char pcInGameFramebar_17[17] = "IN-GAME FRAMEBAR";
-const char pcSlowMotion_12[12] = "SLOW MOTION";
-const char pcThreeFourths_4[4] = "3/4";
-const char pcOneHalf_4[4] = "1/2";
-const char pcOneFourth_4[4] = "1/4";
-const char pcList_5[5] = "LIST";
-const char pcArcade_7[7] = "ARCADE";
-const char pcBoth_5[5] = "BOTH";
-const char pcP1InputDisplay_17[17] = "P1 INPUT DISPLAY";
-const char pcP2InputDisplay_17[17] = "P2 INPUT DISPLAY";
-const char pcShowStats_11[11] = "SHOW STATS";
-const char pcAttackDisplay_15[15] = "ATTACK DISPLAY";
-
-const char pcReversals_10[10] = "REVERSALS";
-const char pcTraining_9[9] = "TRAINING";
-const char pcPositions_10[10] = "POSITIONS";
-const char pcSaveStates_12[12] = "SAVE STATES";
-const char pcCharacter_10[10] = "CHARACTER";
-const char pcHitboxes_9[9] = "HITBOXES";
-const char pcHighlights_11[11] = "HIGHLIGHTS";
-const char pcRNG_4[4] = "RNG";
-const char pcSystem_8[8] = "SYSTEM";
-const char pcUI_3[3] = "UI";
-const char pcReversalsHotkeys_10[10] = "REVERSALS";
-const char pcGeneralHotkeys_16[16] = "GENERAL HOTKEYS";
-const char pcFrameDataHotkeys_19[19] = "FRAME DATA HOTKEYS";
-const char pcRNGHotkeys_12[12] = "RNG HOTKEYS";
-const char pcFrameDisplayY_16[16] = "FRAME DISPLAY Y";
-
-const std::vector<const char*> vHighlightNames = {	"OFF",
-													"RED",
-													"YELLOW",
-													"GREEN",
-													"BLUE",
-													"PURPLE",
-													"BLACK" };
-const std::vector<const char*> vHighlightNamesWithFormatting = {	"OFF",
-																	"~RED",
-																	"`YELLOW",
-																	"@GREEN",
-																	"{BLUE",
-																	"^PURPLE",
-																	"*BLACK" };
-const std::vector<const char*> vBackgroundNames = { "NORMAL",
-													"WHITE",
-													"GRAY",
-													"BLACK",
-													"RED",
-													"GREEN",
-													"BLUE",
-													"PURPLE",
-													"YELLOW"
-};
-
-const std::vector<const char*> vBackgroundNamesWithFormatting = { "NORMAL",
-																	"WHITE",
-																	"$GRAY",
-																	"*BLACK",
-																	"~RED",
-																	"@GREEN",
-																	"{BLUE",
-																	"^PURPLE",
-																	"`YELLOW"
-};
-
-const char pcEnemyReversal_15[15] = "ENEMY REVERSAL";
-
-const char pcRecover_8[8] = "RECOVER";
-const char pcRecover_11[11] = "NO RECOVER";
-
-const char pcTrainingPreset_17[17] = "training preset.";
-const char pcExtendedSettings_18[18] = "EXTENDED SETTINGS";
-
 const char pcLatestVersion_19[19] = "LATEST VERSION";
 const char pcOffline_8[8] = "OFFLINE";
-
-const char pcFrameData_11[11] = "FRAME DATA";
-const char pcSaveStateSlot_16[16] = "SAVE STATE SLOT";
-const char pcSaveState_11[11] = "SAVE STATE";
-const char pcShowFreezeInputs_21[21] = "SHOW FREEZE & INPUTS";
-const char pcShowCancelWindows_20[20] = "SHOW CANCEL WINDOWS";
-const char pcScrollDisplay_15[15] = "SCROLL DISPLAY";
-const char pcColorGuide_12[12] = "COLOR GUIDE";
-const char pcAdvanced_9[9] = "ADVANCED";
-const char pcOff_4[4] = "OFF";
-const char pcOn_3[3] = "ON";
-const char pcNone_5[5] = "NONE";
-
-const char pcClearAllSaves_16[16] = "CLEAR ALL SAVES";
-const char pcImportSave_12[12] = "IMPORT SAVE";
-const char pcExportSave_12[12] = "EXPORT SAVE";
-const char pcLoadRNG_9[9] = "LOAD RNG";
-const char pcNoData_8[8] = "NO DATA";
-const char pcNoSlotSelected_17[17] = "NO SLOT SELECTED";
-const char pcPressA_8[8] = "PRESS A";
-
-const char pcIdle_5[5] = "IDLE";
-const char pcBlock_6[6] = "BLOCK";
-const char pcHit_4[4] = "HIT";
-const char pcArmor_6[6] = "ARMOR";
-const char pcThrowProtection_17[17] = "THROW PROTECTION";
-const char pcRed_4[4] = "RED";
-const char pcGreen_6[6] = "GREEN";
-const char pcBlue_5[5] = "BLUE";
-const char pcGray_5[5] = "GRAY";
-const char pcWhite_6[6] = "WHITE";
-
-const char pcHideHUD_9[9] = "HIDE HUD";
-const char pcHideShadow_13[13] = "HIDE SHADOWS";
-const char pcBackground_11[11] = "BACKGROUND";
-const char pcDrawGround_12[12] = "DRAW GROUND";
-const char pcHideExtras_12[12] = "HIDE EXTRAS";
-
-const char pcFreeze_11[11] = "FREEZE KEY";
-const char pcNextFrame_15[15] = "NEXT FRAME KEY";
-const char pcPreviousFrame_15[15] = "PREV FRAME KEY";
-const char pcHitboxes_13[13] = "HITBOXES KEY";
-const char pcFrameDisplay_18[18] = "FRAME DISPLAY KEY";
-const char pcHighlights_15[15] = "HIGHLIGHTS KEY";
-const char pcSaveState_15[15] = "SAVE STATE KEY";
-const char pcPrevSaveSlot_19[19] = "PREV SAVE SLOT KEY";
-const char pcNextSaveSlot_19[19] = "NEXT SAVE SLOT KEY";
-const char pcFrameBarLeft_15[15] = "FRAME BAR LEFT";
-const char pcFrameBarRight_17[17] = "FRAME BAR RIGHT";
-const char pcNextRNG_13[13] = "NEXT RNG KEY";
-const char pcPrevRNG_13[13] = "PREV RNG KEY";
 
 const LPCTSTR sFREEZE_KEY_REG = L"HOTKEY_Freeze";
 const LPCTSTR sNEXT_FRAME_KEY_REG = L"HOTKEY_NextFrame";
@@ -781,20 +562,25 @@ const LPCTSTR sNEXT_SAVE_SLOT_KEY_REG = L"HOTKEY_NextSaveSlot";
 const LPCTSTR sFRAME_BAR_LEFT_KEY_REG = L"HOTKEY_FrameBarLeft";
 const LPCTSTR sFRAME_BAR_RIGHT_KEY_REG = L"HOTKEY_FrameBarRight";
 
+const LPCTSTR sHIGHLIGHTS = L"Highlights";
+const LPCTSTR sBLOCKING_HIGHLIGHT = L"BlockingHighlight";
+const LPCTSTR sHIT_HIGHLIGHT = L"HitHighlight";
+const LPCTSTR sARMOR_HIGHLIGHT = L"ArmorHighlight";
+const LPCTSTR sTHROW_PROTECTION_HIGHLIGHT = L"ThrowProtectionHighlight";
+const LPCTSTR sIDLE_HIGHLIGHT = L"IdleHighlight";
+
+const LPCTSTR sHITBOX_STYLE = L"HitboxStyle";
+const LPCTSTR sCOLOR_BLIND_MODE = L"ColorBlindMode";
+
 const LPCTSTR sFRAME_DATA = L"FrameData";
 const LPCTSTR sDISPLAY_FREEZE = L"DisplayFreeze";
 const LPCTSTR sDISPLAY_INPUTS = L"DisplayInputs";
 const LPCTSTR sDISPLAY_CANCELS = L"DisplayCancels";
-const LPCTSTR sHITBOX_STYLE = L"HitboxStyle";
+
 const LPCTSTR sFRAME_BAR_Y = L"FrameBarY";
 const LPCTSTR sP1_INPUT_DISPLAY = L"P1InputDisplay";
 const LPCTSTR sP2_INPUT_DISPLAY = L"P2InputDisplay";
-const LPCTSTR sBLOCKING_HIGHLIGHT = L"BlockingHighlight";
-const LPCTSTR sTHROW_PROTECTION_HIGHLIGHT = L"ThrowProtectionHighlight";
-const LPCTSTR sHIT_HIGHLIGHT = L"HitHighlight";
-const LPCTSTR sIDLE_HIGHLIGHT = L"IdleHighlight";
-const LPCTSTR sARMOR_HIGHLIGHT = L"ArmorHighlight";
-const LPCTSTR sHIGHLIGHT = L"Highlight";
+
 const LPCTSTR sP1_ARCADE_INPUT_X = L"P1ArcadeInputX";
 const LPCTSTR sP1_ARCADE_INPUT_Y = L"P1ArcadeInputY";
 const LPCTSTR sP2_ARCADE_INPUT_X = L"P2ArcadeInputX";
@@ -843,26 +629,6 @@ const LPCTSTR sP2_LIST_INPUT_Y = L"P2ListInputY";
 #define VK_KEY_X 0x58
 #define VK_KEY_Y 0x59
 #define VK_KEY_Z 0x5A
-
-enum eKeyNames { KEY_FREEZE, KEY_FRAMESTEP, KEY_HITBOX, KEY_FRAMEDATA, KEY_HIGHLIGHT, KEY_SAVESTATE, KEY_PREVSAVE, KEY_NEXTSAVE, KEY_FRAMEBARLEFT, KEY_FRAMEBARRIGHT, KEY_RNGINC, KEY_RNGDEC, KEY_REVERSAL, KEY_PREVFRAME, KEY_RESET };
-
-const uint8_t nDefaultFreezeKey = VK_KEY_UNSET;
-const uint8_t nDefaultFrameStepKey = VK_KEY_UNSET;
-const uint8_t nDefaultHitboxDisplayKey = VK_KEY_UNSET;
-const uint8_t nDefaultFrameDataDisplayKey = VK_KEY_UNSET;
-const uint8_t nDefaultHighlightsOnKey = VK_KEY_UNSET;
-const uint8_t nDefaultSaveStateKey = VK_KEY_UNSET;
-const uint8_t nDefaultPrevSaveSlotKey = VK_KEY_UNSET;
-const uint8_t nDefaultNextSaveSlotKey = VK_KEY_UNSET;
-const uint8_t nDefaultFrameBarScrollLeftKey = VK_KEY_UNSET;
-const uint8_t nDefaultFrameBarScrollRightKey = VK_KEY_UNSET;
-const uint8_t nDefaultRNGIncKey = VK_KEY_UNSET;
-const uint8_t nDefaultRNGDecKey = VK_KEY_UNSET;
-const uint8_t nDefaultReversalKey = VK_KEY_UNSET;
-const uint8_t nDefaultSlowKey = VK_KEY_UNSET;
-const uint8_t nDefaultNextFrameKey = VK_KEY_UNSET;
-const uint8_t nDefaultPrevFrameKey = VK_KEY_UNSET;
-const uint8_t nDefaultResetKey = VK_KEY_UNSET;
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))

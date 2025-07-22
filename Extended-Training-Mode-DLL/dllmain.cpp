@@ -79,11 +79,6 @@ bool bShowFrameBarPreview = false;
 bool bShowFrameBarYPreview = false;
 bool bForceGuard = false;
 
-uint8_t nRNGMode = RNG_OFF;
-uint8_t nRNGRate = RNG_EVERY_FRAME;
-uint32_t nCustomSeed = 0;
-uint32_t nCustomRN = 0;
-
 std::vector<std::string> vPatternNames = GetEmptyPatternList();
 std::vector<int> vAirReversals;
 std::vector<int> vGroundReversals;
@@ -139,24 +134,28 @@ void initHotkeys()
 
 }
 
-void initXSRegistryValues()
+void initRegistryValues()
 {
-	ReadFromRegistry(sFRAME_DATA, &nFRAME_DATA);
-	ReadFromRegistry(sDISPLAY_FREEZE, &nSHOW_FREEZE_AND_INPUTS);
-	ReadFromRegistry(sDISPLAY_INPUTS, &nSHOW_FREEZE_AND_INPUTS);
-	ReadFromRegistry(sDISPLAY_CANCELS, &nSHOW_CANCEL_WINDOWS);
+	ReadFromRegistry(sHIGHLIGHTS, &nHIGHLIGHTS);
+	ReadFromRegistry(sBLOCKING_HIGHLIGHT, &nGUARD_HIGHLIGHT);
+	ReadFromRegistry(sHIT_HIGHLIGHT, &nHIT_HIGHLIGHT);
+	ReadFromRegistry(sARMOR_HIGHLIGHT, &nARMOR_HIGHLIGHT);
+	ReadFromRegistry(sTHROW_PROTECTION_HIGHLIGHT, &nTHROW_PROTECTION_HIGHLIGHT);
+	ReadFromRegistry(sIDLE_HIGHLIGHT, &nIDLE_HIGHLIGHT);
+
 	ReadFromRegistry(sHITBOX_STYLE, &nHITBOX_STYLE);
+	ReadFromRegistry(sCOLOR_BLIND_MODE, &nCOLOR_BLIND_MODE);
+
+	ReadFromRegistry(sFRAME_DATA, &nFRAME_DATA);
+	ReadFromRegistry(sDISPLAY_FREEZE, &nSHOW_HITSTOP_AND_FREEZE);
+	ReadFromRegistry(sDISPLAY_INPUTS, &nSHOW_INPUTS);
+	ReadFromRegistry(sDISPLAY_CANCELS, &nSHOW_CANCEL_WINDOWS);
+
 	ReadFromRegistry(sFRAME_BAR_Y, &nTRUE_FRAME_DISPLAY_Y);
 	if (nTRUE_FRAME_DISPLAY_Y == 440) nFRAME_DISPLAY_Y = 2;
 	else if (nTRUE_FRAME_DISPLAY_Y == 0) nFRAME_DISPLAY_Y = 0;
 	ReadFromRegistry(sP1_INPUT_DISPLAY, &nP1_INPUT_DISPLAY);
 	ReadFromRegistry(sP2_INPUT_DISPLAY, &nP2_INPUT_DISPLAY);
-	ReadFromRegistry(sBLOCKING_HIGHLIGHT, &nGUARD_HIGHLIGHT);
-	ReadFromRegistry(sTHROW_PROTECTION_HIGHLIGHT, &nTHROW_PROTECTION_HIGHLIGHT);
-	ReadFromRegistry(sHIT_HIGHLIGHT, &nHIT_HIGHLIGHT);
-	ReadFromRegistry(sIDLE_HIGHLIGHT, &nIDLE_HIGHLIGHT);
-	ReadFromRegistry(sARMOR_HIGHLIGHT, &nARMOR_HIGHLIGHT);
-	ReadFromRegistry(sHIGHLIGHT, &nHIGHLIGHTS);
 
 	ReadFromRegistry(sP1_LIST_INPUT_X, &fP1_LIST_INPUT_X);
 	ReadFromRegistry(sP1_LIST_INPUT_Y, &fP1_LIST_INPUT_Y);
@@ -171,7 +170,8 @@ void initXSRegistryValues()
 void initSharedValues()
 {
 	*(byte*)(adMBAABase + adXS_frameData) = nFRAME_DATA;
-	*(byte*)(adMBAABase + adXS_showFreezeInputs) = nSHOW_FREEZE_AND_INPUTS;
+	*(byte*)(adMBAABase + adXS_showHitstopAndFreeze) = nSHOW_HITSTOP_AND_FREEZE;
+	*(byte*)(adMBAABase + adXS_showInputs) = nSHOW_INPUTS;
 	*(byte*)(adMBAABase + adXS_showCancel) = nSHOW_CANCEL_WINDOWS;
 }
 
@@ -1819,7 +1819,7 @@ void SetRN(uint32_t nRN)
 	}
 }
 
-//Handle all extended training gameplay effects
+//Handle extended training gameplay effects
 bool bDoReversal = false;
 int nReversalDelayFramesLeft = 0;
 bool bHoldButtons = false;
@@ -1827,7 +1827,7 @@ bool bHoldShield = false;
 bool bDidShield = false;
 int nSaveShieldRevIndex = 0;
 
-void HandleReversals() {
+void HandleReversalsPage() {
 	if ((nREVERSAL_TYPE == 0 && !bDoReversal) || pActiveP2->doTrainingAction != 1) return;
 	if (pdP2Data->inactionableFrames == 0) {
 		bHoldButtons = false;
@@ -1935,7 +1935,7 @@ void HandleReversals() {
 bool bDoBurst = true;
 bool bDoBunker = true;
 
-void HandleMeters() {
+void HandleTrainingPage() {
 	if (nPENALTY_RESET == 1) {
 		doFastReversePenalty();
 	}
@@ -1989,7 +1989,7 @@ void HandleMeters() {
 	}
 }
 
-void HandleCharResources() {
+void HandleCharacterPage() {
 	switch (pActiveP1->charID) {
 	case 0: //sion
 		if (nSION_BULLETS == 0 && pActiveP1->animationDataPtr->stateData->canMove) {
@@ -2051,9 +2051,9 @@ void HandleExtendedTrainingEffects() {
 	isP1Controlled = pP1->doTrainingAction == 0;
 	pPlayer = isP1Controlled ? pActiveP1 : pActiveP2;
 	pDummy = isP1Controlled ? pActiveP2 : pActiveP1;
-	HandleReversals();			//page 1
-	HandleMeters();				//page 2
-	HandleCharResources();		//page 5
+	HandleReversalsPage();			//page 1
+	HandleTrainingPage();				//page 2
+	HandleCharacterPage();		//page 5
 }
 
 void __stdcall legacyPauseCallback(DWORD dwMilliseconds)
@@ -2553,6 +2553,7 @@ void frameDoneCallback()
 	if (oToggleHighlightsHotkey.keyDown())
 	{
 		nHIGHLIGHTS = !nHIGHLIGHTS;
+		SetRegistryValue(sHIGHLIGHTS, nHIGHLIGHTS);
 		nDrawTextTimer = TEXT_TIMER;
 		if (nHIGHLIGHTS)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HIGHLIGHTS ON");
@@ -4893,20 +4894,28 @@ void ExtendedMenuInputChecking() {
 	case eXS_PAGES::HIGHLIGHTS:
 	{
 		switch ((eHIGHLIGHTS)curMenuInfo->selectedElement) {
+		case eHIGHLIGHTS::HIGHLIGHTS:
+			SetRegistryValue(sHIGHLIGHTS, curElement->selectedItem);
+			break;
 		case eHIGHLIGHTS::GUARD:
 			HighlightSwitch(curElement->selectedItem, arrBlockingHighlightSetting);
+			SetRegistryValue(sBLOCKING_HIGHLIGHT, curElement->selectedItem);
 			break;
 		case eHIGHLIGHTS::HIT:
 			HighlightSwitch(curElement->selectedItem, arrHitHighlightSetting);
+			SetRegistryValue(sHIT_HIGHLIGHT, curElement->selectedItem);
 			break;
 		case eHIGHLIGHTS::ARMOR:
 			HighlightSwitch(curElement->selectedItem, arrArmorHighlightSetting);
+			SetRegistryValue(sARMOR_HIGHLIGHT, curElement->selectedItem);
 			break;
 		case eHIGHLIGHTS::THROW_PROTECTION:
 			HighlightSwitch(curElement->selectedItem, arrThrowProtectionHighlightSetting);
+			SetRegistryValue(sTHROW_PROTECTION_HIGHLIGHT, curElement->selectedItem);
 			break;
 		case eHIGHLIGHTS::IDLE:
 			HighlightSwitch(curElement->selectedItem, arrIdleHighlightSetting);
+			SetRegistryValue(sIDLE_HIGHLIGHT, curElement->selectedItem);
 			break;
 		case eHIGHLIGHTS::DEFAULT:
 			if (bAPos) DefaultP3(curMenuInfo);
@@ -5009,15 +5018,12 @@ void ExtendedMenuInputChecking() {
 	case eXS_PAGES::HITBOXES:
 	{
 		switch ((eHITBOXES)curMenuInfo->selectedElement) {
-		//case eHITBOXES::HITBOX_STYLE:
-		//	*(byte*)(adMBAABase + adXS_hitboxStyle) = curElement->selectedItem;
-		//	break;
-		//case eHITBOXES::COLOR_BLIND_MODE:
-		//	*(byte*)(adMBAABase + adXS_colorblind) = curElement->selectedItem;
-		//	break;
-		//case eHITBOXES::ORIGIN_STYLE:
-		//	*(byte*)(adMBAABase + adXS_originStyle) = curElement->selectedItem;
-		//	break;
+		case eHITBOXES::HITBOX_STYLE:
+			SetRegistryValue(sHITBOX_STYLE, curElement->selectedItem);
+			break;
+		case eHITBOXES::COLOR_BLIND_MODE:
+			SetRegistryValue(sCOLOR_BLIND_MODE, curElement->selectedItem);
+			break;
 		case eHITBOXES::DEFAULT:
 			if (bAPos) DefaultP6(curMenuInfo);
 			break;
@@ -5084,12 +5090,29 @@ void ExtendedMenuInputChecking() {
 		switch ((eFRAME_DATA)curMenuInfo->selectedElement) {
 		case eFRAME_DATA::FRAME_DATA:
 			*(byte*)(adMBAABase + adXS_frameData) = curElement->selectedItem;
+			SetRegistryValue(sFRAME_DATA, curElement->selectedItem);
 			break;
-		case eFRAME_DATA::SHOW_FREEZE_AND_INPUTS:
-			*(byte*)(adMBAABase + adXS_showFreezeInputs) = curElement->selectedItem;
+		case eFRAME_DATA::SHOW_HITSTOP_AND_FREEZE:
+			*(byte*)(adMBAABase + adXS_showHitstopAndFreeze) = curElement->selectedItem;
+			SetRegistryValue(sDISPLAY_FREEZE, curElement->selectedItem);
+			if (curElement->selectedItem == 0) {
+				curMenuInfo->ElementList[(int)eFRAME_DATA::SHOW_INPUTS]->selectedItem = 0;
+				*(byte*)(adMBAABase + adXS_showInputs) = 0;
+				SetRegistryValue(sDISPLAY_INPUTS, 0);
+			}
+			break;
+		case eFRAME_DATA::SHOW_INPUTS:
+			*(byte*)(adMBAABase + adXS_showInputs) = curElement->selectedItem;
+			SetRegistryValue(sDISPLAY_INPUTS, curElement->selectedItem);
+			if (curElement->selectedItem == 1) {
+				curMenuInfo->ElementList[(int)eFRAME_DATA::SHOW_HITSTOP_AND_FREEZE]->selectedItem = 1;
+				*(byte*)(adMBAABase + adXS_showHitstopAndFreeze) = 1;
+				SetRegistryValue(sDISPLAY_FREEZE, 1);
+			}
 			break;
 		case eFRAME_DATA::SHOW_CANCEL_WINDOWS:
 			*(byte*)(adMBAABase + adXS_showCancel) = curElement->selectedItem;
+			SetRegistryValue(sDISPLAY_CANCELS, curElement->selectedItem);
 			break;
 		case eFRAME_DATA::SCROLL_DISPLAY:
 		{
@@ -6342,7 +6365,7 @@ void threadFunc()
 	initForceDummyGuard();
 
 	initHotkeys();
-	initXSRegistryValues();
+	initRegistryValues();
 	initSharedValues();
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);

@@ -993,8 +993,8 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player &P1, Player &P2, Player &P3, P
 void FrameDisplay(HANDLE hMBAAHandle)
 {
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameData), &bAdvancedFrameData, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_showFreezeInputs), &bDisplayFreeze, 1, 0);
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_showFreezeInputs), &bDisplayInputs, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_showHitstopAndFreeze), &bDisplayFreeze, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_showInputs), &bDisplayInputs, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_showCancel), &bDisplayCancels, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameScroll), &nBarScrolling, 2, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_colorGuide), &bPrintColorGuide, 1, 0);

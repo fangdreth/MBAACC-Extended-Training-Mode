@@ -32,42 +32,6 @@
 HANDLE hMBAAHandle = 0x0;
 DWORD dwBaseAddress = 0;
 
-uint8_t nFreezeKey = nDefaultFreezeKey;
-uint8_t nFrameStepKey = nDefaultFrameStepKey;
-uint8_t nHitboxDisplayKey = nDefaultHitboxDisplayKey;
-uint8_t nFrameDataDisplayKey = nDefaultFrameDataDisplayKey;
-uint8_t nHighlightsOnKey = nDefaultHighlightsOnKey;
-uint8_t nSaveStateKey = nDefaultSaveStateKey;
-uint8_t nPrevSaveSlotKey = nDefaultPrevSaveSlotKey;
-uint8_t nNextSaveSlotKey = nDefaultNextSaveSlotKey;
-uint8_t nFrameBarScrollLeftKey = nDefaultFrameBarScrollLeftKey;
-uint8_t nFrameBarScrollRightKey = nDefaultFrameBarScrollRightKey;
-uint8_t nRNGIncKey = nDefaultRNGIncKey;
-uint8_t nRNGDecKey = nDefaultRNGIncKey;
-uint8_t nReversalKey = nDefaultReversalKey;
-uint8_t nSlowKey = nDefaultSlowKey;
-uint8_t nNextFrameKey = nDefaultNextFrameKey;
-uint8_t nPrevFrameKey = nDefaultPrevFrameKey;
-uint8_t nResetKey = nDefaultResetKey;
-
-bool bFreezeKeySet = false;
-bool bFrameStepKeySet = false;
-bool bHitboxDisplayKeySet = false;
-bool bFrameDataDisplayKeySet = false;
-bool bHighlightsOnKeySet = false;
-bool bSaveStateKeySet = false;
-bool bPrevSaveSlotKeySet = false;
-bool bNextSaveSlotKeySet = false;
-bool bFrameBarScrollLeftKeySet = false;
-bool bFrameBarScrollRightKeySet = false;
-bool bRNGIncKeySet = false;
-bool bRNGDecKeySet = false;
-bool bReversalKeySet = false;
-bool bSlowKeySet = false;
-bool bNextFrameKeySet = false;
-bool bPrevFrameKeySet = false;
-bool bResetKeySet = false;
-
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;
     std::string result;
@@ -222,82 +186,6 @@ void WriteCharacterMemory(HANDLE hMBAAHandle, DWORD address, void* pData, uint8_
 void ReadCharacterMemory(HANDLE hMBAAHandle, DWORD address, void* pData, uint8_t nSize, uint8_t nCharacter)
 {
     ReadProcessMemory(hMBAAHandle, (LPVOID)(address + nCharacter * 0xAFC), pData, nSize, 0);
-}
-
-void SetHealth(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue, uint8_t nP1Controlled, uint8_t nP2Controlled)
-{
-    /*WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Health), &nValue, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RedHealth), &nValue, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Health), &nValue, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RedHealth), &nValue, 4, 0);*/
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1Health, &nValue, 4, nP1Controlled);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1Health, &nValue, 4, nP2Controlled);
-
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1RedHealth, &nValue, 4, nP1Controlled);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1RedHealth, &nValue, 4, nP2Controlled);
-}
-
-void SetMeter(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue, int nP1Moon, int nP2Moon, uint8_t nP1Controlled, uint8_t nP2Controlled)
-{
-    int nWriteBuffer = nP1Moon == 2 ? min(nValue, 20000) : nValue;
-    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Meter), &nWriteBuffer, 4, 0);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1Meter, &nWriteBuffer, 4, nP1Controlled);
-
-    nWriteBuffer = nP2Moon == 2 ? min(nValue, 20000) : nValue;
-    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Meter), &nWriteBuffer, 4, 0);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1Meter, &nWriteBuffer, 4, nP2Controlled);
-}
-
-void SetGuard(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nLevel, int nP1Moon, int nP2Moon, uint8_t nP1Controlled, uint8_t nP2Controlled)
-{
-    int nWriteBuffer = vGuardLevelLookupTable[nP1Moon * 5 + nLevel];
-    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1GuardAmount), &nWriteBuffer, 4, 0);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1GuardAmount, &nWriteBuffer, 4, nP1Controlled);
-    
-    nWriteBuffer = vGuardLevelLookupTable[nP2Moon * 5 + nLevel];
-    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2GuardAmount), &nWriteBuffer, 4, 0);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1GuardAmount, &nWriteBuffer, 4, nP2Controlled);
-}
-
-void SetSionBullets(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
-{
-    int nWriteBuffer = 13 - min(nValue, MAX_BULLETS);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1SionBullets), &nWriteBuffer, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2SionBullets), &nWriteBuffer, 4, 0);
-}
-
-void SetRoaVisibleCharge(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nVisible)
-{
-    nVisible = nVisible == -2 ? 9 : max(nVisible, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RoaVisibleCharge), &nVisible, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RoaVisibleCharge), &nVisible, 4, 0);
-}
-
-void SetRoaHiddenCharge(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nHidden)
-{
-    // for some reason it matters the order that hidden is first
-    nHidden = nHidden == -2 ? 9 : max(nHidden, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RoaHiddenCharge), &nHidden, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RoaHiddenCharge), &nHidden, 4, 0);
-}
-
-void SetFMaidsHearts(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nHearts)
-{
-    if (nHearts == -1)
-        nHearts = 0;
-    else
-        nHearts = 5 - min(nHearts, MAX_HEARTS);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1FMaidsHisuiLeadHearts), &nHearts, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2FMaidsHisuiLeadHearts), &nHearts, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1FMaidsKohaLeadHearts), &nHearts, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2FMaidsKohaLeadHearts), &nHearts, 4, 0);
-}
-
-void SetRyougiKnife(HANDLE hMBAAHandle, DWORD dwBaseAddress, bool bInfinite)
-{
-    int nTemp = bInfinite ? 0 : 1;
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RyougiKnife), &nTemp, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RyougiKnife), &nTemp, 4, 0);
 }
 
 void SetP1X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)

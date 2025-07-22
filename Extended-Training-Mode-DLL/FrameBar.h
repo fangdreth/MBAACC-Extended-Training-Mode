@@ -518,8 +518,8 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 
 void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 {
-	bDisplayFreeze = nSHOW_FREEZE_AND_INPUTS;
-	bDisplayInputs = nSHOW_FREEZE_AND_INPUTS;
+	bDisplayFreeze = nSHOW_HITSTOP_AND_FREEZE;
+	bDisplayInputs = nSHOW_INPUTS; //currently unused, may add input display to framebar at some point
 	nBarScrolling = nTRUE_SCROLL_DISPLAY;
 
 	Main1 = &P1;
