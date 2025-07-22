@@ -48,6 +48,41 @@ enum eHitboxStyle { HITBOX_DRAW_ALL = 0, HITBOX_BLEND = 1 };
 enum eBackground { BG_NORMAL, BG_WHITE, BG_GRAY, BG_BLACK, BG_RED, BG_YELLOW, BG_GREEN, BG_BLUE, BG_PURPLE };
 enum eSlow { SLOW_THREE_FOURTHS = 3, SLOW_ONE_HALF = 2, SLOW_ONE_FOURTH = 1 };
 enum eInputDisplay { INPUT_OFF = 0, INPUT_LIST = 1, INPUT_ARCADE = 2, INPUT_BOTH = 3 };
+enum class eCharID {
+	SION,
+	ARC,
+	CIEL,
+	AKIHA,
+	MAIDS,
+	HISUI,
+	KOHAKU,
+	TOHNO,
+	MIYAKO,
+	WARA,
+	NERO,
+	VSION,
+	WARC,
+	VAKIHA,
+	MECH,
+	NANAYA,
+	GAKIHA,
+	SATSUKI,
+	LEN,
+	PCIEL,
+	NECO,
+	AOKO = 22,
+	WLEN,
+	NAC = 25,
+	GCHAOS = 27,
+	KOUMA,
+	SEI,
+	RIES,
+	ROA,
+	HERMES,
+	RYOUGI,
+	NECOMECH,
+	KOHAMECH
+};
 
 const std::string VERSION = "v2.1";
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
@@ -182,23 +217,6 @@ const int BAR_INTERVAL = 20; //Number of frames of only blanks before the bar st
 const int MAX_SAVES = 3;
 const int SAVE_RESET_TIME = 60; //Frames of holding Save State Hotkey before clearing that save
 const char TEXT_TIMER = 40; //How many frames Save State popup text stays on screen
-
-const int SAVE_NUM_EFFECTS = 100;
-const int SAVE_EFFECTS_SIZE = 0x33c;
-const int SAVE_STOP_SITUATION_SIZE = 1632;
-const int SAVE_ATTACK_DISPLAY_INFO_SIZE = 52;
-const int SAVE_ATTACK_DISPLAY_INFO_2_SIZE = 1004;
-const int SAVE_PLAYER_1_SIZE = 492;
-const int SAVE_PLAYER_2_SIZE = 284;
-const int SAVE_RNG_SIZE = 228;
-
-const int ADJ_SAVE_EFFECTS_SIZE = SAVE_EFFECTS_SIZE / 4;
-const int ADJ_SAVE_STOP_SITUATION_SIZE = SAVE_STOP_SITUATION_SIZE /4;
-const int ADJ_SAVE_ATTACK_DISPLAY_INFO_SIZE = SAVE_ATTACK_DISPLAY_INFO_SIZE / 4;
-const int ADJ_SAVE_ATTACK_DISPLAY_INFO_2_SIZE = SAVE_ATTACK_DISPLAY_INFO_2_SIZE / 4;
-const int ADJ_SAVE_PLAYER_1_SIZE = SAVE_PLAYER_1_SIZE / 4;
-const int ADJ_SAVE_PLAYER_2_SIZE = SAVE_PLAYER_2_SIZE / 4;
-const int ADJ_SAVE_RNG_SIZE = SAVE_RNG_SIZE / 4;
 
 const char REVERSE_INPUT_MAP[10] = { 0, 3, 2, 1, 6, 0, 4, 9, 8, 7 };
 const char CH_MAP[3] = { ' ', 'H', 'L' };
@@ -434,95 +452,95 @@ const ADDRESS adFont2 = 0x55DAA0;
 // let's include comments here so we know how big everything is
 // to make it easier to add more.
 const ADDRESS adShareBase = 0x381000;
-const ADDRESS adSharedSaveSlot =					adShareBase + 0x0;	// 1 byte
-const ADDRESS adSharedDoSave =						adShareBase + 0x1;	// 1 byte
-const ADDRESS adSharedDoClearSave =					adShareBase + 0x2;	// 1 byte
-const ADDRESS adSharedDisplayFreeze =				adShareBase + 0x3;	// 1 byte
-const ADDRESS adSharedDisplayInputs =				adShareBase + 0x4;	// 1 byte
-const ADDRESS adSharedScrolling =					adShareBase + 0x5;	// 2 bytes
-const ADDRESS adSharedHoveringScroll =				adShareBase + 0x7;	// 1 byte
-const ADDRESS adSharedFreezeOverride =				adShareBase + 0x8;	// 1 byte
-const ADDRESS adSharedRNGMode =						adShareBase + 0x9;	// 1 byte
-const ADDRESS adSharedRNGRate =						adShareBase + 0xA;	// 1 byte
-const ADDRESS adSharedRNGCustomSeed =				adShareBase + 0xB;	// 4 bytes
-const ADDRESS adSharedRNGCustomRN =					adShareBase + 0xF;	// 4 bytes
-const ADDRESS adSharedHitboxStyle =					adShareBase + 0x14;	// 1 byte
-const ADDRESS adSharedColorBlindMode =				adShareBase + 0x15;	// 1 byte
-const ADDRESS adSharedDisplayHitboxes =				adShareBase + 0x16;	// 1 byte
-const ADDRESS adSharedExtendOrigins =				adShareBase + 0x17; // 1 byte
-const ADDRESS adSharedReversalKeyHeld =				adShareBase + 0x18; // 1 byte
-const ADDRESS adSharedBackgroundStyle =				adShareBase + 0x19; // 1 byte
-const ADDRESS adSharedDisableHUD =					adShareBase + 0x1A; // 1 byte
-const ADDRESS adSharedDrawGround =					adShareBase + 0x1B; // 1 byte
-const ADDRESS adSharedDisableShadow =				adShareBase + 0x1C; // 1 byte
-const ADDRESS adSharedFastReversePenalty =			adShareBase + 0x1D; // 1 byte
-const ADDRESS adSharedFrameDataDisplay =			adShareBase + 0x1E; // 1 byte
-const ADDRESS adSharedSlowSpeed =					adShareBase + 0x1F; // 1 byte
-const ADDRESS adSharedFrameBarY =					adShareBase + 0x20; // 4 bytes
-const ADDRESS adSharedShowStats =					adShareBase + 0x24; // 1 byte
-const ADDRESS adSharedP1InputDisplay =				adShareBase + 0x25; // 1 byte
-const ADDRESS adSharedP2InputDisplay =				adShareBase + 0x26; // 1 byte
-const ADDRESS adSharedHighlight =					adShareBase + 0x27; // 1 byte
-const ADDRESS adSharedTimer =						adShareBase + 0x28; // 4 bytes
-const ADDRESS adSharedColorGuide =					adShareBase + 0x2C; // 1 byte
-const ADDRESS adSharedHideFPS =						adShareBase + 0x2D; // 1 byte
-const ADDRESS adSharedHideBuildInfo =				adShareBase + 0x2E; // 1 byte
+//const ADDRESS adSharedSaveSlot =					adShareBase + 0x0;	// 1 byte
+//const ADDRESS adSharedDoSave =						adShareBase + 0x1;	// 1 byte
+//const ADDRESS adSharedDoClearSave =					adShareBase + 0x2;	// 1 byte
+//const ADDRESS adSharedDisplayFreeze =				adShareBase + 0x3;	// 1 byte
+//const ADDRESS adSharedDisplayInputs =				adShareBase + 0x4;	// 1 byte
+//const ADDRESS adSharedScrolling =					adShareBase + 0x5;	// 2 bytes
+//const ADDRESS adSharedHoveringScroll =				adShareBase + 0x7;	// 1 byte
+const ADDRESS adSharedFreezeOverride =				adShareBase + 0x8;	// 1 byte - this one still used during text boxes it looks like, @fang
+//const ADDRESS adSharedRNGMode =						adShareBase + 0x9;	// 1 byte
+//const ADDRESS adSharedRNGRate =						adShareBase + 0xA;	// 1 byte
+//const ADDRESS adSharedRNGCustomSeed =				adShareBase + 0xB;	// 4 bytes
+//const ADDRESS adSharedRNGCustomRN =					adShareBase + 0xF;	// 4 bytes
+//const ADDRESS adSharedHitboxStyle =					adShareBase + 0x14;	// 1 byte
+//const ADDRESS adSharedColorBlindMode =				adShareBase + 0x15;	// 1 byte
+//const ADDRESS adSharedDisplayHitboxes =				adShareBase + 0x16;	// 1 byte
+//const ADDRESS adSharedExtendOrigins =				adShareBase + 0x17; // 1 byte
+//const ADDRESS adSharedReversalKeyHeld =				adShareBase + 0x18; // 1 byte
+//const ADDRESS adSharedBackgroundStyle =				adShareBase + 0x19; // 1 byte
+//const ADDRESS adSharedDisableHUD =					adShareBase + 0x1A; // 1 byte
+//const ADDRESS adSharedDrawGround =					adShareBase + 0x1B; // 1 byte
+//const ADDRESS adSharedDisableShadow =				adShareBase + 0x1C; // 1 byte
+//const ADDRESS adSharedFastReversePenalty =			adShareBase + 0x1D; // 1 byte
+//const ADDRESS adSharedFrameDataDisplay =			adShareBase + 0x1E; // 1 byte
+//const ADDRESS adSharedSlowSpeed =					adShareBase + 0x1F; // 1 byte
+//const ADDRESS adSharedFrameBarY =					adShareBase + 0x20; // 4 bytes
+//const ADDRESS adSharedShowStats =					adShareBase + 0x24; // 1 byte
+//const ADDRESS adSharedP1InputDisplay =				adShareBase + 0x25; // 1 byte
+//const ADDRESS adSharedP2InputDisplay =				adShareBase + 0x26; // 1 byte
+//const ADDRESS adSharedHighlight =					adShareBase + 0x27; // 1 byte
+const ADDRESS adSharedTimer =						adShareBase + 0x28; // 4 bytes - can maybe be removed, idr why it was needed
+//const ADDRESS adSharedColorGuide =					adShareBase + 0x2C; // 1 byte
+//const ADDRESS adSharedHideFPS =						adShareBase + 0x2D; // 1 byte
+//const ADDRESS adSharedHideBuildInfo =				adShareBase + 0x2E; // 1 byte
 
-const ADDRESS adSharedFreezeKey =					adShareBase + 0x30;	// 1 byte
-const ADDRESS adSharedFrameStepKey =				adShareBase + 0x31;	// 1 byte
-const ADDRESS adSharedHitboxesDisplayKey =			adShareBase + 0x32;	// 1 byte
-const ADDRESS adSharedFrameDataDisplayKey =			adShareBase + 0x33;	// 1 byte
-const ADDRESS adSharedHighlightsOnKey =				adShareBase + 0x34;	// 1 byte
-const ADDRESS adSharedSaveStateKey =				adShareBase + 0x35;	// 1 byte
-const ADDRESS adSharedPrevSaveSlotKey =				adShareBase + 0x36;	// 1 byte
-const ADDRESS adSharedNextSaveSlotKey =				adShareBase + 0x37;	// 1 byte
-const ADDRESS adSharedFrameBarScrollLeftKey =		adShareBase + 0x38;	// 1 byte
-const ADDRESS adSharedFrameBarScrollRightKey =		adShareBase + 0x39;	// 1 byte
-const ADDRESS adSharedRNGIncKey =					adShareBase + 0x3A; // 1 byte
-const ADDRESS adSharedRNGDecKey =					adShareBase + 0x3B; // 1 byte
-const ADDRESS adSharedReversalKey =					adShareBase + 0x3C; // 1 byte
-const ADDRESS adSharedSlowKey =						adShareBase + 0x3D; // 1 byte
-const ADDRESS adSharedNextFrameKey =				adShareBase + 0x3E; // 1 byte
-const ADDRESS adSharedPrevFrameKey =			adShareBase + 0x3F; // 1 byte
-const ADDRESS adSharedResetKey =					adShareBase + 0x40; // 1 byte
+//const ADDRESS adSharedFreezeKey =					adShareBase + 0x30;	// 1 byte
+//const ADDRESS adSharedFrameStepKey =				adShareBase + 0x31;	// 1 byte
+//const ADDRESS adSharedHitboxesDisplayKey =			adShareBase + 0x32;	// 1 byte
+//const ADDRESS adSharedFrameDataDisplayKey =			adShareBase + 0x33;	// 1 byte
+//const ADDRESS adSharedHighlightsOnKey =				adShareBase + 0x34;	// 1 byte
+//const ADDRESS adSharedSaveStateKey =				adShareBase + 0x35;	// 1 byte
+//const ADDRESS adSharedPrevSaveSlotKey =				adShareBase + 0x36;	// 1 byte
+//const ADDRESS adSharedNextSaveSlotKey =				adShareBase + 0x37;	// 1 byte
+//const ADDRESS adSharedFrameBarScrollLeftKey =		adShareBase + 0x38;	// 1 byte
+//const ADDRESS adSharedFrameBarScrollRightKey =		adShareBase + 0x39;	// 1 byte
+//const ADDRESS adSharedRNGIncKey =					adShareBase + 0x3A; // 1 byte
+//const ADDRESS adSharedRNGDecKey =					adShareBase + 0x3B; // 1 byte
+//const ADDRESS adSharedReversalKey =					adShareBase + 0x3C; // 1 byte
+//const ADDRESS adSharedSlowKey =						adShareBase + 0x3D; // 1 byte
+//const ADDRESS adSharedNextFrameKey =				adShareBase + 0x3E; // 1 byte
+//const ADDRESS adSharedPrevFrameKey =			adShareBase + 0x3F; // 1 byte
+//const ADDRESS adSharedResetKey =					adShareBase + 0x40; // 1 byte
 
-const ADDRESS adSharedIdleHighlight =				adShareBase + 0x50; // 4 bytes
-const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x54; // 4 bytes
-const ADDRESS adSharedHitHighlight =				adShareBase + 0x58; // 4 bytes
-const ADDRESS adSharedArmorHighlight =				adShareBase + 0x5C; // 4 bytes
-const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x60; // 4 bytes
+//const ADDRESS adSharedIdleHighlight =				adShareBase + 0x50; // 4 bytes
+//const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x54; // 4 bytes
+//const ADDRESS adSharedHitHighlight =				adShareBase + 0x58; // 4 bytes
+//const ADDRESS adSharedArmorHighlight =				adShareBase + 0x5C; // 4 bytes
+//const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x60; // 4 bytes
 
-const ADDRESS adSharedMessageBuffer =				adShareBase + 0x100; // 32 bytes
-const ADDRESS adSharedOnExtendedSettings =			adShareBase + 0x120; // 1 byte
-const ADDRESS adSharedMainInfoText =				adShareBase + 0x121; // 64 bytes
-const ADDRESS adSharedSubInfoText =					adShareBase + 0x161; // 64 bytes
+//const ADDRESS adSharedMessageBuffer =				adShareBase + 0x100; // 32 bytes
+//const ADDRESS adSharedOnExtendedSettings =			adShareBase + 0x120; // 1 byte
+//const ADDRESS adSharedMainInfoText =				adShareBase + 0x121; // 64 bytes
+//const ADDRESS adSharedSubInfoText =					adShareBase + 0x161; // 64 bytes
 
-const ADDRESS adSharedP1FancyInputX =				adShareBase + 0x200; // 4 bytes (float)
-const ADDRESS adSharedP1FancyInputY =				adShareBase + 0x204; // 4 bytes (float)
-const ADDRESS adSharedP2FancyInputX =				adShareBase + 0x208; // 4 bytes (float)
-const ADDRESS adSharedP2FancyInputY =				adShareBase + 0x20C; // 4 bytes (float)
-const ADDRESS adSharedP1ListInputX =				adShareBase + 0x210; // 4 bytes (float)
-const ADDRESS adSharedP1ListInputY =				adShareBase + 0x214; // 4 bytes (float)
-const ADDRESS adSharedP2ListInputX =				adShareBase + 0x218; // 4 bytes (float)
-const ADDRESS adSharedP2ListInputY =				adShareBase + 0x21C; // 4 bytes (float)
+//const ADDRESS adSharedP1FancyInputX =				adShareBase + 0x200; // 4 bytes (float)
+//const ADDRESS adSharedP1FancyInputY =				adShareBase + 0x204; // 4 bytes (float)
+//const ADDRESS adSharedP2FancyInputX =				adShareBase + 0x208; // 4 bytes (float)
+//const ADDRESS adSharedP2FancyInputY =				adShareBase + 0x20C; // 4 bytes (float)
+//const ADDRESS adSharedP1ListInputX =				adShareBase + 0x210; // 4 bytes (float)
+//const ADDRESS adSharedP1ListInputY =				adShareBase + 0x214; // 4 bytes (float)
+//const ADDRESS adSharedP2ListInputX =				adShareBase + 0x218; // 4 bytes (float)
+//const ADDRESS adSharedP2ListInputY =				adShareBase + 0x21C; // 4 bytes (float)
 
-const ADDRESS adSharedP1Guts =						adShareBase + 0x250; // 16 bytes (float[4])
-const ADDRESS adSharedP2Guts =						adShareBase + 0x260; // 16 bytes (float[4])
+//const ADDRESS adSharedP1Guts =						adShareBase + 0x250; // 16 bytes (float[4])
+//const ADDRESS adSharedP2Guts =						adShareBase + 0x260; // 16 bytes (float[4])
 
-const ADDRESS adHealthRestore =						adShareBase + 0x300; //4 bytes
+//const ADDRESS adHealthRestore =						adShareBase + 0x300; //4 bytes
 
 //extended menu storage
-const ADDRESS adXS_hitboxStyle =						adShareBase + 0x500; //1 byte
-const ADDRESS adXS_colorblind =							adShareBase + 0x501; //1 byte
-const ADDRESS adXS_originStyle =						adShareBase + 0x502; //1 byte
-const ADDRESS adXS_frameData =							adShareBase + 0x503; //1 byte
-const ADDRESS adXS_showFreezeInputs =					adShareBase + 0x504; //1 byte
+//const ADDRESS adXS_hitboxStyle =						adShareBase + 0x500; //1 byte
+//const ADDRESS adXS_colorblind =							adShareBase + 0x501; //1 byte
+//const ADDRESS adXS_originStyle =						adShareBase + 0x502; //1 byte
+const ADDRESS adXS_frameData =							adShareBase + 0x503; //1 byte - remaining are used to communicate with console framebar
+const ADDRESS adXS_showFreezeInputs =					adShareBase + 0x504; //1 byte - pending split into freeze and inputs
 const ADDRESS adXS_showCancel =							adShareBase + 0x505; //1 byte
 const ADDRESS adXS_frameScroll =						adShareBase + 0x506; //2 bytes
 const ADDRESS adXS_colorGuide =							adShareBase + 0x508; //1 byte
-const ADDRESS adXS_P1InputDisplay =						adShareBase + 0x509; //1 byte
-const ADDRESS adXS_P2InputDisplay =						adShareBase + 0x50A; //1 byte
-const ADDRESS adXS_hideExtras =							adShareBase + 0x50B; //1 byte
+//const ADDRESS adXS_P1InputDisplay =						adShareBase + 0x509; //1 byte
+//const ADDRESS adXS_P2InputDisplay =						adShareBase + 0x50A; //1 byte
+//const ADDRESS adXS_hideExtras =							adShareBase + 0x50B; //1 byte
 
 // integer representations of raw float values
 // not interested in messing with converting them when a table is good enough
@@ -998,65 +1016,6 @@ private:
 	static XINPUT_STATE* xState;
 	static XINPUT_STATE* prevxState;
 };
-
-static bool GetOpenSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wstring* pwsFileName)
-{
-	const uint8_t nOne = 1;
-	const uint8_t nZero = 0;
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nOne, 1, 0);
-
-	char pcFileName[MAX_PATH];
-
-	OPENFILENAME ofn;
-	ZeroMemory(pcFileName, sizeof(pcFileName));
-	ZeroMemory(&ofn, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = NULL;
-	ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
-	ofn.lpstrFile = (LPWSTR)pcFileName;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrTitle = (LPWSTR)L"Open Save State";
-	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
-
-	bool bResult = GetOpenFileNameW(&ofn);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
-	if (bResult)
-	{
-		*pwsFileName = std::wstring(ofn.lpstrFile);
-		return true;
-	}
-	return false;
-}
-
-static bool GetSaveSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wstring* pwsFileName)
-{
-	const uint8_t nOne = 1;
-	const uint8_t nZero = 0;
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nOne, 1, 0);
-
-	char pcFileName[MAX_PATH];
-
-	OPENFILENAME ofn;
-	ZeroMemory(pcFileName, sizeof(pcFileName));
-	ZeroMemory(&ofn, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = NULL;
-	ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
-	ofn.lpstrFile = (LPWSTR)pcFileName;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.lpstrTitle = (LPWSTR)L"Create Save State";
-	ofn.lpstrDefExt = L"sav";
-	ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT;
-
-	bool bResult = GetSaveFileNameW(&ofn);
-	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
-	if (bResult)
-	{
-		*pwsFileName = std::wstring(ofn.lpstrFile);
-		return true;
-	}
-	return false;
-}
 
 static void CreateRegistryKey()
 {

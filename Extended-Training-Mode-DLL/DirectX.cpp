@@ -2084,7 +2084,7 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 void HitboxBatchDrawNoBlend(const BoxObjects* b) {
 
 	const DWORD* arrColors;
-	if (*(uint8_t*)(dwBaseAddress + adXS_colorblind))
+	if (nCOLOR_BLIND_MODE)
 		arrColors = arrColorBlindColors;
 	else
 		arrColors = arrNormalColors;
@@ -2133,7 +2133,7 @@ void HitboxBatchDrawNoBlend(const BoxObjects* b) {
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
 
-		if (*(uint8_t*)(dwBaseAddress + adXS_originStyle)) {
+		if (nORIGIN_STYLE) {
 			//_drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
 			//_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
 			LineDraw(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
@@ -2171,7 +2171,7 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 	// i could have avoided a div stage, but ugh, another time
 
 	const DWORD* arrColors;
-	if (*(uint8_t*)(dwBaseAddress + adXS_colorblind))
+	if (nCOLOR_BLIND_MODE)
 		arrColors = arrColorBlindColors;
 	else
 		arrColors = arrNormalColors;
@@ -2214,7 +2214,7 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
-		if (*(uint8_t*)(dwBaseAddress + adXS_originStyle)) {
+		if (nORIGIN_STYLE) {
 			//LineDrawBlend(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
 			//LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
 			LineDrawBlend(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
@@ -2265,7 +2265,7 @@ void _drawHitboxes() {
 	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
 
-	if (*(uint8_t*)(dwBaseAddress + adXS_hitboxStyle)) {
+	if (nHITBOX_STYLE) {
 		for (int i = 0; i < boxObjectList.size(); i++) {
 			HitboxBatchDrawBlend(boxObjectList[i]);
 			delete boxObjectList[i];
@@ -3018,7 +3018,7 @@ void logFPS() {
 
 	FreqTimerData timerData = fpsTimer.getData();
 
-	if (*(char*)(adMBAABase + adXS_hideExtras)) return;
+	if (nHIDE_EXTRAS) return;
 
 	if (logVerboseFps) {
 		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "avg:%6.2lf min:%6.2lf max:%6.2lf stdev:%6.2lf maintainfps: %s", timerData.mean, timerData.min, timerData.max, timerData.stdev, fpsMethod);

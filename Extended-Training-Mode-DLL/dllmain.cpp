@@ -99,6 +99,26 @@ std::array<uint8_t, 4> arrHitHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrArmorHighlightSetting({ 255, 255, 255, 0 });
 std::array<uint8_t, 4> arrThrowProtectionHighlightSetting({ 255, 255, 255, 0 });
 
+PlayerData* pP1 = (PlayerData*)(adMBAABase + adP1Base);
+PlayerData* pP2 = (PlayerData*)(adMBAABase + adP2Base);
+PlayerData* pP3 = (PlayerData*)(adMBAABase + adP3Base);
+PlayerData* pP4 = (PlayerData*)(adMBAABase + adP4Base);
+
+PlayerData* pPlayerArray[4] = { pP1, pP2, pP3, pP4 };
+
+PlayerAuxData* pdP1Data = (PlayerAuxData*)(adMBAABase + adP1DataBase);
+PlayerAuxData* pdP2Data = (PlayerAuxData*)(adMBAABase + adP2DataBase);
+PlayerAuxData* pdP3Data = (PlayerAuxData*)(adMBAABase + adP3DataBase);
+PlayerAuxData* pdP4Data = (PlayerAuxData*)(adMBAABase + adP4DataBase);
+
+PlayerAuxData* pdPlayerDataArray[4] = { pdP1Data , pdP2Data , pdP3Data , pdP4Data };
+
+PlayerData* pActiveP1 = pP1;
+PlayerData* pActiveP2 = pP2;
+bool isP1Controlled = 1;
+PlayerData* pPlayer = pP1;
+PlayerData* pDummy = pP2;
+
 void initHotkeys()
 {
 	oFreezeHotkey.setKeyFromRegistry(sFREEZE_KEY_REG);
@@ -1434,7 +1454,8 @@ void drawStats()
 
 	static char buffer[256];
 	
-	int nP1RedHealth = *(int*)(dwBaseAddress + dwP1RedHealth);
+	int nP1Health = pP1->health; // this works on maids too
+	int nP1RedHealth = pP1->redHealth;
 	int nP1RedHealthX;
 	if (nP1RedHealth >= 9200)
 		nP1RedHealthX = 60;
@@ -1446,11 +1467,12 @@ void drawStats()
 	//drawTextWithBorder(nP1RedHealthX - nResetOffset, 40, 10, 10, buffer);
 	TextDraw(nP1RedHealthX - nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
-	snprintf(buffer, 256, "%5d", *(int*)(dwBaseAddress + dwP1Health));
+	snprintf(buffer, 256, "%5d", nP1Health);
 	//drawTextWithBorder(230 - nResetOffset, 40, 10, 10, buffer);
 	TextDraw(235 - nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
-	int nP2RedHealth = *(int*)(dwBaseAddress + dwP2RedHealth);
+	int nP2Health = pP2->health; // this works on maids too
+	int nP2RedHealth = pP2->redHealth;
 	int nP2RedHealthX;
 	if (nP2RedHealth >= 9200)
 		nP2RedHealthX = 535;
@@ -1462,22 +1484,22 @@ void drawStats()
 	//drawTextWithBorder(nP2RedHealthX + nResetOffset, 40, 10, 10, buffer);
 	TextDraw(5 + nP2RedHealthX + nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
-	snprintf(buffer, 256, "%5d", *(int*)(dwBaseAddress + dwP2Health));
+	snprintf(buffer, 256, "%5d", nP2Health);
 	//drawTextWithBorder(366 + nResetOffset, 40, 10, 10, buffer);
 	TextDraw(365 + nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
 
-	snprintf(buffer, 256, "%5.0f", *(float*)(dwBaseAddress + dwP1GuardAmount));
+	snprintf(buffer, 256, "%5.0f", pP1->guardGauge);
 	//drawTextWithBorder(234 - nResetOffset, 58, 8, 9, buffer);
 	TextDraw(242 - nResetOffset, 58, 8, 0xFFFFFFFF, buffer);
-	snprintf(buffer, 256, "%1.3f", *(float*)(dwBaseAddress + dwP1GuardQuality));
+	snprintf(buffer, 256, "%1.3f", pP1->quardQuality);
 	//drawTextWithBorder(244 - nResetOffset, 67, 6, 9, buffer);
 	TextDraw(249 - nResetOffset, 67, 6, 0xFFFFFFFF, buffer);
 
-	snprintf(buffer, 256, "%5.0f", *(float*)(dwBaseAddress + dwP2GuardAmount));
+	snprintf(buffer, 256, "%5.0f", pP2->guardGauge);
 	//drawTextWithBorder(368 + nResetOffset, 58, 8, 9, buffer);
 	TextDraw(361 + nResetOffset, 58, 8, 0xFFFFFFFF, buffer);
-	snprintf(buffer, 256, "%1.3f", *(float*)(dwBaseAddress + dwP2GuardQuality));
+	snprintf(buffer, 256, "%1.3f", pP2->quardQuality);
 	//drawTextWithBorder(369 + nResetOffset, 67, 6, 9, buffer);
 	TextDraw(367 + nResetOffset, 67, 6, 0xFFFFFFFF, buffer);
 
@@ -1487,54 +1509,54 @@ void drawStats()
 	drawRect(167.0f - nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
 	drawRect(220.0f - nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
 
-	uint32_t nP1Health = *(uint32_t*)(dwBaseAddress + dwP1Health); // this works on maids too
+	float* P1Guts = pP1->cmdFileDataPtr->guts;
 	if (nP1Health >= 8550)
 	{
 		drawRect(61.0f - nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(61.0f - nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(62 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x0)).c_str());
+		TextDraw(62 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[0]).c_str());
 	}
 	else
 	{
 		drawRect(61.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);			// on vertical bar
 		drawRect(61.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(62 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x0)).c_str());
+		TextDraw(62 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[0]).c_str());
 	}
 	if (8550 > nP1Health && nP1Health >= 5700)
 	{
 		drawRect(114.0f - nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(114.0f - nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(115 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x4)).c_str());
+		TextDraw(115 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[1]).c_str());
 	}
 	else
 	{
 		drawRect(114.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(114.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(115 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x4)).c_str());
+		TextDraw(115 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[1]).c_str());
 	}
 	if (5700 > nP1Health && nP1Health >= 2850)
 	{
 		drawRect(167.0f - nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(167.0f - nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(168 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x8)).c_str());
+		TextDraw(168 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[2]).c_str());
 	}
 	else
 	{
 		drawRect(167.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(167.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(168 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0x8)).c_str());
+		TextDraw(168 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[2]).c_str());
 	}
 	if (2850 > nP1Health)
 	{
 		drawRect(220.0f - nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(220.0f - nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(221 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0xC)).c_str());
+		TextDraw(221 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[3]).c_str());
 	}
 	else
 	{
 		drawRect(220.0f - nResetOffset, 23.0f, 1.0f, 14.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(220.0f - nResetOffset, 23.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(221 - nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP1Guts + 0xC)).c_str());
+		TextDraw(221 - nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[3]).c_str());
 	}
 
 
@@ -1543,54 +1565,54 @@ void drawStats()
 	drawRect(472.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
 	drawRect(419.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
 
-	uint32_t nP2Health = *(uint32_t*)(dwBaseAddress + dwP2Health); // this works on maids too
+	float* P2Guts = pP2->cmdFileDataPtr->guts;
 	if (nP2Health >= 8550)
 	{
 		drawRect(579.0f + nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(540.0f + nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(541 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x0)).c_str());
+		TextDraw(541 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[0]).c_str());
 	}
 	else
 	{
 		drawRect(579.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);			// on vertical bar
 		drawRect(555.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(556 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x0)).c_str());
+		TextDraw(556 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[0]).c_str());
 	}
 	if (8550 > nP2Health && nP2Health >= 5700)
 	{
 		drawRect(525.0f + nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(486.0f + nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(486 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x4)).c_str());
+		TextDraw(486 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[1]).c_str());
 	}
 	else
 	{
 		drawRect(525.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(501.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(501 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x4)).c_str());
+		TextDraw(501 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[1]).c_str());
 	}
 	if (5700 > nP2Health && nP2Health >= 2850)
 	{
 		drawRect(472.0f + nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(434.0f + nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(432 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x8)).c_str());
+		TextDraw(432 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[2]).c_str());
 	}
 	else
 	{
 		drawRect(472.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(449.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(448 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0x8)).c_str());
+		TextDraw(448 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[2]).c_str());
 	}
 	if (2850 > nP2Health)
 	{
 		drawRect(419.0f + nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(380.0f + nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(380 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0xC)).c_str());
+		TextDraw(380 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[3]).c_str());
 	}
 	else
 	{
 		drawRect(419.0f + nResetOffset, 23.0f, 1.0f, 14.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(395.0f + nResetOffset, 23.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(395 + nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", *(float*)(dwBaseAddress + adSharedP2Guts + 0xC)).c_str());
+		TextDraw(395 + nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[3]).c_str());
 	}
 }
 
@@ -1778,7 +1800,7 @@ void SetSeed(uint32_t nSeed)
 
 void SetRN(uint32_t nRN)
 {
-	if (nRNGRate == RNG_EVERY_FRAME)
+	if (nRATE == RNG_EVERY_FRAME)
 	{
 		*(uint32_t*)(dwBaseAddress + adRNGIndex) = 55;
 		uint8_t nOffset = 1;
@@ -1787,7 +1809,7 @@ void SetRN(uint32_t nRN)
 			*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * nOffset++) = (nOffset < 22) ? nRN : 0;
 		} while (nOffset < 56);
 	}
-	else if (nRNGRate == RNG_EVERY_RESET)
+	else if (nRATE == RNG_EVERY_RESET)
 	{
 		SetSeed(nRN);
 		*(uint32_t*)(dwBaseAddress + adRNGIndex) = 55;
@@ -1798,27 +1820,6 @@ void SetRN(uint32_t nRN)
 }
 
 //Handle all extended training gameplay effects
-
-PlayerData* pP1 = (PlayerData*)(adMBAABase + adP1Base);
-PlayerData* pP2 = (PlayerData*)(adMBAABase + adP2Base);
-PlayerData* pP3 = (PlayerData*)(adMBAABase + adP3Base);
-PlayerData* pP4 = (PlayerData*)(adMBAABase + adP4Base);
-
-PlayerData* pPlayerArray[4] = { pP1, pP2, pP3, pP4 };
-
-PlayerAuxData* pdP1Data = (PlayerAuxData*)(adMBAABase + adP1DataBase);
-PlayerAuxData* pdP2Data = (PlayerAuxData*)(adMBAABase + adP2DataBase);
-PlayerAuxData* pdP3Data = (PlayerAuxData*)(adMBAABase + adP3DataBase);
-PlayerAuxData* pdP4Data = (PlayerAuxData*)(adMBAABase + adP4DataBase);
-
-PlayerAuxData* pdPlayerDataArray[4] = {pdP1Data , pdP2Data , pdP3Data , pdP4Data};
-
-PlayerData* pActiveP1 = pP1;
-PlayerData* pActiveP2 = pP2;
-bool isP1Controlled = 1;
-PlayerData* pPlayer = pP1;
-PlayerData* pDummy = pP2;
-
 bool bDoReversal = false;
 int nReversalDelayFramesLeft = 0;
 bool bHoldButtons = false;
@@ -2359,7 +2360,7 @@ void frameDoneCallback()
 	drawFancyMenu();
 	dragManager.handleDrag();
 
-	shouldDrawBackground = *(uint8_t*)(dwBaseAddress + adSharedBackgroundStyle) == BG_NORMAL;
+	shouldDrawBackground = true;
 	shouldDrawHud = !nHIDE_HUD;
 	shouldDrawGroundLine = nDRAW_GROUND;
 	shouldDrawShadow = !nHIDE_SHADOWS;
@@ -2445,16 +2446,6 @@ void frameDoneCallback()
 
 		//HookDirectX();
 	}
-
-	if (*(bool*)(dwBaseAddress + adSharedDisplayHitboxes))
-		bHitboxesDisplay = true;
-	else
-		bHitboxesDisplay = false;
-
-	if (*(bool*)(dwBaseAddress + adSharedHighlight))
-		bHighlightsOn = true;
-	else
-		bHighlightsOn = false;
 	
 	//drawTextWithBorder(300, 300, 36, 48	, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
 
@@ -2543,7 +2534,7 @@ void frameDoneCallback()
 	{
 		nDISPLAY_HITBOXES = !nDISPLAY_HITBOXES;
 		nDrawTextTimer = TEXT_TIMER;
-		if (bHitboxesDisplay)
+		if (nDISPLAY_HITBOXES)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HITBOXES ON");
 		else
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HITBOXES OFF");
@@ -2563,7 +2554,7 @@ void frameDoneCallback()
 	{
 		nHIGHLIGHTS = !nHIGHLIGHTS;
 		nDrawTextTimer = TEXT_TIMER;
-		if (bHighlightsOn)
+		if (nHIGHLIGHTS)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HIGHLIGHTS ON");
 		else
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HIGHLIGHTS OFF");
@@ -2625,29 +2616,21 @@ void frameDoneCallback()
 		oIncrementRNGHotkey.nHeldKeyCounter++;
 	else
 		oIncrementRNGHotkey.nHeldKeyCounter = 0;
-	if (nRNGMode != 0 && oIncrementRNGHotkey.keyDown() || oIncrementRNGHotkey.nHeldKeyCounter >= 20)
+	if (nCUSTOM_RNG != 0 && oIncrementRNGHotkey.keyDown() || oIncrementRNGHotkey.nHeldKeyCounter >= 20)
 	{
 		char pcTemp[19];
 		nDrawTextTimer = TEXT_TIMER;
-		if (nRNGMode == RNG_SEED)
+		if (nCUSTOM_RNG == RNG_SEED)
 		{
-			nCustomSeed = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomSeed);
-			nCustomSeed++;
-			*(uint32_t*)(dwBaseAddress + adSharedRNGCustomSeed) = nCustomSeed;
-			std::string sSeedString = std::format("{:x}", nCustomSeed);
-			std::transform(sSeedString.begin(), sSeedString.end(), sSeedString.begin(), ::toupper);
-			strcpy_s(pcTemp, std::string("0x" + sSeedString).c_str());
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "SEED: %s", pcTemp);
+			nTRUE_SEED++;
+			if (nTRUE_SEED > 0xffff) nTRUE_SEED = 0;
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RNG SEED: %i", nTRUE_SEED);
 		}
-		else if (nRNGMode == RNG_RN)
+		else if (nCUSTOM_RNG == RNG_RN)
 		{
-			nCustomRN = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomRN);
-			nCustomRN++;
-			*(uint32_t*)(dwBaseAddress + adSharedRNGCustomRN) = nCustomRN;
-			std::string sRNString = std::format("{:x}", nCustomRN);
-			std::transform(sRNString.begin(), sRNString.end(), sRNString.begin(), ::toupper);
-			strcpy_s(pcTemp, std::string("0x" + sRNString).c_str());
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RN: %s", pcTemp);
+			nTRUE_SEED++;
+			if (nTRUE_SEED > 0xffff) nTRUE_SEED = 0;
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RNG VALUE: %i", nTRUE_SEED);
 		}
 	}
 
@@ -2655,41 +2638,22 @@ void frameDoneCallback()
 		oDecrementRNGHotkey.nHeldKeyCounter++;
 	else
 		oDecrementRNGHotkey.nHeldKeyCounter = 0;
-	if (nRNGMode != 0 && oDecrementRNGHotkey.keyDown() || oDecrementRNGHotkey.nHeldKeyCounter >= 20)
+	if (nCUSTOM_RNG != 0 && oDecrementRNGHotkey.keyDown() || oDecrementRNGHotkey.nHeldKeyCounter >= 20)
 	{
 		char pcTemp[19];
 		nDrawTextTimer = TEXT_TIMER;
-		if (nRNGMode == RNG_SEED)
+		if (nCUSTOM_RNG == RNG_SEED)
 		{
-			nCustomSeed = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomSeed);
-			nCustomSeed = max(0, nCustomSeed - 1);
-			*(uint32_t*)(dwBaseAddress + adSharedRNGCustomSeed) = nCustomSeed;
-			std::string sSeedString = std::format("{:x}", nCustomSeed);
-			std::transform(sSeedString.begin(), sSeedString.end(), sSeedString.begin(), ::toupper);
-			strcpy_s(pcTemp, std::string("0x" + sSeedString).c_str());
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "SEED: %s", pcTemp);
+			nTRUE_SEED--;
+			if (nTRUE_SEED < 0) nTRUE_SEED = 0xffff;
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RNG SEED: %i", nTRUE_SEED);
 		}
-		else if (nRNGMode == RNG_RN)
+		else if (nCUSTOM_RNG == RNG_RN)
 		{
-			nCustomRN = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomRN);
-			nCustomRN = max(0, nCustomRN - 1);
-			*(uint32_t*)(dwBaseAddress + adSharedRNGCustomRN) = nCustomRN;
-			std::string sRNString = std::format("{:x}", nCustomRN);
-			std::transform(sRNString.begin(), sRNString.end(), sRNString.begin(), ::toupper);
-			strcpy_s(pcTemp, std::string("0x" + sRNString).c_str());
-			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RN: %s", pcTemp);
+			nTRUE_SEED--;
+			if (nTRUE_SEED < 0) nTRUE_SEED = 0xffff;
+			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RNG VALUE: %i", nTRUE_SEED);
 		}
-	}
-
-	char pcMessageBuffer[32];
-	ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcMessageBuffer, 32, 0);
-	if (strcmp(pcMessageBuffer, "") != 0)
-	{
-		char pcEmpty[32] = "";
-		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedMessageBuffer), &pcEmpty, 32, 0);
-
-		nDrawTextTimer = TEXT_TIMER;
-		snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", pcMessageBuffer);
 	}
 
 	if (nDrawTextTimer != 0 && safeWrite())
@@ -2796,27 +2760,12 @@ void frameDoneCallback()
 	*(int*)(adMBAABase + adSharedTimer) = *(int*)(adMBAABase + adTrueFrameCount);
 
 	int nFrameTimer = *(int*)(dwBaseAddress + dwFrameTimer);
-	nRNGMode = *(uint8_t*)(dwBaseAddress + adSharedRNGMode);
-	nRNGRate = *(uint8_t*)(dwBaseAddress + adSharedRNGRate);
-	nCustomSeed = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomSeed);
-	nCustomRN = *(uint32_t*)(dwBaseAddress + adSharedRNGCustomRN);
 	if (nRATE == RNG_EVERY_FRAME)
 	{
 		if (nCUSTOM_RNG == RNG_SEED)
-			SetSeed(nSEED);
+			SetSeed(nTRUE_SEED);
 		if (nCUSTOM_RNG == RNG_RN)
-			SetRN(nSEED);
-	}
-
-	if (*(bool*)(dwBaseAddress + adSharedOnExtendedSettings))
-	{
-		char pcMainInfoText[64];
-		char pcSubInfoText[64];
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedMainInfoText), &pcMainInfoText, 64, 0);
-		ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSubInfoText), &pcSubInfoText, 64, 0);
-		RectDraw(-0.5f, 382.5f, 640.5f, 70.0f, 0xFF101010);
-		TextDraw(47.5f, 393.5f, 16.0f, 0xFFFFFFFF, pcMainInfoText);
-		TextDraw(66.5f, 420.5f, 16.0f, 0xFFFFFFFF, pcSubInfoText);
+			SetRN(nTRUE_SEED);
 	}
 }
 
@@ -5060,15 +5009,15 @@ void ExtendedMenuInputChecking() {
 	case eXS_PAGES::HITBOXES:
 	{
 		switch ((eHITBOXES)curMenuInfo->selectedElement) {
-		case eHITBOXES::HITBOX_STYLE:
-			*(byte*)(adMBAABase + adXS_hitboxStyle) = curElement->selectedItem;
-			break;
-		case eHITBOXES::COLOR_BLIND_MODE:
-			*(byte*)(adMBAABase + adXS_colorblind) = curElement->selectedItem;
-			break;
-		case eHITBOXES::ORIGIN_STYLE:
-			*(byte*)(adMBAABase + adXS_originStyle) = curElement->selectedItem;
-			break;
+		//case eHITBOXES::HITBOX_STYLE:
+		//	*(byte*)(adMBAABase + adXS_hitboxStyle) = curElement->selectedItem;
+		//	break;
+		//case eHITBOXES::COLOR_BLIND_MODE:
+		//	*(byte*)(adMBAABase + adXS_colorblind) = curElement->selectedItem;
+		//	break;
+		//case eHITBOXES::ORIGIN_STYLE:
+		//	*(byte*)(adMBAABase + adXS_originStyle) = curElement->selectedItem;
+		//	break;
 		case eHITBOXES::DEFAULT:
 			if (bAPos) DefaultP6(curMenuInfo);
 			break;
@@ -5173,6 +5122,9 @@ void ExtendedMenuInputChecking() {
 	case eXS_PAGES::RNG:
 	{
 		switch ((eRNG)curMenuInfo->selectedElement) {
+		case eRNG::CUSTOM_RNG:
+			nCUSTOM_RNG = curElement->selectedItem;
+			break;
 		case eRNG::SEED:
 			LoopingScrolling(curElement, nTRUE_SEED, 0, 0x0000ffff, 1, 24);
 			break;
@@ -5186,6 +5138,9 @@ void ExtendedMenuInputChecking() {
 
 		snprintf(labelBuf, 31, "%i", nTRUE_SEED);
 		curMenuInfo->ElementList[(int)eRNG::SEED]->SetCurItemLabel(labelBuf);
+
+		curMenuInfo->ElementList[(int)eRNG::RATE]->textOpacity = nCUSTOM_RNG ? 1.0f : 0.5f;
+		curMenuInfo->ElementList[(int)eRNG::SEED]->textOpacity = nCUSTOM_RNG ? 1.0f : 0.5f;
 
 		break;
 	}
