@@ -220,26 +220,26 @@ void DefaultP2(MenuInfo* menuInfo) {
 
 //Page 3
 int nHIGHLIGHTS = defHIGHLIGHTS;
-int nGUARD = defGUARD;
-int nHIT = defHIT;
-int nARMOR = defARMOR;
-int nTHROW_PROTECTION = defTHROW_PROT;
-int nIDLE = defIDLE;
+int nGUARD_HIGHLIGHT = defGUARD_HIGHLIGHT;
+int nHIT_HIGHLIGHT = defHIT_HIGHLIGHT;
+int nARMOR_HIGHLIGHT = defARMOR_HIGHLIGHT;
+int nTHROW_PROTECTION_HIGHLIGHT = defTHROW_PROT_HIGHLIGHT;
+int nIDLE_HIGHLIGHT = defIDLE_HIGHLIGHT;
 
 void DefaultP3(MenuInfo* menuInfo) {
 	nHIGHLIGHTS = defHIGHLIGHTS;
-	nGUARD = defGUARD;
-	nHIT = defHIT;
-	nARMOR = defARMOR;
-	nTHROW_PROTECTION = defTHROW_PROT;
-	nIDLE = defIDLE;
+	nGUARD_HIGHLIGHT = defGUARD_HIGHLIGHT;
+	nHIT_HIGHLIGHT = defHIT_HIGHLIGHT;
+	nARMOR_HIGHLIGHT = defARMOR_HIGHLIGHT;
+	nTHROW_PROTECTION_HIGHLIGHT = defTHROW_PROT_HIGHLIGHT;
+	nIDLE_HIGHLIGHT = defIDLE_HIGHLIGHT;
 
 	menuInfo->ElementList[(int)eHIGHLIGHTS::HIGHLIGHTS]->selectedItem = defHIGHLIGHTS;
-	menuInfo->ElementList[(int)eHIGHLIGHTS::GUARD]->selectedItem = defGUARD;
-	menuInfo->ElementList[(int)eHIGHLIGHTS::HIT]->selectedItem = defHIT;
-	menuInfo->ElementList[(int)eHIGHLIGHTS::ARMOR]->selectedItem = defARMOR;
-	menuInfo->ElementList[(int)eHIGHLIGHTS::THROW_PROTECTION]->selectedItem = defTHROW_PROT;
-	menuInfo->ElementList[(int)eHIGHLIGHTS::IDLE]->selectedItem = defIDLE;
+	menuInfo->ElementList[(int)eHIGHLIGHTS::GUARD]->selectedItem = defGUARD_HIGHLIGHT;
+	menuInfo->ElementList[(int)eHIGHLIGHTS::HIT]->selectedItem = defHIT_HIGHLIGHT;
+	menuInfo->ElementList[(int)eHIGHLIGHTS::ARMOR]->selectedItem = defARMOR_HIGHLIGHT;
+	menuInfo->ElementList[(int)eHIGHLIGHTS::THROW_PROTECTION]->selectedItem = defTHROW_PROT_HIGHLIGHT;
+	menuInfo->ElementList[(int)eHIGHLIGHTS::IDLE]->selectedItem = defIDLE_HIGHLIGHT;
 }
 
 //Page 4
@@ -382,6 +382,16 @@ int nP2_INPUT_DISPLAY = defP2_INPUT;
 int nFRAME_DISPLAY_Y = defFRAME_DISPLAY_Y;
 
 int nTRUE_FRAME_DISPLAY_Y = defTRUE_FRAME_DISPLAY_Y;
+
+extern float fP1_LIST_INPUT_X = defP1_LIST_INPUT_X;
+extern float fP1_LIST_INPUT_Y = defP1_LIST_INPUT_Y;
+extern float fP2_LIST_INPUT_X = defP2_LIST_INPUT_X;
+extern float fP2_LIST_INPUT_Y = defP2_LIST_INPUT_Y;
+
+extern float fP1_ARCADE_INPUT_X = defP1_ARCADE_INPUT_X;
+extern float fP1_ARCADE_INPUT_Y = defP1_ARCADE_INPUT_Y;
+extern float fP2_ARCADE_INPUT_X = defP2_ARCADE_INPUT_X;
+extern float fP2_ARCADE_INPUT_Y = defP2_ARCADE_INPUT_Y;
 
 void DefaultP10(MenuInfo* menuInfo) {
 	nSHOW_STATS = defSHOW_STATS;

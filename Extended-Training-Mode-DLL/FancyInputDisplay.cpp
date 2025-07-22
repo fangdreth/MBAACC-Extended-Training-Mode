@@ -2,6 +2,7 @@
 #include "DirectX.h"
 #include "FancyInputDisplay.h"
 #include "TrainingMenu.h"
+#include "..\Common\Common.h"
 
 InputColumn::InputColumn(unsigned addr_, float xVal_, float yVal_, int inputMaxLen_) {
 		addr = addr_;
@@ -593,8 +594,10 @@ void InputDisplay::draw() {
 
 // -----
 
-InputColumn P1InputBar(0x00555134 + 0x02E7, *(float*)(dwBaseAddress + adSharedP1ListInputX), *(float*)(dwBaseAddress + adSharedP1ListInputY), 24);
-InputColumn P2InputBar(0x00555C30 + 0x02E7, *(float*)(dwBaseAddress + adSharedP2ListInputX), *(float*)(dwBaseAddress + adSharedP2ListInputY), 24);
+//InputColumn P1InputBar(0x00555134 + 0x02E7, *(float*)(dwBaseAddress + adSharedP1ListInputX), *(float*)(dwBaseAddress + adSharedP1ListInputY), 24);
+//InputColumn P2InputBar(0x00555C30 + 0x02E7, *(float*)(dwBaseAddress + adSharedP2ListInputX), *(float*)(dwBaseAddress + adSharedP2ListInputY), 24);
+InputColumn P1InputBar(0x00555134 + 0x02E7, fP1_LIST_INPUT_X, fP1_LIST_INPUT_Y, 24);
+InputColumn P2InputBar(0x00555C30 + 0x02E7, fP2_LIST_INPUT_X, fP2_LIST_INPUT_Y, 24);
 //InputColumn P1InputBar(0x00555134 + 0x02E7, 10.0f, 124.0f, 24);
 //InputColumn P2InputBar(0x00555C30 + 0x02E7, 545.0f, 124.0f, 24);
 
@@ -615,14 +618,16 @@ void dualInputDisplay() {
 		P1InputBar.draw();
 		if (!lHeld)
 		{
-			*(float*)(dwBaseAddress + adSharedP1ListInputX) = *P1InputBar.dragInfo.dragPointX;
-			*(float*)(dwBaseAddress + adSharedP1ListInputY) = *P1InputBar.dragInfo.dragPointY;
+			fP1_LIST_INPUT_X = *P1InputBar.dragInfo.dragPointX;
+			fP1_LIST_INPUT_Y = *P1InputBar.dragInfo.dragPointY;
+			SetRegistryValue(sP1_LIST_INPUT_X, fP1_LIST_INPUT_X);
+			SetRegistryValue(sP1_LIST_INPUT_Y, fP1_LIST_INPUT_Y);
 		}
 	}
 	else
 	{
-		*P1InputBar.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP1ListInputX);
-		*P1InputBar.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP1ListInputY);
+		*P1InputBar.dragInfo.dragPointX = fP1_LIST_INPUT_X;
+		*P1InputBar.dragInfo.dragPointY = fP1_LIST_INPUT_Y;
 	}
 
 	//P2InputBar.dragInfo.enable = *(BYTE*)(0x00400000 + adXS_P2InputDisplay) == INPUT_LIST || *(BYTE*)(0x00400000 + adXS_P2InputDisplay) == INPUT_BOTH;
@@ -632,14 +637,16 @@ void dualInputDisplay() {
 		P2InputBar.draw();
 		if (!lHeld)
 		{
-			*(float*)(dwBaseAddress + adSharedP2ListInputX) = *P2InputBar.dragInfo.dragPointX;
-			*(float*)(dwBaseAddress + adSharedP2ListInputY) = *P2InputBar.dragInfo.dragPointY;
+			fP2_LIST_INPUT_X = *P2InputBar.dragInfo.dragPointX;
+			fP2_LIST_INPUT_Y = *P2InputBar.dragInfo.dragPointY;
+			SetRegistryValue(sP2_LIST_INPUT_X, fP2_LIST_INPUT_X);
+			SetRegistryValue(sP2_LIST_INPUT_Y, fP2_LIST_INPUT_Y);
 		}
 	}
 	else
 	{
-		*P2InputBar.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP2ListInputX);
-		*P2InputBar.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP2ListInputY);
+		*P2InputBar.dragInfo.dragPointX = fP2_LIST_INPUT_X;
+		*P2InputBar.dragInfo.dragPointY = fP2_LIST_INPUT_Y;
 	}
 
 }
@@ -651,8 +658,10 @@ void dualInputDisplayReset() {
 
 int InputDisplay::hasDrag = 0;
 
-InputDisplay P1InputDisplay(*(float*)(dwBaseAddress + adSharedP1FancyInputX), *(float*)(dwBaseAddress + adSharedP1FancyInputY), 25.0f, 25.0f * 1.2f, &P1InputBar, 1);
-InputDisplay P2InputDisplay(*(float*)(dwBaseAddress + adSharedP2FancyInputX), *(float*)(dwBaseAddress + adSharedP2FancyInputY), 25.0f, 25.0f * 1.2f, &P2InputBar, 2);
+//InputDisplay P1InputDisplay(*(float*)(dwBaseAddress + adSharedP1FancyInputX), *(float*)(dwBaseAddress + adSharedP1FancyInputY), 25.0f, 25.0f * 1.2f, &P1InputBar, 1);
+//InputDisplay P2InputDisplay(*(float*)(dwBaseAddress + adSharedP2FancyInputX), *(float*)(dwBaseAddress + adSharedP2FancyInputY), 25.0f, 25.0f * 1.2f, &P2InputBar, 2);
+InputDisplay P1InputDisplay(fP1_ARCADE_INPUT_X, fP1_ARCADE_INPUT_Y, 25.0f, 25.0f * 1.2f, &P1InputBar, 1);
+InputDisplay P2InputDisplay(fP2_ARCADE_INPUT_X, fP2_ARCADE_INPUT_Y, 25.0f, 25.0f * 1.2f, &P2InputBar, 2);
 
 void drawFancyInputDisplay() {
 
@@ -667,15 +676,17 @@ void drawFancyInputDisplay() {
 		if (!lHeld)
 		{
 			// the exe needs to know the location so it can persist it in the registry
-			*(float*)(dwBaseAddress + adSharedP1FancyInputX) = *P1InputDisplay.dragInfo.dragPointX;
-			*(float*)(dwBaseAddress + adSharedP1FancyInputY) = *P1InputDisplay.dragInfo.dragPointY;
+			fP1_ARCADE_INPUT_X = *P1InputDisplay.dragInfo.dragPointX;
+			fP1_ARCADE_INPUT_Y = *P1InputDisplay.dragInfo.dragPointY;
+			SetRegistryValue(sP1_ARCADE_INPUT_X, fP1_ARCADE_INPUT_X);
+			SetRegistryValue(sP1_ARCADE_INPUT_Y, fP1_ARCADE_INPUT_Y);
 		}
 	}
 	else
 	{
 		// the exe might change the location while paused, so read it back while paused
-		*P1InputDisplay.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP1FancyInputX);
-		*P1InputDisplay.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP1FancyInputY);
+		*P1InputDisplay.dragInfo.dragPointX = fP1_ARCADE_INPUT_X;
+		*P1InputDisplay.dragInfo.dragPointY = fP1_ARCADE_INPUT_Y;
 	}
 
 	//P2InputDisplay.dragInfo.enable = *(BYTE*)(0x00400000 + adXS_P2InputDisplay) == INPUT_ARCADE || *(BYTE*)(0x00400000 + adXS_P2InputDisplay) == INPUT_BOTH;
@@ -685,14 +696,16 @@ void drawFancyInputDisplay() {
 		P2InputDisplay.draw();
 		if (!lHeld)
 		{
-			*(float*)(dwBaseAddress + adSharedP2FancyInputX) = *P2InputDisplay.dragInfo.dragPointX;
-			*(float*)(dwBaseAddress + adSharedP2FancyInputY) = *P2InputDisplay.dragInfo.dragPointY;
+			fP2_ARCADE_INPUT_X = *P2InputDisplay.dragInfo.dragPointX;
+			fP2_ARCADE_INPUT_Y = *P2InputDisplay.dragInfo.dragPointY;
+			SetRegistryValue(sP2_ARCADE_INPUT_X, fP2_ARCADE_INPUT_X);
+			SetRegistryValue(sP2_ARCADE_INPUT_Y, fP2_ARCADE_INPUT_Y);
 		}
 	}
 	else
 	{
-		*P2InputDisplay.dragInfo.dragPointX = *(float*)(dwBaseAddress + adSharedP2FancyInputX);
-		*P2InputDisplay.dragInfo.dragPointY = *(float*)(dwBaseAddress + adSharedP2FancyInputY);
+		*P2InputDisplay.dragInfo.dragPointX = fP2_ARCADE_INPUT_X;
+		*P2InputDisplay.dragInfo.dragPointY = fP2_ARCADE_INPUT_Y;
 	}
 }
 

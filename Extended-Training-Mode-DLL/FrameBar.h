@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include "DebugInfo.h"
+#include "TrainingMenu.h"
 
 const ADDRESS adBaseAddress = (0x00400000);
 
@@ -171,7 +172,9 @@ void ResetBars()
 			P.nNumBar[i][1] = 0;
 		}
 	}
-	WriteProcessMemory(GetCurrentProcess(), (LPVOID)(adBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+	nTRUE_SCROLL_DISPLAY = 0;
+	nSCROLL_DISPLAY = 2;
+	*(short*)(adMBAABase + adXS_frameScroll) = -nTRUE_SCROLL_DISPLAY;
 }
 
 void UpdateBars(Player& P, Player& Assist)
@@ -515,9 +518,9 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 
 void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 {
-	bDisplayFreeze = *(char*)(adMBAABase + adSharedDisplayFreeze);
-	bDisplayInputs = *(char*)(adMBAABase + adSharedDisplayInputs);
-	nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+	bDisplayFreeze = nSHOW_FREEZE_AND_INPUTS;
+	bDisplayInputs = nSHOW_FREEZE_AND_INPUTS;
+	nBarScrolling = nTRUE_SCROLL_DISPLAY;
 
 	Main1 = &P1;
 	Main2 = &P2;

@@ -119,6 +119,42 @@ void initHotkeys()
 
 }
 
+void initXSRegistryValues()
+{
+	ReadFromRegistry(sFRAME_DATA, &nFRAME_DATA);
+	ReadFromRegistry(sDISPLAY_FREEZE, &nSHOW_FREEZE_AND_INPUTS);
+	ReadFromRegistry(sDISPLAY_INPUTS, &nSHOW_FREEZE_AND_INPUTS);
+	ReadFromRegistry(sDISPLAY_CANCELS, &nSHOW_CANCEL_WINDOWS);
+	ReadFromRegistry(sHITBOX_STYLE, &nHITBOX_STYLE);
+	ReadFromRegistry(sFRAME_BAR_Y, &nTRUE_FRAME_DISPLAY_Y);
+	if (nTRUE_FRAME_DISPLAY_Y == 440) nFRAME_DISPLAY_Y = 2;
+	else if (nTRUE_FRAME_DISPLAY_Y == 0) nFRAME_DISPLAY_Y = 0;
+	ReadFromRegistry(sP1_INPUT_DISPLAY, &nP1_INPUT_DISPLAY);
+	ReadFromRegistry(sP2_INPUT_DISPLAY, &nP2_INPUT_DISPLAY);
+	ReadFromRegistry(sBLOCKING_HIGHLIGHT, &nGUARD_HIGHLIGHT);
+	ReadFromRegistry(sTHROW_PROTECTION_HIGHLIGHT, &nTHROW_PROTECTION_HIGHLIGHT);
+	ReadFromRegistry(sHIT_HIGHLIGHT, &nHIT_HIGHLIGHT);
+	ReadFromRegistry(sIDLE_HIGHLIGHT, &nIDLE_HIGHLIGHT);
+	ReadFromRegistry(sARMOR_HIGHLIGHT, &nARMOR_HIGHLIGHT);
+	ReadFromRegistry(sHIGHLIGHT, &nHIGHLIGHTS);
+
+	ReadFromRegistry(sP1_LIST_INPUT_X, &fP1_LIST_INPUT_X);
+	ReadFromRegistry(sP1_LIST_INPUT_Y, &fP1_LIST_INPUT_Y);
+	ReadFromRegistry(sP2_LIST_INPUT_X, &fP2_LIST_INPUT_X);
+	ReadFromRegistry(sP2_LIST_INPUT_Y, &fP2_LIST_INPUT_Y);
+	ReadFromRegistry(sP1_ARCADE_INPUT_X, &fP1_ARCADE_INPUT_X);
+	ReadFromRegistry(sP1_ARCADE_INPUT_Y, &fP1_ARCADE_INPUT_Y);
+	ReadFromRegistry(sP2_ARCADE_INPUT_X, &fP2_ARCADE_INPUT_X);
+	ReadFromRegistry(sP2_ARCADE_INPUT_Y, &fP2_ARCADE_INPUT_Y);
+}
+
+void initSharedValues()
+{
+	*(byte*)(adMBAABase + adXS_frameData) = nFRAME_DATA;
+	*(byte*)(adMBAABase + adXS_showFreezeInputs) = nSHOW_FREEZE_AND_INPUTS;
+	*(byte*)(adMBAABase + adXS_showCancel) = nSHOW_CANCEL_WINDOWS;
+}
+
 bool __stdcall safeWrite()
 {
 	//BYTE PauseFlag = *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
@@ -1176,8 +1212,8 @@ void drawFrameBar(int frameBarY)
 
 	int nBarDrawCounter = 0;
 
-	nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
-	short sAdjustedScroll = min(min(nBarCounter - DISPLAY_RANGE, BAR_MEMORY_SIZE - DISPLAY_RANGE), nBarScrolling);
+	//nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
+	short sAdjustedScroll = min(min(nBarCounter - DISPLAY_RANGE, BAR_MEMORY_SIZE - DISPLAY_RANGE), -nTRUE_SCROLL_DISPLAY);
 
 	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - DISPLAY_RANGE - sAdjustedScroll;
 	int nForEnd = (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll;
@@ -2169,11 +2205,20 @@ void setFPSLimiter(bool b) {
 }
 
 int nVolTextTimer = 0;
-DWORD MBAA_Change_Volume = 0x00418030;
+const DWORD MBAA_Change_Volume = 0x00418030;
 void ChangeVolume() {
 	PUSH_ALL;
 	__asm {
 		call[MBAA_Change_Volume];
+	}
+	POP_ALL;
+}
+
+const DWORD MBAA_Save_Game_Settings = 0x00401540;
+void SaveGameSettings() {
+	PUSH_ALL;
+	__asm {
+		call[MBAA_Save_Game_Settings];
 	}
 	POP_ALL;
 }
@@ -2285,6 +2330,7 @@ void frameDoneCallback()
 		if (i > 19) i = 19;
 		*(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144) = i;
 		ChangeVolume();
+		SaveGameSettings();
 		nVolTextTimer = 20;
 	}
 
@@ -2295,6 +2341,7 @@ void frameDoneCallback()
 		if (i > 19) i = 21;
 		*(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144) = i;
 		ChangeVolume();
+		SaveGameSettings();
 		nVolTextTimer = 20;
 	}
 
@@ -2417,9 +2464,7 @@ void frameDoneCallback()
 		{
 			char pcFreezeKey[256];
 			char pcName[19];
-			UINT scanCode = MapVirtualKeyA(*(uint8_t*)(dwBaseAddress + adSharedFreezeKey), MAPVK_VK_TO_VSC);
-			LONG lParamValue = (scanCode << 16);
-			GetKeyNameTextA(lParamValue, pcName, 19);
+			oFreezeHotkey.getKeyName(pcName);
 			snprintf(pcFreezeKey, sizeof(pcFreezeKey), "Freeze Key: %s", pcName);
 			TextDraw(100.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcFreezeKey);
 		}
@@ -2466,9 +2511,15 @@ void frameDoneCallback()
 		oFrameBarLeftHotkey.nHeldKeyCounter = 0;
 	if (oFrameBarLeftHotkey.keyDown() || oFrameBarLeftHotkey.nHeldKeyCounter >= 20)
 	{
-		nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
-		nBarScrolling++;
-		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+		nTRUE_SCROLL_DISPLAY--;
+		if (nTRUE_SCROLL_DISPLAY <= -400) {
+			nTRUE_SCROLL_DISPLAY = -400;
+			nSCROLL_DISPLAY = 0;
+		}
+		else {
+			nSCROLL_DISPLAY = 1;
+		}
+		*(short*)(adMBAABase + adXS_frameScroll) = -nTRUE_SCROLL_DISPLAY;
 	}
 
 	if (oFrameBarRightHotkey.keyHeld())
@@ -2477,14 +2528,20 @@ void frameDoneCallback()
 		oFrameBarRightHotkey.nHeldKeyCounter = 0;
 	if (oFrameBarRightHotkey.keyDown() || oFrameBarRightHotkey.nHeldKeyCounter >= 20)
 	{
-		nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
-		nBarScrolling--;
-		WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
+		nTRUE_SCROLL_DISPLAY++;
+		if (nTRUE_SCROLL_DISPLAY >= 0) {
+			nTRUE_SCROLL_DISPLAY = 0;
+			nSCROLL_DISPLAY = 2;
+		}
+		else {
+			nSCROLL_DISPLAY = 1;
+		}
+		*(short*)(adMBAABase + adXS_frameScroll) = -nTRUE_SCROLL_DISPLAY;
 	}
 
 	if (oToggleHitboxesHotkey.keyDown())
 	{
-		nDISPLAY_HITBOXES = ~nDISPLAY_HITBOXES;
+		nDISPLAY_HITBOXES = !nDISPLAY_HITBOXES;
 		nDrawTextTimer = TEXT_TIMER;
 		if (bHitboxesDisplay)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HITBOXES ON");
@@ -2494,7 +2551,7 @@ void frameDoneCallback()
 
 	if (oToggleFrameBarHotkey.keyDown())
 	{
-		nIN_GAME_FRAME_DISPLAY = ~nIN_GAME_FRAME_DISPLAY;
+		nIN_GAME_FRAME_DISPLAY = !nIN_GAME_FRAME_DISPLAY;
 		nDrawTextTimer = TEXT_TIMER;
 		if (nIN_GAME_FRAME_DISPLAY)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "FRAME DATA ON");
@@ -2504,7 +2561,7 @@ void frameDoneCallback()
 
 	if (oToggleHighlightsHotkey.keyDown())
 	{
-		nHIGHLIGHTS = ~nHIGHLIGHTS;
+		nHIGHLIGHTS = !nHIGHLIGHTS;
 		nDrawTextTimer = TEXT_TIMER;
 		if (bHighlightsOn)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "HIGHLIGHTS ON");
@@ -5086,10 +5143,14 @@ void ExtendedMenuInputChecking() {
 			*(byte*)(adMBAABase + adXS_showCancel) = curElement->selectedItem;
 			break;
 		case eFRAME_DATA::SCROLL_DISPLAY:
-			NormalScrolling(curElement, nTRUE_SCROLL_DISPLAY, -400, 0);
+		{
+			int scrollMax;
+			scrollMax = nBarCounter > DISPLAY_RANGE ? min(nBarCounter - DISPLAY_RANGE, BAR_MEMORY_SIZE - DISPLAY_RANGE) : 1;
+			NormalScrolling(curElement, nTRUE_SCROLL_DISPLAY, -scrollMax, 0);
 			*(short*)(adMBAABase + adXS_frameScroll) = -nTRUE_SCROLL_DISPLAY;
 			bShowFrameBarPreview = true;
 			break;
+		}
 		case eFRAME_DATA::COLOR_GUIDE:
 			if (bAPos) {
 				bCOLOR_GUIDE = !bCOLOR_GUIDE;
@@ -5132,7 +5193,7 @@ void ExtendedMenuInputChecking() {
 	{
 		switch ((eUI)curMenuInfo->selectedElement) {
 		case eUI::FRAME_DISPLAY_Y:
-			NormalScrolling(curElement, nTRUE_FRAME_DISPLAY_Y, 0, 440, 10);
+			NormalScrolling(curElement, nTRUE_FRAME_DISPLAY_Y, 10, 440, 10);
 			bShowFrameBarYPreview = true;
 			break;
 		case eUI::DEFAULT:
@@ -6326,6 +6387,8 @@ void threadFunc()
 	initForceDummyGuard();
 
 	initHotkeys();
+	initXSRegistryValues();
+	initSharedValues();
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 

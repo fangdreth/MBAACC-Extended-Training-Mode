@@ -763,6 +763,29 @@ const LPCTSTR sNEXT_SAVE_SLOT_KEY_REG = L"HOTKEY_NextSaveSlot";
 const LPCTSTR sFRAME_BAR_LEFT_KEY_REG = L"HOTKEY_FrameBarLeft";
 const LPCTSTR sFRAME_BAR_RIGHT_KEY_REG = L"HOTKEY_FrameBarRight";
 
+const LPCTSTR sFRAME_DATA = L"FrameData";
+const LPCTSTR sDISPLAY_FREEZE = L"DisplayFreeze";
+const LPCTSTR sDISPLAY_INPUTS = L"DisplayInputs";
+const LPCTSTR sDISPLAY_CANCELS = L"DisplayCancels";
+const LPCTSTR sHITBOX_STYLE = L"HitboxStyle";
+const LPCTSTR sFRAME_BAR_Y = L"FrameBarY";
+const LPCTSTR sP1_INPUT_DISPLAY = L"P1InputDisplay";
+const LPCTSTR sP2_INPUT_DISPLAY = L"P2InputDisplay";
+const LPCTSTR sBLOCKING_HIGHLIGHT = L"BlockingHighlight";
+const LPCTSTR sTHROW_PROTECTION_HIGHLIGHT = L"ThrowProtectionHighlight";
+const LPCTSTR sHIT_HIGHLIGHT = L"HitHighlight";
+const LPCTSTR sIDLE_HIGHLIGHT = L"IdleHighlight";
+const LPCTSTR sARMOR_HIGHLIGHT = L"ArmorHighlight";
+const LPCTSTR sHIGHLIGHT = L"Highlight";
+const LPCTSTR sP1_ARCADE_INPUT_X = L"P1ArcadeInputX";
+const LPCTSTR sP1_ARCADE_INPUT_Y = L"P1ArcadeInputY";
+const LPCTSTR sP2_ARCADE_INPUT_X = L"P2ArcadeInputX";
+const LPCTSTR sP2_ARCADE_INPUT_Y = L"P2ArcadeInputY";
+const LPCTSTR sP1_LIST_INPUT_X = L"P1ListInputX";
+const LPCTSTR sP1_LIST_INPUT_Y = L"P1ListInputY";
+const LPCTSTR sP2_LIST_INPUT_X = L"P2ListInputX";
+const LPCTSTR sP2_LIST_INPUT_Y = L"P2ListInputY";
+
 #define VK_KEY_UNSET 0x0;
 
 #define VK_KEY_0 0x30

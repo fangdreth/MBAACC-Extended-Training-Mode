@@ -558,21 +558,21 @@ enum class eHIGHLIGHTS {
 };
 
 const int defHIGHLIGHTS = 0;
-const int defGUARD = 0;
-const int defHIT = 0;
-const int defARMOR = 0;
-const int defTHROW_PROT = 0;
-const int defIDLE = 0;
+const int defGUARD_HIGHLIGHT = 0;
+const int defHIT_HIGHLIGHT = 0;
+const int defARMOR_HIGHLIGHT = 0;
+const int defTHROW_PROT_HIGHLIGHT = 0;
+const int defIDLE_HIGHLIGHT = 0;
 
 extern int nHIGHLIGHTS;
-extern int nGUARD;
-extern int nHIT;
-extern int nARMOR;
-extern int nTHROW_PROTECTION;
-extern int nIDLE;
+extern int nGUARD_HIGHLIGHT;
+extern int nHIT_HIGHLIGHT;
+extern int nARMOR_HIGHLIGHT;
+extern int nTHROW_PROTECTION_HIGHLIGHT;
+extern int nIDLE_HIGHLIGHT;
 
 const std::vector<int*> P3_Settings = {
-	&nHIGHLIGHTS, &nGUARD, &nHIT, &nARMOR, &nTHROW_PROTECTION, &nIDLE,
+	&nHIGHLIGHTS, &nGUARD_HIGHLIGHT, &nHIT_HIGHLIGHT, &nARMOR_HIGHLIGHT, &nTHROW_PROTECTION_HIGHLIGHT, &nIDLE_HIGHLIGHT,
 	&nPAGE
 };
 
@@ -1118,6 +1118,26 @@ const std::vector<int*> P10_Settings = {
 	&nSHOW_STATS, &nP1_INPUT_DISPLAY, &nP2_INPUT_DISPLAY, &nFRAME_DISPLAY_Y,
 	&nPAGE
 };
+
+const float defP1_LIST_INPUT_X = 60.0f;
+const float defP1_LIST_INPUT_Y = 174.0f;
+const float defP2_LIST_INPUT_X = 595.0f;
+const float defP2_LIST_INPUT_Y = 174.0f;
+
+const float defP1_ARCADE_INPUT_X = 200.0f;
+const float defP1_ARCADE_INPUT_Y = 112.0f;
+const float defP2_ARCADE_INPUT_X = 378.0f;
+const float defP2_ARCADE_INPUT_Y = 112.0f;
+
+extern float fP1_LIST_INPUT_X;
+extern float fP1_LIST_INPUT_Y;
+extern float fP2_LIST_INPUT_X;
+extern float fP2_LIST_INPUT_Y;
+
+extern float fP1_ARCADE_INPUT_X;
+extern float fP1_ARCADE_INPUT_Y;
+extern float fP2_ARCADE_INPUT_X;
+extern float fP2_ARCADE_INPUT_Y;
 
 void DefaultP10(MenuInfo* menuInfo);
 

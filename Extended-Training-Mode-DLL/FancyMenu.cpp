@@ -1,6 +1,7 @@
 
 #include "DirectX.h"
 #include "FancyMenu.h"
+#include "TrainingMenu.h"
 extern bool shouldDisplayDebugInfo;
 extern bool shouldDisplayLinkedListInfo;
 extern bool shouldDebugImportantDraw;
@@ -176,7 +177,7 @@ void initMenu() {
 			opt += inc;
 			opt = CLAMP(opt, INPUT_OFF, INPUT_BOTH);
 
-			*(BYTE*)(0x00400000 + adSharedP1InputDisplay) = opt;
+			nP1_INPUT_DISPLAY = opt;
 		},
 		[](int opt) mutable -> std::string {
 
@@ -203,7 +204,7 @@ void initMenu() {
 			opt += inc;
 			opt = CLAMP(opt, INPUT_OFF, INPUT_BOTH);
 
-			*(BYTE*)(0x00400000 + adSharedP2InputDisplay) = opt;
+			nP2_INPUT_DISPLAY = opt;
 		},
 		[](int opt) -> std::string {
 
@@ -230,7 +231,7 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adSharedFrameDataDisplay) = opt;
+			nIN_GAME_FRAME_DISPLAY = opt;
 		},
 		defaultOnOffNameFunc,
 		L"FrameDisplay"
@@ -241,7 +242,10 @@ void initMenu() {
 			opt += (inc * 10.0f);
 			opt = CLAMP(opt, 10.0f, 440.0f);
 
-			*(BYTE*)(dwBaseAddress + adSharedFrameBarY) = opt;
+			nTRUE_FRAME_DISPLAY_Y = opt;
+			if (nTRUE_FRAME_DISPLAY_Y == 440) nFRAME_DISPLAY_Y = 2;
+			else if (nTRUE_FRAME_DISPLAY_Y == 10) nFRAME_DISPLAY_Y = 0;
+			else nFRAME_DISPLAY_Y = 1;
 		},
 		defaultSliderNameFunc,
 		L"FrameBarY"
@@ -252,7 +256,7 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adSharedShowStats) = opt;
+			nSHOW_STATS = opt;
 		},
 		defaultOnOffNameFunc,
 		L"",
@@ -264,8 +268,7 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adSharedHideFPS) = opt;
-			*(BYTE*)(dwBaseAddress + adSharedHideBuildInfo) = opt;
+			nHIDE_EXTRAS = opt;
 		},
 		defaultOnOffNameFunc
 	);
@@ -279,7 +282,7 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adXS_hitboxStyle) = opt;
+			nHITBOX_STYLE = opt;
 		},
 		[](int opt) -> std::string {
 
@@ -302,7 +305,7 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adXS_colorblind) = opt;
+			nCOLOR_BLIND_MODE = opt;
 		},
 		defaultOnOffNameFunc
 	);
