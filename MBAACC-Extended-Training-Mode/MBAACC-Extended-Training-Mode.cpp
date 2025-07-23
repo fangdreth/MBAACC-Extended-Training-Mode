@@ -236,7 +236,7 @@ int main(int argc, char* argv[])
                 //LogInfo("MBAA is in versus mode");
                 continue;
             }
-            else if (nTrainingMenuPtr != 0) //Training menu is open
+            else if (nTrainingMenuPtr != 0 && !bInjected) //Training menu is open
             {
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
                 std::cout << "Cannot attach while training menu is open....\x1b[K";

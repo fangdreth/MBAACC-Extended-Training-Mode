@@ -159,6 +159,9 @@ void initRegistryValues()
 	else if (nTRUE_FRAME_DISPLAY_Y == 0) nFRAME_DISPLAY_Y = 0;
 	ReadFromRegistry(sP1_INPUT_DISPLAY, &nP1_INPUT_DISPLAY);
 	ReadFromRegistry(sP2_INPUT_DISPLAY, &nP2_INPUT_DISPLAY);
+	if (nP1_INPUT_DISPLAY != 0 || nP2_INPUT_DISPLAY != 0) {
+		*(bool*)(INPUTDISPLAYTOGGLE) = true;
+	}
 
 	ReadFromRegistry(sP1_LIST_INPUT_X, &fP1_LIST_INPUT_X);
 	ReadFromRegistry(sP1_LIST_INPUT_Y, &fP1_LIST_INPUT_Y);
@@ -2791,11 +2794,14 @@ void frameDoneCallback()
 		if (*(bool*)(INPUTDISPLAYTOGGLE)) {
 			nP1_INPUT_DISPLAY = 1;
 			nLastCustomInputDisplay = true;
+			SetRegistryValue(sP1_INPUT_DISPLAY, 1);
 		}
 		else {
 			nP1_INPUT_DISPLAY = 0;
 			nP2_INPUT_DISPLAY = 0;
 			nLastCustomInputDisplay = false;
+			SetRegistryValue(sP1_INPUT_DISPLAY, 0);
+			SetRegistryValue(sP2_INPUT_DISPLAY, 0);
 		}
 		nInputDisplaySettings = nP1_INPUT_DISPLAY || nP2_INPUT_DISPLAY;
 	}
@@ -5204,9 +5210,16 @@ void ExtendedMenuInputChecking() {
 	case eXS_PAGES::UI:
 	{
 		switch ((eUI)curMenuInfo->selectedElement) {
+		case eUI::P1_INPUT_DISPLAY:
+			SetRegistryValue(sP1_INPUT_DISPLAY, curElement->selectedItem);
+			break;
+		case eUI::P2_INPUT_DISPLAY:
+			SetRegistryValue(sP2_INPUT_DISPLAY, curElement->selectedItem);
+			break;
 		case eUI::FRAME_DISPLAY_Y:
 			NormalScrolling(curElement, nTRUE_FRAME_DISPLAY_Y, 10, 440, 10);
 			bShowFrameBarYPreview = true;
+			SetRegistryValue(sFRAME_BAR_Y, curElement->selectedItem);
 			break;
 		case eUI::DEFAULT:
 			if (bAPos) DefaultP10(curMenuInfo);
