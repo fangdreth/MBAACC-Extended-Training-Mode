@@ -79,6 +79,9 @@ bool bShowFrameBarPreview = false;
 bool bShowFrameBarYPreview = false;
 bool bForceGuard = false;
 
+bool nLastCustomInputDisplay = false;
+bool nLastVanillaInputDisplay = false;
+
 std::vector<std::string> vPatternNames = GetEmptyPatternList();
 std::vector<int> vAirReversals;
 std::vector<int> vGroundReversals;
@@ -1062,12 +1065,20 @@ bool tryCmdID(PlayerData* pPlayer, int ID) {
 bool tryCmdPattern(PlayerData* pPlayer, int nPattern) {
 	if (nPattern < 41) return false;
 	int id = -1;
+	int meterMem = 0;
+	bool didCmd = false;
 	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
 		if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i])
 		{
 			if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->pattern == nPattern) {
 				id = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->ID;
-				if (checkCmdVars(pPlayer, id) && tryCmdID(pPlayer, id)) return true;
+				if (checkCmdVars(pPlayer, id)) {
+					meterMem = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->meterSpend;
+					pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->meterSpend = 0;
+					didCmd = tryCmdID(pPlayer, id);
+					pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->meterSpend = meterMem;
+					if (didCmd) return true;
+				}
 			};
 		}
 	}
@@ -1833,7 +1844,7 @@ void HandleReversalsPage() {
 		bHoldButtons = false;
 		bHoldShield = false;
 	}
-	std::vector<int> vValidReversals = (pActiveP2->yPos == 0 ? vGroundReversals : vAirReversals);
+	std::vector<int> vValidReversals = (pActiveP2->yPos == 0 && pActiveP2->prevYPos == 0 ? vGroundReversals : vAirReversals);
 	int pat;
 	if (vValidReversals.size() != 0 && bDoReversal && pdP2Data->inactionableFrames == 0) {
 		if (nReversalDelayFramesLeft == 0) {
@@ -2768,6 +2779,29 @@ void frameDoneCallback()
 		if (nCUSTOM_RNG == RNG_RN)
 			SetRN(nTRUE_SEED);
 	}
+
+	//some janky linking of the extended input display options to the vanilla one
+	bool nInputDisplaySettings = nP1_INPUT_DISPLAY || nP2_INPUT_DISPLAY;
+	if (nInputDisplaySettings != nLastCustomInputDisplay) {
+		*(bool*)(INPUTDISPLAYTOGGLE) = nInputDisplaySettings;
+		nLastVanillaInputDisplay = nInputDisplaySettings;
+	}
+
+	if (*(bool*)(INPUTDISPLAYTOGGLE) != nLastVanillaInputDisplay) {
+		if (*(bool*)(INPUTDISPLAYTOGGLE)) {
+			nP1_INPUT_DISPLAY = 1;
+			nLastCustomInputDisplay = true;
+		}
+		else {
+			nP1_INPUT_DISPLAY = 0;
+			nP2_INPUT_DISPLAY = 0;
+			nLastCustomInputDisplay = false;
+		}
+		nInputDisplaySettings = nP1_INPUT_DISPLAY || nP2_INPUT_DISPLAY;
+	}
+
+	nLastCustomInputDisplay = nInputDisplaySettings;
+	nLastVanillaInputDisplay = *(bool*)(INPUTDISPLAYTOGGLE);
 }
 
 __declspec(naked) void nakedFrameDoneCallback()
