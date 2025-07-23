@@ -40,6 +40,7 @@ int main(int argc, char* argv[])
 
         int nGameMode = 0;
         int nVersusCheck = 0;
+        int nTrainingMenuPtr = 0;
 
         bool bJustUnpaused = false;
         bool bInjected = false;
@@ -227,11 +228,18 @@ int main(int argc, char* argv[])
             // check this to prevent attaching to netplay
             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwGameMode), &nGameMode, 4, 0);
             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwVersusCheck), &nVersusCheck, 4, 0);
+            ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwTrainingMenu), &nTrainingMenuPtr, 4, 0);
             if(nGameMode == 1 && nVersusCheck == 1) //Versus
             {
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
                 std::cout << "Cannot attach to versus mode....\x1b[K";
                 //LogInfo("MBAA is in versus mode");
+                continue;
+            }
+            else if (nTrainingMenuPtr != 0) //Training menu is open
+            {
+                SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
+                std::cout << "Cannot attach while training menu is open....\x1b[K";
                 continue;
             }
             else if (nGameMode == 4112 || (nGameMode == 1 && nVersusCheck == 2)) //Training OR Replay

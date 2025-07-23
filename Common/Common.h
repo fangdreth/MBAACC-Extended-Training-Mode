@@ -200,6 +200,7 @@ const DWORD dwInputDisplay = 0x1585F8;
 const DWORD dwP1ButtonHeld = 0x15541D; // 16:A 32:B 64:C 112:ABC
 const DWORD dwSomeDummyPlaybackFlag = 0x37BF28;
 const DWORD dwSomeDummyPlaybackFlag2 = 0x37BF2C;
+const DWORD dwTrainingMenu = 0x34D7FC;
 
 // DLL Constants
 const DWORD dwCameraX = 0x0055dec4;
