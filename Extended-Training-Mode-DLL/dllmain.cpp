@@ -2301,7 +2301,6 @@ void frameDoneCallback()
 			saveStateManager.log();
 		}
 
-		//HandleExtendedTrainingEffects();
 	}
 
 	static KeyState rKey('R');
@@ -5750,6 +5749,12 @@ __declspec(naked) void _naked_NewExtMainMenuWindow() {
 void CSSCallback() {
 	for (int i = 0; i < MAX_SAVES; i++)
 		saveStateManager.FullSaves[i]->IsSaved = false;
+
+	vPatternNames = GetEmptyPatternList();
+	nREV_ID_1 = 0;
+	nREV_ID_2 = 0;
+	nREV_ID_3 = 0;
+	nREV_ID_4 = 0;
 }
 
 DWORD CSSCallback_PatchAddr = 0x004271e0;
