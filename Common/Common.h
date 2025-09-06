@@ -429,7 +429,9 @@ const ADDRESS adEffectSubBase = 0x27BDEC;
 const ADDRESS adEffectSource = 0x4;
 const ADDRESS adEffectStatus = 0x5;
 
+const ADDRESS adNewSceneFlag = 0x15DEC3;
 const ADDRESS adDummyState = 0x34D7F8;
+const ADDRESS adTrainingMenu = 0x34D7FC;
 const ADDRESS adP1AInput = 0x371399;
 const ADDRESS adP1DInput = 0x37139C;
 const ADDRESS adP1FN1Input = 0x37144C;

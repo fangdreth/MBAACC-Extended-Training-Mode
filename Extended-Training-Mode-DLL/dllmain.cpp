@@ -1066,7 +1066,12 @@ bool tryCmdID(PlayerData* pPlayer, int ID) {
 }
 
 bool tryCmdPattern(PlayerData* pPlayer, int nPattern) {
-	if (nPattern < 41) return false;
+	if (nPattern < 41) {
+		return false;
+	}
+	else if (nPattern == 260 || nPattern == pPlayer->cmdFileDataPtr->groundThrowPat) {
+		pPlayer->targetPattern = nPattern;
+	}
 	int id = -1;
 	int meterMem = 0;
 	bool didCmd = false;
@@ -1856,6 +1861,7 @@ void HandleReversalsPage() {
 				if (*nREV_IDs[i] != 0 && vValidReversals[i] != 0) totalWeight += *nREV_WEIGHTS[i];
 			}
 			totalWeight += nNO_REV_WEIGHT;
+			if (totalWeight == 0) return;
 			int randomWeight = rand() % totalWeight + 1;
 			int validIndex = -1;
 			for (int i = 0; i < NUM_REVERSALS; i++) {
@@ -2095,112 +2101,6 @@ void __stdcall legacyPauseCallback(DWORD dwMilliseconds)
 // frame start/done callbacks
 
 void frameStartCallback() {
-
-	//maintainFPS();
-
-	// this is called right after directx present displays a new frame
-
-	/*
-	setAllKeys();
-
-	bool ok = true;
-	MSG msg;
-	while (bFreeze || *(uint8_t*)(dwBaseAddress + adSharedFreezeOverride) == 1)
-	{
-		Sleep(1);
-
-		while (ok = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			if (!ok) {
-				PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
-				return;
-			}
-
-			switch (msg.message) {
-			case WM_QUIT:
-			case WM_DESTROY:
-				PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
-				return;
-			}
-
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		if (*(uint8_t*)(dwBaseAddress + adSharedFreezeOverride) != 1)
-		{
-			if (oFrameBarLeftScrollKey.keyHeld())
-				oFrameBarLeftScrollKey.nHeldKeyCounter++;
-			else
-				oFrameBarLeftScrollKey.nHeldKeyCounter = 0;
-			if (oFrameBarLeftScrollKey.keyDown() || oFrameBarLeftScrollKey.nHeldKeyCounter >= 150)
-			{
-				nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
-				nBarScrolling++;
-				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
-			}
-
-			if (oFrameBarRightScrollKey.keyHeld())
-				oFrameBarRightScrollKey.nHeldKeyCounter++;
-			else
-				oFrameBarRightScrollKey.nHeldKeyCounter = 0;
-			if (oFrameBarRightScrollKey.keyDown() || oFrameBarRightScrollKey.nHeldKeyCounter >= 150)
-			{
-				nBarScrolling = *(short*)(adMBAABase + adSharedScrolling);
-				nBarScrolling--;
-				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedScrolling), &nBarScrolling, 2, 0);
-			}
-
-			if (oHitboxesDisplayKey.keyDown())
-			{
-				bHitboxesDisplay = !bHitboxesDisplay;
-			}
-
-			if (oFrameDataDisplayKey.keyDown())
-			{
-				bFrameDataDisplay = !bFrameDataDisplay;
-			}
-
-			if (oHighlightsOnKey.keyDown())
-				bHighlightsOn = !bHighlightsOn;
-
-			if (oSaveStateKey.keyDown() && safeWrite())
-			{
-				*(char*)(dwBaseAddress + adSharedDoSave) = 1;
-			}
-
-			if (oFreezeKey.keyDown())
-			{
-				bFreeze = !bFreeze;
-			}
-
-			if (oPrevSaveSlotKey.keyDown())
-			{
-				uint8_t nTempSaveSlot;
-				ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-				nTempSaveSlot = max(0, nTempSaveSlot - 1);
-				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-			}
-			if (oNextSaveSlotKey.keyDown())
-			{
-				uint8_t nTempSaveSlot;
-				ReadProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-				nTempSaveSlot = min(nTempSaveSlot + 1, MAX_SAVES);
-				WriteProcessMemory(GetCurrentProcess(), (LPVOID)(dwBaseAddress + adSharedSaveSlot), &nTempSaveSlot, 1, 0);
-			}
-
-			if (oFrameStepKey.keyHeld())
-				oFrameStepKey.nHeldKeyCounter++;
-			else
-				oFrameStepKey.nHeldKeyCounter = 0;
-			if (oFrameStepKey.keyDown() || oFrameStepKey.nHeldKeyCounter >= 150)
-			{
-				break;
-			}
-		}
-	}
-
-	*/
 
 }
 
@@ -2668,6 +2568,12 @@ void frameDoneCallback()
 			if (nTRUE_SEED < 0) nTRUE_SEED = 0xffff;
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "RNG VALUE: %i", nTRUE_SEED);
 		}
+	}
+
+	if (*(byte*)(adMBAABase + adP1FN2Input) &&
+		(*(byte*)(adMBAABase + adDummyState) == 0xFF || *(byte*)(adMBAABase + adDummyState) == 0x5))
+	{
+		*(byte*)(adMBAABase + adNewSceneFlag) = 0xFF;
 	}
 
 	if (nDrawTextTimer != 0 && safeWrite())
@@ -6360,6 +6266,10 @@ void initForceDummyGuard() {
 	patchJump(ForceDummyGuard_PatchAddr, _naked_ForceDummyGuard);
 }
 
+void initDisabledExit() {
+	patchMemset(0x0047d21c, 0x90, 11);
+}
+
 // dll thread func
 
 void threadFunc() 
@@ -6415,6 +6325,8 @@ void threadFunc()
 	initCSSCallback();
 
 	initForceDummyGuard();
+
+	initDisabledExit();
 
 	initHotkeys();
 	initRegistryValues();
