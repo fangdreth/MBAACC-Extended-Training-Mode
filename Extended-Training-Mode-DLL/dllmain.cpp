@@ -3752,39 +3752,40 @@ void EnterIntoList(void* list, void* entry) {
 	}
 }
 
-MenuInfo* InitMenuInfo(MenuInfo* menuInfo, MenuWindow* menuWindow, const char* tag) {
+MenuInfo* InitMenuInfo(MenuInfo* menuInfo, MenuWindow* menuWindow, const char* label) {
 	menuInfo->vftable = (void*)0x00535ec8;
 	menuInfo->parentWindow = menuWindow;
-	menuInfo->tag[0] = 0;
-	menuInfo->tagLength = 0;
-	menuInfo->tagMaxLength = 0xf;
-	menuInfo->blank[0] = 0;
-	menuInfo->blankLength = 0;
-	menuInfo->blankMaxLength = 0xf;
+	(menuInfo->label).maxLength = 0;
+	(menuInfo->label).length = 0;
+	(menuInfo->label).shortString[0] = 0;
+	(menuInfo->blank).maxLength = 0xf;
+	(menuInfo->blank).length = 0;
+	(menuInfo->blank).shortString[0] = 0;
+	(menuInfo->elementList).listStart = 0;
+	(menuInfo->elementList).listEnd = 0;
+	(menuInfo->elementList).listMaxEnd = 0;
+	(menuInfo->selectableList).listStart = 0;
+	(menuInfo->selectableList).listEnd = 0;
+	(menuInfo->selectableList).listMaxEnd = 0;
+	menuInfo->parentWindow = menuWindow;
+	ReadDataFile(&menuInfo->label, label, strlen(label));
+	ReadDataFile(&menuInfo->blank, "", 0);
 	menuInfo->selectedElement = 0;
 	menuInfo->prevSelectedElement = 0;
-	menuInfo->ElementList = 0;
-	menuInfo->ElementListEnd = 0;
-	menuInfo->field_0x54 = 0;
-	menuInfo->field_0x5c = 0;
-	menuInfo->field_0x60 = 0;
-	menuInfo->field_0x64 = 0;
 	menuInfo->finishedDrawing = 0;
 	menuInfo->timeDisplayed = 0;
 	menuInfo->field_0x70 = 99999;
 	menuInfo->close = 0;
-	ReadDataFile(&menuInfo->tagBase, tag, strlen(tag));
-	ReadDataFile(&menuInfo->blankBase, "", 0);
 	return menuInfo;
 }
 
 MenuWindow* InitMenuWindow(MenuWindow* menuWindow) {
-	menuWindow->MenuInfoList = 0;
-	menuWindow->MenuInfoListEnd = 0;
-	menuWindow->field_0x18 = 0;
-	menuWindow->hoveredTagLength = 0;
-	menuWindow->hoveredTagMaxLength = 0xf;
-	menuWindow->hoveredTag[0] = 0;
+	(menuWindow->menuInfoList).listStart = 0;
+	(menuWindow->menuInfoList).listEnd = 0;
+	(menuWindow->menuInfoList).listMaxEnd = 0;
+	(menuWindow->hoveredTag).length = 0;
+	(menuWindow->hoveredTag).maxLength = 0xf;
+	(menuWindow->hoveredTag).shortString[0] = 0;
 	menuWindow->menuInfoIndex = 0;
 	menuWindow->field_0x8 = 0;
 	menuWindow->someYOffset = 0x10;
@@ -3793,9 +3794,9 @@ MenuWindow* InitMenuWindow(MenuWindow* menuWindow) {
 	menuWindow->field_0x3c = 0;
 	menuWindow->xOffset = 0x140;
 	menuWindow->vftable = (void*)0x0053d3c0;
-	menuWindow->labelMaxLength = 0xf;
-	menuWindow->labelLength = 0;
-	menuWindow->label[0] = 0;
+	(menuWindow->label).maxLength = 0xf;
+	(menuWindow->label).length = 0;
+	(menuWindow->label).shortString[0] = 0;
 	menuWindow->progressionRate = 0.0625;
 	menuWindow->degressionRate = -0.0625;
 	menuWindow->isRootMenu = 0;
@@ -3813,7 +3814,7 @@ MenuWindow* InitMenuWindow(MenuWindow* menuWindow) {
 	menuWindow->yOffset = 0xf0;
 	menuWindow->textXWidth = 0x10;
 	menuWindow->textYWidth = 0x10;
-	ReadDataFile(&menuWindow->labelBase, "", 0);
+	ReadDataFile(&menuWindow->label, "", 0);
 	menuWindow->paragraphMode = 0;
 	menuWindow->field_0xb0 = 0;
 	return menuWindow;
@@ -3831,12 +3832,12 @@ void AddSelectElement(MenuInfo* menuInfo, std::vector<const char*> elementVector
 		Item* item = (Item*)NEW_ITEM();
 		snprintf(tempTag, 15, "%i_%i_%i", pageNum, elementNum, i);
 		InitItem(item, elementVector[i], tempTag, i - 1);
-		EnterIntoList((void*)(&element->ListInput), (void*)(item));
+		EnterIntoList((void*)(&element->itemList), (void*)(item));
 	}
 	if (elementVector[0] == " ") {
 		element->selectItemLabelXOffset = 64;
 	}
-	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
+	EnterIntoList((void*)(&menuInfo->elementList), (void*)(element));
 }
 
 void AddNormalElement(MenuInfo* menuInfo, std::vector<const char*> elementVector, int pageNum, int elementNum) {
@@ -3848,7 +3849,7 @@ void AddNormalElement(MenuInfo* menuInfo, std::vector<const char*> elementVector
 	element->canSelect = 1;
 	element->elementType = 1;
 	element->vftable = (void*)0x0053604c;
-	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
+	EnterIntoList((void*)(&menuInfo->elementList), (void*)(element));
 }
 
 void AddSpaceElement(MenuInfo* menuInfo, int pageNum, int elementNum, int margin = 8) {
@@ -3860,7 +3861,7 @@ void AddSpaceElement(MenuInfo* menuInfo, int pageNum, int elementNum, int margin
 	element->elementType = 2;
 	element->bottomMargin = margin;
 	element->vftable = (void*)0x00536094;
-	EnterIntoList((void*)(&menuInfo->ListInput), (void*)(element));
+	EnterIntoList((void*)(&menuInfo->elementList), (void*)(element));
 }
 
 //wrapper for call to FUN_00429b00
@@ -3926,7 +3927,7 @@ bool GetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
 
 //get settings from persistent locations to init menu window
 void GetExtendedSettings(MenuWindow* extendedWindow) {
-	if (extendedWindow->MenuInfoList == 0x0 || extendedWindow->MenuInfoListEnd - extendedWindow->MenuInfoList == 0) {
+	if ((extendedWindow->menuInfoList).listStart == 0x0 || (extendedWindow->menuInfoList).listEnd - (extendedWindow->menuInfoList).listStart == 0) {
 		__asm {
 			call[MBAA_UnrecoveredJumptable];
 		}
@@ -3934,7 +3935,7 @@ void GetExtendedSettings(MenuWindow* extendedWindow) {
 	char tempTag[16];
 	MenuInfo* extendedInfo;
 	for (int pageNum = 0; pageNum <= XS_NUM_PAGES; pageNum++) {
-		extendedInfo = extendedWindow->MenuInfoList[pageNum];
+		extendedInfo = (extendedWindow->menuInfoList).listStart[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
 			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
@@ -3946,13 +3947,13 @@ void GetExtendedSettings(MenuWindow* extendedWindow) {
 	
 	extendedWindow->menuInfoIndex = nEXTENDED_SETTINGS_PAGE;
 	for (int i = 0; i <= XS_NUM_PAGES; i++) {
-		extendedWindow->MenuInfoList[i]->selectedElement = nEXTENDED_SETTINGS_CURSOR[i];
+		(extendedWindow->menuInfoList).listStart[i]->selectedElement = nEXTENDED_SETTINGS_CURSOR[i];
 	}
 }
 
 //get settings from persistent locations to init menu window
 void GetHotkeySettings(MenuWindow* hotkeyWindow) {
-	if (hotkeyWindow->MenuInfoList == 0x0 || hotkeyWindow->MenuInfoListEnd - hotkeyWindow->MenuInfoList == 0) {
+	if ((hotkeyWindow->menuInfoList).listStart == 0x0 || (hotkeyWindow->menuInfoList).listEnd - (hotkeyWindow->menuInfoList).listStart == 0) {
 		__asm {
 			call[MBAA_UnrecoveredJumptable];
 		}
@@ -3960,7 +3961,7 @@ void GetHotkeySettings(MenuWindow* hotkeyWindow) {
 	char tempTag[16];
 	MenuInfo* hotkeyInfo;
 	for (int pageNum = 0; pageNum <= HK_NUM_PAGES; pageNum++) {
-		hotkeyInfo = hotkeyWindow->MenuInfoList[pageNum];
+		hotkeyInfo = (hotkeyWindow->menuInfoList).listStart[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
 			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
@@ -3972,14 +3973,14 @@ void GetHotkeySettings(MenuWindow* hotkeyWindow) {
 
 	hotkeyWindow->menuInfoIndex = nHOTKEY_SETTINGS_PAGE;
 	for (int i = 0; i <= HK_NUM_PAGES; i++) {
-		hotkeyWindow->MenuInfoList[i]->selectedElement = nHOTKEY_SETTINGS_CURSOR[i];
+		(hotkeyWindow->menuInfoList).listStart[i]->selectedElement = nHOTKEY_SETTINGS_CURSOR[i];
 	}
 }
 
 //init extended window, info, elements, and items
 MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 	InitMenuWindow(extendedWindow);
-	ReadDataFile(&extendedWindow->labelBase, "EXTENDED SETTINGS", 18);
+	ReadDataFile(&extendedWindow->label, "EXTENDED SETTINGS", 18);
 	MenuInfo* extendedInfo;
 	for (int pageNum = 0; pageNum < size(Page_Options); pageNum++)
 	{
@@ -4004,7 +4005,7 @@ MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 				break;
 			}
 		}
-		EnterIntoList((void*)(&extendedWindow->ListInput), (void*)(extendedInfo));
+		EnterIntoList((void*)(&extendedWindow->menuInfoList), (void*)(extendedInfo));
 		//_FUN_00429b00(extendedInfo, "EXTENDED_SETTING");
 	}
 
@@ -4022,7 +4023,7 @@ MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 //init extended window, info, elements, and items
 MenuWindow* InitHotkeySettingsMenu(MenuWindow* hotkeyWindow) {
 	InitMenuWindow(hotkeyWindow);
-	ReadDataFile(&hotkeyWindow->labelBase, "HOTKEY SETTINGS", 18);
+	ReadDataFile(&hotkeyWindow->label, "HOTKEY SETTINGS", 18);
 	MenuInfo* hotkeyInfo;
 	for (int pageNum = 0; pageNum < size(HK_Page_Options); pageNum++)
 	{
@@ -4047,7 +4048,7 @@ MenuWindow* InitHotkeySettingsMenu(MenuWindow* hotkeyWindow) {
 				break;
 			}
 		}
-		EnterIntoList((void*)(&hotkeyWindow->ListInput), (void*)(hotkeyInfo));
+		EnterIntoList((void*)(&hotkeyWindow->menuInfoList), (void*)(hotkeyInfo));
 	}
 
 	GetHotkeySettings(hotkeyWindow);
@@ -4087,7 +4088,7 @@ bool SetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
 	Element* element = GetElementPointer(menuInfo, tag);
 	if (element != 0x0) {
 		int selectionIndex = element->selectedItem;
-		int value = element->ItemList[selectionIndex]->value;
+		int value = (element->itemList).listStart[selectionIndex]->value;
 		*setting = value;
 		return true;
 	}
@@ -4096,7 +4097,7 @@ bool SetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
 
 //save extended settings to persistent locations
 void SetExtendedSettings(MenuWindow* extendedWindow) {
-	if (extendedWindow->MenuInfoList == 0x0 || extendedWindow->MenuInfoListEnd - extendedWindow->MenuInfoList == 0) {
+	if ((extendedWindow->menuInfoList).listStart == 0x0 || (extendedWindow->menuInfoList).listEnd - (extendedWindow->menuInfoList).listStart == 0) {
 		__asm {
 			call[MBAA_UnrecoveredJumptable];
 		}
@@ -4104,7 +4105,7 @@ void SetExtendedSettings(MenuWindow* extendedWindow) {
 	char tempTag[16];
 	MenuInfo* extendedInfo;
 	for (int pageNum = 0; pageNum <= XS_NUM_PAGES; pageNum++) {
-		extendedInfo = extendedWindow->MenuInfoList[pageNum];
+		extendedInfo = (extendedWindow->menuInfoList).listStart[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
 			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
@@ -4116,13 +4117,13 @@ void SetExtendedSettings(MenuWindow* extendedWindow) {
 
 	nEXTENDED_SETTINGS_PAGE = extendedWindow->menuInfoIndex;
 	for (int i = 0; i <= XS_NUM_PAGES; i++) {
-		nEXTENDED_SETTINGS_CURSOR[i] = extendedWindow->MenuInfoList[i]->selectedElement;
+		nEXTENDED_SETTINGS_CURSOR[i] = (extendedWindow->menuInfoList).listStart[i]->selectedElement;
 	}
 }
 
 //save hotkey settings to persistent locations
 void SetHotkeySettings(MenuWindow* hotkeyWindow) {
-	if (hotkeyWindow->MenuInfoList == 0x0 || hotkeyWindow->MenuInfoListEnd - hotkeyWindow->MenuInfoList == 0) {
+	if ((hotkeyWindow->menuInfoList).listStart == 0x0 || (hotkeyWindow->menuInfoList).listEnd - (hotkeyWindow->menuInfoList).listStart == 0) {
 		__asm {
 			call[MBAA_UnrecoveredJumptable];
 		}
@@ -4130,7 +4131,7 @@ void SetHotkeySettings(MenuWindow* hotkeyWindow) {
 	char tempTag[16];
 	MenuInfo* hotkeyInfo;
 	for (int pageNum = 0; pageNum <= HK_NUM_PAGES; pageNum++) {
-		hotkeyInfo = hotkeyWindow->MenuInfoList[pageNum];
+		hotkeyInfo = (hotkeyWindow->menuInfoList).listStart[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
 			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
@@ -4142,7 +4143,7 @@ void SetHotkeySettings(MenuWindow* hotkeyWindow) {
 
 	nHOTKEY_SETTINGS_PAGE = hotkeyWindow->menuInfoIndex;
 	for (int i = 0; i <= HK_NUM_PAGES; i++) {
-		nHOTKEY_SETTINGS_CURSOR[i] = hotkeyWindow->MenuInfoList[i]->selectedElement;
+		nHOTKEY_SETTINGS_CURSOR[i] = (hotkeyWindow->menuInfoList).listStart[i]->selectedElement;
 	}
 }
 
@@ -4668,8 +4669,8 @@ void ExtendedMenuInputChecking() {
 	bool bDPos = bD && !bDPrev; //D Press Positive Edge
 	bShowFrameBarPreview = false;
 	bShowFrameBarYPreview = false;
-	curMenuInfo = extendedWindow->MenuInfoList[extendedWindow->menuInfoIndex];
-	curElement = curMenuInfo->ElementList[curMenuInfo->selectedElement];
+	curMenuInfo = extendedWindow->menuInfoList.listStart[extendedWindow->menuInfoIndex];
+	curElement = curMenuInfo->elementList.listStart[curMenuInfo->selectedElement];
 	switch ((eXS_PAGES)extendedWindow->menuInfoIndex) {
 	case eXS_PAGES::REVERSALS:
 	{
@@ -4703,20 +4704,20 @@ void ExtendedMenuInputChecking() {
 		}
 
 		snprintf(labelBuf, 31, "%s%s", REV_SHIELD_PREFIX[nREV_ID_1 >> 16], vPatternNames[nREV_ID_1 % 0x00010000].c_str());
-		curMenuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_1]->SetCurItemLabel(labelBuf);
-		curMenuInfo->ElementList[(int)eREVERSALS::WEIGHT_1]->textOpacity = nREV_ID_1 == 0 ? 0.5f : 1.0f;
+		(curMenuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_1]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_1]->textOpacity = nREV_ID_1 == 0 ? 0.5f : 1.0f;
 
 		snprintf(labelBuf, 31, "%s%s", REV_SHIELD_PREFIX[nREV_ID_2 >> 16], vPatternNames[nREV_ID_2 % 0x00010000].c_str());
-		curMenuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_2]->SetCurItemLabel(labelBuf);
-		curMenuInfo->ElementList[(int)eREVERSALS::WEIGHT_2]->textOpacity = nREV_ID_2 == 0 ? 0.5f : 1.0f;
+		(curMenuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_2]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_2]->textOpacity = nREV_ID_2 == 0 ? 0.5f : 1.0f;
 
 		snprintf(labelBuf, 31, "%s%s", REV_SHIELD_PREFIX[nREV_ID_3 >> 16], vPatternNames[nREV_ID_3 % 0x00010000].c_str());
-		curMenuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_3]->SetCurItemLabel(labelBuf);
-		curMenuInfo->ElementList[(int)eREVERSALS::WEIGHT_3]->textOpacity = nREV_ID_3 == 0 ? 0.5f : 1.0f;
+		(curMenuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_3]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_3]->textOpacity = nREV_ID_3 == 0 ? 0.5f : 1.0f;
 
 		snprintf(labelBuf, 31, "%s%s", REV_SHIELD_PREFIX[nREV_ID_4 >> 16], vPatternNames[nREV_ID_4 % 0x00010000].c_str());
-		curMenuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_4]->SetCurItemLabel(labelBuf);
-		curMenuInfo->ElementList[(int)eREVERSALS::WEIGHT_4]->textOpacity = nREV_ID_4 == 0 ? 0.5f : 1.0f;
+		(curMenuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_4]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_4]->textOpacity = nREV_ID_4 == 0 ? 0.5f : 1.0f;
 
 		PopulateAirAndGroundReversals(&vAirReversals, &vGroundReversals, nP2CharacterID, &vPatternNames,
 			nREV_ID_1 % 0x00010000, nREV_ID_2 % 0x00010000, nREV_ID_3 % 0x00010000, nREV_ID_4 % 0x00010000);
@@ -4771,68 +4772,68 @@ void ExtendedMenuInputChecking() {
 		if (pP1->moon != 2) {
 			switch (nTRUE_P1_METER) {
 			case 30000:
-				curMenuInfo->ElementList[(int)eTRAINING::P1_METER]->SetCurItemLabel("MAX");
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P1_METER]->SetCurItemLabel("MAX");
 				break;
 			case 30001:
-				curMenuInfo->ElementList[(int)eTRAINING::P1_METER]->SetCurItemLabel("HEAT");
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P1_METER]->SetCurItemLabel("HEAT");
 				break;
 			case 30002:
-				curMenuInfo->ElementList[(int)eTRAINING::P1_METER]->SetCurItemLabel("BLOOD HEAT");
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P1_METER]->SetCurItemLabel("BLOOD HEAT");
 				break;
 			default:
 				snprintf(labelBuf, 31, "%i.%02i%%", nTRUE_P1_METER / 100, nTRUE_P1_METER % 100);
-				curMenuInfo->ElementList[(int)eTRAINING::P1_METER]->SetCurItemLabel(labelBuf);
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P1_METER]->SetCurItemLabel(labelBuf);
 			}
 		}
 		else {
 			switch (nTRUE_P1_METER) {
 			case 20000:
-				curMenuInfo->ElementList[(int)eTRAINING::P1_METER]->SetCurItemLabel("HEAT");
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P1_METER]->SetCurItemLabel("HEAT");
 				break;
 			default:
 				snprintf(labelBuf, 31, "%i.%02i%%", nTRUE_P1_METER / 100, nTRUE_P1_METER % 100);
-				curMenuInfo->ElementList[(int)eTRAINING::P1_METER]->SetCurItemLabel(labelBuf);
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P1_METER]->SetCurItemLabel(labelBuf);
 			}
 		}
 		
 		if (pP2->moon != 2) {
 			switch (nTRUE_P2_METER) {
 			case 30000:
-				curMenuInfo->ElementList[(int)eTRAINING::P2_METER]->SetCurItemLabel("MAX");
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P2_METER]->SetCurItemLabel("MAX");
 				break;
 			case 30001:
-				curMenuInfo->ElementList[(int)eTRAINING::P2_METER]->SetCurItemLabel("HEAT");
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P2_METER]->SetCurItemLabel("HEAT");
 				break;
 			case 30002:
-				curMenuInfo->ElementList[(int)eTRAINING::P2_METER]->SetCurItemLabel("BLOOD HEAT");
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P2_METER]->SetCurItemLabel("BLOOD HEAT");
 				break;
 			default:
 				snprintf(labelBuf, 31, "%i.%02i%%", nTRUE_P2_METER / 100, nTRUE_P2_METER % 100);
-				curMenuInfo->ElementList[(int)eTRAINING::P2_METER]->SetCurItemLabel(labelBuf);
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P2_METER]->SetCurItemLabel(labelBuf);
 			}
 		}
 		else {
 			switch (nTRUE_P2_METER) {
 			case 20000:
-				curMenuInfo->ElementList[(int)eTRAINING::P2_METER]->SetCurItemLabel("HEAT");
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P2_METER]->SetCurItemLabel("HEAT");
 				break;
 			default:
 				snprintf(labelBuf, 31, "%i.%02i%%", nTRUE_P2_METER / 100, nTRUE_P2_METER % 100);
-				curMenuInfo->ElementList[(int)eTRAINING::P2_METER]->SetCurItemLabel(labelBuf);
+				(curMenuInfo->elementList).listStart[(int)eTRAINING::P2_METER]->SetCurItemLabel(labelBuf);
 			}
 		}
 
 		snprintf(labelBuf, 31, "%i", nTRUE_P1_HEALTH);
-		curMenuInfo->ElementList[(int)eTRAINING::P1_HEALTH]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eTRAINING::P1_HEALTH]->SetCurItemLabel(labelBuf);
 		snprintf(labelBuf, 31, "%i", nTRUE_P2_HEALTH);
-		curMenuInfo->ElementList[(int)eTRAINING::P2_HEALTH]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eTRAINING::P2_HEALTH]->SetCurItemLabel(labelBuf);
 
 		snprintf(labelBuf, 31, "%i", nTRUE_HITS_UNTIL_BURST);
-		curMenuInfo->ElementList[(int)eTRAINING::HITS_UNTIL_BURST]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eTRAINING::HITS_UNTIL_BURST]->SetCurItemLabel(labelBuf);
 		snprintf(labelBuf, 31, "%i", nTRUE_HITS_UNTIL_BUNKER);
-		curMenuInfo->ElementList[(int)eTRAINING::HITS_UNTIL_BUNKER]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eTRAINING::HITS_UNTIL_BUNKER]->SetCurItemLabel(labelBuf);
 		snprintf(labelBuf, 31, "%i", nTRUE_HITS_UNTIL_FORCE_GUARD);
-		curMenuInfo->ElementList[(int)eTRAINING::HITS_UNTIL_FORCE_GUARD]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eTRAINING::HITS_UNTIL_FORCE_GUARD]->SetCurItemLabel(labelBuf);
 
 		break;
 	}
@@ -4934,16 +4935,16 @@ void ExtendedMenuInputChecking() {
 		}
 
 		snprintf(labelBuf, 31, "%i %i", nTRUE_P1_X_LOC >> 7, (nTRUE_P1_X_LOC + 0x10000) % 0x80);
-		curMenuInfo->ElementList[(int)ePOSITIONS::P1_POSITION]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)ePOSITIONS::P1_POSITION]->SetCurItemLabel(labelBuf);
 		snprintf(labelBuf, 31, "%i %i", nTRUE_P1_ASSIST_X_LOC >> 7, (nTRUE_P1_ASSIST_X_LOC + 0x10000) % 0x80);
-		curMenuInfo->ElementList[(int)ePOSITIONS::P1_ASSIST_POSITION]->SetCurItemLabel(labelBuf);
-		curMenuInfo->ElementList[(int)ePOSITIONS::P1_ASSIST_POSITION]->textOpacity = pP3->exists ? 1.0f : 0.5f;
+		(curMenuInfo->elementList).listStart[(int)ePOSITIONS::P1_ASSIST_POSITION]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)ePOSITIONS::P1_ASSIST_POSITION]->textOpacity = pP3->exists ? 1.0f : 0.5f;
 
 		snprintf(labelBuf, 31, "%i %i", nTRUE_P2_X_LOC >> 7, (nTRUE_P2_X_LOC + 0x10000) % 0x80);
-		curMenuInfo->ElementList[(int)ePOSITIONS::P2_POSITION]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)ePOSITIONS::P2_POSITION]->SetCurItemLabel(labelBuf);
 		snprintf(labelBuf, 31, "%i %i", nTRUE_P2_ASSIST_X_LOC >> 7, (nTRUE_P2_ASSIST_X_LOC + 0x10000) % 0x80);
-		curMenuInfo->ElementList[(int)ePOSITIONS::P2_ASSIST_POSITION]->SetCurItemLabel(labelBuf);
-		curMenuInfo->ElementList[(int)ePOSITIONS::P2_ASSIST_POSITION]->textOpacity = pP4->exists ? 1.0f : 0.5f;
+		(curMenuInfo->elementList).listStart[(int)ePOSITIONS::P2_ASSIST_POSITION]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)ePOSITIONS::P2_ASSIST_POSITION]->textOpacity = pP4->exists ? 1.0f : 0.5f;
 
 		break;
 	}
@@ -5025,7 +5026,7 @@ void ExtendedMenuInputChecking() {
 			else {
 				snprintf(labelBuf, 31, "%s %02i (%s)", "SLOT", i + 1, "NOT SAVED");
 			}
-			curMenuInfo->ElementList[(int)eSAVE_STATES::SAVE_STATE_SLOT]->SetItemLabel(labelBuf, i + 1);
+			(curMenuInfo->elementList).listStart[(int)eSAVE_STATES::SAVE_STATE_SLOT]->SetItemLabel(labelBuf, i + 1);
 		}
 
 		break;
@@ -5041,7 +5042,7 @@ void ExtendedMenuInputChecking() {
 			*(byte*)(adMBAABase + adXS_showHitstopAndFreeze) = curElement->selectedItem;
 			SetRegistryValue(sDISPLAY_FREEZE, curElement->selectedItem);
 			if (curElement->selectedItem == 0) {
-				curMenuInfo->ElementList[(int)eFRAME_DATA::SHOW_INPUTS]->selectedItem = 0;
+				(curMenuInfo->elementList).listStart[(int)eFRAME_DATA::SHOW_INPUTS]->selectedItem = 0;
 				*(byte*)(adMBAABase + adXS_showInputs) = 0;
 				SetRegistryValue(sDISPLAY_INPUTS, 0);
 			}
@@ -5050,7 +5051,7 @@ void ExtendedMenuInputChecking() {
 			*(byte*)(adMBAABase + adXS_showInputs) = curElement->selectedItem;
 			SetRegistryValue(sDISPLAY_INPUTS, curElement->selectedItem);
 			if (curElement->selectedItem == 1) {
-				curMenuInfo->ElementList[(int)eFRAME_DATA::SHOW_HITSTOP_AND_FREEZE]->selectedItem = 1;
+				(curMenuInfo->elementList).listStart[(int)eFRAME_DATA::SHOW_HITSTOP_AND_FREEZE]->selectedItem = 1;
 				*(byte*)(adMBAABase + adXS_showHitstopAndFreeze) = 1;
 				SetRegistryValue(sDISPLAY_FREEZE, 1);
 			}
@@ -5083,7 +5084,7 @@ void ExtendedMenuInputChecking() {
 		}
 
 		snprintf(labelBuf, 31, "%i", nTRUE_SCROLL_DISPLAY);
-		curMenuInfo->ElementList[(int)eFRAME_DATA::SCROLL_DISPLAY]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eFRAME_DATA::SCROLL_DISPLAY]->SetCurItemLabel(labelBuf);
 
 		break;
 	}
@@ -5105,10 +5106,10 @@ void ExtendedMenuInputChecking() {
 		}
 
 		snprintf(labelBuf, 31, "%i", nTRUE_SEED);
-		curMenuInfo->ElementList[(int)eRNG::SEED]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eRNG::SEED]->SetCurItemLabel(labelBuf);
 
-		curMenuInfo->ElementList[(int)eRNG::RATE]->textOpacity = nCUSTOM_RNG ? 1.0f : 0.5f;
-		curMenuInfo->ElementList[(int)eRNG::SEED]->textOpacity = nCUSTOM_RNG ? 1.0f : 0.5f;
+		(curMenuInfo->elementList).listStart[(int)eRNG::RATE]->textOpacity = nCUSTOM_RNG ? 1.0f : 0.5f;
+		(curMenuInfo->elementList).listStart[(int)eRNG::SEED]->textOpacity = nCUSTOM_RNG ? 1.0f : 0.5f;
 
 		break;
 	}
@@ -5135,7 +5136,7 @@ void ExtendedMenuInputChecking() {
 		}
 
 		snprintf(labelBuf, 31, "%i", nTRUE_FRAME_DISPLAY_Y);
-		curMenuInfo->ElementList[(int)eUI::FRAME_DISPLAY_Y]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eUI::FRAME_DISPLAY_Y]->SetCurItemLabel(labelBuf);
 
 		break;
 	}
@@ -5162,7 +5163,7 @@ void ExtendedMenuInputChecking() {
 			break;
 		}
 
-		curMenuInfo->ElementList[(int)eSYSTEM::HIDE_EXTRAS]->textOpacity = nHIDE_HUD ? 0.5f : 1.0f;
+		(curMenuInfo->elementList).listStart[(int)eSYSTEM::HIDE_EXTRAS]->textOpacity = nHIDE_HUD ? 0.5f : 1.0f;
 
 
 		break;
@@ -5231,8 +5232,8 @@ void HotkeyMenuInputChecking() {
 	char labelBuf[32];
 	bool bA = *(bool*)(adMBAABase + adP1AInput) && hotkeyWindow->openSubmenuIndex == 2; //A is pressed
 	bool bAPos = bA && !bAPrev; //A Press Positive Edge
-	curMenuInfo = hotkeyWindow->MenuInfoList[hotkeyWindow->menuInfoIndex];
-	curElement = curMenuInfo->ElementList[curMenuInfo->selectedElement];
+	curMenuInfo = (hotkeyWindow->menuInfoList).listStart[hotkeyWindow->menuInfoIndex];
+	curElement = (curMenuInfo->elementList).listStart[curMenuInfo->selectedElement];
 	switch (hotkeyWindow->menuInfoIndex) {
 	case 0:
 		switch ((eHK_PAGE1)curMenuInfo->selectedElement) {
@@ -5269,23 +5270,23 @@ void HotkeyMenuInputChecking() {
 		}
 
 		GetKeyStateMenuLabel(labelBuf, oFreezeHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE1::FREEZE]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::FREEZE]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oNextFrameHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE1::NEXT_FRAME]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::NEXT_FRAME]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oPrevFrameHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE1::PREV_FRAME]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::PREV_FRAME]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oToggleHitboxesHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE1::TOGGLE_HITBOXES]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::TOGGLE_HITBOXES]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oToggleFrameBarHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE1::TOGGLE_FRAME_BAR]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::TOGGLE_FRAME_BAR]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oToggleHighlightsHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE1::TOGGLE_HIGHLIGHTS]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::TOGGLE_HIGHLIGHTS]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oQueueReversalHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE1::QUEUE_REVERSAL]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::QUEUE_REVERSAL]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oIncrementRNGHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE1::INCREMENT_RNG]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::INCREMENT_RNG]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oDecrementRNGHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE1::DECREMENT_RNG]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::DECREMENT_RNG]->SetCurItemLabel(labelBuf);
 
 		break;
 	case 1:
@@ -5311,15 +5312,15 @@ void HotkeyMenuInputChecking() {
 		}
 
 		GetKeyStateMenuLabel(labelBuf, oSaveStateHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE2::SAVE_STATE]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE2::SAVE_STATE]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oPrevSaveSlotHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE2::PREV_SAVE_SLOT]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE2::PREV_SAVE_SLOT]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oNextSaveSlotHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE2::NEXT_SAVE_SLOT]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE2::NEXT_SAVE_SLOT]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oFrameBarLeftHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE2::FRAME_BAR_LEFT]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE2::FRAME_BAR_LEFT]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oFrameBarRightHotkey);
-		curMenuInfo->ElementList[(int)eHK_PAGE2::FRAME_BAR_RIGHT]->SetCurItemLabel(labelBuf);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE2::FRAME_BAR_RIGHT]->SetCurItemLabel(labelBuf);
 
 		break;
 	}

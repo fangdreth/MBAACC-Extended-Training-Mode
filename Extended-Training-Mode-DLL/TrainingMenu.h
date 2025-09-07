@@ -4,9 +4,32 @@
 #include "..\Common\Common.h"
 
 const DWORD MBAA_ReadDataFile = 0x00407c10;
+const DWORD MBAA_StringCopyFromIndex = 0x004079d0;
 //wrapper for call to ReadDataFile (misleading name? pulled straight from ghidra)
 //subtract 4 bytes from actual destination to get dest input
 void ReadDataFile(void* dest, const char* name, int nameLength);
+
+void CopyStringFromIndex(void* dest, void* source, int startIndex, int copyLength);
+
+struct MenuString
+{
+	int base;
+	union {
+		char* pLongString;
+		char shortString[0x10];
+	};
+	int length;
+	int maxLength;
+};
+
+template <typename T>
+struct MenuList
+{
+	int base;
+	T* listStart;
+	T* listEnd;
+	T* listMaxEnd;
+};
 
 int GetHotkeyPressed();
 
@@ -27,18 +50,12 @@ void GetKeyStateMenuLabel(char* buffer, KeyState oHotkey);
 
 struct Item //scrolling items on right
 {
-	void* vftable;
-	char label[0x10]; // becomes pointer if size > 0xf
-	int labelLength;
-	int labelMaxLength;
-	int nameBase;
-	char tag[0x10]; // becomes pointer if size > 0xf
-	int tagLength;
-	int tagMaxLength;
+	MenuString label;
+	MenuString tag;
 	int value;
 };
 
-CHECKOFFSET(Item, tag, 0x20)
+CHECKOFFSET(Item, tag, 0x1c)
 CHECKOFFSET(Item, value, 0x38)
 CHECKSIZE(Item, 0x3c)
 
@@ -52,20 +69,11 @@ struct Element //listed elements on left
 	int timeNotHovered;
 	int bottomMargin;
 	float textOpacity;
-	int labelBase;
-	char label[0x10]; // becomes pointer if size > 0xf
-	int labelLength;
-	int labelMaxLength;
-	int tagBase;
-	char tag[0x10]; // becomes pointer if size > 0xf
-	int tagLength;
-	int tagMaxLength;
+	MenuString label;
+	MenuString tag;
 	int selectedItem;
 	int selectItemLabelXOffset;
-	int ListInput;
-	Item** ItemList;
-	Item** ItemListEnd;
-	UNUSED(0x04);
+	MenuList<Item*> itemList;
 
 	void SetItemLabel(const char* newLabel, int itemIndex);
 
@@ -82,9 +90,9 @@ struct Element //listed elements on left
 	int GetItemListSize();
 };
 
-CHECKOFFSET(Element, label, 0x24)
-CHECKOFFSET(Element, tag, 0x40)
-CHECKOFFSET(Element, ItemList, 0x64)
+CHECKOFFSET(Element, label, 0x20)
+CHECKOFFSET(Element, tag, 0x3c)
+CHECKOFFSET(Element, itemList, 0x60)
 CHECKSIZE(Element, 0x70)
 
 struct MenuWindow;
@@ -93,48 +101,65 @@ struct MenuInfo
 {
 	void* vftable;
 	MenuWindow* parentWindow;
-	int tagBase;
-	char tag[0x10]; // becomes pointer if size > 0xf
-	int tagLength;
-	int tagMaxLength;
-	int blankBase;
-	char blank[0x10]; // becomes pointer if size > 0xf
-	int blankLength;
-	int blankMaxLength;
+	MenuString label;
+	MenuString blank;
 	int selectedElement;
 	int prevSelectedElement;
-	int ListInput;
-	Element** ElementList;
-	Element** ElementListEnd;
-	int field_0x54;
-	int field_0x58;
-	int field_0x5c;
-	int field_0x60;
-	int field_0x64;
+	MenuList<Element*> elementList;
+	MenuList<MenuString> selectableList;
 	int finishedDrawing;
 	int timeDisplayed;
 	int field_0x70;
 	int close;
 };
 
-CHECKOFFSET(MenuInfo, tagMaxLength, 0x20)
-CHECKOFFSET(MenuInfo, ElementList, 0x4c)
+CHECKOFFSET(MenuInfo, label, 0x8)
+CHECKOFFSET(MenuInfo, elementList, 0x48)
+CHECKOFFSET(MenuInfo, selectableList, 0x58)
 CHECKSIZE(MenuInfo, 0x78)
+
+struct InfoWindow
+{
+	int mode;
+	int timeOpen;
+	int field_0x8;
+	int field_0xc;
+	int field_0x10;
+	int field_0x14;
+	int field_0x18;
+	int field_0x1c;
+	int field_0x20;
+	MenuString hoveredTag;
+	MenuString selectedItem;
+	int field_0x5c;
+	int field_0x60;
+	MenuString font;
+	int fontSize;
+	int field_0x84;
+	int fontThickness;
+	MenuList<char*> infoStructList;
+	MenuString hoveredTagCopy;
+	MenuString label;
+	int zLayer;
+	int yPosition;
+	int windowHeight;
+	int field_0xe0;
+	int field_0xe4;
+	float animationProgress;
+};
+
+CHECKOFFSET(InfoWindow, font, 0x64)
+CHECKOFFSET(InfoWindow, label, 0xb8)
+CHECKSIZE(InfoWindow, 0xec)
 
 struct MenuWindow
 {
 	void* vftable;
 	int menuInfoIndex;
 	int field_0x8;
-	int ListInput;
-	MenuInfo** MenuInfoList;
-	MenuInfo** MenuInfoListEnd;
-	int field_0x18;
+	MenuList<MenuInfo*> menuInfoList;
 	int didPress;
-	int hoveredTagBase;
-	char hoveredTag[0x10]; // becomes pointer if size > 0xf
-	int hoveredTagLength;
-	int hoveredTagMaxLength;
+	MenuString hoveredTag;
 	int field_0x3c;
 	int field_0x40;
 	int yOffset;
@@ -143,10 +168,7 @@ struct MenuWindow
 	int field_0x50;
 	int field_0x54;
 	int field_0x58;
-	int labelBase;
-	char label[0x10]; // becomes pointer if size > 0xf
-	int labelLength;
-	int labelMaxLength;
+	MenuString label;
 	int playerInControl;
 	int isRootMenu;
 	int timeOpened;
@@ -172,15 +194,15 @@ struct MenuWindow
 	MenuWindow* TrainingDisplay;
 	MenuWindow* DummySettings;
 	int u_hideMenu;
-	void* InformationMenu;
+	InfoWindow* InformationMenu;
 	MenuWindow* ExtendedSettings;
 	MenuWindow* HotkeySettings;
 
 	void SetLabel(const char* newLabel);
 };
 
-CHECKOFFSET(MenuWindow, MenuInfoList, 0x10)
-CHECKOFFSET(MenuWindow, labelBase, 0x5c)
+CHECKOFFSET(MenuWindow, menuInfoList, 0xc)
+CHECKOFFSET(MenuWindow, label, 0x5c)
 CHECKOFFSET(MenuWindow, isRootMenu, 0x7c)
 CHECKOFFSET(MenuWindow, dimScreenPercentage, 0xc0)
 CHECKSIZE(MenuWindow, 0xe8)

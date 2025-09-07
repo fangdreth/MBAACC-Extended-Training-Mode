@@ -16,6 +16,22 @@ void ReadDataFile(void* dest, const char* name, int nameLength) {
 	}
 }
 
+//wrapper for call to CopyStringFromIndex
+//subtract 4 bytes from actual destination to get dest input
+void CopyStringFromIndex(void* dest, void* source, int startIndex, int copyLength) {
+	//dest should be ecx
+	//source should be stack[4]
+	//startIndex should be stack[8]
+	//copyLength should be stack[0xc]
+	__asm {
+		mov ecx, dest;
+		push copyLength;
+		push startIndex;
+		push source;
+		call[MBAA_StringCopyFromIndex];
+	}
+}
+
 int GetHotkeyPressed()
 {
 	//http://www.kbdedit.com/manual/low_level_vk_list.html
@@ -71,40 +87,40 @@ void GetKeyStateMenuLabel(char* buffer, KeyState oHotkey) {
 }
 
 void Element::SetItemLabel(const char* newLabel, int itemIndex) {
-	if (ItemList == 0x0 || ItemListEnd - ItemList <= itemIndex) {
+	if (itemList.listStart == 0x0 || itemList.listEnd - itemList.listStart <= itemIndex) {
 		return;
 	}
-	Item* targetItem = ItemList[itemIndex];
+	Item* targetItem = itemList.listStart[itemIndex];
 	ReadDataFile((void*)(targetItem), newLabel, strlen(newLabel));
 }
 
 void Element::SetCurItemLabel(const char* newLabel) {
 	int itemIndex = selectedItem;
-	if (ItemList == 0x0 || ItemListEnd - ItemList <= itemIndex) {
+	if (itemList.listStart == 0x0 || itemList.listEnd - itemList.listStart <= itemIndex) {
 		return;
 	}
-	Item* targetItem = ItemList[itemIndex];
+	Item* targetItem = itemList.listStart[itemIndex];
 	ReadDataFile((void*)(targetItem), newLabel, strlen(newLabel));
 }
 
 //vftable[6]
 int Element::GetItemValue(int itemIndex) {
-	if (ItemList == 0x0 || ItemListEnd - ItemList <= itemIndex) {
+	if (itemList.listStart == 0x0 || itemList.listEnd - itemList.listStart <= itemIndex) {
 		return 0;
 	}
-	return ItemList[itemIndex]->value;
+	return itemList.listStart[itemIndex]->value;
 }
 
 //vftable[11]
 int Element::GetItemListSize() {
-	if (ItemList == 0x0) {
+	if (itemList.listStart == 0x0) {
 		return 0;
 	}
-	return ItemListEnd - ItemList;
+	return itemList.listEnd - itemList.listStart;
 }
 
 void MenuWindow::SetLabel(const char* newLabel) {
-	ReadDataFile((void*)(&labelBase), newLabel, strlen(newLabel));
+	ReadDataFile((void*)(&label), newLabel, strlen(newLabel));
 }
 
 // --- Vectors guide ---
@@ -150,17 +166,17 @@ void DefaultP1(MenuInfo* menuInfo) {
 	nREV_ID_3 = defREV_ID;
 	nREV_ID_4 = defREV_ID;
 
-	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_TYPE]->selectedItem = defREVERSAL_TYPE;
-	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_1]->selectedItem = defREVERSAL_SLOT_1;
-	menuInfo->ElementList[(int)eREVERSALS::WEIGHT_1]->selectedItem = defREV_SLOT_1_WEIGHT;
-	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_2]->selectedItem = defREVERSAL_SLOT_2;
-	menuInfo->ElementList[(int)eREVERSALS::WEIGHT_2]->selectedItem = defREV_SLOT_2_WEIGHT;
-	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_3]->selectedItem = defREVERSAL_SLOT_3;
-	menuInfo->ElementList[(int)eREVERSALS::WEIGHT_3]->selectedItem = defREV_SLOT_3_WEIGHT;
-	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_SLOT_4]->selectedItem = defREVERSAL_SLOT_4;
-	menuInfo->ElementList[(int)eREVERSALS::WEIGHT_4]->selectedItem = defREV_SLOT_4_WEIGHT;
-	menuInfo->ElementList[(int)eREVERSALS::NO_REVERSAL_WEIGHT]->selectedItem = defNO_REV_WEIGHT;
-	menuInfo->ElementList[(int)eREVERSALS::REVERSAL_DELAY]->selectedItem = defREVERSAL_DELAY;
+	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_TYPE]->selectedItem = defREVERSAL_TYPE;
+	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_1]->selectedItem = defREVERSAL_SLOT_1;
+	(menuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_1]->selectedItem = defREV_SLOT_1_WEIGHT;
+	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_2]->selectedItem = defREVERSAL_SLOT_2;
+	(menuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_2]->selectedItem = defREV_SLOT_2_WEIGHT;
+	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_3]->selectedItem = defREVERSAL_SLOT_3;
+	(menuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_3]->selectedItem = defREV_SLOT_3_WEIGHT;
+	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_4]->selectedItem = defREVERSAL_SLOT_4;
+	(menuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_4]->selectedItem = defREV_SLOT_4_WEIGHT;
+	(menuInfo->elementList).listStart[(int)eREVERSALS::NO_REVERSAL_WEIGHT]->selectedItem = defNO_REV_WEIGHT;
+	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_DELAY]->selectedItem = defREVERSAL_DELAY;
 }
 
 //Page 2
@@ -205,17 +221,17 @@ void DefaultP2(MenuInfo* menuInfo) {
 	nTRUE_HITS_UNTIL_BUNKER = defTRUE_HITS_BUNKER;
 	nTRUE_HITS_UNTIL_FORCE_GUARD = defTRUE_HITS_FORCE_GUARD;
 
-	menuInfo->ElementList[(int)eTRAINING::PENALTY_RESET]->selectedItem = defPEN_RESET;
-	menuInfo->ElementList[(int)eTRAINING::GUARD_BAR_RESET]->selectedItem = defGUARD_RESET;
-	menuInfo->ElementList[(int)eTRAINING::EX_GUARD]->selectedItem = defEX_GUARD;
-	menuInfo->ElementList[(int)eTRAINING::P1_METER]->selectedItem = defP1_METER;
-	menuInfo->ElementList[(int)eTRAINING::P2_METER]->selectedItem = defP2_METER;
-	menuInfo->ElementList[(int)eTRAINING::P1_HEALTH]->selectedItem = defP1_HEALTH;
-	menuInfo->ElementList[(int)eTRAINING::P2_HEALTH]->selectedItem = defP2_HEALTH;
-	menuInfo->ElementList[(int)eTRAINING::HITS_UNTIL_BURST]->selectedItem = defHITS_BURST;
-	menuInfo->ElementList[(int)eTRAINING::HITS_UNTIL_BUNKER]->selectedItem = defHITS_BUNKER;
-	menuInfo->ElementList[(int)eTRAINING::HITS_UNTIL_FORCE_GUARD]->selectedItem = defHITS_FORCE_GUARD;
-	menuInfo->ElementList[(int)eTRAINING::FORCE_GUARD_STANCE]->selectedItem = defFORCE_GUARD_STANCE;
+	(menuInfo->elementList).listStart[(int)eTRAINING::PENALTY_RESET]->selectedItem = defPEN_RESET;
+	(menuInfo->elementList).listStart[(int)eTRAINING::GUARD_BAR_RESET]->selectedItem = defGUARD_RESET;
+	(menuInfo->elementList).listStart[(int)eTRAINING::EX_GUARD]->selectedItem = defEX_GUARD;
+	(menuInfo->elementList).listStart[(int)eTRAINING::P1_METER]->selectedItem = defP1_METER;
+	(menuInfo->elementList).listStart[(int)eTRAINING::P2_METER]->selectedItem = defP2_METER;
+	(menuInfo->elementList).listStart[(int)eTRAINING::P1_HEALTH]->selectedItem = defP1_HEALTH;
+	(menuInfo->elementList).listStart[(int)eTRAINING::P2_HEALTH]->selectedItem = defP2_HEALTH;
+	(menuInfo->elementList).listStart[(int)eTRAINING::HITS_UNTIL_BURST]->selectedItem = defHITS_BURST;
+	(menuInfo->elementList).listStart[(int)eTRAINING::HITS_UNTIL_BUNKER]->selectedItem = defHITS_BUNKER;
+	(menuInfo->elementList).listStart[(int)eTRAINING::HITS_UNTIL_FORCE_GUARD]->selectedItem = defHITS_FORCE_GUARD;
+	(menuInfo->elementList).listStart[(int)eTRAINING::FORCE_GUARD_STANCE]->selectedItem = defFORCE_GUARD_STANCE;
 }
 
 //Page 3
@@ -234,12 +250,12 @@ void DefaultP3(MenuInfo* menuInfo) {
 	nTHROW_PROTECTION_HIGHLIGHT = defTHROW_PROT_HIGHLIGHT;
 	nIDLE_HIGHLIGHT = defIDLE_HIGHLIGHT;
 
-	menuInfo->ElementList[(int)eHIGHLIGHTS::HIGHLIGHTS]->selectedItem = defHIGHLIGHTS;
-	menuInfo->ElementList[(int)eHIGHLIGHTS::GUARD]->selectedItem = defGUARD_HIGHLIGHT;
-	menuInfo->ElementList[(int)eHIGHLIGHTS::HIT]->selectedItem = defHIT_HIGHLIGHT;
-	menuInfo->ElementList[(int)eHIGHLIGHTS::ARMOR]->selectedItem = defARMOR_HIGHLIGHT;
-	menuInfo->ElementList[(int)eHIGHLIGHTS::THROW_PROTECTION]->selectedItem = defTHROW_PROT_HIGHLIGHT;
-	menuInfo->ElementList[(int)eHIGHLIGHTS::IDLE]->selectedItem = defIDLE_HIGHLIGHT;
+	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::HIGHLIGHTS]->selectedItem = defHIGHLIGHTS;
+	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::GUARD]->selectedItem = defGUARD_HIGHLIGHT;
+	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::HIT]->selectedItem = defHIT_HIGHLIGHT;
+	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::ARMOR]->selectedItem = defARMOR_HIGHLIGHT;
+	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::THROW_PROTECTION]->selectedItem = defTHROW_PROT_HIGHLIGHT;
+	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::IDLE]->selectedItem = defIDLE_HIGHLIGHT;
 }
 
 //Page 4
@@ -266,11 +282,11 @@ void DefaultP4(MenuInfo* menuInfo) {
 	nTRUE_P2_X_LOC = defTRUE_P2_X;
 	nTRUE_P2_ASSIST_X_LOC = defTRUE_P2_ASSIST_X;
 
-	menuInfo->ElementList[(int)ePOSITIONS::RESET_TO_POSITIONS]->selectedItem = defRESET_POS;
-	menuInfo->ElementList[(int)ePOSITIONS::P1_POSITION]->selectedItem = defP1_X;
-	menuInfo->ElementList[(int)ePOSITIONS::P1_ASSIST_POSITION]->selectedItem = defP1_ASSIST_X;
-	menuInfo->ElementList[(int)ePOSITIONS::P2_POSITION]->selectedItem = defP2_X;
-	menuInfo->ElementList[(int)ePOSITIONS::P2_ASSIST_POSITION]->selectedItem = defP2_ASSIST_X;
+	(menuInfo->elementList).listStart[(int)ePOSITIONS::RESET_TO_POSITIONS]->selectedItem = defRESET_POS;
+	(menuInfo->elementList).listStart[(int)ePOSITIONS::P1_POSITION]->selectedItem = defP1_X;
+	(menuInfo->elementList).listStart[(int)ePOSITIONS::P1_ASSIST_POSITION]->selectedItem = defP1_ASSIST_X;
+	(menuInfo->elementList).listStart[(int)ePOSITIONS::P2_POSITION]->selectedItem = defP2_X;
+	(menuInfo->elementList).listStart[(int)ePOSITIONS::P2_ASSIST_POSITION]->selectedItem = defP2_ASSIST_X;
 }
 
 //Page 5
@@ -287,11 +303,11 @@ void DefaultP5(MenuInfo* menuInfo) {
 	nF_MAIDS_HEARTS = defMAIDS_HEARTS;
 	nRYOUGI_KNIFE = defRYOUGI_KNIFE;
 
-	menuInfo->ElementList[(int)eCHARACTER::SION_BULLETS]->selectedItem = defSION_BULLETS;
-	menuInfo->ElementList[(int)eCHARACTER::ROA_VISIBLE_CHARGES]->selectedItem = defROA_VISIBLE;
-	menuInfo->ElementList[(int)eCHARACTER::ROA_HIDDEN_CHARGES]->selectedItem = defROA_HIDDEN;
-	menuInfo->ElementList[(int)eCHARACTER::F_MAIDS_HEARTS]->selectedItem = defMAIDS_HEARTS;
-	menuInfo->ElementList[(int)eCHARACTER::RYOUGI_KNIFE]->selectedItem = defRYOUGI_KNIFE;
+	(menuInfo->elementList).listStart[(int)eCHARACTER::SION_BULLETS]->selectedItem = defSION_BULLETS;
+	(menuInfo->elementList).listStart[(int)eCHARACTER::ROA_VISIBLE_CHARGES]->selectedItem = defROA_VISIBLE;
+	(menuInfo->elementList).listStart[(int)eCHARACTER::ROA_HIDDEN_CHARGES]->selectedItem = defROA_HIDDEN;
+	(menuInfo->elementList).listStart[(int)eCHARACTER::F_MAIDS_HEARTS]->selectedItem = defMAIDS_HEARTS;
+	(menuInfo->elementList).listStart[(int)eCHARACTER::RYOUGI_KNIFE]->selectedItem = defRYOUGI_KNIFE;
 }
 
 //Page 6
@@ -308,11 +324,11 @@ void DefaultP6(MenuInfo* menuInfo) {
 	nORIGIN_STYLE = defORIGIN_STYLE;
 	nDRAW_GROUND = defDRAW_GROUND;
 
-	menuInfo->ElementList[(int)eHITBOXES::DISPLAY_HITBOXES]->selectedItem = defDISPLAY_HITBOXES;
-	menuInfo->ElementList[(int)eHITBOXES::HITBOX_STYLE]->selectedItem = defHITBOX_STYLE;
-	menuInfo->ElementList[(int)eHITBOXES::COLOR_BLIND_MODE]->selectedItem = defCOLOR_BLIND;
-	menuInfo->ElementList[(int)eHITBOXES::ORIGIN_STYLE]->selectedItem = defORIGIN_STYLE;
-	menuInfo->ElementList[(int)eHITBOXES::DRAW_GROUND]->selectedItem = defDRAW_GROUND;
+	(menuInfo->elementList).listStart[(int)eHITBOXES::DISPLAY_HITBOXES]->selectedItem = defDISPLAY_HITBOXES;
+	(menuInfo->elementList).listStart[(int)eHITBOXES::HITBOX_STYLE]->selectedItem = defHITBOX_STYLE;
+	(menuInfo->elementList).listStart[(int)eHITBOXES::COLOR_BLIND_MODE]->selectedItem = defCOLOR_BLIND;
+	(menuInfo->elementList).listStart[(int)eHITBOXES::ORIGIN_STYLE]->selectedItem = defORIGIN_STYLE;
+	(menuInfo->elementList).listStart[(int)eHITBOXES::DRAW_GROUND]->selectedItem = defDRAW_GROUND;
 }
 
 //Page 7
@@ -323,8 +339,8 @@ void DefaultP7(MenuInfo* menuInfo) {
 	nSAVE_STATE_SLOT = defSAVE_SLOT;
 	nLOAD_RNG = defLOAD_RNG;
 
-	menuInfo->ElementList[(int)eSAVE_STATES::SAVE_STATE_SLOT]->selectedItem = defSAVE_SLOT;
-	menuInfo->ElementList[(int)eSAVE_STATES::LOAD_RNG]->selectedItem = defLOAD_RNG;
+	(menuInfo->elementList).listStart[(int)eSAVE_STATES::SAVE_STATE_SLOT]->selectedItem = defSAVE_SLOT;
+	(menuInfo->elementList).listStart[(int)eSAVE_STATES::LOAD_RNG]->selectedItem = defLOAD_RNG;
 }
 
 //Page 8
@@ -351,12 +367,12 @@ void DefaultP8(MenuInfo* menuInfo) {
 
 	nTRUE_SCROLL_DISPLAY = defTRUE_SCROLL_DISPLAY;
 
-	menuInfo->ElementList[(int)eFRAME_DATA::FRAME_DATA]->selectedItem = defFRAME_DATA;
-	menuInfo->ElementList[(int)eFRAME_DATA::IN_GAME_FRAME_DISPLAY]->selectedItem = defIN_GAME_FRAME_DISPLAY;
-	menuInfo->ElementList[(int)eFRAME_DATA::SHOW_HITSTOP_AND_FREEZE]->selectedItem = defSHOW_HITSTOP_AND_FREEZE;
-	menuInfo->ElementList[(int)eFRAME_DATA::SHOW_INPUTS]->selectedItem = defSHOW_INPUTS;
-	menuInfo->ElementList[(int)eFRAME_DATA::SHOW_CANCEL_WINDOWS]->selectedItem = defSHOW_CANCEL;
-	menuInfo->ElementList[(int)eFRAME_DATA::SCROLL_DISPLAY]->selectedItem = defSCROLL_DISPLAY;
+	(menuInfo->elementList).listStart[(int)eFRAME_DATA::FRAME_DATA]->selectedItem = defFRAME_DATA;
+	(menuInfo->elementList).listStart[(int)eFRAME_DATA::IN_GAME_FRAME_DISPLAY]->selectedItem = defIN_GAME_FRAME_DISPLAY;
+	(menuInfo->elementList).listStart[(int)eFRAME_DATA::SHOW_HITSTOP_AND_FREEZE]->selectedItem = defSHOW_HITSTOP_AND_FREEZE;
+	(menuInfo->elementList).listStart[(int)eFRAME_DATA::SHOW_INPUTS]->selectedItem = defSHOW_INPUTS;
+	(menuInfo->elementList).listStart[(int)eFRAME_DATA::SHOW_CANCEL_WINDOWS]->selectedItem = defSHOW_CANCEL;
+	(menuInfo->elementList).listStart[(int)eFRAME_DATA::SCROLL_DISPLAY]->selectedItem = defSCROLL_DISPLAY;
 }
 
 //Page 9
@@ -373,9 +389,9 @@ void DefaultP9(MenuInfo* menuInfo) {
 
 	nTRUE_SEED = defTRUE_SEED;
 
-	menuInfo->ElementList[(int)eRNG::CUSTOM_RNG]->selectedItem = defCUSTOM_RNG;
-	menuInfo->ElementList[(int)eRNG::RATE]->selectedItem = defRATE;
-	menuInfo->ElementList[(int)eRNG::SEED]->selectedItem = defSEED;
+	(menuInfo->elementList).listStart[(int)eRNG::CUSTOM_RNG]->selectedItem = defCUSTOM_RNG;
+	(menuInfo->elementList).listStart[(int)eRNG::RATE]->selectedItem = defRATE;
+	(menuInfo->elementList).listStart[(int)eRNG::SEED]->selectedItem = defSEED;
 }
 
 //Page 10
@@ -404,10 +420,10 @@ void DefaultP10(MenuInfo* menuInfo) {
 
 	nTRUE_FRAME_DISPLAY_Y = defTRUE_FRAME_DISPLAY_Y;
 
-	menuInfo->ElementList[(int)eUI::SHOW_STATS]->selectedItem = defSHOW_STATS;
-	menuInfo->ElementList[(int)eUI::P1_INPUT_DISPLAY]->selectedItem = defP1_INPUT;
-	menuInfo->ElementList[(int)eUI::P2_INPUT_DISPLAY]->selectedItem = defP2_INPUT;
-	menuInfo->ElementList[(int)eUI::FRAME_DISPLAY_Y]->selectedItem = defFRAME_DISPLAY_Y;
+	(menuInfo->elementList).listStart[(int)eUI::SHOW_STATS]->selectedItem = defSHOW_STATS;
+	(menuInfo->elementList).listStart[(int)eUI::P1_INPUT_DISPLAY]->selectedItem = defP1_INPUT;
+	(menuInfo->elementList).listStart[(int)eUI::P2_INPUT_DISPLAY]->selectedItem = defP2_INPUT;
+	(menuInfo->elementList).listStart[(int)eUI::FRAME_DISPLAY_Y]->selectedItem = defFRAME_DISPLAY_Y;
 }
 
 //Page 11
@@ -424,11 +440,11 @@ void DefaultP11(MenuInfo* menuInfo) {
 	nHIDE_EXTRAS = defHIDE_EXTRAS;
 	nBACKGROUND = defBACKGROUND;
 
-	menuInfo->ElementList[(int)eSYSTEM::GAME_SPEED]->selectedItem = defGAME_SPEED;
-	menuInfo->ElementList[(int)eSYSTEM::HIDE_HUD]->selectedItem = defHIDE_HUD;
-	menuInfo->ElementList[(int)eSYSTEM::HIDE_SHADOWS]->selectedItem = defHIDE_SHADOWS;
-	menuInfo->ElementList[(int)eSYSTEM::HIDE_EXTRAS]->selectedItem = defHIDE_EXTRAS;
-	menuInfo->ElementList[(int)eSYSTEM::BACKGROUND]->selectedItem = defBACKGROUND;
+	(menuInfo->elementList).listStart[(int)eSYSTEM::GAME_SPEED]->selectedItem = defGAME_SPEED;
+	(menuInfo->elementList).listStart[(int)eSYSTEM::HIDE_HUD]->selectedItem = defHIDE_HUD;
+	(menuInfo->elementList).listStart[(int)eSYSTEM::HIDE_SHADOWS]->selectedItem = defHIDE_SHADOWS;
+	(menuInfo->elementList).listStart[(int)eSYSTEM::HIDE_EXTRAS]->selectedItem = defHIDE_EXTRAS;
+	(menuInfo->elementList).listStart[(int)eSYSTEM::BACKGROUND]->selectedItem = defBACKGROUND;
 }
 
 //All pages
