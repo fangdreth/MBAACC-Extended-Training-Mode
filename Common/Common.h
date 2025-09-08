@@ -440,6 +440,7 @@ const ADDRESS adP1FN2Input = 0x37144D;
 
 //Vanilla training menu
 const ADDRESS adBS_MAGIC_CIRCUIT = 0x37C1FC;
+const ADDRESS adBS_GUARD_GAUGE = 0x37C200;
 
 //FrameBar Constants
 const int DISPLAY_RANGE = 75;

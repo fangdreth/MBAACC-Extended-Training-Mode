@@ -1995,11 +1995,18 @@ void HandleTrainingPage() {
 	}
 
 	if (nGUARD_BAR_RESET == 1) {
-		int maxGauges[3] = { 8000, 7000, 10500 };
-		if (pP1->inBlockstun == 0) pP1->guardGauge = maxGauges[pP1->moon];
-		if (pP2->inBlockstun == 0) pP2->guardGauge = maxGauges[pP2->moon];
-		if (pP3->exists && pP3->inBlockstun == 0) pP3->guardGauge = maxGauges[pP3->moon];
-		if (pP4->exists && pP4->inBlockstun == 0) pP4->guardGauge = maxGauges[pP4->moon];
+		float mults[5] = { 1.0, 0.75, 0.5, 0.25, 0.0 };
+		int guardSetting = *(short*)(adMBAABase + adBS_GUARD_GAUGE);
+		int gauges[3] = { 8000 * mults[guardSetting], 7000 * mults[guardSetting], 10500 * mults[guardSetting] };
+		if (pP1->inBlockstun == 0) pP1->guardGauge = gauges[pP1->moon];
+		if (pP2->inBlockstun == 0) pP2->guardGauge = gauges[pP2->moon];
+		if (pP3->exists && pP3->inBlockstun == 0) pP3->guardGauge = gauges[pP3->moon];
+		if (pP4->exists && pP4->inBlockstun == 0) pP4->guardGauge = gauges[pP4->moon];
+
+		if (pP1->guardGaugeState == 2) pP1->guardGaugeState = 1;
+		if (pP2->guardGaugeState == 2) pP2->guardGaugeState = 1;
+		if (pP3->exists && pP3->guardGaugeState == 2) pP3->guardGaugeState = 1;
+		if (pP4->exists && pP4->guardGaugeState == 2) pP4->guardGaugeState = 1;
 	}
 
 	if (nEX_GUARD == 1 || (nEX_GUARD == 2 && rand() % 2 == 0)) {
@@ -2930,6 +2937,17 @@ void ResetCallback() {
 			}
 			break;
 		}
+
+		int gauges[3] = { 8000, 7000, 10500 };
+		pP1->guardGauge = gauges[pP1->moon];
+		pP2->guardGauge = gauges[pP2->moon];
+		if (pP3->exists) pP3->guardGauge = gauges[pP3->moon];
+		if (pP4->exists) pP4->guardGauge = gauges[pP4->moon];
+
+		pP1->guardGaugeState = 1;
+		pP2->guardGaugeState = 1;
+		if (pP3->exists) pP3->guardGaugeState = 1;
+		if (pP4->exists) pP4->guardGaugeState = 1;
 
 		int tempX;
 		if (nSavedP1ActiveChar != 0) {
