@@ -156,7 +156,7 @@ void initRegistryValues()
 
 	ReadFromRegistry(sFRAME_BAR_Y, &nTRUE_FRAME_DISPLAY_Y);
 	if (nTRUE_FRAME_DISPLAY_Y == 440) nFRAME_DISPLAY_Y = 2;
-	else if (nTRUE_FRAME_DISPLAY_Y == 0) nFRAME_DISPLAY_Y = 0;
+	else if (nTRUE_FRAME_DISPLAY_Y == 10) nFRAME_DISPLAY_Y = 0;
 	ReadFromRegistry(sP1_INPUT_DISPLAY, &nP1_INPUT_DISPLAY);
 	ReadFromRegistry(sP2_INPUT_DISPLAY, &nP2_INPUT_DISPLAY);
 	if (nP1_INPUT_DISPLAY != 0 || nP2_INPUT_DISPLAY != 0) {
@@ -3821,7 +3821,6 @@ MenuWindow* InitMenuWindow(MenuWindow* menuWindow) {
 }
 
 void AddSelectElement(MenuInfo* menuInfo, std::vector<const char*> elementVector, int pageNum, int elementNum) {
-	//std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
 	int vSize = size(elementVector);
 	Element* element = NEW_SELECT_ELEMENT();
 	char tempTag[16];
@@ -3841,7 +3840,6 @@ void AddSelectElement(MenuInfo* menuInfo, std::vector<const char*> elementVector
 }
 
 void AddNormalElement(MenuInfo* menuInfo, std::vector<const char*> elementVector, int pageNum, int elementNum) {
-	//std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
 	Element* element = NEW_NORMAL_ELEMENT();
 	char tempTag[16];
 	snprintf(tempTag, 15, "%i_%i_0_n", pageNum, elementNum);
@@ -4217,148 +4215,172 @@ void HandleExtendedMenu() {
 }
 
 int ScrollAccelTimer = 0;
-int ScrollAccelTimerResetTimer = 0;
-bool LoopingScrolling(Element* element, int& storage, int min, int max, int interval = 1, int accel = 0) {
+const int ScrollAccelThreshold = 50;
+bool LoopingScrolling(Element* element, int& storage, int min, int max, int interval = 1, int accelInterval = 0) {
 	bool retVal = false;
-	int neutralIndex = 1;
+	enum index {
+		LEFT, MIDDLE, RIGHT
+	};
+	int item = element->selectedItem;
+	int targetIndex = MIDDLE;
 
-	if (accel != 0) {
-		if (ScrollAccelTimerResetTimer > 10) {
-			ScrollAccelTimer = 0;
-		}
-		if (ScrollAccelTimer > 10) {
-			interval *= (int)(accel * ScrollAccelTimer / 24);
+	if (accelInterval != 0) {
+		if (ScrollAccelTimer >= ScrollAccelThreshold) {
+			interval = accelInterval;
+			if (storage % accelInterval != 0)
+			{
+				if (item == LEFT) {
+					interval = (storage % accelInterval);
+				}
+				else if (item == RIGHT) {
+					interval = (accelInterval - storage % accelInterval);
+				}
+			}
 		}
 	}
 	else {
 		ScrollAccelTimer = 0;
-		ScrollAccelTimerResetTimer = 0;
 	}
 
-	if (element->selectedItem == neutralIndex - 1) { //left
+	if (item == LEFT) { //left
 		retVal = true;
+		if (storage - interval < min) {
+			interval -= max - min + 1;
+		}
 		storage -= interval;
-		if (storage < min) {
-			storage = max;
-		}
+		
 	}
-	else if (element->selectedItem == neutralIndex + 1) { //right
+	else if (item == RIGHT) { //right
 		retVal = true;
-		storage += interval;
-		if (storage > max) {
-			storage = min;
+		if (storage + interval > max) {
+			interval -= max - min + 1;
 		}
+		storage += interval;
 	}
 
-	if (accel != 0 && element->selectedItem != neutralIndex) {
+	if (accelInterval != 0 &&
+		(*(byte*)(adMBAABase + adP1MenuDirInput) == 4 || *(byte*)(adMBAABase + adP1MenuDirInput) == 6)) {
 		ScrollAccelTimer++;
-		ScrollAccelTimerResetTimer = 0;
 	}
 	else {
-		ScrollAccelTimerResetTimer++;
+		ScrollAccelTimer = 0;
 	}
 
-	element->selectedItem = neutralIndex;
+	element->selectedItem = MIDDLE;
 	return retVal;
 }
 
 
-bool NormalScrolling(Element* element, int& storage, int min, int max, int interval = 1, int accel = 0) {
+bool NormalScrolling(Element* element, int& storage, int min, int max, int interval = 1, int accelInterval = 0) {
 	bool retVal = false;
-	int neutralIndex = 1;
-	int targetIndex = neutralIndex;
+	enum index {
+		LEFT, MIDDLE, RIGHT
+	};
+	int item = element->selectedItem;
+	int targetIndex = MIDDLE;
 
-	if (accel != 0) {
-		if (ScrollAccelTimerResetTimer > 10) {
-			ScrollAccelTimer = 0;
-		}
-		if (ScrollAccelTimer > 10) {
-			interval *= (int)(accel * ScrollAccelTimer / 24);
+	if (accelInterval != 0) {
+		if (ScrollAccelTimer >= ScrollAccelThreshold) {
+			interval = accelInterval;
+			if (storage % accelInterval != 0)
+			{
+				if (item == LEFT) {
+					interval = (storage % accelInterval);
+				}
+				else if (item == RIGHT) {
+					interval = (accelInterval - storage % accelInterval);
+				}
+			}
 		}
 	}
 	else {
 		ScrollAccelTimer = 0;
-		ScrollAccelTimerResetTimer = 0;
 	}
 
 	if (storage == max)
 	{
-		if (element->selectedItem == neutralIndex) { //left
+		if (item == MIDDLE) { //left
 			retVal = true;
 			storage -= interval;
 		}
 	}
 	else if (storage == min)
 	{
-		if (element->selectedItem == neutralIndex) { //right
+		if (item == MIDDLE) { //right
 			retVal = true;
 			storage += interval;
 		}
 	}
 	else
 	{
-		if (element->selectedItem == neutralIndex - 1) { //left
+		if (item == LEFT) { //left
 			retVal = true;
 			storage = max(storage - interval, min);
 		}
-		else if (element->selectedItem == neutralIndex + 1) { //right
+		else if (item == RIGHT) { //right
 			retVal = true;
 			storage = min(storage + interval, max);
 		}
-
-		if (accel != 0 && element->selectedItem != neutralIndex) {
-			ScrollAccelTimer++;
-			ScrollAccelTimerResetTimer = 0;
-		}
-		else {
-			ScrollAccelTimerResetTimer++;
-		}
-
 	}
 
-	if (storage == max) targetIndex = neutralIndex + 1;
-	if (storage == min) targetIndex = neutralIndex - 1;
+	if (accelInterval != 0 && 
+		(*(byte*)(adMBAABase + adP1MenuDirInput) == 4 || *(byte*)(adMBAABase + adP1MenuDirInput) == 6)) {
+		ScrollAccelTimer++;
+	}
+	else {
+		ScrollAccelTimer = 0;
+	}
+
+	if (storage == max) targetIndex = RIGHT;
+	if (storage == min) targetIndex = LEFT;
 	element->selectedItem = targetIndex;
 	return retVal;
 }
 
 void CFMeterScrolling(Element* element, int& storage, bool toggle) {
-	int neutralIndex = 1;
-	int targetIndex = neutralIndex;
+	enum index {
+		LEFT, MIDDLE, RIGHT
+	};
+	int item = element->selectedItem;
+	int targetIndex = MIDDLE;
 	int interval = 100;
+	int accelInterval = 1000;
+
 	if (!toggle) {
-		if (ScrollAccelTimerResetTimer > 10) {
-			ScrollAccelTimer = 0;
-		}
-		if (ScrollAccelTimer > 10) {
-			interval = 100 * (int)(ScrollAccelTimer / 4);
+		if (ScrollAccelTimer >= ScrollAccelThreshold) {
+			interval = accelInterval;
+			if (storage < 30000 && storage % accelInterval != 0)
+			{
+				if (item == LEFT) {
+					interval = (storage % accelInterval);
+				}
+				else if (item == RIGHT) {
+					interval = (accelInterval - storage % accelInterval);
+				}
+			}
 		}
 
 		switch (storage) {
 		case 30002: //BLOOD HEAT
-			if (element->selectedItem == neutralIndex) storage--;
+			if (item == MIDDLE) storage--;
 			break;
 		case 30001: //HEAT
-			if (element->selectedItem == neutralIndex - 1) storage--;
-			if (element->selectedItem == neutralIndex + 1) storage++;
+			if (item == LEFT) storage--;
+			else if (item == RIGHT) storage++;
 			break;
 		case 30000: //MAX
-			if (element->selectedItem == neutralIndex - 1) storage -= 100;
-			if (element->selectedItem == neutralIndex + 1) storage++;
+			if (item == LEFT) storage -= 100;
+			else if (item == RIGHT) storage++;
 			break;
 		case 0:
-			if (element->selectedItem == neutralIndex) storage += 100;
+			if (item == MIDDLE) storage += 100;
 			break;
 		default:
-			if (element->selectedItem == neutralIndex - 1) storage = max(storage - interval, 0);
-			if (element->selectedItem == neutralIndex + 1) storage = min(storage + interval, 30000);
-			
-			if (element->selectedItem != neutralIndex) {
-				ScrollAccelTimer++;
-				ScrollAccelTimerResetTimer = 0;
+			if (item == LEFT) {
+				storage = max(storage - interval, 0);
 			}
-			else {
-				ScrollAccelTimerResetTimer++;
+			else if (item == RIGHT) {
+				storage = min(storage + interval, 30000);
 			}
 			break;
 		}
@@ -4366,132 +4388,150 @@ void CFMeterScrolling(Element* element, int& storage, bool toggle) {
 	else
 	{
 		interval = 1;
-		if (ScrollAccelTimerResetTimer > 10) {
-			ScrollAccelTimer = 0;
+		accelInterval = 10;
+		if (ScrollAccelTimer >= ScrollAccelThreshold) {
+			interval = accelInterval;
+			if (storage < 30000 && storage % accelInterval != 0)
+			{
+				if (item == LEFT) {
+					interval = (storage % accelInterval);
+				}
+				else if (item == RIGHT) {
+					interval = (accelInterval - storage % accelInterval);
+				}
+			}
 		}
-		if (ScrollAccelTimer > 10) {
-			interval = min(1 * (int)(ScrollAccelTimer / 4), 20);
-		}
+
 		switch (storage) {
 		case 30002: //BLOOD HEAT
-			if (element->selectedItem == neutralIndex) storage--;
+			if (item == MIDDLE) storage--;
 			break;
 		case 30001: //HEAT
-			if (element->selectedItem == neutralIndex - 1) storage--;
-			if (element->selectedItem == neutralIndex + 1) storage++;
+			if (item == LEFT) storage--;
+			else if (item == RIGHT) storage++;
 			break;
 		case 30000: //MAX
-			if (element->selectedItem == neutralIndex - 1) storage--;
-			if (element->selectedItem == neutralIndex + 1) storage++;
+			if (item == LEFT) storage--;
+			else if (item == RIGHT) storage++;
 			break;
 		case 0:
-			if (element->selectedItem == neutralIndex) storage += 1;
+			if (item == MIDDLE) storage++;
 			break;
 		default:
-			if (element->selectedItem == neutralIndex - 1) {
+			if (item == LEFT) {
 				if (storage % 100 - interval < 0) {
 					interval -= 100;
 				}
 				storage -= interval;
 			}
-			if (element->selectedItem == neutralIndex + 1) {
+			if (item == RIGHT) {
 				if (storage % 100 + interval > 99) {
 					interval -= 100;
 				}
 				storage += interval;
 			}
-
-			if (element->selectedItem != neutralIndex) {
-				ScrollAccelTimer++;
-				ScrollAccelTimerResetTimer = 0;
-			}
-			else {
-				ScrollAccelTimerResetTimer++;
-			}
 			break;
 		}
 	}
-	if (storage == 30002) targetIndex = neutralIndex + 1;
-	if (storage == 0) targetIndex = neutralIndex - 1;
+
+	if (*(byte*)(adMBAABase + adP1MenuDirInput) == 4 || *(byte*)(adMBAABase + adP1MenuDirInput) == 6) {
+		ScrollAccelTimer++;
+	}
+	else {
+		ScrollAccelTimer = 0;
+	}
+
+	if (storage == 30002) targetIndex = RIGHT;
+	if (storage == 0) targetIndex = LEFT;
 	element->selectedItem = targetIndex;
-	
 }
 
 void HMeterScrolling(Element* element, int& storage, bool toggle) {
-	int neutralIndex = 1;
-	int targetIndex = neutralIndex;
+	enum index {
+		LEFT, MIDDLE, RIGHT
+	};
+	int item = element->selectedItem;
+	int targetIndex = MIDDLE;
 	int interval = 100;
+	int accelInterval = 1000;
+
 	if (!toggle) {
-		if (ScrollAccelTimerResetTimer > 10) {
-			ScrollAccelTimer = 0;
-		}
-		if (ScrollAccelTimer > 10) {
-			interval = 100 * (int)(ScrollAccelTimer / 4);
+		if (ScrollAccelTimer >= ScrollAccelThreshold) {
+			interval = accelInterval;
+			if (storage < 20000 && storage % accelInterval != 0)
+			{
+				if (item == LEFT) {
+					interval = (storage % accelInterval);
+				}
+				else if (item == RIGHT) {
+					interval = (accelInterval - storage % accelInterval);
+				}
+			}
 		}
 
 		switch (storage) {
-		case 20000: //BLOOD HEAT
-			if (element->selectedItem == neutralIndex) storage--;
+		case 20000: //HEAT
+			if (item == MIDDLE) storage--;
 			break;
 		case 0:
-			if (element->selectedItem == neutralIndex) storage += 100;
+			if (item == MIDDLE) storage += 100;
 			break;
 		default:
-			if (element->selectedItem == neutralIndex - 1) storage = max(storage - interval, 0);
-			if (element->selectedItem == neutralIndex + 1) storage = min(storage + interval, 20000);
-
-			if (element->selectedItem != neutralIndex) {
-				ScrollAccelTimer++;
-				ScrollAccelTimerResetTimer = 0;
-			}
-			else {
-				ScrollAccelTimerResetTimer++;
-			}
+			if (item == LEFT) storage = max(storage - interval, 0);
+			if (item == RIGHT) storage = min(storage + interval, 20000);
 			break;
 		}
 	}
 	else
 	{
 		interval = 1;
-		if (ScrollAccelTimerResetTimer > 10) {
-			ScrollAccelTimer = 0;
+		accelInterval = 10;
+		if (ScrollAccelTimer >= ScrollAccelThreshold) {
+			interval = accelInterval;
+			if (storage < 20000 && storage % accelInterval != 0)
+			{
+				if (item == LEFT) {
+					interval = (storage % accelInterval);
+				}
+				else if (item == RIGHT) {
+					interval = (accelInterval - storage % accelInterval);
+				}
+			}
 		}
-		if (ScrollAccelTimer > 10) {
-			interval = min(1 * (int)(ScrollAccelTimer / 4), 20);
-		}
+
 		switch (storage) {
-		case 20000: //BLOOD HEAT
-			if (element->selectedItem == neutralIndex) storage--;
+		case 20000: //HEAT
+			if (item == MIDDLE) storage--;
 			break;
 		case 0:
-			if (element->selectedItem == neutralIndex) storage += 1;
+			if (item == MIDDLE) storage += 1;
 			break;
 		default:
-			if (element->selectedItem == neutralIndex - 1) {
+			if (item == LEFT) {
 				if (storage % 100 - interval < 0) {
 					interval -= 100;
 				}
 				storage -= interval;
 			}
-			if (element->selectedItem == neutralIndex + 1) {
+			if (item == RIGHT) {
 				if (storage % 100 + interval > 99) {
 					interval -= 100;
 				}
 				storage += interval;
 			}
-
-			if (element->selectedItem != neutralIndex) {
-				ScrollAccelTimer++;
-				ScrollAccelTimerResetTimer = 0;
-			}
-			else {
-				ScrollAccelTimerResetTimer++;
-			}
 			break;
 		}
 	}
-	if (storage == 20000) targetIndex = neutralIndex + 1;
-	if (storage == 0) targetIndex = neutralIndex - 1;
+
+	if (*(byte*)(adMBAABase + adP1MenuDirInput) == 4 || *(byte*)(adMBAABase + adP1MenuDirInput) == 6) {
+		ScrollAccelTimer++;
+	}
+	else {
+		ScrollAccelTimer = 0;
+	}
+
+	if (storage == 20000) targetIndex = RIGHT;
+	if (storage == 0) targetIndex = LEFT;
 	element->selectedItem = targetIndex;
 
 }
@@ -4524,105 +4564,126 @@ void HighlightSwitch(int option, std::array<uint8_t, 4>& array) {
 }
 
 void PositionScrolling(Element* element, int& storage, bool toggle) {
-	int neutralIndex = 1;
-	int targetIndex = neutralIndex;
-	int interval = 0x80;
-	storage += 0x10000;
+	enum index {
+		LEFT, MIDDLE, RIGHT
+	};
+	int item = element->selectedItem;
+	int targetIndex = MIDDLE;
+	int interval = 128;
+	int accelInterval = 1000;
+	storage += 0x10000; //change range from -0x10000 - 0x10000 to 0x0 - 0x20000, undone at end of func
 	if (!toggle) {
-		if (ScrollAccelTimerResetTimer > 10) {
-			ScrollAccelTimer = 0;
-		}
-		if (ScrollAccelTimer > 10) {
-			interval = 0x80 * (int)(ScrollAccelTimer / 4);
+		if (ScrollAccelTimer >= ScrollAccelThreshold) {
+			interval = accelInterval;
+			if (storage < 0x20000 && storage % accelInterval != 0)
+			{
+				if (item == LEFT) {
+					interval = (storage % accelInterval);
+				}
+				else if (item == RIGHT) {
+					interval = (accelInterval - storage % accelInterval);
+				}
+			}
 		}
 
 		switch (storage) {
 		case 0x20000:
-			if (element->selectedItem == neutralIndex) storage -= interval;
+			if (item == MIDDLE) storage -= interval;
 			break;
 		case 0x0:
-			if (element->selectedItem == neutralIndex) storage += interval;
+			if (item == MIDDLE) storage += interval;
 			break;
 		default:
-			if (element->selectedItem == neutralIndex - 1) storage = max(storage - interval, 0x0);
-			if (element->selectedItem == neutralIndex + 1) storage = min(storage + interval, 0x20000);
-
-			if (element->selectedItem != neutralIndex) {
-				ScrollAccelTimer++;
-				ScrollAccelTimerResetTimer = 0;
-			}
-			else {
-				ScrollAccelTimerResetTimer++;
-			}
+			if (item == LEFT) storage = max(storage - interval, 0x0);
+			if (item == RIGHT) storage = min(storage + interval, 0x20000);
 			break;
 		}
 	}
 	else
 	{
 		interval = 1;
-		if (ScrollAccelTimerResetTimer > 10) {
-			ScrollAccelTimer = 0;
-		}
-		if (ScrollAccelTimer > 10) {
-			interval = min(1 * (int)(ScrollAccelTimer / 4), 20);
+		accelInterval = 10;
+		if (ScrollAccelTimer >= ScrollAccelThreshold) {
+			interval = accelInterval;
+			if (storage < 0x20000 && storage % accelInterval != 0)
+			{
+				if (item == LEFT) {
+					interval = (storage % accelInterval);
+				}
+				else if (item == RIGHT) {
+					interval = (accelInterval - storage % accelInterval);
+				}
+			}
 		}
 		switch (storage) {
 		case 0x20000:
-			if (element->selectedItem == neutralIndex) storage--;
+			if (item == MIDDLE) storage--;
 			break;
 		case 0x0:
-			if (element->selectedItem == neutralIndex) storage++;
+			if (item == MIDDLE) storage++;
 			break;
 		default:
-			if (element->selectedItem == neutralIndex - 1) {
-				if (storage % 0x80 - interval < 0) {
+			if (item == LEFT) {
+				if (storage % 128 - interval < 0) {
 					interval -= 0x80;
 				}
 				storage -= interval;
 			}
-			if (element->selectedItem == neutralIndex + 1) {
-				if (storage % 0x80 + interval >= 0x80) {
-					interval -= 0x80;
+			if (item == RIGHT) {
+				if (storage % 128 + interval >= 127) {
+					interval -= 128;
 				}
 				storage += interval;
-			}
-
-			if (element->selectedItem != neutralIndex) {
-				ScrollAccelTimer++;
-				ScrollAccelTimerResetTimer = 0;
-			}
-			else {
-				ScrollAccelTimerResetTimer++;
 			}
 			break;
 		}
 	}
-	if (storage == 0x20000) targetIndex = neutralIndex + 1;
-	if (storage == 0x0) targetIndex = neutralIndex - 1;
+
+	if (*(byte*)(adMBAABase + adP1MenuDirInput) == 4 || *(byte*)(adMBAABase + adP1MenuDirInput) == 6) {
+		ScrollAccelTimer++;
+	}
+	else {
+		ScrollAccelTimer = 0;
+	}
+
+	if (storage == 0x20000) targetIndex = RIGHT;
+	if (storage == 0x0) targetIndex = LEFT;
 	element->selectedItem = targetIndex;
-	storage -= 0x10000;
+	storage -= 0x10000; //undoing de-negativing at beginning of func
 }
 
 bool PageScrolling(Element* element, MenuWindow* window, int numPages) {
 	bool retVal = false;
-	int neutralIndex = 1;
+	enum index {
+		LEFT, MIDDLE, RIGHT
+	};
+	int item = element->selectedItem;
 	int curInfo = window->menuInfoIndex;
 	int destInfo = curInfo;
 
-	if (element->selectedItem == neutralIndex - 1) { //left
+	if (item == LEFT) { //left
 		retVal = true;
 		destInfo = window->menuInfoIndex - 1;
 		if (destInfo < 0) destInfo = numPages;
 		window->menuInfoIndex = destInfo;
 	}
-	else if (element->selectedItem == neutralIndex + 1) { //right
+	else if (item == RIGHT) { //right
 		retVal = true;
 		destInfo = window->menuInfoIndex + 1;
 		if (destInfo > numPages) destInfo = 0;
 		window->menuInfoIndex = destInfo;
 	}
 
-	element->selectedItem = neutralIndex;
+	element->selectedItem = MIDDLE;
+	if (retVal)
+	{
+		MenuList elements = (window->menuInfoList).listStart[destInfo]->elementList;
+		int numElements = (elements.listEnd - elements.listStart);
+		if (numElements != 0)
+		{
+			(window->menuInfoList).listStart[destInfo]->selectedElement = numElements - 1;
+		}
+	}
 	return retVal;
 }
 
@@ -4698,6 +4759,9 @@ void ExtendedMenuInputChecking() {
 		case eREVERSALS::DEFAULT:
 			if (bAPos) DefaultP1(curMenuInfo);
 			break;
+		case eREVERSALS::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
+			break;
 		case eREVERSALS::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
 			break;
@@ -4726,8 +4790,8 @@ void ExtendedMenuInputChecking() {
 	}
 	case eXS_PAGES::TRAINING:
 	{
-		int healthInterval = bA ? 1 : 950;
-		int healthAccel = bA ? 6 : 0;
+		int healthInterval = bA ? 1 : 114;
+		int healthAccel = bA ? 10 : 570;
 		switch ((eTRAINING)curMenuInfo->selectedElement) {
 		case eTRAINING::P1_METER:
 			if (pP1->moon != 2) {
@@ -4761,8 +4825,10 @@ void ExtendedMenuInputChecking() {
 			NormalScrolling(curElement, nTRUE_HITS_UNTIL_FORCE_GUARD, 0, 101);
 			break;
 		case eTRAINING::DEFAULT:
-			if (bA)
-				DefaultP2(curMenuInfo);
+			if (bAPos) DefaultP2(curMenuInfo);
+			break;
+		case eTRAINING::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
 			break;
 		case eTRAINING::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -4823,9 +4889,9 @@ void ExtendedMenuInputChecking() {
 			}
 		}
 
-		snprintf(labelBuf, 31, "%i", nTRUE_P1_HEALTH);
+		snprintf(labelBuf, 31, "%i (%.1f%%)", nTRUE_P1_HEALTH, nTRUE_P1_HEALTH / 114.0f);
 		(curMenuInfo->elementList).listStart[(int)eTRAINING::P1_HEALTH]->SetCurItemLabel(labelBuf);
-		snprintf(labelBuf, 31, "%i", nTRUE_P2_HEALTH);
+		snprintf(labelBuf, 31, "%i (%.1f%%)", nTRUE_P2_HEALTH, nTRUE_P2_HEALTH / 114.0f);
 		(curMenuInfo->elementList).listStart[(int)eTRAINING::P2_HEALTH]->SetCurItemLabel(labelBuf);
 
 		snprintf(labelBuf, 31, "%i", nTRUE_HITS_UNTIL_BURST);
@@ -4865,6 +4931,9 @@ void ExtendedMenuInputChecking() {
 			break;
 		case eHIGHLIGHTS::DEFAULT:
 			if (bAPos) DefaultP3(curMenuInfo);
+			break;
+		case eHIGHLIGHTS::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
 			break;
 		case eHIGHLIGHTS::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -4929,6 +4998,9 @@ void ExtendedMenuInputChecking() {
 		case ePOSITIONS::DEFAULT:
 			if (bAPos) DefaultP4(curMenuInfo);
 			break;
+		case ePOSITIONS::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
+			break;
 		case ePOSITIONS::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
 			break;
@@ -4954,6 +5026,9 @@ void ExtendedMenuInputChecking() {
 		case eCHARACTER::DEFAULT:
 			if (bAPos) DefaultP5(curMenuInfo);
 			break;
+		case eCHARACTER::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
+			break;
 		case eCHARACTER::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
 			break;
@@ -4972,6 +5047,9 @@ void ExtendedMenuInputChecking() {
 			break;
 		case eHITBOXES::DEFAULT:
 			if (bAPos) DefaultP6(curMenuInfo);
+			break;
+		case eHITBOXES::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
 			break;
 		case eHITBOXES::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5013,6 +5091,9 @@ void ExtendedMenuInputChecking() {
 			break;
 		case eSAVE_STATES::DEFAULT:
 			if (bAPos) DefaultP7(curMenuInfo);
+			break;
+		case eSAVE_STATES::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
 			break;
 		case eSAVE_STATES::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5078,6 +5159,9 @@ void ExtendedMenuInputChecking() {
 		case eFRAME_DATA::DEFAULT:
 			if (bAPos) DefaultP8(curMenuInfo);
 			break;
+		case eFRAME_DATA::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
+			break;
 		case eFRAME_DATA::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
 			break;
@@ -5095,10 +5179,13 @@ void ExtendedMenuInputChecking() {
 			nCUSTOM_RNG = curElement->selectedItem;
 			break;
 		case eRNG::SEED:
-			LoopingScrolling(curElement, nTRUE_SEED, 0, 0x0000ffff, 1, 24);
+			LoopingScrolling(curElement, nTRUE_SEED, 0, 0x0000ffff, 1, 10);
 			break;
 		case eRNG::DEFAULT:
 			if (bAPos) DefaultP9(curMenuInfo);
+			break;
+		case eRNG::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
 			break;
 		case eRNG::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5123,12 +5210,15 @@ void ExtendedMenuInputChecking() {
 			SetRegistryValue(sP2_INPUT_DISPLAY, curElement->selectedItem);
 			break;
 		case eUI::FRAME_DISPLAY_Y:
-			NormalScrolling(curElement, nTRUE_FRAME_DISPLAY_Y, 10, 440, 10);
+			NormalScrolling(curElement, nTRUE_FRAME_DISPLAY_Y, 10, 440, bA ? 1 : 10);
 			bShowFrameBarYPreview = true;
-			SetRegistryValue(sFRAME_BAR_Y, curElement->selectedItem);
+			SetRegistryValue(sFRAME_BAR_Y, nTRUE_FRAME_DISPLAY_Y);
 			break;
 		case eUI::DEFAULT:
 			if (bAPos) DefaultP10(curMenuInfo);
+			break;
+		case eUI::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
 			break;
 		case eUI::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5157,6 +5247,9 @@ void ExtendedMenuInputChecking() {
 			break;
 		case eSYSTEM::DEFAULT:
 			if (bAPos) DefaultP11(curMenuInfo);
+			break;
+		case eSYSTEM::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
 			break;
 		case eSYSTEM::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5264,6 +5357,9 @@ void HotkeyMenuInputChecking() {
 		case eHK_PAGE1::DECREMENT_RNG:
 			CheckNewHotkey(bAPos, oDecrementRNGHotkey, sDECREMENT_RNG_KEY_REG);
 			break;
+		case eHK_PAGE1::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
+			break;
 		case eHK_PAGE1::PAGE:
 			PageScrolling(curElement, hotkeyWindow, HK_NUM_PAGES);
 			break;
@@ -5305,6 +5401,9 @@ void HotkeyMenuInputChecking() {
 			break;
 		case eHK_PAGE2::FRAME_BAR_RIGHT:
 			CheckNewHotkey(bAPos, oFrameBarRightHotkey, sFRAME_BAR_RIGHT_KEY_REG);
+			break;
+		case eHK_PAGE2::RETURN:
+			if (bAPos) curMenuInfo->close = 1;
 			break;
 		case eHK_PAGE2::PAGE:
 			PageScrolling(curElement, hotkeyWindow, HK_NUM_PAGES);

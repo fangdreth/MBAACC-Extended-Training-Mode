@@ -1331,6 +1331,7 @@ const std::vector<const char*> vDECREMENT_RNG = {
 
 const std::vector<std::vector<const char*>> HK_P1_Options = {
 	vFREEZE, vNEXT_FRAME, vPREV_FRAME, vTOGGLE_HITBOXES, vTOGGLE_FRAME_BAR, vTOGGLE_HIGHLIGHTS, vQUEUE_REVERSAL, vINCREMENT_RNG, vDECREMENT_RNG, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP1_PAGE
 };
 
@@ -1361,6 +1362,8 @@ enum class eHK_PAGE1 {
 	INCREMENT_RNG,
 	DECREMENT_RNG,
 	S0,
+	RETURN,
+	S1,
 	PAGE
 };
 
@@ -1392,6 +1395,7 @@ const std::vector<const char*> vFRAME_BAR_RIGHT = {
 
 const std::vector<std::vector<const char*>> HK_P2_Options = {
 	vSAVE_STATE_HK, vPREV_SAVE_SLOT, vNEXT_SAVE_SLOT, vFRAME_BAR_LEFT, vFRAME_BAR_RIGHT, vSPACE_ELEMENT,
+	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP2_PAGE
 };
 
@@ -1412,6 +1416,8 @@ enum class eHK_PAGE2 {
 	FRAME_BAR_LEFT,
 	FRAME_BAR_RIGHT,
 	S0,
+	RETURN,
+	S1,
 	PAGE
 };
 
