@@ -88,6 +88,9 @@ std::vector<int> vGroundReversals;
 
 int nP2CharacterID = 0;
 
+int nSavedP1ActiveChar = 0;
+int nSavedP2ActiveChar = 1;
+
 DWORD _naked_newPauseCallback2_IsPaused = 0;
 
 std::array<uint8_t, 4> arrDefaultHighlightSetting({ 255, 255, 255, 0 });
@@ -1528,54 +1531,70 @@ void drawStats()
 	drawRect(167.0f - nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
 	drawRect(220.0f - nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
 
-	float* P1Guts = pP1->cmdFileDataPtr->guts;
+	const float gutsMod[4] = { 32.0f / 32.0f, 31.0f / 32.0f, 30.0f / 32.0f, 29.0f / 32.0f };
+	float extraMod = 1.0f;
+	if (pP1->charID == (int)eCharID::MAIDS) { //if maids
+		extraMod = 1.035f;
+	}
+
+	float* P1Guts = pActiveP1->cmdFileDataPtr->guts;
+
+	float P1AdjGuts[4];
+
+	for (int i = 0; i < 4; i++) {
+		float curGuts = (int)(P1Guts[i] * 1000) / 1000.0f;
+		curGuts = (int)(curGuts * extraMod * 1000) / 1000.0f;
+		curGuts = (int)(curGuts * gutsMod[i] * 1000) / 1000.0f;
+		P1AdjGuts[i] = curGuts;
+	}
+
 	if (nP1Health >= 8550)
 	{
 		drawRect(61.0f - nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(61.0f - nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(62 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[0]).c_str());
+		TextDraw(62 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P1AdjGuts[0]).c_str());
 	}
 	else
 	{
 		drawRect(61.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);			// on vertical bar
 		drawRect(61.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(62 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[0]).c_str());
+		TextDraw(62 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P1AdjGuts[0]).c_str());
 	}
 	if (8550 > nP1Health && nP1Health >= 5700)
 	{
 		drawRect(114.0f - nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(114.0f - nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(115 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[1]).c_str());
+		TextDraw(115 - nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P1AdjGuts[1]).c_str());
 	}
 	else
 	{
 		drawRect(114.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(114.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(115 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[1]).c_str());
+		TextDraw(115 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P1AdjGuts[1]).c_str());
 	}
 	if (5700 > nP1Health && nP1Health >= 2850)
 	{
 		drawRect(167.0f - nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(167.0f - nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(168 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[2]).c_str());
+		TextDraw(168 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P1AdjGuts[2]).c_str());
 	}
 	else
 	{
 		drawRect(167.0f - nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(167.0f - nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(168 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[2]).c_str());
+		TextDraw(168 - nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P1AdjGuts[2]).c_str());
 	}
 	if (2850 > nP1Health)
 	{
 		drawRect(220.0f - nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(220.0f - nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(221 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[3]).c_str());
+		TextDraw(221 - nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P1AdjGuts[3]).c_str());
 	}
 	else
 	{
 		drawRect(220.0f - nResetOffset, 23.0f, 1.0f, 14.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(220.0f - nResetOffset, 23.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(221 - nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", P1Guts[3]).c_str());
+		TextDraw(221 - nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", P1AdjGuts[3]).c_str());
 	}
 
 
@@ -1584,54 +1603,69 @@ void drawStats()
 	drawRect(472.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
 	drawRect(419.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
 
-	float* P2Guts = pP2->cmdFileDataPtr->guts;
+	extraMod = 1.0f;
+	if (pP2->charID == (int)eCharID::MAIDS) { //if maids
+		extraMod = 1.035f;
+	}
+
+	float* P2Guts = pActiveP2->cmdFileDataPtr->guts;
+
+	float P2AdjGuts[4];
+
+	for (int i = 0; i < 4; i++) {
+		float curGuts = (int)(P2Guts[i] * 1000) / 1000.0f;
+		curGuts = (int)(curGuts * extraMod * 1000) / 1000.0f;
+		curGuts = (int)(curGuts * gutsMod[i] * 1000) / 1000.0f;
+		P2AdjGuts[i] = curGuts;
+	}
+
 	if (nP2Health >= 8550)
 	{
 		drawRect(579.0f + nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(540.0f + nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(541 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[0]).c_str());
+		TextDraw(541 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P2AdjGuts[0]).c_str());
 	}
 	else
 	{
 		drawRect(579.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);			// on vertical bar
 		drawRect(555.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(556 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[0]).c_str());
+		TextDraw(556 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P2AdjGuts[0]).c_str());
 	}
 	if (8550 > nP2Health && nP2Health >= 5700)
 	{
 		drawRect(525.0f + nResetOffset, 25.0f, 1.0f, 12.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(486.0f + nResetOffset, 25.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(486 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[1]).c_str());
+		TextDraw(486 + nResetOffset, 26, 10, 0xFFFFFFFF, std::format("{:.3f}", P2AdjGuts[1]).c_str());
 	}
 	else
 	{
 		drawRect(525.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(501.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(501 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[1]).c_str());
+		TextDraw(501 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P2AdjGuts[1]).c_str());
 	}
 	if (5700 > nP2Health && nP2Health >= 2850)
 	{
 		drawRect(472.0f + nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(434.0f + nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(432 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[2]).c_str());
+		TextDraw(432 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P2AdjGuts[2]).c_str());
 	}
 	else
 	{
 		drawRect(472.0f + nResetOffset, 29.0f, 1.0f, 8.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(449.0f + nResetOffset, 29.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(448 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[2]).c_str());
+		TextDraw(448 + nResetOffset, 30, 6, 0xFFFFFFFF, std::format("{:.3f}", P2AdjGuts[2]).c_str());
 	}
 	if (2850 > nP2Health)
 	{
 		drawRect(419.0f + nResetOffset, 19.0f, 1.0f, 18.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(380.0f + nResetOffset, 19.0f, 39.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(380 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[3]).c_str());
+		TextDraw(380 + nResetOffset, 20, 10, 0xFFFFFFFF, std::format("{:.3f}", P2AdjGuts[3]).c_str());
 	}
 	else
 	{
 		drawRect(419.0f + nResetOffset, 23.0f, 1.0f, 14.0f, 0xFFFFFFFF);		// vertical bar
 		drawRect(395.0f + nResetOffset, 23.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
-		TextDraw(395 + nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", P2Guts[3]).c_str());
+		TextDraw(395 + nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", P2AdjGuts[3]).c_str());
 	}
 }
 
@@ -1964,8 +1998,8 @@ void HandleTrainingPage() {
 		int maxGauges[3] = { 8000, 7000, 10500 };
 		if (pP1->inBlockstun == 0) pP1->guardGauge = maxGauges[pP1->moon];
 		if (pP2->inBlockstun == 0) pP2->guardGauge = maxGauges[pP2->moon];
-		if (pP3->exists && pP1->inBlockstun == 0) pP3->guardGauge = maxGauges[pP3->moon];
-		if (pP4->exists && pP1->inBlockstun == 0) pP4->guardGauge = maxGauges[pP4->moon];
+		if (pP3->exists && pP3->inBlockstun == 0) pP3->guardGauge = maxGauges[pP3->moon];
+		if (pP4->exists && pP4->inBlockstun == 0) pP4->guardGauge = maxGauges[pP4->moon];
 	}
 
 	if (nEX_GUARD == 1 || (nEX_GUARD == 2 && rand() % 2 == 0)) {
@@ -2713,6 +2747,9 @@ void frameDoneCallback()
 
 	nLastCustomInputDisplay = nInputDisplaySettings;
 	nLastVanillaInputDisplay = *(bool*)(INPUTDISPLAYTOGGLE);
+
+	nSavedP1ActiveChar = pdP1Data->activeCharacter;
+	nSavedP2ActiveChar = pdP2Data->activeCharacter;
 }
 
 __declspec(naked) void nakedFrameDoneCallback()
@@ -2744,8 +2781,8 @@ int nP2MeterGain = 0;
 DWORD prevComboPtr = 0;
 
 void ResetCallback() {
-	if (nSAVE_STATE_SLOT == 0 || !(saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)) {
-		if (*(int*)(adMBAABase + adBS_MAGIC_CIRCUIT) == 0) {
+	if (nSAVE_STATE_SLOT == 0 || !(saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)) { // if not loading a save
+		if (*(int*)(adMBAABase + adBS_MAGIC_CIRCUIT) == 0) { // if Magic Circuit is set to Normal
 			for (int i = 0; i < 4; i++) {
 				PlayerData* curPlayer = pPlayerArray[i];
 				if (!curPlayer->exists) continue;
@@ -2892,6 +2929,25 @@ void ResetCallback() {
 				pActiveP2->extraVariables[7] = nROA_VISIBLE_CHARGE - 1;
 			}
 			break;
+		}
+
+		int tempX;
+		if (nSavedP1ActiveChar != 0) {
+			pdP1Data->activeCharacter = 2;
+			pP1->tagFlag = 1;
+			pP3->tagFlag = 0;
+			tempX = pP1->xPos;
+			pP1->xPos = pP3->xPos;
+			pP3->xPos = tempX;
+		}
+
+		if (nSavedP2ActiveChar != 1) {
+			pdP2Data->activeCharacter = 3;
+			pP2->tagFlag = 1;
+			pP4->tagFlag = 0;
+			tempX = pP2->xPos;
+			pP2->xPos = pP4->xPos;
+			pP4->xPos = tempX;
 		}
 
 	}
