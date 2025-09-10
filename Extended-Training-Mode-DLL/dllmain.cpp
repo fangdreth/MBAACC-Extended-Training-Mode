@@ -607,11 +607,11 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 	//int yPos = *(DWORD*)(objAddr + 0x10C);
 	//bool facingLeft = *(BYTE*)(objAddr + 0x314);
 
-	int xPos = effect->xPos;
-	int yPos = effect->yPos;
-	bool facingLeft = effect->facingLeft;
+	int xPos = effect->subObj.xPos;
+	int yPos = effect->subObj.yPos;
+	bool facingLeft = effect->subObj.facingLeft;
 	
-	AnimationData* animationData = effect->animationDataPtr;
+	AnimationData* animationData = effect->subObj.animationDataPtr;
 	//DWORD objFramePtr = (DWORD)animationData;
 
 	if (animationData == NULL) {
@@ -962,12 +962,12 @@ int getPatternFromInput(PlayerData* PD, const char input[20])
 	char buffer[20];
 	char inputCopy[20];
 	char readableInput[20] = {0};
-	for (int i = 0; i < PD->cmdFileDataPtr->cmdDataPtr->maxID; i++)
+	for (int i = 0; i < PD->cmdFileDataPtr->cmdDataPtr->count; i++)
 	{
-		if (PD->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i] != 0)
+		if (PD->cmdFileDataPtr->cmdDataPtr->array[i] != 0)
 		{
 			int length = 0;
-			snprintf(inputCopy, 20, "%s", PD->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->input);
+			snprintf(inputCopy, 20, "%s", PD->cmdFileDataPtr->cmdDataPtr->array[i]->input);
 			for (int j = 0; j < 20; j++)
 			{
 				if (inputCopy[j] == '\xFF')
@@ -993,7 +993,7 @@ int getPatternFromInput(PlayerData* PD, const char input[20])
 			}
 			if (isMatch)
 			{
-				return PD->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->pattern;
+				return PD->cmdFileDataPtr->cmdDataPtr->array[i]->pattern;
 			}
 		}
 	}
@@ -1003,11 +1003,11 @@ int getPatternFromInput(PlayerData* PD, const char input[20])
 int getIDFromPattern(PlayerData* pPlayer, int nPattern, int nthMatch = 1)
 {
 	int retVal = -1;
-	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i])
+	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->count; i++) {
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i])
 		{
-			if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->pattern == nPattern) {
-				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->ID;
+			if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->pattern == nPattern) {
+				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->ID;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
 			};
@@ -1018,11 +1018,11 @@ int getIDFromPattern(PlayerData* pPlayer, int nPattern, int nthMatch = 1)
 
 int getIDFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
 	int retVal = -1;
-	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i])
+	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->count; i++) {
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i])
 		{
-			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->input) == 0) {
-				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->ID;
+			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->input) == 0) {
+				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->ID;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
 			};
@@ -1033,11 +1033,11 @@ int getIDFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
 
 int getPatternFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
 	int retVal = -1;
-	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i])
+	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->count; i++) {
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i])
 		{
-			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->input) == 0) {
-				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->pattern;
+			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->input) == 0) {
+				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->pattern;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
 			};
@@ -1073,21 +1073,21 @@ bool tryCmdPattern(PlayerData* pPlayer, int nPattern) {
 		return false;
 	}
 	else if (nPattern == 260 || nPattern == pPlayer->cmdFileDataPtr->groundThrowPat) {
-		pPlayer->targetPattern = nPattern;
+		pPlayer->subObj.targetPattern = nPattern;
 	}
 	int id = -1;
 	int meterMem = 0;
 	bool didCmd = false;
-	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->maxID; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i])
+	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->count; i++) {
+		if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i])
 		{
-			if (pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->pattern == nPattern) {
-				id = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->ID;
+			if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->pattern == nPattern) {
+				id = pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->ID;
 				if (checkCmdVars(pPlayer, id)) {
-					meterMem = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->meterSpend;
-					pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->meterSpend = 0;
+					meterMem = pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->meterSpend;
+					pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->meterSpend = 0;
 					didCmd = tryCmdID(pPlayer, id);
-					pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[i]->meterSpend = meterMem;
+					pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->meterSpend = meterMem;
 					if (didCmd) return true;
 				}
 			};
@@ -1118,18 +1118,18 @@ void SetBurstFlags(PlayerData* pPlayer) {
 }
 
 bool tryBurst(PlayerData* pPlayer) {
-	if (pPlayer->hitstunTimeRemaining != 0 && pPlayer->burstLock == 0 && pPlayer->hitstop == 0) {
-		int stance = pPlayer->animationDataPtr->stateData->stance;
+	if (pPlayer->subObj.hitstunTimeRemaining != 0 && pPlayer->subObj.burstLock == 0 && pPlayer->subObj.hitstop == 0) {
+		int stance = pPlayer->subObj.animationDataPtr->stateData->stance;
 		if (stance == 0 || stance == 2) {
-			if (pPlayer->hitstunTimeRemaining < 0) {
+			if (pPlayer->subObj.hitstunTimeRemaining < 0) {
 				return 0;
 			}
 		}
 		else if (stance == 1) {
-			if (9 < pPlayer->untechTimeElapsed) {
+			if (9 < pPlayer->subObj.untechTimeElapsed) {
 				return 0;
 			}
-			if (pPlayer->isKnockedDown != 0) {
+			if (pPlayer->subObj.completedHitVectors != 0) {
 				return 0;
 			}
 		}
@@ -1170,7 +1170,7 @@ bool tryBufferCmd(PlayerData* pPlayer) {
 
 //returns AND of 1 for held shield and 2 for ex shield
 byte getShieldCancel(PlayerData* pPlayer, int pat) {
-	byte exOnly = pPlayer->moon == 0 ? 0x2 : 0x0;
+	byte exOnly = pPlayer->subObj.moon == 0 ? 0x2 : 0x0;
 	byte retVal = 0x0;
 	if (pat == pPlayer->cmdFileDataPtr->ShieldCounter_Ground ||
 		pat == pPlayer->cmdFileDataPtr->ShieldCounter_Air ||
@@ -1180,8 +1180,8 @@ byte getShieldCancel(PlayerData* pPlayer, int pat) {
 	if (pat <= 40) return exOnly;
 	int ID = getIDFromPattern(pPlayer, pat, 1);
 	if (ID == -1) return 0x0;
-	WORD flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[ID]->flagsets;
-	int specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[ID]->specialFlag;
+	WORD flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets;
+	int specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->array[ID]->specialFlag;
 	if (flagsets & 0x8) { // if no cancel
 		if (flagsets & 0x40 && !(flagsets & 0x1000)) { //if guard/shield cancel and not guard cancel only (covers D > D)
 			retVal = 0x3;
@@ -1199,8 +1199,8 @@ byte getShieldCancel(PlayerData* pPlayer, int pat) {
 	
 	ID = getIDFromPattern(pPlayer, pat, 2);
 	if (ID == -1) return retVal;
-	flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[ID]->flagsets;
-	specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[ID]->specialFlag;
+	flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets;
+	specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->array[ID]->specialFlag;
 	if (flagsets & 0x8) {
 		if (flagsets & 0x40 && !(flagsets & 0x1000)) {
 			retVal = 0x3;
@@ -1220,7 +1220,7 @@ byte getShieldCancel(PlayerData* pPlayer, int pat) {
 
 //returns AND of 1 = stand, 2 = airborne, 4 = crouch
 byte getCmdStance(PlayerData* pPlayer, int ID) {
-	return pPlayer->cmdFileDataPtr->cmdDataPtr->commandPtrArr[ID]->flagsets[0] & 0x7;
+	return pPlayer->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets[0] & 0x7;
 }
 
 //returns AND of 1 = stand, 2 = airborne, 4 = crouch
@@ -1476,8 +1476,8 @@ void drawStats()
 
 	static char buffer[256];
 	
-	int nP1Health = pP1->health; // this works on maids too
-	int nP1RedHealth = pP1->redHealth;
+	int nP1Health = pP1->subObj.health; // this works on maids too
+	int nP1RedHealth = pP1->subObj.redHealth;
 	int nP1RedHealthX;
 	if (nP1RedHealth >= 9200)
 		nP1RedHealthX = 60;
@@ -1493,8 +1493,8 @@ void drawStats()
 	//drawTextWithBorder(230 - nResetOffset, 40, 10, 10, buffer);
 	TextDraw(235 - nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
-	int nP2Health = pP2->health; // this works on maids too
-	int nP2RedHealth = pP2->redHealth;
+	int nP2Health = pP2->subObj.health; // this works on maids too
+	int nP2RedHealth = pP2->subObj.redHealth;
 	int nP2RedHealthX;
 	if (nP2RedHealth >= 9200)
 		nP2RedHealthX = 535;
@@ -1511,17 +1511,17 @@ void drawStats()
 	TextDraw(365 + nResetOffset, 40, 10, 0xFFFFFFFF, buffer);
 
 
-	snprintf(buffer, 256, "%5.0f", pP1->guardGauge);
+	snprintf(buffer, 256, "%5.0f", pP1->subObj.guardGauge);
 	//drawTextWithBorder(234 - nResetOffset, 58, 8, 9, buffer);
 	TextDraw(242 - nResetOffset, 58, 8, 0xFFFFFFFF, buffer);
-	snprintf(buffer, 256, "%1.3f", pP1->quardQuality);
+	snprintf(buffer, 256, "%1.3f", pP1->subObj.quardQuality);
 	//drawTextWithBorder(244 - nResetOffset, 67, 6, 9, buffer);
 	TextDraw(249 - nResetOffset, 67, 6, 0xFFFFFFFF, buffer);
 
-	snprintf(buffer, 256, "%5.0f", pP2->guardGauge);
+	snprintf(buffer, 256, "%5.0f", pP2->subObj.guardGauge);
 	//drawTextWithBorder(368 + nResetOffset, 58, 8, 9, buffer);
 	TextDraw(361 + nResetOffset, 58, 8, 0xFFFFFFFF, buffer);
-	snprintf(buffer, 256, "%1.3f", pP2->quardQuality);
+	snprintf(buffer, 256, "%1.3f", pP2->subObj.quardQuality);
 	//drawTextWithBorder(369 + nResetOffset, 67, 6, 9, buffer);
 	TextDraw(367 + nResetOffset, 67, 6, 0xFFFFFFFF, buffer);
 
@@ -1533,7 +1533,7 @@ void drawStats()
 
 	const float gutsMod[4] = { 32.0f / 32.0f, 31.0f / 32.0f, 30.0f / 32.0f, 29.0f / 32.0f };
 	float extraMod = 1.0f;
-	if (pP1->charID == (int)eCharID::MAIDS) { //if maids
+	if (pP1->subObj.charID == (int)eCharID::MAIDS) { //if maids
 		extraMod = 1.035f;
 	}
 
@@ -1604,7 +1604,7 @@ void drawStats()
 	drawRect(419.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
 
 	extraMod = 1.0f;
-	if (pP2->charID == (int)eCharID::MAIDS) { //if maids
+	if (pP2->subObj.charID == (int)eCharID::MAIDS) { //if maids
 		extraMod = 1.035f;
 	}
 
@@ -1881,12 +1881,12 @@ bool bDidShield = false;
 int nSaveShieldRevIndex = 0;
 
 void HandleReversalsPage() {
-	if ((nREVERSAL_TYPE == 0 && !bDoReversal) || pActiveP2->doTrainingAction != 1) return;
+	if ((nREVERSAL_TYPE == 0 && !bDoReversal) || pActiveP2->subObj.doTrainingAction != 1) return;
 	if (pdP2Data->inactionableFrames == 0) {
 		bHoldButtons = false;
 		bHoldShield = false;
 	}
-	std::vector<int> vValidReversals = (pActiveP2->yPos == 0 && pActiveP2->prevYPos == 0 ? vGroundReversals : vAirReversals);
+	std::vector<int> vValidReversals = (pActiveP2->subObj.yPos == 0 && pActiveP2->subObj.prevYPos == 0 ? vGroundReversals : vAirReversals);
 	int pat;
 	if (vValidReversals.size() != 0 && bDoReversal && pdP2Data->inactionableFrames == 0) {
 		if (nReversalDelayFramesLeft == 0) {
@@ -1944,7 +1944,7 @@ void HandleReversalsPage() {
 					tryCmdPattern(pActiveP2, vValidReversals[validIndex] % 1000);
 				}
 				else {
-					pActiveP2->targetPattern = vValidReversals[validIndex] % 1000;
+					pActiveP2->subObj.targetPattern = vValidReversals[validIndex] % 1000;
 				}
 
 				if (vValidReversals[validIndex] > 999) {
@@ -1958,7 +1958,7 @@ void HandleReversalsPage() {
 		}
 	}
 
-	if (bDidShield && pActiveP2->shieldType != 0) {
+	if (bDidShield && pActiveP2->subObj.shieldSuccessType != 0) {
 		bHoldButtons = false;
 		bHoldShield = false;
 		pat = vValidReversals[nSaveShieldRevIndex];
@@ -1969,7 +1969,7 @@ void HandleReversalsPage() {
 			tryCmdPattern(pActiveP2, vValidReversals[nSaveShieldRevIndex] % 1000);
 		}
 		else {
-			pActiveP2->targetPattern = vValidReversals[nSaveShieldRevIndex] % 1000;
+			pActiveP2->subObj.targetPattern = vValidReversals[nSaveShieldRevIndex] % 1000;
 		}
 		if (vValidReversals[nSaveShieldRevIndex] > 999) {
 			bHoldButtons = true;
@@ -1977,7 +1977,7 @@ void HandleReversalsPage() {
 		bDidShield = false;
 	}
 	
-	if (pActiveP2->hitstunTimeRemaining != 0) {
+	if (pActiveP2->subObj.hitstunTimeRemaining != 0) {
 		bDoReversal = true;
 		nReversalDelayFramesLeft = nREVERSAL_DELAY;
 		bHoldButtons = false;
@@ -1998,51 +1998,51 @@ void HandleTrainingPage() {
 		float mults[5] = { 1.0, 0.75, 0.5, 0.25, 0.0 };
 		int guardSetting = *(short*)(adMBAABase + adBS_GUARD_GAUGE);
 		int gauges[3] = { 8000 * mults[guardSetting], 7000 * mults[guardSetting], 10500 * mults[guardSetting] };
-		if (pP1->inBlockstun == 0) pP1->guardGauge = gauges[pP1->moon];
-		if (pP2->inBlockstun == 0) pP2->guardGauge = gauges[pP2->moon];
-		if (pP3->exists && pP3->inBlockstun == 0) pP3->guardGauge = gauges[pP3->moon];
-		if (pP4->exists && pP4->inBlockstun == 0) pP4->guardGauge = gauges[pP4->moon];
+		if (pP1->subObj.inBlockstun == 0) pP1->subObj.guardGauge = gauges[pP1->subObj.moon];
+		if (pP2->subObj.inBlockstun == 0) pP2->subObj.guardGauge = gauges[pP2->subObj.moon];
+		if (pP3->exists && pP3->subObj.inBlockstun == 0) pP3->subObj.guardGauge = gauges[pP3->subObj.moon];
+		if (pP4->exists && pP4->subObj.inBlockstun == 0) pP4->subObj.guardGauge = gauges[pP4->subObj.moon];
 
-		if (pP1->guardGaugeState == 2) pP1->guardGaugeState = 1;
-		if (pP2->guardGaugeState == 2) pP2->guardGaugeState = 1;
-		if (pP3->exists && pP3->guardGaugeState == 2) pP3->guardGaugeState = 1;
-		if (pP4->exists && pP4->guardGaugeState == 2) pP4->guardGaugeState = 1;
+		if (pP1->subObj.guardGaugeState == 2) pP1->subObj.guardGaugeState = 1;
+		if (pP2->subObj.guardGaugeState == 2) pP2->subObj.guardGaugeState = 1;
+		if (pP3->exists && pP3->subObj.guardGaugeState == 2) pP3->subObj.guardGaugeState = 1;
+		if (pP4->exists && pP4->subObj.guardGaugeState == 2) pP4->subObj.guardGaugeState = 1;
 	}
 
 	if (nEX_GUARD == 1 || (nEX_GUARD == 2 && rand() % 2 == 0)) {
-		if (pDummy->doTrainingAction) {
-			pDummy->exGuard = 10;
+		if (pDummy->subObj.doTrainingAction) {
+			pDummy->subObj.exGuard = 10;
 		}
 	}
 
 	if (nTRUE_HITS_UNTIL_BURST != 0) {
 		if (bDoBurst &&
-			(pActiveP2->onBlockComboCount >= nTRUE_HITS_UNTIL_BURST ||
-			pActiveP2->onHitComboCount >= nTRUE_HITS_UNTIL_BURST)) {
+			(pActiveP2->subObj.onBlockComboCount >= nTRUE_HITS_UNTIL_BURST ||
+			pActiveP2->subObj.onHitComboCount >= nTRUE_HITS_UNTIL_BURST)) {
  			if(tryBurst(pActiveP2)) bDoBurst = false;
 		}
 
-		if (!bDoBurst && pActiveP2->onBlockComboCount == 0 && pActiveP2->onHitComboCount == 0) {
+		if (!bDoBurst && pActiveP2->subObj.onBlockComboCount == 0 && pActiveP2->subObj.onHitComboCount == 0) {
 			bDoBurst = true;
 		}
 	}
 
 	if (nTRUE_HITS_UNTIL_BUNKER != 0) {
-		if (bDoBunker && pActiveP2->onBlockComboCount >= nTRUE_HITS_UNTIL_BUNKER) {
+		if (bDoBunker && pActiveP2->subObj.onBlockComboCount >= nTRUE_HITS_UNTIL_BUNKER) {
 			int bunkerPat = getPatternFromCmd(pActiveP2, "\2\1\4D\xff");
-			pActiveP2->targetPattern = bunkerPat;
+			pActiveP2->subObj.targetPattern = bunkerPat;
 			DWORD bunkerFlags[7] = { 4, 0, 0, 0, 0, 0, 0 };
-			memcpy(pActiveP2->flags, bunkerFlags, 7 * 0x4);
-			pActiveP2->hitstunTimeRemaining = 0;
+			memcpy(pActiveP2->subObj.flags, bunkerFlags, 7 * 0x4);
+			pActiveP2->subObj.hitstunTimeRemaining = 0;
 			bDoBunker = false;
 		}
 
-		if (!bDoBunker && pActiveP2->onBlockComboCount == 0) {
+		if (!bDoBunker && pActiveP2->subObj.onBlockComboCount == 0) {
 			bDoBunker = true;
 		}
 	}
 
-	if (nTRUE_HITS_UNTIL_FORCE_GUARD != 0 && pActiveP2->onBlockComboCount >= nTRUE_HITS_UNTIL_FORCE_GUARD && pActiveP2->animationDataPtr->stateData->stance != 1) {
+	if (nTRUE_HITS_UNTIL_FORCE_GUARD != 0 && pActiveP2->subObj.onBlockComboCount >= nTRUE_HITS_UNTIL_FORCE_GUARD && pActiveP2->subObj.animationDataPtr->stateData->stance != 1) {
 		bForceGuard = true;
 	}
 	else {
@@ -2051,56 +2051,56 @@ void HandleTrainingPage() {
 }
 
 void HandleCharacterPage() {
-	switch (pActiveP1->charID) {
+	switch (pActiveP1->subObj.charID) {
 	case 0: //sion
-		if (nSION_BULLETS == 0 && pActiveP1->animationDataPtr->stateData->canMove) {
-			pActiveP1->extraVariables[1] = 0;
+		if (nSION_BULLETS == 0 && pActiveP1->subObj.animationDataPtr->stateData->canMove) {
+			pActiveP1->subObj.extraVariables[1] = 0;
 		}
 		break;
 	case 4: //maids
-		if (nF_MAIDS_HEARTS == 0 && pActiveP1->animationDataPtr->stateData->canMove) {
-			pP1->extraVariables[4] = 0;
-			pP3->extraVariables[5] = 0;
+		if (nF_MAIDS_HEARTS == 0 && pActiveP1->subObj.animationDataPtr->stateData->canMove) {
+			pP1->subObj.extraVariables[4] = 0;
+			pP3->subObj.extraVariables[5] = 0;
 		}
 		break;
 	case 31: //roa
-		if (nROA_HIDDEN_CHARGE == 0 && pActiveP1->animationDataPtr->stateData->canMove) {
-			pActiveP1->extraVariables[6] = 9;
+		if (nROA_HIDDEN_CHARGE == 0 && pActiveP1->subObj.animationDataPtr->stateData->canMove) {
+			pActiveP1->subObj.extraVariables[6] = 9;
 		}
-		if (nROA_VISIBLE_CHARGE == 0 && pActiveP1->animationDataPtr->stateData->canMove) {
-			pActiveP1->extraVariables[7] = 9;
+		if (nROA_VISIBLE_CHARGE == 0 && pActiveP1->subObj.animationDataPtr->stateData->canMove) {
+			pActiveP1->subObj.extraVariables[7] = 9;
 		}
 		break;
 	case 33: //ryougi
-		if (nRYOUGI_KNIFE == 0 && pActiveP1->animationDataPtr->stateData->canMove) {
-			pActiveP1->specialVariables[0] = 0;
+		if (nRYOUGI_KNIFE == 0 && pActiveP1->subObj.animationDataPtr->stateData->canMove) {
+			pActiveP1->subObj.specialVariables[0] = 0;
 		}
 		break;
 	}
 
-	switch (pActiveP2->charID) {
+	switch (pActiveP2->subObj.charID) {
 	case 0: //sion
-		if (nSION_BULLETS == 0 && pActiveP2->animationDataPtr->stateData->canMove) {
-			pActiveP2->extraVariables[1] = 0;
+		if (nSION_BULLETS == 0 && pActiveP2->subObj.animationDataPtr->stateData->canMove) {
+			pActiveP2->subObj.extraVariables[1] = 0;
 		}
 		break;
 	case 4: //maids
-		if (nF_MAIDS_HEARTS == 0 && pActiveP2->animationDataPtr->stateData->canMove) {
-			pP2->extraVariables[4] = 0;
-			pP4->extraVariables[5] = 0;
+		if (nF_MAIDS_HEARTS == 0 && pActiveP2->subObj.animationDataPtr->stateData->canMove) {
+			pP2->subObj.extraVariables[4] = 0;
+			pP4->subObj.extraVariables[5] = 0;
 		}
 		break;
 	case 31: //roa
-		if (nROA_HIDDEN_CHARGE == 0 && pActiveP2->animationDataPtr->stateData->canMove) {
-			pActiveP2->extraVariables[6] = 9;
+		if (nROA_HIDDEN_CHARGE == 0 && pActiveP2->subObj.animationDataPtr->stateData->canMove) {
+			pActiveP2->subObj.extraVariables[6] = 9;
 		}
-		if (nROA_VISIBLE_CHARGE == 0 && pActiveP2->animationDataPtr->stateData->canMove) {
-			pActiveP2->extraVariables[7] = 9;
+		if (nROA_VISIBLE_CHARGE == 0 && pActiveP2->subObj.animationDataPtr->stateData->canMove) {
+			pActiveP2->subObj.extraVariables[7] = 9;
 		}
 		break;
 	case 33: //ryougi
-		if (nRYOUGI_KNIFE == 0 && pActiveP2->animationDataPtr->stateData->canMove) {
-			pActiveP2->specialVariables[0] = 0;
+		if (nRYOUGI_KNIFE == 0 && pActiveP2->subObj.animationDataPtr->stateData->canMove) {
+			pActiveP2->subObj.specialVariables[0] = 0;
 		}
 		break;
 	}
@@ -2109,7 +2109,7 @@ void HandleCharacterPage() {
 void HandleExtendedTrainingEffects() {
 	pActiveP1 = (PlayerData*)(adMBAABase + adP1Base + pdP1Data->activeCharacter * dwPlayerStructSize);
 	pActiveP2 = (PlayerData*)(adMBAABase + adP1Base + pdP2Data->activeCharacter * dwPlayerStructSize);
-	isP1Controlled = pP1->doTrainingAction == 0;
+	isP1Controlled = pP1->subObj.doTrainingAction == 0;
 	pPlayer = isP1Controlled ? pActiveP1 : pActiveP2;
 	pDummy = isP1Controlled ? pActiveP2 : pActiveP1;
 	HandleReversalsPage();			//page 1
@@ -2794,74 +2794,74 @@ void ResetCallback() {
 				PlayerData* curPlayer = pPlayerArray[i];
 				if (!curPlayer->exists) continue;
 				int USE_METER = i % 2 == 0 ? nTRUE_P1_METER : nTRUE_P2_METER;
-				switch (curPlayer->moon) {
+				switch (curPlayer->subObj.moon) {
 				case 0:
 					switch (USE_METER) {
 					case 30000:
-						curPlayer->magicCircuit = 20000;
-						curPlayer->heatTimeLeft = 600;
-						curPlayer->magicCircuitState = 2;
-						curPlayer->maxHeatTime = 600;
-						curPlayer->magicCircuitPause = 10;
+						curPlayer->subObj.magicCircuit = 20000;
+						curPlayer->subObj.heatTimeLeft = 600;
+						curPlayer->subObj.magicCircuitState = 2;
+						curPlayer->subObj.maxHeatTime = 600;
+						curPlayer->subObj.magicCircuitPause = 10;
 						break;
 					case 30001:
-						curPlayer->magicCircuit = 0;
-						curPlayer->heatTimeLeft = 550;
-						curPlayer->magicCircuitState = 1;
-						curPlayer->maxHeatTime = 550;
-						curPlayer->magicCircuitPause = 10;
+						curPlayer->subObj.magicCircuit = 0;
+						curPlayer->subObj.heatTimeLeft = 550;
+						curPlayer->subObj.magicCircuitState = 1;
+						curPlayer->subObj.maxHeatTime = 550;
+						curPlayer->subObj.magicCircuitPause = 10;
 						break;
 					case 30002:
-						curPlayer->magicCircuit = 0;
-						curPlayer->heatTimeLeft = 500;
-						curPlayer->magicCircuitState = 3;
-						curPlayer->maxHeatTime = 500;
-						curPlayer->magicCircuitPause = 60;
+						curPlayer->subObj.magicCircuit = 0;
+						curPlayer->subObj.heatTimeLeft = 500;
+						curPlayer->subObj.magicCircuitState = 3;
+						curPlayer->subObj.maxHeatTime = 500;
+						curPlayer->subObj.magicCircuitPause = 60;
 						break;
 					default:
-						curPlayer->magicCircuit = USE_METER;
+						curPlayer->subObj.magicCircuit = USE_METER;
 						break;
 					}
 					break;
 				case 1:
 					switch (USE_METER) {
 					case 30000:
-						curPlayer->magicCircuit = 20000;
-						curPlayer->heatTimeLeft = 600;
-						curPlayer->magicCircuitState = 2;
-						curPlayer->maxHeatTime = 600;
-						curPlayer->magicCircuitPause = 10;
+						curPlayer->subObj.magicCircuit = 20000;
+						curPlayer->subObj.heatTimeLeft = 600;
+						curPlayer->subObj.magicCircuitState = 2;
+						curPlayer->subObj.maxHeatTime = 600;
+						curPlayer->subObj.magicCircuitPause = 10;
 						break;
 					case 30001:
-						curPlayer->magicCircuit = 0;
-						curPlayer->heatTimeLeft = 550;
-						curPlayer->magicCircuitState = 1;
-						curPlayer->maxHeatTime = 550;
-						curPlayer->magicCircuitPause = 10;
+						curPlayer->subObj.magicCircuit = 0;
+						curPlayer->subObj.heatTimeLeft = 550;
+						curPlayer->subObj.magicCircuitState = 1;
+						curPlayer->subObj.maxHeatTime = 550;
+						curPlayer->subObj.magicCircuitPause = 10;
 						break;
 					case 30002:
-						curPlayer->magicCircuit = 0;
-						curPlayer->heatTimeLeft = 750;
-						curPlayer->magicCircuitState = 3;
-						curPlayer->maxHeatTime = 750;
-						curPlayer->magicCircuitPause = 60;
+						curPlayer->subObj.magicCircuit = 0;
+						curPlayer->subObj.heatTimeLeft = 750;
+						curPlayer->subObj.magicCircuitState = 3;
+						curPlayer->subObj.maxHeatTime = 750;
+						curPlayer->subObj.magicCircuitPause = 60;
 						break;
 					default:
-						curPlayer->magicCircuit = USE_METER;
+						curPlayer->subObj.magicCircuit = USE_METER;
 						break;
 					}
 					break;
 				case 2:
 					if (USE_METER == 20000) {
-						curPlayer->magicCircuit = 0;
-						curPlayer->heatTimeLeft = 550;
-						curPlayer->magicCircuitState = 1;
-						curPlayer->maxHeatTime = 550;
-						curPlayer->magicCircuitPause = 10;
+						curPlayer->subObj.magicCircuit = 0;
+						curPlayer->subObj.heatTimeLeft = 550;
+						curPlayer->subObj.magicCircuitState = 1;
+						curPlayer->subObj.maxHeatTime = 550;
+						curPlayer->subObj.magicCircuitPause = 10;
 					}
 					else
 					{
-						curPlayer->magicCircuit = USE_METER;
+						curPlayer->subObj.magicCircuit = USE_METER;
 					}
 					break;
 				}
@@ -2869,103 +2869,103 @@ void ResetCallback() {
 		}
 
 		if (nRESET_TO_POSITIONS) {
-			pP1->xPos = nTRUE_P1_X_LOC;
-			pP2->xPos = nTRUE_P2_X_LOC;
-			bool p1LookLeft = pP1->xPos > pP2->xPos;
-			pP1->facingLeft = p1LookLeft;
-			pP1->isOpponentToLeft = p1LookLeft;
-			pP2->facingLeft = !p1LookLeft;
-			pP2->isOpponentToLeft = !p1LookLeft;
+			pP1->subObj.xPos = nTRUE_P1_X_LOC;
+			pP2->subObj.xPos = nTRUE_P2_X_LOC;
+			bool p1LookLeft = pP1->subObj.xPos > pP2->subObj.xPos;
+			pP1->subObj.facingLeft = p1LookLeft;
+			pP1->subObj.isOpponentToLeft = p1LookLeft;
+			pP2->subObj.facingLeft = !p1LookLeft;
+			pP2->subObj.isOpponentToLeft = !p1LookLeft;
 
-			if (pP3->exists && pP3->charID != 51) {
-				pP3->xPos = nTRUE_P1_ASSIST_X_LOC;
+			if (pP3->exists && pP3->subObj.charID != 51) {
+				pP3->subObj.xPos = nTRUE_P1_ASSIST_X_LOC;
 
-				bool p3LookLeft = pP3->xPos > pP2->xPos;
-				pP3->facingLeft = p3LookLeft;
-				pP3->isOpponentToLeft = p3LookLeft;
+				bool p3LookLeft = pP3->subObj.xPos > pP2->subObj.xPos;
+				pP3->subObj.facingLeft = p3LookLeft;
+				pP3->subObj.isOpponentToLeft = p3LookLeft;
 			}
 
-			if (pP4->exists && pP4->charID != 51) {
-				pP4->xPos = nTRUE_P2_ASSIST_X_LOC;
+			if (pP4->exists && pP4->subObj.charID != 51) {
+				pP4->subObj.xPos = nTRUE_P2_ASSIST_X_LOC;
 
-				bool p4LookLeft = pP4->xPos > pP1->xPos;
-				pP4->facingLeft = p4LookLeft;
-				pP4->isOpponentToLeft = p4LookLeft;
+				bool p4LookLeft = pP4->subObj.xPos > pP1->subObj.xPos;
+				pP4->subObj.facingLeft = p4LookLeft;
+				pP4->subObj.isOpponentToLeft = p4LookLeft;
 			}
 		}
 
-		switch (pActiveP1->charID) {
+		switch (pActiveP1->subObj.charID) {
 		case 0: //sion
 			if (nSION_BULLETS > 1) {
-				pActiveP1->extraVariables[1] = 14 - nSION_BULLETS;
+				pActiveP1->subObj.extraVariables[1] = 14 - nSION_BULLETS;
 			}
 			break;
 		case 4: //maids
 			if (nF_MAIDS_HEARTS > 1) { //maids
-				pP1->extraVariables[4] = nF_MAIDS_HEARTS - 1;
-				pP3->extraVariables[5] = nF_MAIDS_HEARTS - 1;
+				pP1->subObj.extraVariables[4] = nF_MAIDS_HEARTS - 1;
+				pP3->subObj.extraVariables[5] = nF_MAIDS_HEARTS - 1;
 			}
 			break;
 		case 31: //roa
 			if (nROA_HIDDEN_CHARGE > 1) {
-				pActiveP1->extraVariables[6] = nROA_HIDDEN_CHARGE - 1;
+				pActiveP1->subObj.extraVariables[6] = nROA_HIDDEN_CHARGE - 1;
 			}
 			if (nROA_VISIBLE_CHARGE > 1) {
-				pActiveP1->extraVariables[7] = nROA_VISIBLE_CHARGE - 1;
+				pActiveP1->subObj.extraVariables[7] = nROA_VISIBLE_CHARGE - 1;
 			}
 			break;
 		}
 
-		switch (pActiveP2->charID) {
+		switch (pActiveP2->subObj.charID) {
 		case 0: //sion
 			if (nSION_BULLETS > 1) {
-				pActiveP2->extraVariables[1] = 14 - nSION_BULLETS;
+				pActiveP2->subObj.extraVariables[1] = 14 - nSION_BULLETS;
 			}
 			break;
 		case 4: //maids
 			if (nF_MAIDS_HEARTS > 1) { //maids
-				pP2->extraVariables[4] = nF_MAIDS_HEARTS - 1;
-				pP4->extraVariables[5] = nF_MAIDS_HEARTS - 1;
+				pP2->subObj.extraVariables[4] = nF_MAIDS_HEARTS - 1;
+				pP4->subObj.extraVariables[5] = nF_MAIDS_HEARTS - 1;
 			}
 			break;
 		case 31: //roa
 			if (nROA_HIDDEN_CHARGE > 1) {
-				pActiveP2->extraVariables[6] = nROA_HIDDEN_CHARGE - 1;
+				pActiveP2->subObj.extraVariables[6] = nROA_HIDDEN_CHARGE - 1;
 			}
 			if (nROA_VISIBLE_CHARGE > 1) {
-				pActiveP2->extraVariables[7] = nROA_VISIBLE_CHARGE - 1;
+				pActiveP2->subObj.extraVariables[7] = nROA_VISIBLE_CHARGE - 1;
 			}
 			break;
 		}
 
 		int gauges[3] = { 8000, 7000, 10500 };
-		pP1->guardGauge = gauges[pP1->moon];
-		pP2->guardGauge = gauges[pP2->moon];
-		if (pP3->exists) pP3->guardGauge = gauges[pP3->moon];
-		if (pP4->exists) pP4->guardGauge = gauges[pP4->moon];
+		pP1->subObj.guardGauge = gauges[pP1->subObj.moon];
+		pP2->subObj.guardGauge = gauges[pP2->subObj.moon];
+		if (pP3->exists) pP3->subObj.guardGauge = gauges[pP3->subObj.moon];
+		if (pP4->exists) pP4->subObj.guardGauge = gauges[pP4->subObj.moon];
 
-		pP1->guardGaugeState = 1;
-		pP2->guardGaugeState = 1;
-		if (pP3->exists) pP3->guardGaugeState = 1;
-		if (pP4->exists) pP4->guardGaugeState = 1;
+		pP1->subObj.guardGaugeState = 1;
+		pP2->subObj.guardGaugeState = 1;
+		if (pP3->exists) pP3->subObj.guardGaugeState = 1;
+		if (pP4->exists) pP4->subObj.guardGaugeState = 1;
 
 		int tempX;
 		if (nSavedP1ActiveChar != 0) {
 			pdP1Data->activeCharacter = 2;
-			pP1->tagFlag = 1;
-			pP3->tagFlag = 0;
-			tempX = pP1->xPos;
-			pP1->xPos = pP3->xPos;
-			pP3->xPos = tempX;
+			pP1->subObj.tagFlag = 1;
+			pP3->subObj.tagFlag = 0;
+			tempX = pP1->subObj.xPos;
+			pP1->subObj.xPos = pP3->subObj.xPos;
+			pP3->subObj.xPos = tempX;
 		}
 
 		if (nSavedP2ActiveChar != 1) {
 			pdP2Data->activeCharacter = 3;
-			pP2->tagFlag = 1;
-			pP4->tagFlag = 0;
-			tempX = pP2->xPos;
-			pP2->xPos = pP4->xPos;
-			pP4->xPos = tempX;
+			pP2->subObj.tagFlag = 1;
+			pP4->subObj.tagFlag = 0;
+			tempX = pP2->subObj.xPos;
+			pP2->subObj.xPos = pP4->subObj.xPos;
+			pP4->subObj.xPos = tempX;
 		}
 
 	}
@@ -3023,9 +3023,11 @@ void RoundcallCallback() {
 		PlayerData* tempPlayer;
 		for (int i = 0; i < 4; i++) {
 			tempPlayer = pPlayerArray[i];
-			if (tempPlayer->attackingObjPtr != 0) {
-				PlayerData* attackingPlayer = (PlayerData*)(tempPlayer->attackingObjPtr - 0x4);
-				tempPlayer->recievingAttackDataPtr = attackingPlayer->attackDataPtr;
+			for (int j = 0; j < 8; j++) {
+				if (tempPlayer->subObj.attackingSubObjPtrArr[j] != 0) {
+					ActorData* attackingSubObj = tempPlayer->subObj.attackingSubObjPtrArr[j];
+					tempPlayer->subObj.recievingAttackDataPtrArr[j] = attackingSubObj->attackDataPtr;
+				}
 			}
 		}
 	}
@@ -3047,10 +3049,10 @@ __declspec(naked) void _naked_RoundcallCallback() {
 
 void CharInputCallback() {
 	if (bHoldButtons) {
-		pActiveP2->buttonHeld = 0x70;
+		pActiveP2->subObj.buttonInputs &= 0x7000;
 	}
 	if (bHoldShield) {
-		pActiveP2->buttonHeld = 0x80;
+		pActiveP2->subObj.buttonInputs &= 0x8000;
 	}
 }
 
@@ -4776,7 +4778,7 @@ void XS_Reversal_Slots(Element* element, int &reversal_value, bool APos, bool DP
 		reversal_value = (reversal_value + 0x00010000) % 0x00070000;
 		byte stance = getPatStance(pActiveP2, pat);
 		byte shieldCancel = getShieldCancel(pActiveP2, pat);
-		if (pActiveP2->moon == 2) shieldCancel &= 0x2;
+		if (pActiveP2->subObj.moon == 2) shieldCancel &= 0x2;
 		byte exShield = shieldCancel & 0x2;
 		byte heldShield = shieldCancel & 0x1;
 		byte validShields[7] = { !isSC, (stance & 0x1) * exShield, (stance & 0x1) * heldShield,
@@ -4868,7 +4870,7 @@ void ExtendedMenuInputChecking() {
 		int healthAccel = bA ? 10 : 570;
 		switch ((eTRAINING)curMenuInfo->selectedElement) {
 		case eTRAINING::P1_METER:
-			if (pP1->moon != 2) {
+			if (pP1->subObj.moon != 2) {
 				CFMeterScrolling(curElement, nTRUE_P1_METER, bA);
 			}
 			else {
@@ -4876,7 +4878,7 @@ void ExtendedMenuInputChecking() {
 			}
 			break;
 		case eTRAINING::P2_METER:
-			if (pP2->moon != 2) {
+			if (pP2->subObj.moon != 2) {
 				CFMeterScrolling(curElement, nTRUE_P2_METER, bA);
 			}
 			else {
@@ -4909,7 +4911,7 @@ void ExtendedMenuInputChecking() {
 			break;
 		}
 
-		if (pP1->moon != 2) {
+		if (pP1->subObj.moon != 2) {
 			switch (nTRUE_P1_METER) {
 			case 30000:
 				(curMenuInfo->elementList).listStart[(int)eTRAINING::P1_METER]->SetCurItemLabel("MAX");
@@ -4936,7 +4938,7 @@ void ExtendedMenuInputChecking() {
 			}
 		}
 		
-		if (pP2->moon != 2) {
+		if (pP2->subObj.moon != 2) {
 			switch (nTRUE_P2_METER) {
 			case 30000:
 				(curMenuInfo->elementList).listStart[(int)eTRAINING::P2_METER]->SetCurItemLabel("MAX");
@@ -5033,28 +5035,28 @@ void ExtendedMenuInputChecking() {
 			break;
 		case ePOSITIONS::MOVE_TO_POSITIONS:
 			if (bAPos) {
-				pP1->xPos = nTRUE_P1_X_LOC;
-				pP2->xPos = nTRUE_P2_X_LOC;
-				bool p1LookLeft = pP1->xPos > pP2->xPos;
-				pP1->facingLeft = p1LookLeft;
-				pP1->isOpponentToLeft = p1LookLeft;
-				pP2->facingLeft = !p1LookLeft;
-				pP2->isOpponentToLeft = !p1LookLeft;
+				pP1->subObj.xPos = nTRUE_P1_X_LOC;
+				pP2->subObj.xPos = nTRUE_P2_X_LOC;
+				bool p1LookLeft = pP1->subObj.xPos > pP2->subObj.xPos;
+				pP1->subObj.facingLeft = p1LookLeft;
+				pP1->subObj.isOpponentToLeft = p1LookLeft;
+				pP2->subObj.facingLeft = !p1LookLeft;
+				pP2->subObj.isOpponentToLeft = !p1LookLeft;
 
-				if (pP3->exists && pP3->charID != 51) {
-					pP3->xPos = nTRUE_P1_ASSIST_X_LOC;
+				if (pP3->exists && pP3->subObj.charID != (BYTE)eCharID::HIME) {
+					pP3->subObj.xPos = nTRUE_P1_ASSIST_X_LOC;
 
-					bool p3LookLeft = pP3->xPos > pP2->xPos;
-					pP3->facingLeft = p3LookLeft;
-					pP3->isOpponentToLeft = p3LookLeft;
+					bool p3LookLeft = pP3->subObj.xPos > pP2->subObj.xPos;
+					pP3->subObj.facingLeft = p3LookLeft;
+					pP3->subObj.isOpponentToLeft = p3LookLeft;
 				}
 
-				if (pP4->exists && pP4->charID != 51) {
-					pP4->xPos = nTRUE_P2_ASSIST_X_LOC;
+				if (pP4->exists && pP4->subObj.charID != (BYTE)eCharID::HIME) {
+					pP4->subObj.xPos = nTRUE_P2_ASSIST_X_LOC;
 
-					bool p4LookLeft = pP4->xPos > pP1->xPos;
-					pP4->facingLeft = p4LookLeft;
-					pP4->isOpponentToLeft = p4LookLeft;
+					bool p4LookLeft = pP4->subObj.xPos > pP1->subObj.xPos;
+					pP4->subObj.facingLeft = p4LookLeft;
+					pP4->subObj.isOpponentToLeft = p4LookLeft;
 				}
 			}
 			break;
@@ -5192,6 +5194,9 @@ void ExtendedMenuInputChecking() {
 		case eFRAME_DATA::FRAME_DATA:
 			*(byte*)(adMBAABase + adXS_frameData) = curElement->selectedItem;
 			SetRegistryValue(sFRAME_DATA, curElement->selectedItem);
+			break;
+		case eFRAME_DATA::IN_GAME_FRAME_DISPLAY:
+			SetRegistryValue(sFRAME_DISPLAY, curElement->selectedItem);
 			break;
 		case eFRAME_DATA::SHOW_HITSTOP_AND_FREEZE:
 			*(byte*)(adMBAABase + adXS_showHitstopAndFreeze) = curElement->selectedItem;

@@ -537,8 +537,8 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 
 				EffectData* effect = (EffectData*)(listAppendHook_objAddr - 0x10);
 
-				if (effect->pattern == 103 || (effect->pattern >= 108 && effect->pattern <= 111)) {
-					if (playerDataArr[effect->ownerIndex].charID == 10) { // we are nero.
+				if (effect->subObj.pattern == 103 || (effect->subObj.pattern >= 108 && effect->subObj.pattern <= 111)) {
+					if (playerDataArr[effect->subObj.ownerIndex].subObj.charID == 10) { // we are nero.
 						textureToObject[listAppendHook_texAddr].isDeer = true;
 					}
 				}

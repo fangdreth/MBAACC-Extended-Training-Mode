@@ -80,6 +80,7 @@ extern Menu<int>* disableFpsMenuOption;
 // i hate this. wish i could more easily access menu data
 extern bool enableEffectColors;
 extern float effectColorHue;
+extern bool enableCursor;
 
 void drawFancyMenu();
 

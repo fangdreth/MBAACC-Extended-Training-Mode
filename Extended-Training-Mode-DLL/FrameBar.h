@@ -80,11 +80,11 @@ void UpdatePlayers() //Called after bar handling
 	for (int i = 0; i < 4; i++) {
 		Player& P = *paPlayerArray[i];
 		P.nLastInactionableFrames = *(int*)(P.adInaction);
-		P.nLastFrameCount = P.PlayerData->heatTimeCounter;
-		P.bLastOnRight = P.PlayerData->isOpponentToLeft;
-		P.dwLastActivePointer = (DWORD)P.PlayerData->attackDataPtr;
-		P.cLastHitstop = P.PlayerData->hitstop;
-		if (P.PlayerData->targetPattern != 0xFFFF) {
+		P.nLastFrameCount = P.PlayerData->subObj.heatTimeCounter;
+		P.bLastOnRight = P.PlayerData->subObj.isOpponentToLeft;
+		P.dwLastActivePointer = (DWORD)P.PlayerData->subObj.attackDataPtr;
+		P.cLastHitstop = P.PlayerData->subObj.hitstop;
+		if (P.PlayerData->subObj.targetPattern != 0xFFFF) {
 			P.bAlreadyGotFirstActive = false;
 			P.nFirstActiveCounter = 0;
 		}
@@ -110,10 +110,10 @@ void CheckProjectiles()
 		if (curFX->exists)
 		{
 			cBlankEffectCount = 0;
-			if (curFX->attackDataPtr != 0 &&
-				curFX->someFlag == 0xFF)
+			if (curFX->subObj.attackDataPtr != 0 &&
+				curFX->subObj.someFlag == 0xFF)
 			{
-				Player& P = *paPlayerArray[curFX->index];
+				Player& P = *paPlayerArray[curFX->subObj.index];
 				P.bProjectileActive = true;
 			}
 		}
@@ -191,37 +191,37 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		dwColor = FB_INACTIONABLE;
 		nNumber = *(int*)P.adInaction;
-		if (P.PlayerData->pattern >= 35 && P.PlayerData->pattern <= 37) //Jump Startup
+		if (P.PlayerData->subObj.pattern >= 35 && P.PlayerData->subObj.pattern <= 37) //Jump Startup
 		{
 			dwColor = FB_JUMP;
 		}
-		else if (P.PlayerData->hitstunTimeRemaining != 0 && !P.PlayerData->inBlockstun) //Hitstun
+		else if (P.PlayerData->subObj.hitstunTimeRemaining != 0 && !P.PlayerData->subObj.inBlockstun) //Hitstun
 		{
 			dwColor = FB_HITSTUN;
-			if (P.PlayerData->animationDataPtr->stateData->stance == 1) //Airborne
+			if (P.PlayerData->subObj.animationDataPtr->stateData->stance == 1) //Airborne
 			{
-				if (P.PlayerData->untechTimeElapsed < P.PlayerData->totalUntechTime) //Still has untech remaining
+				if (P.PlayerData->subObj.untechTimeElapsed < P.PlayerData->subObj.totalUntechTime) //Still has untech remaining
 				{
-					nNumber = P.PlayerData->totalUntechTime - P.PlayerData->untechTimeElapsed;
+					nNumber = P.PlayerData->subObj.totalUntechTime - P.PlayerData->subObj.untechTimeElapsed;
 				}
 			}
 			else //Grounded
 			{
-				if (P.PlayerData->hitstunTimeRemaining > 2) //Still has hitstun remaining
+				if (P.PlayerData->subObj.hitstunTimeRemaining > 2) //Still has hitstun remaining
 				{
-					nNumber = P.PlayerData->hitstunTimeRemaining - 1;
+					nNumber = P.PlayerData->subObj.hitstunTimeRemaining - 1;
 				}
 			}
 		}
-		else if (P.PlayerData->inBlockstun) //Blockstun
+		else if (P.PlayerData->subObj.inBlockstun) //Blockstun
 		{
 			dwColor = FB_BLOCKSTUN;
-			if (P.PlayerData->hitstunTimeRemaining > 2 && P.PlayerData->animationDataPtr->stateData->stance != 1)
+			if (P.PlayerData->subObj.hitstunTimeRemaining > 2 && P.PlayerData->subObj.animationDataPtr->stateData->stance != 1)
 			{
-				nNumber = P.PlayerData->hitstunTimeRemaining - 1;
+				nNumber = P.PlayerData->subObj.hitstunTimeRemaining - 1;
 			}
 		}
-		else if (P.PlayerData->attackDataPtr) //Attacking
+		else if (P.PlayerData->subObj.attackDataPtr) //Attacking
 		{
 			dwColor = FB_ACTIVE;
 			nNumber = P.nActiveCounter;
@@ -249,9 +249,9 @@ void UpdateBars(Player& P, Player& Assist)
 
 	bool bIsShield = false;
 	bool bIsThrow = false;
-	if (P.PlayerData->animationDataPtr->highestIFIndex > 0)
+	if (P.PlayerData->subObj.animationDataPtr->highestIFIndex > 0)
 	{
-		AnimationData* animData = P.PlayerData->animationDataPtr;
+		AnimationData* animData = P.PlayerData->subObj.animationDataPtr;
 		for (int i = 0; i < animData->highestIFIndex; i++) {
 			if (animData->IFs[i] != 0) {
 				if (animData->IFs[i]->IFTP == 52) {
@@ -269,23 +269,23 @@ void UpdateBars(Player& P, Player& Assist)
 		*(int*)(adMBAABase + adP2Freeze) != 0)
 	{
 		dwColor = FB_FREEZE;
-		if (P.PlayerData->attackDataPtr != 0) //Attacking
+		if (P.PlayerData->subObj.attackDataPtr != 0) //Attacking
 		{
 			dwColor = FB_FREEZE_ACTIVE;
 		}
 	}
-	else if (P.PlayerData->throwFlag) //Being thrown
+	else if (P.PlayerData->subObj.throwFlag) //Being thrown
 	{
 		dwColor = FB_THROWN;
 	}
-	else if (P.PlayerData->hitstop != 0) //in hitstop
+	else if (P.PlayerData->subObj.hitstop != 0) //in hitstop
 	{
 		dwColor = FB_HITSTOP;
-		if (!P.PlayerData->notInCombo && P.cLastHitstop == 0)
+		if (!P.PlayerData->subObj.notInCombo && P.cLastHitstop == 0)
 		{
 			nNumFlag = 1;
 		}
-		else if (P.PlayerData->attackDataPtr != 0)
+		else if (P.PlayerData->subObj.attackDataPtr != 0)
 		{
 			nNumFlag = 3;
 			nNumber = -1;
@@ -305,22 +305,22 @@ void UpdateBars(Player& P, Player& Assist)
 		dwColor = FB_THROW_ACTIVE;
 	}
 
-	if (P.PlayerData->animationDataPtr->highestNonHitboxIndex == 12) //Clash
+	if (P.PlayerData->subObj.animationDataPtr->highestNonHitboxIndex == 12) //Clash
 	{
 		dwColor2 = FB_CLASH;
 	}
-	else if (P.PlayerData->animationDataPtr->highestNonHitboxIndex <= 1 || //Various forms of invuln
-		P.PlayerData->strikeInvuln != 0 ||
-		P.PlayerData->animationDataPtr->stateData->invincibility == 3)
+	else if (P.PlayerData->subObj.animationDataPtr->highestNonHitboxIndex <= 1 || //Various forms of invuln
+		P.PlayerData->subObj.strikeInvuln != 0 ||
+		P.PlayerData->subObj.animationDataPtr->stateData->invincibility == 3)
 	{
 		dwColor2 = FB_INVULN;
 	}
-	else if (P.PlayerData->animationDataPtr->highestNonHitboxIndex == 10) //Special Box 1
+	else if (P.PlayerData->subObj.animationDataPtr->highestNonHitboxIndex == 10) //Special Box 1
 	{
 		dwColor2 = FB_COUNTER;
 	}
 
-	if (P.PlayerData->animationDataPtr->stateData->stance == 1) //Airborne
+	if (P.PlayerData->subObj.animationDataPtr->stateData->stance == 1) //Airborne
 	{
 		dwBar2Color0 = FB_JUMP;
 	}
@@ -336,7 +336,7 @@ void UpdateBars(Player& P, Player& Assist)
 		}
 	}
 
-	if (Assist.PlayerData->attackDataPtr != 0) //Check Assist for active
+	if (Assist.PlayerData->subObj.attackDataPtr != 0) //Check Assist for active
 	{
 		dwBar2Color1 = FB_ASSIST_ACTIVE;
 		if (Assist.dwLastActivePointer == 0 && !P.bAlreadyGotFirstActive)
@@ -381,11 +381,11 @@ void UpdateBars(Player& P, Player& Assist)
 
 void IncrementActive(Player& P)
 {
-	if (P.PlayerData->attackDataPtr && P.PlayerData->hitstop == 0 && P.PlayerData->heatTimeCounter != P.nLastFrameCount)
+	if (P.PlayerData->subObj.attackDataPtr && P.PlayerData->subObj.hitstop == 0 && P.PlayerData->subObj.heatTimeCounter != P.nLastFrameCount)
 	{
 		P.nActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 	}
-	else if (P.PlayerData->attackDataPtr == 0)
+	else if (P.PlayerData->subObj.attackDataPtr == 0)
 	{
 		P.nActiveCounter = 0;
 	}
@@ -393,12 +393,12 @@ void IncrementActive(Player& P)
 
 void IncrementFirstActive(Player& P1, Player& P2)
 {
-	if (P1.PlayerData->hitstop == 0 &&
+	if (P1.PlayerData->subObj.hitstop == 0 &&
 		//*(int*)(adMBAABase + adP1Freeze) == 0 &&
 		//*(int*)(adMBAABase + adP2Freeze) == 0 &&
 		//*(char*)(adMBAABase + adGlobalFreeze) == 0 &&
-		P1.PlayerData->heatTimeCounter != P1.nLastFrameCount &&
-		P2.PlayerData->heatTimeCounter != P2.nLastFrameCount)
+		P1.PlayerData->subObj.heatTimeCounter != P1.nLastFrameCount &&
+		P2.PlayerData->subObj.heatTimeCounter != P2.nLastFrameCount)
 	{
 		P1.nFirstActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 		//P1.bAddPlayerFreeze = true;
@@ -428,12 +428,12 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 	bool DoBarUpdate = (
 		*(int*)(P1.adInaction) != 0 ||
 		*(int*)(P2.adInaction) != 0||
-		P1.PlayerData->animationDataPtr->stateData->flagset2 != 0||
-		P2.PlayerData->animationDataPtr->stateData->flagset2 != 0||
+		P1.PlayerData->subObj.animationDataPtr->stateData->flagset2 != 0||
+		P2.PlayerData->subObj.animationDataPtr->stateData->flagset2 != 0||
 		P1.bProjectileActive != 0 ||
 		P2.bProjectileActive != 0 ||
-		P1Assist.PlayerData->attackDataPtr != 0 ||
-		P2Assist.PlayerData->attackDataPtr != 0 ||
+		P1Assist.PlayerData->subObj.attackDataPtr != 0 ||
+		P2Assist.PlayerData->subObj.attackDataPtr != 0 ||
 		P1Assist.bProjectileActive != 0 ||
 		P2Assist.bProjectileActive != 0
 		); //True if either char is inactionable, can't block, has an active projectile, has an active assist, or has an active assist projectile
@@ -472,8 +472,8 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 
 	if (bUpdateBar)
 	{
-		if (P1.PlayerData->hitstop != 0 &&
-			P2.PlayerData->hitstop != 0) //Player hitstop values count down but we need it to count up
+		if (P1.PlayerData->subObj.hitstop != 0 &&
+			P2.PlayerData->subObj.hitstop != 0) //Player hitstop values count down but we need it to count up
 		{
 			nSharedHitstop++;
 		}
@@ -526,12 +526,12 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 	Main2 = &P2;
 	Assist1 = &P3;
 	Assist2 = &P4;
-	if (P1.PlayerData->tagFlag)
+	if (P1.PlayerData->subObj.tagFlag)
 	{
 		Main1 = &P3;
 		Assist1 = &P1;
 	}
-	if (P2.PlayerData->tagFlag)
+	if (P2.PlayerData->subObj.tagFlag)
 	{
 		Main2 = &P4;
 		Assist2 = &P2;

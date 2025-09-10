@@ -44,7 +44,7 @@ void InputItem::setMeltyInput(int playerIndex) {
 	DWORD baseAddr = 0x00771398 + (0x2C * playerIndex);
 
 	BYTE tempDir = dir;
-	BYTE facingLeft = playerDataArr[playerIndex].facingLeft;
+	BYTE facingLeft = playerDataArr[playerIndex].subObj.facingLeft;
 
 	if (facingLeft) {
 		constexpr int dirLookup[] = { 0, 3, 2, 1, 6, 5, 4, 9, 8, 7 };

@@ -24,6 +24,7 @@ Menu<int>* disableFpsMenuOption = NULL;
 
 bool enableEffectColors = false;
 float effectColorHue = 0.0f;
+bool enableCursor = true;
 
 template <typename T>
 struct always_false : std::false_type { };
@@ -196,7 +197,7 @@ void initMenu() {
 
 			return "unknown" + std::to_string(opt);
 		},
-		std::wstring(L"P1InputDisplay")
+		sP1_INPUT_DISPLAY
 	);
 
 	ui.add<int>("P2 Input Display",
@@ -223,7 +224,7 @@ void initMenu() {
 
 			return "unknown" + std::to_string(opt);
 		},
-		L"P2InputDisplay"
+		sP2_INPUT_DISPLAY
 	);
 
 	ui.add<int>("Show Framebar",
@@ -234,7 +235,7 @@ void initMenu() {
 			nIN_GAME_FRAME_DISPLAY = opt;
 		},
 		defaultOnOffNameFunc,
-		L"FrameDisplay"
+		sFRAME_DISPLAY
 	);
 
 	ui.add<int>("Framebar Y",
@@ -248,7 +249,7 @@ void initMenu() {
 			else nFRAME_DISPLAY_Y = 1;
 		},
 		defaultSliderNameFunc,
-		L"FrameBarY"
+		sFRAME_BAR_Y
 	);
 
 	ui.add<int>("Show Stats",
@@ -271,6 +272,18 @@ void initMenu() {
 			nHIDE_EXTRAS = opt;
 		},
 		defaultOnOffNameFunc
+	);
+
+	ui.add<int>("Show Cursor",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			enableCursor = opt;
+		},
+		defaultOnOffNameFunc,
+		L"",
+		true
 	);
 
 	baseMenu.add(ui);
@@ -297,7 +310,7 @@ void initMenu() {
 
 			return "unknown" + std::to_string(opt);
 		},
-		L"HitboxStyle"
+		sHITBOX_STYLE
 	);
 
 	hitboxes.add<int>("Color Blind Mode",

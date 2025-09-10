@@ -1632,6 +1632,7 @@ void joystickDraw(float x, float y, float size, DWORD ARGB) {
 }
 
 void cursorDraw() {
+	if (!enableCursor) return;
 
 	D3DXVECTOR2 charTopLeft;
 	D3DXVECTOR2 charW;

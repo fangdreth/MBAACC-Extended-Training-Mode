@@ -81,7 +81,8 @@ enum class eCharID {
 	HERMES,
 	RYOUGI,
 	NECOMECH,
-	KOHAMECH
+	KOHAMECH,
+	HIME = 51
 };
 
 const std::string VERSION = "v2.1";
@@ -457,143 +458,68 @@ const ADDRESS adFont2 = 0x55DAA0;
 // let's include comments here so we know how big everything is
 // to make it easier to add more.
 const ADDRESS adShareBase = 0x381000;
-//const ADDRESS adSharedSaveSlot =					adShareBase + 0x0;	// 1 byte
-//const ADDRESS adSharedDoSave =						adShareBase + 0x1;	// 1 byte
-//const ADDRESS adSharedDoClearSave =					adShareBase + 0x2;	// 1 byte
-//const ADDRESS adSharedDisplayFreeze =				adShareBase + 0x3;	// 1 byte
-//const ADDRESS adSharedDisplayInputs =				adShareBase + 0x4;	// 1 byte
-//const ADDRESS adSharedScrolling =					adShareBase + 0x5;	// 2 bytes
-//const ADDRESS adSharedHoveringScroll =				adShareBase + 0x7;	// 1 byte
 const ADDRESS adSharedFreezeOverride =				adShareBase + 0x8;	// 1 byte - this one still used during text boxes it looks like, @fang
-//const ADDRESS adSharedRNGMode =						adShareBase + 0x9;	// 1 byte
-//const ADDRESS adSharedRNGRate =						adShareBase + 0xA;	// 1 byte
-//const ADDRESS adSharedRNGCustomSeed =				adShareBase + 0xB;	// 4 bytes
-//const ADDRESS adSharedRNGCustomRN =					adShareBase + 0xF;	// 4 bytes
-//const ADDRESS adSharedHitboxStyle =					adShareBase + 0x14;	// 1 byte
-//const ADDRESS adSharedColorBlindMode =				adShareBase + 0x15;	// 1 byte
-//const ADDRESS adSharedDisplayHitboxes =				adShareBase + 0x16;	// 1 byte
-//const ADDRESS adSharedExtendOrigins =				adShareBase + 0x17; // 1 byte
-//const ADDRESS adSharedReversalKeyHeld =				adShareBase + 0x18; // 1 byte
-//const ADDRESS adSharedBackgroundStyle =				adShareBase + 0x19; // 1 byte
-//const ADDRESS adSharedDisableHUD =					adShareBase + 0x1A; // 1 byte
-//const ADDRESS adSharedDrawGround =					adShareBase + 0x1B; // 1 byte
-//const ADDRESS adSharedDisableShadow =				adShareBase + 0x1C; // 1 byte
-//const ADDRESS adSharedFastReversePenalty =			adShareBase + 0x1D; // 1 byte
-//const ADDRESS adSharedFrameDataDisplay =			adShareBase + 0x1E; // 1 byte
-//const ADDRESS adSharedSlowSpeed =					adShareBase + 0x1F; // 1 byte
-//const ADDRESS adSharedFrameBarY =					adShareBase + 0x20; // 4 bytes
-//const ADDRESS adSharedShowStats =					adShareBase + 0x24; // 1 byte
-//const ADDRESS adSharedP1InputDisplay =				adShareBase + 0x25; // 1 byte
-//const ADDRESS adSharedP2InputDisplay =				adShareBase + 0x26; // 1 byte
-//const ADDRESS adSharedHighlight =					adShareBase + 0x27; // 1 byte
+
 const ADDRESS adSharedTimer =						adShareBase + 0x28; // 4 bytes - can maybe be removed, idr why it was needed
-//const ADDRESS adSharedColorGuide =					adShareBase + 0x2C; // 1 byte
-//const ADDRESS adSharedHideFPS =						adShareBase + 0x2D; // 1 byte
-//const ADDRESS adSharedHideBuildInfo =				adShareBase + 0x2E; // 1 byte
 
-//const ADDRESS adSharedFreezeKey =					adShareBase + 0x30;	// 1 byte
-//const ADDRESS adSharedFrameStepKey =				adShareBase + 0x31;	// 1 byte
-//const ADDRESS adSharedHitboxesDisplayKey =			adShareBase + 0x32;	// 1 byte
-//const ADDRESS adSharedFrameDataDisplayKey =			adShareBase + 0x33;	// 1 byte
-//const ADDRESS adSharedHighlightsOnKey =				adShareBase + 0x34;	// 1 byte
-//const ADDRESS adSharedSaveStateKey =				adShareBase + 0x35;	// 1 byte
-//const ADDRESS adSharedPrevSaveSlotKey =				adShareBase + 0x36;	// 1 byte
-//const ADDRESS adSharedNextSaveSlotKey =				adShareBase + 0x37;	// 1 byte
-//const ADDRESS adSharedFrameBarScrollLeftKey =		adShareBase + 0x38;	// 1 byte
-//const ADDRESS adSharedFrameBarScrollRightKey =		adShareBase + 0x39;	// 1 byte
-//const ADDRESS adSharedRNGIncKey =					adShareBase + 0x3A; // 1 byte
-//const ADDRESS adSharedRNGDecKey =					adShareBase + 0x3B; // 1 byte
-//const ADDRESS adSharedReversalKey =					adShareBase + 0x3C; // 1 byte
-//const ADDRESS adSharedSlowKey =						adShareBase + 0x3D; // 1 byte
-//const ADDRESS adSharedNextFrameKey =				adShareBase + 0x3E; // 1 byte
-//const ADDRESS adSharedPrevFrameKey =			adShareBase + 0x3F; // 1 byte
-//const ADDRESS adSharedResetKey =					adShareBase + 0x40; // 1 byte
-
-//const ADDRESS adSharedIdleHighlight =				adShareBase + 0x50; // 4 bytes
-//const ADDRESS adSharedBlockingHighlight =			adShareBase + 0x54; // 4 bytes
-//const ADDRESS adSharedHitHighlight =				adShareBase + 0x58; // 4 bytes
-//const ADDRESS adSharedArmorHighlight =				adShareBase + 0x5C; // 4 bytes
-//const ADDRESS adSharedThrowProtectionHighlight =	adShareBase + 0x60; // 4 bytes
-
-//const ADDRESS adSharedMessageBuffer =				adShareBase + 0x100; // 32 bytes
-//const ADDRESS adSharedOnExtendedSettings =			adShareBase + 0x120; // 1 byte
-//const ADDRESS adSharedMainInfoText =				adShareBase + 0x121; // 64 bytes
-//const ADDRESS adSharedSubInfoText =					adShareBase + 0x161; // 64 bytes
-
-//const ADDRESS adSharedP1FancyInputX =				adShareBase + 0x200; // 4 bytes (float)
-//const ADDRESS adSharedP1FancyInputY =				adShareBase + 0x204; // 4 bytes (float)
-//const ADDRESS adSharedP2FancyInputX =				adShareBase + 0x208; // 4 bytes (float)
-//const ADDRESS adSharedP2FancyInputY =				adShareBase + 0x20C; // 4 bytes (float)
-//const ADDRESS adSharedP1ListInputX =				adShareBase + 0x210; // 4 bytes (float)
-//const ADDRESS adSharedP1ListInputY =				adShareBase + 0x214; // 4 bytes (float)
-//const ADDRESS adSharedP2ListInputX =				adShareBase + 0x218; // 4 bytes (float)
-//const ADDRESS adSharedP2ListInputY =				adShareBase + 0x21C; // 4 bytes (float)
-
-//const ADDRESS adSharedP1Guts =						adShareBase + 0x250; // 16 bytes (float[4])
-//const ADDRESS adSharedP2Guts =						adShareBase + 0x260; // 16 bytes (float[4])
-
-//const ADDRESS adHealthRestore =						adShareBase + 0x300; //4 bytes
-
-//extended menu storage
-//const ADDRESS adXS_hitboxStyle =						adShareBase + 0x500; //1 byte
-//const ADDRESS adXS_colorblind =							adShareBase + 0x501; //1 byte
-//const ADDRESS adXS_originStyle =						adShareBase + 0x502; //1 byte
 const ADDRESS adXS_frameData =							adShareBase + 0x503; //1 byte - remaining are used to communicate with console framebar
 const ADDRESS adXS_showHitstopAndFreeze =				adShareBase + 0x504; //1 byte
 const ADDRESS adXS_showInputs =							adShareBase + 0x505; //1 byte
 const ADDRESS adXS_showCancel =							adShareBase + 0x506; //1 byte
 const ADDRESS adXS_frameScroll =						adShareBase + 0x507; //2 bytes
 const ADDRESS adXS_colorGuide =							adShareBase + 0x509; //1 byte
-//const ADDRESS adXS_P1InputDisplay =						adShareBase + 0x509; //1 byte
-//const ADDRESS adXS_P2InputDisplay =						adShareBase + 0x50A; //1 byte
-//const ADDRESS adXS_hideExtras =							adShareBase + 0x50B; //1 byte
 
 const char pcLatestVersion_19[19] = "LATEST VERSION";
 const char pcOffline_8[8] = "OFFLINE";
 
-const LPCTSTR sFREEZE_KEY_REG = L"HOTKEY_Freeze";
-const LPCTSTR sNEXT_FRAME_KEY_REG = L"HOTKEY_NextFrame";
-const LPCTSTR sPREV_FRAME_KEY_REG = L"HOTKEY_PrevFrame";
-const LPCTSTR sTOGGLE_HITBOXES_KEY_REG = L"HOTKEY_ToggleHitboxes";
-const LPCTSTR sTOGGLE_FRAME_BAR_KEY_REG = L"HOTKEY_ToggleFrameBar";
-const LPCTSTR sTOGGLE_HIGHLIGHTS_KEY_REG = L"HOTKEY_ToggleHighlights";
-const LPCTSTR sQUEUE_REVERSAL_KEY_REG = L"HOTKEY_QueueReversal";
-const LPCTSTR sINCREMENT_RNG_KEY_REG = L"HOTKEY_IncrementRNG";
-const LPCTSTR sDECREMENT_RNG_KEY_REG = L"HOTKEY_DecrementRNG";
+//registry keys
+typedef LPCTSTR REGKEY;
 
-const LPCTSTR sSAVE_STATE_KEY_REG = L"HOTKEY_SaveState";
-const LPCTSTR sPREV_SAVE_SLOT_KEY_REG = L"HOTKEY_PrevSaveSlot";
-const LPCTSTR sNEXT_SAVE_SLOT_KEY_REG = L"HOTKEY_NextSaveSlot";
-const LPCTSTR sFRAME_BAR_LEFT_KEY_REG = L"HOTKEY_FrameBarLeft";
-const LPCTSTR sFRAME_BAR_RIGHT_KEY_REG = L"HOTKEY_FrameBarRight";
+//extended menu registry keys
+const REGKEY sFREEZE_KEY_REG = L"HOTKEY_Freeze";
+const REGKEY sNEXT_FRAME_KEY_REG = L"HOTKEY_NextFrame";
+const REGKEY sPREV_FRAME_KEY_REG = L"HOTKEY_PrevFrame";
+const REGKEY sTOGGLE_HITBOXES_KEY_REG = L"HOTKEY_ToggleHitboxes";
+const REGKEY sTOGGLE_FRAME_BAR_KEY_REG = L"HOTKEY_ToggleFrameBar";
+const REGKEY sTOGGLE_HIGHLIGHTS_KEY_REG = L"HOTKEY_ToggleHighlights";
+const REGKEY sQUEUE_REVERSAL_KEY_REG = L"HOTKEY_QueueReversal";
+const REGKEY sINCREMENT_RNG_KEY_REG = L"HOTKEY_IncrementRNG";
+const REGKEY sDECREMENT_RNG_KEY_REG = L"HOTKEY_DecrementRNG";
 
-const LPCTSTR sHIGHLIGHTS = L"Highlights";
-const LPCTSTR sBLOCKING_HIGHLIGHT = L"BlockingHighlight";
-const LPCTSTR sHIT_HIGHLIGHT = L"HitHighlight";
-const LPCTSTR sARMOR_HIGHLIGHT = L"ArmorHighlight";
-const LPCTSTR sTHROW_PROTECTION_HIGHLIGHT = L"ThrowProtectionHighlight";
-const LPCTSTR sIDLE_HIGHLIGHT = L"IdleHighlight";
+const REGKEY sSAVE_STATE_KEY_REG = L"HOTKEY_SaveState";
+const REGKEY sPREV_SAVE_SLOT_KEY_REG = L"HOTKEY_PrevSaveSlot";
+const REGKEY sNEXT_SAVE_SLOT_KEY_REG = L"HOTKEY_NextSaveSlot";
+const REGKEY sFRAME_BAR_LEFT_KEY_REG = L"HOTKEY_FrameBarLeft";
+const REGKEY sFRAME_BAR_RIGHT_KEY_REG = L"HOTKEY_FrameBarRight";
 
-const LPCTSTR sHITBOX_STYLE = L"HitboxStyle";
-const LPCTSTR sCOLOR_BLIND_MODE = L"ColorBlindMode";
+const REGKEY sHIGHLIGHTS = L"Highlights";
+const REGKEY sBLOCKING_HIGHLIGHT = L"BlockingHighlight";
+const REGKEY sHIT_HIGHLIGHT = L"HitHighlight";
+const REGKEY sARMOR_HIGHLIGHT = L"ArmorHighlight";
+const REGKEY sTHROW_PROTECTION_HIGHLIGHT = L"ThrowProtectionHighlight";
+const REGKEY sIDLE_HIGHLIGHT = L"IdleHighlight";
 
-const LPCTSTR sFRAME_DATA = L"FrameData";
-const LPCTSTR sDISPLAY_FREEZE = L"DisplayFreeze";
-const LPCTSTR sDISPLAY_INPUTS = L"DisplayInputs";
-const LPCTSTR sDISPLAY_CANCELS = L"DisplayCancels";
+const REGKEY sHITBOX_STYLE = L"HitboxStyle";
+const REGKEY sCOLOR_BLIND_MODE = L"ColorBlindMode";
 
-const LPCTSTR sFRAME_BAR_Y = L"FrameBarY";
-const LPCTSTR sP1_INPUT_DISPLAY = L"P1InputDisplay";
-const LPCTSTR sP2_INPUT_DISPLAY = L"P2InputDisplay";
+const REGKEY sFRAME_DATA = L"FrameData";
+const REGKEY sFRAME_DISPLAY = L"FrameDisplay";
+const REGKEY sDISPLAY_FREEZE = L"DisplayFreeze";
+const REGKEY sDISPLAY_INPUTS = L"DisplayInputs";
+const REGKEY sDISPLAY_CANCELS = L"DisplayCancels";
 
-const LPCTSTR sP1_ARCADE_INPUT_X = L"P1ArcadeInputX";
-const LPCTSTR sP1_ARCADE_INPUT_Y = L"P1ArcadeInputY";
-const LPCTSTR sP2_ARCADE_INPUT_X = L"P2ArcadeInputX";
-const LPCTSTR sP2_ARCADE_INPUT_Y = L"P2ArcadeInputY";
-const LPCTSTR sP1_LIST_INPUT_X = L"P1ListInputX";
-const LPCTSTR sP1_LIST_INPUT_Y = L"P1ListInputY";
-const LPCTSTR sP2_LIST_INPUT_X = L"P2ListInputX";
-const LPCTSTR sP2_LIST_INPUT_Y = L"P2ListInputY";
+const REGKEY sFRAME_BAR_Y = L"FrameBarY";
+const REGKEY sP1_INPUT_DISPLAY = L"P1InputDisplay";
+const REGKEY sP2_INPUT_DISPLAY = L"P2InputDisplay";
+
+const REGKEY sP1_ARCADE_INPUT_X = L"P1ArcadeInputX";
+const REGKEY sP1_ARCADE_INPUT_Y = L"P1ArcadeInputY";
+const REGKEY sP2_ARCADE_INPUT_X = L"P2ArcadeInputX";
+const REGKEY sP2_ARCADE_INPUT_Y = L"P2ArcadeInputY";
+const REGKEY sP1_LIST_INPUT_X = L"P1ListInputX";
+const REGKEY sP1_LIST_INPUT_Y = L"P1ListInputY";
+const REGKEY sP2_LIST_INPUT_X = L"P2ListInputX";
+const REGKEY sP2_LIST_INPUT_Y = L"P2ListInputY";
 
 #define VK_KEY_UNSET 0x0;
 
