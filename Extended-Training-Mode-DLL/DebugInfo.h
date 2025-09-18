@@ -636,6 +636,7 @@ CHECKOFFSET(counterhitState, 0x1FA);
 CHECKOFFSET(recievingAttackPtr, 0x1FC);
 CHECKOFFSET(gravity, 0x2E4);
 CHECKOFFSET(buttonHeld, 0x2ED);
+CHECKOFFSET(ownerIndex, 0x2F4); 
 CHECKOFFSET(inputPriority, 0x30E);
 CHECKOFFSET(facingLeft, 0x314);
 CHECKOFFSET(delayedStandAirbornCrouchState, 0x31B);

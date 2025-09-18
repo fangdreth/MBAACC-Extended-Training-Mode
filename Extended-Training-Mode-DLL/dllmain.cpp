@@ -24,7 +24,19 @@ void drawFancyMenu();
 void rollFancyInputDisplay(int n);
 void loadCustomShader();
 
-TASManager TASManagerObj;
+TASManager TASManagerObj[4];
+
+bool fn1Press2v2[4] = { false, false, false, false };
+void doWeird2v2Fixes() {
+	// FN1 needs to be written at a different point than it is. this is a horrid fix, that may result in the button press being 1f late, or more, but i just want this done
+
+	for (int i = 0; i < 4; i++) {
+		if (fn1Press2v2[i]) {
+			*(BYTE*)((*(DWORD*)0x76E6AC) + 0x25 + (i * 0x14)) = 1;
+			fn1Press2v2[i] = false;
+		}
+	}
+}
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
@@ -2423,7 +2435,9 @@ void newPauseCallback2()
 	
 	if (!_naked_newPauseCallback2_IsPaused) {
 		unpausedFrameCount++;
-		TASManagerObj.incInputs();
+		for (int i = 0; i < 4; i++) {
+			TASManagerObj[i].incInputs();
+		}
 	}
 
 	if (!_naked_newPauseCallback2_IsPaused && needPause != 2) {
@@ -4263,7 +4277,11 @@ void __stdcall battleResetCallback()
 
 	dualInputDisplayReset();
 
-	TASManagerObj.load("TAS.txt");
+	// 2v2 support. for some reason. i suppose. i need a nap
+	TASManagerObj[0].load("TAS.txt");
+	TASManagerObj[1].load("TAS2.txt");
+	TASManagerObj[2].load("TAS3.txt");
+	TASManagerObj[3].load("TAS4.txt");
 
 	loadCustomShader();
 
@@ -4287,8 +4305,11 @@ void inputCallback() {
 	profileFunction();
 
 	KeyState::updateControllers(); // this call is taking half a ms, and wtf why am i even caring
-		
-	TASManagerObj.setInputs();
+	
+	for (int i = 0; i < 4; i++) {	
+		TASManagerObj[i].setInputs(i);
+	}
+	
 	replayManager.setInputs();
 
 	if (needTrainingModeReset) {
@@ -4302,6 +4323,8 @@ void inputCallback() {
 }
 
 __declspec(naked) void _naked_inputCallback() {
+
+	// patched at 0x0041f1a6
 
 	PUSH_ALL;
 	inputCallback();
@@ -4333,6 +4356,26 @@ __declspec(naked) void _naked_showCssHook() {
 	}
 
 	emitJump(0x0048bb86);
+
+}
+
+__declspec(naked) void _naked_init2v2Hack() {
+
+	// patched at 0040e3ab
+
+	PUSH_ALL;
+	doWeird2v2Fixes();
+	POP_ALL;
+
+	// overwritten asm from 0040e3ab. i dont trust the compiler
+	emitByte(0x8B);
+	emitByte(0x0D);
+	emitByte(0xB0);
+	emitByte(0xE6);
+	emitByte(0x76);
+	emitByte(0x00);
+
+	emitJump(0x0040e3b1);
 
 }
 
@@ -4539,6 +4582,10 @@ void initShowCssHook() {
 	patchJump(0x0048bb80, _naked_showCssHook);
 }
 
+void init2v2Hack() {
+	patchJump(0x0040e3ab, _naked_init2v2Hack);
+}
+
 // dll thread func
 
 void threadFunc() 
@@ -4583,6 +4630,8 @@ void threadFunc()
 	initCustomHealthRecover();
 
 	initShowCssHook();
+
+	init2v2Hack();
 
 	//initTrainingMenu(); //uncomment for experimental new menu
 

@@ -162,7 +162,9 @@ extern int showDebugMenu;
 extern DWORD showCSS;
 
 class TASManager;
-extern TASManager TASManagerObj;
+extern TASManager TASManagerObj[4];
+
+extern bool fn1Press2v2[4];
 
 // -----
 
