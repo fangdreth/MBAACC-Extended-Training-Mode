@@ -3017,6 +3017,16 @@ __declspec(naked) void _naked_ResetCallback() {
 // roundcall funcs
 
 void RoundcallCallback() {
+	//maintain dummy recording state
+	byte p1DoTraining = pP1->subObj.doTrainingAction;
+	byte p2DoTraining = pP2->subObj.doTrainingAction;
+	byte p3DoTraining;
+	byte p4DoTraining;
+	if (pP3->exists)
+		p3DoTraining = pP3->subObj.doTrainingAction;
+	if (pP4->exists)
+		p4DoTraining = pP4->subObj.doTrainingAction;
+
 	if (nSAVE_STATE_SLOT > 0 && saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)
 	{
 		saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->load(nLOAD_RNG);
@@ -3031,6 +3041,12 @@ void RoundcallCallback() {
 			}
 		}
 	}
+	pP1->subObj.doTrainingAction = p1DoTraining;
+	pP2->subObj.doTrainingAction = p2DoTraining;
+	if (pP3->exists)
+		pP3->subObj.doTrainingAction = p3DoTraining;
+	if (pP4->exists)
+		pP4->subObj.doTrainingAction = p4DoTraining;
 }
 
 DWORD RoundcallCallback_PatchAddr = 0x00472964;
