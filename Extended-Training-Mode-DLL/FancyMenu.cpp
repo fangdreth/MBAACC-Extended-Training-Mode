@@ -612,6 +612,11 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
+	debug.add<int>("Save screenshot each frame",
+		getDefaultOnOffOptionFunc(&doSaveScreenshot),
+		defaultOnOffNameFunc
+	);
+
 	debug.add<int>("Mouse:",
 		[](int inc, int& opt) {
 		},

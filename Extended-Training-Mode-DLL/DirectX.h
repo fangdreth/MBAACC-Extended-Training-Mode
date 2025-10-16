@@ -18,6 +18,8 @@ extern int maxCrowdVel;
 
 extern int showRoaHiddenCharge;
 
+extern bool doSaveScreenshot;
+
 //extern IDirectInput8* inputDevice;
 
 template <typename T, int size>
