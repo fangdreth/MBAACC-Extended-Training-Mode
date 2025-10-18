@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <random> 
 #include "DebugInfo.h"
+#include "dllmain.h"
 
 bool enableTAS = false;
 bool randomTAS = false;

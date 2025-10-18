@@ -3,12 +3,30 @@
 #include <type_traits>
 #include <set>
 #include <map>
-#include "dllmain.h"
+//#include "dllmain.h"
 #include "resource.h"
 //#include "..\Common\Common.h"
 //#include "FancyMenu.h"
 #include "..\Common\types.h"
 
+#include <string>
+#include <array>
+#include <vector>
+#include <functional>
+
+#include <d3d9.h>
+#include <D3dx9math.h>
+#include <D3D9Types.h>
+
+void __stdcall ___log(const char* msg);
+
+void __stdcall log(const char* format, ...);
+
+void __stdcall ___log(const wchar_t* msg);
+
+void __stdcall log(const wchar_t* format, ...);
+
+extern IDirect3DDevice9* device;
 
 extern bool logPowerInfo;
 extern bool logVerboseFps;

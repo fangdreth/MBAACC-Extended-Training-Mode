@@ -133,6 +133,7 @@
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>%(AdditionalDependencies);$(IntDir)\DLLAsmFuncs.obj</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers />
+      <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PreBuildEvent>
       <Command>cd /D "$(ProjectDir)/../Common/" &amp;&amp; call "$(ProjectDir)/../Common/genVersion.bat"</Command>
@@ -185,6 +186,7 @@
     <ClInclude Include="..\Common\RawData.h" />
     <ClInclude Include="..\Common\types.h" />
     <ClInclude Include="..\Common\version.h" />
+    <ClInclude Include="..\MBAACC-Extended-Training-Mode\Logger.h" />
     <ClInclude Include="DebugInfo.h" />
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="dllmain.h" />
@@ -205,6 +207,7 @@
     <ClCompile Include="..\Common\RawData.cpp" />
     <ClCompile Include="..\Common\types.cpp" />
     <ClCompile Include="..\Common\version.cpp" />
+    <ClCompile Include="..\MBAACC-Extended-Training-Mode\Logger.cpp" />
     <ClCompile Include="DebugInfo.cpp" />
     <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="dllmain.cpp" />

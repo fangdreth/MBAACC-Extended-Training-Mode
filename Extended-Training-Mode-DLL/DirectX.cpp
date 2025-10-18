@@ -9,6 +9,8 @@
 #include "../Common/version.h"
 #include "..\Common\Common.h"
 
+#include "dllmain.h"
+
 void debugLinkedList();
 void displayDebugInfo();
 void debugImportantDraw();

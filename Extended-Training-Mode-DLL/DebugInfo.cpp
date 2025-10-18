@@ -2,6 +2,7 @@
 #include "DebugInfo.h"
 #include "DirectX.h"
 #include <string>
+#include "dllmain.h"
 
 extern bool hasTextureAddr(DWORD test);
 

@@ -15,8 +15,8 @@
 #include <Xinput.h>
 
 
-//void LogInfo(std::string sInfo);
-//void LogError(std::string sError);
+//void LogInfo(const std::string& sInfo);
+//void LogError(const std::string& sError);
 
 #pragma comment(lib, "ws2_32.lib") 
 #pragma comment(lib, "dinput8.lib")

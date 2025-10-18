@@ -2,6 +2,8 @@
 #include "DirectX.h"
 #include "FancyMenu.h"
 #include "DebugInfo.h"
+#include "dllmain.h"
+#include "..\Common\Common.h"
 
 extern bool shouldDisplayDebugInfo;
 extern bool shouldDisplayLinkedListInfo;
