@@ -202,88 +202,298 @@ void printDIJOYSTATE2(const DIJOYSTATE2& state) {
 	log(buffer);
 }
 
-XINPUT_STATE* KeyState::xState = new XINPUT_STATE();
-XINPUT_STATE* KeyState::prevxState = new XINPUT_STATE();
+// -----
 
-void KeyState::updateControllers() {
 
-	// tbh, ideally, this should be called once a frame, and grab the WHOLE keyboard.
 
-	// swap the current and prev states
-	std::swap(xState, prevxState);
+// -----
 
-	XINPUT_STATE tempState;
-	ZeroMemory(&tempState, sizeof(XINPUT_STATE));
-	ZeroMemory(xState, sizeof(XINPUT_STATE));
+bool GetOpenSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wstring* pwsFileName)
+{
+	const uint8_t nOne = 1;
+	const uint8_t nZero = 0;
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nOne, 1, 0);
 
-	for (int i = 0; i < 4; i++) {
+	char pcFileName[MAX_PATH];
 
-		DWORD dwResult = XInputGetState(i, &tempState);
+	OPENFILENAME ofn;
+	ZeroMemory(pcFileName, sizeof(pcFileName));
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = NULL;
+	ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
+	ofn.lpstrFile = (LPWSTR)pcFileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrTitle = (LPWSTR)L"Open Save State";
+	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
 
-		if (dwResult == ERROR_SUCCESS) {
+	bool bResult = GetOpenFileNameW(&ofn);
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
+	if (bResult)
+	{
+		*pwsFileName = std::wstring(ofn.lpstrFile);
+		return true;
+	}
+	return false;
+}
 
-			// this currently combines all devices into one. there is most likely a better implementation of this!
-			xState->Gamepad.wButtons |= tempState.Gamepad.wButtons;
+bool GetSaveSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wstring* pwsFileName)
+{
+	const uint8_t nOne = 1;
+	const uint8_t nZero = 0;
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nOne, 1, 0);
 
-			xState->Gamepad.bLeftTrigger  = MAX(xState->Gamepad.bLeftTrigger,   tempState.Gamepad.bLeftTrigger);
-			xState->Gamepad.bRightTrigger = MAX(xState->Gamepad.bRightTrigger, tempState.Gamepad.bRightTrigger);
+	char pcFileName[MAX_PATH];
 
-			// i want to be sure to get the max of any stick pos
-			xState->Gamepad.sThumbLX = abs(xState->Gamepad.sThumbLX) > abs(tempState.Gamepad.sThumbLX) ? xState->Gamepad.sThumbLX : tempState.Gamepad.sThumbLX;
-			xState->Gamepad.sThumbLY = abs(xState->Gamepad.sThumbLY) > abs(tempState.Gamepad.sThumbLY) ? xState->Gamepad.sThumbLY : tempState.Gamepad.sThumbLY;
-			xState->Gamepad.sThumbRX = abs(xState->Gamepad.sThumbRX) > abs(tempState.Gamepad.sThumbRX) ? xState->Gamepad.sThumbRX : tempState.Gamepad.sThumbRX;
-			xState->Gamepad.sThumbRY = abs(xState->Gamepad.sThumbRY) > abs(tempState.Gamepad.sThumbRY) ? xState->Gamepad.sThumbRY : tempState.Gamepad.sThumbRY;
-		}
+	OPENFILENAME ofn;
+	ZeroMemory(pcFileName, sizeof(pcFileName));
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = NULL;
+	ofn.lpstrFilter = (LPWSTR)L"Save State\0*.sav\0";
+	ofn.lpstrFile = (LPWSTR)pcFileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrTitle = (LPWSTR)L"Create Save State";
+	ofn.lpstrDefExt = L"sav";
+	ofn.Flags = OFN_DONTADDTORECENT | OFN_OVERWRITEPROMPT;
+
+	bool bResult = GetSaveFileNameW(&ofn);
+	WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeOverride), &nZero, 1, 0);
+	if (bResult)
+	{
+		*pwsFileName = std::wstring(ofn.lpstrFile);
+		return true;
+	}
+	return false;
+}
+
+void CreateRegistryKey()
+{
+	try
+	{
+		SECURITY_DESCRIPTOR SD;
+		SECURITY_ATTRIBUTES SA;
+		InitializeSecurityDescriptor(&SD, SECURITY_DESCRIPTOR_REVISION);
+		//SetSecurityDescriptorDacl(&SD, true, 0, false);
+		SA.nLength = sizeof(SA);
+		SA.lpSecurityDescriptor = &SD;
+		SA.bInheritHandle = false;
+
+		DWORD dwFunc;
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+		LONG openResult = RegCreateKeyExW(HKEY_CURRENT_USER, sk, 0, (LPTSTR)NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, &SA, &hKey, &dwFunc);
+		RegCloseKey(hKey);
+	} catch (...)
+	{
 	}
 }
 
-void KeyState::showControllerState() {
+LONG ReadFromRegistry(std::wstring sKey, uint8_t* nValue)
+{
+	LONG openResult = -1;
 
-	short wButtons = xState->Gamepad.wButtons;
-	short wprevButtons = prevxState->Gamepad.wButtons;
+	try
+	{
+		DWORD dwValue = NULL;
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+		DWORD dwType = REG_DWORD;
+		DWORD dwSize = sizeof(nValue);
 
-	log("CLEAR");
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+		if (openResult == 0)
+			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
+		if (openResult == 0)
+			*nValue = (int)dwValue;
 
-	log("A %d", !!(wButtons & XINPUT_GAMEPAD_A));
-	log("B %d", !!(wButtons & XINPUT_GAMEPAD_B));
-	log("X %d", !!(wButtons & XINPUT_GAMEPAD_X));
-	log("Y %d", !!(wButtons & XINPUT_GAMEPAD_Y));
+		RegCloseKey(hKey);
+	} catch (...)
+	{
+	}
 
-	log("U %d", !!(wButtons & XINPUT_GAMEPAD_DPAD_UP));
-	log("D %d", !!(wButtons & XINPUT_GAMEPAD_DPAD_DOWN));
-	log("L %d", !!(wButtons & XINPUT_GAMEPAD_DPAD_LEFT));
-	log("R %d", !!(wButtons & XINPUT_GAMEPAD_DPAD_RIGHT));
-
-	log("START %d", !!(wButtons & XINPUT_GAMEPAD_START));
-	log("BACK  %d", !!(wButtons & XINPUT_GAMEPAD_BACK));
-
-	log(" ");
-
-	log("left  X %6d", xState->Gamepad.sThumbLX);
-	log("left  Y %6d", xState->Gamepad.sThumbLY);
-	log("thum    %d", !!(wButtons & XINPUT_GAMEPAD_LEFT_THUMB));
-
-	log(" ");
-
-	log("right X %6d", xState->Gamepad.sThumbRX);
-	log("right Y %6d", xState->Gamepad.sThumbRY);
-	log("thumb   %d", !!(wButtons & XINPUT_GAMEPAD_RIGHT_THUMB));
-
-	log(" ");
-
-	log("lTrig %6d", xState->Gamepad.bLeftTrigger);
-	log("lBtn  %d", !!(wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER));
-	log("rTrig %6d", xState->Gamepad.bRightTrigger);
-	log("rBtn  %d", !!(wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER));
-
+	return openResult;
 }
 
-short KeyState::pressedButtons() {
-	return (prevxState->Gamepad.wButtons ^ xState->Gamepad.wButtons) & xState->Gamepad.wButtons;
+LONG ReadFromRegistry(std::wstring sKey, int* pnValue)
+{
+	LONG openResult = -1;
+
+	try
+	{
+		DWORD dwValue = NULL;
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+		DWORD dwType = REG_DWORD;
+		DWORD dwSize = sizeof(pnValue);
+
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+		if (openResult == 0)
+			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
+		if (openResult == 0)
+			*pnValue = (int)dwValue;
+
+		RegCloseKey(hKey);
+	} catch (...)
+	{
+	}
+
+	return openResult;
 }
 
-short KeyState::releasedButtons() {
-	return (prevxState->Gamepad.wButtons ^ xState->Gamepad.wButtons) & prevxState->Gamepad.wButtons;
+LONG SetRegistryValue(std::wstring sKey, int nValue)
+{
+	LONG openResult = -1;
+
+	try
+	{
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
+
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
+		if (openResult == 0)
+			openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_DWORD, (unsigned char*)&nValue, sizeof(nValue));
+
+		RegCloseKey(hKey);
+	} catch (...)
+	{
+	}
+	return openResult;
 }
 
+LONG SetRegistryValue(std::wstring sKey, float fValue)
+{
+	LONG openResult = -1;
+
+	try
+	{
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
+
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
+		if (openResult == 0)
+			openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_DWORD, (unsigned char*)&fValue, sizeof(fValue));
+
+		RegCloseKey(hKey);
+	} catch (...)
+	{
+	}
+	return openResult;
+}
+
+LONG SetRegistryValue(std::wstring sKey, bool bValue)
+{
+	return SetRegistryValue(sKey, bValue ? 1 : 0);
+}
+
+LONG SetRegistryValue(std::wstring sKey, std::string sValue)
+{
+	LONG openResult = -1;
+
+	try
+	{
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
+		char pcVal[MAX_PATH];
+		strcpy_s(pcVal, sValue.c_str());
+
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
+		if (openResult == 0)
+			openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_SZ, (LPBYTE)pcVal, strlen(pcVal) + 1);
+
+		RegCloseKey(hKey);
+	} catch (...)
+	{
+	}
+	return openResult;
+}
+
+LONG ReadFromRegistry(std::wstring sKey, bool* pbValue)
+{
+	uint8_t nValue = 0;
+	LONG openResult = ReadFromRegistry(sKey, &nValue);
+	if (openResult == 0)
+		*pbValue = nValue > 0 ? true : false;
+	return openResult;
+}
+
+LONG ReadFromRegistry(std::wstring sKey, std::string* psValue)
+{
+	LONG openResult = -1;
+
+	try
+	{
+		char pcValue[MAX_PATH];
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+		DWORD dwType = REG_SZ;
+		DWORD dwSize = MAX_PATH;
+
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+		if (openResult == 0)
+			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&pcValue, &dwSize);
+		if (openResult == 0)
+			*psValue = std::string(pcValue);
+
+		RegCloseKey(hKey);
+	} catch (...)
+	{
+	}
+
+	return openResult;
+}
+
+LONG ReadFromRegistry(std::wstring sKey, float* pfValue)
+{
+	LONG openResult = -1;
+
+	try
+	{
+		float pfTempValue = 0.0f;
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+		DWORD dwType = REG_DWORD;
+		DWORD dwSize = MAX_PATH;
+
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
+		if (openResult == 0)
+			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&pfTempValue, &dwSize);
+		if (openResult == 0)
+			*pfValue = (float)pfTempValue;
+
+		RegCloseKey(hKey);
+	} catch (...)
+	{
+	}
+
+	return openResult;
+}
+
+LONG DeleteRegistry()
+{
+	LONG openResult = -1;
+
+	try
+	{
+		HKEY hKey;
+		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
+
+		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_ALL_ACCESS, &hKey);
+		if (openResult == ERROR_SUCCESS)
+		{
+			openResult = RegDeleteKeyW(HKEY_CURRENT_USER, sk);
+			if (openResult != ERROR_SUCCESS)
+				LogError("Unable to delete registry key");
+		} else
+		{
+			LogError("Unable to open registry key");
+		}
+
+		RegCloseKey(hKey);
+	} catch (...)
+	{
+	}
+
+	return openResult;
+}
 

@@ -661,6 +661,8 @@ extern bool shouldDisplayDebugInfo;
 void displayDebugInfo();
 void debugLinkedList();
 bool isValidTexture(DWORD addr);
+bool isValidResource(DWORD addr);
+bool isValidSurface(DWORD addr);
 struct IDirect3DBaseTexture9;
 extern bool shouldDisplayLinkedListInfo;
 void saveTexture(IDirect3DBaseTexture9* pTex, int i=-1);

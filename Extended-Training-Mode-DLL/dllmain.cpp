@@ -1,5 +1,7 @@
 
 
+
+#include "..\Common\CharacterData.h"
 #include "dllmain.h"
 #include "FrameBar.h"
 #include "SaveState.h"
@@ -8,10 +10,12 @@
 #include "FancyMenu.h"
 #include "TrainingMenu.h"
 
+
+
+
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
 
-typedef DWORD ADDRESS;
 typedef long long longlong;
 typedef unsigned long long ulonglong;
 typedef uint32_t uint;
@@ -47,7 +51,7 @@ DWORD addrEndScene = 0x663fb900;
 DWORD addrEndScenePatch = 0x663fb996;
 
 bool bCasterInit = false;
-ADDRESS dwCasterBaseAddress = 0;
+DWORD dwCasterBaseAddress = 0;
 
 DWORD dwDevice = 0; // MASM is horrid when it comes to writing pointers vs value of pointer bc it has type checking. thats why this cant be a pointer
 IDirect3DDevice9* device = NULL;

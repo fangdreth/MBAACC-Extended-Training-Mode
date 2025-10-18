@@ -7,6 +7,7 @@
 #include "FancyInputDisplay.h"
 //#include "version.h"	
 #include "../Common/version.h"
+#include "..\Common\Common.h"
 
 void debugLinkedList();
 void displayDebugInfo();

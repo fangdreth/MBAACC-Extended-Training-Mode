@@ -1,6 +1,6 @@
 #pragma once
 #include <deque>
-#include "DirectX.h"
+#include "..\Common\types.h"
 
 /*
 

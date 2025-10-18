@@ -1,5 +1,7 @@
 
 #include "SaveState.h"
+#include "DirectX.h"
+#include "..\Common\Common.h"
 
 SaveStateManager saveStateManager;
 

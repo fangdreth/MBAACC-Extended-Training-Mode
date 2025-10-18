@@ -1,9 +1,9 @@
 #pragma once
 
-#include "..\Common\Common.h"
-//#include <ws2tcpip.h>
-//#include <winsock2.h>
-//#include <windows.h>
+#include <ws2tcpip.h>
+#include <winsock2.h>
+#include <Windows.h>
+
 #include <cstring> 
 #include <cstdio>
 #include <psapi.h>
@@ -23,7 +23,6 @@
 #include <thread>
 #include <wchar.h>
 
-#include "..\Common\CharacterData.h"
 
 
 #include <d3d9.h>
@@ -150,7 +149,7 @@ extern DWORD fastReversePenalty;
 extern DWORD __frameDoneCount;
 extern DWORD unpausedFrameCount;
 
-extern ADDRESS dwCasterBaseAddress;
+extern DWORD dwCasterBaseAddress;
 
 extern bool logSaveState;
 
@@ -175,15 +174,6 @@ void __stdcall log(const char* format, ...);
 void __stdcall ___log(const wchar_t* msg);
 
 void __stdcall log(const wchar_t* format, ...);
-
-inline long long getMicroSec() {
-	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-	//return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()).count();
-}
-
-inline long long getNanoSec() {
-	return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-}
 
 bool __stdcall safeWrite();
 

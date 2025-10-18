@@ -1,6 +1,7 @@
 
 #include "DirectX.h"
 #include "FancyInputDisplay.h"
+#include "..\Common\Common.h"
 
 InputColumn::InputColumn(unsigned addr_, float xVal_, float yVal_, int inputMaxLen_) {
 		addr = addr_;
