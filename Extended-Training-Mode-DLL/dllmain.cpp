@@ -23,7 +23,7 @@ typedef uint32_t uint;
 void enemyReversal();
 void frameStartCallback();
 void dualInputDisplayReset();
-void doFastReversePenalty();
+void doFastReversePenalty(); 
 void drawFancyMenu();
 void rollFancyInputDisplay(int n);
 void loadCustomShader();
@@ -33,7 +33,7 @@ TASManager TASManagerObj[4];
 bool fn1Press2v2[4] = { false, false, false, false };
 void doWeird2v2Fixes() {
 	// FN1 needs to be written at a different point than it is. this is a horrid fix, that may result in the button press being 1f late, or more, but i just want this done
-
+	 
 	for (int i = 0; i < 4; i++) {
 		if (fn1Press2v2[i]) {
 			*(BYTE*)((*(DWORD*)0x76E6AC) + 0x25 + (i * 0x14)) = 1;
