@@ -325,7 +325,7 @@ void TASManager::setInputs(int playerIndex) {
 
 		// dir
 		// if (*(BYTE*)(0x00555130 + 0x314) == 1) {
-		if(playerDataArr[playerIndex].facingLeft == 1) {
+		if(playerDataArr[playerIndex].isOpponentToLeft == 1) {
 			constexpr uint8_t dirLookup[10] = { 0, 3, 2, 1, 6, 5, 4, 9, 8, 7 };
 			*(BYTE*)(baseAddr + 0) = dirLookup[tasData[tasIndex].dir];
 		} else {
