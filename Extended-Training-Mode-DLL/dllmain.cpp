@@ -1959,9 +1959,30 @@ void HandleReversalsPage() {
 		}
 	}
 
-	if (bDidShield && pActiveP2->subObj.shieldSuccessType != 0) {
+	if (pActiveP2->subObj.shieldSuccessType != 0) {
 		bHoldButtons = false;
 		bHoldShield = false;
+		if (!bDidShield) {
+			int totalWeight = 0;
+			for (int i = 0; i < NUM_REVERSALS; i++) {
+				if (*nREV_IDs[i] != 0 && *nREV_IDs[i] >> 16 != 0 && vValidReversals[i] != 0) totalWeight += *nREV_WEIGHTS[i];
+			}
+			totalWeight += nNO_REV_WEIGHT;
+			if (totalWeight == 0) return;
+			int randomWeight = rand() % totalWeight + 1;
+			int validIndex = -1;
+			for (int i = 0; i < NUM_REVERSALS; i++) {
+				if (*nREV_IDs[i] == 0 || *nREV_IDs[i] >> 16 == 0 || vValidReversals[i] == 0) continue;
+				randomWeight -= *nREV_WEIGHTS[i];
+				if (randomWeight <= 0) {
+					validIndex = i;
+					break;
+				}
+			}
+			if (validIndex > -1) {
+				nSaveShieldRevIndex = validIndex;
+			}
+		}
 		pat = vValidReversals[nSaveShieldRevIndex];
 		if (pat > 40 &&
 			!(pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Ground ||
