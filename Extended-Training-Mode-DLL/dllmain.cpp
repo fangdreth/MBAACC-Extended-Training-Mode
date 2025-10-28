@@ -1600,8 +1600,8 @@ void drawStats()
 
 	// on p2 health bar
 	drawRect(525.0f + nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
-	drawRect(472.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
-	drawRect(419.0f, 39.0f, 1.0f, 3.0f, 0xFF000000);
+	drawRect(472.0f + nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
+	drawRect(419.0f + nResetOffset, 39.0f, 1.0f, 3.0f, 0xFF000000);
 
 	extraMod = 1.0f;
 	if (pP2->subObj.charID == (int)eCharID::MAIDS) { //if maids
@@ -1945,6 +1945,7 @@ void HandleReversalsPage() {
 				}
 				else {
 					pActiveP2->subObj.targetPattern = vValidReversals[validIndex] % 1000;
+					pActiveP2->subObj.targetPatternPriority = 30001;
 				}
 
 				if (vValidReversals[validIndex] > 999) {
@@ -1970,6 +1971,7 @@ void HandleReversalsPage() {
 		}
 		else {
 			pActiveP2->subObj.targetPattern = vValidReversals[nSaveShieldRevIndex] % 1000;
+			pActiveP2->subObj.targetPatternPriority = 30001;
 		}
 		if (vValidReversals[nSaveShieldRevIndex] > 999) {
 			bHoldButtons = true;
@@ -1977,11 +1979,39 @@ void HandleReversalsPage() {
 		bDidShield = false;
 	}
 	
-	if (pActiveP2->subObj.hitstunTimeRemaining != 0) {
-		bDoReversal = true;
-		nReversalDelayFramesLeft = nREVERSAL_DELAY;
-		bHoldButtons = false;
-		bDidShield = false;
+	switch (nREVERSAL_TYPE) {
+	case 1:
+		if (pActiveP2->subObj.hitstunTimeRemaining != 0) {
+			bDoReversal = true;
+			nReversalDelayFramesLeft = nREVERSAL_DELAY;
+			bHoldButtons = false;
+			bDidShield = false;
+		}
+		break;
+	case 2:
+		if (pActiveP2->subObj.inBlockstun != 0) {
+			bDoReversal = true;
+			nReversalDelayFramesLeft = nREVERSAL_DELAY;
+			bHoldButtons = false;
+			bDidShield = false;
+		}
+		break;
+	case 3:
+		if (pActiveP2->subObj.hitstunTimeRemaining != 0 && pActiveP2->subObj.inBlockstun == 0) {
+			bDoReversal = true;
+			nReversalDelayFramesLeft = nREVERSAL_DELAY;
+			bHoldButtons = false;
+			bDidShield = false;
+		}
+		break;
+	case 4:
+		if (pActiveP2->subObj.hitstunTimeRemaining == -3 || pActiveP2->subObj.isGroundTech) {
+			bDoReversal = true;
+			nReversalDelayFramesLeft = nREVERSAL_DELAY;
+			bHoldButtons = false;
+			bDidShield = false;
+		}
+		break;
 	}
 }
 
@@ -3884,7 +3914,7 @@ MenuWindow* InitMenuWindow(MenuWindow* menuWindow) {
 	menuWindow->field_0x50 = 0;
 	menuWindow->didPress = 0;
 	menuWindow->field_0x3c = 0;
-	menuWindow->xOffset = 0x140;
+	menuWindow->elementsXOffset = 0x140;
 	menuWindow->vftable = (void*)0x0053d3c0;
 	(menuWindow->label).maxLength = 0xf;
 	(menuWindow->label).length = 0;
@@ -3902,7 +3932,7 @@ MenuWindow* InitMenuWindow(MenuWindow* menuWindow) {
 	menuWindow->isMenuBackgroundDisplayed = 1;
 	menuWindow->u_layer = 0x2f0;
 	menuWindow->field_0x58 = 0;
-	menuWindow->field_0x40 = 0;
+	menuWindow->bgXOffset = 0;
 	menuWindow->yOffset = 0xf0;
 	menuWindow->textXWidth = 0x10;
 	menuWindow->textYWidth = 0x10;
@@ -3916,7 +3946,7 @@ void AddSelectElement(MenuInfo* menuInfo, std::vector<const char*> elementVector
 	int vSize = size(elementVector);
 	Element* element = NEW_SELECT_ELEMENT();
 	char tempTag[16];
-	snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
+	snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
 	InitSelectElement(element, elementVector[0], tempTag, 0xa0);
 	element->vftable = (void*)0x00536654;
 	for (int i = 1; i < vSize; i++) {
@@ -3934,7 +3964,7 @@ void AddSelectElement(MenuInfo* menuInfo, std::vector<const char*> elementVector
 void AddNormalElement(MenuInfo* menuInfo, std::vector<const char*> elementVector, int pageNum, int elementNum) {
 	Element* element = NEW_NORMAL_ELEMENT();
 	char tempTag[16];
-	snprintf(tempTag, 15, "%i_%i_0_n", pageNum, elementNum);
+	snprintf(tempTag, 15, "%i_%i_n", pageNum, elementNum);
 	InitNormalElement(element, elementVector[0], tempTag, 0);
 	element->canSelect = 1;
 	element->elementType = 1;
@@ -3945,7 +3975,7 @@ void AddNormalElement(MenuInfo* menuInfo, std::vector<const char*> elementVector
 void AddSpaceElement(MenuInfo* menuInfo, int pageNum, int elementNum, int margin = 8) {
 	Element* element = NEW_NORMAL_ELEMENT();
 	char tempTag[16];
-	snprintf(tempTag, 15, "%i_%i_0_s", pageNum, elementNum);
+	snprintf(tempTag, 15, "%i_%i_s", pageNum, elementNum);
 	InitNormalElement(element, "", "", 0);
 	element->canSelect = 0;
 	element->elementType = 2;
@@ -4028,7 +4058,7 @@ void GetExtendedSettings(MenuWindow* extendedWindow) {
 		extendedInfo = (extendedWindow->menuInfoList).listStart[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
+			snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
 			if (GetSetting(extendedInfo, Page_Settings[pageNum][settingNum], tempTag)) {
 				settingNum++;
 			};
@@ -4054,7 +4084,7 @@ void GetHotkeySettings(MenuWindow* hotkeyWindow) {
 		hotkeyInfo = (hotkeyWindow->menuInfoList).listStart[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
+			snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
 			if (GetSetting(hotkeyInfo, HK_Page_Settings[pageNum][settingNum], tempTag)) {
 				settingNum++;
 			};
@@ -4105,7 +4135,7 @@ MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 	extendedWindow->isMenuLit = 1;
 	extendedWindow->isBlurred = 0;
 	extendedWindow->paragraphMode = 2;
-	extendedWindow->xOffset = 0xfa;
+	extendedWindow->elementsXOffset = 0xfa;
 	extendedWindow->textXWidth = 0xe;
 	return extendedWindow;
 }
@@ -4147,7 +4177,7 @@ MenuWindow* InitHotkeySettingsMenu(MenuWindow* hotkeyWindow) {
 	hotkeyWindow->isMenuLit = 1;
 	hotkeyWindow->isBlurred = 0;
 	hotkeyWindow->paragraphMode = 2;
-	hotkeyWindow->xOffset = 0xfa;
+	hotkeyWindow->elementsXOffset = 0xfa;
 	hotkeyWindow->textXWidth = 0xe;
 	return hotkeyWindow;
 }
@@ -4198,7 +4228,7 @@ void SetExtendedSettings(MenuWindow* extendedWindow) {
 		extendedInfo = (extendedWindow->menuInfoList).listStart[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
+			snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
 			if (SetSetting(extendedInfo, Page_Settings[pageNum][settingNum], tempTag)) {
 				settingNum++;
 			};
@@ -4224,7 +4254,7 @@ void SetHotkeySettings(MenuWindow* hotkeyWindow) {
 		hotkeyInfo = (hotkeyWindow->menuInfoList).listStart[pageNum];
 		int settingNum = 0;
 		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 15, "%i_%i_0", pageNum, elementNum);
+			snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
 			if (SetSetting(hotkeyInfo, HK_Page_Settings[pageNum][settingNum], tempTag)) {
 				settingNum++;
 			};
@@ -4662,7 +4692,7 @@ void PositionScrolling(Element* element, int& storage, bool toggle) {
 	int item = element->selectedItem;
 	int targetIndex = MIDDLE;
 	int interval = 128;
-	int accelInterval = 1000;
+	int accelInterval = 1024;
 	storage += 0x10000; //change range from -0x10000 - 0x10000 to 0x0 - 0x20000, undone at end of func
 	if (!toggle) {
 		if (ScrollAccelTimer >= ScrollAccelThreshold) {
@@ -4694,7 +4724,7 @@ void PositionScrolling(Element* element, int& storage, bool toggle) {
 	else
 	{
 		interval = 1;
-		accelInterval = 10;
+		accelInterval = 8;
 		if (ScrollAccelTimer >= ScrollAccelThreshold) {
 			interval = accelInterval;
 			if (storage < 0x20000 && storage % accelInterval != 0)
@@ -4717,12 +4747,12 @@ void PositionScrolling(Element* element, int& storage, bool toggle) {
 		default:
 			if (item == LEFT) {
 				if (storage % 128 - interval < 0) {
-					interval -= 0x80;
+					interval -= 128;
 				}
 				storage -= interval;
 			}
 			if (item == RIGHT) {
-				if (storage % 128 + interval >= 127) {
+				if (storage % 128 + interval > 127) {
 					interval -= 128;
 				}
 				storage += interval;
@@ -5845,6 +5875,256 @@ __declspec(naked) void _naked_NewExtMainMenuWindow() {
 	}
 }
 
+void Handle_REV(char* buffer) {
+	if (vPatternNames.size() == 1)
+	{
+		int nP2CharacterNumber = *(int*)(adMBAABase + dwP2CharNumber);
+		int nP2Moon = *(int*)(adMBAABase + dwP2CharMoon);
+		nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
+		vPatternNames = GetPatternList(nP2CharacterID);
+	}
+	if (strcmp(vPatternNames[nREV_ID_1 % 0x00010000].c_str(), "OFF") == 0) {
+		snprintf(buffer, 128, "%sNo reversal.", SUB_INFO_PREFIX);
+		return;
+	}
+	snprintf(buffer, 128, "%sReversal with %s%s (Press D to cycle shield).", SUB_INFO_PREFIX, REV_SHIELD_PREFIX[nREV_ID_1 >> 16], vPatternNames[nREV_ID_1 % 0x00010000].c_str());
+}
+
+void Handle_METER1(char* buffer) {
+	char meterStr[32];
+	switch (nTRUE_P1_METER) {
+	case 30000:
+		snprintf(meterStr, 32, "MAX");
+		break;
+	case 30001:
+		snprintf(meterStr, 32, "HEAT");
+		break;
+	case 30002:
+		snprintf(meterStr, 32, "BLOOD HEAT");
+		break;
+	case 20000:
+		if (pP1->subObj.moon == 2) {
+			snprintf(meterStr, 32, "HEAT");
+			break;
+		}
+	default:
+		snprintf(meterStr, 32, "%i.%02i%%", nTRUE_P1_METER / 100, nTRUE_P1_METER % 100);
+	}
+	snprintf(buffer, 128, "%sReset meter to %s.", SUB_INFO_PREFIX, meterStr);
+}
+
+void Handle_METER2(char* buffer) {
+	char meterStr[32];
+	switch (nTRUE_P2_METER) {
+	case 30000:
+		snprintf(meterStr, 32, "MAX");
+		break;
+	case 30001:
+		snprintf(meterStr, 32, "HEAT");
+		break;
+	case 30002:
+		snprintf(meterStr, 32, "BLOOD HEAT");
+		break;
+	case 20000:
+		if (pP1->subObj.moon == 2) {
+			snprintf(meterStr, 32, "HEAT");
+			break;
+		}
+	default:
+		snprintf(meterStr, 32, "%i.%02i%%", nTRUE_P2_METER / 100, nTRUE_P2_METER % 100);
+	}
+	snprintf(buffer, 128, "%sReset meter to %s.", SUB_INFO_PREFIX, meterStr);
+}
+
+void Handle_HEALTH1(char* buffer) {
+	snprintf(buffer, 128, "%sReset health to %i (%.1f%%).", SUB_INFO_PREFIX, nTRUE_P1_HEALTH, nTRUE_P1_HEALTH / 114.0f);
+}
+
+void Handle_HEALTH2(char* buffer) {
+	snprintf(buffer, 128, "%sReset health to %i (%.1f%%).", SUB_INFO_PREFIX, nTRUE_P2_HEALTH, nTRUE_P2_HEALTH / 114.0f);
+}
+
+void Handle_BURST(char* buffer) {
+	snprintf(buffer, 128, "%sBurst after %i hit(s).", SUB_INFO_PREFIX, nTRUE_HITS_UNTIL_BURST);
+}
+
+void Handle_BUNKER(char* buffer) {
+	snprintf(buffer, 128, "%sBunker after %i hit(s).", SUB_INFO_PREFIX, nTRUE_HITS_UNTIL_BUNKER);
+}
+
+void Handle_FORCEGUARD(char* buffer) {
+	snprintf(buffer, 128, "%sForce guard after %i hit(s).", SUB_INFO_PREFIX, nTRUE_HITS_UNTIL_FORCE_GUARD);
+}
+
+void Handle_POS1(char* buffer) {
+	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels", SUB_INFO_PREFIX, nTRUE_P1_X_LOC >> 7, (nTRUE_P1_X_LOC + 0x10000) % 0x80);
+}
+
+void Handle_POS1A(char* buffer) {
+	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels", SUB_INFO_PREFIX, nTRUE_P1_ASSIST_X_LOC >> 7, (nTRUE_P1_ASSIST_X_LOC + 0x10000) % 0x80);
+}
+
+void Handle_POS2(char* buffer) {
+	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels", SUB_INFO_PREFIX, nTRUE_P2_X_LOC >> 7, (nTRUE_P2_X_LOC + 0x10000) % 0x80);
+}
+
+void Handle_POS2A(char* buffer) {
+	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels", SUB_INFO_PREFIX, nTRUE_P2_ASSIST_X_LOC >> 7, (nTRUE_P2_ASSIST_X_LOC + 0x10000) % 0x80);
+}
+
+void Handle_SCROLL(char* buffer) {
+	snprintf(buffer, 128, "%sScroll display by %i frames.", SUB_INFO_PREFIX, nTRUE_SCROLL_DISPLAY);
+}
+
+void Handle_RNG(char* buffer) {
+	snprintf(buffer, 128, "%sUse a seed / value of %i", SUB_INFO_PREFIX, nTRUE_SEED);
+}
+
+void Handle_BARY(char* buffer) {
+	snprintf(buffer, 128, "%sDisplay the bar at y = %i.", SUB_INFO_PREFIX, nTRUE_FRAME_DISPLAY_Y);
+}
+
+void HandleInformationMenu() {
+	MenuWindow* trainingMenu = *(MenuWindow**)(adMBAABase + adTrainingMenu);
+	if (trainingMenu == 0 || trainingMenu->InformationMenu == 0) return;
+
+	MenuWindow* extendedWindow = trainingMenu->ExtendedSettings;
+	InfoWindow* infoWindow = trainingMenu->InformationMenu;
+	char buffer[128];
+
+	char* checkTag;
+	if (infoWindow->elementTag.maxLength < 0x10) {
+		checkTag = (char*)&(infoWindow->elementTag.shortString);
+	}
+	else {
+		checkTag = infoWindow->elementTag.pLongString;
+	}
+
+	std::string checkStr(checkTag);
+
+	if (MAIN_INFORMATION_MAP.find(checkStr) != MAIN_INFORMATION_MAP.end()) {
+		snprintf(buffer, 128, "%s%s", MAIN_INFO_PREFIX, MAIN_INFORMATION_MAP.at(checkStr));
+		SetInfoWindowText(buffer, trainingMenu->InformationMenu->mainInfo);
+	}
+
+	if (infoWindow->itemTag.maxLength < 0x10) {
+		checkTag = (char*)&(infoWindow->itemTag.shortString);
+	}
+	else {
+		checkTag = infoWindow->itemTag.pLongString;
+	}
+
+	checkStr = std::string(checkTag);
+
+	if (SUB_INFORMATION_MAP.find(checkStr) != SUB_INFORMATION_MAP.end()) {
+		const char* subInfo = SUB_INFORMATION_MAP.at(checkStr);
+		if (subInfo[0] == '_') {
+			if (strcmp(subInfo, "_REV") == 0) {
+				Handle_REV(buffer);
+			}
+			else if (strcmp(subInfo, "_METER1") == 0) {
+				Handle_METER1(buffer);
+			}
+			else if (strcmp(subInfo, "_METER2") == 0) {
+				Handle_METER2(buffer);
+			}
+			else if (strcmp(subInfo, "_HEALTH1") == 0) {
+				Handle_HEALTH1(buffer);
+			}
+			else if (strcmp(subInfo, "_HEALTH2") == 0) {
+				Handle_HEALTH2(buffer);
+			}
+			else if (strcmp(subInfo, "_BURST") == 0) {
+				Handle_BURST(buffer);
+			}
+			else if (strcmp(subInfo, "_BUNKER") == 0) {
+				Handle_BUNKER(buffer);
+			}
+			else if (strcmp(subInfo, "_FORCEGUARD") == 0) {
+				Handle_FORCEGUARD(buffer);
+			}
+			else if (strcmp(subInfo, "_POS1") == 0) {
+				Handle_POS1(buffer);
+			}
+			else if (strcmp(subInfo, "_POS1A") == 0) {
+				Handle_POS1A(buffer);
+			}
+			else if (strcmp(subInfo, "_POS2") == 0) {
+				Handle_POS2(buffer);
+			}
+			else if (strcmp(subInfo, "_POS2A") == 0) {
+				Handle_POS2A(buffer);
+			}
+			else if (strcmp(subInfo, "_SCROLL") == 0) {
+				Handle_SCROLL(buffer);
+			}
+			else if (strcmp(subInfo, "_RNG") == 0) {
+				Handle_RNG(buffer);
+			}
+			else if (strcmp(subInfo, "_BARY") == 0) {
+				Handle_BARY(buffer);
+			}
+		}
+		else {
+			snprintf(buffer, 128, "%s%s", SUB_INFO_PREFIX, SUB_INFORMATION_MAP.at(checkStr));
+		}
+		SetInfoWindowText(buffer, trainingMenu->InformationMenu->subInfo);
+	}
+}
+
+DWORD HandleInformationWindow_PatchAddr = 0x004da725;
+__declspec(naked) void _naked_HandleInformationMenu() {
+
+	PUSH_ALL;
+	HandleInformationMenu();
+	POP_ALL;
+
+	__asm {
+		pop edi;
+		pop ebx;
+		mov esp, ebp;
+		pop ebp;
+		ret;
+	}
+}
+
+
+const char* const extendedPrefix = "XS_";
+const char* const hotkeyPrefix = "HK_";
+DWORD InformationWindowSetTargetWindow_PatchAddr = 0x0047e33c;
+__declspec(naked) void _naked_InformationWindowSetTargetWindow() {
+	__asm {
+		mov eax, dword ptr[edi + 0xe0];
+		cmp eax, ebx;
+		jz __NEXT;
+		lea ecx, [esp + 0x14];
+		push ecx;
+		mov ecx, extendedPrefix;
+		mov ebx, eax;
+		push 0x0047e345;
+		ret;
+
+	__NEXT:
+		mov eax, dword ptr[edi + 0xe4];
+		cmp eax, ebx;
+		jz __END;
+		lea ecx, [esp + 0x14];
+		push ecx;
+		mov ecx, hotkeyPrefix;
+		mov ebx, eax;
+		push 0x0047e345;
+		ret;
+
+	__END:
+		lea eax, [esp + 0x14];
+		push eax;
+		xor ecx, ecx;
+		mov ebx, edi;
+		push 0x0047e345;
+		ret;
+	}
+}
+
 //CSS funcs
 
 void CSSCallback() {
@@ -6429,6 +6709,9 @@ void initTrainingMenu() {
 	patchJump(NewExtMainMenuWindow_PatchAddr, _naked_NewExtMainMenuWindow);
 	patchJump(TrainingMenuSwitch_PatchAddr, _naked_TrainingMenuSwitch);
 	patchJump(ZeroMenuPointers_PatchAddr, _naked_ZeroMenuPointers);
+
+	patchJump(HandleInformationWindow_PatchAddr, _naked_HandleInformationMenu);
+	patchJump(InformationWindowSetTargetWindow_PatchAddr, _naked_InformationWindowSetTargetWindow);
 }
 
 void initCustomHealthRecover() {

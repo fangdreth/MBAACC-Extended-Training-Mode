@@ -5,11 +5,15 @@
 
 const DWORD MBAA_ReadDataFile = 0x00407c10;
 const DWORD MBAA_StringCopyFromIndex = 0x004079d0;
+const DWORD MBAA_SetInfoWindowText = 0x004d9ba0;
+const DWORD MBAA_CompareSSOString = 0x0042bdc0;
 //wrapper for call to ReadDataFile (misleading name? pulled straight from ghidra)
 //subtract 4 bytes from actual destination to get dest input
 void ReadDataFile(void* dest, const char* name, int nameLength);
 
 void CopyStringFromIndex(void* dest, void* source, int startIndex, int copyLength);
+
+void SetInfoWindowText(const char* text, void* dest);
 
 struct MenuString
 {
@@ -21,6 +25,8 @@ struct MenuString
 	int length;
 	int maxLength;
 };
+
+bool CompareSSOString(const char* compareTo, MenuString* str);
 
 template <typename T>
 struct MenuList
@@ -118,28 +124,30 @@ CHECKOFFSET(MenuInfo, elementList, 0x48)
 CHECKOFFSET(MenuInfo, selectableList, 0x58)
 CHECKSIZE(MenuInfo, 0x78)
 
+struct TagInfoPair
+{
+	MenuString tag;
+	MenuString info;
+};
+
+CHECKSIZE(TagInfoPair, 0x38)
+
 struct InfoWindow
 {
 	int mode;
 	int timeOpen;
-	int field_0x8;
-	int field_0xc;
-	int field_0x10;
-	int field_0x14;
-	int field_0x18;
-	int field_0x1c;
-	int field_0x20;
-	MenuString hoveredTag;
-	MenuString selectedItem;
-	int field_0x5c;
-	int field_0x60;
+	MenuString label;
+	MenuString elementTag;
+	MenuString itemTag;
+	void* mainInfo;
+	void* subInfo;
 	MenuString font;
 	int fontSize;
 	int field_0x84;
 	int fontThickness;
-	MenuList<char*> infoStructList;
-	MenuString hoveredTagCopy;
-	MenuString label;
+	MenuList<TagInfoPair*> tagInfoPairList;
+	MenuString curTagChecked;
+	MenuString curInfo;
 	int zLayer;
 	int yPosition;
 	int windowHeight;
@@ -149,7 +157,7 @@ struct InfoWindow
 };
 
 CHECKOFFSET(InfoWindow, font, 0x64)
-CHECKOFFSET(InfoWindow, label, 0xb8)
+CHECKOFFSET(InfoWindow, curInfo, 0xb8)
 CHECKSIZE(InfoWindow, 0xec)
 
 struct MenuWindow
@@ -161,10 +169,10 @@ struct MenuWindow
 	int didPress;
 	MenuString hoveredTag;
 	int field_0x3c;
-	int field_0x40;
+	int bgXOffset;
 	int yOffset;
 	int someYOffset;
-	int xOffset;
+	int elementsXOffset;
 	int field_0x50;
 	int field_0x54;
 	int field_0x58;
@@ -199,6 +207,7 @@ struct MenuWindow
 	MenuWindow* HotkeySettings;
 
 	void SetLabel(const char* newLabel);
+	void GetHoveredItemTag();
 };
 
 CHECKOFFSET(MenuWindow, menuInfoList, 0xc)
@@ -230,8 +239,8 @@ const std::vector<const char*> vRETURN_ELEMENT = {
 
 //Page 1
 const std::vector<const char*> vREVERSAL_TYPE = {
-	"DO REVERSALS",
-	"OFF", "ON"
+	"REVERSALS",
+	"OFF", "ON", "ON GUARD", "ON HIT", "ON WAKEUP"
 };
 
 const std::vector<const char*> vREVERSAL_SLOT_1 = {
@@ -1436,3 +1445,256 @@ extern uint8_t nHOTKEY_SETTINGS_PAGE;
 extern uint8_t nHOTKEY_SETTINGS_CURSOR[HK_NUM_PAGES + 1];
 
 extern int nHOTKEY_CD_TIMER;
+
+//Information Window Text
+const char* const DEFAULT_INFO = "Restore \\@COLOR@<015, 183, 255, 255>default settings.";
+const char* const RETURN_INFO = "Return to \\@COLOR@<015, 183, 255, 255>training menu.";
+const char* const PAGE_INFO = "Switch \\@COLOR@<015,183,255,255>pages.";
+const char* const MAIN_INFO_PREFIX = "\\@COLOR@<255,255,255,255>";
+const char* const SUB_INFO_PREFIX = "\\@COLOR@<128,128,128,255>  >\\@COLOR@<255,255,255,255>";
+
+extern const std::map<std::string, const char*> MAIN_INFORMATION_MAP;
+
+extern const std::map<std::string, const char*> SUB_INFORMATION_MAP;
+
+const std::vector<std::string> XS_REVERSALS_INFORMATION = {
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>dummy reversal mode",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>reversal slot 1",
+	"\\@COLOR@<255, 255, 255, 255>Set weight of \\@COLOR@<015, 183, 255, 255>reversal slot 1",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>reversal slot 2",
+	"\\@COLOR@<255, 255, 255, 255>Set weight of \\@COLOR@<015, 183, 255, 255>reversal slot 2",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>reversal slot 3",
+	"\\@COLOR@<255, 255, 255, 255>Set weight of \\@COLOR@<015, 183, 255, 255>reversal slot 3",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>reversal slot 4",
+	"\\@COLOR@<255, 255, 255, 255>Set weight of \\@COLOR@<015, 183, 255, 255>reversal slot 4",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set weight of \\@COLOR@<015, 183, 255, 255>no reversal",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>delay before a reversal is performed",
+	"",
+	DEFAULT_INFO,
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::string> XS_TRAINING_INFORMATION = {
+	"\\@COLOR@<255, 255, 255, 255>Set the \\@COLOR@<015, 183, 255, 255>speed at which Reverse Penalty resets",
+	"\\@COLOR@<255, 255, 255, 255>Set the \\@COLOR@<015, 183, 255, 255>speed at which the Guard Bar resets",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>dummy ex guard",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>P1 meter on reset",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>P2 meter on reset",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>P1 health on reset",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>P2 health on reset",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>hits until the dummy will burst",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>hits until the dummy will bunker",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>hits until the dummy will force guard stance",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>stance to force the dummy to guard with",
+	"",
+	DEFAULT_INFO,
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::string> XS_HIGHLIGHTS_INFORMATION = {
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>highlights display",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set color to highlight \\@COLOR@<015, 183, 255, 255>Guard state",
+	"\\@COLOR@<255, 255, 255, 255>Set color to highlight \\@COLOR@<015, 183, 255, 255>Hit state",
+	"\\@COLOR@<255, 255, 255, 255>Set color to highlight \\@COLOR@<015, 183, 255, 255>Armor state",
+	"\\@COLOR@<255, 255, 255, 255>Set color to highlight \\@COLOR@<015, 183, 255, 255>Throw Protection state",
+	"\\@COLOR@<255, 255, 255, 255>Set color to highlight \\@COLOR@<015, 183, 255, 255>Idle state",
+	"",
+	DEFAULT_INFO,
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::string> XS_POSITIONS_INFORMATION = {
+	"\\@COLOR@<255, 255, 255, 255>Set whether to \\@COLOR@<015, 183, 255, 255>reset to these positions",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>P1 position on reset",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>P1 assist position on reset",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>P2 position on reset",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>P2 assist position on reset",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Move \\@COLOR@<015, 183, 255, 255>players to the set positions",
+	"\\@COLOR@<255, 255, 255, 255>Swap \\@COLOR@<015, 183, 255, 255>P1 and P2 positions",
+	"",
+	DEFAULT_INFO,
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::string> XS_CHARACTER_INFORMATION = {
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>Sion bullets on reset",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>C-Roa visible charges on reset",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>C-Roa hiddne charges on reset",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>F-Maids hearts on reset",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>Ryougi knives",
+	"",
+	DEFAULT_INFO,
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::string> XS_HITBOXES_INFORMATION = {
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>hitbox display",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>hitbox style",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>color-blind mode",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>draw style of player origins",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>ground draw",
+	"",
+	DEFAULT_INFO,
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::string> XS_SAVE_STATES_INFORMATION = {
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>save slot",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Save \\@COLOR@<015, 183, 255, 255>current state",
+	"\\@COLOR@<255, 255, 255, 255>Clear \\@COLOR@<015, 183, 255, 255>all saved states",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Import \\@COLOR@<015, 183, 255, 255>save from file",
+	"\\@COLOR@<255, 255, 255, 255>Export \\@COLOR@<015, 183, 255, 255>save to file",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>RNG loading",
+	"",
+	DEFAULT_INFO,
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::string> XS_FRAME_DATA_INFORMATION = {
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>frame data display level (console only)",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>in-game frame display",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>hitstop and freeze display",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>input display (console only)",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>cancel window display (console only)",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Scroll \\@COLOR@<015, 183, 255, 255>frame display",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Show \\@COLOR@<015, 183, 255, 255>color guide",
+	"",
+	DEFAULT_INFO,
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::string> XS_RNG_INFORMATION = {
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>RNG mode",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>rate of RNG setting",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>seed / value of RNG to be set",
+	"",
+	DEFAULT_INFO,
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::string> XS_UI_INFORMATION = {
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>stats display",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>P1 input display",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>P2 input display",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>Y-Position of frame display",
+	"",
+	DEFAULT_INFO,
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::string> XS_SYSTEM_INFORMATION = {
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>game speed",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>HUD display",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>shadow display",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>extras display",
+	"",
+	"\\@COLOR@<255, 255, 255, 255>Set \\@COLOR@<015, 183, 255, 255>background color",
+	"",
+	DEFAULT_INFO,
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::vector<std::string>> XS_Information = {
+	XS_REVERSALS_INFORMATION,
+	XS_TRAINING_INFORMATION,
+	XS_HIGHLIGHTS_INFORMATION,
+	XS_POSITIONS_INFORMATION,
+	XS_CHARACTER_INFORMATION,
+	XS_HITBOXES_INFORMATION,
+	XS_SAVE_STATES_INFORMATION,
+	XS_FRAME_DATA_INFORMATION,
+	XS_RNG_INFORMATION,
+	XS_UI_INFORMATION,
+	XS_SYSTEM_INFORMATION
+};
+
+const std::vector<std::string> HS_PAGE_1 = {
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>freeze the game.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>advance to the next frame.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>rewind to the previous frame.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle hitbox display.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle the in-game frame bar.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle highlights.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>queue up a reversal regardless of settings.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>increment the RNG Seed / Value.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>decrement the RNG Seed / Value.",
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::string> HS_PAGE_2 = {
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>save the current game state.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>select the previous save slot.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>select the next save slot.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>scroll the frame bar to the left.",
+	"\\@COLOR@<255, 255, 255, 255>Set hotkey to \\@COLOR@<015, 183, 255, 255>scroll the frame bar to the right.",
+	"",
+	RETURN_INFO,
+	"",
+	PAGE_INFO
+};
+
+const std::vector<std::vector<std::string>> HS_Information = {
+	HS_PAGE_1,
+	HS_PAGE_2
+};
