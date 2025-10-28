@@ -1875,7 +1875,7 @@ void SetRN(uint32_t nRN)
 //Handle extended training gameplay effects
 bool bDoReversal = false;
 int nReversalDelayFramesLeft = 0;
-bool bHoldButtons = false;
+byte nHoldButtons = 0;
 bool bHoldShield = false;
 bool bDidShield = false;
 int nSaveShieldRevIndex = 0;
@@ -1883,7 +1883,7 @@ int nSaveShieldRevIndex = 0;
 void HandleReversalsPage() {
 	if ((nREVERSAL_TYPE == 0 && !bDoReversal) || pActiveP2->subObj.doTrainingAction != 1) return;
 	if (pdP2Data->inactionableFrames == 0) {
-		bHoldButtons = false;
+		nHoldButtons = 0;
 		bHoldShield = false;
 	}
 	std::vector<int> vValidReversals = (pActiveP2->subObj.yPos == 0 && pActiveP2->subObj.prevYPos == 0 ? vGroundReversals : vAirReversals);
@@ -1908,7 +1908,7 @@ void HandleReversalsPage() {
 			}
 
 			if (validIndex > -1) {
-				int pat = vValidReversals[validIndex];
+				int pat = vValidReversals[validIndex] % 1000;
 				if (*nREV_IDs[validIndex] >> 16 != 0) {
 					nSaveShieldRevIndex = validIndex;
 					int nP2CharacterNumber = *(int*)(adMBAABase + dwP2CharNumber);
@@ -1949,7 +1949,7 @@ void HandleReversalsPage() {
 				}
 
 				if (vValidReversals[validIndex] > 999) {
-					bHoldButtons = true;
+					nHoldButtons = vValidReversals[validIndex] / 1000;
 				}
 			}
 			bDoReversal = false;
@@ -1960,7 +1960,7 @@ void HandleReversalsPage() {
 	}
 
 	if (pActiveP2->subObj.shieldSuccessType != 0) {
-		bHoldButtons = false;
+		nHoldButtons = 0;
 		bHoldShield = false;
 		if (!bDidShield) {
 			int totalWeight = 0;
@@ -1983,7 +1983,7 @@ void HandleReversalsPage() {
 				nSaveShieldRevIndex = validIndex;
 			}
 		}
-		pat = vValidReversals[nSaveShieldRevIndex];
+		pat = vValidReversals[nSaveShieldRevIndex] % 1000;
 		if (pat > 40 &&
 			!(pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Ground ||
 			pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Air ||
@@ -1995,7 +1995,7 @@ void HandleReversalsPage() {
 			pActiveP2->subObj.targetPatternPriority = 30001;
 		}
 		if (vValidReversals[nSaveShieldRevIndex] > 999) {
-			bHoldButtons = true;
+			nHoldButtons = vValidReversals[nSaveShieldRevIndex] / 1000;
 		}
 		bDidShield = false;
 	}
@@ -2005,7 +2005,7 @@ void HandleReversalsPage() {
 		if (pActiveP2->subObj.hitstunTimeRemaining != 0) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
-			bHoldButtons = false;
+			nHoldButtons = 0;
 			bDidShield = false;
 		}
 		break;
@@ -2013,7 +2013,7 @@ void HandleReversalsPage() {
 		if (pActiveP2->subObj.inBlockstun != 0) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
-			bHoldButtons = false;
+			nHoldButtons = 0;
 			bDidShield = false;
 		}
 		break;
@@ -2021,7 +2021,7 @@ void HandleReversalsPage() {
 		if (pActiveP2->subObj.hitstunTimeRemaining != 0 && pActiveP2->subObj.inBlockstun == 0) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
-			bHoldButtons = false;
+			nHoldButtons = 0;
 			bDidShield = false;
 		}
 		break;
@@ -2029,7 +2029,7 @@ void HandleReversalsPage() {
 		if (pActiveP2->subObj.hitstunTimeRemaining == -3 || pActiveP2->subObj.isGroundTech) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
-			bHoldButtons = false;
+			nHoldButtons = 0;
 			bDidShield = false;
 		}
 		break;
@@ -3030,7 +3030,7 @@ void ResetCallback() {
 	}
 
 	bDoReversal = false;
-	bHoldButtons = false;
+	nHoldButtons = 0;
 	bHoldShield = false;
 	bDidShield = false;
 
@@ -3115,11 +3115,11 @@ __declspec(naked) void _naked_RoundcallCallback() {
 // char input funcs
 
 void CharInputCallback() {
-	if (bHoldButtons) {
-		pActiveP2->subObj.buttonInputs &= 0x7000;
+	if (nHoldButtons != 0) {
+		pActiveP2->subObj.buttonInputs |= (0x1000 * nHoldButtons);
 	}
 	if (bHoldShield) {
-		pActiveP2->subObj.buttonInputs &= 0x8000;
+		pActiveP2->subObj.buttonInputs |= 0x8000;
 	}
 }
 
