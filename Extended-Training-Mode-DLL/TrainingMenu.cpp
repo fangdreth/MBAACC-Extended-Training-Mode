@@ -416,6 +416,7 @@ void DefaultP9(MenuInfo* menuInfo) {
 
 //Page 10
 int nSHOW_STATS = defSHOW_STATS;
+int nSHOW_ACCURATE_COMBO_DAMAGE = defSHOW_ACCURATE_COMBO_DAMAGE;
 int nP1_INPUT_DISPLAY = defP1_INPUT;
 int nP2_INPUT_DISPLAY = defP2_INPUT;
 int nFRAME_DISPLAY_Y = defFRAME_DISPLAY_Y;
@@ -434,6 +435,7 @@ extern float fP2_ARCADE_INPUT_Y = defP2_ARCADE_INPUT_Y;
 
 void DefaultP10(MenuInfo* menuInfo) {
 	nSHOW_STATS = defSHOW_STATS;
+	nSHOW_ACCURATE_COMBO_DAMAGE = defSHOW_ACCURATE_COMBO_DAMAGE;
 	nP1_INPUT_DISPLAY = defP1_INPUT;
 	nP2_INPUT_DISPLAY = defP2_INPUT;
 	nFRAME_DISPLAY_Y = defFRAME_DISPLAY_Y;
@@ -441,6 +443,7 @@ void DefaultP10(MenuInfo* menuInfo) {
 	nTRUE_FRAME_DISPLAY_Y = defTRUE_FRAME_DISPLAY_Y;
 
 	(menuInfo->elementList).listStart[(int)eUI::SHOW_STATS]->selectedItem = defSHOW_STATS;
+	(menuInfo->elementList).listStart[(int)eUI::SHOW_ACCURATE_COMBO_DAMAGE]->selectedItem = defSHOW_ACCURATE_COMBO_DAMAGE;
 	(menuInfo->elementList).listStart[(int)eUI::P1_INPUT_DISPLAY]->selectedItem = defP1_INPUT;
 	(menuInfo->elementList).listStart[(int)eUI::P2_INPUT_DISPLAY]->selectedItem = defP2_INPUT;
 	(menuInfo->elementList).listStart[(int)eUI::FRAME_DISPLAY_Y]->selectedItem = defFRAME_DISPLAY_Y;
@@ -505,9 +508,10 @@ int nHOTKEY_CD_TIMER = 0;
 
 //Information
 const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
-	//REVERSALS
 	{"EXTENDED_SETTING", "Set \\@COLOR@<015,183,255,255>extended details."},
 	{"HOTKEY_SETTING", "Set \\@COLOR@<015,183,255,255>hotkeys."},
+
+	//REVERSALS
 	{"XS_0_0", "Set \\@COLOR@<015, 183, 255, 255>dummy reversal mode."},
 	{"XS_0_2", "Set \\@COLOR@<015, 183, 255, 255>reversal slot 1."},
 	{"XS_0_3", "Set weight of \\@COLOR@<015, 183, 255, 255>reversal slot 1."},
@@ -615,12 +619,13 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 
 	//UI
 	{"XS_9_0", "Set \\@COLOR@<015, 183, 255, 255>stats display."},
-	{"XS_9_2", "Set \\@COLOR@<015, 183, 255, 255>P1 input display."},
-	{"XS_9_3", "Set \\@COLOR@<015, 183, 255, 255>P2 input display."},
-	{"XS_9_5", "Set \\@COLOR@<015, 183, 255, 255>Y-Position of frame display."},
+	{"XS_9_1", "Set \\@COLOR@<015, 183, 255, 255>accurate combo damage display."},
+	{"XS_9_3", "Set \\@COLOR@<015, 183, 255, 255>P1 input display."},
+	{"XS_9_4", "Set \\@COLOR@<015, 183, 255, 255>P2 input display."},
+	{"XS_9_6", "Set \\@COLOR@<015, 183, 255, 255>Y-Position of frame display."},
 	{"XS_9_7_n", DEFAULT_INFO},
-	{"XS_9_9_n", RETURN_INFO},
-	{"XS_9_11", PAGE_INFO},
+	{"XS_9_10_n", RETURN_INFO},
+	{"XS_9_12", PAGE_INFO},
 
 	//SYSTEM
 	{"XS_10_0", "Set \\@COLOR@<015, 183, 255, 255>game speed."},
@@ -763,11 +768,12 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 	{"XS_8_3_1", "_RNG"},
 
 	{"XS_9_0_0", "Do not show health and guard values."}, {"XS_9_0_1", "Show health and guard values."},
+	{"XS_9_1_0", "Show default combo damage values."}, {"XS_9_1_1", "Show accurate combo damage values."},
 
-	{"XS_9_2_0", "No P1 input display."}, {"XS_9_2_1", "Display P1 inputs as a list."}, {"XS_9_2_2", "Display P1 inputs on an arcade layout."}, {"XS_9_2_3", "Display P1 inputs both ways."},
-	{"XS_9_3_0", "No P2 input display."}, {"XS_9_3_1", "Display P2 inputs as a list."}, {"XS_9_3_2", "Display P2 inputs on an arcade layout."}, {"XS_9_3_3", "Display P2 inputs both ways."},
+	{"XS_9_3_0", "No P1 input display."}, {"XS_9_3_1", "Display P1 inputs as a list."}, {"XS_9_3_2", "Display P1 inputs on an arcade layout."}, {"XS_9_3_3", "Display P1 inputs both ways."},
+	{"XS_9_4_0", "No P2 input display."}, {"XS_9_4_1", "Display P2 inputs as a list."}, {"XS_9_4_2", "Display P2 inputs on an arcade layout."}, {"XS_9_4_3", "Display P2 inputs both ways."},
 
-	{"XS_9_5_0", "_BARY"}, {"XS_9_5_1", "_BARY"}, {"XS_9_5_2", "_BARY"},
+	{"XS_9_6_0", "_BARY"}, {"XS_9_6_1", "_BARY"}, {"XS_9_6_2", "_BARY"},
 
 	{"XS_10_0_0", "Play the game at 100% speed."}, {"XS_10_0_1", "Play the game at 75% speed."}, {"XS_10_0_2", "Play the game at 50% speed."}, {"XS_10_0_3", "Play the game at 25% speed."},
 

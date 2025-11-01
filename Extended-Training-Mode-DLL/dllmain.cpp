@@ -5919,7 +5919,7 @@ void Handle_REV(char* buffer) {
 		snprintf(buffer, 128, "%sNo reversal.", SUB_INFO_PREFIX);
 		return;
 	}
-	snprintf(buffer, 128, "%sReversal with %s%s (Press D to cycle shield).", SUB_INFO_PREFIX, REV_SHIELD_PREFIX[nREV_ID_1 >> 16], vPatternNames[nREV_ID_1 % 0x00010000].c_str());
+	snprintf(buffer, 128, "%sReversal with %s%s (Press D).", SUB_INFO_PREFIX, REV_SHIELD_PREFIX[nREV_ID_1 >> 16], vPatternNames[nREV_ID_1 % 0x00010000].c_str());
 }
 
 void Handle_METER1(char* buffer) {
@@ -5942,7 +5942,7 @@ void Handle_METER1(char* buffer) {
 	default:
 		snprintf(meterStr, 32, "%i.%02i%%", nTRUE_P1_METER / 100, nTRUE_P1_METER % 100);
 	}
-	snprintf(buffer, 128, "%sReset meter to %s.", SUB_INFO_PREFIX, meterStr);
+	snprintf(buffer, 128, "%sReset meter to %s (Hold A).", SUB_INFO_PREFIX, meterStr);
 }
 
 void Handle_METER2(char* buffer) {
@@ -5965,15 +5965,15 @@ void Handle_METER2(char* buffer) {
 	default:
 		snprintf(meterStr, 32, "%i.%02i%%", nTRUE_P2_METER / 100, nTRUE_P2_METER % 100);
 	}
-	snprintf(buffer, 128, "%sReset meter to %s.", SUB_INFO_PREFIX, meterStr);
+	snprintf(buffer, 128, "%sReset meter to %s (Hold A).", SUB_INFO_PREFIX, meterStr);
 }
 
 void Handle_HEALTH1(char* buffer) {
-	snprintf(buffer, 128, "%sReset health to %i (%.1f%%).", SUB_INFO_PREFIX, nTRUE_P1_HEALTH, nTRUE_P1_HEALTH / 114.0f);
+	snprintf(buffer, 128, "%sReset health to %i (%.1f%%) (Hold A).", SUB_INFO_PREFIX, nTRUE_P1_HEALTH, nTRUE_P1_HEALTH / 114.0f);
 }
 
 void Handle_HEALTH2(char* buffer) {
-	snprintf(buffer, 128, "%sReset health to %i (%.1f%%).", SUB_INFO_PREFIX, nTRUE_P2_HEALTH, nTRUE_P2_HEALTH / 114.0f);
+	snprintf(buffer, 128, "%sReset health to %i (%.1f%%) (Hold A).", SUB_INFO_PREFIX, nTRUE_P2_HEALTH, nTRUE_P2_HEALTH / 114.0f);
 }
 
 void Handle_BURST(char* buffer) {
@@ -5989,19 +5989,19 @@ void Handle_FORCEGUARD(char* buffer) {
 }
 
 void Handle_POS1(char* buffer) {
-	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels", SUB_INFO_PREFIX, nTRUE_P1_X_LOC >> 7, (nTRUE_P1_X_LOC + 0x10000) % 0x80);
+	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels (Hold A).", SUB_INFO_PREFIX, nTRUE_P1_X_LOC >> 7, (nTRUE_P1_X_LOC + 0x10000) % 0x80);
 }
 
 void Handle_POS1A(char* buffer) {
-	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels", SUB_INFO_PREFIX, nTRUE_P1_ASSIST_X_LOC >> 7, (nTRUE_P1_ASSIST_X_LOC + 0x10000) % 0x80);
+	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels (Hold A).", SUB_INFO_PREFIX, nTRUE_P1_ASSIST_X_LOC >> 7, (nTRUE_P1_ASSIST_X_LOC + 0x10000) % 0x80);
 }
 
 void Handle_POS2(char* buffer) {
-	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels", SUB_INFO_PREFIX, nTRUE_P2_X_LOC >> 7, (nTRUE_P2_X_LOC + 0x10000) % 0x80);
+	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels (Hold A).", SUB_INFO_PREFIX, nTRUE_P2_X_LOC >> 7, (nTRUE_P2_X_LOC + 0x10000) % 0x80);
 }
 
 void Handle_POS2A(char* buffer) {
-	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels", SUB_INFO_PREFIX, nTRUE_P2_ASSIST_X_LOC >> 7, (nTRUE_P2_ASSIST_X_LOC + 0x10000) % 0x80);
+	snprintf(buffer, 128, "%sReset position to %i pixels %i sub pixels (Hold A).", SUB_INFO_PREFIX, nTRUE_P2_ASSIST_X_LOC >> 7, (nTRUE_P2_ASSIST_X_LOC + 0x10000) % 0x80);
 }
 
 void Handle_SCROLL(char* buffer) {
@@ -6605,16 +6605,8 @@ void DrawTrueComboDamage() {
 				trueComboData[i][j].damage = 0;
 				trueComboData[i][j].defender = nullptr;
 			}
-			else if (playerData->comboCalcData[j].someFlag <= 100 && trueComboData[i][j].defender != nullptr && trueComboData[i][j].defender->notInCombo == false) {
-				trueComboData[i][j].damage = trueComboData[i][j].startingHealth - trueComboData[i][j].defender->health;
-			}
-
-			if (playerData->comboCalcData[j].drawComboData && nSHOW_STATS) {
-				int xPos = playerData->comboCalcData[j].xPos + 112;
-				int yPos = playerData->comboCalcData[j].yPos + 64;
-				byte alpha = playerData->comboCalcData[j].alpha;
-				DWORD ARGB = (alpha << 24) | 0x00FFFFFF;
-				TextDraw(xPos, yPos, 16, ARGB, "%5d", trueComboData[i][j].damage);
+			else if (playerData->comboCalcData[j].someFlag <= 100 && trueComboData[i][j].defender != nullptr && trueComboData[i][j].defender->notInCombo == false && nSHOW_ACCURATE_COMBO_DAMAGE) {
+				playerData->comboCalcData[j].damage = trueComboData[i][j].startingHealth - trueComboData[i][j].defender->health;
 			}
 		}
 	}
