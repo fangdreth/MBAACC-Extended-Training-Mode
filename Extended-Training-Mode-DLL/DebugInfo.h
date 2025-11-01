@@ -718,24 +718,24 @@ typedef struct AttackDisplayData {
 
 #pragma pack(push,1)
 typedef struct ComboCalcData {
-	byte field_0x1;
 	byte index;
 	short field_0x2;
 	int numHits;
 	int damage;
-	short field_0xc;
+	short isInvalid;
 	short field_0xe;
 	short proration;
 	short field_0x12;
-	byte field_0x14;
+	byte drawComboData;
 	byte field_0x15;
 	short timer1;
 	short timer2;
 	short field_0x1a;
 	int someFlag;
 	int timer3;
-	int field_0x24;
-	int field_0x28;
+	int xPos;
+	int yPos;
+	byte alpha;
 } ComboCalcData;
 #pragma pack(pop)
 
@@ -761,15 +761,17 @@ typedef struct PlayerAuxData {
 	int currentAttackDisplayIndex;
 	UNUSED(0x4);
 	AttackDisplayData attackDisplayData[2];
+	byte comboCalcIndex;
 	ComboCalcData comboCalcData[8];
-	UNUSED(0x8);
+	UNUSED(0x3);
+	int dispCHTimer;
 	int inactionableFrames;
 } PlayerAuxData;
 #pragma pack(pop)
 
 #define CHECKOFFSET(v, n) static_assert(offsetof(PlayerAuxData, v) == n, "PlayerAuxData offset incorrect for " #v);
 
-CHECKOFFSET(comboCalcData, 0xA0);
+CHECKOFFSET(comboCalcData, 0xA1);
 CHECKOFFSET(inactionableFrames, 0x208);
 
 static_assert(sizeof(PlayerAuxData) == 0x20C, "PlayerAuxData must have size 0x5A.");

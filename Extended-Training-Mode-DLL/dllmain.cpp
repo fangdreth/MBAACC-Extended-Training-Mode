@@ -79,6 +79,17 @@ bool bShowFrameBarPreview = false;
 bool bShowFrameBarYPreview = false;
 bool bForceGuard = false;
 
+struct TrueComboDamageData {
+	int startingHealth = 11400;
+	int damage = 0;
+	ActorData* defender = nullptr;
+};
+
+TrueComboDamageData trueComboData[2][8];
+
+ActorData* pDefPlayer = nullptr;
+ActorData* pAttPlayer = nullptr;
+
 bool nLastCustomInputDisplay = false;
 bool nLastVanillaInputDisplay = false;
 
@@ -6552,6 +6563,80 @@ __declspec(naked) void _naked_ForceDummyGuard() {
 	}
 }
 
+void GetInitialHealthForTrueComboDamage() {
+	if (pAttPlayer->OwnerSubObjPtr != 0) {
+		pAttPlayer = pAttPlayer->OwnerSubObjPtr;
+	}
+	byte curComboData = pdPlayerDataArray[pAttPlayer->ownerIndex]->comboCalcData[0].index;
+	if (pdPlayerDataArray[pAttPlayer->ownerIndex]->comboCalcData[curComboData].numHits == 0) {
+		trueComboData[pAttPlayer->ownerIndex][curComboData].startingHealth = pDefPlayer->health;
+		trueComboData[pAttPlayer->ownerIndex][curComboData].defender = pDefPlayer;
+	}
+}
+
+DWORD GetInitialHealthForTrueComboDamage_PatchAddr = 0x0047155f;
+__declspec(naked) void _naked_GetInitialHealthForTrueComboDamage() {
+	__asm {
+		mov esi, dword ptr[esp + 0xe0];
+		mov ebx, 0x1;
+		push ebx;
+		push esi;
+		push ebp;
+		mov pDefPlayer, ebp;
+		mov pAttPlayer, edi;
+	}
+
+	PUSH_ALL;
+	GetInitialHealthForTrueComboDamage();
+	POP_ALL;
+
+	__asm {
+		mov eax, edi;
+		push 0x00471570;
+		ret;
+	}
+}
+
+void DrawTrueComboDamage() {
+	for (int i = 0; i < 2; i++) {
+		for (int j = 0; j < 8; j++) {
+			PlayerAuxData* playerData = pdPlayerDataArray[i];
+			if (playerData->comboCalcData[j].someFlag == -1) {
+				trueComboData[i][j].damage = 0;
+				trueComboData[i][j].defender = nullptr;
+			}
+			else if (playerData->comboCalcData[j].someFlag <= 100 && trueComboData[i][j].defender != nullptr && trueComboData[i][j].defender->notInCombo == false) {
+				trueComboData[i][j].damage = trueComboData[i][j].startingHealth - trueComboData[i][j].defender->health;
+			}
+
+			if (playerData->comboCalcData[j].drawComboData && nSHOW_STATS) {
+				int xPos = playerData->comboCalcData[j].xPos + 112;
+				int yPos = playerData->comboCalcData[j].yPos + 64;
+				byte alpha = playerData->comboCalcData[j].alpha;
+				DWORD ARGB = (alpha << 24) | 0x00FFFFFF;
+				TextDraw(xPos, yPos, 16, ARGB, "%5d", trueComboData[i][j].damage);
+			}
+		}
+	}
+}
+
+//DWORD DrawTrueComboDamage_PatchAddr = 0x0047698a;
+DWORD DrawTrueComboDamage_PatchAddr = 0x00476a81;
+__declspec(naked) void _naked_DrawTrueComboDamage() {
+	PUSH_ALL;
+	DrawTrueComboDamage();
+	POP_ALL;
+
+	__asm {
+		pop edi;
+		pop esi;
+		pop ebp;
+		pop ebx;
+		add esp, 0xc;
+		ret;
+	}
+}
+
 // init funcs
 
 void initFrameDoneCallback()
@@ -6769,6 +6854,11 @@ void initDisabledExit() {
 	patchMemset(0x0047d21c, 0x90, 11);
 }
 
+void initTrueComboDamage() {
+	patchJump(GetInitialHealthForTrueComboDamage_PatchAddr, _naked_GetInitialHealthForTrueComboDamage);
+	patchJump(DrawTrueComboDamage_PatchAddr, _naked_DrawTrueComboDamage);
+}
+
 // dll thread func
 
 void threadFunc() 
@@ -6826,6 +6916,8 @@ void threadFunc()
 	initForceDummyGuard();
 
 	initDisabledExit();
+
+	initTrueComboDamage();
 
 	initHotkeys();
 	initRegistryValues();
