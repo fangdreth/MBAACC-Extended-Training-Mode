@@ -1096,7 +1096,7 @@ const std::vector<const char*> vSHOW_STATS = {
 };
 
 const std::vector<const char*> vSHOW_ACCURATE_COMBO_DAMAGE = {
-	"SHOW ACCURATE COMBO DAMAGE",
+	"ACCURATE COMBO DAMAGE",
 	"OFF", "ON"
 };
 
@@ -1131,7 +1131,7 @@ const std::vector<std::vector<const char*>> P10_Options = {
 
 enum class eUI {
 	SHOW_STATS,
-	SHOW_ACCURATE_COMBO_DAMAGE,
+	ACCURATE_COMBO_DAMAGE,
 	S0,
 	P1_INPUT_DISPLAY,
 	P2_INPUT_DISPLAY,
@@ -1146,13 +1146,13 @@ enum class eUI {
 };
 
 const int defSHOW_STATS = 1;
-const int defSHOW_ACCURATE_COMBO_DAMAGE = 1;
+const int defACCURATE_COMBO_DAMAGE = 1;
 const int defP1_INPUT = 0;
 const int defP2_INPUT = 0;
 const int defFRAME_DISPLAY_Y = 1;
 
 extern int nSHOW_STATS;
-extern int nSHOW_ACCURATE_COMBO_DAMAGE;
+extern int nACCURATE_COMBO_DAMAGE;
 extern int nP1_INPUT_DISPLAY;
 extern int nP2_INPUT_DISPLAY;
 extern int nFRAME_DISPLAY_Y;
@@ -1162,7 +1162,7 @@ const int defTRUE_FRAME_DISPLAY_Y = 400;
 extern int nTRUE_FRAME_DISPLAY_Y;
 
 const std::vector<int*> P10_Settings = {
-	&nSHOW_STATS, &nSHOW_ACCURATE_COMBO_DAMAGE, &nP1_INPUT_DISPLAY, &nP2_INPUT_DISPLAY, &nFRAME_DISPLAY_Y,
+	&nSHOW_STATS, &nACCURATE_COMBO_DAMAGE, &nP1_INPUT_DISPLAY, &nP2_INPUT_DISPLAY, &nFRAME_DISPLAY_Y,
 	&nPAGE
 };
 

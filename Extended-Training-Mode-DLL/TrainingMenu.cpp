@@ -416,7 +416,7 @@ void DefaultP9(MenuInfo* menuInfo) {
 
 //Page 10
 int nSHOW_STATS = defSHOW_STATS;
-int nSHOW_ACCURATE_COMBO_DAMAGE = defSHOW_ACCURATE_COMBO_DAMAGE;
+int nACCURATE_COMBO_DAMAGE = defACCURATE_COMBO_DAMAGE;
 int nP1_INPUT_DISPLAY = defP1_INPUT;
 int nP2_INPUT_DISPLAY = defP2_INPUT;
 int nFRAME_DISPLAY_Y = defFRAME_DISPLAY_Y;
@@ -435,7 +435,7 @@ extern float fP2_ARCADE_INPUT_Y = defP2_ARCADE_INPUT_Y;
 
 void DefaultP10(MenuInfo* menuInfo) {
 	nSHOW_STATS = defSHOW_STATS;
-	nSHOW_ACCURATE_COMBO_DAMAGE = defSHOW_ACCURATE_COMBO_DAMAGE;
+	nACCURATE_COMBO_DAMAGE = defACCURATE_COMBO_DAMAGE;
 	nP1_INPUT_DISPLAY = defP1_INPUT;
 	nP2_INPUT_DISPLAY = defP2_INPUT;
 	nFRAME_DISPLAY_Y = defFRAME_DISPLAY_Y;
@@ -443,7 +443,7 @@ void DefaultP10(MenuInfo* menuInfo) {
 	nTRUE_FRAME_DISPLAY_Y = defTRUE_FRAME_DISPLAY_Y;
 
 	(menuInfo->elementList).listStart[(int)eUI::SHOW_STATS]->selectedItem = defSHOW_STATS;
-	(menuInfo->elementList).listStart[(int)eUI::SHOW_ACCURATE_COMBO_DAMAGE]->selectedItem = defSHOW_ACCURATE_COMBO_DAMAGE;
+	(menuInfo->elementList).listStart[(int)eUI::ACCURATE_COMBO_DAMAGE]->selectedItem = defACCURATE_COMBO_DAMAGE;
 	(menuInfo->elementList).listStart[(int)eUI::P1_INPUT_DISPLAY]->selectedItem = defP1_INPUT;
 	(menuInfo->elementList).listStart[(int)eUI::P2_INPUT_DISPLAY]->selectedItem = defP2_INPUT;
 	(menuInfo->elementList).listStart[(int)eUI::FRAME_DISPLAY_Y]->selectedItem = defFRAME_DISPLAY_Y;

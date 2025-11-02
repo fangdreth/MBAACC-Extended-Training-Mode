@@ -6605,7 +6605,7 @@ void DrawTrueComboDamage() {
 				trueComboData[i][j].damage = 0;
 				trueComboData[i][j].defender = nullptr;
 			}
-			else if (playerData->comboCalcData[j].someFlag <= 100 && trueComboData[i][j].defender != nullptr && trueComboData[i][j].defender->notInCombo == false && nSHOW_ACCURATE_COMBO_DAMAGE) {
+			else if (playerData->comboCalcData[j].someFlag <= 100 && trueComboData[i][j].defender != nullptr && trueComboData[i][j].defender->notInCombo == false && nACCURATE_COMBO_DAMAGE) {
 				playerData->comboCalcData[j].damage = trueComboData[i][j].startingHealth - trueComboData[i][j].defender->health;
 			}
 		}
