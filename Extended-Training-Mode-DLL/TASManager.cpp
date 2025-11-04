@@ -8,10 +8,12 @@
 #include <algorithm>
 #include <random> 
 #include "DebugInfo.h"
+#include "dllmain.h"
 
 bool enableTAS = false;
 bool randomTAS = false;
 bool regenTAS = true;
+bool fixTAS2v2 = false;
 
 unsigned getRand() {
 
@@ -75,9 +77,9 @@ void TASManager::parseLine(const std::string& l) {
 	// the format of this map is key(string hash), val is the rest of the string not containing the command
 	// constexpr doesnt like maps, which is why im using an array, the size is small enough that it will probs be better that way
 	#ifdef _DEBUG
-		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 9> parseArr = {{
+		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 14> parseArr = {{
 	#else
-		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 9> parseArr = {{
+		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 14> parseArr = {{
 	#endif
 	
 		{ hashString("pause"), [](TASManager* t, const std::string& data) -> void {
@@ -106,6 +108,20 @@ void TASManager::parseLine(const std::string& l) {
 			t->tasData.push_back(res);
 		}},
 
+		{ hashString("p3pos"), [](TASManager* t, const std::string& data) -> void {
+			TASItem res;
+			res.command = TASCommand::P3XPos;
+			res.commandData = safeStoi(data);
+			t->tasData.push_back(res);
+		}},
+
+		{ hashString("p4pos"), [](TASManager* t, const std::string& data) -> void {
+			TASItem res;
+			res.command = TASCommand::P4XPos;
+			res.commandData = safeStoi(data);
+			t->tasData.push_back(res);
+		}},
+
 		{ hashString("p1meter"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::P1Meter;
@@ -116,6 +132,20 @@ void TASManager::parseLine(const std::string& l) {
 		{ hashString("p2meter"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::P2Meter;
+			res.commandData = safeStoi(data);
+			t->tasData.push_back(res);
+		}},
+
+		{ hashString("p3meter"), [](TASManager* t, const std::string& data) -> void {
+			TASItem res;
+			res.command = TASCommand::P3Meter;
+			res.commandData = safeStoi(data);
+			t->tasData.push_back(res);
+		}},
+
+		{ hashString("p4meter"), [](TASManager* t, const std::string& data) -> void {
+			TASItem res;
+			res.command = TASCommand::P4Meter;
 			res.commandData = safeStoi(data);
 			t->tasData.push_back(res);
 		}},
@@ -132,11 +162,18 @@ void TASManager::parseLine(const std::string& l) {
 			t->tasData.push_back(res);
 		}},
 
+		{ hashString("fn1"), [](TASManager* t, const std::string& data) -> void {
+			TASItem res;
+			res.command = TASCommand::FN1;
+			t->tasData.push_back(res);
+		}},
+
 		{ hashString("dl"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.length = safeStoi(data);
 			t->tasData.push_back(res);
 		}}
+
 
 	}};
 
@@ -229,7 +266,7 @@ void TASManager::load(const std::string& filename) {
 
 	reset();
 
-	log("loaded tas file");
+	log("loaded tas file %s", filename.c_str());
 
 	if (TASManager::tasData.size() > 0 && TASManager::tasData[0].command == TASCommand::Unpause) {
 		bFreeze = 0;
@@ -264,7 +301,7 @@ void TASManager::reset() {
 
 }
 
-void TASManager::setInputs() {
+void TASManager::setInputs(int playerIndex) {
 
 	if (!enableTAS) {
 		return;
@@ -283,11 +320,12 @@ void TASManager::setInputs() {
 
 	if (tasData[tasIndex].command == TASCommand::Nothing) {
 
-		int playerIndex = 0;
+		//int playerIndex = 0;
 		DWORD baseAddr = 0x00771398 + (0x2C * playerIndex);
 
 		// dir
-		if (*(BYTE*)(0x00555130 + 0x314) == 1) {
+		// if (*(BYTE*)(0x00555130 + 0x314) == 1) {
+		if(playerDataArr[playerIndex].isOpponentToLeft == 1) {
 			constexpr uint8_t dirLookup[10] = { 0, 3, 2, 1, 6, 5, 4, 9, 8, 7 };
 			*(BYTE*)(baseAddr + 0) = dirLookup[tasData[tasIndex].dir];
 		} else {
@@ -307,16 +345,28 @@ void TASManager::setInputs() {
 	switch (tasData[tasIndex].command) {
 
 	case TASCommand::P1XPos:
-		*(int32_t*)(dwBaseAddress + adP1Base + 0x108) = tasData[tasIndex].commandData;
+		playerDataArr[0].xPos = tasData[tasIndex].commandData;
 		break;
 	case TASCommand::P2XPos:
-		*(int32_t*)(dwBaseAddress + adP2Base + 0x108) = tasData[tasIndex].commandData;
+		playerDataArr[1].xPos = tasData[tasIndex].commandData;
+		break;
+	case TASCommand::P3XPos:
+		playerDataArr[2].xPos = tasData[tasIndex].commandData;
+		break;
+	case TASCommand::P4XPos:
+		playerDataArr[3].xPos = tasData[tasIndex].commandData;
 		break;
 	case TASCommand::P1Meter:
-		*(int32_t*)(dwBaseAddress + adP1Base + 0x0E0) = tasData[tasIndex].commandData;
+		playerDataArr[0].magicCircuit = tasData[tasIndex].commandData;
 		break;
 	case TASCommand::P2Meter:
-		*(int32_t*)(dwBaseAddress + adP2Base + 0x0E0) = tasData[tasIndex].commandData;
+		playerDataArr[1].magicCircuit = tasData[tasIndex].commandData;
+		break;
+	case TASCommand::P3Meter:
+		playerDataArr[2].magicCircuit = tasData[tasIndex].commandData;
+		break;
+	case TASCommand::P4Meter:
+		playerDataArr[3].magicCircuit = tasData[tasIndex].commandData;
 		break;
 	case TASCommand::RNG:
 		SetSeed(tasData[tasIndex].commandDataU32);
@@ -335,6 +385,12 @@ void TASManager::setInputs() {
 		break;
 	case TASCommand::StopFF:
 		setFPSLimiter(false);
+		break;
+	case TASCommand::FN1: 
+		// ugh. this doesnt work bc of how 2v2 works. i just. ugh. 
+		// 2v2 doesnt read the button and then switch, it switches and then writes the button
+		// due to stupid reasons, this needs to be changed at a different point in the code, so that 2v2 can interact with it
+		fn1Press2v2[playerIndex] = true;
 		break;
 	default: 
 		break;

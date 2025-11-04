@@ -2,9 +2,31 @@
 #include <cstdio>
 #include <type_traits>
 #include <set>
-#include "dllmain.h"
+#include <map>
+//#include "dllmain.h"
 #include "resource.h"
+//#include "..\Common\Common.h"
 //#include "FancyMenu.h"
+#include "..\Common\types.h"
+
+#include <string>
+#include <array>
+#include <vector>
+#include <functional>
+
+#include <d3d9.h>
+#include <D3dx9math.h>
+#include <D3D9Types.h>
+
+void __stdcall ___log(const char* msg);
+
+void __stdcall log(const char* format, ...);
+
+void __stdcall ___log(const wchar_t* msg);
+
+void __stdcall log(const wchar_t* format, ...);
+
+extern IDirect3DDevice9* device;
 
 extern bool logPowerInfo;
 extern bool logVerboseFps;
@@ -18,231 +40,10 @@ extern int maxCrowdVel;
 
 extern int showRoaHiddenCharge;
 
+extern bool doSaveScreenshot;
+
 //extern IDirectInput8* inputDevice;
 
-template <typename T, int size>
-class CircularBuffer {
-public:
-
-	CircularBuffer() {}
-
-	void pushHead(const T& v) {
-		index++;
-		if (index >= size) {
-			index = 0;
-		}
-		data[index] = v;
-	}
-
-	void pushTail(const T& v) {
-		index--;
-		if (index < 0) {
-			index = size - 1;
-		}
-		data[index] = v;
-	}
-
-	void rollHead() {
-		index--;
-		if (index >= size) {
-			index = 0;
-		}
-	}
-
-	void rollTail() {
-		index++;
-		if (index < 0) {
-			index = size - 1;
-		}
-	}
-
-	T& front() {
-		return data[index];
-	}
-
-	int totalMemory() {
-		return sizeof(T) * size;
-	}
-
-	void clear() {
-		for (size_t i = 0; i < size; i++) {
-			data[i] = T();
-		}
-		index = 0;
-	}
-
-	T& operator [](int i) {
-		while (i < 0) {
-			i += size;
-		}
-		i += index;
-		return data[i % size];
-	}
-	
-	const T& operator [](int i) const {
-		while (i < 0) {
-			i += size;
-		}
-		i += index;
-		return data[i % size];
-	}
-
-	T data[size];
-	int index = 0; // index will be the head, index-1 will be the tail
-};
-
-typedef struct FreqTimerData {
-	float min;
-	float mean;
-	float max;
-	float stdev;
-} FreqTimerData;
-
-// meant to,,, assist in timing certain things/seeing how frequently something is called per frame
-extern float _freqTimerYVal; // template classes dont share statics
-template<int size>
-class FreqTimer {
-public:
-
-	void tick() {
-		long long time = getNanoSec();
-		float temp = (float)1000000000.0 / ((float)time - prevTime);
-		buffer.pushHead(temp);
-		prevTime = time;
-	}
-
-	FreqTimerData getData() {
-		FreqTimerData res;
-
-		res.min = buffer.data[0];
-		res.max = buffer.data[0];
-		res.mean = 0.0;
-		int tempSize = size;
-		for (int i = 0; i < size; i++) {
-			if (std::isnan(buffer.data[i]) || std::isinf(buffer.data[i])) {
-				tempSize--;
-				continue;	
-			}
-			res.mean += buffer.data[i];
-			res.min = MIN(res.min, buffer.data[i]);
-			res.max = MAX(res.max, buffer.data[i]);
-		}
-
-		if (tempSize != 0) {
-			res.mean /= ((float)tempSize);
-		} else {
-			res.mean = NAN;
-		}
-
-		res.stdev = 0.0f;
-		for (int i = 0; i < size; i++) {
-			if (std::isnan(buffer.data[i]) || std::isinf(buffer.data[i])) {
-				continue;
-			}
-			res.stdev += (buffer.data[i] - res.mean) * (buffer.data[i] - res.mean);
-		}
-
-		if (tempSize != 0) {
-			res.stdev /= ((float)tempSize - 1);
-			res.stdev = sqrtf(res.stdev);
-		} else {
-			res.stdev = NAN;
-		}
-
-		return res;
-	}
-
-	void log() {
-
-		FreqTimerData res = getData();
-
-		TextDraw(50.0f, 10.0 + (_freqTimerYVal  * 4), 4, 0xFFFFFFFF, "%5.2lf %5.2lf %5.2lf", res.mean, res.min, res.max);
-		_freqTimerYVal += 4;
-	}
-
-	long long prevTime = 0;
-	CircularBuffer<float, size> buffer;
-
-};
-
-template <typename T>
-class Vec {
-public:
-
-	Vec(int maxSize_ = 16) {
-		maxSize = maxSize_;
-		if(maxSize != 0) {
-			data = (T*)malloc(maxSize * sizeof(T));
-		}
-	}
-
-	~Vec() {
-		if (data != NULL) {
-			free(data);
-			data = NULL;
-		}
-	}
-
-	Vec(const Vec& other) = delete;
-	Vec& operator=(const Vec& other) = delete;
-
-	int totalMemory() {
-		return sizeof(T) * maxSize;
-	}
-
-	void resize() {
-		maxSize *= 2;
-		T* temp = (T*)realloc(data, maxSize * sizeof(T));
-		
-		if (temp == NULL) {
-			log("vec resize failed??!");
-			return;
-		}
-
-		data = temp;
-	}
-
-	void addCapacity(int n) {
-		maxSize += n;
-
-		T* temp = (T*)realloc(data, maxSize * sizeof(T));
-
-		if (temp == NULL) {
-			log("Vec realloc failed??!");
-			return;
-		}
-
-		data = temp;
-	}
-
-	void push_back(const T& newItem) {
-
-		if (size == maxSize) {
-			resize();
-		}
-
-		data[size] = newItem;
-		size++;
-	}
-
-	void emplace_back(const T&& newItem) {
-
-		if (size == maxSize) {
-			resize();
-		}
-
-		data[size] = std::forward<T>(newItem);
-		size++;
-	}
-	
-	T operator [](int i) const { return data[i]; }
-	T& operator [](int i) { return data[i]; }
-
-	T* data = NULL;
-	int size = 0;
-	int maxSize = 0;
-
-};
 
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
@@ -261,76 +62,7 @@ extern bool kDown;
 extern bool lDown;
 extern bool mDown;
 
-// my inconsistent use of D3DXVECTOR2 vs point is bad. i should use point
-
-struct Rect;
-typedef struct Rect Rect;
-
-typedef struct Point {
-	float x = 0.0;
-	float y = 0.0;
-	Point() {}
-	Point(float x_, float y_) : x(x_), y(y_) {}
-	bool operator==(const Point const& rhs) { return x == rhs.x && y == rhs.y; }
-	bool operator!=(const Point const& rhs) { return x != rhs.x || y != rhs.y; }
-	Point operator+(const Point const& rhs) { return Point(x + rhs.x, y + rhs.y); }
-	Point operator-(const Point const& rhs) { return Point(x - rhs.x, y - rhs.y); }
-	Point& operator+=(const Point const& rhs) { x += rhs.x; y += rhs.y; return *this; }
-	Point& operator-=(const Point const& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
-	Point& operator=(const Point const& rhs) { if (this != &rhs) { x = rhs.x; y = rhs.y; } return *this; }
-
-	bool inside(const Rect& rect) const;
-
-	bool outside(const Rect& rect) const;
-
-} Point;
-
-typedef struct Rect {
-
-	// there is specifically not a 4 float constructor due to ambiguity between if its 2 points, or 1 point, and width, height
-	Rect() {}
-
-	Rect(const Point& a, const Point& b) {
-		x1 = a.x;
-		y1 = a.y;
-		x2 = b.x;
-		y2 = b.y;
-	}
-
-	Rect(const Point& a, float w, float h) {
-		x1 = a.x;
-		y1 = a.y;
-		x2 = a.x + w; 
-		y2 = a.y + h;
-	}
-
-	union {
-		struct {
-			float x1;
-			float y1;
-		};
-		Point p1;
-	};
-	
-	union {
-		struct {
-			float x2;
-			float y2;
-		};
-		Point p2;
-	};
-
-	bool inside(const Point& p) const {
-		return (p.x >= x1 && p.x <= x2 && p.y >= y1 && p.y <= y2);
-	}
-
-	bool outside(const Point& p) const {
-		return !inside(p);
-	}
-	
-	Rect& operator=(const Rect const& rhs) { if (this != &rhs) { p1 = rhs.p1; p2 = rhs.p2; } return *this; }
-
-} Rect;
+// my inconsistent use of D3DXVECTOR2 vs point is bad. i should use poin
 
 typedef struct DragInfo {
 	float* dragPointX;

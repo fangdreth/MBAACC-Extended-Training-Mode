@@ -3,6 +3,7 @@
 extern bool enableTAS;
 extern bool randomTAS;
 extern bool regenTAS;
+extern bool fixTAS2v2;
 
 int safeStoi(const std::string& s);
 
@@ -14,13 +15,18 @@ enum class TASCommand : uint8_t {
 	Nothing = 0,
 	P1XPos = 1,
 	P2XPos = 2,
-	P1Meter = 3,
-	P2Meter = 4,
-	RNG = 5, // not implemented
-	Pause = 6, 
-	Unpause = 7, 
-	StartFF = 8,
-	StopFF = 9,
+	P3XPos = 3,
+	P4XPos = 4,
+	P1Meter = 5,
+	P2Meter = 6,
+	P3Meter = 7,
+	P4Meter = 8,
+	RNG = 9, // not implemented
+	Pause = 10, 
+	Unpause = 11, 
+	StartFF = 12,
+	StopFF = 13,
+	FN1 = 14,
 };
 
 #pragma pack(push,1)
@@ -135,7 +141,7 @@ public:
 
 	void reset();
 
-	void setInputs();
+	void setInputs(int playerIndex = 0);
 	void incInputs();
 
 	void undoInputForPause();

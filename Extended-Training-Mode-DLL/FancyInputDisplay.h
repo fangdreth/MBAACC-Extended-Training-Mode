@@ -1,6 +1,6 @@
 #pragma once
 #include <set>
-
+#include "..\Common\types.h"
 
 typedef struct InputData {
 	DWORD rawInput = 0;

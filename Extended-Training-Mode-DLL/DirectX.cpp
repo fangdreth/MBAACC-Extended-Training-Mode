@@ -7,6 +7,9 @@
 #include "FancyInputDisplay.h"
 //#include "version.h"	
 #include "../Common/version.h"
+#include "..\Common\Common.h"
+
+#include "dllmain.h"
 
 void debugLinkedList();
 void displayDebugInfo();
@@ -2802,6 +2805,51 @@ void drawRoaHiddenCharge() {
 
 }
 
+bool doSaveScreenshot = false; // add a menu option for this lest i murder everyones pcs
+void saveScreenshot() {
+
+	// saves a screenshot, hopefully at full resolution
+
+	if (!doSaveScreenshot) {
+		return;
+	}
+
+
+	// in the future, this could (and probs should) be made threaded to not slow the game to a crawl. but i work with what i have
+
+	HRESULT hr;
+	
+	IDirect3DSurface9* surf = NULL;
+
+	hr = device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf);
+
+	if (hr != S_OK) {
+		log("GetBackBuffer failed");
+		printDirectXError(hr);
+	}
+
+	D3DSURFACE_DESC sDesc;
+	surf->GetDesc(&sDesc);
+
+	RECT rect = { 0, 0, sDesc.Width, sDesc.Height };
+
+	static int _frameIndex = 0;
+	static char buffer[256];
+
+	snprintf(buffer, 256, "./ScreenShot/ugh%d.png", _frameIndex);
+	_frameIndex++;
+
+	hr = D3DXSaveSurfaceToFileA(buffer, D3DXIFF_PNG, surf, NULL, &rect);
+
+	if (hr != S_OK) {
+		log("D3DXSaveSurfaceToFileA failed");
+		printDirectXError(hr);
+	}
+
+	surf->Release();
+
+}
+
 void __stdcall _doDrawCalls() {
 
 	/*
@@ -2962,6 +3010,7 @@ void __stdcall _doDrawCalls() {
 			_drawBuildInfo();
 		}
 	}
+	saveScreenshot();
 
 	// -- ACTUAL RENDERING --
 	backupRenderState();

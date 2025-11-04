@@ -84,8 +84,8 @@
     <IncludePath>$(DXSDK_DIR)Include;$(LibraryPath);$(ProjectDir)lib\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(SolutionDir)Lib\x86;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(DXSDK_DIR)Include;$(LibraryPath);$(ProjectDir)lib\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(SolutionDir)Lib\x86;$(LibraryPath);C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;</LibraryPath>
+    <IncludePath>$(DXSDK_DIR)Include;$(LibraryPath);$(ProjectDir)lib\;$(IncludePath);C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -95,6 +95,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <DisableSpecificWarnings>4711;4710;5260;4124;4201;4505;4514</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,6 +121,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <StringPooling>true</StringPooling>
       <DisableSpecificWarnings>4711;4710;5260;4124;4201;4505;4514</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -137,6 +139,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <DisableSpecificWarnings>4711;4710;5260;4124;4201;4505;4514</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,6 +160,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <DisableSpecificWarnings>4711;4710;5260;4124;4201;4505;4514</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -170,13 +174,16 @@
     <ClCompile Include="..\Common\CharacterData.cpp" />
     <ClCompile Include="..\Common\Common.cpp" />
     <ClCompile Include="..\Common\RawData.cpp" />
+    <ClCompile Include="..\Common\types.cpp" />
     <ClCompile Include="Injector.h" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="MBAACC-Extended-Training-Mode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\CharacterData.h" />
     <ClInclude Include="..\Common\Common.h" />
     <ClInclude Include="..\Common\RawData.h" />
+    <ClInclude Include="..\Common\types.h" />
     <ClInclude Include="FrameDisplay.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MBAACC-Extended-Training-Mode.h" />
