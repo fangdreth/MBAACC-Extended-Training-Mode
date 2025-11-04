@@ -240,7 +240,7 @@ const std::vector<const char*> vRETURN_ELEMENT = {
 //Page 1
 const std::vector<const char*> vREVERSAL_TYPE = {
 	"REVERSALS",
-	"OFF", "ON", "ON GUARD", "ON HIT", "ON WAKEUP"
+	"OFF", "ON", "ON GUARD", "ON HIT", "ON WAKEUP", "ON SHIELD"
 };
 
 const std::vector<const char*> vREVERSAL_SLOT_1 = {

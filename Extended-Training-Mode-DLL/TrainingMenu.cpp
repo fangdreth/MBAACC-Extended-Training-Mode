@@ -661,7 +661,8 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 };
 
 const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
-	{"XS_0_0_0", "No reversal."}, {"XS_0_0_1", "Reversal after recovery."}, {"XS_0_0_2", "Reversal after guarding."}, {"XS_0_0_3", "Reversal after being hit."}, {"XS_0_0_4", "Reversal after wakeup."},
+	{"XS_0_0_0", "No reversal."}, {"XS_0_0_1", "Reversal after recovery."}, {"XS_0_0_2", "Reversal after guarding."}, {"XS_0_0_3", "Reversal after being hit."},
+	{"XS_0_0_4", "Reversal after wakeup."}, {"XS_0_0_4", "Reversal after successful shield."},
 
 	{"XS_0_2_1", "_REV"},
 	{"XS_0_3_0", "0."}, {"XS_0_3_1", "1."}, {"XS_0_3_2", "2."}, {"XS_0_3_3", "3."}, {"XS_0_3_4", "4."}, {"XS_0_3_5", "5."},

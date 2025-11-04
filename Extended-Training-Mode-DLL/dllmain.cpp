@@ -1892,25 +1892,39 @@ bool bDidShield = false;
 int nSaveShieldRevIndex = 0;
 
 void HandleReversalsPage() {
-	if ((nREVERSAL_TYPE == 0 && !bDoReversal) || pActiveP2->subObj.doTrainingAction != 1) return;
 	if (pdP2Data->inactionableFrames == 0) {
 		nHoldButtons = 0;
 		bHoldShield = false;
 	}
+	if ((nREVERSAL_TYPE == 0 && !bDoReversal) || pActiveP2->subObj.doTrainingAction != 1 || pActiveP2->subObj.targetPatternPriority == 30001) return;
 	std::vector<int> vValidReversals = (pActiveP2->subObj.yPos == 0 && pActiveP2->subObj.prevYPos == 0 ? vGroundReversals : vAirReversals);
 	int pat;
-	if (vValidReversals.size() != 0 && bDoReversal && pdP2Data->inactionableFrames == 0) {
+	if (vValidReversals.size() != 0 && bDoReversal && (pdP2Data->inactionableFrames == 0 || pActiveP2->subObj.shieldSuccessType != 0)) {
 		if (nReversalDelayFramesLeft == 0) {
 			int totalWeight = 0;
 			for (int i = 0; i < NUM_REVERSALS; i++) {
-				if (*nREV_IDs[i] != 0 && vValidReversals[i] != 0) totalWeight += *nREV_WEIGHTS[i];
+				if (pActiveP2->subObj.shieldSuccessType != 0) {
+					pat = vValidReversals[i] % 1000;
+					byte shieldCancel = getShieldCancel(pActiveP2, pat);
+					if (*nREV_IDs[i] != 0 && vValidReversals[i] != 0 && (pActiveP2->subObj.shieldSuccessType & shieldCancel) != 0) totalWeight += *nREV_WEIGHTS[i];
+				}
+				else {
+					if (*nREV_IDs[i] != 0 && vValidReversals[i] != 0) totalWeight += *nREV_WEIGHTS[i];
+				}
 			}
 			totalWeight += nNO_REV_WEIGHT;
 			if (totalWeight == 0) return;
 			int randomWeight = rand() % totalWeight + 1;
 			int validIndex = -1;
 			for (int i = 0; i < NUM_REVERSALS; i++) {
-				if (*nREV_IDs[i] == 0 || vValidReversals[i] == 0) continue;
+				if (pActiveP2->subObj.shieldSuccessType != 0) {
+					pat = vValidReversals[i] % 1000;
+					byte shieldCancel = getShieldCancel(pActiveP2, pat);
+					if (*nREV_IDs[i] == 0 || vValidReversals[i] == 0 || (pActiveP2->subObj.shieldSuccessType & shieldCancel) == 0) continue;
+				}
+				else {
+					if (*nREV_IDs[i] == 0 || vValidReversals[i] == 0) continue;
+				}
 				randomWeight -= *nREV_WEIGHTS[i];
 				if (randomWeight <= 0) {
 					validIndex = i;
@@ -1970,30 +1984,9 @@ void HandleReversalsPage() {
 		}
 	}
 
-	if (pActiveP2->subObj.shieldSuccessType != 0) {
+	if (pActiveP2->subObj.shieldSuccessType != 0 && bDidShield) { // D > X reversals
 		nHoldButtons = 0;
 		bHoldShield = false;
-		if (!bDidShield) {
-			int totalWeight = 0;
-			for (int i = 0; i < NUM_REVERSALS; i++) {
-				if (*nREV_IDs[i] != 0 && *nREV_IDs[i] >> 16 != 0 && vValidReversals[i] != 0) totalWeight += *nREV_WEIGHTS[i];
-			}
-			totalWeight += nNO_REV_WEIGHT;
-			if (totalWeight == 0) return;
-			int randomWeight = rand() % totalWeight + 1;
-			int validIndex = -1;
-			for (int i = 0; i < NUM_REVERSALS; i++) {
-				if (*nREV_IDs[i] == 0 || *nREV_IDs[i] >> 16 == 0 || vValidReversals[i] == 0) continue;
-				randomWeight -= *nREV_WEIGHTS[i];
-				if (randomWeight <= 0) {
-					validIndex = i;
-					break;
-				}
-			}
-			if (validIndex > -1) {
-				nSaveShieldRevIndex = validIndex;
-			}
-		}
 		pat = vValidReversals[nSaveShieldRevIndex] % 1000;
 		if (pat > 40 &&
 			!(pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Ground ||
@@ -2009,11 +2002,14 @@ void HandleReversalsPage() {
 			nHoldButtons = vValidReversals[nSaveShieldRevIndex] / 1000;
 		}
 		bDidShield = false;
+		bDoReversal = false;
 	}
-	
+
+	if (pActiveP2->subObj.targetPatternPriority == 30001) return;
+
 	switch (nREVERSAL_TYPE) {
 	case 1:
-		if (pActiveP2->subObj.hitstunTimeRemaining != 0) {
+		if (pActiveP2->subObj.hitstunTimeRemaining != 0 || pActiveP2->subObj.shieldSuccessType != 0) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
 			nHoldButtons = 0;
@@ -2044,6 +2040,13 @@ void HandleReversalsPage() {
 			bDidShield = false;
 		}
 		break;
+	case 5:
+		if (pActiveP2->subObj.shieldSuccessType != 0) {
+			bDoReversal = true;
+			nReversalDelayFramesLeft = nREVERSAL_DELAY;
+			nHoldButtons = 0;
+			bDidShield = false;
+		}
 	}
 }
 
