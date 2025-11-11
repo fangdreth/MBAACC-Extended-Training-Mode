@@ -2097,7 +2097,7 @@ void HandleTrainingPage() {
 			int bunkerPat = getPatternFromCmd(pActiveP2, "\2\1\4D\xff");
 			pActiveP2->subObj.targetPattern = bunkerPat;
 			DWORD bunkerFlags[7] = { 4, 0, 0, 0, 0, 0, 0 };
-			memcpy(pActiveP2->subObj.flags, bunkerFlags, 7 * 0x4);
+			memcpy(&pActiveP2->subObj.defensiveStateQueue, bunkerFlags, 7 * 0x4);
 			pActiveP2->subObj.hitstunTimeRemaining = 0;
 			bDoBunker = false;
 		}
