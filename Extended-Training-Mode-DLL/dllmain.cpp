@@ -1,5 +1,7 @@
 
 
+
+#include "..\Common\CharacterData.h"
 #include "dllmain.h"
 #include "FrameBar.h"
 #include "SaveState.h"
@@ -8,10 +10,12 @@
 #include "FancyMenu.h"
 #include "TrainingMenu.h"
 
+
+
+
 #pragma push_macro("optimize")
 #pragma optimize("t", on) 
 
-typedef DWORD ADDRESS;
 typedef long long longlong;
 typedef unsigned long long ulonglong;
 typedef uint32_t uint;
@@ -19,12 +23,24 @@ typedef uint32_t uint;
 void enemyReversal();
 void frameStartCallback();
 void dualInputDisplayReset();
-void doFastReversePenalty();
+void doFastReversePenalty(); 
 void drawFancyMenu();
 void rollFancyInputDisplay(int n);
 void loadCustomShader();
 
-TASManager TASManagerObj;
+TASManager TASManagerObj[4];
+
+bool fn1Press2v2[4] = { false, false, false, false };
+void doWeird2v2Fixes() {
+	// FN1 needs to be written at a different point than it is. this is a horrid fix, that may result in the button press being 1f late, or more, but i just want this done
+	 
+	for (int i = 0; i < 4; i++) {
+		if (fn1Press2v2[i]) {
+			*(BYTE*)((*(DWORD*)0x76E6AC) + 0x25 + (i * 0x14)) = 1;
+			fn1Press2v2[i] = false;
+		}
+	}
+}
 
 // have all pointers as DWORDS, or a goofy object type, fangs way of doing things was right as to not have pointers get incremented by sizeof(unsigned)
 // or i could make all pointers u8*, but that defeats half the point of what i did
@@ -35,7 +51,7 @@ DWORD addrEndScene = 0x663fb900;
 DWORD addrEndScenePatch = 0x663fb996;
 
 bool bCasterInit = false;
-ADDRESS dwCasterBaseAddress = 0;
+DWORD dwCasterBaseAddress = 0;
 
 DWORD dwDevice = 0; // MASM is horrid when it comes to writing pointers vs value of pointer bc it has type checking. thats why this cant be a pointer
 IDirect3DDevice9* device = NULL;
@@ -3056,7 +3072,11 @@ void ResetCallback() {
 
 	dualInputDisplayReset();
 
-	TASManagerObj.load("TAS.txt");
+	// 2v2 support. for some reason. i suppose. i need a nap
+	TASManagerObj[0].load("TAS.txt");
+	TASManagerObj[1].load("TAS2.txt");
+	TASManagerObj[2].load("TAS3.txt");
+	TASManagerObj[3].load("TAS4.txt");
 
 	loadCustomShader();
 }
@@ -3222,7 +3242,9 @@ void newPauseCallback2()
 	
 	if (!_naked_newPauseCallback2_IsPaused) {
 		unpausedFrameCount++;
-		TASManagerObj.incInputs();
+		for (int i = 0; i < 4; i++) {
+			TASManagerObj[i].incInputs();
+		}
 	}
 
 	if (!_naked_newPauseCallback2_IsPaused && needPause != 2) {
@@ -6466,8 +6488,11 @@ void inputCallback() {
 	profileFunction();
 
 	KeyState::updateControllers(); // this call is taking half a ms, and wtf why am i even caring
-		
-	TASManagerObj.setInputs();
+	
+	for (int i = 0; i < 4; i++) {	
+		TASManagerObj[i].setInputs(i);
+	}
+	
 	replayManager.setInputs();
 
 	if (needTrainingModeReset) {
@@ -6481,6 +6506,8 @@ void inputCallback() {
 }
 
 __declspec(naked) void _naked_inputCallback() {
+
+	// patched at 0x0041f1a6
 
 	PUSH_ALL;
 	inputCallback();
@@ -6544,6 +6571,26 @@ __declspec(naked) void _naked_CustomHealthRegen() {
 		mov[esi], edx;
 		ret;
 	}
+}
+
+__declspec(naked) void _naked_init2v2Hack() {
+
+	// patched at 0040e3ab
+
+	PUSH_ALL;
+	doWeird2v2Fixes();
+	POP_ALL;
+
+	// overwritten asm from 0040e3ab. i dont trust the compiler
+	emitByte(0x8B);
+	emitByte(0x0D);
+	emitByte(0xB0);
+	emitByte(0xE6);
+	emitByte(0x76);
+	emitByte(0x00);
+
+	emitJump(0x0040e3b1);
+
 }
 
 DWORD ForceDummyGuard_PatchAddr = 0x004710a3;
@@ -6854,6 +6901,10 @@ void initTrueComboDamage() {
 	patchJump(DrawTrueComboDamage_PatchAddr, _naked_DrawTrueComboDamage);
 }
 
+void init2v2Hack() {
+	patchJump(0x0040e3ab, _naked_init2v2Hack);
+}
+
 // dll thread func
 
 void threadFunc() 
@@ -6917,6 +6968,8 @@ void threadFunc()
 	initHotkeys();
 	initRegistryValues();
 	initSharedValues();
+	init2v2Hack();
+
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 

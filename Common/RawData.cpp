@@ -321,6 +321,7 @@ const std::map<std::string, int> CKOHAKU_Map =
 	{ "j.D", 72 },
 	{ "DODGE", 65 },
 	{ "AIR DODGE", 270 },
+	{ "HEAT", 260 },
 	{ "THROW", 64 },
 	{ "AIR THROW", 271 },
 	{ "BACK DASH", 61 },

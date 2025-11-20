@@ -2,6 +2,7 @@
 #include "DebugInfo.h"
 #include "DirectX.h"
 #include <string>
+#include "dllmain.h"
 
 extern bool hasTextureAddr(DWORD test);
 
@@ -23,7 +24,7 @@ void EffectData::describe(char* buffer, int bufLen) {
 	if (subObj.attackDataPtr != NULL) {
 		snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d\nPROR%d", subObj.attackDataPtr->damage, subObj.attackDataPtr->proration);
 	}
-
+	 
 }
 
 PatternData* EffectData::getPatternDataPtr(int p) {
@@ -217,6 +218,19 @@ bool isValidTexture(DWORD addr) {
 	__try {
 		IDirect3DTexture9* tex = (IDirect3DTexture9*)addr;
 		D3DRESOURCETYPE type = tex->GetType();
+		return type != 0; // https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dresourcetype. should i maybe convert this to... check for texture specifically?
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		return false;
+	}
+}
+
+bool isValidSurface(DWORD addr) {
+	if (addr == 0) {
+		return false;
+	}
+	__try {
+		IDirect3DSurface9* surf = (IDirect3DSurface9*)addr;
+		D3DRESOURCETYPE type = surf->GetType();
 		return type != 0;
 	} __except (EXCEPTION_EXECUTE_HANDLER) {
 		return false;

@@ -29,6 +29,8 @@
 #include "Injector.h"
 #include "Logger.h"
 
+#include "..\Common\types.h"
+
 HANDLE hMBAAHandle = 0x0;
 DWORD dwBaseAddress = 0;
 
@@ -488,10 +490,6 @@ void __stdcall netlog(const char* format, ...) {
     vsnprintf(buffer, 1024, format, args);
     ___netlog(buffer);
     va_end(args);
-}
-
-long long getMicroSec() {
-    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 }
 
 std::wstring getDLLPath() {

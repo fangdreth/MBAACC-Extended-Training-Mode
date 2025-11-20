@@ -1,5 +1,6 @@
 #include <cstddef>
 #include "..\Common\Common.h"
+#include "..\Common\types.h"
 #include "TrainingMenu.h"
 
 //wrapper for call to ReadDataFile (misleading name? pulled straight from ghidra)

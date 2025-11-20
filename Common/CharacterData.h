@@ -1,8 +1,9 @@
 #pragma once
 
-#include "..\Common\Common.h"
-#include "..\Common\RawData.h"
 
+#include <map>
+#include <vector>
+#include "..\Common\RawData.h"
 
 // Character ID is created as a concatination of char number and moon.  Ex. Sats is 29 and C is 0, so CSats is 290
 enum eCharacterValues {

@@ -1,6 +1,10 @@
 
 #include "DirectX.h"
 #include "FancyMenu.h"
+#include "DebugInfo.h"
+#include "dllmain.h"
+#include "..\Common\Common.h"
+
 #include "TrainingMenu.h"
 extern bool shouldDisplayDebugInfo;
 extern bool shouldDisplayLinkedListInfo;
@@ -14,6 +18,7 @@ extern bool useWind;
 extern int xWindVel;
 extern int changeWindDir;
 extern int showRoaHiddenCharge;
+extern bool fixTAS2v2;
 
 //put these wherever you want in the menu
 extern bool showMinAirdashHeight; // 64 pixels above ground
@@ -374,6 +379,23 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
+	tasMenu.add<int>("fix tas for 2v2",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			*(BYTE*)0x0077C1E8 = MANUAL; // set dummy to manual
+
+			// fix the port numbers.
+			for (int i = 0; i < 4; i++) {
+				playerDataArr[i].subObj.ownerIndex = i;
+			}
+
+			*(BYTE*)(&fixTAS2v2) = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
 	misc.add(tasMenu);
 
 	Menu subColorMenu("color options");
@@ -605,6 +627,11 @@ void initMenu() {
 
 	debug.add<int>("Show ImportantDraw Hex",
 		getDefaultOnOffOptionFunc(&shouldDebugImportantDraw),
+		defaultOnOffNameFunc
+	);
+
+	debug.add<int>("Save screenshot each frame",
+		getDefaultOnOffOptionFunc(&doSaveScreenshot),
 		defaultOnOffNameFunc
 	);
 

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <ws2tcpip.h>
 #include <winsock2.h>
 #include <Windows.h>
@@ -14,8 +15,8 @@
 #include <Xinput.h>
 
 
-//void LogInfo(std::string sInfo);
-//void LogError(std::string sError);
+//void LogInfo(const std::string& sInfo);
+//void LogError(const std::string& sError);
 
 #pragma comment(lib, "ws2_32.lib") 
 #pragma comment(lib, "dinput8.lib")
@@ -561,406 +562,39 @@ const REGKEY sP2_LIST_INPUT_Y = L"P2ListInputY";
 #define VK_KEY_Y 0x59
 #define VK_KEY_Z 0x5A
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX(a,b) (((a)>(b))?(a):(b))
-#define CLAMP(value, min_val, max_val) MAX(MIN((value), (max_val)), (min_val))
-#define SAFEMOD(a, b) (((b) + ((a) % (b))) % (b))
-
-static LONG ReadFromRegistry(std::wstring sKey, int* pnValue); //wanted this accessible for a KeyState function
-
-class KeyState
-{
-public:
-
-	// polling input multiple times a frame is bad, we really should switch over to something which polls the whole keyboard/controllers once a frame
-
-	KeyState()
-	{
-		nKey = 0x00;
-		nHeldKeyCounter = 0;
-	}
-
-	KeyState(int k)
-	{
-		nKey = k;
-		nHeldKeyCounter = 0;
-	}
-
-	void setKey(int vKey_)
-	{
-		if (nKey != vKey_)
-		{
-			// reset the key state here to prevent it from firing
-			// when it gets changed
-			prevState = true;
-			nKey = vKey_;
-		}
-	}
-
-	void setKeyFromRegistry(std::wstring sKey) {
-		int temp = 0;
-		ReadFromRegistry(sKey, &temp);
-		setKey(temp);
-	}
-
-	int getKey() const
-	{
-		return nKey;
-	}
-
-	void getKeyName(char* buffer) const
-	{
-		UINT scanCode = MapVirtualKeyA(nKey, MAPVK_VK_TO_VSC);
-		LONG lParamValue = (scanCode << 16);
-		GetKeyNameTextA(lParamValue, buffer, 19);
-	}
-
-	bool isFocused()
-	{
-		return GetActiveWindow() == GetForegroundWindow();
-	}
-
-	bool keyHeld()
-	{
-		if (!isFocused()) {
-			freqHeldCounter = 0;
-			return false;
-		}
-
-		bool res = nKey != 0x0 && GetAsyncKeyState(nKey) & 0x8000;
-		if (res) {
-			freqHeldCounter++;
-		} else {
-			freqHeldCounter = 0;
-		}
-		return res;
-	}
-
-	template<int freq, int startup = 45> // freq is the frame modulo for when this should trig, startup is how long to wait for that
-	bool keyHeldFreq() {
-
-		bool res = keyHeld();
-
-		if (freqHeldCounter < startup) {
-			return false;
-		}
-
-		if (__frameDoneCount % freq != 0) {
-			return false;
-		}
-
-		return res;
-	}
-
-	template<int freq, int startup = 45> // same as above func, but also will return immediately on keydown
-	bool keyDownHeldFreq() {
-
-		bool res = keyHeld();
-
-		if (keyDown()) {
-			return true;
-		}
-
-		if (freqHeldCounter < startup) {
-			return false;
-		}
-
-		if (__frameDoneCount % freq != 0) {
-			return false;
-		}
-
-		return res;
-	}
-
-	bool keyDown()
-	{
-		if (nKey == 0x0 || !isFocused()) {
-			return false;
-		}
-
-		tempState = false;
-		if (GetAsyncKeyState(nKey) & 0x8000)
-			tempState = true;
-
-		bool res = false;
-		if (!prevState && tempState)
-		{
-			res = true;
-		}
-
-		prevState = tempState;
-
-		return res;
-	}
-
-	static void updateControllers();
-
-	static void showControllerState();
-
-	static short pressedButtons();
-
-	static short releasedButtons();
-
-public:
-	int nHeldKeyCounter;
-	int freqHeldCounter = 0;
-private:
-	// lets say that -1 will be a value for when we are using a dinput device instead
-	// or, a value above 0xFF could be used, vkeys are restricted to a byte.
-	int nKey = -1;
-	bool prevState = false;
-	bool tempState = false;
-	static XINPUT_STATE* xState;
-	static XINPUT_STATE* prevxState;
-};
-
-static void CreateRegistryKey()
-{
-	try
-	{
-		SECURITY_DESCRIPTOR SD;
-		SECURITY_ATTRIBUTES SA;
-		InitializeSecurityDescriptor(&SD, SECURITY_DESCRIPTOR_REVISION);
-		//SetSecurityDescriptorDacl(&SD, true, 0, false);
-		SA.nLength = sizeof(SA);
-		SA.lpSecurityDescriptor = &SD;
-		SA.bInheritHandle = false;
-
-		DWORD dwFunc;
-		HKEY hKey;
-		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
-		LONG openResult = RegCreateKeyExW(HKEY_CURRENT_USER, sk, 0, (LPTSTR)NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, &SA, &hKey, &dwFunc);
-		RegCloseKey(hKey);
-	}
-	catch (...)
-	{
-	}
-}
-
-static LONG ReadFromRegistry(std::wstring sKey, uint8_t* nValue)
-{
-	LONG openResult = -1;
-
-	try
-	{
-		DWORD dwValue = NULL;
-		HKEY hKey;
-		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
-		DWORD dwType = REG_DWORD;
-		DWORD dwSize = sizeof(nValue);
-
-		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
-		if (openResult == 0)
-			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
-		if (openResult == 0)
-			*nValue = (int)dwValue;
-
-		RegCloseKey(hKey);
-	}
-	catch (...)
-	{
-	}
-
-	return openResult;
-}
-
-static LONG ReadFromRegistry(std::wstring sKey, int* pnValue)
-{
-	LONG openResult = -1;
-
-	try
-	{
-		DWORD dwValue = NULL;
-		HKEY hKey;
-		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
-		DWORD dwType = REG_DWORD;
-		DWORD dwSize = sizeof(pnValue);
-
-		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
-		if (openResult == 0)
-			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&dwValue, &dwSize);
-		if (openResult == 0)
-			*pnValue = (int)dwValue;
-
-		RegCloseKey(hKey);
-	}
-	catch (...)
-	{
-	}
-
-	return openResult;
-}
-
-static LONG SetRegistryValue(std::wstring sKey, int nValue)
-{
-	LONG openResult = -1;
-
-	try
-	{
-		HKEY hKey;
-		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
-
-		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
-		if (openResult == 0)
-			openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_DWORD, (unsigned char*)&nValue, sizeof(nValue));
-
-		RegCloseKey(hKey);
-	}
-	catch (...)
-	{
-	}
-	return openResult;
-}
-
-static LONG SetRegistryValue(std::wstring sKey, float fValue)
-{
-	LONG openResult = -1;
-
-	try
-	{
-		HKEY hKey;
-		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
-
-		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
-		if (openResult == 0)
-			openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_DWORD, (unsigned char*)&fValue, sizeof(fValue));
-
-		RegCloseKey(hKey);
-	}
-	catch (...)
-	{
-	}
-	return openResult;
-}
-
-static LONG SetRegistryValue(std::wstring sKey, bool bValue)
-{
-	return SetRegistryValue(sKey, bValue ? 1 : 0);
-}
-
-static LONG SetRegistryValue(std::wstring sKey, std::string sValue)
-{
-	LONG openResult = -1;
-
-	try
-	{
-		HKEY hKey;
-		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode\\";
-		char pcVal[MAX_PATH];
-		strcpy_s(pcVal, sValue.c_str());
-
-		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_WRITE, &hKey);
-		if (openResult == 0)
-			openResult = RegSetValueEx(hKey, sKey.c_str(), 0, REG_SZ, (LPBYTE)pcVal, strlen(pcVal) + 1);
-
-		RegCloseKey(hKey);
-	}
-	catch (...)
-	{
-	}
-	return openResult;
-}
-
-static LONG ReadFromRegistry(std::wstring sKey, bool* pbValue)
-{
-	uint8_t nValue = 0;
-	LONG openResult = ReadFromRegistry(sKey, &nValue);
-	if (openResult == 0)
-		*pbValue = nValue > 0 ? true : false;
-	return openResult;
-}
-
-static LONG ReadFromRegistry(std::wstring sKey, std::string* psValue)
-{
-	LONG openResult = -1;
-
-	try
-	{
-		char pcValue[MAX_PATH];
-		HKEY hKey;
-		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
-		DWORD dwType = REG_SZ;
-		DWORD dwSize = MAX_PATH;
-
-		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
-		if (openResult == 0)
-			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&pcValue, &dwSize);
-		if (openResult == 0)
-			*psValue = std::string(pcValue);
-
-		RegCloseKey(hKey);
-	}
-	catch (...)
-	{
-	}
-
-	return openResult;
-}
-
-static LONG ReadFromRegistry(std::wstring sKey, float* pfValue)
-{
-	LONG openResult = -1;
-
-	try
-	{
-		float pfTempValue = 0.0f;
-		HKEY hKey;
-		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
-		DWORD dwType = REG_DWORD;
-		DWORD dwSize = MAX_PATH;
-
-		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_READ, &hKey);
-		if (openResult == 0)
-			openResult = RegQueryValueEx(hKey, sKey.c_str(), 0, &dwType, (LPBYTE)&pfTempValue, &dwSize);
-		if (openResult == 0)
-			*pfValue = (float)pfTempValue;
-
-		RegCloseKey(hKey);
-	}
-	catch (...)
-	{
-	}
-
-	return openResult;
-}
-
-static LONG DeleteRegistry()
-{
-	LONG openResult = -1;
-
-	try
-	{
-		HKEY hKey;
-		LPCTSTR sk = L"Software\\MBAACC-Extended-Training-Mode";
-
-		openResult = RegOpenKeyEx(HKEY_CURRENT_USER, sk, 0, KEY_ALL_ACCESS, &hKey);
-		if (openResult == ERROR_SUCCESS)
-		{
-			openResult = RegDeleteKeyW(HKEY_CURRENT_USER, sk);
-			if (openResult != ERROR_SUCCESS)
-				LogError("Unable to delete registry key");
-		}
-		else
-		{
-			LogError("Unable to open registry key");
-		}
-
-		RegCloseKey(hKey);
-	}
-	catch (...)
-	{
-	}
-
-	return openResult;
-}
-
 void __stdcall ___log(const char* msg);
 
 void __stdcall log(const char* format, ...);
 
 void __stdcall ___log(const wchar_t* msg);
 
-void __stdcall log(const wchar_t* format, ...);
+// -----
+
+bool GetOpenSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wstring* pwsFileName);
+
+bool GetSaveSAVFileName(HANDLE hMBAAHandle, DWORD dwBaseAddress, std::wstring* pwsFileName);
+
+void CreateRegistryKey();
+
+LONG ReadFromRegistry(std::wstring sKey, uint8_t* nValue);
+
+LONG ReadFromRegistry(std::wstring sKey, int* pnValue);
+
+LONG SetRegistryValue(std::wstring sKey, int nValue);
+
+LONG SetRegistryValue(std::wstring sKey, float fValue);
+
+LONG SetRegistryValue(std::wstring sKey, bool bValue);
+
+LONG SetRegistryValue(std::wstring sKey, std::string sValue);
+
+LONG ReadFromRegistry(std::wstring sKey, bool* pbValue);
+
+LONG ReadFromRegistry(std::wstring sKey, std::string* psValue);
+
+LONG ReadFromRegistry(std::wstring sKey, float* pfValue);
+
+LONG DeleteRegistry();
 
 void printDirectXError(HRESULT hr);
 

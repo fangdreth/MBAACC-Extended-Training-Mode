@@ -202,9 +202,9 @@ int main(int argc, char* argv[])
                 hMBAAHandle = 0x0;
 
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
-                std::string sLookingForMelty = "Looking for MBAA.exe        \x1b[K";
+                std::string sLookingForMelty = "Please launch Melty Blood with CCCaster        \x1b[K";
                 for (int i = 0; i < nCurrentTime % 8; i++)
-                    sLookingForMelty[20 + i] = '.';
+                    sLookingForMelty[39 + i] = '.';
                 std::cout << sLookingForMelty;
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 8 });
                 std::cout << "\x1b[J";

@@ -1,6 +1,6 @@
 #pragma once
 #include <deque>
-#include "DirectX.h"
+#include "..\Common\types.h"
 
 /*
 
@@ -132,7 +132,7 @@ public:
 	// tbh i should just use circbuffer for this, but i dont want to alloc all the memory upfront
 	std::deque<SaveState*> states; 
 
-	FullSave* FullSaves[MAX_SAVES] = {new FullSave(), new FullSave(), new FullSave()};
+	FullSave* FullSaves[3] = {new FullSave(), new FullSave(), new FullSave()};
 
 	// my thought is that a typical round is what,, 1:30? so why not store that many
 	const int maxStates = 60 * 90;

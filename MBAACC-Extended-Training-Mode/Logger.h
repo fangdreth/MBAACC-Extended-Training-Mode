@@ -6,75 +6,31 @@
 #include <format>
 #include <fstream>
 
-//#include "..\Common\Common.h"
+#include <ws2tcpip.h>
+#include <winsock2.h>
+#include <Windows.h>
 
-//#include "..\Common\Common.h"
-
+/*
 static HANDLE m_hConsole;
 static std::string m_sLogFile;
 static std::ofstream m_fLogFile;
 static bool bLogOpen = false;
+*/
 
-static void LogInfo(std::string sInfo);
+extern HANDLE m_hConsole;
+extern std::string m_sLogFile;
+extern std::ofstream m_fLogFile;
+extern bool bLogOpen;
 
-static std::string Time()
-{
-	return std::format("{:%m-%d-%y_%OH-%OM-%OS}", std::chrono::zoned_time{ std::chrono::current_zone(), std::chrono::system_clock::now() });
-}
+void LogInfo(const std::string& sInfo);
 
-static void InitializeLogger(HANDLE hConsole)
-{
-	if (bLogOpen)
-		return;
+std::string Time();
 
-	m_hConsole = hConsole;
+void InitializeLogger(HANDLE hConsole);
 
-	std::string sTempPath = std::filesystem::temp_directory_path().string();
-	std::string sTime = Time();
+void CloseLogger();
 
-	m_sLogFile = sTempPath + "ExtendedTrainingMode__" + sTime + ".log";
+void LogInfo(const std::string& sInfo);
 
-	m_fLogFile.open(m_sLogFile);
-	
-	LogInfo(VERSION);
-
-	bLogOpen = true;
-}
-
-static void CloseLogger()
-{
-	if (!bLogOpen) return;
-
-	LogInfo("Closed Extended Training Mode");
-
-	m_fLogFile.close();
-	bLogOpen = false;
-}
-
-static void LogInfo(std::string sInfo)
-{
-	if (!bLogOpen) return;
-
-	m_fLogFile << "\n";
-	m_fLogFile << "*** INFO *** Time: " << Time() << "\n";
-	m_fLogFile << "\n";
-	m_fLogFile << "\t" << sInfo << "\n";
-	m_fLogFile << "\n";
-
-	m_fLogFile.flush();
-}
-
-static void LogError(std::string sError)
-{
-	if (!bLogOpen) return;
-
-	m_fLogFile << "\n";
-	m_fLogFile << "*** ERROR ***";
-	m_fLogFile << "\tTime: " << Time() << "\n";
-	m_fLogFile << "\n";
-	m_fLogFile << "\t" << sError << "\n";
-	m_fLogFile << "\n";
-
-	m_fLogFile.flush();
-}
+void LogError(const std::string& sError);
 

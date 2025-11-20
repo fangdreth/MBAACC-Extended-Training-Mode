@@ -1,5 +1,6 @@
 
 #include "CharacterData.h"
+#include "..\Common\Common.h"
 
 std::map<std::string, int> CharacterValues_Map =
 {

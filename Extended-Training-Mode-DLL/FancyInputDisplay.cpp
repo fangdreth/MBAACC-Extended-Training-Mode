@@ -1,6 +1,8 @@
 
 #include "DirectX.h"
 #include "FancyInputDisplay.h"
+#include "..\Common\Common.h"
+#include "dllmain.h"
 #include "TrainingMenu.h"
 #include "..\Common\Common.h"
 
