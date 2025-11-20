@@ -130,22 +130,18 @@ void Menu<T>::add(std::string name_, std::function<void(int, U&)> optionFunc_, s
 
 template <typename T>
 template <typename U>
-void Menu<T>::addSimpleOnOff(std::string name_, U ref) {
+void Menu<T>::addSimpleOnOff(std::string name_, std::wstring regkey, U ref) {
 	
+	// screw it, ima just pass in the reg key as another thing
+
 	static_assert(std::is_pointer<U>::value, "U must be a pointer!");
 
-
-	//add()
-
-	objInfo.add<U>(name_,
+	add<U>(name_,
 		getDefaultOnOffOptionFuncPtr(ref),
 		defaultOnOffNameFuncPtr,
-		L"verboseShowPlayers",
+		regkey,
 		ref
 	);
-
-	items.push_back(Menu<U>(name_, optionFunc_, nameFunc_, key_, startVal));
-
 }
 
 template <typename T>
@@ -596,34 +592,28 @@ void initObjViewSubmenu() {
 	);
 
 	// this sucks ass and i hate it. fuck me, and fuck everyone who has every said i should curse less in my code.
-	objInfo.add<int*>("Show Players",
+	/*objInfo.add<int*>("Show Players",
 		getDefaultOnOffOptionFuncPtr(&verboseShowPlayers),
 		defaultOnOffNameFuncPtr,
 		L"verboseShowPlayers",
 		&verboseShowPlayers
-	);
+	);*/
 
-	objInfo.add<int*>("Show Effects",
-		getDefaultOnOffOptionFuncPtr(&verboseShowEffects),
-		defaultOnOffNameFuncPtr,
-		L"verboseShowPlayers",
-		&verboseShowEffects
-	);
+	objInfo.addSimpleOnOff<int*>("Show Players", L"verboseShowPlayers", &verboseShowPlayers);
+	objInfo.addSimpleOnOff<int*>("Show Effects", L"verboseShowEffects", &verboseShowEffects);
+	objInfo.addSimpleOnOff<int*>("Show Unknown", L"verboseShowUnknown", &verboseShowUnknown);
+	objInfo.addSimpleOnOff<int*>("Show Pattern/State", L"verboseShowPatternState", &verboseShowPatternState);
+	
+	objInfo.addSimpleOnOff<int*>("Show Pos", L"verboseShowPos", &verboseShowPos);
+	objInfo.addSimpleOnOff<int*>("Show Vel", L"verboseShowVel", &verboseShowVel);
+	objInfo.addSimpleOnOff<int*>("Show Accel", L"verboseShowAccel", &verboseShowAccel);
+	
+	objInfo.addSimpleOnOff<int*>("Show Untech", L"verboseShowUntech", &verboseShowUntech);
+	objInfo.addSimpleOnOff<int*>("Show Damage", L"verboseShowDamage", &verboseShowDamage);
 
-	objInfo.add<int*>("Show Unknown",
-		getDefaultOnOffOptionFuncPtr(&verboseShowUnknown),
-		defaultOnOffNameFuncPtr,
-		L"verboseShowPlayers",
-		&verboseShowUnknown
-	);
+
 	// tbh i could reduce this further to just a name and a variable. but id have to do some stringified bs, or maybe just take the name of the setting. actually,,, that sounds kinda nice. 
 	// ima just do that. can these things have spaces in reg keys?
-	objInfo.add<int*>("Show Pattern/State",
-		getDefaultOnOffOptionFuncPtr(&verboseShowPatternState),
-		defaultOnOffNameFuncPtr,
-		L"verboseShowPlayers",
-		&verboseShowPatternState
-	);
 
 	baseMenu.add(objInfo);
 	

@@ -792,8 +792,12 @@ extern bool verboseMode;
 extern int verboseShowPlayers;
 extern int verboseShowEffects;
 extern int verboseShowUnknown;
-
 extern int verboseShowPatternState;
+extern int verboseShowPos;
+extern int verboseShowVel;
+extern int verboseShowAccel;
+extern int verboseShowUntech;
+extern int verboseShowDamage;
 
 extern bool overkillVerboseMode;
 extern bool doDrawProfiler;

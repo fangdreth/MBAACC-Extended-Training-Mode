@@ -10,8 +10,12 @@ extern bool hasTextureAddr(DWORD test);
 int verboseShowPlayers = 0; // show player stuff
 int verboseShowEffects = 0; // show effect stuff
 int verboseShowUnknown = 0; // show styuff if i dont know what it is
-
 int verboseShowPatternState = 0;
+int verboseShowPos = 0;
+int verboseShowVel = 0;
+int verboseShowAccel = 0;
+int verboseShowUntech = 0;
+int verboseShowDamage = 0;
 
 void EffectData::describe(char* buffer, int bufLen) {
 
@@ -28,14 +32,30 @@ void EffectData::describe(char* buffer, int bufLen) {
 	int bufferOffset = 0;
 	//bufferOffset = snprintf(buffer, bufLen, "%s%d P%d S%d\n(%d,%d)\nUNTCH%d\n", entityString, index, subObj.pattern, subObj.state, subObj.xPos, subObj.yPos, subObj.totalUntechTime);
 
-	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s%d\n", entityString, index);
+	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s%d ", entityString, index);
 
 	if (verboseShowPatternState) {
 		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "P%d S%d\n", subObj.pattern, subObj.state);
 	}
 
-	if (subObj.attackDataPtr != NULL) {
-		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d\nPROR%d", subObj.attackDataPtr->damage, subObj.attackDataPtr->proration);
+	if (verboseShowPos) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "p:(%d,%d)\n", subObj.xPos, subObj.yPos);
+	}
+
+	if (verboseShowVel) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "v:(%d,%d)\n", subObj.xVel, subObj.yVel);
+	}
+
+	if (verboseShowAccel) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "a:(%d,%d)\n", subObj.xAccel, subObj.yAccel);		
+	}
+
+	if (verboseShowUntech) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "UNTCH%d\n", subObj.totalUntechTime);
+	}
+
+	if (verboseShowDamage && subObj.attackDataPtr != NULL) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d PROR%d", subObj.attackDataPtr->damage, subObj.attackDataPtr->proration);
 	}
 	 
 }

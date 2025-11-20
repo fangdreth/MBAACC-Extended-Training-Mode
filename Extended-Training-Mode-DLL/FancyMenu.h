@@ -53,7 +53,7 @@ public:
 	void add(std::string name_, std::function<void(int, U&)> optionFunc_, std::function<std::string(U)> nameFunc_, std::wstring key_ = L"", U startVal = 0);
 
 	template <typename U = int>
-	void addSimpleOnOff(std::string name_, U ref);
+	void addSimpleOnOff(std::string name_, std::wstring regkey, U ref);
 
 	void draw(Point& p);
 
