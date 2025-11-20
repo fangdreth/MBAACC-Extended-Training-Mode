@@ -756,6 +756,8 @@ void initMenu() {
 
 	initHitboxSubmenu();
 
+	initMiscSubmenu();
+
 	initObjViewSubmenu();
 
 	initDebugSubmenu();
