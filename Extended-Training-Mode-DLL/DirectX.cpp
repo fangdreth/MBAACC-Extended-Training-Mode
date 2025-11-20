@@ -49,8 +49,8 @@ void DragManager::add(DragInfo* info) {
 	if (dragInfoData.contains(info)) {
 		log("DragManager had a duplicate id added. this should never happen");
 		return;
-	}
-
+	} 
+	
 	dragInfoData.insert(info);
 }
 
