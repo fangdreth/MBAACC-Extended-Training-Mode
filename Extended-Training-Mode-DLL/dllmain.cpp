@@ -6210,7 +6210,9 @@ __declspec(naked) void _naked_CSSCallback() {
 // ---
 
 DWORD _naked_DisableShadows_FuncAddr = 0x0041a390;
-__declspec(naked) void _naked_DisableShadows() {
+__declspec(naked) void _naked_DisableShadows() { 
+
+	// patched at 0x0041b47c and 0041b58a
 	__asm {
 
 		//cmp shouldDrawBackground, 0;
@@ -6222,6 +6224,24 @@ __declspec(naked) void _naked_DisableShadows() {
 	_SKIP:
 
 		push 0041b481h;
+		ret;
+	}
+}
+
+__declspec(naked) void _naked_DisableShadows2() {
+
+	// patched at 0x0041b47c and 0041b58a
+	__asm {
+
+		//cmp shouldDrawBackground, 0;
+		cmp shouldDrawShadow, 0;
+		JE _SKIP;
+
+		call[_naked_DisableShadows_FuncAddr];
+
+	_SKIP:
+
+		push 0041b58fh;
 		ret;
 	}
 }
@@ -6822,6 +6842,7 @@ void initDrawBackground() {
 	patchJump(0x004238a6, _naked_DrawHud);
 	patchJump(0x0042522d, _naked_DrawHudMeter);
 	patchJump(0x0041b47c, _naked_DisableShadows);
+	patchJump(0x0041b58a, _naked_DisableShadows2);
 }
 
 void initNewAttackDisplay() {
