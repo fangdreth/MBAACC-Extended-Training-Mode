@@ -1,5 +1,6 @@
 #pragma once
 #include "FrameDisplay.h"
+#include <format>
 
 void __stdcall ___netlog(const char* msg);
 void __stdcall netlog(const char* format, ...);
