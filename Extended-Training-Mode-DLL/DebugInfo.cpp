@@ -32,7 +32,7 @@ void EffectData::describe(char* buffer, int bufLen) {
 	int bufferOffset = 0;
 	//bufferOffset = snprintf(buffer, bufLen, "%s%d P%d S%d\n(%d,%d)\nUNTCH%d\n", entityString, index, subObj.pattern, subObj.state, subObj.xPos, subObj.yPos, subObj.totalUntechTime);
 
-	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s%d ", entityString, index);
+	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s%d: ", entityString, index);
 
 	if (verboseShowPatternState) {
 		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "P%d S%d\n", subObj.pattern, subObj.state);
