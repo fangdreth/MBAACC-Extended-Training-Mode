@@ -3,6 +3,7 @@
 #include <vector>
 #include "..\Common\Common.h"
 #include "..\Common\types.h"
+#include <map>
 
 const DWORD MBAA_ReadDataFile = 0x00407c10;
 const DWORD MBAA_StringCopyFromIndex = 0x004079d0;

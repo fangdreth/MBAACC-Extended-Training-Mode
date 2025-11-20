@@ -3,7 +3,22 @@
 #include "ReplayManager.h"
 #include "DebugInfo.h"
 
+
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <regex>
+//#include <set>
 #include <filesystem>
+
+
+
+
+//#include "DirectX.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))

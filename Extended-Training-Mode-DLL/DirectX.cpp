@@ -7,10 +7,11 @@
 #include "FancyInputDisplay.h"
 #include "TrainingMenu.h"
 //#include "version.h"	
-#include "../Common/version.h"
+#include "..\Common\version.h"
 #include "..\Common\Common.h"
 
 #include "dllmain.h"
+#include <fstream>
 
 void debugLinkedList();
 void displayDebugInfo();

@@ -1,5 +1,9 @@
 #include "Common.h"
 
+#include <vector>
+#include <map>
+#include <unordered_map>
+
 #ifdef ISDLL
 void DrawLog(char* s);
 #endif

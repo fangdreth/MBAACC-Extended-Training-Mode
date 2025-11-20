@@ -4,6 +4,7 @@
 #include "..\Common\Common.h"
 #include "dllmain.h"
 #include <shobjidl.h> 
+#include <fstream>
 
 SaveStateManager saveStateManager;
 

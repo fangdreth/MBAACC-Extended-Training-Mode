@@ -1,12 +1,11 @@
 #pragma once
 
 #include <ws2tcpip.h>
-#include <winsock2.h>
-#include <Windows.h>
-#include <vector>
+//#include <winsock2.h>
+//#include <Windows.h>
+
 #include <string>
-#include <map>
-#include <unordered_map>
+
 #include <iostream>
 #include <cwctype>
 #include <algorithm>

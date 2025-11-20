@@ -1,19 +1,12 @@
 #pragma once
 
-
-#include <cstdio>
-#include <cstdint>
-#include <cstdlib>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <regex>
 #include <set>
 
 #include "FancyMenu.h"
 
-#include "DirectX.h"
+// forward decleration of menu class
+template <typename T = int>
+class Menu;
 
 #pragma pack(push,1)
 typedef struct InputItem {
