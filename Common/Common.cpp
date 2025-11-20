@@ -1,8 +1,22 @@
+
+
+#include <ws2tcpip.h>
+#include <winsock2.h>
+
 #include "Common.h"
 
 #include <vector>
 #include <map>
 #include <unordered_map>
+
+#include <iostream>
+#include <cwctype>
+#include <algorithm>
+#include <dinput.h>
+#include <dxerr.h>
+#include <Xinput.h>
+
+#include "..\MBAACC-Extended-Training-Mode\Logger.h"
 
 #ifdef ISDLL
 void DrawLog(char* s);

@@ -3,8 +3,8 @@
 // i should probs have a types.h,,,
 // i now have a types.h
 
-#include <ws2tcpip.h>
-#include <winsock2.h>
+//#include <ws2tcpip.h>
+//#include <winsock2.h>
 #include <Windows.h>
 #include <Xinput.h>
 #include <cmath>

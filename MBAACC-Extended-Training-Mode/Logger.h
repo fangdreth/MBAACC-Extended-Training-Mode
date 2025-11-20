@@ -2,10 +2,9 @@
 #include <string>
 
 
-#include <ws2tcpip.h>
-#include <winsock2.h>
-#include <Windows.h>
-
+//#include <ws2tcpip.h>
+//#include <winsock2.h>
+//#include <Windows.h>
 
 /*
 static HANDLE m_hConsole;
@@ -13,6 +12,10 @@ static std::string m_sLogFile;
 static std::ofstream m_fLogFile;
 static bool bLogOpen = false;
 */
+
+#ifndef HANDLE
+typedef void* HANDLE; // I WILL NOT INCLUDE WINDOWS.H FOR ONE TYPE DEFINITION I WILL NOT INCLUDE WINDOWS.H FOR ONE TYPE DEFINITION
+#endif
 
 extern HANDLE m_hConsole;
 extern std::string m_sLogFile;

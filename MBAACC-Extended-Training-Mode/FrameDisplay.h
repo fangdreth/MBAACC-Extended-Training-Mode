@@ -1,14 +1,8 @@
 #pragma once
-#include <cmath>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include "..\Common\Common.h"
-#include "Logger.h"
-#include <cstdarg>
 
-void __stdcall ___netlog(const char* msg);
-void __stdcall netlog(const char* format, ...);
+#include <string>
+#include "Logger.h"
+#include "..\Common\Common.h"
 
 extern char cGameState; // 1:In-Game 2:Title 3:Logos 8:Loading 9:Arcade Cutscene 10:Next Stage 12:Options 20:CSS 25:Main Menu
 extern char cP1Freeze; //Used for EXFlashes where initiator still moves (ex. Satsuki 214C winds up during flash)
@@ -166,6 +160,13 @@ struct Player
 	int nActiveProjectileCount = 0;
 	bool bLastOnRight = false;
 	char cLastStance = 0;
+
+	Player(char _cPlayerNumber, DWORD _adPlayerBase, DWORD _adInactionable) {
+		cPlayerNumber = _cPlayerNumber;
+		adPlayerBase = _adPlayerBase;
+		adInactionable = _adInactionable;
+	}
+
 };
 
 extern Player P1;

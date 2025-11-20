@@ -176,6 +176,7 @@
     <ClCompile Include="..\Common\RawData.cpp" />
     <ClCompile Include="..\Common\types.cpp" />
     <ClCompile Include="FrameDisplay.cpp" />
+    <ClCompile Include="Injector.cpp" />
     <ClCompile Include="Injector.h" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="MBAACC-Extended-Training-Mode.cpp" />

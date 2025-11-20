@@ -1,17 +1,17 @@
 #pragma once
 
-#include <ws2tcpip.h>
+//#include <ws2tcpip.h>
 //#include <winsock2.h>
-//#include <Windows.h>
+#include <Windows.h>
+
+//#include "../MBAACC-Extended-Training-Mode/Logger.h"
 
 #include <string>
 
-#include <iostream>
-#include <cwctype>
-#include <algorithm>
-#include <dinput.h>
-#include <dxerr.h>
-#include <Xinput.h>
+#if !defined(DWORD)
+//typedef unsigned DWORD;
+//static_assert(sizeof(DWORD) == 4, "what are you doing maddy");
+#endif 
 
 
 //void LogInfo(const std::string& sInfo);
@@ -92,7 +92,6 @@ const std::string GITHUB_RELEASE = "https://github.com/fangdreth/MBAACC-Extended
 const std::string EXE_NAME = "MBAACC-Extended-Training-Mode.exe";
 const std::string DLL_NAME = "Extended-Training-Mode-DLL.dll";
 const std::string UPDATER_NAME = "MBAACC-Extended-Training-Mode-Updater.exe";
-#include "../MBAACC-Extended-Training-Mode/Logger.h"
 
 const DWORD dwP1WillBlock = 0x1552AC;
 const DWORD dwP2WillBlock = 0x1552AC + 0xAFC;
@@ -597,4 +596,4 @@ LONG DeleteRegistry();
 
 void printDirectXError(HRESULT hr);
 
-void printDIJOYSTATE2(const DIJOYSTATE2& state);
+//void printDIJOYSTATE2(const DIJOYSTATE2& state);

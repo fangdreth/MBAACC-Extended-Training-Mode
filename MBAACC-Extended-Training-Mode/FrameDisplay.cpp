@@ -1,9 +1,10 @@
-#pragma once
-#include "FrameDisplay.h"
-#include <format>
 
-void __stdcall ___netlog(const char* msg);
-void __stdcall netlog(const char* format, ...);
+#include "FrameDisplay.h"
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <cstdarg>
+#include <format>
 
 char cGameState = 0; // 1:In-Game 2:Title 3:Logos 8:Loading 9:Arcade Cutscene 10:Next Stage 12:Options 20:CSS 25:Main Menu
 char cP1Freeze = 0; //Used for EXFlashes where initiator still moves (ex. Satsuki 214C winds up during flash)
@@ -52,6 +53,7 @@ int nSharedHitstop;
 
 int outBufferIndex = 0;
 char outBuffer[outBufferSize];
+
 void writeBuffer(const char* fmt, ...) {
 	// this will add a written string to the buffer, which is to be printed at the end of each frame.
 	// combining all prints into one is very helpful in this case
@@ -99,10 +101,16 @@ void UpdateGlobals(HANDLE hMBAAHandle)
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adSharedTimer), &nTimer, 4, 0);
 }
 
-Player P1{ .cPlayerNumber = 0, .adPlayerBase = adMBAABase + adP1Base, .adInactionable = adMBAABase + adP1Inaction };
-Player P2{ .cPlayerNumber = 1, .adPlayerBase = adMBAABase + adP2Base, .adInactionable = adMBAABase + adP2Inaction };
-Player P3{ .cPlayerNumber = 2, .adPlayerBase = adMBAABase + adP3Base, .adInactionable = adMBAABase + adP1Inaction };
-Player P4{ .cPlayerNumber = 3, .adPlayerBase = adMBAABase + adP4Base, .adInactionable = adMBAABase + adP2Inaction };
+// stupid bs msvc compiler made this take wayYYYY to long to compile for no damn reason
+//Player P1{ .cPlayerNumber = 0, .adPlayerBase = adMBAABase + adP1Base, .adInactionable = adMBAABase + adP1Inaction };
+//Player P2{ .cPlayerNumber = 1, .adPlayerBase = adMBAABase + adP2Base, .adInactionable = adMBAABase + adP2Inaction };
+//Player P3{ .cPlayerNumber = 2, .adPlayerBase = adMBAABase + adP3Base, .adInactionable = adMBAABase + adP1Inaction };
+//Player P4{ .cPlayerNumber = 3, .adPlayerBase = adMBAABase + adP4Base, .adInactionable = adMBAABase + adP2Inaction };
+
+Player P1(0, adMBAABase + adP1Base, adMBAABase + adP1Inaction);
+Player P2(0, adMBAABase + adP2Base, adMBAABase + adP2Inaction);
+Player P3(0, adMBAABase + adP3Base, adMBAABase + adP1Inaction);
+Player P4(0, adMBAABase + adP4Base, adMBAABase + adP2Inaction);
 
 Player* paPlayerArray[4] = { &P1, &P2, &P3, &P4 };
 
@@ -965,3 +973,4 @@ void FrameDisplay(HANDLE hMBAAHandle)
 	nPlayerAdvantage = ((*Main1).nAdvantageCounter - (*Main2).nAdvantageCounter) % 100;
 
 }
+

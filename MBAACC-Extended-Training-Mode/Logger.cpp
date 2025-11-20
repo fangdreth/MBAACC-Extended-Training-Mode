@@ -6,6 +6,12 @@
 #include <chrono>
 #include <filesystem>
 
+
+//#include <ws2tcpip.h>
+//#include <winsock2.h>
+
+#include <Windows.h>
+
 #include "..\Common\Common.h"
 
 HANDLE m_hConsole;

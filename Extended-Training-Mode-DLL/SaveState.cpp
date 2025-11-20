@@ -5,6 +5,7 @@
 #include "dllmain.h"
 #include <shobjidl.h> 
 #include <fstream>
+#include "..\MBAACC-Extended-Training-Mode\Logger.h"
 
 SaveStateManager saveStateManager;
 
