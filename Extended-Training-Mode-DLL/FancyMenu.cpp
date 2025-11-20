@@ -42,6 +42,47 @@ void printType(T&&) {
 	static_assert(always_false_v<T>, "Compilation failed because you wanted to know the type; see below:");
 }
 
+// weird menu helper funcs
+
+
+std::function<std::string(int)> defaultOnOffNameFunc = [](int opt) -> std::string {
+	return opt & 0b1 ? "ON" : "OFF";
+	};
+
+std::function<std::string(float)> defaultSliderNameFunc = [](float opt) -> std::string {
+	//return std::string("-", (int)(opt * 10.0f)) + std::string("+") + std::string("-", (int)((1.0f - opt) * 10.0f));
+	//return opt & 0b1 ? "ON" : "OFF";
+
+	static char buffer[256];
+	snprintf(buffer, 256, "%5.2f", opt);
+	return std::string(buffer);
+	};
+
+// returns a func which modifies the variable passed in
+std::function<std::function<void(int, int&)>(void*)> getDefaultOnOffOptionFunc = [](void* optPtr) -> std::function<void(int, int&)> {
+	return [optPtr](int inc, int& opt) {
+		opt += inc;
+		opt &= 0b1;
+
+		*(BYTE*)(optPtr) = opt;
+		};
+	};
+
+// THESE FUNCS ACTUALLY LET ME REMEMBER/LOAD STUFF FROM REGISTRY
+// GOD i could have, and should have, given a pointer to a menu object as control for the variable, instead of this weird pointer bs
+// for my first menu its ok but omfg 
+// and c++ doesnt make it easy with its template variant bs
+std::function<std::function<void(int, int*&)>(void*)> getDefaultOnOffOptionFuncPtr = [](void* optPtr) -> std::function<void(int, int*&)> {
+	return [optPtr](int inc, int*& opt) {
+		*opt += inc;
+		*opt &= 0b1;
+		};
+	};
+
+std::function<std::string(int*)> defaultOnOffNameFuncPtr = [](int* opt) -> std::string {
+	return *opt & 0b1 ? "ON" : "OFF";
+	};
+
 // -----
 
 template <typename T>
@@ -85,6 +126,26 @@ template <typename T>
 template <typename U>
 void Menu<T>::add(std::string name_, std::function<void(int, U&)> optionFunc_, std::function<std::string(U)> nameFunc_, std::wstring key_, U startVal) {
 	items.push_back(Menu<U>(name_, optionFunc_, nameFunc_, key_, startVal));
+}
+
+template <typename T>
+template <typename U>
+void Menu<T>::addSimpleOnOff(std::string name_, U ref) {
+	
+	static_assert(std::is_pointer<U>::value, "U must be a pointer!");
+
+
+	//add()
+
+	objInfo.add<U>(name_,
+		getDefaultOnOffOptionFuncPtr(ref),
+		defaultOnOffNameFuncPtr,
+		L"verboseShowPlayers",
+		ref
+	);
+
+	items.push_back(Menu<U>(name_, optionFunc_, nameFunc_, key_, startVal));
+
 }
 
 template <typename T>
@@ -148,30 +209,8 @@ void Menu<T>::draw(Point& p) {
 
 // -----
 
-void initMenu() {
 
-	std::function<std::string(int)> defaultOnOffNameFunc = [](int opt) -> std::string {
-		return opt & 0b1 ? "ON" : "OFF";
-		};
-
-	std::function<std::string(float)> defaultSliderNameFunc = [](float opt) -> std::string {
-		//return std::string("-", (int)(opt * 10.0f)) + std::string("+") + std::string("-", (int)((1.0f - opt) * 10.0f));
-		//return opt & 0b1 ? "ON" : "OFF";
-
-		static char buffer[256];
-		snprintf(buffer, 256, "%5.2f", opt);
-		return std::string(buffer);
-		};
-
-	// returns a func which modifies the variable passed in
-	std::function<std::function<void(int, int&)>(void*)> getDefaultOnOffOptionFunc = [](void* optPtr) -> std::function<void(int, int&)> {
-		return [optPtr](int inc, int& opt) {
-			opt += inc;
-			opt &= 0b1;
-
-			*(BYTE*)(optPtr) = opt;
-			};
-		};
+void initUISubmenu() {
 
 	// -----
 
@@ -293,6 +332,12 @@ void initMenu() {
 
 	baseMenu.add(ui);
 
+	// -----
+
+}
+
+void initHitboxSubmenu() {
+
 	Menu hitboxes("Hitboxes");
 
 	hitboxes.add<int>("Hitbox Style",
@@ -342,6 +387,10 @@ void initMenu() {
 	std::get<Menu<float>>(hitboxes.items[hitboxes.items.size() - 1]).optionState = 0.20f;
 
 	baseMenu.add(hitboxes);
+
+}
+
+void initMiscSubmenu() {
 
 	Menu misc("Misc");
 
@@ -527,6 +576,60 @@ void initMenu() {
 	misc.add(windMenu);
 
 	baseMenu.add(misc);
+}
+
+void initObjViewSubmenu() {
+
+	Menu objInfo("Object Info");
+
+	// i have no idea what this will default to
+	// tbh idc. 
+
+	objInfo.add<int>("Object Info",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			verboseMode = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
+	// this sucks ass and i hate it. fuck me, and fuck everyone who has every said i should curse less in my code.
+	objInfo.add<int*>("Show Players",
+		getDefaultOnOffOptionFuncPtr(&verboseShowPlayers),
+		defaultOnOffNameFuncPtr,
+		L"verboseShowPlayers",
+		&verboseShowPlayers
+	);
+
+	objInfo.add<int*>("Show Effects",
+		getDefaultOnOffOptionFuncPtr(&verboseShowEffects),
+		defaultOnOffNameFuncPtr,
+		L"verboseShowPlayers",
+		&verboseShowEffects
+	);
+
+	objInfo.add<int*>("Show Unknown",
+		getDefaultOnOffOptionFuncPtr(&verboseShowUnknown),
+		defaultOnOffNameFuncPtr,
+		L"verboseShowPlayers",
+		&verboseShowUnknown
+	);
+	// tbh i could reduce this further to just a name and a variable. but id have to do some stringified bs, or maybe just take the name of the setting. actually,,, that sounds kinda nice. 
+	// ima just do that. can these things have spaces in reg keys?
+	objInfo.add<int*>("Show Pattern/State",
+		getDefaultOnOffOptionFuncPtr(&verboseShowPatternState),
+		defaultOnOffNameFuncPtr,
+		L"verboseShowPlayers",
+		&verboseShowPatternState
+	);
+
+	baseMenu.add(objInfo);
+	
+}
+
+void initDebugSubmenu() {
 
 	Menu debug("Debug");
 
@@ -540,6 +643,7 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
+	/*
 	debug.add<int>("Object Info",
 		[](int inc, int& opt) {
 			opt += inc;
@@ -549,6 +653,7 @@ void initMenu() {
 		},
 		defaultOnOffNameFunc
 	);
+	*/
 
 	debug.add<int>("Call Info",
 		[](int inc, int& opt) {
@@ -644,13 +749,26 @@ void initMenu() {
 			return std::string(buffer);
 		}
 	);
-	
 
 	baseMenu.add(debug);
 
 	// i need to find a way to make this better. its so fucking stupid
 	// options being stored in the menu is so much nicer
+	// idk wtf im smoking here but i think i need to keep debug as the last option here.
+	// WHAT IS THIS OPTION. IT SCARES ME.
 	disableFpsMenuOption = &std::get<Menu<int>>(std::get<Menu<int>>(baseMenu.items[baseMenu.items.size() - 1]).items[disableFPSIndex]);
+
+}
+
+void initMenu() {
+
+	initUISubmenu();
+
+	initHitboxSubmenu();
+
+	initObjViewSubmenu();
+
+	initDebugSubmenu();
 
 	baseMenu.unfolded = true;
 

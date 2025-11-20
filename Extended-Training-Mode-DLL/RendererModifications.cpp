@@ -680,7 +680,10 @@ void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
 		//snprintf(buffer, buflen, "PLAYER%d\nP:%d\nS:%d", playerIndex, pattern, state);
 		//playerDataArr[playerIndex].describe(buffer, buflen);
 		//int offset = snprintf(buffer, buflen, "PLAYER%d ");
-		playerDataArr[playerIndex].describe(buffer, buflen);
+		if (verboseShowPlayers) {
+			playerDataArr[playerIndex].describe(buffer, buflen);
+		}
+		
 		return;
 	}
 
@@ -691,13 +694,19 @@ void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
 
 		//snprintf(buffer, buflen, "EFFECT: %d\nP:%d\nS:%d", effectIndex, pattern, state);
 		//int offset = snprintf(buffer, buflen, "EFFECT%d ");
-		effectDataArr[effectIndex].describe(buffer, buflen);
+		if (verboseShowEffects) {
+			effectDataArr[effectIndex].describe(buffer, buflen);
+		}
+		
 		return;
 	}
 
 
 	// default we dont know what this is case
-	snprintf(buffer, buflen, "???: %08X ", info.object);
+	if (verboseShowUnknown) {
+		snprintf(buffer, buflen, "???: %08X ", info.object);
+	}
+	
 
 }
 
@@ -734,6 +743,7 @@ void drawLoopHook() {
 
 	bool hasExtraDetail = false;
 	static char extraDetail[2048];
+	extraDetail[0] = '\0'; // "clear" the buffer
 
 	const char* infoString = "NULL";
 	switch (info.caller) {

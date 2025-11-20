@@ -2392,8 +2392,11 @@ void frameDoneCallback()
 
 	renderModificationsFrameDone();
 
-	drawFancyMenu();
-	dragManager.handleDrag();
+	if (device != NULL) {
+		drawFancyMenu();
+		dragManager.handleDrag();
+	}
+	
 
 	shouldDrawBackground = true;
 	shouldDrawHud = !nHIDE_HUD;

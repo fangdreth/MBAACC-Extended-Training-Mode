@@ -6,23 +6,36 @@
 
 extern bool hasTextureAddr(DWORD test);
 
+// for reasons unknown to all above and below, this shit wont work with bools
+int verboseShowPlayers = 0; // show player stuff
+int verboseShowEffects = 0; // show effect stuff
+int verboseShowUnknown = 0; // show styuff if i dont know what it is
+
+int verboseShowPatternState = 0;
+
 void EffectData::describe(char* buffer, int bufLen) {
 
 	DWORD offset = ((DWORD)&exists);
 	int index = -1;
-	const char* entityString = "PLAYER";
+	const char* entityString = "P";
 	if (offset >= 0x0067BDE8) {
 		index = (offset - 0x0067BDE8) / 0x33C;
-		entityString = "EFFECT";
+		entityString = "E";
 	} else {
 		index = (offset - 0x00555130) / 0xAFC;
 	}
 
 	int bufferOffset = 0;
-	bufferOffset = snprintf(buffer, bufLen, "%s%d P%d S%d\n(%d,%d)\nUNTCH%d\n", entityString, index, subObj.pattern, subObj.state, subObj.xPos, subObj.yPos, subObj.totalUntechTime);
+	//bufferOffset = snprintf(buffer, bufLen, "%s%d P%d S%d\n(%d,%d)\nUNTCH%d\n", entityString, index, subObj.pattern, subObj.state, subObj.xPos, subObj.yPos, subObj.totalUntechTime);
+
+	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s%d\n", entityString, index);
+
+	if (verboseShowPatternState) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "P%d S%d\n", subObj.pattern, subObj.state);
+	}
 
 	if (subObj.attackDataPtr != NULL) {
-		snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d\nPROR%d", subObj.attackDataPtr->damage, subObj.attackDataPtr->proration);
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d\nPROR%d", subObj.attackDataPtr->damage, subObj.attackDataPtr->proration);
 	}
 	 
 }

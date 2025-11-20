@@ -1320,6 +1320,7 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format) {
 
 	if (fontTexture == NULL) {
 		log("fontTexture was null, im not drawing");
+		log("tried to draw \"%s\"", format);
 		return Rect();
 	}
 
@@ -1513,6 +1514,7 @@ void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format
 
 	if (fontTexture == NULL) {
 		log("fontTexture was null, im not drawing");
+		log("tried to draw \"%s\"", buffer);
 		return;
 	}
 
@@ -3198,6 +3200,7 @@ void cleanForDirectXReset() {
 
 	// fonttexture is managed, doesnt need release
 	if (renderTargetTex != NULL) {
+		log("reset renderTargetTex");
 		renderTargetTex->Release();
 		renderTargetTex = NULL;
 	}

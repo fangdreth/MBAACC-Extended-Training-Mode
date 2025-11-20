@@ -788,6 +788,13 @@ void _drawLog();
 
 extern bool debugMode;
 extern bool verboseMode;
+
+extern int verboseShowPlayers;
+extern int verboseShowEffects;
+extern int verboseShowUnknown;
+
+extern int verboseShowPatternState;
+
 extern bool overkillVerboseMode;
 extern bool doDrawProfiler;
 extern bool doDrawVertexInfo;
