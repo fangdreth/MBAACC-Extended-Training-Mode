@@ -11,7 +11,7 @@ IDirectInput8* inputDevice = NULL;
 void __stdcall ___log(const char* msg) {
 	const char* ipAddress = "127.0.0.1";
 	unsigned short port = 17474;
-
+	
 	int msgLen = strlen(msg);
 
 	const char* message = msg;
