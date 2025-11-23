@@ -3,6 +3,21 @@
 int main(int argc, char* argv[])
 {
 
+    // disable quick edit mode, aka "i clicked in the console window and idk how why it hangs" mode
+    // https://learn.microsoft.com/en-us/windows/console/setconsolemode
+    HANDLE hConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD consoleMode;
+    GetConsoleMode(hConsoleHandle, &consoleMode);
+    // these two flags, of course, did nothing. i will leave this here though bc setting this every ms has no use
+    consoleMode &= ~ENABLE_QUICK_EDIT_MODE; // To disable this mode, use ENABLE_EXTENDED_FLAGS without this flag.
+    //consoleMode |= ENABLE_EXTENDED_FLAGS;
+    
+    // the following 3 emulate the or 7 that was previously done
+    consoleMode |= ENABLE_PROCESSED_INPUT;
+    consoleMode |= ENABLE_LINE_INPUT;
+    consoleMode |= ENABLE_ECHO_INPUT;
+    SetConsoleMode(hConsoleHandle, consoleMode); 
+
     if (!writeDLL()) {
         fprintf(stderr, "FAILED TO WRITE DLL\n");
         fprintf(stderr, "press any key to exit\n");
@@ -50,9 +65,6 @@ int main(int argc, char* argv[])
         int nStartingTime = 0;
         std::string sOnlineVersion;
         int nCurrentTime;
-
-        HANDLE hConsoleHandle;
-
 
         char pcModPath[MAX_PATH];
         GetModuleFileNameA(NULL, pcModPath, sizeof(pcModPath));
@@ -148,12 +160,11 @@ int main(int argc, char* argv[])
 
         std::srand((unsigned int)std::time(nullptr));
    
-        hConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
         CONSOLE_CURSOR_INFO cursorInfo;
         GetConsoleCursorInfo(hConsoleHandle, &cursorInfo);
         cursorInfo.bVisible = false;
         SetConsoleCursorInfo(hConsoleHandle, &cursorInfo);
-        SetConsoleMode(hConsoleHandle, 7);
+        //SetConsoleMode(hConsoleHandle, 7); // moving this line up to the top..
 
         std::cout << "\x1b]0;Extended Training " << VERSION << "\x07";
   

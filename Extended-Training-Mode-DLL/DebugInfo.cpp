@@ -55,7 +55,7 @@ void EffectData::describe(char* buffer, int bufLen) {
 	}
 
 	if (verboseShowDamage && subObj.attackDataPtr != NULL) {
-		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d PROR%d", subObj.attackDataPtr->damage, subObj.attackDataPtr->proration);
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d PROR%d\n", subObj.attackDataPtr->damage, subObj.attackDataPtr->proration);
 	}
 	 
 }

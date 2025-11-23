@@ -200,6 +200,9 @@
   <ItemGroup>
     <None Include="..\Release\Extended-Training-Mode-DLL.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Images\icons\ETM256.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
