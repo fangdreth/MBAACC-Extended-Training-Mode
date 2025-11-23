@@ -769,7 +769,8 @@ public:
 
 void DrawHitboxes(BoxObjects* b);
 
-constexpr int logHistorySize = 32;
+//constexpr int logHistorySize = 32; // this number should really be gotten dynamically. why did i.. what was i, why. why am i like this
+constexpr int logHistorySize = 48;
 extern char* logHistory[logHistorySize];
 extern int logHistoryIndex;
 void DrawLog(char* s);
