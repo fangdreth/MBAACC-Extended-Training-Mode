@@ -53,7 +53,7 @@ std::function<std::string(float)> defaultSliderNameFunc = [](float opt) -> std::
 	//return std::string("-", (int)(opt * 10.0f)) + std::string("+") + std::string("-", (int)((1.0f - opt) * 10.0f));
 	//return opt & 0b1 ? "ON" : "OFF";
 
-	static char buffer[256];
+	static char buffer[256]; // is this buffer shared between lambdas,, tbh hopefully it is, it is overwritten every time
 	snprintf(buffer, 256, "%5.2f", opt);
 	return std::string(buffer);
 	};

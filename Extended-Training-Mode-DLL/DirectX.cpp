@@ -161,7 +161,7 @@ size_t fontBufferMeltySize = 0;
 IDirect3DTexture9* fontTextureMelty = NULL;
 
 VertexData<PosColVert, 3 * 2048> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
+VertexData<PosTexVert, 3 * 4096> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture); // this is only rlly used for... the debug log, but im making it bigger just in case
 // need to rework font rendering, 4096 is just horrid
 //VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 VertexData<PosColTexVert, 3 * 4096 * 16 * 2> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
