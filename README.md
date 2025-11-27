@@ -1,74 +1,106 @@
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/Extended%20Training%20Mode%20v2.0%20Corner.png?raw=true)
 
-#
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/Features.png?raw=true)
 
 + New "EXTENDED SETTINGS" menu
-+ Reversals
-	+ Four slots with five modes
-		+ OFF: no reversals
-		+ NORMAL: perform one of the selected reversals on block or hit
-		+ RANDOM: 50% chance to perform one of the selected reversals on block or hit
-		+ REPEAT: perform the selected reversals repeatedly
-		+ SHIELD: perform one of the selected reversals after shielding
-	+ Has support for nearly every action in the game
-	+ Fixed 1f delay glitch
-	+ Configurable delay can be added to the reversal to simulate fuzzy defense
-+ EX Guard
-+ Precise Meter and Health Controls
-	+ Exact health and red health written to the screen
-+ Guard Bar QoL
-	+ Instantly regenerate instead of slowly refilling
-	+ New INFINITE option
-	+ Exact guard health and quality written to the screen
-+ Position Controls
-	+ Control both players and assist positions
-	+ LOCK positions for custom reset positions
-+ Burst After X Hits
-+ More accurate meter built during a combo in Training Display
-+ Option to reset the Reverse Penalty instantly after a combo or blockstring
-+ Character Specific Resources
-	+ Roa visible and hidden charges
-	+ Sion bullets
-	+ F-Maids heart meter
-	+ Ryougi knife refill
-	+ Normal, auto-refill, and infinite options
-	+ Take Control of Assist Characters
-	+ Control Kohaku as C-Maids through resets
-+ Frame Data Display
-	+ Displayed in the mod window or on the screen
-	+ Startup, Total, and Advantage clearly displayed
-	+ The display in the mod window can be configured to display significantly more detail
-+ Save States
-	+ Three separate save slots.
-	+ Import and Export of save states supported
-+ RNG
-	+ Pick a custom seed or custom RNG value
-	+ Can refresh the custom RNG every frame or every training mode reset depending on need
-+ Character Highlights
-	+ Highlight character Idle, Block, Hit, Armor, and Throw Protection
-+ Character Hitboxes
-	+ Different rendering styles for preference
-	+ Color blind-friendly colors or the classic colors both supported
-	+ Options to extend the origin for each character
-	+ Option to draw the ground level
-+ Hotkey Controls
+	+ Reversals (Page 1)
+		+ Four reversal slots
+		+ Five modes
+			+ OFF: no reversals
+			+ ON: perform one of the selected reversals always
+			+ ON GUARD: only reversal after blocking
+			+ ON HIT: only reversal after being hit
+			+ ON WAKEUP: only reversal on wakeup
+			+ ON SHIELD: only reversal after shielding
+		+ Pressing Shield (D) on a reversal switches it to a shield reversal
+		+ Probability weights for each reversal plus chance for no reversal
+		+ Support for *nearly* every action in the game as a reversal
+		+ Fixed 1f delay glitch from vanilla
+		+ Reversal delay to simulate fuzzy defense
+	+ Training (Page 2)
+		+ Penalty Reset
+			+ Put Reverse Beat back to zero faster
+		+ Guard Bar QoL
+			+ Instantly regenerate instead of slowly refilling
+			+ Exact guard health and quality written to the screen
+		+ Precise Meter and Health Controls
+			+ Exact health and red health written to the screen
+		+ Hits until burst
+			+ Practice burst safe combos and punishes
+		+ Hits until bunker
+			+ Learn to play around EX Bunker
+		+ Hits until force guard stance
+			+ Use this to practice f shiki/fuzzy overhead setups
+	+ Highlights (Page 3)
+		+ Toggle on and off highlights for various game states
+			+ Guarding
+			+ Hitstun
+			+ Armor
+			+ Throw Protection
+			+ Idle
+	+ Position Controls (Page 4)
+		+ Control both players and assist positions
+		+ LOCK positions for custom reset positions
+	+ Character Specific Resources (Page 5)
+		+ Roa visible and hidden charges
+		+ Sion bullets
+		+ F-Maids heart meter
+		+ Ryougi knife refill
+		+ Normal, auto-refill, and infinite options
+	+ Hitboxes (Page 6)
+		+ See all the hitboxes in-game
+		+ Lots of control over how it is displayed
+	+ Save States (Page 7)
+		+ Three slots available for save state slots
+		+ Supports saving and importing save states as files
+	+ Frame Data (Page 8)
+		+ Shows a frame bar very similar to Street Fighter 6 on screen
+		+ Frame advantage
+		+ Move startups
+		+ Simply an insane amount of info
+		+ Plus an option to look at the launcher window to get *even more* stats that don't fit on screen
+	+ RNG (Page 9)
+		+ Pick a custom seed or custom RNG value
+		+ Can refresh the custom RNG every frame or every training mode reset depending on need
+	+ UI (Page 10)
+		+ Display a lot of information about health, meter, and other resources on screen
+		+ Custom player input display with more accuracy than vanilla
+		+ Input display can be clicked and dragged around the screen
+	+ System (Page 11)
+		+ Customize the game speed
+		+ Turn various HUD and background elements on and off
+
+
++ New “HOTKEY SETTINGS” menu
+	+ Hotkey Settings Menu
+		+ Allows you to bind many of the training settings to keyboard keys to make life easier
+
+
++ TAS Tools
+	+ The game can be advanced forward and *backwards* using hotkeys to examine interactions frame-by-frame
+
+
++ Debug Menu
+	+ Accessed with Shift + Left Mouse
+	+ Click and drag the yellow circle to move
+	+ Much of the UI settings can be to toggled from here
+	+ You want to dig into the super technical stuff?  This is where you go
+	+ Plus some easter eggs
+
+
 + Etcetera
 	+ Helper text has been added to the new settings to explain their uses
 	+ Replaced the stock FPS counter with one that is more accurate
-	+ The background can be replaced with solid colors
-	+ Shadows can be disabled
-	+ The HUD can be disabled
+	+ A custom mouse cursor has been added
+	+ The mod will auto update
 
-#
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/Discord.png?raw=true)
 
 We have a [Discord](https://discord.gg/6QUpZcThg7) where you can report bugs, get help, request features, or just discuss the mod.  If you do not want to join a discord, you can ping or message Fang___ instead.
 
-#
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/Get.png?raw=true)
 
-- [Download the latest .EXE and .DLL from this link.](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases)  
+- [Download the launcher from this link or go to the Releases page.](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases)  
 
 - The first time you run the .EXE, your anti-virus might warn you it is dangerous.  You can safely dismiss this message.  If you are curious why, it says this because the training mod has code which modifies memory directly, which sets off the anti-virus.
 
@@ -76,12 +108,10 @@ We have a [Discord](https://discord.gg/6QUpZcThg7) where you can report bugs, ge
 
 - It is not necessary to put the executable in the same directory as MBAA.exe.
 
-#
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/build.png?raw=true)
 
 Right now there isn't a CMAKE file, so if you want to build the mod yourself, get the [latest version of Visual Studio](https://visualstudio.microsoft.com/vs/), [DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812), and be sure to target x86.
 
-#
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/faq.png?raw=true)
 
 ### Is it compatible with the Steam release?
@@ -91,91 +121,27 @@ At the moment, no.  You must use the latest version of the [community edition](h
 Yes.  Concerto is just an external program for CCCaster, so it will work just fine.
 
 ### I found a bug, how do I report it?
-You can join our Discord linked above, or send a message to Fang___
+You can join our Discord linked above, or send a message to Fang
 
-### "Looking for MBAA.exe..." when MBAA.exe is already open
+### "Please launch Melty Blood with CCCaster..." when MBAA.exe is already open
 Check Task Manager too see if you have a zombie MBAA.exe process running.  You may have to restart your computer to kill this program.
 
 ### "VCRUNTIME140.dll" was not found
 This means your VC++ redistributable is missing or needs repaired.  There are step-by-step instructions on Google, so you're best off searching this error to find the best way to fix it.
 
 ### MBAA crashes as soon as I open the mod
-There is a good chance this is being caused by your DirectX installation.  Try to reinstall DirectX if you can, and if you still have this problem, please reach out and we can try to help you.
-
-### Some of my settings change on their own
-This is most likely because you are using the HITS UNTIL BURST option.  This setting requires MANUAL for the dummy and INFINITE for the meter, and turning HITS UNTIL BURST on automatically changes these.
-
-### The hitboxes are being glitchy
-More than likely this is because you opened the F4 menu at some point.  This is a known issue and can be easily fixed by switching in/out of fullscreen (alt+enter).
+There is a good chance this is being caused by your DirectX9 installation.  Try to reinstall DirectX9 if you can, and if you still have this problem, please reach out and we can try to help you.
 
 ### Can I make my own version?
 Yes.
 
-#
+### Is there Linux support?
+
+The official version of the mod does not support Linux at this point in time, but several people have made forks in the past which reportedly worked.  You may be able to fin them by using the discord search feature.
+
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/changelog.png?raw=true)
 
-+ Uses DLL injection now in addition to the old external EXE
 
-+ Frame data improved
-  + Exact health, red health, guard bar, and guard quality values on-screen
-  + Color Guide has been created to reference the meaning of the labels
-  + Frame data is now written to the screen a la SF6
-
-+ Reworked Save State controls
-  + Press A on a save slot to delete it
-  + Import and Export Save States
-  + Save States support RNG
-  + Hotkey controls
-    + Save by pressing the hotkey, and delete by holding it
-    + Change active Save Slot
-
-+ Frame Step
-  + Freeze the game and advance frame-by-frame
-
-+ Hitboxes
-  + Different styles of drawing and a color blind mode
-  + Option to extend the characters' origin marker fullscreen
-  + Option to highlight the ground
-
-+ Color Overlay
-  + Idle, Blocking, Hit, Armor, and Throw Protection
-  + Red, Yellow, Green, Blue, Purple, and Black
-  + Toggle on and off with a hotkey
-
-+ More features to Enemy Reversals
-  + Can be turned off without setting everything to NONE
-  + Reversal out of shield
-  + Reversal with a hotkey
-
-+ Custom RNG Controls
-  + Pick a custom Seed or a specific RNG value
-  + Can reset every frame or just set it once when resetting training mode
-
-+ Improved Input Display
-  + Shows E presses
-  + Arcade style similar to Strive
-
-+ Customization
-  + Configurable hotkeys for many of the training mode functions
-  + Significantly more accurate FPS
-  + Disable the HUD
-  + Disable the background and replace it with a solid color.  Useful for chroma keying
-  + Disable shadows
-
-+ Training Display
-  + Improved the accuracy of meter built during a combo
-
-+ More character specific controls
-  + FMaids Hearts
-  + Ryougi Knife
-
-+ Et cetera
-  + Helper text has been added to everything in the Extended Settings menu
-  + Fixed a few incorrect moves in Reversals
-  + Improved inputs being dropped in the menu performance
-  + Moved several menus around
-  + Frame advantage is not shown with the FPS counter anymore
-  + Removed random tripping
 
 # License
 
