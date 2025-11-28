@@ -38,7 +38,6 @@ static bool bEnableFN2Load = false;
 static bool bInExtendedSettings = false;
 
 bool bAdvancedFrameData = false;
-bool bSimpleFrameInfo = true;
 bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
 bool bDisplayInputs = false;
 bool bDisplayCancels = false;
@@ -851,6 +850,8 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player& P1, Player& P2, Player& P3, P
 	int nXPixelDistance = (int)abs(floor(P1.nXPosition / 128.0) - floor(P2.nXPosition / 128.0));
 	int nYPixelDistance = (int)abs(floor(P1.nYPosition / 128.0) - floor(P2.nYPosition / 128.0));
 
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameData), &bAdvancedFrameData, 1, 0);
+
 	if (!bAdvancedFrameData)
 	{
 		writeBuffer("\x1b[0m" "Total %3i / Advantage %3i / Distance %3i" "\n", P1.nInactionableMemory, nPlayerAdvantage, nXPixelDistance);
@@ -890,7 +891,8 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, Player& P1, Player& P2, Player& P3, P
 
 void FrameDisplay(HANDLE hMBAAHandle)
 {
-	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameData), &bAdvancedFrameData, 1, 0);
+	//this was somehow getting overwritten between here and when the print function checks it??? so moved into the function
+	//ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameData), &bAdvancedFrameData, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_showHitstopAndFreeze), &bDisplayFreeze, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_showInputs), &bDisplayInputs, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_showCancel), &bDisplayCancels, 1, 0);
