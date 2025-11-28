@@ -2819,6 +2819,7 @@ void saveScreenshot() {
 		return;
 	}
 
+	//long long start = getMicroSec();
 
 	// in the future, this could (and probs should) be made threaded to not slow the game to a crawl. but i work with what i have
 
@@ -2844,14 +2845,28 @@ void saveScreenshot() {
 	snprintf(buffer, 256, "./ScreenShot/ugh%d.png", _frameIndex);
 	_frameIndex++;
 
-	hr = D3DXSaveSurfaceToFileA(buffer, D3DXIFF_PNG, surf, NULL, &rect);
+	//long long startSaveFile = getMicroSec();
 
+	// switching from bmp to png sped it up
+	// also, is fast at start but gets slower, maybe due to resources piling up?
+	// dds was even faster
+	// 004bd280 shows how melty is getting the screen, and doing it faster
+	// also they use bmp
+	
+	hr = D3DXSaveSurfaceToFileA(buffer, D3DXIFF_PNG, surf, NULL, &rect);
+	
 	if (hr != S_OK) {
 		log("D3DXSaveSurfaceToFileA failed");
 		printDirectXError(hr);
 	}
 
+	//long long beforeRelease = getMicroSec();
+
 	surf->Release();
+
+	//long long end = getMicroSec();
+
+	//log("release took %lld took %lld before %lld", (end- beforeRelease)/1000, (beforeRelease - startSaveFile)/1000, (startSaveFile-start)/1000);
 
 }
 
