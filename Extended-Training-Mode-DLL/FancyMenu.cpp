@@ -5,6 +5,7 @@
 #include "dllmain.h"
 #include "..\Common\Common.h"
 
+#include "TrainingMenu.h"
 extern bool shouldDisplayDebugInfo;
 extern bool shouldDisplayLinkedListInfo;
 extern bool shouldDebugImportantDraw;
@@ -28,6 +29,7 @@ Menu<int>* disableFpsMenuOption = NULL;
 
 bool enableEffectColors = false;
 float effectColorHue = 0.0f;
+bool enableCursor = true;
 
 template <typename T>
 struct always_false : std::false_type { };
@@ -39,6 +41,47 @@ template <typename T>
 void printType(T&&) {
 	static_assert(always_false_v<T>, "Compilation failed because you wanted to know the type; see below:");
 }
+
+// weird menu helper funcs
+
+
+std::function<std::string(int)> defaultOnOffNameFunc = [](int opt) -> std::string {
+	return opt & 0b1 ? "ON" : "OFF";
+	};
+
+std::function<std::string(float)> defaultSliderNameFunc = [](float opt) -> std::string {
+	//return std::string("-", (int)(opt * 10.0f)) + std::string("+") + std::string("-", (int)((1.0f - opt) * 10.0f));
+	//return opt & 0b1 ? "ON" : "OFF";
+
+	static char buffer[256]; // is this buffer shared between lambdas,, tbh hopefully it is, it is overwritten every time
+	snprintf(buffer, 256, "%5.2f", opt);
+	return std::string(buffer);
+	};
+
+// returns a func which modifies the variable passed in
+std::function<std::function<void(int, int&)>(void*)> getDefaultOnOffOptionFunc = [](void* optPtr) -> std::function<void(int, int&)> {
+	return [optPtr](int inc, int& opt) {
+		opt += inc;
+		opt &= 0b1;
+
+		*(BYTE*)(optPtr) = opt;
+		};
+	};
+
+// THESE FUNCS ACTUALLY LET ME REMEMBER/LOAD STUFF FROM REGISTRY
+// GOD i could have, and should have, given a pointer to a menu object as control for the variable, instead of this weird pointer bs
+// for my first menu its ok but omfg 
+// and c++ doesnt make it easy with its template variant bs
+std::function<std::function<void(int, int*&)>(void*)> getDefaultOnOffOptionFuncPtr = [](void* optPtr) -> std::function<void(int, int*&)> {
+	return [optPtr](int inc, int*& opt) {
+		*opt += inc;
+		*opt &= 0b1;
+		};
+	};
+
+std::function<std::string(int*)> defaultOnOffNameFuncPtr = [](int* opt) -> std::string {
+	return *opt & 0b1 ? "ON" : "OFF";
+	};
 
 // -----
 
@@ -83,6 +126,22 @@ template <typename T>
 template <typename U>
 void Menu<T>::add(std::string name_, std::function<void(int, U&)> optionFunc_, std::function<std::string(U)> nameFunc_, std::wstring key_, U startVal) {
 	items.push_back(Menu<U>(name_, optionFunc_, nameFunc_, key_, startVal));
+}
+
+template <typename T>
+template <typename U>
+void Menu<T>::addSimpleOnOff(std::string name_, std::wstring regkey, U ref) {
+	
+	// screw it, ima just pass in the reg key as another thing
+
+	static_assert(std::is_pointer<U>::value, "U must be a pointer!");
+
+	add<U>(name_,
+		getDefaultOnOffOptionFuncPtr(ref),
+		defaultOnOffNameFuncPtr,
+		regkey,
+		ref
+	);
 }
 
 template <typename T>
@@ -146,30 +205,8 @@ void Menu<T>::draw(Point& p) {
 
 // -----
 
-void initMenu() {
 
-	std::function<std::string(int)> defaultOnOffNameFunc = [](int opt) -> std::string {
-		return opt & 0b1 ? "ON" : "OFF";
-		};
-
-	std::function<std::string(float)> defaultSliderNameFunc = [](float opt) -> std::string {
-		//return std::string("-", (int)(opt * 10.0f)) + std::string("+") + std::string("-", (int)((1.0f - opt) * 10.0f));
-		//return opt & 0b1 ? "ON" : "OFF";
-
-		static char buffer[256];
-		snprintf(buffer, 256, "%5.2f", opt);
-		return std::string(buffer);
-		};
-
-	// returns a func which modifies the variable passed in
-	std::function<std::function<void(int, int&)>(void*)> getDefaultOnOffOptionFunc = [](void* optPtr) -> std::function<void(int, int&)> {
-		return [optPtr](int inc, int& opt) {
-			opt += inc;
-			opt &= 0b1;
-
-			*(BYTE*)(optPtr) = opt;
-			};
-		};
+void initUISubmenu() {
 
 	// -----
 
@@ -181,7 +218,7 @@ void initMenu() {
 			opt += inc;
 			opt = CLAMP(opt, INPUT_OFF, INPUT_BOTH);
 
-			*(BYTE*)(0x00400000 + adSharedP1InputDisplay) = opt;
+			nP1_INPUT_DISPLAY = opt;
 		},
 		[](int opt) mutable -> std::string {
 
@@ -200,7 +237,7 @@ void initMenu() {
 
 			return "unknown" + std::to_string(opt);
 		},
-		std::wstring(L"P1InputDisplay")
+		sP1_INPUT_DISPLAY
 	);
 
 	ui.add<int>("P2 Input Display",
@@ -208,7 +245,7 @@ void initMenu() {
 			opt += inc;
 			opt = CLAMP(opt, INPUT_OFF, INPUT_BOTH);
 
-			*(BYTE*)(0x00400000 + adSharedP2InputDisplay) = opt;
+			nP2_INPUT_DISPLAY = opt;
 		},
 		[](int opt) -> std::string {
 
@@ -227,7 +264,7 @@ void initMenu() {
 
 			return "unknown" + std::to_string(opt);
 		},
-		L"P2InputDisplay"
+		sP2_INPUT_DISPLAY
 	);
 
 	ui.add<int>("Show Framebar",
@@ -235,10 +272,10 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adSharedFrameDataDisplay) = opt;
+			nIN_GAME_FRAME_DISPLAY = opt;
 		},
 		defaultOnOffNameFunc,
-		L"FrameDisplay"
+		sFRAME_DISPLAY
 	);
 
 	ui.add<int>("Framebar Y",
@@ -246,10 +283,13 @@ void initMenu() {
 			opt += (inc * 10.0f);
 			opt = CLAMP(opt, 10.0f, 440.0f);
 
-			*(BYTE*)(dwBaseAddress + adSharedFrameBarY) = opt;
+			nTRUE_FRAME_DISPLAY_Y = opt;
+			if (nTRUE_FRAME_DISPLAY_Y == 440) nFRAME_DISPLAY_Y = 2;
+			else if (nTRUE_FRAME_DISPLAY_Y == 10) nFRAME_DISPLAY_Y = 0;
+			else nFRAME_DISPLAY_Y = 1;
 		},
 		defaultSliderNameFunc,
-		L"FrameBarY"
+		sFRAME_BAR_Y
 	);
 
 	ui.add<int>("Show Stats",
@@ -257,7 +297,7 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adSharedShowStats) = opt;
+			nSHOW_STATS = opt;
 		},
 		defaultOnOffNameFunc,
 		L"",
@@ -269,13 +309,30 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adSharedHideFPS) = opt;
-			*(BYTE*)(dwBaseAddress + adSharedHideBuildInfo) = opt;
+			nHIDE_EXTRAS = opt;
 		},
 		defaultOnOffNameFunc
 	);
 
+	ui.add<int>("Show Cursor",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			enableCursor = opt;
+		},
+		defaultOnOffNameFunc,
+		L"",
+		true
+	);
+
 	baseMenu.add(ui);
+
+	// -----
+
+}
+
+void initHitboxSubmenu() {
 
 	Menu hitboxes("Hitboxes");
 
@@ -284,7 +341,7 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adSharedHitboxStyle) = opt;
+			nHITBOX_STYLE = opt;
 		},
 		[](int opt) -> std::string {
 
@@ -299,7 +356,7 @@ void initMenu() {
 
 			return "unknown" + std::to_string(opt);
 		},
-		L"HitboxStyle"
+		sHITBOX_STYLE
 	);
 
 	hitboxes.add<int>("Color Blind Mode",
@@ -307,7 +364,7 @@ void initMenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			*(BYTE*)(dwBaseAddress + adSharedColorBlindMode) = opt;
+			nCOLOR_BLIND_MODE = opt;
 		},
 		defaultOnOffNameFunc
 	);
@@ -326,6 +383,10 @@ void initMenu() {
 	std::get<Menu<float>>(hitboxes.items[hitboxes.items.size() - 1]).optionState = 0.20f;
 
 	baseMenu.add(hitboxes);
+
+}
+
+void initMiscSubmenu() {
 
 	Menu misc("Misc");
 
@@ -372,7 +433,7 @@ void initMenu() {
 
 			// fix the port numbers.
 			for (int i = 0; i < 4; i++) {
-				playerDataArr[i].ownerIndex = i;
+				playerDataArr[i].subObj.ownerIndex = i;
 			}
 
 			*(BYTE*)(&fixTAS2v2) = opt;
@@ -511,6 +572,54 @@ void initMenu() {
 	misc.add(windMenu);
 
 	baseMenu.add(misc);
+}
+
+void initObjViewSubmenu() {
+
+	Menu objInfo("Object Info");
+
+	// i have no idea what this will default to
+	// tbh idc. 
+
+	objInfo.add<int>("Object Info",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			verboseMode = opt;
+		},
+		defaultOnOffNameFunc
+	);
+
+	// this sucks ass and i hate it. fuck me, and fuck everyone who has every said i should curse less in my code.
+	/*objInfo.add<int*>("Show Players",
+		getDefaultOnOffOptionFuncPtr(&verboseShowPlayers),
+		defaultOnOffNameFuncPtr,
+		L"verboseShowPlayers",
+		&verboseShowPlayers
+	);*/
+
+	objInfo.addSimpleOnOff<int*>("Show Players", L"verboseShowPlayers", &verboseShowPlayers);
+	objInfo.addSimpleOnOff<int*>("Show Effects", L"verboseShowEffects", &verboseShowEffects);
+	objInfo.addSimpleOnOff<int*>("Show Unknown", L"verboseShowUnknown", &verboseShowUnknown);
+	objInfo.addSimpleOnOff<int*>("Show Pattern/State", L"verboseShowPatternState", &verboseShowPatternState);
+	
+	objInfo.addSimpleOnOff<int*>("Show Pos", L"verboseShowPos", &verboseShowPos);
+	objInfo.addSimpleOnOff<int*>("Show Vel", L"verboseShowVel", &verboseShowVel);
+	objInfo.addSimpleOnOff<int*>("Show Accel", L"verboseShowAccel", &verboseShowAccel);
+	
+	objInfo.addSimpleOnOff<int*>("Show Untech", L"verboseShowUntech", &verboseShowUntech);
+	objInfo.addSimpleOnOff<int*>("Show Damage", L"verboseShowDamage", &verboseShowDamage);
+
+
+	// tbh i could reduce this further to just a name and a variable. but id have to do some stringified bs, or maybe just take the name of the setting. actually,,, that sounds kinda nice. 
+	// ima just do that. can these things have spaces in reg keys?
+
+	baseMenu.add(objInfo);
+	
+}
+
+void initDebugSubmenu() {
 
 	Menu debug("Debug");
 
@@ -524,6 +633,7 @@ void initMenu() {
 		defaultOnOffNameFunc
 	);
 
+	/*
 	debug.add<int>("Object Info",
 		[](int inc, int& opt) {
 			opt += inc;
@@ -533,6 +643,7 @@ void initMenu() {
 		},
 		defaultOnOffNameFunc
 	);
+	*/
 
 	debug.add<int>("Call Info",
 		[](int inc, int& opt) {
@@ -628,13 +739,28 @@ void initMenu() {
 			return std::string(buffer);
 		}
 	);
-	
 
 	baseMenu.add(debug);
 
 	// i need to find a way to make this better. its so fucking stupid
 	// options being stored in the menu is so much nicer
+	// idk wtf im smoking here but i think i need to keep debug as the last option here.
+	// WHAT IS THIS OPTION. IT SCARES ME.
 	disableFpsMenuOption = &std::get<Menu<int>>(std::get<Menu<int>>(baseMenu.items[baseMenu.items.size() - 1]).items[disableFPSIndex]);
+
+}
+
+void initMenu() {
+
+	initUISubmenu();
+
+	initHitboxSubmenu();
+
+	initMiscSubmenu();
+
+	initObjViewSubmenu();
+
+	initDebugSubmenu();
 
 	baseMenu.unfolded = true;
 

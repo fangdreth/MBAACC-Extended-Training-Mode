@@ -439,7 +439,7 @@ extern size_t fontBufferMeltySize;
 extern IDirect3DTexture9* fontTextureMelty;
 
 extern VertexData<PosColVert, 3 * 2048> posColVertData;//(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-extern VertexData<PosTexVert, 3 * 2048> posTexVertData;//(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
+extern VertexData<PosTexVert, 3 * 4096> posTexVertData;//(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
 // need to rework font rendering, 4096 is just horrid
 //extern VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData;// (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 extern VertexData<PosColTexVert, 3 * 4096 * 16 * 2> posColTexVertData;// (D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
@@ -769,7 +769,8 @@ public:
 
 void DrawHitboxes(BoxObjects* b);
 
-constexpr int logHistorySize = 32;
+//constexpr int logHistorySize = 32; // this number should really be gotten dynamically. why did i.. what was i, why. why am i like this
+constexpr int logHistorySize = 48;
 extern char* logHistory[logHistorySize];
 extern int logHistoryIndex;
 void DrawLog(char* s);
@@ -788,6 +789,17 @@ void _drawLog();
 
 extern bool debugMode;
 extern bool verboseMode;
+
+extern int verboseShowPlayers;
+extern int verboseShowEffects;
+extern int verboseShowUnknown;
+extern int verboseShowPatternState;
+extern int verboseShowPos;
+extern int verboseShowVel;
+extern int verboseShowAccel;
+extern int verboseShowUntech;
+extern int verboseShowDamage;
+
 extern bool overkillVerboseMode;
 extern bool doDrawProfiler;
 extern bool doDrawVertexInfo;

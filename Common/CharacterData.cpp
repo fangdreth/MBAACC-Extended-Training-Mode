@@ -43,7 +43,7 @@ std::map<short, std::map<short, bool>> MBAACC_PatternMap = { {} };
 std::vector<std::string> vEveryPatternName =
 {
 	"5A", "2A", "6A", "6[A]", "5B", "5[B]", "2B", "2[B]", "4B", "4[B]", "6B", "6[B]", "3B", "3[B]", "5C", "5[C]", "2C", "2[C]", "4C", "4[C]", "6C", "6[C]", "3C", "3[C]",
-	"j.A", "j.[A]", "j.6A", "j.B", "j.[B]", "j.6B", "j.C", "j.[C]", "j.6C", "j.2C",
+	"j.A", "j.[A]", "j.2A", "j.6A", "j.B", "j.2B", "j.[B]", "j.6B", "j.C", "j.[C]", "j.2C", "j.6C",
 	"A DIVEKICK", "B DIVEKICK", "C DIVEKICK",
 	"BUNKER", "LOW SHIELD COUNTER", "SHIELD COUNTER", "5D", "2D", "j.D", "DODGE", "AIR DODGE", "HEAT", "THROW", "AIR THROW", "FLOAT", "AIR FLOAT",
 	"BACK DASH", "BACK AIRDASH", "FORWARD DASH", "FORWARD AIRDASH", "FASTFALL", "JUMP", "DBL JUMP", "FORWARD JUMP", "FORWARD DBL JUMP", "BACKWARD JUMP", "BACKWARD DBL JUMP", "FORWARD SUPER JUMP", "SUPER JUMP", "SUPER DBL JUMP",
@@ -175,7 +175,7 @@ std::string GetCharacterNameFromID(int nCharacterID) {
 }
 
 std::vector<std::string> GetPatternList(int nCharacterID) {
-	std::vector<std::string> vReturnList = { "None" };
+	std::vector<std::string> vReturnList = { "OFF" };
 
 	for (std::string& sPatternName : vEveryPatternName) {
 		if (MBAACC_Map[eCharacterValues::UNIVERSAL][sPatternName] != 0 || MBAACC_Map[nCharacterID][sPatternName] != 0)

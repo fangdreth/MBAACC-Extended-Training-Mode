@@ -3,6 +3,9 @@
 #include "DirectX.h"
 #include "..\Common\Common.h"
 #include "dllmain.h"
+#include <shobjidl.h> 
+#include <fstream>
+#include "..\MBAACC-Extended-Training-Mode\Logger.h"
 
 SaveStateManager saveStateManager;
 
@@ -43,19 +46,19 @@ void SaveState::save() {
 	
 	//memcpy((void*)&playerSaves, (void*)0x00555130, 0xAFC * 4);
 
-	memcpy((void*)&P1, (void*)(0x00555130 + (0xAFC * 0)), 0x33C);
-	memcpy((void*)&P2, (void*)(0x00555130 + (0xAFC * 1)), 0x33C);
+	memcpy((void*)&P1, (void*)(0x00555130 + (0xAFC * 0)), PlayerSaveSize);
+	memcpy((void*)&P2, (void*)(0x00555130 + (0xAFC * 1)), PlayerSaveSize);
 	//memcpy((void*)&P3, (void*)(0x00555130 + (0xAFC * 2)), 0x33C);
 	//memcpy((void*)&P4, (void*)(0x00555130 + (0xAFC * 3)), 0x33C);
 
 	if (*(BYTE*)(0x00555130 + (0xAFC * 2)) != 0) {
 		P3 = (PlayerSave*)malloc(1 * sizeof(PlayerSave));
-		memcpy((void*)P3, (void*)(0x00555130 + (0xAFC * 2)), 0x33C);
+		memcpy((void*)P3, (void*)(0x00555130 + (0xAFC * 2)), PlayerSaveSize);
 	}
 	
 	if (*(BYTE*)(0x00555130 + (0xAFC * 3)) != 0) {
 		P4 = (PlayerSave*)malloc(1 * sizeof(PlayerSave));
-		memcpy((void*)P4, (void*)(0x00555130 + (0xAFC * 3)), 0x33C);
+		memcpy((void*)P4, (void*)(0x00555130 + (0xAFC * 3)), PlayerSaveSize);
 	}
 
 	// should we also save hit effect data? (would need to fix hit effect pausing for that)
@@ -117,15 +120,15 @@ void SaveState::load() {
 
 	//memcpy((void*)0x00555130, (void*)&playerSaves, 0xAFC * 4);
 	
-	memcpy((void*)(0x00555130 + (0xAFC * 0)), (void*)&P1, 0x33C);
-	memcpy((void*)(0x00555130 + (0xAFC * 1)), (void*)&P2, 0x33C);
+	memcpy((void*)(0x00555130 + (0xAFC * 0)), (void*)&P1, PlayerSaveSize);
+	memcpy((void*)(0x00555130 + (0xAFC * 1)), (void*)&P2, PlayerSaveSize);
 
 	if (P3 != NULL) {
-		memcpy((void*)(0x00555130 + (0xAFC * 2)), (void*)P3, 0x33C);
+		memcpy((void*)(0x00555130 + (0xAFC * 2)), (void*)P3, PlayerSaveSize);
 	}
 
 	if (P4 != NULL) {
-		memcpy((void*)(0x00555130 + (0xAFC * 3)), (void*)P4, 0x33C);
+		memcpy((void*)(0x00555130 + (0xAFC * 3)), (void*)P4, PlayerSaveSize);
 	}
 	
 	
@@ -234,4 +237,154 @@ void SaveStateManager::log() {
 	TextDraw(200, 214, 12, 0xFFFFFFFF, "avg: %.4f KB", (1024.0f) * avgMB);
 	TextDraw(200, 228, 12, 0xFFFFFFFF, "pred: %.4f MB", maxStates * avgMB);
 
+}
+
+
+void FullSave::save() {
+	memcpy(CameraZoom, (void*)0x0054eb70, 0x4 * 3);
+	memcpy(CameraCoordsDestination, (void*)0x00555124, 0x4 * 3);
+	memcpy((void*)&P1, (void*)(0x00555130 + (0xAFC * 0)), PlayerSaveSize);
+	memcpy((void*)&P2, (void*)(0x00555130 + (0xAFC * 1)), PlayerSaveSize);
+	memcpy((void*)&P3, (void*)(0x00555130 + (0xAFC * 2)), PlayerSaveSize);
+	memcpy((void*)&P4, (void*)(0x00555130 + (0xAFC * 3)), PlayerSaveSize);
+	memcpy(PlayerData, (void*)0x00557db8, 0x830);
+	memcpy(StopSituation, (void*)0x00558600, 0xF38);
+	FrameCount = *(DWORD*)(0x00400000 + adFrameCount);
+	SlowMo = *(WORD*)(0x0055d208);
+	memcpy(CameraCoords, (void*)0x0055dec4, 0x4 * 3);
+	TrueFrameCount = *(DWORD*)(0x00400000 + adTrueFrameCount);
+	GlobalFreeze = *(DWORD*)(0x00400000 + adGlobalFreeze);
+	memcpy(RNG, (void*)0x00564068, 0xe4);
+	memcpy(CameraCoordsNext, (void*)0x00564b14, 0x4 * 3);
+	memcpy(Effects, (void*)(0x0067BDE8), 0x33C * 1000);
+
+	IsSaved = true;
+}
+
+void FullSave::load(bool LoadRNG) {
+	memcpy((void*)0x0054eb70, CameraZoom, 0x4 * 3);
+	memcpy((void*)0x00555124, CameraCoordsDestination, 0x4 * 3);
+	memcpy((void*)(0x00555130 + (0xAFC * 0)), (void*)&P1, PlayerSaveSize);
+	memcpy((void*)(0x00555130 + (0xAFC * 1)), (void*)&P2, PlayerSaveSize);
+	memcpy((void*)(0x00555130 + (0xAFC * 2)), (void*)&P3, PlayerSaveSize);
+	memcpy((void*)(0x00555130 + (0xAFC * 3)), (void*)&P4, PlayerSaveSize);
+	memcpy((void*)0x00557db8, PlayerData, 0x830);
+	memcpy((void*)0x00558600, StopSituation, 0xF38);
+	*(DWORD*)(0x00400000 + adFrameCount) = FrameCount;
+	*(WORD*)(0x0055d208) = SlowMo;
+	memcpy((void*)0x0055dec4, CameraCoords, 0x4 * 3);
+	*(DWORD*)(0x00400000 + adTrueFrameCount) = TrueFrameCount;
+	*(DWORD*)(0x00400000 + adGlobalFreeze) = GlobalFreeze;
+	if (LoadRNG) memcpy((void*)0x00564068, RNG, 0xe4);
+	memcpy((void*)0x00564b14, CameraCoordsNext, 0x4 * 3);
+	memcpy((void*)(0x0067BDE8), Effects, 0x33C * 1000);
+}
+
+static bool LoadFileExplorer(std::wstring& filePath)
+{
+	IFileOpenDialog* pFileOpen;
+	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
+
+	if (SUCCEEDED(hr))
+	{
+		hr = pFileOpen->Show(NULL); // Display the dialog
+		if (SUCCEEDED(hr))
+		{
+			IShellItem* pItem;
+			hr = pFileOpen->GetResult(&pItem);
+			if (SUCCEEDED(hr))
+			{
+				PWSTR pszFilePath;
+				hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+				if (SUCCEEDED(hr))
+				{
+					filePath = pszFilePath;
+					CoTaskMemFree(pszFilePath);
+					pItem->Release();
+					pFileOpen->Release();
+					return true;
+				}
+				pItem->Release();
+			}
+		}
+		pFileOpen->Release();
+	}
+	return false;
+}
+
+static bool SaveFileExplorer(std::wstring& filePath)
+{
+    IFileSaveDialog* pFileSave;
+    HRESULT hr = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_INPROC_SERVER, IID_IFileSaveDialog, reinterpret_cast<void**>(&pFileSave));
+
+    if (SUCCEEDED(hr))
+    {
+        hr = pFileSave->Show(NULL); // Display the dialog
+        if (SUCCEEDED(hr))
+        {
+            IShellItem* pItem;
+            hr = pFileSave->GetResult(&pItem);
+            if (SUCCEEDED(hr))
+            {
+                PWSTR pszFilePath;
+                hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+                if (SUCCEEDED(hr))
+                {
+					filePath = pszFilePath;
+                    CoTaskMemFree(pszFilePath);
+					pItem->Release();
+					pFileSave->Release();
+					return true;
+                }
+                pItem->Release();
+            }
+        }
+		pFileSave->Release();
+    }
+	return false;
+}
+
+void FullSave::saveToFile() {
+	if (!IsSaved) return;
+	try
+	{
+		std::wstring wsFileName;
+		if (SaveFileExplorer(wsFileName))
+		{
+			std::ofstream SaveOutFile;
+			SaveOutFile.open(wsFileName);
+			SaveOutFile.write(reinterpret_cast<char*>(this), sizeof(*this));
+			SaveOutFile.close();
+		}
+	}
+	catch (...) {
+		std::string sErrorString = "UNABLE TO CREATE SAVE STATE FILE";
+		int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONWARNING);
+		LogError("UNABLE TO CREATE SAVE STATE FILE");
+	}
+}
+
+void FullSave::loadFromFile() {
+	try
+	{
+		std::wstring wsFileName;
+		if (LoadFileExplorer(wsFileName))
+		{
+			std::ifstream SaveInFile;
+			SaveInFile.open(wsFileName);
+			SaveInFile.read(reinterpret_cast<char*>(this), sizeof(*this));
+			SaveInFile.close();
+			IsSaved = true;
+		}
+	}
+	catch (...)
+	{
+		std::wstring wsErrorString = L"UNABLE TO PARSE SAVE STATE FILE";
+		int nReturnVal = MessageBoxW(NULL, wsErrorString.c_str(), L"", MB_ICONWARNING);
+		LogError("UNABLE TO PARSE SAVE STATE FILE");
+	}
+}
+
+void FullSave::unsave() {
+	IsSaved = false;
 }

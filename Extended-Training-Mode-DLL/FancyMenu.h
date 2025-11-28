@@ -52,10 +52,12 @@ public:
 	template <typename U = int>
 	void add(std::string name_, std::function<void(int, U&)> optionFunc_, std::function<std::string(U)> nameFunc_, std::wstring key_ = L"", U startVal = 0);
 
+	template <typename U = int>
+	void addSimpleOnOff(std::string name_, std::wstring regkey, U ref);
 
 	void draw(Point& p);
 
-	using MenuVariant = std::variant<Menu<int>, Menu<float>, Menu<int*>>;
+	using MenuVariant = std::variant<Menu<int>, Menu<float>, Menu<int*>>; // remember that you must add all types here! but dont try a type that isnt 4 bytes. i think. or well wait a bool* is 4 bytes. but that fucked everything?
 	std::vector<MenuVariant> items;
 	
 	template <typename U = int> // i wish i didnt need this
@@ -82,6 +84,7 @@ extern Menu<int>* disableFpsMenuOption;
 // i hate this. wish i could more easily access menu data
 extern bool enableEffectColors;
 extern float effectColorHue;
+extern bool enableCursor;
 
 void drawFancyMenu();
 

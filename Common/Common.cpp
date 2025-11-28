@@ -1,4 +1,22 @@
+
+
+#include <ws2tcpip.h>
+#include <winsock2.h>
+
 #include "Common.h"
+
+#include <vector>
+#include <map>
+#include <unordered_map>
+
+#include <iostream>
+#include <cwctype>
+#include <algorithm>
+#include <dinput.h>
+#include <dxerr.h>
+#include <Xinput.h>
+
+#include "..\MBAACC-Extended-Training-Mode\Logger.h"
 
 #ifdef ISDLL
 void DrawLog(char* s);
@@ -11,7 +29,7 @@ IDirectInput8* inputDevice = NULL;
 void __stdcall ___log(const char* msg) {
 	const char* ipAddress = "127.0.0.1";
 	unsigned short port = 17474;
-
+	
 	int msgLen = strlen(msg);
 
 	const char* message = msg;

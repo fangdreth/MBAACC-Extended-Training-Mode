@@ -3,7 +3,22 @@
 #include "ReplayManager.h"
 #include "DebugInfo.h"
 
+
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <regex>
+//#include <set>
 #include <filesystem>
+
+
+
+
+//#include "DirectX.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -44,7 +59,7 @@ void InputItem::setMeltyInput(int playerIndex) {
 	DWORD baseAddr = 0x00771398 + (0x2C * playerIndex);
 
 	BYTE tempDir = dir;
-	BYTE facingLeft = playerDataArr[playerIndex].facingLeft;
+	BYTE facingLeft = playerDataArr[playerIndex].subObj.facingLeft;
 
 	if (facingLeft) {
 		constexpr int dirLookup[] = { 0, 3, 2, 1, 6, 5, 4, 9, 8, 7 };

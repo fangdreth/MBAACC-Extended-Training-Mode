@@ -5,11 +5,13 @@
 #include "resource.h"
 #include "FancyMenu.h"
 #include "FancyInputDisplay.h"
+#include "TrainingMenu.h"
 //#include "version.h"	
-#include "../Common/version.h"
+#include "..\Common\version.h"
 #include "..\Common\Common.h"
 
 #include "dllmain.h"
+#include <fstream>
 
 void debugLinkedList();
 void displayDebugInfo();
@@ -47,8 +49,8 @@ void DragManager::add(DragInfo* info) {
 	if (dragInfoData.contains(info)) {
 		log("DragManager had a duplicate id added. this should never happen");
 		return;
-	}
-
+	} 
+	
 	dragInfoData.insert(info);
 }
 
@@ -159,7 +161,7 @@ size_t fontBufferMeltySize = 0;
 IDirect3DTexture9* fontTextureMelty = NULL;
 
 VertexData<PosColVert, 3 * 2048> posColVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-VertexData<PosTexVert, 3 * 2048> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture);
+VertexData<PosTexVert, 3 * 4096> posTexVertData(D3DFVF_XYZ | D3DFVF_TEX1, &fontTexture); // this is only rlly used for... the debug log, but im making it bigger just in case
 // need to rework font rendering, 4096 is just horrid
 //VertexData<PosColTexVert, 3 * 4096 * 2> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
 VertexData<PosColTexVert, 3 * 4096 * 16 * 2> posColTexVertData(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1, &fontTextureMelty);
@@ -1318,6 +1320,7 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format) {
 
 	if (fontTexture == NULL) {
 		log("fontTexture was null, im not drawing");
+		log("tried to draw \"%s\"", format);
 		return Rect();
 	}
 
@@ -1511,6 +1514,7 @@ void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format
 
 	if (fontTexture == NULL) {
 		log("fontTexture was null, im not drawing");
+		log("tried to draw \"%s\"", buffer);
 		return;
 	}
 
@@ -1634,6 +1638,7 @@ void joystickDraw(float x, float y, float size, DWORD ARGB) {
 }
 
 void cursorDraw() {
+	if (!enableCursor) return;
 
 	D3DXVECTOR2 charTopLeft;
 	D3DXVECTOR2 charW;
@@ -2086,7 +2091,7 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 void HitboxBatchDrawNoBlend(const BoxObjects* b) {
 
 	const DWORD* arrColors;
-	if (*(uint8_t*)(dwBaseAddress + adSharedColorBlindMode))
+	if (nCOLOR_BLIND_MODE)
 		arrColors = arrColorBlindColors;
 	else
 		arrColors = arrNormalColors;
@@ -2135,7 +2140,7 @@ void HitboxBatchDrawNoBlend(const BoxObjects* b) {
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
 
-		if (*(uint8_t*)(dwBaseAddress + adSharedExtendOrigins)) {
+		if (nORIGIN_STYLE) {
 			//_drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
 			//_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
 			LineDraw(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
@@ -2173,7 +2178,7 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 	// i could have avoided a div stage, but ugh, another time
 
 	const DWORD* arrColors;
-	if (*(uint8_t*)(dwBaseAddress + adSharedColorBlindMode))
+	if (nCOLOR_BLIND_MODE)
 		arrColors = arrColorBlindColors;
 	else
 		arrColors = arrNormalColors;
@@ -2216,7 +2221,7 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
-		if (*(uint8_t*)(dwBaseAddress + adSharedExtendOrigins)) {
+		if (nORIGIN_STYLE) {
 			//LineDrawBlend(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
 			//LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
 			LineDrawBlend(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
@@ -2267,7 +2272,7 @@ void _drawHitboxes() {
 	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
 
-	if (*(uint8_t*)(dwBaseAddress + adSharedHitboxStyle)) {
+	if (nHITBOX_STYLE) {
 		for (int i = 0; i < boxObjectList.size(); i++) {
 			HitboxBatchDrawBlend(boxObjectList[i]);
 			delete boxObjectList[i];
@@ -2814,6 +2819,7 @@ void saveScreenshot() {
 		return;
 	}
 
+	//long long start = getMicroSec();
 
 	// in the future, this could (and probs should) be made threaded to not slow the game to a crawl. but i work with what i have
 
@@ -2839,14 +2845,28 @@ void saveScreenshot() {
 	snprintf(buffer, 256, "./ScreenShot/ugh%d.png", _frameIndex);
 	_frameIndex++;
 
-	hr = D3DXSaveSurfaceToFileA(buffer, D3DXIFF_PNG, surf, NULL, &rect);
+	//long long startSaveFile = getMicroSec();
 
+	// switching from bmp to png sped it up
+	// also, is fast at start but gets slower, maybe due to resources piling up?
+	// dds was even faster
+	// 004bd280 shows how melty is getting the screen, and doing it faster
+	// also they use bmp
+	
+	hr = D3DXSaveSurfaceToFileA(buffer, D3DXIFF_PNG, surf, NULL, &rect);
+	
 	if (hr != S_OK) {
 		log("D3DXSaveSurfaceToFileA failed");
 		printDirectXError(hr);
 	}
 
+	//long long beforeRelease = getMicroSec();
+
 	surf->Release();
+
+	//long long end = getMicroSec();
+
+	//log("release took %lld took %lld before %lld", (end- beforeRelease)/1000, (beforeRelease - startSaveFile)/1000, (startSaveFile-start)/1000);
 
 }
 
@@ -3005,7 +3025,7 @@ void __stdcall _doDrawCalls() {
 	_drawMiscInfo();
 	displayDebugInfo();
 	_drawDebugMenu();
-	if (!*(bool*)(adMBAABase + adSharedHideBuildInfo)) {
+	if (!nHIDE_EXTRAS) {
 		if (shouldDrawHud) {
 			_drawBuildInfo();
 		}
@@ -3066,7 +3086,7 @@ void logFPS() {
 
 	FreqTimerData timerData = fpsTimer.getData();
 
-	if (*(char*)(adMBAABase + adSharedHideFPS)) return;
+	if (nHIDE_EXTRAS) return;
 
 	if (logVerboseFps) {
 		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "avg:%6.2lf min:%6.2lf max:%6.2lf stdev:%6.2lf maintainfps: %s", timerData.mean, timerData.min, timerData.max, timerData.stdev, fpsMethod);
@@ -3195,6 +3215,7 @@ void cleanForDirectXReset() {
 
 	// fonttexture is managed, doesnt need release
 	if (renderTargetTex != NULL) {
+		log("reset renderTargetTex");
 		renderTargetTex->Release();
 		renderTargetTex = NULL;
 	}

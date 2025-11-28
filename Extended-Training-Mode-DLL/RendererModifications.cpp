@@ -680,7 +680,10 @@ void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
 		//snprintf(buffer, buflen, "PLAYER%d\nP:%d\nS:%d", playerIndex, pattern, state);
 		//playerDataArr[playerIndex].describe(buffer, buflen);
 		//int offset = snprintf(buffer, buflen, "PLAYER%d ");
-		playerDataArr[playerIndex].describe(buffer, buflen);
+		if (verboseShowPlayers) {
+			playerDataArr[playerIndex].describe(buffer, buflen);
+		}
+		
 		return;
 	}
 
@@ -691,13 +694,19 @@ void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
 
 		//snprintf(buffer, buflen, "EFFECT: %d\nP:%d\nS:%d", effectIndex, pattern, state);
 		//int offset = snprintf(buffer, buflen, "EFFECT%d ");
-		effectDataArr[effectIndex].describe(buffer, buflen);
+		if (verboseShowEffects) {
+			effectDataArr[effectIndex].describe(buffer, buflen);
+		}
+		
 		return;
 	}
 
 
 	// default we dont know what this is case
-	snprintf(buffer, buflen, "???: %08X ", info.object);
+	if (verboseShowUnknown) {
+		snprintf(buffer, buflen, "???: %08X ", info.object);
+	}
+	
 
 }
 
@@ -734,6 +743,7 @@ void drawLoopHook() {
 
 	bool hasExtraDetail = false;
 	static char extraDetail[2048];
+	extraDetail[0] = '\0'; // "clear" the buffer
 
 	const char* infoString = "NULL";
 	switch (info.caller) {
@@ -1107,8 +1117,8 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 
 				EffectData* effect = (EffectData*)(listAppendHook_objAddr - 0x10);
 
-				if (effect->pattern == 103 || (effect->pattern >= 108 && effect->pattern <= 111)) {
-					if (playerDataArr[effect->ownerIndex].charID == 10) { // we are nero.
+				if (effect->subObj.pattern == 103 || (effect->subObj.pattern >= 108 && effect->subObj.pattern <= 111)) {
+					if (playerDataArr[effect->subObj.ownerIndex].subObj.charID == 10) { // we are nero.
 						textureToObject[listAppendHook_texAddr].isDeer = true;
 					}
 				}

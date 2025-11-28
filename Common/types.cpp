@@ -43,6 +43,24 @@ void KeyState::setKey(int vKey_)
 	}
 }
 
+void KeyState::setKeyFromRegistry(std::wstring sKey) {
+	int temp = 0;
+	ReadFromRegistry(sKey, &temp);
+	setKey(temp);
+}
+
+int KeyState::getKey()
+{
+	return nKey;
+}
+
+void KeyState::getKeyName(char* buffer)
+{
+	UINT scanCode = MapVirtualKeyA(nKey, MAPVK_VK_TO_VSC);
+	LONG lParamValue = (scanCode << 16);
+	GetKeyNameTextA(lParamValue, buffer, 19);
+}
+
 bool KeyState::isFocused()
 {
 	return GetActiveWindow() == GetForegroundWindow();

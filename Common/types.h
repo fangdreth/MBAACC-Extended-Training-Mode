@@ -3,11 +3,12 @@
 // i should probs have a types.h,,,
 // i now have a types.h
 
-#include <ws2tcpip.h>
-#include <winsock2.h>
+//#include <ws2tcpip.h>
+//#include <winsock2.h>
 #include <Windows.h>
 #include <Xinput.h>
 #include <cmath>
+#include <string>
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
@@ -31,6 +32,12 @@ public:
 	KeyState(int k);
 
 	void setKey(int vKey_);
+
+	void setKeyFromRegistry(std::wstring sKey);
+
+	int getKey();
+
+	void getKeyName(char* buffer);
 
 	bool isFocused();
 

@@ -19,6 +19,7 @@
 #include <sstream>
 #include <iostream>
 #include "resource.h"
+#include <fstream>
 #pragma comment(lib, "winmm.lib")
 
 #include "json.hpp"
@@ -33,42 +34,6 @@
 
 HANDLE hMBAAHandle = 0x0;
 DWORD dwBaseAddress = 0;
-
-uint8_t nFreezeKey = nDefaultFreezeKey;
-uint8_t nFrameStepKey = nDefaultFrameStepKey;
-uint8_t nHitboxDisplayKey = nDefaultHitboxDisplayKey;
-uint8_t nFrameDataDisplayKey = nDefaultFrameDataDisplayKey;
-uint8_t nHighlightsOnKey = nDefaultHighlightsOnKey;
-uint8_t nSaveStateKey = nDefaultSaveStateKey;
-uint8_t nPrevSaveSlotKey = nDefaultPrevSaveSlotKey;
-uint8_t nNextSaveSlotKey = nDefaultNextSaveSlotKey;
-uint8_t nFrameBarScrollLeftKey = nDefaultFrameBarScrollLeftKey;
-uint8_t nFrameBarScrollRightKey = nDefaultFrameBarScrollRightKey;
-uint8_t nRNGIncKey = nDefaultRNGIncKey;
-uint8_t nRNGDecKey = nDefaultRNGIncKey;
-uint8_t nReversalKey = nDefaultReversalKey;
-uint8_t nSlowKey = nDefaultSlowKey;
-uint8_t nNextFrameKey = nDefaultNextFrameKey;
-uint8_t nPrevFrameKey = nDefaultPrevFrameKey;
-uint8_t nResetKey = nDefaultResetKey;
-
-bool bFreezeKeySet = false;
-bool bFrameStepKeySet = false;
-bool bHitboxDisplayKeySet = false;
-bool bFrameDataDisplayKeySet = false;
-bool bHighlightsOnKeySet = false;
-bool bSaveStateKeySet = false;
-bool bPrevSaveSlotKeySet = false;
-bool bNextSaveSlotKeySet = false;
-bool bFrameBarScrollLeftKeySet = false;
-bool bFrameBarScrollRightKeySet = false;
-bool bRNGIncKeySet = false;
-bool bRNGDecKeySet = false;
-bool bReversalKeySet = false;
-bool bSlowKeySet = false;
-bool bNextFrameKeySet = false;
-bool bPrevFrameKeySet = false;
-bool bResetKeySet = false;
 
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;
@@ -226,82 +191,6 @@ void ReadCharacterMemory(HANDLE hMBAAHandle, DWORD address, void* pData, uint8_t
     ReadProcessMemory(hMBAAHandle, (LPVOID)(address + nCharacter * 0xAFC), pData, nSize, 0);
 }
 
-void SetHealth(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue, uint8_t nP1Controlled, uint8_t nP2Controlled)
-{
-    /*WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Health), &nValue, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RedHealth), &nValue, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Health), &nValue, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RedHealth), &nValue, 4, 0);*/
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1Health, &nValue, 4, nP1Controlled);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1Health, &nValue, 4, nP2Controlled);
-
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1RedHealth, &nValue, 4, nP1Controlled);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1RedHealth, &nValue, 4, nP2Controlled);
-}
-
-void SetMeter(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue, int nP1Moon, int nP2Moon, uint8_t nP1Controlled, uint8_t nP2Controlled)
-{
-    int nWriteBuffer = nP1Moon == 2 ? min(nValue, 20000) : nValue;
-    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Meter), &nWriteBuffer, 4, 0);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1Meter, &nWriteBuffer, 4, nP1Controlled);
-
-    nWriteBuffer = nP2Moon == 2 ? min(nValue, 20000) : nValue;
-    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2Meter), &nWriteBuffer, 4, 0);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1Meter, &nWriteBuffer, 4, nP2Controlled);
-}
-
-void SetGuard(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nLevel, int nP1Moon, int nP2Moon, uint8_t nP1Controlled, uint8_t nP2Controlled)
-{
-    int nWriteBuffer = vGuardLevelLookupTable[nP1Moon * 5 + nLevel];
-    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1GuardAmount), &nWriteBuffer, 4, 0);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1GuardAmount, &nWriteBuffer, 4, nP1Controlled);
-    
-    nWriteBuffer = vGuardLevelLookupTable[nP2Moon * 5 + nLevel];
-    //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2GuardAmount), &nWriteBuffer, 4, 0);
-    WriteCharacterMemory(hMBAAHandle, dwBaseAddress + dwP1GuardAmount, &nWriteBuffer, 4, nP2Controlled);
-}
-
-void SetSionBullets(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
-{
-    int nWriteBuffer = 13 - min(nValue, MAX_BULLETS);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1SionBullets), &nWriteBuffer, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2SionBullets), &nWriteBuffer, 4, 0);
-}
-
-void SetRoaVisibleCharge(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nVisible)
-{
-    nVisible = nVisible == -2 ? 9 : max(nVisible, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RoaVisibleCharge), &nVisible, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RoaVisibleCharge), &nVisible, 4, 0);
-}
-
-void SetRoaHiddenCharge(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nHidden)
-{
-    // for some reason it matters the order that hidden is first
-    nHidden = nHidden == -2 ? 9 : max(nHidden, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RoaHiddenCharge), &nHidden, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RoaHiddenCharge), &nHidden, 4, 0);
-}
-
-void SetFMaidsHearts(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nHearts)
-{
-    if (nHearts == -1)
-        nHearts = 0;
-    else
-        nHearts = 5 - min(nHearts, MAX_HEARTS);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1FMaidsHisuiLeadHearts), &nHearts, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2FMaidsHisuiLeadHearts), &nHearts, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1FMaidsKohaLeadHearts), &nHearts, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2FMaidsKohaLeadHearts), &nHearts, 4, 0);
-}
-
-void SetRyougiKnife(HANDLE hMBAAHandle, DWORD dwBaseAddress, bool bInfinite)
-{
-    int nTemp = bInfinite ? 0 : 1;
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1RyougiKnife), &nTemp, 4, 0);
-    WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2RyougiKnife), &nTemp, 4, 0);
-}
-
 void SetP1X(HANDLE hMBAAHandle, DWORD dwBaseAddress, int nValue)
 {
     //WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1X), &nValue, 4, 0);
@@ -398,115 +287,6 @@ int KeyJustPressed()
     }
 
     return 0;
-}
-
-//enum eKeyNames { KEY_FREEZE, KEY_FRAMESTEP, KEY_HITBOX, KEY_FRAMEDATA, KEY_HIGHLIGHT, KEY_SAVESTATE, KEY_PREVSAVE, KEY_NEXTSAVE, KEY_FRAMEBARLEFT, KEY_FRAMEBARRIGHT, KEY_RNGINC, KEY_RNGDEC };
-void ReplaceKey(uint8_t nKey, int nKeyNameEnum)
-{
-    if (nFreezeKey == nKey && nKeyNameEnum != KEY_FREEZE)
-    {
-        nFreezeKey = nDefaultFreezeKey;
-        bFreezeKeySet = false;
-        SetRegistryValue(L"FreezeKey", nFreezeKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFreezeKey), &nFreezeKey, 1, 0);
-    }
-    else if (nFrameStepKey == nKey && nKeyNameEnum != KEY_FRAMESTEP)
-    {
-        nFrameStepKey = nDefaultFrameStepKey;
-        bFrameStepKeySet = false;
-        SetRegistryValue(L"FrameStepKey", nFrameStepKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameStepKey), &nFrameStepKey, 1, 0);
-    }
-    else if (nPrevFrameKey == nKey && nKeyNameEnum != KEY_PREVFRAME)
-    {
-        nPrevFrameKey = nDefaultPrevFrameKey;
-        bPrevFrameKeySet = false;
-        SetRegistryValue(L"PrevFrameKey", nPrevFrameKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevFrameKey), &nPrevFrameKey, 1, 0);
-    }
-    else if (nResetKey == nKey && nKeyNameEnum != KEY_RESET)
-    {
-        nResetKey = nDefaultResetKey;
-        bResetKeySet = false;
-        SetRegistryValue(L"ResetKey", nResetKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedResetKey), &nResetKey, 1, 0);
-    }
-    else if (nHitboxDisplayKey == nKey && nKeyNameEnum != KEY_HITBOX)
-    {
-        nHitboxDisplayKey = nDefaultHitboxDisplayKey;
-        bHitboxDisplayKeySet = false;
-        SetRegistryValue(L"HitboxDisplayKey", nHitboxDisplayKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHitboxesDisplayKey), &nHitboxDisplayKey, 1, 0);
-    }
-    else if (nFrameDataDisplayKey == nKey && nKeyNameEnum != KEY_FRAMEDATA)
-    {
-        nFrameDataDisplayKey = nDefaultFrameDataDisplayKey;
-        bFrameDataDisplayKeySet = false;
-        SetRegistryValue(L"FrameDataDisplayKey", nFrameDataDisplayKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameDataDisplayKey), &nFrameDataDisplayKey, 1, 0);
-    }
-    else if (nHighlightsOnKey == nKey && nKeyNameEnum != KEY_HIGHLIGHT)
-    {
-        nHighlightsOnKey = nDefaultHighlightsOnKey;
-        bHighlightsOnKeySet = false;
-        SetRegistryValue(L"HighlightsOnKey", nHighlightsOnKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedHighlightsOnKey), &nHighlightsOnKey, 1, 0);
-    }
-    else if (nSaveStateKey == nKey && nKeyNameEnum != KEY_SAVESTATE)
-    {
-        nSaveStateKey = nDefaultSaveStateKey;
-        bSaveStateKeySet = false;
-        SetRegistryValue(L"SaveStateKey", nSaveStateKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedSaveStateKey), &nSaveStateKey, 1, 0);
-    }
-    else if (nPrevSaveSlotKey == nKey && nKeyNameEnum != KEY_PREVSAVE)
-    {
-        nPrevSaveSlotKey = nDefaultPrevSaveSlotKey;
-        bPrevSaveSlotKeySet = false;
-        SetRegistryValue(L"PrevSaveSlotKey", nPrevSaveSlotKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedPrevSaveSlotKey), &nPrevSaveSlotKey, 1, 0);
-    }
-    else if (nNextSaveSlotKey == nKey && nKeyNameEnum != KEY_NEXTSAVE)
-    {
-        nNextSaveSlotKey = nDefaultNextSaveSlotKey;
-        bNextSaveSlotKeySet = false;
-        SetRegistryValue(L"NextSaveSlotKey", nNextSaveSlotKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedNextSaveSlotKey), &nNextSaveSlotKey, 1, 0);
-    }
-    else if (nFrameBarScrollLeftKey == nKey && nKeyNameEnum != KEY_FRAMEBARLEFT)
-    {
-        nFrameBarScrollLeftKey = nDefaultFrameBarScrollLeftKey;
-        bFrameBarScrollLeftKeySet = false;
-        SetRegistryValue(L"FrameBarScrollLeftKey", nFrameBarScrollLeftKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollLeftKey), &nFrameBarScrollLeftKey, 1, 0);
-    }
-    else if (nFrameBarScrollRightKey == nKey && nKeyNameEnum != KEY_FRAMEBARRIGHT)
-    {
-        nFrameBarScrollRightKey = nDefaultFrameBarScrollRightKey;
-        bFrameBarScrollRightKeySet = false;
-        SetRegistryValue(L"FrameBarScrollRightKey", nFrameBarScrollRightKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedFrameBarScrollRightKey), &nFrameBarScrollRightKey, 1, 0);
-    }
-    else if (nRNGIncKey == nKey && nKeyNameEnum != KEY_RNGINC)
-    {
-        nRNGIncKey = nDefaultRNGIncKey;
-        bRNGIncKeySet = false;
-        SetRegistryValue(L"RNGIncKey", nRNGIncKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGIncKey), &nRNGIncKey, 1, 0);
-    }
-    else if (nRNGDecKey == nKey && nKeyNameEnum != KEY_RNGDEC)
-    {
-        nRNGDecKey = nDefaultRNGDecKey;
-        bRNGDecKeySet = false;
-        SetRegistryValue(L"RNGDecKey", nRNGDecKey);
-        WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + adSharedRNGDecKey), &nRNGDecKey, 1, 0);
-    }
-    else if (nReversalKey == nKey && nKeyNameEnum != KEY_REVERSAL)
-    {
-        nReversalKey = nDefaultReversalKey;
-        bReversalKeySet = false;
-        SetRegistryValue(L"ReversalKey", nReversalKey);
-    }
 }
 
 bool IsControllerNeutral()
@@ -657,60 +437,6 @@ uint32_t PromptForNumber(HANDLE hMBAAHandle, DWORD dwBaseAddress)
         return nDialogOutput;
     else
         return -1;
-}
-
-void __stdcall ___netlog(const char* msg)
-{
-    const char* ipAddress = "127.0.0.1";
-    unsigned short port = 17474;
-
-    int msgLen = strlen(msg);
-
-    const char* message = msg;
-
-    WSADATA wsaData;
-    int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (result != 0)
-    {
-        return;
-    }
-
-    SOCKET sendSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sendSocket == INVALID_SOCKET)
-    {
-        WSACleanup();
-        return;
-    }
-
-    sockaddr_in destAddr;
-    destAddr.sin_family = AF_INET;
-    destAddr.sin_port = htons(port);
-    if (inet_pton(AF_INET, ipAddress, &destAddr.sin_addr) <= 0)
-    {
-        closesocket(sendSocket);
-        WSACleanup();
-        return;
-    }
-
-    int sendResult = sendto(sendSocket, message, strlen(message), 0, (sockaddr*)&destAddr, sizeof(destAddr));
-    if (sendResult == SOCKET_ERROR)
-    {
-        closesocket(sendSocket);
-        WSACleanup();
-        return;
-    }
-
-    closesocket(sendSocket);
-    WSACleanup();
-}
-
-void __stdcall netlog(const char* format, ...) {
-    static char buffer[1024]; // no more random char buffers everywhere.
-    va_list args;
-    va_start(args, format);
-    vsnprintf(buffer, 1024, format, args);
-    ___netlog(buffer);
-    va_end(args);
 }
 
 std::wstring getDLLPath() {

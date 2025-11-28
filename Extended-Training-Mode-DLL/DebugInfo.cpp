@@ -6,23 +6,56 @@
 
 extern bool hasTextureAddr(DWORD test);
 
+// for reasons unknown to all above and below, this shit wont work with bools
+int verboseShowPlayers = 0; // show player stuff
+int verboseShowEffects = 0; // show effect stuff
+int verboseShowUnknown = 0; // show styuff if i dont know what it is
+int verboseShowPatternState = 0;
+int verboseShowPos = 0;
+int verboseShowVel = 0;
+int verboseShowAccel = 0;
+int verboseShowUntech = 0;
+int verboseShowDamage = 0;
+
 void EffectData::describe(char* buffer, int bufLen) {
 
 	DWORD offset = ((DWORD)&exists);
 	int index = -1;
-	const char* entityString = "PLAYER";
+	const char* entityString = "P";
 	if (offset >= 0x0067BDE8) {
 		index = (offset - 0x0067BDE8) / 0x33C;
-		entityString = "EFFECT";
+		entityString = "E";
 	} else {
 		index = (offset - 0x00555130) / 0xAFC;
 	}
 
 	int bufferOffset = 0;
-	bufferOffset = snprintf(buffer, bufLen, "%s%d P%d S%d\n(%d,%d)\nUNTCH%d\n", entityString, index, pattern, state, xPos, yPos, totalUntechTime);
-	
-	if (attackDataPtr != NULL) {
-		snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d\nPROR%d", attackDataPtr->damage, attackDataPtr->proration);
+	//bufferOffset = snprintf(buffer, bufLen, "%s%d P%d S%d\n(%d,%d)\nUNTCH%d\n", entityString, index, subObj.pattern, subObj.state, subObj.xPos, subObj.yPos, subObj.totalUntechTime);
+
+	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s%d: ", entityString, index);
+
+	if (verboseShowPatternState) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "P%d S%d\n", subObj.pattern, subObj.state);
+	}
+
+	if (verboseShowPos) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "p:(%d,%d)\n", subObj.xPos, subObj.yPos);
+	}
+
+	if (verboseShowVel) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "v:(%d,%d)\n", subObj.xVel, subObj.yVel);
+	}
+
+	if (verboseShowAccel) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "a:(%d,%d)\n", subObj.xAccel, subObj.yAccel);		
+	}
+
+	if (verboseShowUntech) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "UNTCH%d\n", subObj.totalUntechTime);
+	}
+
+	if (verboseShowDamage && subObj.attackDataPtr != NULL) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d PROR%d\n", subObj.attackDataPtr->damage, subObj.attackDataPtr->proration);
 	}
 	 
 }
@@ -30,8 +63,13 @@ void EffectData::describe(char* buffer, int bufLen) {
 PatternData* EffectData::getPatternDataPtr(int p) {
 	// doing this in a more normal way could never get me the results i wanted
 	__try {
-		DWORD temp = (DWORD)(playerDataArr[0].ha6DataPtr->subData1->subData2->ptrToPatternDataArr);
-		return (PatternData*)*(DWORD*)(temp + (4 * playerDataArr[0].pattern));
+		HA6Data* ha6 = playerDataArr[0].subObj.someDataPtr->ha6DataPtr;
+		if (!ha6) return 0;
+		ArrayContainer<PatternData*>* patCont = ha6->patternContainer;
+		if (!patCont || patCont->count < p) return 0;
+		PatternData* pat = (patCont->array)[p];
+		if (!pat) return 0;
+		return pat;
 	} __except (EXCEPTION_EXECUTE_HANDLER) {
 		return NULL;
 	}
@@ -42,7 +80,7 @@ AnimationData* EffectData::getAnimationDataPtr(int p, int s) {
 		PatternData* pattern = getPatternDataPtr(p);
 		//DWORD temp = (DWORD)pattern->ptrToAnimationDataArr->animationDataArr;
 		//return (AnimationData*)(temp + (0x54 * s));
-		return &(pattern->ptrToAnimationDataArr->animationDataArr[s]);
+		return &(pattern->animationDataContainer->array[s]);
 	} __except (EXCEPTION_EXECUTE_HANDLER) {
 		return NULL;
 	}
@@ -96,9 +134,9 @@ void displayDebugInfo() {
 		char buffer[128];
 		int bufLoc = 0;
 		for (int i = 0; i < 32; i++) {
-			bufLoc += snprintf(buffer + bufLoc, 128 - bufLoc, "%02X\n", (BYTE)playerDataArr[0].patternDataPtr->patternName[i]);
+			bufLoc += snprintf(buffer + bufLoc, 128 - bufLoc, "%02X\n", (BYTE)playerDataArr[0].subObj.patternDataPtr->patternName[i]);
 
-			if (i > 0 && (BYTE)playerDataArr[0].patternDataPtr->patternName[i] == 0 && (BYTE)playerDataArr[0].patternDataPtr->patternName[i - 1] == 0) {
+			if (i > 0 && (BYTE)playerDataArr[0].subObj.patternDataPtr->patternName[i] == 0 && (BYTE)playerDataArr[0].subObj.patternDataPtr->patternName[i - 1] == 0) {
 				break;
 			}
 		}
@@ -601,7 +639,7 @@ int getComboCount() {
 	// go read 00478c38
 	// this only gets the combo count for p1, and doesnt reset properly without more code
 
-	if (playerDataArr[1].notInCombo) {
+	if (playerDataArr[1].subObj.notInCombo) {
 		return 0;
 	}
 
@@ -640,7 +678,7 @@ void setWind() {
 
 	for (int i = 0; i < 4; i++) {
 		if (playerDataArr[i].exists) {
-			playerDataArr[i].xVelChange = invertDir ? -xWindVel : xWindVel;
+			playerDataArr[i].subObj.xVelChange = invertDir ? -xWindVel : xWindVel;
 		}
 	}
 

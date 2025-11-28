@@ -130,7 +130,8 @@ typedef struct MovementData {
 #pragma pack(push,1)
 typedef struct StateData { // i am sure of nothing in this struct.
 	MovementData* movementData;
-	UNUSED(8);
+	short maxXSpeed;
+	UNUSED(6);
 	BYTE stance;
 	BYTE invincibility;
 	BYTE cancelNormal;
@@ -148,9 +149,10 @@ typedef struct StateData { // i am sure of nothing in this struct.
 			UNUSEDBITS(1);
 			BYTE canGroundTech : 1;
 			UNUSEDBITS(3);
-			BYTE blockHighsAndMids : 1;
-			BYTE blockAirBlockable : 1;
-			UNUSEDBITS(6);
+			BYTE standGuardpoint : 1;
+			BYTE airGuardpoint : 1;
+			BYTE crouchGuardpoint : 1;
+			UNUSEDBITS(5);
 			UNUSEDBITS(8);
 			UNUSEDBITS(8);
 		};
@@ -204,18 +206,13 @@ static_assert(sizeof(IF) == 0x28, "IF MUST be 0x28 large!");
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
-typedef struct IFData { // List of Conditions
-	IF* IFs[4];
-} IFData;
+typedef struct CameraBoxData {
+	int x1;
+	int y1;
+	int x2;
+	int y2;
+} CameraBoxData;
 #pragma pack(pop)
-
-#define CHECKOFFSET(v, n) static_assert(offsetof(IFData, v) == n, "IFData offset incorrect for " #v);
-
-CHECKOFFSET(IFs, 0x0);
-
-static_assert(sizeof(IFData) == 0x10, "IFData MUST be 0x10 large!");
-
-#undef CHECKOFFSET
 
 #pragma pack(push,1)
 typedef struct RawBoxData {
@@ -271,7 +268,7 @@ typedef struct AnimationData {
 			UNUSEDBITS(4);
 		};
 	};
-	WORD gotoAnim; // i cant use goto as a var name, not sure what this is going to tho! ask gonp!
+	WORD goToFrame; // i cant use goto as a var name, not sure what this is going to tho! ask gonp!
 	WORD landingFrame;
 	WORD loopNTimes;
 	WORD endOfLoop;
@@ -291,13 +288,13 @@ typedef struct AnimationData {
 	float xScale;
 	float yScale;
 	StateData* stateData;
-	UNUSED(4);
+	AttackData* attackData;
 	BYTE highestIFIndex;
 	BYTE highestEFIndex;
 	BYTE highestNonHitboxIndex;
 	BYTE highestHitboxIndex;
-	IFData* IFDataPtr;
-	DWORD EFDataPtr;
+	IF** IFs;
+	DWORD EFs;
 	NonHitboxData* nonHitboxData;
 	HitboxData* hitboxData;
 } AnimationData;
@@ -311,13 +308,19 @@ CHECKOFFSET(stateData, 0x38);
 CHECKOFFSET(highestNonHitboxIndex, 0x42);
 CHECKOFFSET(nonHitboxData, 0x4C);
 
-static_assert(sizeof(AnimationData) == 0x54, "AnimationDataMUST be 0x50 large!");
+static_assert(sizeof(AnimationData) == 0x54, "AnimationData MUST be 0x50 large!");
 #undef CHECKOFFSET
 
-typedef struct AnimationDataArr {
-	UNUSED(4);
-	AnimationData* animationDataArr;
-} AnimationDataArr;
+template <typename T>
+#pragma pack(push,1)
+struct ArrayContainer {
+	int isPointerArray;
+	T* array;
+	int elementSize;
+	int count;
+	int capacity;
+};
+#pragma pack(pop)
 
 #pragma pack(push,1)
 typedef struct PatternData {
@@ -330,7 +333,7 @@ typedef struct PatternData {
 	DWORD level;
 	DWORD PFLG;
 	UNUSED(4);
-	AnimationDataArr* ptrToAnimationDataArr;
+	ArrayContainer<AnimationData>* animationDataContainer;
 	UNUSED(0x20);
 } PatternData;
 #pragma pack(pop)
@@ -339,159 +342,155 @@ typedef struct PatternData {
 
 CHECKOFFSET(PSTS, 0x24);
 CHECKOFFSET(PFLG, 0x2C);
-CHECKOFFSET(ptrToAnimationDataArr, 0x34);
+CHECKOFFSET(animationDataContainer, 0x34);
 
 static_assert(sizeof(PatternData) == 0x58, "PatternData must have size 0x58."); // i am pretty confident on this number, but it could be off.
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
-typedef struct Command {
-	int commandFilePriority;
+typedef struct CommandData {
+	int ID;
 	char input[20];
 	int pattern;
 	int specialFlag;
 	int meterSpend;
-	uint8_t vars[4]; //assist, special, dash, unused
+	byte assistVar;
+	byte specialVar;
+	byte dashVar;
+	UNUSED(1);
 	uint8_t flagsets[4]; //flagset 1, flagset 2, unused, unused
-} Command;
-#pragma pack(pop)
-
-#define CHECKOFFSET(v, n) static_assert(offsetof(Command, v) == n, "Command offset incorrect for " #v);
-
-CHECKOFFSET(flagsets, 0x28);
-
-static_assert(sizeof(Command) == 0x2C, "Command must have size 0x2C.");
-#undef CHECKOFFSET
-
-#pragma pack(push,1)
-typedef struct CommandPtrArray {
-	Command* commands[1000];
-} CommandPtrArray;
-#pragma pack(pop)
-
-static_assert(sizeof(CommandPtrArray) == 4000, "CommandPtrArray must have size 4000.");
-
-#pragma pack(push,1)
-typedef struct CommandFileData {
-	UNUSED(0x4);
-	CommandPtrArray* cmdPtrArray;
-	UNUSED(0x4);
-	int maxFilePriority;
-	int maxFilePriorityCopy;
-} CommandFileData;
-#pragma pack(pop)
-
-#define CHECKOFFSET(v, n) static_assert(offsetof(CommandFileData, v) == n, "CommandFileData offset incorrect for " #v);
-
-CHECKOFFSET(maxFilePriorityCopy, 0x10);
-
-static_assert(sizeof(CommandFileData) == 0x14, "CommandFileData must have size 0x14.");
-#undef CHECKOFFSET
-
-#pragma pack(push,1)
-typedef struct CommandData {
-	CommandFileData* cmdFileDataPtr;
-	UNUSED(0x14);
-	float guts[4];
-	UNUSED(0x2A);
-	uint16_t groundThrowPat;
-	UNUSED(0x4);
-	uint16_t airThrowPat;
 } CommandData;
 #pragma pack(pop)
 
 #define CHECKOFFSET(v, n) static_assert(offsetof(CommandData, v) == n, "CommandData offset incorrect for " #v);
 
-CHECKOFFSET(airThrowPat, 0x58);
+CHECKOFFSET(flagsets, 0x28);
 
-static_assert(sizeof(CommandData) == 0x5A, "CommandData must have size 0x5A.");
+static_assert(sizeof(CommandData) == 0x2C, "CommandData must have size 0x2C.");
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
-typedef struct SubHA6Data2 {
-	DWORD isPointerList;
-	PatternData* (*ptrToPatternDataArr)[1000];
-	DWORD elementSize;
-	DWORD count;
-	DWORD capacity;
-} SubHA6Data2;
+typedef struct CommandFileData {
+	ArrayContainer<CommandData*>* cmdDataPtr;
+	byte airJumpNum;
+	UNUSED(0x4);
+	byte Flags;
+	UNUSED(0x1);
+	byte KoRareVoice;
+	UNUSED(0x4);
+	int CharaGravity_AddY;
+	int CharaGravity_MaxX;
+	float guts[4];
+	UNUSED(0x8);
+	int ShieldCounter_Ground;
+	int ShieldCounter_Air;
+	int ShieldCounter_Crouch;
+	UNUSED(0x8);
+	int CancelSparkPat_Ground; //unused
+	int CancelSparkPat_Air;
+	int CancelHighJumpPat;
+	short isGroundThrowDefined;
+	short groundThrowPat;
+	short groundThrowRange;
+	short isAirThrowDefined;
+	short airThrowPat;
+	short airThrowRange;
+	int KoAniEff;
+	int ExComCheck_Num;
+	void* ExComCheckPtr;
+} CommandFileData;
 #pragma pack(pop)
 
-static_assert(sizeof(SubHA6Data2) == 0x14, "SubHA6Data2 must have a size of 0x14");
+#define CHECKOFFSET(v, n) static_assert(offsetof(CommandFileData, v) == n, "CommandFileData offset incorrect for " #v);
+
+CHECKOFFSET(airThrowPat, 0x58);
+
+static_assert(sizeof(CommandFileData) == 0x68, "CommandFileData must have size 0x5A.");
+#undef CHECKOFFSET
 
 #pragma pack(push,1)
-typedef struct SubHA6Data1 {
+typedef struct HA6Data {
 	DWORD isStaticSize;
-	SubHA6Data2* subData2;
-} SubHA6Data1;
-#pragma pack(pop)
-
-#pragma pack(push,1)
-typedef struct HA6Data { 
-	// out of all the structs, i understand this one the least.
-	// the important thing, is that it eventually leads to 0x31C patternDataPtr, and so in most cases, you can and should probs just use that
-	// this however, can be used to see all paterns in a char. seems very nice to have
-	SubHA6Data1* subData1;
+	ArrayContainer<PatternData*>* patternContainer;
 } HA6Data;
 #pragma pack(pop)
 
-#pragma pack(push,1)
-typedef struct EffectData {
-	
-	void describe(char* buffer, int bufLen);
-	inline PatternData* getPatternDataPtr(int p);
-	inline AnimationData* getAnimationDataPtr(int p, int s);
-	// -----
 
-	DWORD exists;
+#pragma pack(push,1)
+typedef struct SomeData { 
+	// out of all the structs, i understand this one the least.
+	// the important thing, is that it eventually leads to 0x31C patternDataPtr, and so in most cases, you can and should probs just use that
+	// this however, can be used to see all paterns in a char. seems very nice to have
+	HA6Data* ha6DataPtr;
+	UNUSED(0x8);
+} SomeData;
+#pragma pack(pop)
+
+typedef struct EffectData;
+typedef struct PlayerData;
+
+#pragma pack(push,1)
+typedef struct ActorData {
 	BYTE index;
 	BYTE charID;
 	BYTE charIDCopy;
-	BYTE recording;
-	UNUSED(1);
+	BYTE doTrainingAction;
+	BYTE source;
 	BYTE someFlag;
 	BYTE palette;
 	UNUSED(1);
-	BYTE moon;
-	UNUSED(3);
+	WORD moon;
+	UNUSED(2);
 	DWORD pattern;
 	DWORD state;
 	DWORD nextSprite;
 	DWORD framesInCurrentState;
 	BYTE isFirstFramePlusOne;
-	UNUSED(4);
+	UNUSED(2);
+	BYTE didPatternTransition;
+	UNUSED(1);
 	BYTE remainingLoops;
-	UNUSED(0x3E);
+	WORD EFTP1flagset1;
+	WORD EFTP1flagset2;
+	WORD commandSpecialVar;
+	UNUSED(0x24);
+	DWORD randomAirTech;
+	DWORD randomGroundTech;
+	UNUSED(0xC);
 	DWORD notInCombo;
 	DWORD numFrameAndPatternTransitions;
-	UNUSED(0x44);
+	DWORD defensiveStateFlag;
+	UNUSED(0x18);
+	DWORD defensiveStateQueue;
+	DWORD flags[6];
+	UNUSED(0xC);
 	DWORD exGuard;
-	UNUSED(0x8);
+	DWORD exGuardTimer;
+	DWORD doClashExtraHitstop;
 	DWORD health;
 	DWORD redHealth;
 	float guardGauge;
 	float guardGaugeHeal;
 	DWORD guardGaugeState;
 	DWORD guardGaugeStop;
-	UNUSED(2);
-	BYTE guardQualityStop;
-	UNUSED(1);
+	WORD onBlockComboCount;
+	WORD guardQualityStop;
 	float quardQuality;
-	BYTE exMoveMeterPenaltyTiimer;
-	UNUSED(3);
+	WORD exMoveMeterPenaltyTimer;
+	UNUSED(2);
 	DWORD magicCircuit;
 	DWORD heatTimeLeft;
-	WORD magicCircuitState;
-	UNUSED(4);
-	BYTE magicCircuitPause;
-	UNUSED(1);
-	DWORD heatTimeThisHeat;
+	BYTE magicCircuitState;
+	UNUSED(3);
+	WORD maxHeatTime;
+	WORD magicCircuitPause;
+	DWORD heatTimeCounter;
 	UNUSED(4);
 	DWORD storedMeterUsage;
 	DWORD storedMeterCircuitState;
-	WORD circuitBreakExPenaltyTimer;
-	WORD circuitBreakExPenaltyTimerLength;
-	WORD ifExPenalty;
+	WORD meterMultTimer;
+	WORD meterMultTimerTotal;
+	WORD meterGainMultiplier; //out of 256. ex moves set to 110 for 43% meter gain
 	UNUSED(2);
 	int xPos;
 	int yPos;
@@ -508,15 +507,28 @@ typedef struct EffectData {
 	int yVelChange;
 	short xAccelChange;
 	short yAccelChange;
-	short momentum;
-	UNUSED(0x32);
-	WORD shieldHeldTime;
-	UNUSED(2);
-	WORD shieldType;
+	int momentum;
+	int momentumQueue;
+	short momentumDecay;
+	short momentumGrantingPattern;
+	short useAddYMaxXParams;
+	UNUSED(0x12);
+	int thrownXOffset;
+	int thrownYOffset;
+	short hitType;
+	short projectileHitType;
+	short zPriority;
+	short zPrioritySetter;
+	UNUSED(0x4);
+	int shieldHeldTime;
+	BYTE shieldSuccessType;
+	BYTE autoSuperJump;
 	BYTE hitstop;
-	UNUSED(3);
+	BYTE hitstopAdvanceFrames;
+	UNUSED(1);
+	BYTE ungrantedHitstop;
 	BYTE throwFlag;
-	BYTE deathFlag;
+	BYTE noInputFlag;
 	BYTE tagFlag;
 	UNUSED(1);
 	BYTE remainingHits;
@@ -524,131 +536,245 @@ typedef struct EffectData {
 	BYTE willBlock;
 	BYTE proxyGuardTime;
 	BYTE bounceCount;
-	UNUSED(6);
+	UNUSED(2);
+	BYTE comboJumpCancel;
+	BYTE burstLock;
+	UNUSED(2);
 	BYTE strikeInvuln;
 	BYTE throwInvuln;
 	UNUSED(1);
-	BYTE preJumpTimeRemaining;
+	BYTE preJumpThrowInvuln;
 	UNUSED(1);
 	WORD airTime;
 	WORD timeThrown;
 	WORD totalUntechTime;
 	WORD untechTimeElapsed;
-	UNUSED(6);
+	UNUSED(2);
+	BYTE canAirTech;
+	BYTE canGroundTech;
+	BYTE isGroundTech;
+	UNUSED(1);
 	WORD armorTimer;
 	WORD reversedControlsTimer;
 	UNUSED(8);
 	BYTE recievedHitstop;
-	UNUSED(3);
+	BYTE isHitboxConnect;
+	UNUSED(2);
 	DWORD hitstunBlockstunTimeElapsed;
-	int hitstunTimeRemaining; // -2 if airborn
-	BYTE isKnockedDown;
-	UNUSED(0x11);
-	WORD airdashVariable;
-	UNUSED(0x26);
+	int hitstunTimeRemaining; // -2 if airborne
+	BYTE completedHitVectors;
+	BYTE didHitVectorFaceLeft;
+	BYTE recievedHitVector;
+	UNUSED(0x2);
+	BYTE someDeathFlagMaybe;
+	UNUSED(1);
+	BYTE jumpVariable;
+	BYTE specialVariables[10];
+	BYTE dashVariable;
+	UNUSED(1);
+	WORD extraVariables[10];
+	WORD xVelStorage;
+	WORD yVelStorage;
+	WORD xAccStorage;
+	WORD yAccStorage;
+	UNUSED(0x6);
+	BYTE afterImageBlendMode;
+	BYTE numAfterImages;
+	BYTE afterImageFramePosOffset;
+	UNUSED(0x1);
 	WORD reversePenalty;
 	WORD reversePenaltyDecayTimer;
-	UNUSED(0xC);
+	WORD onHitComboCount;
+	UNUSED(0xA);
 	BYTE counterhitState;
 	UNUSED(1);
-	AttackData* recievingAttackPtr;
-	UNUSED(0xE4);
-	float gravity;
-	WORD extraUntechPenalty;
-	BYTE correctedInput;
-	BYTE rawInput;
-	BYTE buttonJustPressed;
-	BYTE buttonHeld;
-	WORD macroPressed;
-	WORD buttonReleased;
-	UNUSED(0x2);
-	BYTE ownerIndex;
-	UNUSED(0x17);
-	WORD inputEvent;
-	WORD inputPriority;
+	AttackData* recievingAttackDataPtrArr[8];
+	CameraBoxData hitboxOverlapArr[8];
+	ActorData* attackingSubObjPtrArr[8];
+	ActorData* lastHitBySubObjPtr;
+	ActorData* lastHitSubObjPtr;
+	ActorData* isControllingSubObjPtr;
+	BYTE isControllingActor;
+	UNUSED(0x3);
+	ActorData* OwnerSubObjPtr;
+	ActorData* isControlledBySubObjPtr;
+	UNUSED(0x8);
+	int type2FlashSpawnedDuring;
 	UNUSED(0x4);
+	float gravity;
+	WORD untechPenalty;
+	BYTE correctedDirInput;
+	BYTE rawDirInput;
+	DWORD buttonInputs; // 0x000AA0CC  -  AA : binary combination of buttons held (0x01 = A, 0x02 = B ... 0x10 = E) ,  CC : binary combination of buttons just pressed
+	DWORD buttonReleased; // binary combination of buttons just released (0x01 = A, 0x02 = B ... 0x10 = E)
+	BYTE ownerIndex;
+	UNUSED(0x1);
+	WORD numSpawnedEffects;
+	UNUSED(0x8);
+	int spriteRotation;
+	float xScale;
+	float yScale;
+	WORD targetPattern;
+	WORD targetPatternPriority;
+	WORD targetState;
+	WORD targetStatePriority;
 	BYTE facingLeft;
 	BYTE isOpponentToLeft;
-	UNUSED(5);
-	BYTE delayedStandAirbornCrouchState;
+	BYTE needToCrossupInputs;
+	UNUSED(0x1);
+	BYTE delayedStance;
+	BYTE doLanding;
+	BYTE justLanded;
+	UNUSED(0x1);
 	PatternData* patternDataPtr;
 	AnimationData* animationDataPtr;
 	AttackData* attackDataPtr;
 	EffectData* selfPtr;
-	UNUSED(4); // i have never seen a more suspicious 4 bytes in my life
-	HA6Data* ha6DataPtr;
+	ActorData* partnerPtr;
+	SomeData* someDataPtr;
 	DWORD framesIntoCurrentPattern;
 	UNUSED(4);
-} EffectData;
+} ActorData;
 #pragma pack(pop)
 
-#define CHECKOFFSET(v, n) static_assert(offsetof(EffectData, v) == n, "EffectData offset incorrect for " #v);
+#define CHECKOFFSET(v, n) static_assert(offsetof(ActorData, v) == n, "ActorData offset incorrect for " #v);
 
-CHECKOFFSET(ha6DataPtr, 0x330);
+CHECKOFFSET(randomAirTech, 0x4c);
+CHECKOFFSET(defensiveStateQueue, 0x84);
+CHECKOFFSET(xPos, 0x104);
+CHECKOFFSET(momentum, 0x134);
+CHECKOFFSET(thrownXOffset, 0x154);
+CHECKOFFSET(airTime, 0x186);
+CHECKOFFSET(extraVariables, 0x1c0);
+CHECKOFFSET(recievingAttackDataPtrArr, 0x1f8);
+CHECKOFFSET(isControllingSubObjPtr, 0x2c0);
+CHECKOFFSET(gravity, 0x2e0);
+CHECKOFFSET(numSpawnedEffects, 0x2f2);
+CHECKOFFSET(needToCrossupInputs, 0x312);
 
 #undef CHECKOFFSET
 
+static_assert(sizeof(ActorData) == 0x338, "EffectData MUST be 0x338 large!");
+
+#pragma pack(push,1)
+typedef struct EffectData {
+	void describe(char* buffer, int bufLen);
+	inline PatternData* getPatternDataPtr(int p);
+	inline AnimationData* getAnimationDataPtr(int p, int s);
+	// -----
+	DWORD exists;
+	ActorData subObj;
+} EffectData;
+#pragma pack(pop)
+
 static_assert(sizeof(EffectData) == 0x33C, "EffectData MUST be 0x33C large!");
 
-// im going off of base 00555130, sorta wish we could switch to 00555134 tho
 #pragma pack(push,1)
 typedef struct PlayerData : public EffectData {
-	CommandData* cmdDataPtr;
-	UNUSED(0x7BC);
+	CommandFileData* cmdFileDataPtr;
+	UNUSED(0x8);
+	int reduceFlag;
+	int reduceCounter;
+	UNUSED(0x4);
+	int usedNormalsInString;
+	UNUSED(0x80);
+	int inputCmdID;
+	UNUSED(0x4);
+	int chainedCmdsCounter;
+	UNUSED(0x4);
+	WORD dirInputs[0x81];
+	WORD aInputs[0x81];
+	WORD bInputs[0x81];
+	WORD cInputs[0x81];
+	WORD dInputs[0x81];
+	WORD eInputs[0x81];
+	WORD fInputs[0x81];
+	UNUSED(0x6);
 } PlayerData;
 #pragma pack(pop)
 
 #define CHECKOFFSET(v, n) static_assert(offsetof(PlayerData, v) == n, "PlayerData offset incorrect for " #v);
 
 CHECKOFFSET(exists, 0)
-CHECKOFFSET(charID, 5)
-CHECKOFFSET(pattern, 0x10)
-CHECKOFFSET(isFirstFramePlusOne, 0x20)
-CHECKOFFSET(numFrameAndPatternTransitions, 0x68)
-CHECKOFFSET(exGuard, 0xB0)
-CHECKOFFSET(health, 0xBC)
-CHECKOFFSET(guardGaugeStop, 0xD0)
-CHECKOFFSET(guardQualityStop, 0xD6)
-CHECKOFFSET(quardQuality, 0xD8)
-CHECKOFFSET(exMoveMeterPenaltyTiimer, 0xDC)
-CHECKOFFSET(magicCircuit, 0xE0)
-CHECKOFFSET(magicCircuitState, 0xE8)
-CHECKOFFSET(magicCircuitPause, 0xEE)
-CHECKOFFSET(heatTimeThisHeat, 0xF0)
-CHECKOFFSET(storedMeterUsage, 0xF8)
-CHECKOFFSET(circuitBreakExPenaltyTimer, 0x100)
-CHECKOFFSET(xPos, 0x108)
-CHECKOFFSET(maxXSpeed, 0x128);
-CHECKOFFSET(yVelChange, 0x130);
-CHECKOFFSET(momentum, 0x138);
-CHECKOFFSET(shieldHeldTime, 0x16C)
-CHECKOFFSET(tagFlag, 0x178);
-CHECKOFFSET(bounceCount, 0x17E);
-CHECKOFFSET(strikeInvuln, 0x185);
-CHECKOFFSET(timeThrown, 0x18C);
-CHECKOFFSET(totalUntechTime, 0x18E);
-CHECKOFFSET(armorTimer, 0x198);
-CHECKOFFSET(recievedHitstop, 0x1A4);
-CHECKOFFSET(isKnockedDown, 0x1B0);
-CHECKOFFSET(airdashVariable, 0x1C2);
-CHECKOFFSET(reversePenalty, 0x1EA);
-CHECKOFFSET(counterhitState, 0x1FA);
-CHECKOFFSET(recievingAttackPtr, 0x1FC);
-CHECKOFFSET(gravity, 0x2E4);
-CHECKOFFSET(buttonHeld, 0x2ED);
-CHECKOFFSET(ownerIndex, 0x2F4); 
-CHECKOFFSET(inputPriority, 0x30E);
-CHECKOFFSET(facingLeft, 0x314);
-CHECKOFFSET(delayedStandAirbornCrouchState, 0x31B);
-CHECKOFFSET(patternDataPtr, 0x31C);
-CHECKOFFSET(selfPtr, 0x328);
-CHECKOFFSET(ha6DataPtr, 0x330);
+CHECKOFFSET(chainedCmdsCounter, 0x3e0);
 
 static_assert(sizeof(PlayerData) == 0xAFC, "PlayerData MUST be 0xAFC large!");
 
 extern PlayerData* playerDataArr;
 extern EffectData* effectDataArr;
 
+#undef CHECKOFFSET
+
+#pragma pack(push,1)
+typedef struct AttackDisplayData {
+	int comboInvalid;
+	int comboTrue;
+	int damageScaled;
+	int damageUnscaled;
+	int vsDamage;
+	int meterGain;
+} AttackDisplayData;
+#pragma pack(pop)
+
+#pragma pack(push,1)
+typedef struct ComboCalcData {
+	byte index;
+	short field_0x2;
+	int numHits;
+	int damage;
+	short isInvalid;
+	short field_0xe;
+	short proration;
+	short field_0x12;
+	byte drawComboData;
+	byte field_0x15;
+	short timer1;
+	short timer2;
+	short field_0x1a;
+	int someFlag;
+	int timer3;
+	int xPos;
+	int yPos;
+	byte alpha;
+} ComboCalcData;
+#pragma pack(pop)
+
+#pragma pack(push,1)
+typedef struct PlayerAuxData {
+	int activeCharacter;
+	int assistChangeState;
+	UNUSED(0x4);
+	int hasPartner;
+	UNUSED(0x10);
+	int dispCorrectionValue;
+	UNUSED(0x18);
+	float someDamageMult;
+	UNUSED(0x4);
+	int comboCount;
+	int comboCountCopy;
+	UNUSED(0x4);
+	int dispMaxCombo;
+	int maxDamage;
+	int maxCombo;
+	UNUSED(0x8);
+	int nextAttackDisplayIndex;
+	int currentAttackDisplayIndex;
+	UNUSED(0x4);
+	AttackDisplayData attackDisplayData[2];
+	byte comboCalcIndex;
+	ComboCalcData comboCalcData[8];
+	UNUSED(0x3);
+	int dispCHTimer;
+	int inactionableFrames;
+} PlayerAuxData;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(PlayerAuxData, v) == n, "PlayerAuxData offset incorrect for " #v);
+
+CHECKOFFSET(comboCalcData, 0xA1);
+CHECKOFFSET(inactionableFrames, 0x208);
+
+static_assert(sizeof(PlayerAuxData) == 0x20C, "PlayerAuxData must have size 0x5A.");
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
