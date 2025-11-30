@@ -12,6 +12,7 @@
 
 #include "dllmain.h"
 #include <fstream>
+#include <filesystem>
 
 void debugLinkedList();
 void displayDebugInfo();
@@ -2815,9 +2816,43 @@ void saveScreenshot() {
 
 	// saves a screenshot, hopefully at full resolution
 
+	static bool prevDoSaveScreenshot = false;
+
 	if (!doSaveScreenshot) {
+		prevDoSaveScreenshot = doSaveScreenshot;
 		return;
 	}
+
+	constexpr std::string baseScreenShotFolder = "ETMScreenShots";
+
+	static bool firstRun = true;
+	if (firstRun) {
+		firstRun = false;
+		if (!std::filesystem::is_directory(baseScreenShotFolder)) {
+			std::filesystem::create_directories(baseScreenShotFolder);
+		}
+	}
+
+
+	static int _frameIndex = 0;
+	static std::string folderName = "";
+
+	if (!prevDoSaveScreenshot && doSaveScreenshot) { // rising edge, generate a new folder, reset the counter
+		_frameIndex = 0;
+
+		time_t timeVal;
+		time(&timeVal);
+		struct tm* timeInfo = localtime(&timeVal);
+
+		char folderNameBuffer[32];
+		strftime(folderNameBuffer, sizeof(folderNameBuffer), "%Y-%m-%d %H-%M-%S", timeInfo);
+		folderName = baseScreenShotFolder + "/" + std::string(folderNameBuffer);
+
+		if (!std::filesystem::is_directory(folderName)) {
+			std::filesystem::create_directories(folderName);
+		}
+	}
+	prevDoSaveScreenshot = doSaveScreenshot;
 
 	//long long start = getMicroSec();
 
@@ -2839,10 +2874,10 @@ void saveScreenshot() {
 
 	RECT rect = { 0, 0, sDesc.Width, sDesc.Height };
 
-	static int _frameIndex = 0;
+	
 	static char buffer[256];
 
-	snprintf(buffer, 256, "./ScreenShot/ugh%d.png", _frameIndex);
+	snprintf(buffer, 256, "./%s/ugh%d.png", folderName.c_str(), _frameIndex);
 	_frameIndex++;
 
 	//long long startSaveFile = getMicroSec();
@@ -2934,6 +2969,7 @@ void __stdcall _doDrawCalls() {
 
 	if (prevDisableFPSLimit != disableFPSLimit) {
 		// ugh. long story but this changes each caster patch. just open the hook in ghidra and find,, dx end or something
+		// this is one of the stupidest things i have coded, ever.
 		patchByte(dwCasterBaseAddress + 0x66395af0, disableFPSLimit ? 0xC3 : 0x80);
 		prevDisableFPSLimit = disableFPSLimit;
 	}

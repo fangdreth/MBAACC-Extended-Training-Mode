@@ -77,6 +77,7 @@ int nSaveStateKey;
 
 DWORD showCSS = 1;
 int showDebugMenu = 0;
+int showReplayMenu = 0;
 bool bFreeze = false;
 bool bSlow = false;
 bool bFrameDataDisplay = false;
@@ -2332,14 +2333,10 @@ void frameDoneCallback()
 		
 		needTrainingModeReset = true;
 
-		//replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_250203130642.rep");
-		replayManager.load("./ReplayVS/RED_ARCUEIDxRED_ARCUEID_241231183621_usethis.rep");
-		//replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_250203130642.rep");
-
-		//replayManager.load("./ReplayVS/RED_ARCUEIDxRED_ARCUEID_250203161138.rep");
-
+		
+		///replayManager.load("./ReplayVS/RED_ARCUEIDxSATSUKI_251128130201.rep");
 		replayManager.reset();
-
+		
 
 		//TASManagerObj.load("TAS.txt");
 		//needTrainingModeReset = true;
@@ -6996,6 +6993,8 @@ void threadFunc()
 
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
+
+	ReadFromRegistry(L"showReplayMenuf", &showReplayMenu);
 
 	//timeMeltyCall(0x0040d350, "GoesToGameLoop0");
 
