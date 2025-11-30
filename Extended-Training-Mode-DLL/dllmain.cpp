@@ -77,6 +77,7 @@ int nSaveStateKey;
 
 DWORD showCSS = 1;
 int showDebugMenu = 0;
+int showReplayMenu = 0;
 bool bFreeze = false;
 bool bSlow = false;
 bool bFrameDataDisplay = false;
@@ -2288,7 +2289,7 @@ void frameDoneCallback()
 			saveStateManager.save();
 			unpausedFrameCount = prevUnpausedFrameCount;
 			//log("calling rollforward 1");
-			replayManager.rollForward();
+			//replayManager.rollForward();
 			alreadyRolledReplayManager = true;
 
 			//long long endTime = getMicroSec();
@@ -2334,7 +2335,7 @@ void frameDoneCallback()
 
 		
 		///replayManager.load("./ReplayVS/RED_ARCUEIDxSATSUKI_251128130201.rep");
-		//replayManager.reset();
+		replayManager.reset();
 		
 
 		//TASManagerObj.load("TAS.txt");
@@ -6992,6 +6993,8 @@ void threadFunc()
 
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
+
+	ReadFromRegistry(L"showReplayMenuf", &showReplayMenu);
 
 	//timeMeltyCall(0x0040d350, "GoesToGameLoop0");
 

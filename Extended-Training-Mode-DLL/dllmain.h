@@ -157,6 +157,7 @@ extern bool disableFPSLimit;
 extern bool bFreeze;
 
 extern int showDebugMenu;
+extern int showReplayMenu;
 
 extern DWORD showCSS;
 

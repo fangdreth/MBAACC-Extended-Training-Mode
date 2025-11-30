@@ -15,7 +15,7 @@
 //#include <set>
 #include <filesystem>
 
-extern int showDebugMenu;
+extern int showReplayMenu;
 
 
 //#include "DirectX.h"
@@ -194,6 +194,9 @@ void Round::setInputs() {
 		}
 
 		//log("attempting p%d index %5d len %5d", i, currentItemIndex[i], currentItemLength[i]);
+
+		// the first 224 ( i think ) frames of gameplay are the standby thing. 
+		// i really, really do not know why i programmed this in such a way that its this hard to just, see what frame of gameplay im in in theround
 
 		inputItems[i][currentItemIndex[i]].setMeltyInput(i);
 
@@ -376,7 +379,8 @@ void ReplayManager::load(const std::string& filePath_) {
 
 	replays.insert(replay);
 	//activeReplay = replays.size() - 1;
-	activeReplay = replay;
+	//activeReplay = replay;
+	
 
 	log("replay manager load succeeded");
 
@@ -589,11 +593,12 @@ void ReplayManager::initMenu() {
 
 void ReplayManager::drawMenu() {
 
+	// this code is ass and is why i got some criticism on my code interview. why cant i put things where they should be
+	// putting the replay load code here is so dumb
+
 	initMenu();
 
 	Point dupe = anchorPoint;
-
-	showCSS = !replayMenu.unfolded;
 
 	if (replayMenu.unfolded && firstUnfold) {
 		firstUnfold = false;
@@ -607,8 +612,21 @@ void ReplayManager::drawMenu() {
 // -----
 
 void drawReplayMenu() {
-	if (showDebugMenu) {
-		//replayManager.drawMenu();
+
+	static KeyState lShiftKey(VK_LSHIFT);
+	if (lShiftKey.keyHeld() && rClick) {
+		showReplayMenu = !showReplayMenu;
+		SetRegistryValue(L"showReplayMenu", showReplayMenu);
 	}
+
+	
+	showCSS = !replayManager.replayMenu.unfolded || !showReplayMenu;
+
+
+
+	if (showReplayMenu) {
+		replayManager.drawMenu();
+	}
+
 }
 
