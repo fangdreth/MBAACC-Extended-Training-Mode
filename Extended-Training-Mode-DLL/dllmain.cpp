@@ -2288,7 +2288,7 @@ void frameDoneCallback()
 			saveStateManager.save();
 			unpausedFrameCount = prevUnpausedFrameCount;
 			//log("calling rollforward 1");
-			//replayManager.rollForward();
+			replayManager.rollForward();
 			alreadyRolledReplayManager = true;
 
 			//long long endTime = getMicroSec();
@@ -2332,14 +2332,10 @@ void frameDoneCallback()
 		
 		needTrainingModeReset = true;
 
-		//replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_250203130642.rep");
-		replayManager.load("./ReplayVS/RED_ARCUEIDxRED_ARCUEID_241231183621_usethis.rep");
-		//replayManager.load("./ReplayVS/RED_ARCUEIDxV_SION_250203130642.rep");
-
-		//replayManager.load("./ReplayVS/RED_ARCUEIDxRED_ARCUEID_250203161138.rep");
-
-		replayManager.reset();
-
+		
+		///replayManager.load("./ReplayVS/RED_ARCUEIDxSATSUKI_251128130201.rep");
+		//replayManager.reset();
+		
 
 		//TASManagerObj.load("TAS.txt");
 		//needTrainingModeReset = true;

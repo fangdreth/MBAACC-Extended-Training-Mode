@@ -2969,6 +2969,7 @@ void __stdcall _doDrawCalls() {
 
 	if (prevDisableFPSLimit != disableFPSLimit) {
 		// ugh. long story but this changes each caster patch. just open the hook in ghidra and find,, dx end or something
+		// this is one of the stupidest things i have coded, ever.
 		patchByte(dwCasterBaseAddress + 0x66395af0, disableFPSLimit ? 0xC3 : 0x80);
 		prevDisableFPSLimit = disableFPSLimit;
 	}

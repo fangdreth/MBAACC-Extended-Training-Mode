@@ -15,7 +15,7 @@
 //#include <set>
 #include <filesystem>
 
-
+extern int showDebugMenu;
 
 
 //#include "DirectX.h"
@@ -376,7 +376,8 @@ void ReplayManager::load(const std::string& filePath_) {
 
 	replays.insert(replay);
 	//activeReplay = replays.size() - 1;
-	
+	activeReplay = replay;
+
 	log("replay manager load succeeded");
 
 }
@@ -388,6 +389,8 @@ void ReplayManager::initReplay(Replay* r) {
 	}
 
 	log("%s", r->filePath.c_str());
+
+	activeReplay = r; // is this all i needed?
 
 }
 
@@ -417,11 +420,13 @@ void ReplayManager::reset() {
 		return;
 	}
 
-
+	log("reseting active replay");
 	activeReplay->reset();
 }
 
 void ReplayManager::rollForward() {
+
+	//log("replay # %d %08X", replays.size(), (DWORD)activeReplay);
 	if (replays.size() == 0) {
 		return;
 	}
@@ -602,6 +607,8 @@ void ReplayManager::drawMenu() {
 // -----
 
 void drawReplayMenu() {
-	//replayManager.drawMenu();
+	if (showDebugMenu) {
+		//replayManager.drawMenu();
+	}
 }
 
