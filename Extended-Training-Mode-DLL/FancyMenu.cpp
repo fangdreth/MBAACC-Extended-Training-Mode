@@ -6,6 +6,8 @@
 #include "..\Common\Common.h"
 
 #include "TrainingMenu.h"
+#include "FrameBar.h"
+
 extern bool shouldDisplayDebugInfo;
 extern bool shouldDisplayLinkedListInfo;
 extern bool shouldDebugImportantDraw;
@@ -290,6 +292,42 @@ void initUISubmenu() {
 		},
 		defaultSliderNameFunc,
 		sFRAME_BAR_Y
+	);
+
+	ui.add<int>("Framebar Width",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt = CLAMP(opt, 1.0f, 640.0f);
+
+			fFrameBarW = opt;
+		},
+		defaultSliderNameFunc,
+		L"",
+		600
+	);
+
+	ui.add<int>("Framebar Height",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt = CLAMP(opt, 1.0f, 480.0f);
+
+			fFrameBarH = opt;
+		},
+		defaultSliderNameFunc,
+		L"",
+		26
+	);
+
+	ui.add<int>("Framebar Display Range",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt = CLAMP(opt, 1, 400);
+
+			nFrameBarDisplayRange = opt;
+		},
+		defaultSliderNameFunc,
+		L"",
+		75
 	);
 
 	ui.add<int>("Show Stats",
