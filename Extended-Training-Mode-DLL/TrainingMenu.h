@@ -5,6 +5,8 @@
 #include "..\Common\types.h"
 #include <map>
 
+extern Point trueFrameDisplayPt;
+
 const DWORD MBAA_ReadDataFile = 0x00407c10;
 const DWORD MBAA_StringCopyFromIndex = 0x004079d0;
 const DWORD MBAA_SetInfoWindowText = 0x004d9ba0;

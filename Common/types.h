@@ -347,9 +347,9 @@ typedef struct Point {
 	Point& operator-=(const Point const& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
 	Point& operator=(const Point const& rhs) { if (this != &rhs) { x = rhs.x; y = rhs.y; } return *this; }
 
-	bool inside(const Rect& rect) const;
+	bool isInside(const Rect& rect) const;
 
-	bool outside(const Rect& rect) const;
+	bool isOutside(const Rect& rect) const;
 
 } Point;
 
@@ -388,12 +388,12 @@ typedef struct Rect {
 		Point p2;
 	};
 
-	bool inside(const Point& p) const {
+	bool isInside(const Point& p) const {
 		return (p.x >= x1 && p.x <= x2 && p.y >= y1 && p.y <= y2);
 	}
 
-	bool outside(const Point& p) const {
-		return !inside(p);
+	bool isOutside(const Point& p) const {
+		return !isInside(p);
 	}
 
 	Rect& operator=(const Rect const& rhs) { if (this != &rhs) { p1 = rhs.p1; p2 = rhs.p2; } return *this; }
