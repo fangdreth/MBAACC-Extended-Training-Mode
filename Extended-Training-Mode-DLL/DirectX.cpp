@@ -3236,8 +3236,9 @@ void __stdcall _doDrawCalls() {
 		prevDisableFPSLimit = disableFPSLimit;
 	}
 
-	TextDraw(0, 0, 12, 0xFFFFFFFF, "test top left");
-	TextDrawRight(640, 0, 12, 0xFFFFFFFF, "test top right");
+	// hihi gonp
+	//TextDraw(0, 0, 12, 0xFFFFFFFF, "test top left");
+	//TextDrawRight(640, 0, 12, 0xFFFFFFFF, "test top right");
 
 	//dualInputDisplay();
 
