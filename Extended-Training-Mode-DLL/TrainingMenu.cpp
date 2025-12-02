@@ -423,6 +423,7 @@ int nP2_INPUT_DISPLAY = defP2_INPUT;
 int nFRAME_DISPLAY_Y = defFRAME_DISPLAY_Y;
 
 int nTRUE_FRAME_DISPLAY_Y = defTRUE_FRAME_DISPLAY_Y;
+Point trueFrameDisplayPt = Point(0, defTRUE_FRAME_DISPLAY_Y);
 
 extern float fP1_LIST_INPUT_X = defP1_LIST_INPUT_X;
 extern float fP1_LIST_INPUT_Y = defP1_LIST_INPUT_Y;

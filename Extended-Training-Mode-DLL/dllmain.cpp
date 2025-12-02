@@ -194,6 +194,8 @@ void initRegistryValues()
 		*(bool*)(INPUTDISPLAYTOGGLE) = true;
 	}
 
+	trueFrameDisplayPt = Point(0, nTRUE_FRAME_DISPLAY_Y);
+
 	ReadFromRegistry(sP1_LIST_INPUT_X, &fP1_LIST_INPUT_X);
 	ReadFromRegistry(sP1_LIST_INPUT_Y, &fP1_LIST_INPUT_Y);
 	ReadFromRegistry(sP2_LIST_INPUT_X, &fP2_LIST_INPUT_X);
@@ -2766,6 +2768,8 @@ void frameDoneCallback()
 		
 		if (nIN_GAME_FRAME_DISPLAY)
 			drawFrameBar(nTRUE_FRAME_DISPLAY_Y);
+			//drawFrameBar(trueFrameDispl);
+			
 
 		if (nDISPLAY_HITBOXES)
 			drawFrameData();

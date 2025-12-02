@@ -36,12 +36,12 @@ Point mousePos; // no use getting this multiple times a frame
 
 // my inconsistent use of D3DXVECTOR2 vs point is bad. i should use point
 
-bool Point::inside(const Rect& rect) const {
+bool Point::isInside(const Rect& rect) const {
 	return (x >= rect.x1 && x <= rect.x2 && y >= rect.y1 && y <= rect.y2);
 }
 
-bool Point::outside(const Rect& rect) const {
-	return !inside(rect);
+bool Point::isOutside(const Rect& rect) const {
+	return !isInside(rect);
 }
 
 // -----
@@ -1290,6 +1290,45 @@ void BorderRectDrawBlend(float x, float y, float w, float h, DWORD ARGB) {
 
 // -----
 
+float getCharWidth(const unsigned char c, const float w) {
+	// values taken from the switch in below TextDraw func
+
+	float res = w;
+
+	switch (c) {
+	case ARROW_1:
+	case ARROW_2:
+	case ARROW_3:
+	case ARROW_4:
+	case ARROW_6:
+	case ARROW_7:
+	case ARROW_8:
+	case ARROW_9:
+	case BUTTON_A:
+	case BUTTON_B:
+	case BUTTON_C:
+	case BUTTON_D:
+	case BUTTON_A_GRAY:
+	case BUTTON_B_GRAY:
+	case BUTTON_C_GRAY:
+	case BUTTON_D_GRAY:
+	case ARCICON:
+	case MECHICON:
+	case HIMEICON:
+	case WARAICON:
+	case ARROW_0:
+	case ARROW_5:
+	case JOYSTICK:
+	case WHISK:
+		break;
+	default:
+		res *= 0.75;
+		break;
+	}
+
+	return res;
+}
+
 Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format) {
 	// i do hope that this allocing does not slow things down. i tried saving the va_args for when the actual print func was called, but it would not work
 
@@ -1488,9 +1527,232 @@ Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format) {
 	return res;
 }
 
+Rect TextDrawRight(float x, float y, float size, DWORD ARGB, const char* format) {
+	// i do hope that this allocing does not slow things down. i tried saving the va_args for when the actual print func was called, but it would not work
+
+	if (format == NULL) {
+		return Rect();
+	}
+
+	if (true) { // this is stolen from 2v2. well i mean i cant steal from myself
+		// this is NOT accurate. .75 comes from default width
+		// i should probs,, either make a second switch statement or have a constexpr array
+		// i should consider having periods be thinner
+
+		float tempCharWidth = (fontRatio * size * 2.0f);
+		float textWidth = 0.0f;
+		const char* c = format;
+		while (*c != '\0') {
+			textWidth += getCharWidth(*c, tempCharWidth);
+			c++;
+		}
+
+		//x = 640.0f - x;
+		x -= textWidth;
+	}
+
+
+	Rect res(Point(x, y), Point(x, y + size));
+
+	float rectOrigXVal = x;
+	int maxX2Value = res.x2;
+
+	size *= 2.0f;
+
+	x /= 480.0f;
+	y /= 480.0f;
+	size /= 480.0f;
+
+	/*
+	static char buffer[1024];
+
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, 1024, format, args);
+	va_end(args);
+	*/
+
+	DWORD TempARGB = ARGB;
+
+	if (fontTexture == NULL) {
+		log("fontTexture was null, im not drawing");
+		log("tried to draw \"%s\"", format);
+		return Rect();
+	}
+
+	DWORD antiAliasBackup;
+	//device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
+	//device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
+
+	float origX = x;
+	float origY = y;
+
+	float charWidthOffset = (fontRatio * size) * 1.0f;
+	float charHeightOffset = size / 2.0; // melty font is weird
+
+	float w = charWidthOffset;
+	float h = charHeightOffset;
+
+	float charWidth = ((float)(fontSize >> 1)) / (float)fontTexWidth;
+	float charHeight = (((float)fontSize) / (float)fontTexWidth) / 2.0f;
+
+	const char* str = format;
+
+	while (*str) {
+
+		BYTE c = *str;
+
+		charWidthOffset = w * 0.75;
+
+		D3DXVECTOR2 charTopLeft(charWidth * (c & 0xF), charHeight * ((c - 0x00) / 0x10));
+
+		D3DXVECTOR2 charW(charWidth, 0.0);
+		D3DXVECTOR2 charH(0.0, charHeight);
+
+		switch (c) {
+		case '\r':
+		case '\n':
+			maxX2Value = MAX(maxX2Value, 480 * x);
+			res.x2 = rectOrigXVal;
+			x = origX;
+			origY += charHeightOffset;
+			res.y2 += (480.0f * charHeightOffset);
+			str++;
+			continue;
+		case ' ':
+			x += charWidthOffset;
+			res.x2 += (480.0f * charWidthOffset);
+			str++;
+			continue;
+		case '\t': // please dont use tabs. please
+			TempARGB = 0xFF42e5f4;
+			str++;
+			continue;
+		case '{': // blue
+			TempARGB = 0xFF8F8FFF;
+			str++;
+			continue;
+		case '~': // red
+			TempARGB = 0xFFFF8F8F;
+			str++;
+			continue;
+		case '@': // green 
+			TempARGB = 0xFF8FFF8F;
+			str++;
+			continue;
+		case '`': // yellow
+			TempARGB = 0xFFFFFF8F;
+			str++;
+			continue;
+		case '^': // purple
+			TempARGB = 0xFFFF8FFF;
+			str++;
+			continue;
+		case '*': // black
+			TempARGB = 0xFF8F8F8F;
+			str++;
+			continue;
+		case '$': // gray
+			TempARGB = 0xFF888888;
+			str++;
+			continue;
+		case '}': // reset 
+			TempARGB = ARGB;
+			str++;
+			continue;
+		case '\\': // in case you want to print one of the above chars, you can escape them
+			str++;
+			if (c == '\0') {
+				return res;
+			}
+			break;
+		case ARROW_1:
+		case ARROW_2:
+		case ARROW_3:
+		case ARROW_4:
+		case ARROW_6:
+		case ARROW_7:
+		case ARROW_8:
+		case ARROW_9:
+		case BUTTON_A:
+		case BUTTON_B:
+		case BUTTON_C:
+		case BUTTON_D:
+		case BUTTON_A_GRAY:
+		case BUTTON_B_GRAY:
+		case BUTTON_C_GRAY:
+		case BUTTON_D_GRAY:
+		case ARCICON:
+		case MECHICON:
+		case HIMEICON:
+		case WARAICON:
+			charWidthOffset = w;
+			break;
+		case ARROW_0:
+		case ARROW_5:
+			charWidthOffset = w;
+			break;
+		case JOYSTICK:
+		case WHISK:
+			charWidthOffset = w;
+			charW = D3DXVECTOR2(2.0f / 16.0f, 0.0);
+			charH = D3DXVECTOR2(0.0, 2.0f / 16.0f);
+			break;
+		case CURSOR:
+			charTopLeft.y = (8.0f + ((float)(directxFrameCount & 0b1))) / 16.0f;
+			charWidthOffset = w * 4;
+			charW = D3DXVECTOR2(4.0f / 16.0f, 0.0);
+			charH = D3DXVECTOR2(0.0, 1.0f / 16.0f);
+			break;
+		case CURSOR_LOADING:
+			charTopLeft.x = ((float)(directxFrameCount & 0b111)) / 8.0f;
+			charWidthOffset = w * 2;
+			charW = D3DXVECTOR2(2.0f / 16.0f, 0.0);
+			charH = D3DXVECTOR2(0.0, 2.0f / 16.0f);
+			break;
+		default:
+			break;
+		}
+
+		y = 1 - origY;
+
+		PosColTexVert v1{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft };
+		PosColTexVert v2{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y + 0) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft + charW };
+		PosColTexVert v3{ D3DVECTOR(((x + 0) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft + charH };
+		PosColTexVert v4{ D3DVECTOR(((x + w) * 1.5f) - 1.0f, ((y - h) * 2.0f) - 1.0f, 0.5f), TempARGB, charTopLeft + charW + charH };
+
+		scaleVertex(v1.position);
+		scaleVertex(v2.position);
+		scaleVertex(v3.position);
+		scaleVertex(v4.position);
+
+		posColTexVertData.add(v1, v2, v3);
+		posColTexVertData.add(v2, v3, v4);
+
+		x += charWidthOffset;
+		res.x2 += (480.0f * charWidthOffset);
+		str++;
+	}
+
+	res.x2 = MAX(res.x2, maxX2Value);
+
+	//device->SetTexture(0, NULL);
+
+	//device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, antiAliasBackup);
+
+	return res;
+}
+
 Rect TextDraw(const Point& p, float size, DWORD ARGB, const char* format) {
 	return TextDraw(p.x, p.y, size, ARGB, format);
 }
+
+Rect TextDrawRight(const Point& p, float size, DWORD ARGB, const char* format) {
+	return TextDrawRight(p.x, p.y, size, ARGB, format);
+}
+
+
+// -----
 
 void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format, ...) {
 
@@ -2973,6 +3235,9 @@ void __stdcall _doDrawCalls() {
 		patchByte(dwCasterBaseAddress + 0x66395af0, disableFPSLimit ? 0xC3 : 0x80);
 		prevDisableFPSLimit = disableFPSLimit;
 	}
+
+	TextDraw(0, 0, 12, 0xFFFFFFFF, "test top left");
+	TextDrawRight(640, 0, 12, 0xFFFFFFFF, "test top right");
 
 	//dualInputDisplay();
 

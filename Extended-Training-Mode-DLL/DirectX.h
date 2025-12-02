@@ -658,7 +658,6 @@ void BorderRectDrawBlend(float x, float y, float w, float h, DWORD ARGB = 0x8042
 
 // -----
 
-
 Rect TextDraw(float x, float y, float size, DWORD ARGB, const char* format);
 
 Rect TextDraw(const Point& p, float size, DWORD ARGB, const char* format);
@@ -677,6 +676,27 @@ Rect TextDraw(const Point& p, float size, DWORD ARGB, const char* format, Args..
 	// if this isnt inlined ill kill someone
 	return TextDraw(p.x, p.y, size, ARGB, format, args...);
 }
+
+Rect TextDrawRight(float x, float y, float size, DWORD ARGB, const char* format);
+
+Rect TextDrawRight(const Point& p, float size, DWORD ARGB, const char* format);
+
+template<typename... Args>
+Rect TextDrawRight(float x, float y, float size, DWORD ARGB, const char* format, Args... args) {
+
+	static char buffer[4096];
+	snprintf(buffer, 4096, format, args...);
+
+	return TextDraw(x, y, size, ARGB, buffer);
+}
+
+template<typename... Args>
+Rect TextDrawRight(const Point& p, float size, DWORD ARGB, const char* format, Args... args) {
+	// if this isnt inlined ill kill someone
+	return TextDraw(p.x, p.y, size, ARGB, format, args...);
+}
+
+// -----
 
 void TextDrawSimple(float x, float y, float size, DWORD ARGB, const char* format, ...);
 

@@ -6,6 +6,15 @@
 #include "..\Common\Common.h"
 
 #include "TrainingMenu.h"
+
+/*
+
+this code gives me psychic damage every time i look back on it
+what was i smoking;
+i seriously just ended a sentance with a semicolon. wow
+
+*/
+
 extern bool shouldDisplayDebugInfo;
 extern bool shouldDisplayLinkedListInfo;
 extern bool shouldDebugImportantDraw;
@@ -154,7 +163,7 @@ void Menu<T>::draw(Point& p) {
 	if (items.size() == 0) {
 
 		bounds = TextDraw(p, 10, 0xFFFFFFFF, "%s %s", name.c_str(), nameFunc(optionState).c_str());
-		inside = bounds.inside(mousePos);
+		inside = bounds.isInside(mousePos);
 
 		if (lClick && inside) {
 			optionFunc(1, optionState);
@@ -178,7 +187,7 @@ void Menu<T>::draw(Point& p) {
 
 	} else {
 		bounds = TextDraw(p, 10, 0xFFFFFFFF, "%s", name.c_str());
-		inside = bounds.inside(mousePos);
+		inside = bounds.isInside(mousePos);
 
 		if (unfolded) {
 			for (int i = 0; i < items.size(); i++) {
@@ -195,7 +204,7 @@ void Menu<T>::draw(Point& p) {
 	p -= Point(10.0f, 0.0f);
 
 	if (inside) {
-		col = 0xFF00FFFF;
+		col = 0xFF42E5F4;
 	}
 
 	//log("%s %f %f %f %f", name.c_str(), bounds.x1, bounds.y1, bounds.x2, bounds.y2);
@@ -803,7 +812,6 @@ void drawFancyMenu() {
 
 	menuDrag.bottomRight = menuDragPoint + Point(12.0f, 12.0f);
 	menuDrag.topLeft = menuDragPoint - Point(4.0f, 4.0f);
-
 
 	Point menuBasePos = menuDragPoint; // copy bc the menu messes with this point value
 	baseMenu.draw(menuBasePos);
