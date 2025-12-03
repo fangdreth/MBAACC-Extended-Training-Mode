@@ -42,7 +42,7 @@ Player* Main2 = &P2;
 Player* Assist1 = &P3;
 Player* Assist2 = &P4;
 
-void BarFrame::DrawFrame(float x, float y, float w, float h)
+void FrameBarCell::draw(float x, float y, float w, float h)
 {
 	float adjW = w * 0.90f;
 	if (mainColor != 0x0) RectDraw(x, y, adjW, h, mainColor);
@@ -61,7 +61,7 @@ void BarFrame::DrawFrame(float x, float y, float w, float h)
 	}
 }
 
-void BarFrame::Reset()
+void FrameBarCell::reset()
 {
 	mainColor = 0x0;
 	subColor = 0x0;
@@ -159,7 +159,7 @@ void ResetBars()
 		Player& P = *paPlayerArray[i];
 		for (int i = 0; i < BAR_MEMORY_SIZE; i++)
 		{
-			P.BarFrames[i].Reset();
+			P.cells[i].reset();
 		}
 	}
 	nTRUE_SCROLL_DISPLAY = 0;
@@ -323,7 +323,7 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			P.nFirstActive = P.nFirstActiveCounter;
 			P.bAlreadyGotFirstActive = true;
-			P.BarFrames[(nBarCounter - 1) % BAR_MEMORY_SIZE].numFlag = 1;
+			P.cells[(nBarCounter - 1) % BAR_MEMORY_SIZE].numFlag = 1;
 		}
 	}
 
@@ -334,17 +334,17 @@ void UpdateBars(Player& P, Player& Assist)
 		{
 			P.nFirstActive = P.nFirstActiveCounter;
 			P.bAlreadyGotFirstActive = true;
-			P.BarFrames[(nBarCounter - 1) % BAR_MEMORY_SIZE].numFlag = 1;
+			P.cells[(nBarCounter - 1) % BAR_MEMORY_SIZE].numFlag = 1;
 		}
 	}
 
-	P.BarFrames[nBarCounter % BAR_MEMORY_SIZE].mainColor = dwMainColor;
-	P.BarFrames[nBarCounter % BAR_MEMORY_SIZE].subColor = dwSubColor;
-	P.BarFrames[nBarCounter % BAR_MEMORY_SIZE].subActiveColor = dwSubActiveColor;
-	P.BarFrames[nBarCounter % BAR_MEMORY_SIZE].airborneColor = dwAirborneColor;
+	P.cells[nBarCounter % BAR_MEMORY_SIZE].mainColor = dwMainColor;
+	P.cells[nBarCounter % BAR_MEMORY_SIZE].subColor = dwSubColor;
+	P.cells[nBarCounter % BAR_MEMORY_SIZE].subActiveColor = dwSubActiveColor;
+	P.cells[nBarCounter % BAR_MEMORY_SIZE].airborneColor = dwAirborneColor;
 
-	P.BarFrames[nBarCounter % BAR_MEMORY_SIZE].number = nNumber;
-	P.BarFrames[nBarCounter % BAR_MEMORY_SIZE].numFlag = nNumFlag;
+	P.cells[nBarCounter % BAR_MEMORY_SIZE].number = nNumber;
+	P.cells[nBarCounter % BAR_MEMORY_SIZE].numFlag = nNumFlag;
 
 	auto posMod = [](int x, int mod) {
 		return (x % mod + mod) % mod;
@@ -354,24 +354,24 @@ void UpdateBars(Player& P, Player& Assist)
 
 	if (nNumFlag != 2 &&
 		nNumber >= 0 &&
-		P.BarFrames[previousIndex].numFlag == 0) //clear last frame if current frame has info and last frame numFlag = 0
+		P.cells[previousIndex].numFlag == 0) //clear last frame if current frame has info and last frame numFlag = 0
 	{
-		P.BarFrames[previousIndex].number = -1;
+		P.cells[previousIndex].number = -1;
 	}
 	else if (nNumFlag == 2 &&
 		nNumber >= 0 &&
-		P.BarFrames[previousIndex].numFlag == 2) //clear last frame if current and last frame numFlag = 2
+		P.cells[previousIndex].numFlag == 2) //clear last frame if current and last frame numFlag = 2
 	{
-		P.BarFrames[previousIndex].number = -1;
+		P.cells[previousIndex].number = -1;
 	}
 	else if (nNumFlag == 2 &&
 		nNumber >= 0 &&
-		P.BarFrames[previousIndex].numFlag == 3) //continuous clear if numFlag = 2 and previous = 3
+		P.cells[previousIndex].numFlag == 3) //continuous clear if numFlag = 2 and previous = 3
 	{
 		int i = 1;
-		while (P.BarFrames[posMod(nBarCounter - i, BAR_MEMORY_SIZE)].numFlag == 3)
+		while (P.cells[posMod(nBarCounter - i, BAR_MEMORY_SIZE)].numFlag == 3)
 		{
-			P.BarFrames[posMod(nBarCounter - ++i, BAR_MEMORY_SIZE)].number = -1;
+			P.cells[posMod(nBarCounter - ++i, BAR_MEMORY_SIZE)].number = -1;
 		}
 	}
 }
@@ -575,8 +575,8 @@ void drawFrameBar(int frameBarY)
 
 		float x = left + fFrameBarW / nFrameBarDisplayRange * nBarDrawCounter;
 		float w = fFrameBarW / nFrameBarDisplayRange;
-		Main1->BarFrames[j].DrawFrame(x, top + fFrameBarH * 0.06, w, fFrameBarH * 0.38);
-		Main2->BarFrames[j].DrawFrame(x, top + fFrameBarH * 0.56, w, fFrameBarH * 0.38);
+		Main1->cells[j].draw(x, top + fFrameBarH * 0.06, w, fFrameBarH * 0.38);
+		Main2->cells[j].draw(x, top + fFrameBarH * 0.56, w, fFrameBarH * 0.38);
 
 		nBarDrawCounter++;
 	}

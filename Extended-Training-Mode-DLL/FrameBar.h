@@ -39,7 +39,7 @@ extern char pcTextPattern[256];
 extern int nDrawTextTimer;
 extern int nClearSaveTimer;
 
-struct BarFrame
+struct FrameBarCell
 {
 	DWORD mainColor = 0x0;
 	DWORD subColor = 0x0;
@@ -49,9 +49,9 @@ struct BarFrame
 	int number = -1;
 	int numFlag = 0;
 
-	void Reset();
+	void reset();
 
-	void DrawFrame(float x, float y, float w, float h);
+	void draw(float x, float y, float w, float h);
 };
 
 struct Player
@@ -63,7 +63,7 @@ struct Player
 
 	int nLastInactionableFrames = 0;
 
-	BarFrame BarFrames[BAR_MEMORY_SIZE];
+	FrameBarCell cells[BAR_MEMORY_SIZE];
 
 	int nActiveCounter = 0;
 	int nInactionableMemory = 0;
