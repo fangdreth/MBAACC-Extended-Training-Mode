@@ -2710,7 +2710,7 @@ void frameDoneCallback()
 	}
 	else if (bShowFrameBarPreview)
 	{
-		drawFrameBar(420);
+		drawFrameBar(430);
 	}
 	else if (bShowFrameBarYPreview)
 	{
@@ -2722,7 +2722,7 @@ void frameDoneCallback()
 		drawColorGuide();
 	}
 
-	if (nIN_GAME_FRAME_DISPLAY && nTRUE_FRAME_DISPLAY_Y > 400)
+	if (nIN_GAME_FRAME_DISPLAY && nTRUE_FRAME_DISPLAY_Y > 410)
 	{
 		shouldDrawMeter = 0;
 	}

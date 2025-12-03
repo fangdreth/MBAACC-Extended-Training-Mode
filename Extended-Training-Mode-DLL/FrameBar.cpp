@@ -22,7 +22,7 @@ int nSharedHitstop;
 float fFrameBarW = 600; // total inside width of framebar
 float fFrameBarH = 26; // total inside height of framebar
 
-int nFrameBarY = 400;
+int nFrameBarY = 410;
 int nFrameBarDisplayRange = 75;
 
 char pcTextToDisplay[256];
@@ -575,8 +575,8 @@ void drawFrameBar(int frameBarY)
 
 		float x = left + fFrameBarW / nFrameBarDisplayRange * nBarDrawCounter;
 		float w = fFrameBarW / nFrameBarDisplayRange;
-		Main1->BarFrames[j].DrawFrame(x, top + 2, w, (fFrameBarH - 6) / 2);
-		Main2->BarFrames[j].DrawFrame(x, top + (fFrameBarH / 2) + 2, w, (fFrameBarH - 6) / 2);
+		Main1->BarFrames[j].DrawFrame(x, top + fFrameBarH * 0.06, w, fFrameBarH * 0.38);
+		Main2->BarFrames[j].DrawFrame(x, top + fFrameBarH * 0.56, w, fFrameBarH * 0.38);
 
 		nBarDrawCounter++;
 	}

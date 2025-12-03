@@ -303,8 +303,8 @@ void initUISubmenu() {
 		sFRAME_BAR_Y
 	);
 
-	ui.add<int>("Framebar Width",
-		[](int inc, int& opt) {
+	ui.add<float>("Framebar Width",
+		[](float inc, float& opt) {
 			opt += inc;
 			opt = CLAMP(opt, 1.0f, 640.0f);
 
@@ -315,8 +315,8 @@ void initUISubmenu() {
 		600
 	);
 
-	ui.add<int>("Framebar Height",
-		[](int inc, int& opt) {
+	ui.add<float>("Framebar Height",
+		[](float inc, float& opt) {
 			opt += inc;
 			opt = CLAMP(opt, 1.0f, 480.0f);
 
