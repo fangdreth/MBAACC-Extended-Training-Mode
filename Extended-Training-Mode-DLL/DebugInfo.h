@@ -654,7 +654,7 @@ CHECKOFFSET(needToCrossupInputs, 0x312);
 
 #undef CHECKOFFSET
 
-static_assert(sizeof(ActorData) == 0x338, "EffectData MUST be 0x338 large!");
+static_assert(sizeof(ActorData) == 0x338, "ActorData MUST be 0x338 large!");
 
 #pragma pack(push,1)
 typedef struct EffectData {

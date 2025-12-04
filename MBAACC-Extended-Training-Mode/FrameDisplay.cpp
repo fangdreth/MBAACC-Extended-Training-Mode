@@ -333,10 +333,6 @@ void UpdateBars(Player& P, Player& Assist)
 				sBarValue = std::format("{:2}", (P.nHitstunRemaining - 1) % 100);
 			}
 		}
-		else if (bHasInvuln)
-		{
-			sFont = FD_INACTIONABLE_INVULN;
-		}
 		else
 		{
 			sFont = FD_INACTIONABLE;
@@ -362,22 +358,18 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		sFont = FD_ACTIONABLE;
 		sBarValue = std::format("{:2}", P.nPattern % 100);
-		if (bDoAdvantage) //Has advantage
-		{
-			sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
-			sFont = FD_ADVANTAGE;
-		}
 		if (P.nLastInactionableFrames != 0 || (P.cLastStance == 1 && P.cState_Stance != 1)) //Neutral frame
 		{
 			sFont = FD_NEUTRAL;
 		}
-		else if (bHasInvuln)
+		else if (bDoAdvantage) //Has advantage
 		{
-			sFont = FD_ACTIONABLE_INVULN;
+			sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
+			sFont = FD_ADVANTAGE;
 		}
 	}
 
-	if (bDisplayCancels && P.nState_Flagset2 & 1)
+	if (bDisplayCancels && P.nState_Flagset2 & 1) //EX Cancel
 	{
 		sFont = FD_UNDERLINE + sFont;
 	}
@@ -407,9 +399,17 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		sFont = FD_SHIELD;
 	}
-	else if (P.dwCondition1_ConditionType == 52 || P.dwCondition2_ConditionType == 52)
+	else if (P.dwCondition1_ConditionType == 52 || P.dwCondition2_ConditionType == 52) //Throw active frame
 	{
 		sFont = FD_THROW_ACTIVE;
+	}
+
+	if (P.cAnimation_BoxIndex <= 1 ||
+		P.sStrikeInvuln != 0 ||
+		P.cState_Invuln == 3)
+	{
+		if (P.nInactionableFrames != 0) sFont = FD_INACTIONABLE_INVULN;
+		else sFont = FD_ACTIONABLE_INVULN;
 	}
 
 	P.sBar1[nBarCounter % BAR_MEMORY_SIZE][0] = sFont;
