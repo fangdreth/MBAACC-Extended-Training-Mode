@@ -420,10 +420,6 @@ int nSHOW_STATS = defSHOW_STATS;
 int nACCURATE_COMBO_DAMAGE = defACCURATE_COMBO_DAMAGE;
 int nP1_INPUT_DISPLAY = defP1_INPUT;
 int nP2_INPUT_DISPLAY = defP2_INPUT;
-int nFRAME_DISPLAY_Y = defFRAME_DISPLAY_Y;
-
-int nTRUE_FRAME_DISPLAY_Y = defTRUE_FRAME_DISPLAY_Y;
-Point trueFrameDisplayPt = Point(0, defTRUE_FRAME_DISPLAY_Y);
 
 extern float fP1_LIST_INPUT_X = defP1_LIST_INPUT_X;
 extern float fP1_LIST_INPUT_Y = defP1_LIST_INPUT_Y;
@@ -440,15 +436,11 @@ void DefaultP10(MenuInfo* menuInfo) {
 	nACCURATE_COMBO_DAMAGE = defACCURATE_COMBO_DAMAGE;
 	nP1_INPUT_DISPLAY = defP1_INPUT;
 	nP2_INPUT_DISPLAY = defP2_INPUT;
-	nFRAME_DISPLAY_Y = defFRAME_DISPLAY_Y;
-
-	nTRUE_FRAME_DISPLAY_Y = defTRUE_FRAME_DISPLAY_Y;
 
 	(menuInfo->elementList).listStart[(int)eUI::SHOW_STATS]->selectedItem = defSHOW_STATS;
 	(menuInfo->elementList).listStart[(int)eUI::ACCURATE_COMBO_DAMAGE]->selectedItem = defACCURATE_COMBO_DAMAGE;
 	(menuInfo->elementList).listStart[(int)eUI::P1_INPUT_DISPLAY]->selectedItem = defP1_INPUT;
 	(menuInfo->elementList).listStart[(int)eUI::P2_INPUT_DISPLAY]->selectedItem = defP2_INPUT;
-	(menuInfo->elementList).listStart[(int)eUI::FRAME_DISPLAY_Y]->selectedItem = defFRAME_DISPLAY_Y;
 }
 
 //Page 11
@@ -775,8 +767,6 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 
 	{"XS_9_3_0", "No P1 input display."}, {"XS_9_3_1", "Display P1 inputs as a list."}, {"XS_9_3_2", "Display P1 inputs on an arcade layout."}, {"XS_9_3_3", "Display P1 inputs both ways."},
 	{"XS_9_4_0", "No P2 input display."}, {"XS_9_4_1", "Display P2 inputs as a list."}, {"XS_9_4_2", "Display P2 inputs on an arcade layout."}, {"XS_9_4_3", "Display P2 inputs both ways."},
-
-	{"XS_9_6_0", "_BARY"}, {"XS_9_6_1", "_BARY"}, {"XS_9_6_2", "_BARY"},
 
 	{"XS_10_0_0", "Play the game at 100% speed."}, {"XS_10_0_1", "Play the game at 75% speed."}, {"XS_10_0_2", "Play the game at 50% speed."}, {"XS_10_0_3", "Play the game at 25% speed."},
 

@@ -19,6 +19,8 @@ bool bDisplayInputs = false;
 int nPlayerAdvantage;
 int nSharedHitstop;
 
+float fFrameBarX = 20.0f;
+float fFrameBarY = 410.0f;
 float fFrameBarW = 600; // total inside width of framebar
 float fFrameBarH = 26; // total inside height of framebar
 
@@ -41,6 +43,23 @@ Player* Main1 = &P1;
 Player* Main2 = &P2;
 Player* Assist1 = &P3;
 Player* Assist2 = &P4;
+
+DragInfo frameBarDragInfo(&fFrameBarX, &fFrameBarY);
+
+FrameBar::FrameBar(float x_, float y_, float w_, float h_, int numCells_)
+{
+	x = x_;
+	y = y_;
+	w = w_;
+	h = h_;
+	numCells = numCells_;
+
+	dragInfo.dragPointX = &x;
+	dragInfo.dragPointY = &y;
+	dragManager.add(&dragInfo);
+}
+
+FrameBar frameBar(20.0f, 400.0f, 600.0f, 26.0f, 75);
 
 void FrameBarCell::draw(float x, float y, float w, float h)
 {
@@ -153,7 +172,7 @@ void ResetBars()
 	nBarIntervalCounter = 0;
 	nBarScrolling = 0;
 	bDoBarReset = false;
-	nBarIntervalMax = nFrameBarDisplayRange;
+	nBarIntervalMax = frameBar.numCells;
 	for (int i = 0; i < 4; i++)
 	{
 		Player& P = *paPlayerArray[i];
@@ -435,7 +454,7 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 		nBarIntervalCounter++;
 	}
 
-	if (nBarCounter >= nFrameBarDisplayRange)
+	if (nBarCounter >= frameBar.numCells)
 	{
 		nBarIntervalMax = BAR_INTERVAL;
 	}
@@ -499,7 +518,7 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 	}
 }
 
-void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
+void UpdateFrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 {
 	bDisplayFreeze = nSHOW_HITSTOP_AND_FREEZE;
 	bDisplayInputs = nSHOW_INPUTS; //currently unused, may add input display to framebar at some point
@@ -541,50 +560,47 @@ void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 
 }
 
-void drawFrameBar(int frameBarY)
+void DrawFrameBar()
 {
 
-	FrameBar(P1, P2, P3, P4);
+	UpdateFrameBar(P1, P2, P3, P4);
 
 	int nBarDrawCounter = 0;
 
-	short sAdjustedScroll = min(min(nBarCounter - nFrameBarDisplayRange, BAR_MEMORY_SIZE - nFrameBarDisplayRange), -nTRUE_SCROLL_DISPLAY);
+	short sAdjustedScroll = min(min(nBarCounter - frameBar.numCells, BAR_MEMORY_SIZE - frameBar.numCells), -nTRUE_SCROLL_DISPLAY);
 
-	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - nFrameBarDisplayRange - sAdjustedScroll;
+	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - frameBar.numCells - sAdjustedScroll;
 	int nForEnd = (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll;
-	if (nBarCounter <= nFrameBarDisplayRange)
+	if (nBarCounter <= frameBar.numCells)
 	{
 		nForStart = 0;
 		nForEnd = nBarCounter;
 	}
 
-	float top = frameBarY - (fFrameBarH / 2.0f);
-	float left = 320.0f - (fFrameBarW / 2.0f);
+	RectDraw(frameBar.x - 2, frameBar.y, frameBar.w + 3, frameBar.h + 1, 0x99000000); //Background
 
-	RectDraw(left - 2, top, fFrameBarW + 3, fFrameBarH + 1, 0x99000000); //Background
-
-	RectDraw(left - 3, top - 2, fFrameBarW + 5, 2, 0xFFFFFFFF);
-	RectDraw(left - 4, top - 1, 2, fFrameBarH + 3, 0xFFFFFFFF);
-	RectDraw(left - 3, top + fFrameBarH + 1, fFrameBarW + 5, 2, 0xFFFFFFFF);
-	RectDraw(left + fFrameBarW + 1, top - 1, 2, fFrameBarH + 3, 0xFFFFFFFF);
+	RectDraw(frameBar.x - 3, frameBar.y - 2, frameBar.w + 5, 2, 0xFFFFFFFF);
+	RectDraw(frameBar.x - 4, frameBar.y - 1, 2, frameBar.h + 3, 0xFFFFFFFF);
+	RectDraw(frameBar.x - 3, frameBar.y + frameBar.h + 1, frameBar.w + 5, 2, 0xFFFFFFFF);
+	RectDraw(frameBar.x + frameBar.w + 1, frameBar.y - 1, 2, frameBar.h + 3, 0xFFFFFFFF);
 
 	int j = 0;
 	for (int i = nForStart; i < nForEnd; i++)
 	{
 		j = i < 0 ? i + BAR_MEMORY_SIZE : i;
 
-		float x = left + fFrameBarW / nFrameBarDisplayRange * nBarDrawCounter;
-		float w = fFrameBarW / nFrameBarDisplayRange;
-		Main1->cells[j].draw(x, top + fFrameBarH * 0.06, w, fFrameBarH * 0.38);
-		Main2->cells[j].draw(x, top + fFrameBarH * 0.56, w, fFrameBarH * 0.38);
+		float x = frameBar.x + frameBar.w / frameBar.numCells * nBarDrawCounter;
+		float w = frameBar.w / frameBar.numCells;
+		Main1->cells[j].draw(x, frameBar.y + frameBar.h * 0.06, w, frameBar.h * 0.38);
+		Main2->cells[j].draw(x, frameBar.y + frameBar.h * 0.56, w, frameBar.h * 0.38);
 
 		nBarDrawCounter++;
 	}
 	static char buffer[256];
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", Main1->nFirstActive % 1000, Main1->nInactionableMemory % 1000, nPlayerAdvantage % 1000);
-	TextDraw(left, top - 12, 10, 0xFFFFFFFF, buffer);
+	TextDraw(frameBar.x, frameBar.y - 12, 10, 0xFFFFFFFF, buffer);
 
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", Main2->nFirstActive % 1000, Main2->nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
-	TextDraw(left, top + fFrameBarH + 3, 10, 0xFFFFFFFF, buffer);
+	TextDraw(frameBar.x, frameBar.y + frameBar.h + 3, 10, 0xFFFFFFFF, buffer);
 
 }

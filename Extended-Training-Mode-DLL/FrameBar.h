@@ -39,6 +39,22 @@ extern char pcTextPattern[256];
 extern int nDrawTextTimer;
 extern int nClearSaveTimer;
 
+class FrameBar
+{
+public:
+	FrameBar(float x_, float y_, float w_, float h_, int numCells_);
+
+	float x;
+	float y;
+	float w;
+	float h;
+	int numCells;
+
+	DragInfo dragInfo;
+};
+
+extern FrameBar frameBar;
+
 struct FrameBarCell
 {
 	DWORD mainColor = 0x0;
@@ -109,6 +125,6 @@ void HandleInactive(Player& P);
 
 void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist);
 
-void FrameBar(Player& P1, Player& P2, Player& P3, Player& P4);
+void UpdateFrameBar(Player& P1, Player& P2, Player& P3, Player& P4);
 
-void drawFrameBar(int frameBarY);
+void DrawFrameBar();

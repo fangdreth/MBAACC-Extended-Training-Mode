@@ -185,16 +185,11 @@ void initRegistryValues()
 	ReadFromRegistry(sDISPLAY_INPUTS, &nSHOW_INPUTS);
 	ReadFromRegistry(sDISPLAY_CANCELS, &nSHOW_CANCEL_WINDOWS);
 
-	ReadFromRegistry(sFRAME_BAR_Y, &nTRUE_FRAME_DISPLAY_Y);
-	if (nTRUE_FRAME_DISPLAY_Y == 440) nFRAME_DISPLAY_Y = 2;
-	else if (nTRUE_FRAME_DISPLAY_Y == 10) nFRAME_DISPLAY_Y = 0;
 	ReadFromRegistry(sP1_INPUT_DISPLAY, &nP1_INPUT_DISPLAY);
 	ReadFromRegistry(sP2_INPUT_DISPLAY, &nP2_INPUT_DISPLAY);
 	if (nP1_INPUT_DISPLAY != 0 || nP2_INPUT_DISPLAY != 0) {
 		*(bool*)(INPUTDISPLAYTOGGLE) = true;
 	}
-
-	trueFrameDisplayPt = Point(0, nTRUE_FRAME_DISPLAY_Y);
 
 	ReadFromRegistry(sP1_LIST_INPUT_X, &fP1_LIST_INPUT_X);
 	ReadFromRegistry(sP1_LIST_INPUT_Y, &fP1_LIST_INPUT_Y);
@@ -2695,7 +2690,7 @@ void frameDoneCallback()
 	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12)) {
 		
 		if (nIN_GAME_FRAME_DISPLAY)
-			drawFrameBar(nTRUE_FRAME_DISPLAY_Y);
+			DrawFrameBar();
 			//drawFrameBar(trueFrameDispl);
 			
 
@@ -2710,11 +2705,7 @@ void frameDoneCallback()
 	}
 	else if (bShowFrameBarPreview)
 	{
-		drawFrameBar(430);
-	}
-	else if (bShowFrameBarYPreview)
-	{
-		drawFrameBar(nTRUE_FRAME_DISPLAY_Y);
+		DrawFrameBar();
 	}
 
 	if (bCOLOR_GUIDE)
@@ -2722,7 +2713,7 @@ void frameDoneCallback()
 		drawColorGuide();
 	}
 
-	if (nIN_GAME_FRAME_DISPLAY && nTRUE_FRAME_DISPLAY_Y > 410)
+	if (nIN_GAME_FRAME_DISPLAY && frameBar.y > 410)
 	{
 		shouldDrawMeter = 0;
 	}
@@ -5323,11 +5314,6 @@ void ExtendedMenuInputChecking() {
 		case eUI::P2_INPUT_DISPLAY:
 			SetRegistryValue(sP2_INPUT_DISPLAY, curElement->selectedItem);
 			break;
-		case eUI::FRAME_DISPLAY_Y:
-			NormalScrolling(curElement, nTRUE_FRAME_DISPLAY_Y, 10, 440, bA ? 1 : 10);
-			bShowFrameBarYPreview = true;
-			SetRegistryValue(sFRAME_BAR_Y, nTRUE_FRAME_DISPLAY_Y);
-			break;
 		case eUI::DEFAULT:
 			if (bAPos) DefaultP10(curMenuInfo);
 			break;
@@ -5338,9 +5324,6 @@ void ExtendedMenuInputChecking() {
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
 			break;
 		}
-
-		snprintf(labelBuf, 31, "%i", nTRUE_FRAME_DISPLAY_Y);
-		(curMenuInfo->elementList).listStart[(int)eUI::FRAME_DISPLAY_Y]->SetCurItemLabel(labelBuf);
 
 		break;
 	}
@@ -5969,10 +5952,6 @@ void Handle_RNG(char* buffer) {
 	snprintf(buffer, 128, "%sUse a seed / value of %i", SUB_INFO_PREFIX, nTRUE_SEED);
 }
 
-void Handle_BARY(char* buffer) {
-	snprintf(buffer, 128, "%sDisplay the bar at y = %i.", SUB_INFO_PREFIX, nTRUE_FRAME_DISPLAY_Y);
-}
-
 void HandleInformationMenu() {
 	MenuWindow* trainingMenu = *(MenuWindow**)(adMBAABase + adTrainingMenu);
 	if (trainingMenu == 0 || trainingMenu->InformationMenu == 0) return;
@@ -6049,9 +6028,6 @@ void HandleInformationMenu() {
 			}
 			else if (strcmp(subInfo, "_RNG") == 0) {
 				Handle_RNG(buffer);
-			}
-			else if (strcmp(subInfo, "_BARY") == 0) {
-				Handle_BARY(buffer);
 			}
 		}
 		else {

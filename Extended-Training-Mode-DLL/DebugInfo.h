@@ -778,6 +778,26 @@ static_assert(sizeof(PlayerAuxData) == 0x20C, "PlayerAuxData must have size 0x5A
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
+typedef struct CSSData {
+	int CharaNo;
+	char Name[48];
+	char File1[32];
+	char File2[32];
+	int CharaNum[2];
+	int GiantFlag;
+	int TagType;
+	UNUSED(0xC);
+} CSSData;
+#pragma pack(pop)
+
+#define CHECKOFFSET(v, n) static_assert(offsetof(CSSData, v) == n, "CSSData offset incorrect for " #v);
+
+CHECKOFFSET(TagType, 0x80);
+
+static_assert(sizeof(CSSData) == 0x90, "CSSData must have size 0x90.");
+#undef CHECKOFFSET
+
+#pragma pack(push,1)
 typedef struct HitEffectData {
 
 } HitEffectData; // remember when i reversed this whole thing and then proceded to accidentally wipe all my work?

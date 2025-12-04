@@ -5,8 +5,6 @@
 #include "..\Common\types.h"
 #include <map>
 
-extern Point trueFrameDisplayPt;
-
 const DWORD MBAA_ReadDataFile = 0x00407c10;
 const DWORD MBAA_StringCopyFromIndex = 0x004079d0;
 const DWORD MBAA_SetInfoWindowText = 0x004d9ba0;
@@ -1114,11 +1112,6 @@ const std::vector<const char*> vP2_INPUT_DISPLAY = {
 	"OFF", "LIST", "ARCADE", "BOTH"
 };
 
-const std::vector<const char*> vFRAME_DISPLAY_Y = {
-	"FRAME DISPLAY Y",
-	"X1", "X2", "X3"
-};
-
 const std::vector<const char*> vP10_PAGE = {
 	" ",
 	"X1", "PAGE 10", "X3"
@@ -1127,7 +1120,6 @@ const std::vector<const char*> vP10_PAGE = {
 const std::vector<std::vector<const char*>> P10_Options = {
 	vSHOW_STATS, vSHOW_ACCURATE_COMBO_DAMAGE, vSPACE_ELEMENT,
 	vP1_INPUT_DISPLAY, vP2_INPUT_DISPLAY, vSPACE_ELEMENT,
-	vFRAME_DISPLAY_Y, vSPACE_ELEMENT,
 	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
 	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP10_PAGE
@@ -1140,12 +1132,10 @@ enum class eUI {
 	P1_INPUT_DISPLAY,
 	P2_INPUT_DISPLAY,
 	S1,
-	FRAME_DISPLAY_Y,
-	S2,
 	DEFAULT,
-	S3,
+	S2,
 	RETURN,
-	S4,
+	S3,
 	PAGE
 };
 
@@ -1153,20 +1143,14 @@ const int defSHOW_STATS = 1;
 const int defACCURATE_COMBO_DAMAGE = 1;
 const int defP1_INPUT = 0;
 const int defP2_INPUT = 0;
-const int defFRAME_DISPLAY_Y = 1;
 
 extern int nSHOW_STATS;
 extern int nACCURATE_COMBO_DAMAGE;
 extern int nP1_INPUT_DISPLAY;
 extern int nP2_INPUT_DISPLAY;
-extern int nFRAME_DISPLAY_Y;
-
-const int defTRUE_FRAME_DISPLAY_Y = 400;
-
-extern int nTRUE_FRAME_DISPLAY_Y;
 
 const std::vector<int*> P10_Settings = {
-	&nSHOW_STATS, &nACCURATE_COMBO_DAMAGE, &nP1_INPUT_DISPLAY, &nP2_INPUT_DISPLAY, &nFRAME_DISPLAY_Y,
+	&nSHOW_STATS, &nACCURATE_COMBO_DAMAGE, &nP1_INPUT_DISPLAY, &nP2_INPUT_DISPLAY,
 	&nPAGE
 };
 

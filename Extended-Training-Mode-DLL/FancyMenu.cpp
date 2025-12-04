@@ -289,18 +289,28 @@ void initUISubmenu() {
 		sFRAME_DISPLAY
 	);
 
-	ui.add<int>("Framebar Y",
-		[](int inc, int& opt) {
-			opt += (inc * 10.0f);
-			opt = CLAMP(opt, 10.0f, 440.0f);
+	ui.add<float>("Framebar X",
+		[](float inc, float& opt) {
+			opt += inc;
+			opt = CLAMP(opt, 0.0f, 640.0f);
 
-			nTRUE_FRAME_DISPLAY_Y = opt;
-			if (nTRUE_FRAME_DISPLAY_Y == 440) nFRAME_DISPLAY_Y = 2;
-			else if (nTRUE_FRAME_DISPLAY_Y == 10) nFRAME_DISPLAY_Y = 0;
-			else nFRAME_DISPLAY_Y = 1;
+			frameBar.x = opt;
 		},
 		defaultSliderNameFunc,
-		sFRAME_BAR_Y
+		L"",
+		20
+	);
+
+	ui.add<float>("Framebar Y",
+		[](float inc, float& opt) {
+			opt += inc;
+			opt = CLAMP(opt, 0.0f, 480.0f);
+
+			frameBar.y = opt;
+		},
+		defaultSliderNameFunc,
+		L"",
+		400
 	);
 
 	ui.add<float>("Framebar Width",
@@ -308,7 +318,7 @@ void initUISubmenu() {
 			opt += inc;
 			opt = CLAMP(opt, 1.0f, 640.0f);
 
-			fFrameBarW = opt;
+			frameBar.w = opt;
 		},
 		defaultSliderNameFunc,
 		L"",
@@ -320,19 +330,19 @@ void initUISubmenu() {
 			opt += inc;
 			opt = CLAMP(opt, 1.0f, 480.0f);
 
-			fFrameBarH = opt;
+			frameBar.h = opt;
 		},
 		defaultSliderNameFunc,
 		L"",
 		26
 	);
 
-	ui.add<int>("Framebar Display Range",
+	ui.add<int>("Framebar Number of Frames Displayed",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt = CLAMP(opt, 1, 400);
 
-			nFrameBarDisplayRange = opt;
+			frameBar.numCells = opt;
 		},
 		defaultSliderNameFunc,
 		L"",
