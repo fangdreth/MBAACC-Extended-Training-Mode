@@ -2268,7 +2268,7 @@ void frameDoneCallback()
 	}
 
 	static KeyState mKey('M');
-	if (mKey.keyDown())
+	if (lShiftKey.keyHeld() && mKey.keyDown())
 	//if (oResetKey.keyDown())
 	{
 		needTrainingModeReset = true;
