@@ -2280,6 +2280,10 @@ void frameDoneCallback()
 	static KeyState nKey('N');
 	if (lShiftKey.keyHeld() && nKey.keyDown())
 	{
+		pP1->exists = 0;
+		pP2->exists = 0;
+		pP3->exists = 0;
+		pP4->exists = 0;
 		FullCharacterReload();
 		needTrainingModeReset = true;
 	}
