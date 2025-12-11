@@ -417,13 +417,14 @@ typedef struct HA6Data {
 
 
 #pragma pack(push,1)
-typedef struct SomeData { 
+typedef struct CharFileData { 
 	// out of all the structs, i understand this one the least.
 	// the important thing, is that it eventually leads to 0x31C patternDataPtr, and so in most cases, you can and should probs just use that
 	// this however, can be used to see all paterns in a char. seems very nice to have
-	HA6Data* ha6DataPtr;
-	UNUSED(0x8);
-} SomeData;
+	HA6Data* DataFile;
+	void* BmpcutFile;
+	void* PAniFile;
+} CharFileData;
 #pragma pack(pop)
 
 typedef struct EffectData;
@@ -631,7 +632,7 @@ typedef struct ActorData {
 	AttackData* attackDataPtr;
 	EffectData* selfPtr;
 	ActorData* partnerPtr;
-	SomeData* someDataPtr;
+	CharFileData* charFileDataPtr;
 	DWORD framesIntoCurrentPattern;
 	UNUSED(4);
 } ActorData;
@@ -819,3 +820,5 @@ extern bool useWind;
 extern int xWindVel;
 extern int changeWindDir;
 void setWind();
+const DWORD MBAA_FullCharacterReload = 0x00448fb0;
+void FullCharacterReload();

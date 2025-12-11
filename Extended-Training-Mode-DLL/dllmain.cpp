@@ -2277,6 +2277,13 @@ void frameDoneCallback()
 		needTrainingModeReset = true;
 	}
 
+	static KeyState nKey('N');
+	if (lShiftKey.keyHeld() && nKey.keyDown())
+	{
+		FullCharacterReload();
+		needTrainingModeReset = true;
+	}
+
 	static KeyState fKey('F');
 	if (lShiftKey.keyHeld() && fKey.keyDown()) {
 		setFPSLimiter(!disableFPSLimit); // sorry :3

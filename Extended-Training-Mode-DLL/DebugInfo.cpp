@@ -63,7 +63,7 @@ void EffectData::describe(char* buffer, int bufLen) {
 PatternData* EffectData::getPatternDataPtr(int p) {
 	// doing this in a more normal way could never get me the results i wanted
 	__try {
-		HA6Data* ha6 = playerDataArr[0].subObj.someDataPtr->ha6DataPtr;
+		HA6Data* ha6 = playerDataArr[0].subObj.charFileDataPtr->DataFile;
 		if (!ha6) return 0;
 		ArrayContainer<PatternData*>* patCont = ha6->patternContainer;
 		if (!patCont || patCont->count < p) return 0;
@@ -682,4 +682,11 @@ void setWind() {
 		}
 	}
 
+}
+
+void FullCharacterReload() {
+	__asm {
+		mov eax, 0x00550014;
+		call[MBAA_FullCharacterReload];
+	}
 }
