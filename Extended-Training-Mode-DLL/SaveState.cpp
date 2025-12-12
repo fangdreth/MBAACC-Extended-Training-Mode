@@ -5,6 +5,7 @@
 #include "dllmain.h"
 #include <shobjidl.h> 
 #include <fstream>
+#include <filesystem>
 #include "..\MBAACC-Extended-Training-Mode\Logger.h"
 
 SaveStateManager saveStateManager;
@@ -239,7 +240,6 @@ void SaveStateManager::log() {
 
 }
 
-
 void FullSave::save() {
 	memcpy(CameraZoom, (void*)0x0054eb70, 0x4 * 3);
 	memcpy(CameraCoordsDestination, (void*)0x00555124, 0x4 * 3);
@@ -278,6 +278,83 @@ void FullSave::load(bool LoadRNG) {
 	if (LoadRNG) memcpy((void*)0x00564068, RNG, 0xe4);
 	memcpy((void*)0x00564b14, CameraCoordsNext, 0x4 * 3);
 	memcpy((void*)(0x0067BDE8), Effects, 0x33C * 1000);
+}
+
+void SaveStateManager::SaveToFile()
+{
+	constexpr std::string baseSaveFolder = "ETMSaveStates";
+
+	try
+	{
+		static bool firstRunSS = true;
+		if (firstRunSS) {
+			firstRunSS = false;
+			if (!std::filesystem::is_directory(baseSaveFolder)) {
+				std::filesystem::create_directories(baseSaveFolder);
+			}
+		}
+
+		char p1Moon = saveMoonMap[*(short*)(0x0055513c)];
+		char p2Moon = saveMoonMap[*(short*)(0x00555c38)];
+
+		char* p1Name = (char*)(0x0074faf4);
+		char* p2Name = (char*)(0x0074fb2c);
+
+		char fileName[64];
+		snprintf(fileName, 64, "%s\\Save_%c_%sx%c_%s.sav", baseSaveFolder.c_str(), p1Moon, p1Name, p2Moon, p2Name);
+
+		std::FILE* savFile = fopen(fileName, "wb");
+
+		for (int i = 0; i < sizeof(FullSaves) / sizeof(FullSave*); i++)
+		{
+			std::fwrite(FullSaves[i], sizeof(FullSave), 1, savFile);
+		}
+
+		fclose(savFile);
+	}
+	catch (...)
+	{
+		TextDraw(40, 40, 10, 0xFFFFFFFF, "FAILED TO SAVE STATES TO FILE");
+	}
+}
+
+void SaveStateManager::LoadFromFile() {
+	constexpr std::string baseSaveFolder = "ETMSaveStates";
+
+	try
+	{
+		static bool firstRunSS = true;
+		if (firstRunSS) {
+			firstRunSS = false;
+			if (!std::filesystem::is_directory(baseSaveFolder)) {
+				std::filesystem::create_directories(baseSaveFolder);
+			}
+		}
+
+		char p1Moon = saveMoonMap[*(short*)(0x0055513c)];
+		char p2Moon = saveMoonMap[*(short*)(0x00555c38)];
+
+		char* p1Name = (char*)(0x0074faf4);
+		char* p2Name = (char*)(0x0074fb2c);
+
+		char fileName[64];
+		snprintf(fileName, 64, "%s\\Save_%c_%sx%c_%s.sav", baseSaveFolder.c_str(), p1Moon, p1Name, p2Moon, p2Name);
+
+		if (!std::filesystem::exists(fileName)) return;
+
+		std::FILE* savFile = fopen(fileName, "rb");
+
+		for (int i = 0; i < sizeof(FullSaves) / sizeof(FullSave*); i++)
+		{
+			std::fread(FullSaves[i], sizeof(FullSave), 1, savFile);
+		}
+
+		fclose(savFile);
+	}
+	catch (...)
+	{
+		TextDraw(40, 40, 10, 0xFFFFFFFF, "FAILED TO LOAD STATES FROM FILE");
+	}
 }
 
 static bool LoadFileExplorer(std::wstring& filePath)
@@ -344,7 +421,7 @@ static bool SaveFileExplorer(std::wstring& filePath)
 	return false;
 }
 
-void FullSave::saveToFile() {
+void FullSave::xport() {
 	if (!IsSaved) return;
 	try
 	{
@@ -364,7 +441,7 @@ void FullSave::saveToFile() {
 	}
 }
 
-void FullSave::loadFromFile() {
+void FullSave::nport() {
 	try
 	{
 		std::wstring wsFileName;

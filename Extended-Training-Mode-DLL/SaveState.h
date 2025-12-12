@@ -107,8 +107,8 @@ typedef struct FullSave {
 	void save();
 	void load(bool LoadRNG);
 
-	void saveToFile();
-	void loadFromFile();
+	void xport();
+	void nport();
 
 	void unsave();
 
@@ -134,8 +134,13 @@ public:
 
 	FullSave* FullSaves[3] = {new FullSave(), new FullSave(), new FullSave()};
 
+	void SaveToFile();
+	void LoadFromFile();
+
 	// my thought is that a typical round is what,, 1:30? so why not store that many
 	const int maxStates = 60 * 90;
 };
 
 extern SaveStateManager saveStateManager;
+
+const char* const saveMoonMap = "CFH";

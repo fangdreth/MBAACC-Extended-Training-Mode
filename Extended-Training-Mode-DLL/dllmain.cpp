@@ -96,6 +96,8 @@ bool bShowFrameBarPreview = false;
 bool bShowFrameBarYPreview = false;
 bool bForceGuard = false;
 
+bool loadSaveFile = false;
+
 struct TrueComboDamageData {
 	int startingHealth = 11400;
 	int damage = 0;
@@ -2545,6 +2547,7 @@ void frameDoneCallback()
 	{
 		if (nSAVE_STATE_SLOT > 0) {
 			saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->save();
+			saveStateManager.SaveToFile();
 		}
 		nDrawTextTimer = TEXT_TIMER;
 		if (nSAVE_STATE_SLOT == 0)
@@ -3038,6 +3041,17 @@ __declspec(naked) void _naked_ResetCallback() {
 
 // roundcall funcs
 
+const DWORD MBAA_UpdateCharPointers = 0x0045f650;
+//wrapper for call to UpdateCharPointers
+void UpdateCharPointers(ActorData* actorData) {
+	//actorData should be EBX
+	__asm
+	{
+		mov ebx, actorData;
+		call[MBAA_UpdateCharPointers];
+	}
+}
+
 void RoundcallCallback() {
 	//maintain dummy recording state
 	byte p1DoTraining = pP1->subObj.doTrainingAction;
@@ -3051,16 +3065,23 @@ void RoundcallCallback() {
 
 	if (nSAVE_STATE_SLOT > 0 && saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)
 	{
+		CommandFileData* cmdPtrs[4] = {pP1->cmdFileDataPtr, pP2->cmdFileDataPtr, pP3->cmdFileDataPtr, pP4->cmdFileDataPtr};
 		saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->load(nLOAD_RNG);
 		PlayerData* tempPlayer;
 		for (int i = 0; i < 4; i++) {
 			tempPlayer = pPlayerArray[i];
-			for (int j = 0; j < 8; j++) {
-				if (tempPlayer->subObj.attackingSubObjPtrArr[j] != 0) {
-					ActorData* attackingSubObj = tempPlayer->subObj.attackingSubObjPtrArr[j];
-					tempPlayer->subObj.recievingAttackDataPtrArr[j] = attackingSubObj->attackDataPtr;
+			if (tempPlayer->exists)
+			{
+				UpdateCharPointers(&(tempPlayer->subObj));
+				tempPlayer->cmdFileDataPtr = cmdPtrs[i];
+				for (int j = 0; j < 8; j++) {
+					if (tempPlayer->subObj.attackingSubObjPtrArr[j] != 0) {
+						ActorData* attackingSubObj = tempPlayer->subObj.attackingSubObjPtrArr[j];
+						tempPlayer->subObj.recievingAttackDataPtrArr[j] = attackingSubObj->attackDataPtr;
+					}
 				}
 			}
+			
 		}
 	}
 	pP1->subObj.doTrainingAction = p1DoTraining;
@@ -3069,6 +3090,11 @@ void RoundcallCallback() {
 		pP3->subObj.doTrainingAction = p3DoTraining;
 	if (pP4->exists)
 		pP4->subObj.doTrainingAction = p4DoTraining;
+
+	if (loadSaveFile) {
+		saveStateManager.LoadFromFile();
+		loadSaveFile = false;
+	}
 }
 
 DWORD RoundcallCallback_PatchAddr = 0x00472964;
@@ -5186,6 +5212,7 @@ void ExtendedMenuInputChecking() {
 		case eSAVE_STATES::SAVE_STATE:
 			if (bAPos && nSAVE_STATE_SLOT > 0) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->save();
+				saveStateManager.SaveToFile();
 			}
 			break;
 		case eSAVE_STATES::CLEAR_ALL_SAVES:
@@ -5197,12 +5224,15 @@ void ExtendedMenuInputChecking() {
 			break;
 		case eSAVE_STATES::IMPORT_SAVE:
 			if (bAPos) {
-				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->loadFromFile();
+				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->nport();
+			}
+			if (bDPos) {
+				saveStateManager.LoadFromFile();
 			}
 			break;
 		case eSAVE_STATES::EXPORT_SAVE:
 			if (bAPos) {
-				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->saveToFile();
+				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->xport();
 			}
 			break;
 		case eSAVE_STATES::DEFAULT:
@@ -6115,6 +6145,8 @@ void CSSCallback() {
 	nREV_ID_2 = 0;
 	nREV_ID_3 = 0;
 	nREV_ID_4 = 0;
+
+	loadSaveFile = true;
 }
 
 DWORD CSSCallback_PatchAddr = 0x004271e0;
