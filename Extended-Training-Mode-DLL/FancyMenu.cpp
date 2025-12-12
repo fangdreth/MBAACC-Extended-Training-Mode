@@ -42,6 +42,14 @@ bool enableEffectColors = false;
 float effectColorHue = 0.0f;
 bool enableCursor = true;
 
+int p1LoadMoon = 0;
+int p1LoadChar = 0;
+int p1LoadPal = 1;
+
+int p2LoadMoon = 0;
+int p2LoadChar = 0;
+int p2LoadPal = 1;
+
 template <typename T>
 struct always_false : std::false_type { };
 
@@ -807,6 +815,130 @@ void initDebugSubmenu() {
 
 }
 
+void initReloadSubmenu() {
+
+	Menu reload("Reload");
+
+	reload.add<int>("P1 Moon",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt = CLAMP(opt, 0, 9);
+			while (MoonMap[opt].at(0) == '_') opt += inc;
+
+			p1LoadMoon = opt;
+		},
+		[](int opt) -> std::string {
+			switch (opt)
+			{
+			case 0:
+				return "CRESCENT";
+			case 1:
+				return "FULL";
+			case 2:
+				return "HALF";
+			case 8:
+				return "BOSS HALF";
+			case 9:
+				return "ECLIPSE";
+			}
+		},
+		L"",
+		0
+	);
+
+	reload.add<int>("P1 Char",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt = CLAMP(opt, 0, 51);
+			while (CharNameMap[opt].at(0) == '_') opt += inc;
+
+			p1LoadChar = opt;
+		},
+		[](int opt) -> std::string {
+			return CharNameMap[opt];
+		},
+		L"",
+		0
+	);
+
+	reload.add<int>("P1 Palette",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt = CLAMP(opt, 1, 36);
+
+			p1LoadPal = opt;
+		},
+		[](int opt) -> std::string {
+			static char buffer[256];
+			snprintf(buffer, 256, "%i", opt);
+			return std::string(buffer);
+		},
+		L"",
+		1
+	);
+
+	reload.add<int>("P2 Moon",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt = CLAMP(opt, 0, 9);
+			while (MoonMap[opt].at(0) == '_') opt += inc;
+
+			p2LoadMoon = opt;
+		},
+		[](int opt) -> std::string {
+			switch (opt)
+			{
+			case 0:
+				return "CRESCENT";
+			case 1:
+				return "FULL";
+			case 2:
+				return "HALF";
+			case 8:
+				return "BOSS HALF";
+			case 9:
+				return "ECLIPSE";
+			}
+		},
+		L"",
+		0
+	);
+
+	reload.add<int>("P2 Char",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt = CLAMP(opt, 0, 51);
+			while (CharNameMap[opt].at(0) == '_') opt += inc;
+
+			p2LoadChar = opt;
+		},
+		[](int opt) -> std::string {
+			return CharNameMap[opt];
+		},
+		L"",
+		0
+	);
+
+	reload.add<int>("P2 Palette",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt = CLAMP(opt, 1, 36);
+
+			p2LoadPal = opt;
+		},
+		[](int opt) -> std::string {
+			static char buffer[256];
+			snprintf(buffer, 256, "%i", opt);
+			return std::string(buffer);
+		},
+		L"",
+		1
+	);
+
+	baseMenu.add(reload);
+
+}
+
 void initMenu() {
 
 	initUISubmenu();
@@ -818,6 +950,8 @@ void initMenu() {
 	initObjViewSubmenu();
 
 	initDebugSubmenu();
+
+	initReloadSubmenu();
 
 	baseMenu.unfolded = true;
 

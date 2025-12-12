@@ -2286,7 +2286,22 @@ void frameDoneCallback()
 		pP2->exists = 0;
 		pP3->exists = 0;
 		pP4->exists = 0;
+
+		*(int*)(0x0074d83c) = p1LoadPal - 1;
+		*(int*)(0x0074d840) = p1LoadChar;
+		*(int*)(0x0074d84C) = p1LoadMoon;
+
+		*(int*)(0x0074d868) = p2LoadPal - 1;
+		*(int*)(0x0074d86C) = p2LoadChar;
+		*(int*)(0x0074d878) = p2LoadMoon;
+
 		FullCharacterReload();
+
+		for (int i = 0; i < 3; i++)
+		{
+			saveStateManager.FullSaves[i]->unsave();
+		}
+
 		needTrainingModeReset = true;
 	}
 
@@ -6138,7 +6153,7 @@ __declspec(naked) void _naked_InformationWindowSetTargetWindow() {
 
 void CSSCallback() {
 	for (int i = 0; i < MAX_SAVES; i++)
-		saveStateManager.FullSaves[i]->IsSaved = false;
+		saveStateManager.FullSaves[i]->unsave();
 
 	vPatternNames = GetEmptyPatternList();
 	nREV_ID_1 = 0;

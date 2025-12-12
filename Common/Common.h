@@ -85,6 +85,19 @@ enum class eCharID {
 	HIME = 51
 };
 
+const std::string CharNameMap[52] = {
+	"SION", "ARC", "CIEL", "AKIHA", "MAIDS", "HISUI", "KOHAKU", "TOHNO", "MIYAKO", "WARA",
+	"NERO", "VSION", "WARC", "VAKIHA", "MECH", "NANAYA", "GAKIHA", "SATSUKI", "LEN", "PCIEL",
+	"NECO", "_21", "AOKO", "WLEN", "_24", "NAC", "_26", "GCHAOS", "KOUMA", "SEI",
+	"RIES", "ROA", "HERMES", "RYOUGI", "NECOMECH", "KOHAMECH", "_36", "_37", "_38", "_39",
+	"_40", "_41", "_42", "_43", "_44", "_45", "_46", "_47", "_48", "_49",
+	"_50", "HIME"
+};
+
+const std::string MoonMap[10] = {
+	"CRESCENT", "FULL", "HALF", "_3", "_4", "_5", "_6", "_7", "BOSS HALF", "ECLIPSE"
+};
+
 const std::string VERSION = "v2.1";
 const std::string GITHUB_LATEST = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases/latest";
 const std::string GITHUB_DOWNLOAD = "https://github.com/fangdreth/MBAACC-Extended-Training-Mode/releases/download/";

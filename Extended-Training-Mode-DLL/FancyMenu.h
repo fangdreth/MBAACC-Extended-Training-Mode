@@ -86,5 +86,13 @@ extern bool enableEffectColors;
 extern float effectColorHue;
 extern bool enableCursor;
 
+extern int p1LoadMoon;
+extern int p1LoadChar;
+extern int p1LoadPal;
+
+extern int p2LoadMoon;
+extern int p2LoadChar;
+extern int p2LoadPal;
+
 void drawFancyMenu();
 
