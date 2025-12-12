@@ -297,8 +297,8 @@ void SaveStateManager::SaveToFile()
 		char p1Moon = saveMoonMap[*(short*)(0x0055513c)];
 		char p2Moon = saveMoonMap[*(short*)(0x00555c38)];
 
-		char* p1Name = (char*)(0x0074faf4);
-		char* p2Name = (char*)(0x0074fb2c);
+		const char* p1Name = CharNameMap[*(byte*)(0x00555135)].c_str();
+		const char* p2Name = CharNameMap[*(byte*)(0x00555c31)].c_str();
 
 		char fileName[64];
 		snprintf(fileName, 64, "%s\\Save_%c_%sx%c_%s.sav", baseSaveFolder.c_str(), p1Moon, p1Name, p2Moon, p2Name);
@@ -334,8 +334,8 @@ void SaveStateManager::LoadFromFile() {
 		char p1Moon = saveMoonMap[*(short*)(0x0055513c)];
 		char p2Moon = saveMoonMap[*(short*)(0x00555c38)];
 
-		char* p1Name = (char*)(0x0074faf4);
-		char* p2Name = (char*)(0x0074fb2c);
+		const char* p1Name = CharNameMap[*(byte*)(0x00555135)].c_str();
+		const char* p2Name = CharNameMap[*(byte*)(0x00555c31)].c_str();
 
 		char fileName[64];
 		snprintf(fileName, 64, "%s\\Save_%c_%sx%c_%s.sav", baseSaveFolder.c_str(), p1Moon, p1Name, p2Moon, p2Name);

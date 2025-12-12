@@ -2302,6 +2302,8 @@ void frameDoneCallback()
 			saveStateManager.FullSaves[i]->unsave();
 		}
 
+		loadSaveFile = true;
+
 		needTrainingModeReset = true;
 	}
 
