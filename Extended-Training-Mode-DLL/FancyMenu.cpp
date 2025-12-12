@@ -819,7 +819,7 @@ void initReloadSubmenu() {
 
 	Menu reload("Reload");
 
-	reload.add<int>("P1 Moon",
+	reload.add<int>("P1 Moon :",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt = CLAMP(opt, 0, 9);
@@ -846,22 +846,44 @@ void initReloadSubmenu() {
 		0
 	);
 
-	reload.add<int>("P1 Char",
+	reload.add<int>("P1 Char :",
 		[](int inc, int& opt) {
+			int optMem = opt;
 			opt += inc;
-			opt = CLAMP(opt, 0, 51);
-			while (CharNameMap[opt].at(0) == '_') opt += inc;
+			ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
+			opt = CLAMP(opt, 0, cssArray.count - 1);
+			while (cssArray.array[opt] == 0x0)
+			{
+				opt += inc;
+				if (opt > (cssArray.count - 1))
+				{
+					opt = optMem;
+					break;
+				}
+				if (opt < 0)
+				{
+					opt = optMem;
+					break;
+				}
+			}
 
 			p1LoadChar = opt;
 		},
 		[](int opt) -> std::string {
-			return CharNameMap[opt];
+			ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
+			if (cssArray.array[opt] == 0x0)
+			{
+				static char buffer[256];
+				snprintf(buffer, 256, "NULL %i", opt);
+				return std::string(buffer);
+			}
+			return cssArray.array[opt]->Name;
 		},
 		L"",
 		0
 	);
 
-	reload.add<int>("P1 Palette",
+	reload.add<int>("P1 Pal  :",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt = CLAMP(opt, 1, 36);
@@ -877,7 +899,7 @@ void initReloadSubmenu() {
 		1
 	);
 
-	reload.add<int>("P2 Moon",
+	reload.add<int>("P2 Moon :",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt = CLAMP(opt, 0, 9);
@@ -904,22 +926,44 @@ void initReloadSubmenu() {
 		0
 	);
 
-	reload.add<int>("P2 Char",
+	reload.add<int>("P2 Char :",
 		[](int inc, int& opt) {
+			int optMem = opt;
 			opt += inc;
-			opt = CLAMP(opt, 0, 51);
-			while (CharNameMap[opt].at(0) == '_') opt += inc;
+			ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
+			opt = CLAMP(opt, 0, cssArray.count - 1);
+			while (cssArray.array[opt] == 0x0)
+			{
+				opt += inc;
+				if (opt > (cssArray.count - 1))
+				{
+					opt = optMem;
+					break;
+				}
+				if (opt < 0)
+				{
+					opt = optMem;
+					break;
+				}
+			}
 
 			p2LoadChar = opt;
 		},
 		[](int opt) -> std::string {
-			return CharNameMap[opt];
+			ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
+			if (cssArray.array[opt] == 0x0)
+			{
+				static char buffer[256];
+				snprintf(buffer, 256, "NULL %i", opt);
+				return std::string(buffer);
+			}
+			return cssArray.array[opt]->Name;
 		},
 		L"",
 		0
 	);
 
-	reload.add<int>("P2 Palette",
+	reload.add<int>("P2 Pal  :",
 		[](int inc, int& opt) {
 			opt += inc;
 			opt = CLAMP(opt, 1, 36);
