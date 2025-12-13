@@ -9,7 +9,7 @@
 #include "TASManager.h"
 #include "FancyMenu.h"
 #include "TrainingMenu.h"
-
+#include <filesystem>
 
 
 
@@ -2282,6 +2282,37 @@ void frameDoneCallback()
 	static KeyState nKey('N');
 	if (lShiftKey.keyHeld() && nKey.keyDown())
 	{
+		ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
+		if (cssArray.array[p1LoadChar] != 0x0)
+		{
+			char buffer[256];
+			char* charName = cssArray.array[p1LoadChar]->File1;
+			snprintf(buffer, 256, "%s%s%s_%01d.txt", ".\\data", "\\", charName, p1LoadMoon);
+			if (!std::filesystem::exists(buffer)) return;
+
+			if (cssArray.array[p1LoadChar]->File2[0] != '0')
+			{
+				char* charName = cssArray.array[p1LoadChar]->File2;
+				snprintf(buffer, 256, "%s%s%s_%01d.txt", ".\\data", "\\", charName, p1LoadMoon);
+				if (!std::filesystem::exists(buffer)) return;
+			}
+		}
+
+		if (cssArray.array[p2LoadChar] != 0x0)
+		{
+			char buffer[256];
+			char* charName = cssArray.array[p2LoadChar]->File1;
+			snprintf(buffer, 256, "%s%s%s_%01d.txt", ".\\data", "\\", charName, p2LoadMoon);
+			if (!std::filesystem::exists(buffer)) return;
+
+			if (cssArray.array[p2LoadChar]->File2[0] != '0')
+			{
+				char* charName = cssArray.array[p2LoadChar]->File2;
+				snprintf(buffer, 256, "%s%s%s_%01d.txt", ".\\data", "\\", charName, p2LoadMoon);
+				if (!std::filesystem::exists(buffer)) return;
+			}
+		}
+
 		pP1->exists = 0;
 		pP2->exists = 0;
 		pP3->exists = 0;
