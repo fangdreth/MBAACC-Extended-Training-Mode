@@ -50,6 +50,8 @@ int p2LoadMoon = 0;
 int p2LoadChar = 0;
 int p2LoadPal = 1;
 
+bool reloadCheckFile = false;
+
 template <typename T>
 struct always_false : std::false_type { };
 
@@ -977,6 +979,18 @@ void initReloadSubmenu() {
 		},
 		L"",
 		1
+	);
+
+	reload.add<int>("Do File Check (requires extracted 0002.p)",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			reloadCheckFile = opt;
+		},
+		defaultOnOffNameFunc,
+		L"",
+		0
 	);
 
 	baseMenu.add(reload);
