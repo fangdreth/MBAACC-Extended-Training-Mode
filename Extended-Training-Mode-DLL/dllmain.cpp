@@ -2328,6 +2328,9 @@ void frameDoneCallback()
 
 		FullCharacterReload();
 
+		pdP1Data->activeCharacter = 0;
+		pdP2Data->activeCharacter = 1;
+
 		for (int i = 0; i < 3; i++)
 		{
 			saveStateManager.FullSaves[i]->unsave();
