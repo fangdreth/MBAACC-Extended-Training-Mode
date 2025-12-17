@@ -502,6 +502,9 @@ void ReplayManager::loadAllReplays() {
 
 std::string ReplayManager::getReplayList() {
 
+	// this is called every frame when the replay menu is opened!
+	// thats ass!
+
 	std::string res = "\n";
 
 	int startIndex = replayPage * replaysPerPage;
@@ -537,7 +540,6 @@ std::string ReplayManager::getReplayList() {
 
 
 	return res;
-
 }
 
 void ReplayManager::initMenu() {
@@ -571,7 +573,7 @@ void ReplayManager::initMenu() {
 	replayMenu.add<int>("Replays:",
 		[this](int inc, int& opt) mutable -> void {
 
-			float testMouseY = mousePos.y - 75.0f;
+			float testMouseY = mousePos.y - 75.0f; // horrid magic number
 
 			testMouseY *= 0.1f;
 
@@ -584,7 +586,7 @@ void ReplayManager::initMenu() {
 
 		},
 		[this](int opt) mutable -> std::string {
-			return this->getReplayList();
+			return this->getReplayList(); // calling this frame is horrid
 		},
 		std::wstring(L"P1InputDisplay")
 	);
