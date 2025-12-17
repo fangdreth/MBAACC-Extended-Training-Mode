@@ -2054,7 +2054,7 @@ void HandleTrainingPage() {
 	if (nTRUE_HITS_UNTIL_FORCE_GUARD != 0 &&
 		pActiveP2->subObj.onBlockComboCount >= nTRUE_HITS_UNTIL_FORCE_GUARD &&
 		pActiveP2->subObj.animationDataPtr->stateData->stance != 1 &&
-		pActiveP2->subObj.inBlockstun) {
+		pActiveP2->subObj.defensiveStateFlag == 5) {
 		bForceGuard = true;
 	}
 	else {
