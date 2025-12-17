@@ -821,16 +821,14 @@ void initReloadSubmenu() {
 
 	Menu reload("Reload");
 
-	reload.add<int>("P1 Moon :",
-		[](int inc, int& opt) {
-			opt += inc;
-			opt = CLAMP(opt, 0, 9);
-			while (MoonMap[opt].at(0) == '_') opt += inc;
-
-			p1LoadMoon = opt;
+	reload.add<int*>("P1 Moon :",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 9);
+			while (MoonMap[*opt].at(0) == '_') *opt += inc;
 		},
-		[](int opt) -> std::string {
-			switch (opt)
+		[](int* opt) -> std::string {
+			switch (*opt)
 			{
 			case 0:
 				return "CRESCENT";
@@ -845,72 +843,66 @@ void initReloadSubmenu() {
 			}
 		},
 		L"",
-		0
+		&p1LoadMoon
 	);
 
-	reload.add<int>("P1 Char :",
-		[](int inc, int& opt) {
-			int optMem = opt;
-			opt += inc;
+	reload.add<int*>("P1 Char :",
+		[](int inc, int*& opt) {
+			int optMem = *opt;
+			*opt += inc;
 			ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
-			opt = CLAMP(opt, 0, cssArray.count - 1);
-			while (cssArray.array[opt] == 0x0)
+			*opt = CLAMP(*opt, 0, cssArray.count - 1);
+			while (cssArray.array[*opt] == 0x0)
 			{
-				opt += inc;
-				if (opt > (cssArray.count - 1))
+				*opt += inc;
+				if (*opt > (cssArray.count - 1))
 				{
-					opt = optMem;
+					*opt = optMem;
 					break;
 				}
-				if (opt < 0)
+				if (*opt < 0)
 				{
-					opt = optMem;
+					*opt = optMem;
 					break;
 				}
 			}
-
-			p1LoadChar = opt;
 		},
-		[](int opt) -> std::string {
+		[](int* opt) -> std::string {
 			ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
-			if (cssArray.array[opt] == 0x0)
+			if (cssArray.array[*opt] == 0x0)
 			{
 				static char buffer[256];
-				snprintf(buffer, 256, "NULL %i", opt);
+				snprintf(buffer, 256, "NULL %i", *opt);
 				return std::string(buffer);
 			}
-			return cssArray.array[opt]->Name;
+			return cssArray.array[*opt]->Name;
 		},
 		L"",
-		0
+		&p1LoadChar
 	);
 
-	reload.add<int>("P1 Pal  :",
-		[](int inc, int& opt) {
-			opt += inc;
-			opt = CLAMP(opt, 1, 36);
-
-			p1LoadPal = opt;
+	reload.add<int*>("P1 Pal  :",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 1, 36);
 		},
-		[](int opt) -> std::string {
+		[](int* opt) -> std::string {
 			static char buffer[256];
-			snprintf(buffer, 256, "%i", opt);
+			snprintf(buffer, 256, "%i", *opt);
 			return std::string(buffer);
 		},
 		L"",
-		1
+		&p1LoadPal
 	);
 
-	reload.add<int>("P2 Moon :",
-		[](int inc, int& opt) {
-			opt += inc;
-			opt = CLAMP(opt, 0, 9);
-			while (MoonMap[opt].at(0) == '_') opt += inc;
-
-			p2LoadMoon = opt;
+	reload.add<int*>("P2 Moon :",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 9);
+			while (MoonMap[*opt].at(0) == '_') *opt += inc;
 		},
-		[](int opt) -> std::string {
-			switch (opt)
+		[](int* opt) -> std::string {
+			switch (*opt)
 			{
 			case 0:
 				return "CRESCENT";
@@ -925,60 +917,56 @@ void initReloadSubmenu() {
 			}
 		},
 		L"",
-		0
+		&p2LoadMoon
 	);
 
-	reload.add<int>("P2 Char :",
-		[](int inc, int& opt) {
-			int optMem = opt;
-			opt += inc;
+	reload.add<int*>("P2 Char :",
+		[](int inc, int*& opt) {
+			int optMem = *opt;
+			*opt += inc;
 			ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
-			opt = CLAMP(opt, 0, cssArray.count - 1);
-			while (cssArray.array[opt] == 0x0)
+			*opt = CLAMP(*opt, 0, cssArray.count - 1);
+			while (cssArray.array[*opt] == 0x0)
 			{
-				opt += inc;
-				if (opt > (cssArray.count - 1))
+				*opt += inc;
+				if (*opt > (cssArray.count - 1))
 				{
-					opt = optMem;
+					*opt = optMem;
 					break;
 				}
-				if (opt < 0)
+				if (*opt < 0)
 				{
-					opt = optMem;
+					*opt = optMem;
 					break;
 				}
 			}
-
-			p2LoadChar = opt;
 		},
-		[](int opt) -> std::string {
+		[](int* opt) -> std::string {
 			ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
-			if (cssArray.array[opt] == 0x0)
+			if (cssArray.array[*opt] == 0x0)
 			{
 				static char buffer[256];
-				snprintf(buffer, 256, "NULL %i", opt);
+				snprintf(buffer, 256, "NULL %i", *opt);
 				return std::string(buffer);
 			}
-			return cssArray.array[opt]->Name;
+			return cssArray.array[*opt]->Name;
 		},
 		L"",
-		0
+		&p2LoadChar
 	);
 
-	reload.add<int>("P2 Pal  :",
-		[](int inc, int& opt) {
-			opt += inc;
-			opt = CLAMP(opt, 1, 36);
-
-			p2LoadPal = opt;
+	reload.add<int*>("P2 Pal  :",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 1, 36);
 		},
-		[](int opt) -> std::string {
+		[](int* opt) -> std::string {
 			static char buffer[256];
-			snprintf(buffer, 256, "%i", opt);
+			snprintf(buffer, 256, "%i", *opt);
 			return std::string(buffer);
 		},
 		L"",
-		1
+		&p2LoadPal
 	);
 
 	reload.add<int>("Do File Check (requires extracted 0002.p)",
@@ -989,6 +977,25 @@ void initReloadSubmenu() {
 			reloadCheckFile = opt;
 		},
 		defaultOnOffNameFunc,
+		L"",
+		0
+	);
+
+	reload.add<int>("Reset Selection to Current",
+		[](int inc, int& opt) {
+			PlayerData* pd = (PlayerData*)(adMBAABase + adP1Base);
+			p1LoadChar = pd->subObj.charID;
+			p1LoadMoon = pd->subObj.moon;
+			p1LoadPal = pd->subObj.palette + 1;
+
+			pd = (PlayerData*)(adMBAABase + adP2Base);
+			p2LoadChar = pd->subObj.charID;
+			p2LoadMoon = pd->subObj.moon;
+			p2LoadPal = pd->subObj.palette + 1;
+		},
+		[](int opt) -> std::string {
+			return "";
+		},
 		L"",
 		0
 	);

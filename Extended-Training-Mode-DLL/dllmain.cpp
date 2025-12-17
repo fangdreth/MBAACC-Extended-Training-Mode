@@ -3147,6 +3147,15 @@ void RoundcallCallback() {
 
 	if (loadSaveFile) {
 		saveStateManager.LoadFromFile();
+
+		p1LoadChar = pP1->subObj.charID;
+		p1LoadMoon = pP1->subObj.moon;
+		p1LoadPal = pP1->subObj.palette + 1;
+
+		p2LoadChar = pP2->subObj.charID;
+		p2LoadMoon = pP2->subObj.moon;
+		p2LoadPal = pP2->subObj.palette + 1;
+
 		loadSaveFile = false;
 	}
 }
