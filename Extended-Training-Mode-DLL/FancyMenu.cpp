@@ -79,6 +79,22 @@ std::function<std::string(float)> defaultSliderNameFunc = [](float opt) -> std::
 	return std::string(buffer);
 	};
 
+std::function<std::string(float*)> pointerSliderNameFunc = [](float* opt) -> std::string {
+	static char buffer[256]; // is this buffer shared between lambdas,, tbh hopefully it is, it is overwritten every time
+	snprintf(buffer, 256, "%5.2f", *opt);
+	return std::string(buffer);
+	};
+
+std::function<std::string(int*)> pointerIntSliderNameFunc = [](int* opt) -> std::string {
+	static char buffer[256]; // is this buffer shared between lambdas,, tbh hopefully it is, it is overwritten every time
+	snprintf(buffer, 256, "%i", *opt);
+	return std::string(buffer);
+	};
+
+std::function<std::string(int)> buttonNameFunc = [](int opt) -> std::string {
+	return "";
+	};
+
 // returns a func which modifies the variable passed in
 std::function<std::function<void(int, int&)>(void*)> getDefaultOnOffOptionFunc = [](void* optPtr) -> std::function<void(int, int&)> {
 	return [optPtr](int inc, int& opt) {
@@ -299,64 +315,65 @@ void initUISubmenu() {
 		sFRAME_DISPLAY
 	);
 
-	ui.add<float>("Framebar X",
-		[](float inc, float& opt) {
-			opt += inc;
-			opt = CLAMP(opt, 0.0f, 640.0f);
-
-			frameBar.x = opt;
+	ui.add<float*>("Framebar X",
+		[](int inc, float*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0.0f, 640.0f);
 		},
-		defaultSliderNameFunc,
-		L"",
-		20
+		pointerSliderNameFunc,
+		sFRAME_BAR_X,
+		&(frameBar.x)
 	);
 
-	ui.add<float>("Framebar Y",
-		[](float inc, float& opt) {
-			opt += inc;
-			opt = CLAMP(opt, 0.0f, 480.0f);
-
-			frameBar.y = opt;
+	ui.add<float*>("Framebar Y",
+		[](float inc, float*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0.0f, 480.0f);
 		},
-		defaultSliderNameFunc,
-		L"",
-		400
+		pointerSliderNameFunc,
+		sFRAME_BAR_Y,
+		&frameBar.y
 	);
 
-	ui.add<float>("Framebar Width",
-		[](float inc, float& opt) {
-			opt += inc;
-			opt = CLAMP(opt, 1.0f, 640.0f);
-
-			frameBar.w = opt;
+	ui.add<float*>("Framebar Width",
+		[](float inc, float*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 1.0f, 640.0f);
 		},
-		defaultSliderNameFunc,
-		L"",
-		600
+		pointerSliderNameFunc,
+		sFRAME_BAR_W,
+		&frameBar.w
 	);
 
-	ui.add<float>("Framebar Height",
-		[](float inc, float& opt) {
-			opt += inc;
-			opt = CLAMP(opt, 1.0f, 480.0f);
-
-			frameBar.h = opt;
+	ui.add<float*>("Framebar Height",
+		[](float inc, float*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 1.0f, 480.0f);
 		},
-		defaultSliderNameFunc,
-		L"",
-		26
+		pointerSliderNameFunc,
+		sFRAME_BAR_H,
+		&frameBar.h
 	);
 
-	ui.add<int>("Framebar Number of Frames Displayed",
+	ui.add<int*>("Framebar Number of Frames Displayed",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 1, 400);
+		},
+		pointerIntSliderNameFunc,
+		sFRAME_BAR_NUMCELLS,
+		&frameBar.numCells
+	);
+
+	ui.add<int>("Default Framebar",
 		[](int inc, int& opt) {
-			opt += inc;
-			opt = CLAMP(opt, 1, 400);
-
-			frameBar.numCells = opt;
+			frameBar.x = 320.0f;
+			frameBar.y = 410.0f;
+			frameBar.w = 600.0f;
+			frameBar.h = 26.0f;
+			frameBar.numCells = 75;
 		},
-		defaultSliderNameFunc,
-		L"",
-		75
+		buttonNameFunc
 	);
 
 	ui.add<int>("Show Stats",
@@ -993,11 +1010,7 @@ void initReloadSubmenu() {
 			p2LoadMoon = pd->subObj.moon;
 			p2LoadPal = pd->subObj.palette + 1;
 		},
-		[](int opt) -> std::string {
-			return "";
-		},
-		L"",
-		0
+		buttonNameFunc
 	);
 
 	baseMenu.add(reload);

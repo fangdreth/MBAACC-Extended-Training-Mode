@@ -57,7 +57,7 @@ public:
 
 	void draw(Point& p);
 
-	using MenuVariant = std::variant<Menu<int>, Menu<float>, Menu<int*>>; // remember that you must add all types here! but dont try a type that isnt 4 bytes. i think. or well wait a bool* is 4 bytes. but that fucked everything?
+	using MenuVariant = std::variant<Menu<int>, Menu<float>, Menu<int*>, Menu<float*>>; // remember that you must add all types here! but dont try a type that isnt 4 bytes. i think. or well wait a bool* is 4 bytes. but that fucked everything?
 	std::vector<MenuVariant> items;
 	
 	template <typename U = int> // i wish i didnt need this

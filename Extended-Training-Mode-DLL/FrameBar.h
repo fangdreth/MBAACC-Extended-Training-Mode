@@ -44,6 +44,8 @@ class FrameBar
 public:
 	FrameBar(float x_, float y_, float w_, float h_, int numCells_);
 
+	void draw();
+
 	float x;
 	float y;
 	float w;
@@ -127,4 +129,4 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist);
 
 void UpdateFrameBar(Player& P1, Player& P2, Player& P3, Player& P4);
 
-void DrawFrameBar();
+void DoFrameBar(bool doDraw);

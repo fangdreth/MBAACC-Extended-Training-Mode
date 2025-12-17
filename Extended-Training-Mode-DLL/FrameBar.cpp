@@ -44,7 +44,9 @@ Player* Main2 = &P2;
 Player* Assist1 = &P3;
 Player* Assist2 = &P4;
 
-DragInfo frameBarDragInfo(&fFrameBarX, &fFrameBarY);
+//Point frameBarDragPoint(20.0f, 410.0f);
+//DragInfo frameBarDrag = DragInfo(&frameBarDragPoint.x, &frameBarDragPoint.y);
+//DragInfo frameBarDragInfo(&fFrameBarX, &fFrameBarY);
 
 FrameBar::FrameBar(float x_, float y_, float w_, float h_, int numCells_)
 {
@@ -59,7 +61,56 @@ FrameBar::FrameBar(float x_, float y_, float w_, float h_, int numCells_)
 	dragManager.add(&dragInfo);
 }
 
-FrameBar frameBar(20.0f, 400.0f, 600.0f, 26.0f, 75);
+void FrameBar::draw()
+{
+	int nBarDrawCounter = 0;
+
+	short sAdjustedScroll = min(min(nBarCounter - numCells, BAR_MEMORY_SIZE - numCells), -nTRUE_SCROLL_DISPLAY);
+
+	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - numCells - sAdjustedScroll;
+	int nForEnd = (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll;
+	if (nBarCounter <= numCells)
+	{
+		nForStart = 0;
+		nForEnd = nBarCounter;
+	}
+
+	dragInfo.topLeftX = x - (w / 2) - 2;
+	dragInfo.topLeftY = y - (h / 2);
+	dragInfo.bottomRightX = x + (w / 2) + 1;
+	dragInfo.bottomRightY = y + (h / 2) + 1;
+
+	float l = x - (w / 2) + 0.5f;
+	float t = y - (h / 2);
+
+	RectDraw(l - 2, t, w + 3, h + 1, 0x99000000); //Background
+
+	RectDraw(l - 3, t - 2, w + 5, 2, 0xFFFFFFFF);
+	RectDraw(l - 4, t - 1, 2, h + 3, 0xFFFFFFFF);
+	RectDraw(l - 3, t + h + 1, w + 5, 2, 0xFFFFFFFF);
+	RectDraw(l + w + 1, t - 1, 2, h + 3, 0xFFFFFFFF);
+
+	int j = 0;
+	for (int i = nForStart; i < nForEnd; i++)
+	{
+		j = i < 0 ? i + BAR_MEMORY_SIZE : i;
+
+		float cellX = l + w / numCells * nBarDrawCounter;
+		float cellW = w / numCells;
+		Main1->cells[j].draw(cellX, t + h * 0.06, cellW, h * 0.38);
+		Main2->cells[j].draw(cellX, t + h * 0.56, cellW, h * 0.38);
+
+		nBarDrawCounter++;
+	}
+	static char buffer[256];
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", Main1->nFirstActive % 1000, Main1->nInactionableMemory % 1000, nPlayerAdvantage % 1000);
+	TextDraw(l, t - 12, 10, 0xFFFFFFFF, buffer);
+
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", Main2->nFirstActive % 1000, Main2->nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
+	TextDraw(l, t + h + 3, 10, 0xFFFFFFFF, buffer);
+}
+
+FrameBar frameBar(320.0f, 410.0f, 600.0f, 26.0f, 75);
 
 void FrameBarCell::draw(float x, float y, float w, float h)
 {
@@ -560,7 +611,7 @@ void UpdateFrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
 
 }
 
-void DrawFrameBar()
+void DoFrameBar(bool doDraw)
 {
 
 	UpdateFrameBar(P1, P2, P3, P4);
@@ -577,30 +628,15 @@ void DrawFrameBar()
 		nForEnd = nBarCounter;
 	}
 
-	RectDraw(frameBar.x - 2, frameBar.y, frameBar.w + 3, frameBar.h + 1, 0x99000000); //Background
-
-	RectDraw(frameBar.x - 3, frameBar.y - 2, frameBar.w + 5, 2, 0xFFFFFFFF);
-	RectDraw(frameBar.x - 4, frameBar.y - 1, 2, frameBar.h + 3, 0xFFFFFFFF);
-	RectDraw(frameBar.x - 3, frameBar.y + frameBar.h + 1, frameBar.w + 5, 2, 0xFFFFFFFF);
-	RectDraw(frameBar.x + frameBar.w + 1, frameBar.y - 1, 2, frameBar.h + 3, 0xFFFFFFFF);
-
-	int j = 0;
-	for (int i = nForStart; i < nForEnd; i++)
+	frameBar.dragInfo.enable = doDraw;
+	if (frameBar.dragInfo.enable)
 	{
-		j = i < 0 ? i + BAR_MEMORY_SIZE : i;
-
-		float x = frameBar.x + frameBar.w / frameBar.numCells * nBarDrawCounter;
-		float w = frameBar.w / frameBar.numCells;
-		Main1->cells[j].draw(x, frameBar.y + frameBar.h * 0.06, w, frameBar.h * 0.38);
-		Main2->cells[j].draw(x, frameBar.y + frameBar.h * 0.56, w, frameBar.h * 0.38);
-
-		nBarDrawCounter++;
+		frameBar.draw();
+		SetRegistryValue(sFRAME_BAR_X, frameBar.x);
+		SetRegistryValue(sFRAME_BAR_Y, frameBar.y);
+		SetRegistryValue(sFRAME_BAR_W, frameBar.w);
+		SetRegistryValue(sFRAME_BAR_H, frameBar.h);
+		SetRegistryValue(sFRAME_BAR_NUMCELLS, frameBar.numCells);
 	}
-	static char buffer[256];
-	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", Main1->nFirstActive % 1000, Main1->nInactionableMemory % 1000, nPlayerAdvantage % 1000);
-	TextDraw(frameBar.x, frameBar.y - 12, 10, 0xFFFFFFFF, buffer);
-
-	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", Main2->nFirstActive % 1000, Main2->nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
-	TextDraw(frameBar.x, frameBar.y + frameBar.h + 3, 10, 0xFFFFFFFF, buffer);
 
 }

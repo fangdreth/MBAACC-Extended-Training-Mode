@@ -201,6 +201,12 @@ void initRegistryValues()
 	ReadFromRegistry(sP1_ARCADE_INPUT_Y, &fP1_ARCADE_INPUT_Y);
 	ReadFromRegistry(sP2_ARCADE_INPUT_X, &fP2_ARCADE_INPUT_X);
 	ReadFromRegistry(sP2_ARCADE_INPUT_Y, &fP2_ARCADE_INPUT_Y);
+
+	ReadFromRegistry(sFRAME_BAR_X, &frameBar.x);
+	ReadFromRegistry(sFRAME_BAR_Y, &frameBar.y);
+	ReadFromRegistry(sFRAME_BAR_W, &frameBar.w);
+	ReadFromRegistry(sFRAME_BAR_H, &frameBar.h);
+	ReadFromRegistry(sFRAME_BAR_NUMCELLS, &frameBar.numCells);
 }
 
 void initSharedValues()
@@ -2755,15 +2761,12 @@ void frameDoneCallback()
 	*/
 
 	// don't draw on the pause menu, but do on VIEW SCREEN
-	DWORD nSubMenuPointer = *reinterpret_cast<DWORD*>(dwBaseAddress + dwBasePointer) + 0x84;
+	MenuWindow* trainingMenu = *(MenuWindow**)(adMBAABase + adTrainingMenu);
+	bool bVIEW_SCREEN = false;
+	if (trainingMenu != 0x0 && trainingMenu->openSubmenuIndex == 12) bVIEW_SCREEN = true;
 	//int nSubMenu;
 	//ReadProcessMemory(GetCurrentProcess(), (LPVOID)(nSubMenuPointer), &nSubMenu, 4, 0);
-	if ((safeWrite() && !isPaused()) || (isPaused() && *(uint8_t*)(nSubMenuPointer) == 12)) {
-		
-		if (nIN_GAME_FRAME_DISPLAY)
-			DrawFrameBar();
-			//drawFrameBar(trueFrameDispl);
-			
+	if ((safeWrite() && !isPaused()) || (isPaused() && bVIEW_SCREEN)) {
 
 		if (nDISPLAY_HITBOXES)
 			drawFrameData();
@@ -2774,17 +2777,18 @@ void frameDoneCallback()
 		if (nSHOW_STATS)
 			drawStats();
 	}
-	else if (bShowFrameBarPreview)
-	{
-		DrawFrameBar();
-	}
+
+	bool doDraw = false;
+	if ((safeWrite() && !isPaused() && nIN_GAME_FRAME_DISPLAY) || (isPaused() && (bVIEW_SCREEN || bShowFrameBarPreview))) doDraw = true;
+
+	if (safeWrite()) DoFrameBar(doDraw);
 
 	if (bCOLOR_GUIDE)
 	{
 		drawColorGuide();
 	}
 
-	if (nIN_GAME_FRAME_DISPLAY && frameBar.y > 410)
+	if (doDraw && frameBar.y + (frameBar.h / 2) > 436)
 	{
 		shouldDrawMeter = 0;
 	}

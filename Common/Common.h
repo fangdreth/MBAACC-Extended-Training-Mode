@@ -520,7 +520,6 @@ const REGKEY sDISPLAY_FREEZE = L"DisplayFreeze";
 const REGKEY sDISPLAY_INPUTS = L"DisplayInputs";
 const REGKEY sDISPLAY_CANCELS = L"DisplayCancels";
 
-const REGKEY sFRAME_BAR_Y = L"FrameBarY";
 const REGKEY sP1_INPUT_DISPLAY = L"P1InputDisplay";
 const REGKEY sP2_INPUT_DISPLAY = L"P2InputDisplay";
 
@@ -532,6 +531,12 @@ const REGKEY sP1_LIST_INPUT_X = L"P1ListInputX";
 const REGKEY sP1_LIST_INPUT_Y = L"P1ListInputY";
 const REGKEY sP2_LIST_INPUT_X = L"P2ListInputX";
 const REGKEY sP2_LIST_INPUT_Y = L"P2ListInputY";
+
+const REGKEY sFRAME_BAR_X = L"FrameBarX";
+const REGKEY sFRAME_BAR_Y = L"FrameBarY";
+const REGKEY sFRAME_BAR_W = L"FrameBarW";
+const REGKEY sFRAME_BAR_H = L"FrameBarH";
+const REGKEY sFRAME_BAR_NUMCELLS = L"FrameBarNumCells";
 
 #define VK_KEY_UNSET 0x0;
 
