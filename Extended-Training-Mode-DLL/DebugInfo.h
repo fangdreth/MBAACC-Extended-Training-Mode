@@ -822,3 +822,5 @@ extern int changeWindDir;
 void setWind();
 const DWORD MBAA_FullCharacterReload = 0x00448fb0;
 void FullCharacterReload();
+const DWORD MBAA_UpdateCharPointers = 0x0045f650;
+void UpdateCharPointers(ActorData* actorData);

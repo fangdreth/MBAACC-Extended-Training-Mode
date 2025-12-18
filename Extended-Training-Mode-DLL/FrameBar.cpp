@@ -95,8 +95,8 @@ void FrameBar::draw()
 	{
 		j = i < 0 ? i + BAR_MEMORY_SIZE : i;
 
-		float cellX = l + w / numCells * nBarDrawCounter;
-		float cellW = w / numCells;
+		float cellX = l + w / (float)numCells * (float)nBarDrawCounter;
+		float cellW = w / (float)numCells;
 		Main1->cells[j].draw(cellX, t + h * 0.06, cellW, h * 0.38);
 		Main2->cells[j].draw(cellX, t + h * 0.56, cellW, h * 0.38);
 
@@ -187,17 +187,17 @@ void CheckProjectiles()
 	}
 }
 
-void CalculateAdvantage(Player& P1, Player& P2)
+void CalculateAdvantage(Player& P1_, Player& P2_)
 {
-	if (*(int*)(P1.adInaction) == 0 && *(int*)(P2.adInaction) == 0)
+	if (*(int*)(P1_.adInaction) == 0 && *(int*)(P2_.adInaction) == 0)
 	{
 		bDoAdvantage = false;
 	}
-	else if (*(int*)(P1.adInaction) != 0 && *(int*)(P2.adInaction) != 0)
+	else if (*(int*)(P1_.adInaction) != 0 && *(int*)(P2_.adInaction) != 0)
 	{
 		bDoAdvantage = true;
-		P1.nAdvantageCounter = 0;
-		P2.nAdvantageCounter = 0;
+		P1_.nAdvantageCounter = 0;
+		P2_.nAdvantageCounter = 0;
 	}
 
 	if (bDoAdvantage && *(int*)(adMBAABase + adFrameCount) != nLastFrameCount &&
@@ -205,13 +205,13 @@ void CalculateAdvantage(Player& P1, Player& P2)
 		*(int*)(adMBAABase + adP2Freeze) == 0 &&
 		*(char*)(adMBAABase + adGlobalFreeze) == 0)
 	{
-		if (*(int*)(P1.adInaction) == 0 && *(int*)(P2.adInaction) != 0)
+		if (*(int*)(P1_.adInaction) == 0 && *(int*)(P2_.adInaction) != 0)
 		{
-			P1.nAdvantageCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
+			P1_.nAdvantageCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 		}
-		else if (*(int*)(P2.adInaction) == 0 && *(int*)(P1.adInaction) != 0)
+		else if (*(int*)(P2_.adInaction) == 0 && *(int*)(P1_.adInaction) != 0)
 		{
-			P2.nAdvantageCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
+			P2_.nAdvantageCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 		}
 	}
 }
@@ -227,9 +227,9 @@ void ResetBars()
 	for (int i = 0; i < 4; i++)
 	{
 		Player& P = *paPlayerArray[i];
-		for (int i = 0; i < BAR_MEMORY_SIZE; i++)
+		for (int j = 0; j < BAR_MEMORY_SIZE; j++)
 		{
-			P.cells[i].reset();
+			P.cells[j].reset();
 		}
 	}
 	nTRUE_SCROLL_DISPLAY = 0;
@@ -458,13 +458,13 @@ void IncrementActive(Player& P)
 	}
 }
 
-void IncrementFirstActive(Player& P1, Player& P2)
+void IncrementFirstActive(Player& P1_, Player& P2_)
 {
-	if (P1.PlayerData->subObj.hitstop == 0 &&
-		P1.PlayerData->subObj.heatTimeCounter != P1.nLastFrameCount &&
-		P2.PlayerData->subObj.heatTimeCounter != P2.nLastFrameCount)
+	if (P1_.PlayerData->subObj.hitstop == 0 &&
+		P1_.PlayerData->subObj.heatTimeCounter != P1_.nLastFrameCount &&
+		P2_.PlayerData->subObj.heatTimeCounter != P2_.nLastFrameCount)
 	{
-		P1.nFirstActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
+		P1_.nFirstActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
 	}
 }
 
@@ -476,17 +476,17 @@ void HandleInactive(Player& P)
 	}
 }
 
-void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
+void BarHandling(Player& P1_, Player& P2_, Player& P1Assist, Player& P2Assist)
 {
-	CalculateAdvantage(P1, P2);
+	CalculateAdvantage(P1_, P2_);
 
 	bool DoBarUpdate = (
-		*(int*)(P1.adInaction) != 0 ||
-		*(int*)(P2.adInaction) != 0 ||
-		P1.PlayerData->subObj.animationDataPtr->stateData->flagset2 != 0 ||
-		P2.PlayerData->subObj.animationDataPtr->stateData->flagset2 != 0 ||
-		P1.bProjectileActive != 0 ||
-		P2.bProjectileActive != 0 ||
+		*(int*)(P1_.adInaction) != 0 ||
+		*(int*)(P2_.adInaction) != 0 ||
+		P1_.PlayerData->subObj.animationDataPtr->stateData->flagset2 != 0 ||
+		P2_.PlayerData->subObj.animationDataPtr->stateData->flagset2 != 0 ||
+		P1_.bProjectileActive != 0 ||
+		P2_.bProjectileActive != 0 ||
 		P1Assist.PlayerData->subObj.attackDataPtr != 0 ||
 		P2Assist.PlayerData->subObj.attackDataPtr != 0 ||
 		P1Assist.bProjectileActive != 0 ||
@@ -527,8 +527,8 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 
 	if (bUpdateBar)
 	{
-		if (P1.PlayerData->subObj.hitstop != 0 &&
-			P2.PlayerData->subObj.hitstop != 0) //Player hitstop values count down but we need it to count up
+		if (P1_.PlayerData->subObj.hitstop != 0 &&
+			P2_.PlayerData->subObj.hitstop != 0) //Player hitstop values count down but we need it to count up
 		{
 			nSharedHitstop++;
 		}
@@ -542,24 +542,24 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 			nSharedHitstop > 1
 			);
 
-		IncrementFirstActive(P1, P2);
-		IncrementFirstActive(P2, P1);
+		IncrementFirstActive(P1_, P2_);
+		IncrementFirstActive(P2_, P1_);
 
 		if (bDisplayFreeze || !bIsFreeze)
 		{
-			IncrementActive(P1);
-			IncrementActive(P2);
-			HandleInactive(P1);
-			HandleInactive(P2);
-			UpdateBars(P1, P1Assist);
-			UpdateBars(P2, P2Assist);
+			IncrementActive(P1_);
+			IncrementActive(P2_);
+			HandleInactive(P1_);
+			HandleInactive(P2_);
+			UpdateBars(P1_, P1Assist);
+			UpdateBars(P2_, P2Assist);
 			if (P1Assist.PlayerData->exists)
 			{
-				UpdateBars(P1Assist, P1);
+				UpdateBars(P1Assist, P1_);
 			}
 			if (P2Assist.PlayerData->exists)
 			{
-				UpdateBars(P2Assist, P2);
+				UpdateBars(P2Assist, P2_);
 			}
 			nBarCounter += *(int*)(adMBAABase + adTrueFrameCount) - nLastTrueFrameCount;
 			if (nBarCounter < 0) {
@@ -569,25 +569,25 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
 	}
 }
 
-void UpdateFrameBar(Player& P1, Player& P2, Player& P3, Player& P4)
+void UpdateFrameBar(Player& P1_, Player& P2_, Player& P3_, Player& P4_)
 {
-	bDisplayFreeze = nSHOW_HITSTOP_AND_FREEZE;
-	bDisplayInputs = nSHOW_INPUTS; //currently unused, may add input display to framebar at some point
+	bDisplayFreeze = nSHOW_HITSTOP_AND_FREEZE != 0;
+	bDisplayInputs = nSHOW_INPUTS != 0; //currently unused, may add input display to framebar at some point
 	nBarScrolling = nTRUE_SCROLL_DISPLAY;
 
-	Main1 = &P1;
-	Main2 = &P2;
-	Assist1 = &P3;
-	Assist2 = &P4;
-	if (P1.PlayerData->subObj.tagFlag)
+	Main1 = &P1_;
+	Main2 = &P2_;
+	Assist1 = &P3_;
+	Assist2 = &P4_;
+	if (P1_.PlayerData->subObj.tagFlag)
 	{
-		Main1 = &P3;
-		Assist1 = &P1;
+		Main1 = &P3_;
+		Assist1 = &P1_;
 	}
-	if (P2.PlayerData->subObj.tagFlag)
+	if (P2_.PlayerData->subObj.tagFlag)
 	{
-		Main2 = &P4;
-		Assist2 = &P2;
+		Main2 = &P4_;
+		Assist2 = &P2_;
 	}
 
 	CheckProjectiles();

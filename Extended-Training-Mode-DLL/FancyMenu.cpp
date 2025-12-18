@@ -991,7 +991,7 @@ void initReloadSubmenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			reloadCheckFile = opt;
+			reloadCheckFile = opt != 0;
 		},
 		defaultOnOffNameFunc,
 		L"",

@@ -592,7 +592,7 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_6_14", PAGE_INFO},
 
 	//FRAME DATA
-	{"XS_7_0",  "Set \\@COLOR@<015, 183, 255, 255>frame data display level (console only)."},
+	{"XS_7_0",  "Set \\@COLOR@<015, 183, 255, 255>console data detail level."},
 	{"XS_7_1", "Set \\@COLOR@<015, 183, 255, 255>in-game frame display."},
 	{"XS_7_3", "Set \\@COLOR@<015, 183, 255, 255>hitstop and freeze display."},
 	{"XS_7_4", "Set \\@COLOR@<015, 183, 255, 255>input display (console only)."},

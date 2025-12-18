@@ -1038,14 +1038,14 @@ int getPatternFromInput(PlayerData* PD, const char input[20])
 	return -1;
 }
 
-int getIDFromPattern(PlayerData* pPlayer, int nPattern, int nthMatch = 1)
+int getIDFromPattern(PlayerData* playerData, int nPattern, int nthMatch = 1)
 {
 	int retVal = -1;
-	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->count; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i])
+	for (int i = 0; i < playerData->cmdFileDataPtr->cmdDataPtr->count; i++) {
+		if (playerData->cmdFileDataPtr->cmdDataPtr->array[i])
 		{
-			if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->pattern == nPattern) {
-				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->ID;
+			if (playerData->cmdFileDataPtr->cmdDataPtr->array[i]->pattern == nPattern) {
+				retVal = playerData->cmdFileDataPtr->cmdDataPtr->array[i]->ID;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
 			};
@@ -1054,13 +1054,13 @@ int getIDFromPattern(PlayerData* pPlayer, int nPattern, int nthMatch = 1)
 	return -1;
 }
 
-int getIDFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
+int getIDFromCmd(PlayerData* playerData, const char* cmd, int nthMatch = 1) {
 	int retVal = -1;
-	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->count; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i])
+	for (int i = 0; i < playerData->cmdFileDataPtr->cmdDataPtr->count; i++) {
+		if (playerData->cmdFileDataPtr->cmdDataPtr->array[i])
 		{
-			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->input) == 0) {
-				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->ID;
+			if (strcmp(cmd, playerData->cmdFileDataPtr->cmdDataPtr->array[i]->input) == 0) {
+				retVal = playerData->cmdFileDataPtr->cmdDataPtr->array[i]->ID;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
 			};
@@ -1069,13 +1069,13 @@ int getIDFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
 	return -1;
 }
 
-int getPatternFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
+int getPatternFromCmd(PlayerData* playerData, const char* cmd, int nthMatch = 1) {
 	int retVal = -1;
-	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->count; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i])
+	for (int i = 0; i < playerData->cmdFileDataPtr->cmdDataPtr->count; i++) {
+		if (playerData->cmdFileDataPtr->cmdDataPtr->array[i])
 		{
-			if (strcmp(cmd, pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->input) == 0) {
-				retVal = pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->pattern;
+			if (strcmp(cmd, playerData->cmdFileDataPtr->cmdDataPtr->array[i]->input) == 0) {
+				retVal = playerData->cmdFileDataPtr->cmdDataPtr->array[i]->pattern;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
 			};
@@ -1085,47 +1085,46 @@ int getPatternFromCmd(PlayerData* pPlayer, const char* cmd, int nthMatch = 1) {
 }
 
 DWORD MBAA_CheckCmdVars = 0x0046d430;
-bool checkCmdVars(PlayerData* pPlayer, int ID) {
+bool checkCmdVars(PlayerData* playerData, int ID) {
 	__asm {
 		mov ecx, ID;
-		mov eax, pPlayer;
+		mov eax, playerData;
 		call[MBAA_CheckCmdVars];
 	}
 	return;
 }
 
 DWORD MBAA_CheckValidCommandConditions = 0x0046cea0;
-bool tryCmdID(PlayerData* pPlayer, int ID) {
+bool tryCmdID(PlayerData* playerData, int ID) {
 	__asm {
 		push ID;
-		mov eax, pPlayer;
+		mov eax, playerData;
 		call[MBAA_CheckValidCommandConditions];
 		add esp, 0x4;
 	}
-
 	return;
 }
 
-bool tryCmdPattern(PlayerData* pPlayer, int nPattern) {
+bool tryCmdPattern(PlayerData* playerData, int nPattern) {
 	if (nPattern < 41) {
 		return false;
 	}
-	else if (nPattern == 260 || nPattern == pPlayer->cmdFileDataPtr->groundThrowPat) {
-		pPlayer->subObj.targetPattern = nPattern;
+	else if (nPattern == 260 || nPattern == playerData->cmdFileDataPtr->groundThrowPat) {
+		playerData->subObj.targetPattern = nPattern;
 	}
 	int id = -1;
 	int meterMem = 0;
 	bool didCmd = false;
-	for (int i = 0; i < pPlayer->cmdFileDataPtr->cmdDataPtr->count; i++) {
-		if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i])
+	for (int i = 0; i < playerData->cmdFileDataPtr->cmdDataPtr->count; i++) {
+		if (playerData->cmdFileDataPtr->cmdDataPtr->array[i])
 		{
-			if (pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->pattern == nPattern) {
-				id = pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->ID;
-				if (checkCmdVars(pPlayer, id)) {
-					meterMem = pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->meterSpend;
-					pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->meterSpend = 0;
-					didCmd = tryCmdID(pPlayer, id);
-					pPlayer->cmdFileDataPtr->cmdDataPtr->array[i]->meterSpend = meterMem;
+			if (playerData->cmdFileDataPtr->cmdDataPtr->array[i]->pattern == nPattern) {
+				id = playerData->cmdFileDataPtr->cmdDataPtr->array[i]->ID;
+				if (checkCmdVars(playerData, id)) {
+					meterMem = playerData->cmdFileDataPtr->cmdDataPtr->array[i]->meterSpend;
+					playerData->cmdFileDataPtr->cmdDataPtr->array[i]->meterSpend = 0;
+					didCmd = tryCmdID(playerData, id);
+					playerData->cmdFileDataPtr->cmdDataPtr->array[i]->meterSpend = meterMem;
 					if (didCmd) return true;
 				}
 			};
@@ -1135,9 +1134,9 @@ bool tryCmdPattern(PlayerData* pPlayer, int nPattern) {
 }
 
 DWORD MBAA_UniversalCommands = 0x004666b0;
-void tryUnivCmd(PlayerData* pPlayer, byte buttons, byte directions) {
+void tryUnivCmd(PlayerData* playerData, byte buttons, byte directions) {
 	__asm {
-		mov ecx, pPlayer;
+		mov ecx, playerData;
 		add ecx, 0x4;
 		push directions;
 		push buttons;
@@ -1147,79 +1146,79 @@ void tryUnivCmd(PlayerData* pPlayer, byte buttons, byte directions) {
 }
 
 DWORD MBAA_SetBurstFlags = 0x00464390;
-void SetBurstFlags(PlayerData* pPlayer) {
+void SetBurstFlags(PlayerData* playerData) {
 	__asm {
-		mov ecx, pPlayer;
+		mov ecx, playerData;
 		add ecx, 0x4;
 		call[MBAA_SetBurstFlags];
 	}
 }
 
-bool tryBurst(PlayerData* pPlayer) {
-	if (pPlayer->subObj.hitstunTimeRemaining != 0 && pPlayer->subObj.burstLock == 0 && pPlayer->subObj.hitstop == 0) {
-		int stance = pPlayer->subObj.animationDataPtr->stateData->stance;
+bool tryBurst(PlayerData* playerData) {
+	if (playerData->subObj.hitstunTimeRemaining != 0 && playerData->subObj.burstLock == 0 && playerData->subObj.hitstop == 0) {
+		int stance = playerData->subObj.animationDataPtr->stateData->stance;
 		if (stance == 0 || stance == 2) {
-			if (pPlayer->subObj.hitstunTimeRemaining < 0) {
+			if (playerData->subObj.hitstunTimeRemaining < 0) {
 				return 0;
 			}
 		}
 		else if (stance == 1) {
-			if (9 < pPlayer->subObj.untechTimeElapsed) {
+			if (9 < playerData->subObj.untechTimeElapsed) {
 				return 0;
 			}
-			if (pPlayer->subObj.completedHitVectors != 0) {
+			if (playerData->subObj.completedHitVectors != 0) {
 				return 0;
 			}
 		}
-		SetBurstFlags(pPlayer);
+		SetBurstFlags(playerData);
 		return 1;
 	}
 	return 0;
 }
 
-void setBuffer(PlayerData* pPlayer, WORD* dir, WORD buttons[4]) {
+void setBuffer(PlayerData* playerData, WORD* dir, WORD buttons[4]) {
 	WORD dirCount = dir[0] * 2 + 3;
-	memcpy(pPlayer->dirInputs, dir, dirCount * 0x2);
-	pPlayer->aInputs[0] = 0;
-	pPlayer->aInputs[1] = buttons[0];
-	pPlayer->aInputs[2] = 1;
+	memcpy(playerData->dirInputs, dir, dirCount * 0x2);
+	playerData->aInputs[0] = 0;
+	playerData->aInputs[1] = buttons[0];
+	playerData->aInputs[2] = 1;
 
-	pPlayer->bInputs[0] = 0;
-	pPlayer->bInputs[1] = buttons[1];
-	pPlayer->bInputs[2] = 1;
+	playerData->bInputs[0] = 0;
+	playerData->bInputs[1] = buttons[1];
+	playerData->bInputs[2] = 1;
 
-	pPlayer->cInputs[0] = 0;
-	pPlayer->cInputs[1] = buttons[2];
-	pPlayer->cInputs[2] = 1;
+	playerData->cInputs[0] = 0;
+	playerData->cInputs[1] = buttons[2];
+	playerData->cInputs[2] = 1;
 
-	pPlayer->dInputs[0] = 0;
-	pPlayer->dInputs[1] = buttons[3];
-	pPlayer->dInputs[2] = 1;
+	playerData->dInputs[0] = 0;
+	playerData->dInputs[1] = buttons[3];
+	playerData->dInputs[2] = 1;
 }
 
 DWORD MBAA_GetHighestPriorityValidCommand = 0x0046d510;
-bool tryBufferCmd(PlayerData* pPlayer) {
+bool tryBufferCmd(PlayerData* playerData) {
 	__asm {
-		mov eax, pPlayer;
+		mov eax, playerData;
 		call[MBAA_GetHighestPriorityValidCommand];
 	}
 	return;
 }
 
 //returns AND of 1 for held shield and 2 for ex shield
-byte getShieldCancel(PlayerData* pPlayer, int pat) {
-	byte exOnly = pPlayer->subObj.moon == 0 ? 0x2 : 0x0;
+byte getShieldCancel(PlayerData* playerData, int pat) {
+	byte exOnly = playerData->subObj.moon == 0 ? 0x2 : 0x0;
 	byte retVal = 0x0;
-	if (pat == pPlayer->cmdFileDataPtr->ShieldCounter_Ground ||
-		pat == pPlayer->cmdFileDataPtr->ShieldCounter_Air ||
-		pat == pPlayer->cmdFileDataPtr->ShieldCounter_Crouch) {
+	if (pat == playerData->cmdFileDataPtr->ShieldCounter_Ground ||
+		pat == playerData->cmdFileDataPtr->ShieldCounter_Air ||
+		pat == playerData->cmdFileDataPtr->ShieldCounter_Crouch) {
 		return 0x3;
 	}
 	if (pat <= 40) return exOnly;
-	int ID = getIDFromPattern(pPlayer, pat, 1);
+	int ID = getIDFromPattern(playerData, pat, 1);
 	if (ID == -1) return 0x0;
-	WORD flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets;
-	int specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->array[ID]->specialFlag;
+	WORD flagsets = *(WORD*)playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets;
+	int specialFlag = playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->specialFlag;
 	if (flagsets & 0x8) { // if no cancel
 		if (flagsets & 0x40 && !(flagsets & 0x1000)) { //if guard/shield cancel and not guard cancel only (covers D > D)
 			retVal = 0x3;
@@ -1235,10 +1234,10 @@ byte getShieldCancel(PlayerData* pPlayer, int pat) {
 		retVal = exOnly;
 	}
 	
-	ID = getIDFromPattern(pPlayer, pat, 2);
+	ID = getIDFromPattern(playerData, pat, 2);
 	if (ID == -1) return retVal;
-	flagsets = *(WORD*)pPlayer->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets;
-	specialFlag = pPlayer->cmdFileDataPtr->cmdDataPtr->array[ID]->specialFlag;
+	flagsets = *(WORD*)playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets;
+	specialFlag = playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->specialFlag;
 	if (flagsets & 0x8) {
 		if (flagsets & 0x40 && !(flagsets & 0x1000)) {
 			retVal = 0x3;
@@ -1257,29 +1256,29 @@ byte getShieldCancel(PlayerData* pPlayer, int pat) {
 }
 
 //returns AND of 1 = stand, 2 = airborne, 4 = crouch
-byte getCmdStance(PlayerData* pPlayer, int ID) {
-	return pPlayer->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets[0] & 0x7;
+byte getCmdStance(PlayerData* playerData, int ID) {
+	return playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets[0] & 0x7;
 }
 
 //returns AND of 1 = stand, 2 = airborne, 4 = crouch
-byte getPatStance(PlayerData* pPlayer, int pat) {
+byte getPatStance(PlayerData* playerData, int pat) {
 	if ((0 <= pat && pat <= 6) || (35 <= pat && pat <= 37)) {
 		return 0x5;
 	}
 	else if ((7 <= pat && pat <= 9) || (38 <= pat && pat <= 40)) {
 		return 0x2;
 	}
-	else if (pat == pPlayer->cmdFileDataPtr->ShieldCounter_Ground || pat == pPlayer->cmdFileDataPtr->ShieldCounter_Crouch) {
+	else if (pat == playerData->cmdFileDataPtr->ShieldCounter_Ground || pat == playerData->cmdFileDataPtr->ShieldCounter_Crouch) {
 		int retVal = 0x0;
-		retVal += 0x1 * (pat == pPlayer->cmdFileDataPtr->ShieldCounter_Ground);
-		retVal += 0x4 * (pat == pPlayer->cmdFileDataPtr->ShieldCounter_Crouch);
+		retVal += 0x1 * (pat == playerData->cmdFileDataPtr->ShieldCounter_Ground);
+		retVal += 0x4 * (pat == playerData->cmdFileDataPtr->ShieldCounter_Crouch);
 		return retVal;
 	}
-	else if (pat == pPlayer->cmdFileDataPtr->ShieldCounter_Air) {
+	else if (pat == playerData->cmdFileDataPtr->ShieldCounter_Air) {
 		return 0x2;
 	}
-	int ID = getIDFromPattern(pPlayer, pat);
-	return getCmdStance(pPlayer, ID);
+	int ID = getIDFromPattern(playerData, pat);
+	return getCmdStance(playerData, ID);
 }
 
 void drawSimpleMeter()
@@ -1888,33 +1887,33 @@ void HandleReversalsPage() {
 			}
 
 			if (validIndex > -1) {
-				int pat = vValidReversals[validIndex] % 1000;
+				pat = vValidReversals[validIndex] % 1000;
 				if (*nREV_IDs[validIndex] >> 16 != 0) {
 					nSaveShieldRevIndex = validIndex;
-					int nP2CharacterNumber = *(int*)(adMBAABase + dwP2CharNumber);
-					int nP2Moon = *(int*)(adMBAABase + dwP2CharMoon);
-					int nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
+					int p2CharacterNumber = *(int*)(adMBAABase + dwP2CharNumber);
+					int p2Moon = *(int*)(adMBAABase + dwP2CharMoon);
+					int p2CharacterID = 10 * p2CharacterNumber + p2Moon;
 					pat = -1;
 					switch (*nREV_IDs[validIndex] >> 16) {
 					case 1:
-						pat = GetPattern(nP2CharacterID, "5D");
+						pat = GetPattern(p2CharacterID, "5D");
 						break;
 					case 2:
-						pat = GetPattern(nP2CharacterID, "5D");
+						pat = GetPattern(p2CharacterID, "5D");
 						bHoldShield = true;
 						break;
 					case 3:
-						pat = GetPattern(nP2CharacterID, "2D");
+						pat = GetPattern(p2CharacterID, "2D");
 						break;
 					case 4:
-						pat = GetPattern(nP2CharacterID, "2D");
+						pat = GetPattern(p2CharacterID, "2D");
 						bHoldShield = true;
 						break;
 					case 5:
-						pat = GetPattern(nP2CharacterID, "j.D");
+						pat = GetPattern(p2CharacterID, "j.D");
 						break;
 					case 6:
-						pat = GetPattern(nP2CharacterID, "j.D");
+						pat = GetPattern(p2CharacterID, "j.D");
 						bHoldShield = true;
 						break;
 					}
@@ -2003,6 +2002,10 @@ void HandleReversalsPage() {
 			bDidShield = false;
 		}
 	}
+
+	if (nREV_ID_1 == 0 && nREV_ID_2 == 0 && nREV_ID_3 == 0 && nREV_ID_4 == 0) {
+		bDoReversal = false;
+	}
 }
 
 
@@ -2048,7 +2051,8 @@ void HandleTrainingPage() {
 	}
 
 	if (nTRUE_HITS_UNTIL_BUNKER != 0) {
-		if (bDoBunker && pActiveP2->subObj.onBlockComboCount >= nTRUE_HITS_UNTIL_BUNKER) {
+		if (bDoBunker && pActiveP2->subObj.onBlockComboCount >= nTRUE_HITS_UNTIL_BUNKER &&
+			pActiveP2->subObj.animationDataPtr->stateData->stance != 1) {
 			int bunkerPat = getPatternFromCmd(pActiveP2, "\2\1\4D\xff");
 			pActiveP2->subObj.targetPattern = bunkerPat;
 			DWORD bunkerFlags[7] = { 4, 0, 0, 0, 0, 0, 0 };
@@ -2305,7 +2309,7 @@ void frameDoneCallback()
 
 				if (cssArray.array[p1LoadChar]->File2[0] != '0')
 				{
-					char* charName = cssArray.array[p1LoadChar]->File2;
+					charName = cssArray.array[p1LoadChar]->File2;
 					snprintf(buffer, 256, "%s%s%s_%01d.txt", ".\\data", "\\", charName, p1LoadMoon);
 					if (!std::filesystem::exists(buffer)) return;
 				}
@@ -2320,7 +2324,7 @@ void frameDoneCallback()
 
 				if (cssArray.array[p2LoadChar]->File2[0] != '0')
 				{
-					char* charName = cssArray.array[p2LoadChar]->File2;
+					charName = cssArray.array[p2LoadChar]->File2;
 					snprintf(buffer, 256, "%s%s%s_%01d.txt", ".\\data", "\\", charName, p2LoadMoon);
 					if (!std::filesystem::exists(buffer)) return;
 				}
@@ -2345,10 +2349,21 @@ void frameDoneCallback()
 		pdP1Data->activeCharacter = 0;
 		pdP2Data->activeCharacter = 1;
 
+		UpdateCharPointers(&(pP1->subObj));
+		UpdateCharPointers(&(pP2->subObj));
+		if (pP3->exists) UpdateCharPointers(&(pP3->subObj));
+		if (pP4->exists) UpdateCharPointers(&(pP4->subObj));
+
 		for (int i = 0; i < 3; i++)
 		{
 			saveStateManager.FullSaves[i]->unsave();
 		}
+
+		vPatternNames = GetEmptyPatternList();
+		nREV_ID_1 = 0;
+		nREV_ID_2 = 0;
+		nREV_ID_3 = 0;
+		nREV_ID_4 = 0;
 
 		loadSaveFile = true;
 
@@ -2627,6 +2642,7 @@ void frameDoneCallback()
 		if (nClearSaveTimer == SAVE_RESET_TIME)
 		{
 			saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->unsave();
+			saveStateManager.SaveToFile();
 			nDrawTextTimer = TEXT_TIMER;
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "CLEARED SAVE", nSAVE_STATE_SLOT);
 		}
@@ -2661,7 +2677,6 @@ void frameDoneCallback()
 		oIncrementRNGHotkey.nHeldKeyCounter = 0;
 	if (nCUSTOM_RNG != 0 && oIncrementRNGHotkey.keyDown() || oIncrementRNGHotkey.nHeldKeyCounter >= 20)
 	{
-		char pcTemp[19];
 		nDrawTextTimer = TEXT_TIMER;
 		if (nCUSTOM_RNG == RNG_SEED)
 		{
@@ -2683,7 +2698,6 @@ void frameDoneCallback()
 		oDecrementRNGHotkey.nHeldKeyCounter = 0;
 	if (nCUSTOM_RNG != 0 && oDecrementRNGHotkey.keyDown() || oDecrementRNGHotkey.nHeldKeyCounter >= 20)
 	{
-		char pcTemp[19];
 		nDrawTextTimer = TEXT_TIMER;
 		if (nCUSTOM_RNG == RNG_SEED)
 		{
@@ -2804,7 +2818,6 @@ void frameDoneCallback()
 
 	*(int*)(adMBAABase + adSharedTimer) = *(int*)(adMBAABase + adTrueFrameCount);
 
-	int nFrameTimer = *(int*)(dwBaseAddress + dwFrameTimer);
 	if (nRATE == RNG_EVERY_FRAME)
 	{
 		if (nCUSTOM_RNG == RNG_SEED)
@@ -3104,27 +3117,12 @@ __declspec(naked) void _naked_ResetCallback() {
 
 // roundcall funcs
 
-const DWORD MBAA_UpdateCharPointers = 0x0045f650;
-//wrapper for call to UpdateCharPointers
-void UpdateCharPointers(ActorData* actorData) {
-	//actorData should be EBX
-	__asm
-	{
-		mov ebx, actorData;
-		call[MBAA_UpdateCharPointers];
-	}
-}
-
 void RoundcallCallback() {
 	//maintain dummy recording state
 	byte p1DoTraining = pP1->subObj.doTrainingAction;
 	byte p2DoTraining = pP2->subObj.doTrainingAction;
-	byte p3DoTraining;
-	byte p4DoTraining;
-	if (pP3->exists)
-		p3DoTraining = pP3->subObj.doTrainingAction;
-	if (pP4->exists)
-		p4DoTraining = pP4->subObj.doTrainingAction;
+	byte p3DoTraining = pP3->subObj.doTrainingAction;
+	byte p4DoTraining = pP4->subObj.doTrainingAction;
 
 	if (nSAVE_STATE_SLOT > 0 && saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)
 	{
@@ -3149,10 +3147,8 @@ void RoundcallCallback() {
 	}
 	pP1->subObj.doTrainingAction = p1DoTraining;
 	pP2->subObj.doTrainingAction = p2DoTraining;
-	if (pP3->exists)
-		pP3->subObj.doTrainingAction = p3DoTraining;
-	if (pP4->exists)
-		pP4->subObj.doTrainingAction = p4DoTraining;
+	pP3->subObj.doTrainingAction = p3DoTraining;
+	pP4->subObj.doTrainingAction = p4DoTraining;
 
 	if (loadSaveFile) {
 		saveStateManager.LoadFromFile();
@@ -4193,7 +4189,6 @@ void GetHotkeySettings(MenuWindow* hotkeyWindow) {
 MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 	InitMenuWindow(extendedWindow);
 	ReadDataFile(&extendedWindow->label, "EXTENDED SETTINGS", 18);
-	MenuInfo* extendedInfo;
 	for (int pageNum = 0; pageNum < size(Page_Options); pageNum++)
 	{
 		MenuInfo* extendedInfo = NEW_MENU_INFO();
@@ -4236,7 +4231,6 @@ MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 MenuWindow* InitHotkeySettingsMenu(MenuWindow* hotkeyWindow) {
 	InitMenuWindow(hotkeyWindow);
 	ReadDataFile(&hotkeyWindow->label, "HOTKEY SETTINGS", 18);
-	MenuInfo* hotkeyInfo;
 	for (int pageNum = 0; pageNum < size(HK_Page_Options); pageNum++)
 	{
 		MenuInfo* hotkeyInfo = NEW_MENU_INFO();
@@ -4436,7 +4430,6 @@ bool LoopingScrolling(Element* element, int& storage, int min, int max, int inte
 		LEFT, MIDDLE, RIGHT
 	};
 	int item = element->selectedItem;
-	int targetIndex = MIDDLE;
 
 	if (accelInterval != 0) {
 		if (ScrollAccelTimer >= ScrollAccelThreshold) {
@@ -5279,6 +5272,7 @@ void ExtendedMenuInputChecking() {
 			nSAVE_STATE_SLOT = curElement->selectedItem;
 			if (bAPos) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->unsave();
+				saveStateManager.SaveToFile();
 			}
 			break;
 		case eSAVE_STATES::SAVE_STATE:
@@ -5292,6 +5286,7 @@ void ExtendedMenuInputChecking() {
 				for (int i = 0; i < MAX_SAVES; i++) {
 					saveStateManager.FullSaves[i]->unsave();
 				}
+				saveStateManager.SaveToFile();
 			}
 			break;
 		case eSAVE_STATES::IMPORT_SAVE:

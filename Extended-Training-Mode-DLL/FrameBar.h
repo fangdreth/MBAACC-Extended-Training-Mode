@@ -87,8 +87,8 @@ struct Player
 	int nInactionableMemory = 0;
 	int nAdvantageCounter = 0;
 	int nFirstActiveCounter = 0;
-	int nLastFrameCount = 0;
-	bool bLastOnRight = false;
+	DWORD nLastFrameCount = 0;
+	byte bLastOnRight = 0;
 	DWORD dwLastActivePointer = 0x0;
 	char cLastHitstop = 0;
 	int nFirstActive = 0;

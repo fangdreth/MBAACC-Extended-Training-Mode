@@ -934,7 +934,7 @@ void DefaultP7(MenuInfo* menuInfo);
 
 //Page 8
 const std::vector<const char*> vFRAME_DATA = {
-	"FRAME DATA",
+	"CONSOLE DATA",
 	"NORMAL", "ADVANCED"
 };
 

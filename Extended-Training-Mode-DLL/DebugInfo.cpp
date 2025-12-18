@@ -690,3 +690,12 @@ void FullCharacterReload() {
 		call[MBAA_FullCharacterReload];
 	}
 }
+
+void UpdateCharPointers(ActorData* actorData) {
+	//actorData should be EBX
+	__asm
+	{
+		mov ebx, actorData;
+		call[MBAA_UpdateCharPointers];
+	}
+}
