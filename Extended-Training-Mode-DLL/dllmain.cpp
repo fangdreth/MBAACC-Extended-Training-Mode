@@ -204,6 +204,11 @@ void initRegistryValues()
 
 	ReadFromRegistry(sFRAME_BAR_X, &frameBar.x);
 	ReadFromRegistry(sFRAME_BAR_Y, &frameBar.y);
+	int backCompY;
+	ReadFromRegistry(sFRAME_BAR_Y, &backCompY);
+	if (backCompY > 0 && backCompY < 480) {
+		frameBar.y = 410.0f;
+	}
 	ReadFromRegistry(sFRAME_BAR_W, &frameBar.w);
 	ReadFromRegistry(sFRAME_BAR_H, &frameBar.h);
 	ReadFromRegistry(sFRAME_BAR_NUMCELLS, &frameBar.numCells);
