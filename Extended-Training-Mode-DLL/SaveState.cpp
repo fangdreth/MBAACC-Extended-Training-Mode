@@ -282,7 +282,7 @@ void FullSave::load(bool LoadRNG) {
 
 void SaveStateManager::SaveToFile()
 {
-	constexpr std::string baseSaveFolder = "ETMSaveStates";
+	const std::string baseSaveFolder = "ETMSaveStates";
 
 	try
 	{
@@ -319,7 +319,7 @@ void SaveStateManager::SaveToFile()
 }
 
 void SaveStateManager::LoadFromFile() {
-	constexpr std::string baseSaveFolder = "ETMSaveStates";
+	const std::string baseSaveFolder = "ETMSaveStates";
 
 	try
 	{
