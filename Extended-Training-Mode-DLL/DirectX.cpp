@@ -3085,7 +3085,7 @@ void saveScreenshot() {
 		return;
 	}
 
-	constexpr std::string baseScreenShotFolder = "ETMScreenShots";
+	const std::string baseScreenShotFolder = "ETMScreenShots";
 
 	static bool firstRun = true;
 	if (firstRun) {
