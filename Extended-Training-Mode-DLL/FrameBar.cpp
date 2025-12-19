@@ -310,6 +310,7 @@ void UpdateBars(Player& P, Player& Assist)
 
 	bool bIsShield = false;
 	bool bIsThrow = false;
+	bool bIsBoxCheck = false;
 	if (P.PlayerData->subObj.animationDataPtr->highestIFIndex > 0)
 	{
 		AnimationData* animData = P.PlayerData->subObj.animationDataPtr;
@@ -320,6 +321,9 @@ void UpdateBars(Player& P, Player& Assist)
 				}
 				else if (animData->IFs[i]->IFTP == 51) {
 					bIsShield = true;
+				}
+				else if (animData->IFs[i]->IFTP == 14) {
+					bIsBoxCheck = true;
 				}
 			}
 		}
@@ -376,7 +380,8 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		dwSubColor = FB_INVULN;
 	}
-	else if (P.PlayerData->subObj.animationDataPtr->highestNonHitboxIndex == 10) //Special Box 1
+	else if (P.PlayerData->subObj.animationDataPtr->highestNonHitboxIndex == 10 &&
+		bIsBoxCheck) //Special Box 1 and IFTP 14
 	{
 		dwSubColor = FB_COUNTER;
 	}
