@@ -701,9 +701,6 @@ CHECKOFFSET(chainedCmdsCounter, 0x3e0);
 
 static_assert(sizeof(PlayerData) == 0xAFC, "PlayerData MUST be 0xAFC large!");
 
-extern PlayerData* playerDataArr;
-extern EffectData* effectDataArr;
-
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
@@ -803,6 +800,10 @@ typedef struct HitEffectData {
 
 } HitEffectData; // remember when i reversed this whole thing and then proceded to accidentally wipe all my work?
 #pragma pack(pop)
+
+extern PlayerData* playerDataArr;
+extern PlayerAuxData* playerAuxDataArr;
+extern EffectData* effectDataArr;
 
 extern bool shouldDisplayDebugInfo;
 void displayDebugInfo();

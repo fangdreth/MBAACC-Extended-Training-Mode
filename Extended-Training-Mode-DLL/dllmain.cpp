@@ -135,14 +135,10 @@ PlayerData* pP2 = (PlayerData*)(adMBAABase + adP2Base);
 PlayerData* pP3 = (PlayerData*)(adMBAABase + adP3Base);
 PlayerData* pP4 = (PlayerData*)(adMBAABase + adP4Base);
 
-PlayerData* pPlayerArray[4] = { pP1, pP2, pP3, pP4 };
-
 PlayerAuxData* pdP1Data = (PlayerAuxData*)(adMBAABase + adP1DataBase);
 PlayerAuxData* pdP2Data = (PlayerAuxData*)(adMBAABase + adP2DataBase);
 PlayerAuxData* pdP3Data = (PlayerAuxData*)(adMBAABase + adP3DataBase);
 PlayerAuxData* pdP4Data = (PlayerAuxData*)(adMBAABase + adP4DataBase);
-
-PlayerAuxData* pdPlayerDataArray[4] = { pdP1Data , pdP2Data , pdP3Data , pdP4Data };
 
 PlayerData* pActiveP1 = pP1;
 PlayerData* pActiveP2 = pP2;
@@ -1638,7 +1634,7 @@ void drawStats()
 	{
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < 8; j++) {
-				PlayerAuxData* playerData = pdPlayerDataArray[i];
+				PlayerAuxData* playerData = &playerAuxDataArr[i];
 				if (trueComboData[i][j].damage != 0 &&
 					playerData->comboCalcData[j].someFlag != -1 &&
 					trueComboData[i][j].damage != playerData->comboCalcData[j].damage) {
@@ -2907,7 +2903,7 @@ void ResetCallback() {
 	if (nSAVE_STATE_SLOT == 0 || !(saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)) { // if not loading a save
 		if (*(int*)(adMBAABase + adBS_MAGIC_CIRCUIT) == 0) { // if Magic Circuit is set to Normal
 			for (int i = 0; i < 4; i++) {
-				PlayerData* curPlayer = pPlayerArray[i];
+				PlayerData* curPlayer = &playerDataArr[i];
 				if (!curPlayer->exists) continue;
 				int USE_METER = i % 2 == 0 ? nTRUE_P1_METER : nTRUE_P2_METER;
 				switch (curPlayer->subObj.moon) {
@@ -3147,21 +3143,31 @@ void RoundcallCallback() {
 	{
 		CommandFileData* cmdPtrs[4] = {pP1->cmdFileDataPtr, pP2->cmdFileDataPtr, pP3->cmdFileDataPtr, pP4->cmdFileDataPtr};
 		saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->load(nLOAD_RNG);
-		PlayerData* tempPlayer;
+		PlayerData* curPlayer;
 		for (int i = 0; i < 4; i++) {
-			tempPlayer = pPlayerArray[i];
-			if (tempPlayer->exists)
+			curPlayer = &playerDataArr[i];
+			if (curPlayer->exists)
 			{
-				UpdateCharPointers(&(tempPlayer->subObj));
-				tempPlayer->cmdFileDataPtr = cmdPtrs[i];
+				UpdateCharPointers(&(curPlayer->subObj));
+				curPlayer->cmdFileDataPtr = cmdPtrs[i];
 				for (int j = 0; j < 8; j++) {
-					if (tempPlayer->subObj.attackingSubObjPtrArr[j] != 0) {
-						ActorData* attackingSubObj = tempPlayer->subObj.attackingSubObjPtrArr[j];
-						tempPlayer->subObj.recievingAttackDataPtrArr[j] = attackingSubObj->attackDataPtr;
+					if (curPlayer->subObj.attackingSubObjPtrArr[j] != 0) {
+						ActorData* attackingSubObj = curPlayer->subObj.attackingSubObjPtrArr[j];
+						curPlayer->subObj.recievingAttackDataPtrArr[j] = attackingSubObj->attackDataPtr;
 					}
 				}
 			}
 			
+		}
+
+		EffectData* curEffect;
+		for (int i = 0; i < 1000; i++) {
+			curEffect = &effectDataArr[i];
+			if (curEffect->exists)
+			{
+				UpdateCharPointers(&(curEffect->subObj));
+			}
+
 		}
 	}
 	pP1->subObj.doTrainingAction = p1DoTraining;
@@ -6677,8 +6683,8 @@ void GetInitialHealthForTrueComboDamage() {
 	if (pAttPlayer->OwnerSubObjPtr != 0) {
 		pAttPlayer = pAttPlayer->OwnerSubObjPtr;
 	}
-	byte curComboData = pdPlayerDataArray[pAttPlayer->ownerIndex]->comboCalcData[0].index;
-	if (pdPlayerDataArray[pAttPlayer->ownerIndex]->comboCalcData[curComboData].numHits == 0) {
+	byte curComboData = playerAuxDataArr[pAttPlayer->ownerIndex].comboCalcData[0].index;
+	if (playerAuxDataArr[pAttPlayer->ownerIndex].comboCalcData[curComboData].numHits == 0) {
 		trueComboData[pAttPlayer->ownerIndex][curComboData].startingHealth = pDefPlayer->health;
 		trueComboData[pAttPlayer->ownerIndex][curComboData].defender = pDefPlayer;
 	}
@@ -6710,7 +6716,7 @@ __declspec(naked) void _naked_GetInitialHealthForTrueComboDamage() {
 void DrawTrueComboDamage() {
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 8; j++) {
-			PlayerAuxData* playerData = pdPlayerDataArray[i];
+			PlayerAuxData* playerData = &playerAuxDataArr[i];
 			if (playerData->comboCalcData[j].someFlag == -1) {
 				trueComboData[i][j].damage = 0;
 				trueComboData[i][j].defender = nullptr;

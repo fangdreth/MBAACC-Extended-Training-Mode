@@ -89,6 +89,7 @@ AnimationData* EffectData::getAnimationDataPtr(int p, int s) {
 // -----
 
 PlayerData* playerDataArr = (PlayerData*)(0x00555130);
+PlayerAuxData* playerAuxDataArr = (PlayerAuxData*)(0x00557DB8);
 EffectData* effectDataArr = (EffectData*)(0x0067BDE8);
 
 bool shouldDisplayDebugInfo = false;
