@@ -1632,6 +1632,25 @@ void drawStats()
 		drawRect(395.0f + nResetOffset, 23.0f, 24.0f, 1.0f, 0xFFFFFFFF);		// horizontal bar
 		TextDraw(395 + nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", P2AdjGuts[3]).c_str());
 	}
+
+	//combo damage
+	if (nACCURATE_COMBO_DAMAGE)
+	{
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 8; j++) {
+				PlayerAuxData* playerData = pdPlayerDataArray[i];
+				if (trueComboData[i][j].damage != 0 &&
+					playerData->comboCalcData[j].someFlag != -1 &&
+					trueComboData[i][j].damage != playerData->comboCalcData[j].damage) {
+					float xPos = playerData->comboCalcData[j].xPos;
+					float yPos = playerData->comboCalcData[j].yPos;
+					byte alpha = playerData->comboCalcData[j].alpha;
+					DWORD ARGB = (alpha << 24) | 0x00FFFFFF;
+					TextDraw(xPos + 137.0f, yPos + 62.0f, 10, ARGB, "%i", trueComboData[i][j].damage);
+				}
+			}
+		}
+	}
 }
 
 void drawFrameData()
@@ -2798,7 +2817,7 @@ void frameDoneCallback()
 	}
 
 	bool doDraw = false;
-	if ((safeWrite() && !isPaused() && nIN_GAME_FRAME_DISPLAY) || (isPaused() && (bVIEW_SCREEN || bShowFrameBarPreview))) doDraw = true;
+	if ((safeWrite() && !isPaused() && nIN_GAME_FRAME_DISPLAY) || (isPaused() && ((bVIEW_SCREEN && nIN_GAME_FRAME_DISPLAY) || bShowFrameBarPreview))) doDraw = true;
 
 	if (safeWrite()) DoFrameBar(doDraw);
 
@@ -6696,8 +6715,11 @@ void DrawTrueComboDamage() {
 				trueComboData[i][j].damage = 0;
 				trueComboData[i][j].defender = nullptr;
 			}
-			else if (playerData->comboCalcData[j].someFlag <= 100 && trueComboData[i][j].defender != nullptr && trueComboData[i][j].defender->notInCombo == false && nACCURATE_COMBO_DAMAGE) {
-				playerData->comboCalcData[j].damage = trueComboData[i][j].startingHealth - trueComboData[i][j].defender->health;
+			else if (playerData->comboCalcData[j].someFlag <= 100 &&
+				trueComboData[i][j].defender != nullptr &&
+				trueComboData[i][j].defender->notInCombo == false) {
+				//playerData->comboCalcData[j].damage = trueComboData[i][j].startingHealth - trueComboData[i][j].defender->health;
+				trueComboData[i][j].damage = trueComboData[i][j].startingHealth - trueComboData[i][j].defender->health;
 			}
 		}
 	}
