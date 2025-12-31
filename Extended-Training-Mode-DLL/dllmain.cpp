@@ -237,6 +237,11 @@ bool __stdcall isPaused()
 	return *reinterpret_cast<BYTE*>(dwBaseAddress + dwPausedFlag);
 }
 
+void QueueTrainingReset()
+{
+	*(byte*)(0x0055dec3) = 0xFF;
+}
+
 // the patch func being templated causes problems when calling from asm
 void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n)
 {
@@ -2291,8 +2296,7 @@ void frameDoneCallback()
 		
 		//log("RKEY hit");
 		
-		needTrainingModeReset = true;
-
+		QueueTrainingReset();
 		
 		///replayManager.load("./ReplayVS/RED_ARCUEIDxSATSUKI_251128130201.rep");
 		replayManager.reset();
@@ -2306,7 +2310,7 @@ void frameDoneCallback()
 	if (lShiftKey.keyHeld() && mKey.keyDown())
 	//if (oResetKey.keyDown())
 	{
-		needTrainingModeReset = true;
+		QueueTrainingReset();
 	}
 
 	static KeyState nKey('N');
@@ -2382,7 +2386,7 @@ void frameDoneCallback()
 
 		loadSaveFile = true;
 
-		needTrainingModeReset = true;
+		QueueTrainingReset();
 	}
 
 	static KeyState fKey('F');
@@ -6546,7 +6550,6 @@ __declspec(naked) void _naked_dualInputDisplay() {
 }
 
 // input funcs
-bool needTrainingModeReset = false;
 void inputCallback() {
 
 	// does melty update controllers in a thread? and is this inside said thread?
@@ -6560,14 +6563,6 @@ void inputCallback() {
 	}
 	
 	replayManager.setInputs();
-
-	if (needTrainingModeReset) {
-		needTrainingModeReset = false;
-
-		PUSH_ALL;
-		emitCall(0x00478590);
-		POP_ALL;
-	}
 
 }
 

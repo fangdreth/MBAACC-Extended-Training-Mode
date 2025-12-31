@@ -303,5 +303,3 @@ constexpr DWORD hashString(const std::string_view& str) {
 void nakedFrameDoneCallback_RAW();
 
 void timeMeltyCall(DWORD patchAddr, const char* funcName = "???");
-
-extern bool needTrainingModeReset;
