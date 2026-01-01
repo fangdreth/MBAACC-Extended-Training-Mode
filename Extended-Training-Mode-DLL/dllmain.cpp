@@ -95,6 +95,7 @@ bool bDoResetBars = true;
 bool bShowFrameBarPreview = false;
 bool bShowFrameBarYPreview = false;
 bool bForceGuard = false;
+int dummyDelayTechFramesElapsed = 0;
 
 bool loadSaveFile = false;
 
@@ -6743,6 +6744,30 @@ __declspec(naked) void _naked_DrawTrueComboDamage() {
 	}
 }
 
+DWORD MBAA_IsInGroundTechWindow = 0x00463760;
+DWORD DummyDelayTech_PatchAddr = 0x00451346;
+__declspec(naked) void _naked_DummyDelayTech() {
+	ActorData* cso;
+	__asm {
+		mov cso, esi;
+	}
+	if (cso->untechTimeElapsed - 2 < dummyTechDelay)
+	{
+		__asm {
+			push 0x0045137b;
+			ret;
+		}
+	}
+	__asm {
+		mov eax, 0x00557d20;
+		mov eax, [eax];
+		cmp eax, 0x4;
+		mov byte ptr[esi + 0x17b], bl;
+		push 0x00451354;
+		ret;
+	}
+}
+
 // init funcs
 
 void initFrameDoneCallback()
@@ -6966,6 +6991,10 @@ void initTrueComboDamage() {
 	patchJump(DrawTrueComboDamage_PatchAddr, _naked_DrawTrueComboDamage);
 }
 
+void initDummyDelayTech() {
+	patchJump(DummyDelayTech_PatchAddr, _naked_DummyDelayTech);
+}
+
 void init2v2Hack() {
 	patchJump(0x0040e3ab, _naked_init2v2Hack);
 }
@@ -7029,6 +7058,8 @@ void threadFunc()
 	initDisabledExit();
 
 	initTrueComboDamage();
+
+	initDummyDelayTech();
 
 	initHotkeys();
 	initRegistryValues();

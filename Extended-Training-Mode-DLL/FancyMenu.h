@@ -96,5 +96,7 @@ extern int p2LoadPal;
 
 extern bool reloadCheckFile;
 
+extern int dummyTechDelay;
+
 void drawFancyMenu();
 

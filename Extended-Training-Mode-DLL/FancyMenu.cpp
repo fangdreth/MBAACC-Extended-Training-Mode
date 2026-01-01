@@ -52,6 +52,8 @@ int p2LoadPal = 1;
 
 bool reloadCheckFile = false;
 
+int dummyTechDelay = 0;
+
 template <typename T>
 struct always_false : std::false_type { };
 
@@ -654,6 +656,18 @@ void initMiscSubmenu() {
 	);
 
 	misc.add(windMenu);
+
+	misc.add<int*>("Dummy Delay Tech Frames",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 2);
+		},
+		[](int* opt) -> std::string {
+			return std::to_string(*opt);
+		},
+		L"",
+		&dummyTechDelay
+	);
 
 	baseMenu.add(misc);
 }
