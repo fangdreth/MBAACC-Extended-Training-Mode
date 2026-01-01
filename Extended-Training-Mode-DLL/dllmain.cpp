@@ -6744,6 +6744,7 @@ __declspec(naked) void _naked_DrawTrueComboDamage() {
 	}
 }
 
+byte randomTechDelay = 0xff;
 DWORD MBAA_IsInGroundTechWindow = 0x00463760;
 DWORD DummyDelayTech_PatchAddr = 0x00451346;
 __declspec(naked) void _naked_DummyDelayTech() {
@@ -6751,13 +6752,16 @@ __declspec(naked) void _naked_DummyDelayTech() {
 	__asm {
 		mov cso, esi;
 	}
-	if (cso->untechTimeElapsed - 2 < dummyTechDelay)
+	if (randomTechDelay == 0xff) randomTechDelay = rand() % 3;
+	if ((dummyTechDelay == 3 && cso->untechTimeElapsed - 2 < randomTechDelay) ||
+		(dummyTechDelay < 3 && cso->untechTimeElapsed - 2 < dummyTechDelay))
 	{
 		__asm {
-			push 0x0045137b;
+			push 0x0045137b; //skip ground tech
 			ret;
 		}
 	}
+	randomTechDelay = 0xff;
 	__asm {
 		mov eax, 0x00557d20;
 		mov eax, [eax];

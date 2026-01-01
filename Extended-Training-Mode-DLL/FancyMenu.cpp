@@ -660,9 +660,13 @@ void initMiscSubmenu() {
 	misc.add<int*>("Dummy Delay Tech Frames",
 		[](int inc, int*& opt) {
 			*opt += inc;
-			*opt = CLAMP(*opt, 0, 2);
+			*opt = CLAMP(*opt, 0, 3);
 		},
 		[](int* opt) -> std::string {
+			if (*opt == 3)
+			{
+				return "RANDOM";
+			}
 			return std::to_string(*opt);
 		},
 		L"",
