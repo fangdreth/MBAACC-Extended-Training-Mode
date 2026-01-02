@@ -358,14 +358,14 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		sFont = FD_ACTIONABLE;
 		sBarValue = std::format("{:2}", P.nPattern % 100);
-		if (P.nLastInactionableFrames != 0 || (P.cLastStance == 1 && P.cState_Stance != 1)) //Neutral frame
-		{
-			sFont = FD_NEUTRAL;
-		}
-		else if (bDoAdvantage) //Has advantage
+		if (bDoAdvantage) //Has advantage
 		{
 			sBarValue = std::format("{:2}", P.nAdvantageCounter % 100);
 			sFont = FD_ADVANTAGE;
+		}
+		if (P.nLastInactionableFrames != 0 || (P.cLastStance == 1 && P.cState_Stance != 1)) //Neutral frame
+		{
+			sFont = FD_NEUTRAL;
 		}
 	}
 
@@ -403,8 +403,7 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		sFont = FD_THROW_ACTIVE;
 	}
-
-	if (P.cAnimation_BoxIndex <= 1 ||
+	else if (P.cAnimation_BoxIndex <= 1 ||
 		P.sStrikeInvuln != 0 ||
 		P.cState_Invuln == 3)
 	{
