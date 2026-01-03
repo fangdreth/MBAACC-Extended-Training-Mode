@@ -1871,7 +1871,7 @@ void HandleReversalsPage() {
 		nHoldButtons = 0;
 		bHoldShield = false;
 	}
-	if ((nREVERSAL_TYPE == 0 && !bDoReversal) || pActiveP2->subObj.doTrainingAction != 1 || pActiveP2->subObj.targetPatternPriority == 30001) return;
+	if ((nREVERSAL_TYPE == 0 && !bDoReversal) || pActiveP2->subObj.doTrainingAction != 1 || pActiveP2->subObj.targetPatternPriority != 0xFFFF) return;
 	std::vector<int> vValidReversals = (pActiveP2->subObj.yPos == 0 && pActiveP2->subObj.prevYPos == 0 ? vGroundReversals : vAirReversals);
 	int pat;
 	if (vValidReversals.size() != 0 && bDoReversal && (pdP2Data->inactionableFrames == 0 || pActiveP2->subObj.shieldSuccessType != 0)) {
@@ -1945,7 +1945,7 @@ void HandleReversalsPage() {
 				}
 				else {
 					pActiveP2->subObj.targetPattern = vValidReversals[validIndex] % 1000;
-					pActiveP2->subObj.targetPatternPriority = 30001;
+					pActiveP2->subObj.targetPatternPriority = 30000;
 				}
 
 				if (vValidReversals[validIndex] > 999) {
@@ -1971,7 +1971,7 @@ void HandleReversalsPage() {
 		}
 		else {
 			pActiveP2->subObj.targetPattern = vValidReversals[nSaveShieldRevIndex] % 1000;
-			pActiveP2->subObj.targetPatternPriority = 30001;
+			pActiveP2->subObj.targetPatternPriority = 30000;
 		}
 		if (vValidReversals[nSaveShieldRevIndex] > 999) {
 			nHoldButtons = vValidReversals[nSaveShieldRevIndex] / 1000;
@@ -1980,7 +1980,7 @@ void HandleReversalsPage() {
 		bDoReversal = false;
 	}
 
-	if (pActiveP2->subObj.targetPatternPriority == 30001) return;
+	if (pActiveP2->subObj.targetPatternPriority != 0xFFFF) return;
 
 	switch (nREVERSAL_TYPE) {
 	case 1:
