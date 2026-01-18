@@ -1683,7 +1683,7 @@ void drawFrameData()
 	int projectileIndex = 4;
 	bool res;
 	for(unsigned index = 0; index < 1000; index++) {
-		if (((*(int*)(index * 0x33c + 0x67bde8) != 0) && (*(char*)(index * 0x33c + 0x67be09) == '\0'))) {
+		if ((*(int*)(index * 0x33c + 0x67bde8) != 0) && (*(char*)(index * 0x33c + 0x67be09) == '\0') && (*(char*)(index * 0x33c + 0x67c0dd) == '\0')) {
 			res = drawObject(index * 0x33c + 0x67bde8, true, projectileIndex);
 			if (res) {
 				projectileIndex++;

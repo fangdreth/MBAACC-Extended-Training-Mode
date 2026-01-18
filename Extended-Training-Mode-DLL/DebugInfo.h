@@ -609,9 +609,10 @@ typedef struct ActorData {
 	DWORD buttonInputs; // 0x000AA0CC  -  AA : binary combination of buttons held (0x01 = A, 0x02 = B ... 0x10 = E) ,  CC : binary combination of buttons just pressed
 	DWORD buttonReleased; // binary combination of buttons just released (0x01 = A, 0x02 = B ... 0x10 = E)
 	BYTE ownerIndex;
-	UNUSED(0x1);
+	BYTE queueDespawn;
 	WORD numSpawnedEffects;
-	UNUSED(0x8);
+	int grabLocX;
+	int grabLocY;
 	int spriteRotation;
 	float xScale;
 	float yScale;
