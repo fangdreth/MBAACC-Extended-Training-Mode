@@ -3137,48 +3137,13 @@ __declspec(naked) void _naked_ResetCallback() {
 
 // roundcall funcs
 
+bool doLoad = false;
 void RoundcallCallback() {
 	//maintain dummy recording state
-	byte p1DoTraining = pP1->subObj.doTrainingAction;
-	byte p2DoTraining = pP2->subObj.doTrainingAction;
-	byte p3DoTraining = pP3->subObj.doTrainingAction;
-	byte p4DoTraining = pP4->subObj.doTrainingAction;
-
 	if (nSAVE_STATE_SLOT > 0 && saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)
 	{
-		CommandFileData* cmdPtrs[4] = {pP1->cmdFileDataPtr, pP2->cmdFileDataPtr, pP3->cmdFileDataPtr, pP4->cmdFileDataPtr};
-		saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->load(nLOAD_RNG);
-		PlayerData* curPlayer;
-		for (int i = 0; i < 4; i++) {
-			curPlayer = &playerDataArr[i];
-			if (curPlayer->exists)
-			{
-				UpdateCharPointers(&(curPlayer->subObj));
-				curPlayer->cmdFileDataPtr = cmdPtrs[i];
-				for (int j = 0; j < 8; j++) {
-					if (curPlayer->subObj.attackingSubObjPtrArr[j] != 0) {
-						ActorData* attackingSubObj = curPlayer->subObj.attackingSubObjPtrArr[j];
-						curPlayer->subObj.recievingAttackDataPtrArr[j] = attackingSubObj->attackDataPtr;
-					}
-				}
-			}
-			
-		}
-
-		EffectData* curEffect;
-		for (int i = 0; i < 1000; i++) {
-			curEffect = &effectDataArr[i];
-			if (curEffect->exists)
-			{
-				UpdateCharPointers(&(curEffect->subObj));
-			}
-
-		}
+		doLoad = true;
 	}
-	pP1->subObj.doTrainingAction = p1DoTraining;
-	pP2->subObj.doTrainingAction = p2DoTraining;
-	pP3->subObj.doTrainingAction = p3DoTraining;
-	pP4->subObj.doTrainingAction = p4DoTraining;
 
 	if (loadSaveFile) {
 		saveStateManager.LoadFromFile();
@@ -6772,6 +6737,67 @@ __declspec(naked) void _naked_DummyDelayTech() {
 	}
 }
 
+void LoadSave() {
+	if (doLoad && nSAVE_STATE_SLOT > 0 && saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)
+	{
+		//save recording status
+		byte p1DoTraining = pP1->subObj.doTrainingAction;
+		byte p2DoTraining = pP2->subObj.doTrainingAction;
+		byte p3DoTraining = pP3->subObj.doTrainingAction;
+		byte p4DoTraining = pP4->subObj.doTrainingAction;
+
+		CommandFileData* cmdPtrs[4] = { pP1->cmdFileDataPtr, pP2->cmdFileDataPtr, pP3->cmdFileDataPtr, pP4->cmdFileDataPtr };
+		saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->load(nLOAD_RNG);
+		PlayerData* curPlayer;
+		for (int i = 0; i < 4; i++) {
+			curPlayer = &playerDataArr[i];
+			if (curPlayer->exists)
+			{
+				UpdateCharPointers(&(curPlayer->subObj));
+				curPlayer->cmdFileDataPtr = cmdPtrs[i];
+				for (int j = 0; j < 8; j++) {
+					if (curPlayer->subObj.attackingSubObjPtrArr[j] != 0) {
+						ActorData* attackingSubObj = curPlayer->subObj.attackingSubObjPtrArr[j];
+						curPlayer->subObj.recievingAttackDataPtrArr[j] = attackingSubObj->attackDataPtr;
+					}
+				}
+			}
+
+		}
+
+		EffectData* curEffect;
+		for (int i = 0; i < 1000; i++) {
+			curEffect = &effectDataArr[i];
+			if (curEffect->exists)
+			{
+				UpdateCharPointers(&(curEffect->subObj));
+			}
+
+		}
+
+		//load recording status
+		pP1->subObj.doTrainingAction = p1DoTraining;
+		pP2->subObj.doTrainingAction = p2DoTraining;
+		pP3->subObj.doTrainingAction = p3DoTraining;
+		pP4->subObj.doTrainingAction = p4DoTraining;
+
+		doLoad = false;
+	}
+}
+
+DWORD LoadSave_PatchAddr = 0x004540b8;
+__declspec(naked) void _naked_LoadSave() {
+	PUSH_ALL;
+	LoadSave();
+	POP_ALL;
+
+	__asm {
+		mov eax, 0x1;
+		pop esi;
+		ret;
+	}
+}
+
 // init funcs
 
 void initFrameDoneCallback()
@@ -7003,6 +7029,10 @@ void init2v2Hack() {
 	patchJump(0x0040e3ab, _naked_init2v2Hack);
 }
 
+void initLoadSave() {
+	patchJump(LoadSave_PatchAddr, _naked_LoadSave);
+}
+
 // dll thread func
 
 void threadFunc() 
@@ -7070,6 +7100,7 @@ void threadFunc()
 	initSharedValues();
 	init2v2Hack();
 
+	initLoadSave();
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 
