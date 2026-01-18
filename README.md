@@ -137,7 +137,7 @@ Yes.
 
 ### Is there Linux support?
 
-The official version of the mod does not support Linux at this point in time, but several people have made forks in the past which reportedly worked.  You may be able to fin them by using the discord search feature.
+The official version of the mod does not support Linux at this point in time, but several people have made forks in the past which reportedly worked.  You may be able to find them by using the discord search feature.
 
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/changelog.png?raw=true)
 
