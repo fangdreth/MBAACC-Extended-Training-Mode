@@ -3353,6 +3353,10 @@ void __stdcall _doDrawCalls() {
 
 void logFPS() {
 
+	if (!logVerboseFps) {
+		return;
+	}
+
 	constexpr int timerSize = 60;
 	static FreqTimer<timerSize> fpsTimer;
 	fpsTimer.tick();
