@@ -3390,6 +3390,8 @@ void logFPS() {
 		fpsMethod = "AFTER";
 	}
 
+	fpsMethod = "IVE BEEN THINKING";
+
 	FreqTimerData timerData = fpsTimer.getData();
 
 	if (nHIDE_EXTRAS) return;
