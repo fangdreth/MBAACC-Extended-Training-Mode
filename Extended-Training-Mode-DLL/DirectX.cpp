@@ -24,7 +24,7 @@ void drawReplayMenu();
 //void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 void cursorDraw();
 unsigned directxFrameCount = 0;
-float _freqTimerYVal = 0.0f;
+double _freqTimerYVal = 0.0;
 bool logPowerInfo = false;
 bool logVerboseFps = false;
 float hitboxOpacity = 0.20f;
@@ -3378,7 +3378,7 @@ void logFPS() {
 		}
 
 		if (logVerboseFps) {
-			TextDraw(0.0, 10.0 + (i * 7), 7, col, "%5.2lf %c %s", fpsTimer.buffer.data[i], (i == fpsTimer.buffer.index) ? '<' : ' ', errorMsg);
+			TextDraw(-50.0, 10.0 + (i * 7), 7, col, "%5.2lf %c %s", fpsTimer.buffer.data[i], (i == fpsTimer.buffer.index) ? '<' : ' ', errorMsg);
 		}
 	}
 

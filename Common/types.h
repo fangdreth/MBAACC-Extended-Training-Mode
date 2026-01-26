@@ -177,21 +177,24 @@ public:
 };
 
 typedef struct FreqTimerData {
-	float min;
-	float mean;
-	float max;
-	float stdev;
+	double min;
+	double mean;
+	double max;
+	double stdev;
 } FreqTimerData;
 
 // meant to,,, assist in timing certain things/seeing how frequently something is called per frame
-extern float _freqTimerYVal; // template classes dont share statics
+extern double _freqTimerYVal; // template classes dont share statics
 template<int size>
 class FreqTimer {
 public:
 
 	void tick() {
-		long long time = getNanoSec();
-		float temp = (float)1000000000.0 / ((float)time - prevTime);
+		// am i being fucking stupid here by doing this conversion here? i was using floats for a precise number and using LARGE NUMBERS?
+		//long long time = getNanoSec();
+		//double temp = (double)1000000000.0 / ((double)time - prevTime);
+		long long time = getMicroSec();
+		double temp = (double)1000000.0 / ((double)time - prevTime);
 		buffer.pushHead(temp);
 		prevTime = time;
 	}
@@ -214,7 +217,7 @@ public:
 		}
 
 		if (tempSize != 0) {
-			res.mean /= ((float)tempSize);
+			res.mean /= ((double)tempSize);
 		} else {
 			res.mean = NAN;
 		}
@@ -228,7 +231,7 @@ public:
 		}
 
 		if (tempSize != 0) {
-			res.stdev /= ((float)tempSize - 1);
+			res.stdev /= ((double)tempSize - 1);
 			res.stdev = sqrtf(res.stdev);
 		} else {
 			res.stdev = NAN;
@@ -246,7 +249,7 @@ public:
 	}
 
 	long long prevTime = 0;
-	CircularBuffer<float, size> buffer;
+	CircularBuffer<double, size> buffer;
 
 };
 
