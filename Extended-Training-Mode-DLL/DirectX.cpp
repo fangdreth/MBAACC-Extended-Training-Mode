@@ -24,7 +24,7 @@ void drawReplayMenu();
 //void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 void cursorDraw();
 unsigned directxFrameCount = 0;
-float _freqTimerYVal = 0.0f;
+double _freqTimerYVal = 0.0;
 bool logPowerInfo = false;
 bool logVerboseFps = false;
 float hitboxOpacity = 0.20f;
@@ -3353,6 +3353,10 @@ void __stdcall _doDrawCalls() {
 
 void logFPS() {
 
+	if (!logVerboseFps) {
+		return;
+	}
+
 	constexpr int timerSize = 60;
 	static FreqTimer<timerSize> fpsTimer;
 	fpsTimer.tick();
@@ -3374,7 +3378,7 @@ void logFPS() {
 		}
 
 		if (logVerboseFps) {
-			TextDraw(0.0, 10.0 + (i * 7), 7, col, "%5.2lf %c %s", fpsTimer.buffer.data[i], (i == fpsTimer.buffer.index) ? '<' : ' ', errorMsg);
+			TextDraw(-50.0, 10.0 + (i * 7), 7, col, "%5.2lf %c %s", fpsTimer.buffer.data[i], (i == fpsTimer.buffer.index) ? '<' : ' ', errorMsg);
 		}
 	}
 
@@ -3385,6 +3389,8 @@ void logFPS() {
 	else if (maintainFPSState == 2) {
 		fpsMethod = "AFTER";
 	}
+
+	fpsMethod = "IVE BEEN THINKING";
 
 	FreqTimerData timerData = fpsTimer.getData();
 
@@ -3431,7 +3437,7 @@ __declspec(naked) void _naked_PresentHook() {
 	//maintainFPS(); // feels snappy? but good. caster puts theirs here
 	//frameStartCallback();
 	// this should stay here, as logging the fps right after a new frame is presented is correct
-	//logFPS();
+	logFPS();
 	/*if (maintainFPSState == 2) {
 		maintainFPS();
 	}*/

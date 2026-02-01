@@ -241,6 +241,7 @@ int main(int argc, char* argv[])
             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwVersusCheck), &nVersusCheck, 4, 0);
             ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwTrainingMenu), &nTrainingMenuPtr, 4, 0);
             if(nGameMode == 1 && nVersusCheck == 1) //Versus
+            //if(false)
             {
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
                 std::cout << "Cannot attach to versus mode....\x1b[K";
@@ -248,12 +249,14 @@ int main(int argc, char* argv[])
                 continue;
             }
             else if (nTrainingMenuPtr != 0 && !bInjected) //Training menu is open
+            //else if(false)
             {
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
                 std::cout << "Cannot attach while training menu is open....\x1b[K";
                 continue;
             }
             else if (nGameMode == 4112 || (nGameMode == 1 && nVersusCheck == 2)) //Training OR Replay
+            //else if(true)
             {
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });               
                 std::cout << "Attached to MBAA.exe\x1b[K" << "\n\x1b[K\n";
