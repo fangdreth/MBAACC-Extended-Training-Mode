@@ -728,7 +728,8 @@ constexpr DWORD arrNormalColors[] = {
 	0xFFFFFF00, // clash
 	0xFF0000FF, // projectile
 	0xFFF54298, // shield
-	0xFFC00080
+	0xFFC00080, // reflect
+	0xFFFF8080  // throw
 };
 
 constexpr DWORD arrColorBlindColors[] = {
@@ -739,7 +740,8 @@ constexpr DWORD arrColorBlindColors[] = {
 	0xFFFFFF00, // clash
 	0xFF00ffcf, // projectile
 	0xFFffffff, // shield
-	0xFFC00080
+	0xFFC00080, // reflect
+	0xFFFF8080  // throw
 };
 
 void HitboxBatchDrawNoBlend(const BoxObjects* b);
