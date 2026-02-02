@@ -1216,7 +1216,10 @@ byte getShieldCancel(PlayerData* playerData, int pat) {
 		pat == playerData->cmdFileDataPtr->ShieldCounter_Crouch) {
 		return 0x3;
 	}
-	if (pat <= 40) return exOnly;
+	if (pat <= 40 || //universal normals and movement
+		pat == 260 || //heat activation
+		pat == playerData->cmdFileDataPtr->groundThrowPat || //throws
+		pat == playerData->cmdFileDataPtr->airThrowPat) return exOnly;
 	int ID = getIDFromPattern(playerData, pat, 1);
 	if (ID == -1) return 0x0;
 	WORD flagsets = *(WORD*)playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets;
@@ -1264,10 +1267,10 @@ byte getCmdStance(PlayerData* playerData, int ID) {
 
 //returns AND of 1 = stand, 2 = airborne, 4 = crouch
 byte getPatStance(PlayerData* playerData, int pat) {
-	if ((0 <= pat && pat <= 6) || (35 <= pat && pat <= 37)) {
+	if ((0 <= pat && pat <= 6) || (35 <= pat && pat <= 37) || pat == 260 || pat == playerData->cmdFileDataPtr->groundThrowPat) { //ground universal normals, normal jumps, heat activation, ground throw
 		return 0x5;
 	}
-	else if ((7 <= pat && pat <= 9) || (38 <= pat && pat <= 40)) {
+	else if ((7 <= pat && pat <= 9) || (38 <= pat && pat <= 40) || pat == playerData->cmdFileDataPtr->airThrowPat) { //air universal normals, normal double jumps, air throw
 		return 0x2;
 	}
 	else if (pat == playerData->cmdFileDataPtr->ShieldCounter_Ground || pat == playerData->cmdFileDataPtr->ShieldCounter_Crouch) {
