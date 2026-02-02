@@ -24,6 +24,7 @@ extern bool bDoAdvantage;
 
 extern bool bDisplayFreeze; //Whether to show global ex flashes and frames where both chars are in hitstop
 extern bool bDisplayInputs;
+extern int displayNumbers;
 
 extern int nPlayerAdvantage;
 extern int nSharedHitstop;

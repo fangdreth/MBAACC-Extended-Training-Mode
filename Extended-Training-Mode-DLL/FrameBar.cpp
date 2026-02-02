@@ -15,6 +15,7 @@ bool bDoAdvantage = false;
 
 bool bDisplayFreeze = false; //Whether to show global ex flashes and frames where both chars are in hitstop
 bool bDisplayInputs = false;
+int displayNumbers = true;
 
 int nPlayerAdvantage;
 int nSharedHitstop;
@@ -122,7 +123,7 @@ void FrameBarCell::draw(float x, float y, float w, float h)
 
 	static char buffer[8];
 
-	if (number >= 0)
+	if (number >= 0 && displayNumbers)
 	{
 		float size = min(w / 0.8f, h);
 		int nLength = floor(log10(number));

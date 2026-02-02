@@ -412,6 +412,19 @@ void initUISubmenu() {
 		true
 	);
 
+	ui.add<int*>("Framebar Display Numbers",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt &= 0b1;
+		},
+		[](int* opt) -> std::string {
+			if (*opt == 0) return "OFF";
+			return "ON";
+		},
+		L"",
+		&displayNumbers
+	);
+
 	baseMenu.add(ui);
 
 	// -----
