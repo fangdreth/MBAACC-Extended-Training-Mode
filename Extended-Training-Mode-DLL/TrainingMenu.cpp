@@ -588,13 +588,13 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_6_0", "Set \\@COLOR@<015, 183, 255, 255>save slot."},
 	{"XS_6_2_n", "Save \\@COLOR@<015, 183, 255, 255>current state."},
 	{"XS_6_3_n", "Clear \\@COLOR@<015, 183, 255, 255>all saved states."},
-	{"XS_6_5", "Sync \\@COLOR@<015, 183, 255, 255>save states with files in ETMSaveStates." },
-	{"XS_6_7_n", "Import \\@COLOR@<015, 183, 255, 255>save from file."},
-	{"XS_6_8_n", "Export \\@COLOR@<015, 183, 255, 255>save to file."},
-	{"XS_6_10", "Set \\@COLOR@<015, 183, 255, 255>RNG loading."},
-	{"XS_6_12_n", DEFAULT_INFO},
-	{"XS_6_14_n", RETURN_INFO},
-	{"XS_6_16", PAGE_INFO},
+	{"XS_6_5", "Sync \\@COLOR@<015, 183, 255, 255>saves with files in ETMSaveStates." },
+	{"XS_6_6_n", "Import \\@COLOR@<015, 183, 255, 255>save from file."},
+	{"XS_6_7_n", "Export \\@COLOR@<015, 183, 255, 255>save to file."},
+	{"XS_6_9", "Set \\@COLOR@<015, 183, 255, 255>RNG loading."},
+	{"XS_6_11_n", DEFAULT_INFO},
+	{"XS_6_13_n", RETURN_INFO},
+	{"XS_6_15", PAGE_INFO},
 
 	//FRAME DATA
 	{"XS_7_0",  "Set \\@COLOR@<015, 183, 255, 255>console data detail level."},
@@ -760,7 +760,7 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 
 	{"XS_6_5_0", "Do not sync saves."}, {"XS_6_5_1", "Sync saves."},
 
-	{"XS_6_8_0", "Do not load RNG saved with state."}, {"XS_6_8_1", "Load RNG saved with state."},
+	{"XS_6_9_0", "Do not load RNG saved with state."}, {"XS_6_9_1", "Load RNG saved with state."},
 
 	//FRAME DATA
 	{"XS_7_0_0", "Show the basic level of information."}, {"XS_7_0_1", "Show all information."},

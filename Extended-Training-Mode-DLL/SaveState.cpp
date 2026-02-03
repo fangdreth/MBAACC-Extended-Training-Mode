@@ -280,6 +280,70 @@ void FullSave::load(bool LoadRNG) {
 	memcpy((void*)(0x0067BDE8), Effects, 0x33C * 1000);
 }
 
+static bool LoadFileExplorer(std::wstring& filePath)
+{
+	IFileOpenDialog* pFileOpen;
+	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
+
+	if (SUCCEEDED(hr))
+	{
+		hr = pFileOpen->Show(NULL); // Display the dialog
+		if (SUCCEEDED(hr))
+		{
+			IShellItem* pItem;
+			hr = pFileOpen->GetResult(&pItem);
+			if (SUCCEEDED(hr))
+			{
+				PWSTR pszFilePath;
+				hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+				if (SUCCEEDED(hr))
+				{
+					filePath = pszFilePath;
+					CoTaskMemFree(pszFilePath);
+					pItem->Release();
+					pFileOpen->Release();
+					return true;
+				}
+				pItem->Release();
+			}
+		}
+		pFileOpen->Release();
+	}
+	return false;
+}
+
+static bool SaveFileExplorer(std::wstring& filePath)
+{
+	IFileSaveDialog* pFileSave;
+	HRESULT hr = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_INPROC_SERVER, IID_IFileSaveDialog, reinterpret_cast<void**>(&pFileSave));
+
+	if (SUCCEEDED(hr))
+	{
+		hr = pFileSave->Show(NULL); // Display the dialog
+		if (SUCCEEDED(hr))
+		{
+			IShellItem* pItem;
+			hr = pFileSave->GetResult(&pItem);
+			if (SUCCEEDED(hr))
+			{
+				PWSTR pszFilePath;
+				hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+				if (SUCCEEDED(hr))
+				{
+					filePath = pszFilePath;
+					CoTaskMemFree(pszFilePath);
+					pItem->Release();
+					pFileSave->Release();
+					return true;
+				}
+				pItem->Release();
+			}
+		}
+		pFileSave->Release();
+	}
+	return false;
+}
+
 void SaveStateManager::SaveToFile()
 {
 	const std::string baseSaveFolder = "ETMSaveStates";
@@ -314,7 +378,9 @@ void SaveStateManager::SaveToFile()
 	}
 	catch (...)
 	{
-		TextDraw(40, 40, 10, 0xFFFFFFFF, "FAILED TO SAVE STATES TO FILE");
+		std::string sErrorString = "UNABLE TO CREATE SAVE STATE FILE";
+		int nReturnVal = MessageBoxA(NULL, sErrorString.c_str(), "", MB_ICONWARNING);
+		LogError("UNABLE TO CREATE SAVE STATE FILE");
 	}
 }
 
@@ -353,72 +419,10 @@ void SaveStateManager::LoadFromFile() {
 	}
 	catch (...)
 	{
-		TextDraw(40, 40, 10, 0xFFFFFFFF, "FAILED TO LOAD STATES FROM FILE");
+		std::wstring wsErrorString = L"UNABLE TO PARSE SAVE STATE FILE";
+		int nReturnVal = MessageBoxW(NULL, wsErrorString.c_str(), L"", MB_ICONWARNING);
+		LogError("UNABLE TO PARSE SAVE STATE FILE");
 	}
-}
-
-static bool LoadFileExplorer(std::wstring& filePath)
-{
-	IFileOpenDialog* pFileOpen;
-	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
-
-	if (SUCCEEDED(hr))
-	{
-		hr = pFileOpen->Show(NULL); // Display the dialog
-		if (SUCCEEDED(hr))
-		{
-			IShellItem* pItem;
-			hr = pFileOpen->GetResult(&pItem);
-			if (SUCCEEDED(hr))
-			{
-				PWSTR pszFilePath;
-				hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
-				if (SUCCEEDED(hr))
-				{
-					filePath = pszFilePath;
-					CoTaskMemFree(pszFilePath);
-					pItem->Release();
-					pFileOpen->Release();
-					return true;
-				}
-				pItem->Release();
-			}
-		}
-		pFileOpen->Release();
-	}
-	return false;
-}
-
-static bool SaveFileExplorer(std::wstring& filePath)
-{
-    IFileSaveDialog* pFileSave;
-    HRESULT hr = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_INPROC_SERVER, IID_IFileSaveDialog, reinterpret_cast<void**>(&pFileSave));
-
-    if (SUCCEEDED(hr))
-    {
-        hr = pFileSave->Show(NULL); // Display the dialog
-        if (SUCCEEDED(hr))
-        {
-            IShellItem* pItem;
-            hr = pFileSave->GetResult(&pItem);
-            if (SUCCEEDED(hr))
-            {
-                PWSTR pszFilePath;
-                hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
-                if (SUCCEEDED(hr))
-                {
-					filePath = pszFilePath;
-                    CoTaskMemFree(pszFilePath);
-					pItem->Release();
-					pFileSave->Release();
-					return true;
-                }
-                pItem->Release();
-            }
-        }
-		pFileSave->Release();
-    }
-	return false;
 }
 
 void FullSave::xport() {
