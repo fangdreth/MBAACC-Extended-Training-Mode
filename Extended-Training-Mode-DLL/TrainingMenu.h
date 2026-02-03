@@ -641,6 +641,10 @@ const std::vector<const char*> vMOVE_TO_POSITIONS = {
 	"MOVE TO POSITIONS"
 };
 
+const std::vector<const char*> vSET_CURRENT_POSITIONS = {
+	"SET CURRENT POSITIONS"
+};
+
 const std::vector<const char*> vINVERT = {
 	"INVERT"
 };
@@ -654,7 +658,7 @@ const std::vector<std::vector<const char*>> P4_Options = {
 	vRESET_TO_POSITIONS, vSPACE_ELEMENT,
 	vP1_POSITION, vP1_ASSIST_POSITION, vSPACE_ELEMENT,
 	vP2_POSITION, vP2_ASSIST_POSITION, vSPACE_ELEMENT,
-	vMOVE_TO_POSITIONS, vINVERT, vSPACE_ELEMENT,
+	vMOVE_TO_POSITIONS, vSET_CURRENT_POSITIONS, vINVERT, vSPACE_ELEMENT,
 	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
 	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP4_PAGE
@@ -670,6 +674,7 @@ enum class ePOSITIONS {
 	P2_ASSIST_POSITION,
 	S2,
 	MOVE_TO_POSITIONS,
+	SET_CURRENT_POSITIONS,
 	INVERT,
 	S3,
 	DEFAULT,
@@ -873,6 +878,11 @@ const std::vector<const char*> vCLEAR_ALL_SAVES = {
 	"CLEAR ALL SAVES"
 };
 
+const std::vector<const char*> vSYNC_SAVES_WITH_FILES = {
+	"SYNC SAVES WITH FILES",
+	"OFF", "ON"
+};
+
 const std::vector<const char*> vIMPORT_SAVE = {
 	"IMPORT SAVE"
 };
@@ -894,6 +904,7 @@ const std::vector<const char*> vP7_PAGE = {
 const std::vector<std::vector<const char*>> P7_Options = {
 	vSAVE_STATE_SLOT, vSPACE_ELEMENT,
 	vSAVE_STATE, vCLEAR_ALL_SAVES, vSPACE_ELEMENT,
+	vSYNC_SAVES_WITH_FILES, vSPACE_ELEMENT,
 	vIMPORT_SAVE, vEXPORT_SAVE, vSPACE_ELEMENT,
 	vLOAD_RNG, vSPACE_ELEMENT,
 	vDEFAULT_ELEMENT, vSPACE_ELEMENT,
@@ -907,26 +918,30 @@ enum class eSAVE_STATES {
 	SAVE_STATE,
 	CLEAR_ALL_SAVES,
 	S1,
+	SYNC_SAVES_WITH_FILES,
+	S2,
 	IMPORT_SAVE,
 	EXPORT_SAVE,
-	S2,
-	LOAD_RNG,
 	S3,
-	DEFAULT,
+	LOAD_RNG,
 	S4,
-	RETURN,
+	DEFAULT,
 	S5,
+	RETURN,
+	S6,
 	PAGE
 };
 
 const int defSAVE_SLOT = 1;
 const int defLOAD_RNG = 0;
+const int defSYNC_SAVES_WITH_FILES = 0;
 
 extern int nSAVE_STATE_SLOT;
 extern int nLOAD_RNG;
+extern int nSYNC_SAVES_WITH_FILES;
 
 const std::vector<int*> P7_Settings = {
-	&nSAVE_STATE_SLOT, &nLOAD_RNG,
+	&nSAVE_STATE_SLOT, &nSYNC_SAVES_WITH_FILES, &nLOAD_RNG, 
 	&nPAGE
 };
 

@@ -355,13 +355,16 @@ void DefaultP6(MenuInfo* menuInfo) {
 //Page 7
 int nSAVE_STATE_SLOT = defSAVE_SLOT;
 int nLOAD_RNG = defLOAD_RNG;
+int nSYNC_SAVES_WITH_FILES = defSYNC_SAVES_WITH_FILES;
 
 void DefaultP7(MenuInfo* menuInfo) {
 	nSAVE_STATE_SLOT = defSAVE_SLOT;
 	nLOAD_RNG = defLOAD_RNG;
+	nSYNC_SAVES_WITH_FILES = defSYNC_SAVES_WITH_FILES;
 
 	(menuInfo->elementList).listStart[(int)eSAVE_STATES::SAVE_STATE_SLOT]->selectedItem = defSAVE_SLOT;
 	(menuInfo->elementList).listStart[(int)eSAVE_STATES::LOAD_RNG]->selectedItem = defLOAD_RNG;
+	(menuInfo->elementList).listStart[(int)eSAVE_STATES::SYNC_SAVES_WITH_FILES]->selectedItem = defSYNC_SAVES_WITH_FILES;
 }
 
 //Page 8
@@ -555,10 +558,11 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_3_5", "Set \\@COLOR@<015, 183, 255, 255>P2 position on reset."},
 	{"XS_3_6", "Set \\@COLOR@<015, 183, 255, 255>P2 assist position on reset."},
 	{"XS_3_8_n", "Move \\@COLOR@<015, 183, 255, 255>players to the set positions."},
-	{"XS_3_9_n", "Swap \\@COLOR@<015, 183, 255, 255>P1 and P2 positions."},
-	{"XS_3_11_n", DEFAULT_INFO},
-	{"XS_3_13_n", RETURN_INFO},
-	{"XS_3_15", PAGE_INFO},
+	{"XS_3_9_n", "Set \\@COLOR@<015, 183, 255, 255>positions to current positions."},
+	{"XS_3_10_n", "Swap \\@COLOR@<015, 183, 255, 255>P1 and P2 positions."},
+	{"XS_3_12_n", DEFAULT_INFO},
+	{"XS_3_14_n", RETURN_INFO},
+	{"XS_3_16", PAGE_INFO},
 
 	//CHARACTER
 	{"XS_4_0", "Set \\@COLOR@<015, 183, 255, 255>Sion bullets on reset."},
@@ -584,12 +588,13 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_6_0", "Set \\@COLOR@<015, 183, 255, 255>save slot."},
 	{"XS_6_2_n", "Save \\@COLOR@<015, 183, 255, 255>current state."},
 	{"XS_6_3_n", "Clear \\@COLOR@<015, 183, 255, 255>all saved states."},
-	{"XS_6_5_n", "Import \\@COLOR@<015, 183, 255, 255>save from file."},
-	{"XS_6_6_n", "Export \\@COLOR@<015, 183, 255, 255>save to file."},
-	{"XS_6_8", "Set \\@COLOR@<015, 183, 255, 255>RNG loading."},
-	{"XS_6_10_n", DEFAULT_INFO},
-	{"XS_6_12_n", RETURN_INFO},
-	{"XS_6_14", PAGE_INFO},
+	{"XS_6_5", "Sync \\@COLOR@<015, 183, 255, 255>save states with files in ETMSaveStates." },
+	{"XS_6_7_n", "Import \\@COLOR@<015, 183, 255, 255>save from file."},
+	{"XS_6_8_n", "Export \\@COLOR@<015, 183, 255, 255>save to file."},
+	{"XS_6_10", "Set \\@COLOR@<015, 183, 255, 255>RNG loading."},
+	{"XS_6_12_n", DEFAULT_INFO},
+	{"XS_6_14_n", RETURN_INFO},
+	{"XS_6_16", PAGE_INFO},
 
 	//FRAME DATA
 	{"XS_7_0",  "Set \\@COLOR@<015, 183, 255, 255>console data detail level."},
@@ -655,6 +660,7 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 };
 
 const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
+	//REVERSALS
 	{"XS_0_0_0", "No reversal."}, {"XS_0_0_1", "Reversal after recovery."}, {"XS_0_0_2", "Reversal after guarding."}, {"XS_0_0_3", "Reversal after being hit."},
 	{"XS_0_0_4", "Reversal after wakeup."}, {"XS_0_0_4", "Reversal after successful shield."},
 
@@ -679,6 +685,7 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 	{"XS_0_13_11", "11 frames."}, {"XS_0_13_12", "12 frames."}, {"XS_0_13_13", "13 frames."}, {"XS_0_13_14", "14 frames."}, {"XS_0_13_15", "15 frames."},
 	{"XS_0_13_16", "16 frames."}, {"XS_0_13_17", "17 frames."}, {"XS_0_13_18", "18 frames."}, {"XS_0_13_19", "19 frames."}, {"XS_0_13_20", "20 frames."},
 
+	//TRAINING
 	{"XS_1_0_0", "Normal."}, {"XS_1_0_1", "Instant."},
 	{"XS_1_1_0", "Normal."}, {"XS_1_1_1", "Instant."},
 	{"XS_1_2_0", "No EX Guard."}, {"XS_1_2_1", "EX Guard all hits."}, {"XS_1_2_2", "EX Guard at random (50% chance)."},
@@ -694,6 +701,7 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 	{"XS_1_12_0", "_FORCEGUARD"}, {"XS_1_12_1", "_FORCEGUARD"}, {"XS_1_12_2", "_FORCEGUARD"},
 	{"XS_1_13_0", "Force standing guard."}, {"XS_1_13_1", "Force crouching guard."},
 
+	//HIGHLIGHTS
 	{"XS_2_0_0", "No highlights."}, {"XS_2_0_1", "Enable highlights."},
 
 	{"XS_2_2_0", "Do not highlight guard state."}, {"XS_2_2_1", "Highlight guard state in red."}, {"XS_2_2_2", "Highlight guard state in yellow."}, {"XS_2_2_3", "Highlight guard state in green."},
@@ -711,6 +719,7 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 	{"XS_2_6_0", "Do not highlight idle state."}, {"XS_2_6_1", "Highlight idle state in red."}, {"XS_2_6_2", "Highlight idle state in yellow."}, {"XS_2_6_3", "Highlight idle state in green."},
 	{"XS_2_6_4", "Highlight idle state in blue."}, {"XS_2_6_5", "Highlight idle state in purple."}, {"XS_2_6_6", "Highlight idle state in black."},
 
+	//POSITIONS
 	{"XS_3_0_0", "Do not reset to custom positions."}, {"XS_3_0_1", "Reset to custom positions."},
 
 	{"XS_3_2_0", "_POS1"}, {"XS_3_2_1", "_POS1"}, {"XS_3_2_2", "_POS1"},
@@ -719,6 +728,7 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 	{"XS_3_5_0", "_POS2"}, {"XS_3_5_1", "_POS2"}, {"XS_3_5_2", "_POS2"},
 	{"XS_3_6_0", "_POS2A"}, {"XS_3_6_1", "_POS2A"}, {"XS_3_6_2", "_POS2A"},
 
+	//CHARACTER
 	{"XS_4_0_0", "Refill bullets on recovery."}, {"XS_4_0_1", "Reset to 13 bullets."}, {"XS_4_0_2", "Reset to 1 bullet."}, {"XS_4_0_3", "Reset to 2 bullets."}, {"XS_4_0_4", "Reset to 3 bullets."},
 	{"XS_4_0_5", "Reset to 4 bullets."}, {"XS_4_0_6", "Reset to 5 bullets."}, {"XS_4_0_7", "Reset to 6 bullets."}, {"XS_4_0_8", "Reset to 7 bullets."}, {"XS_4_0_9", "Reset to 8 bullets."},
 	{"XS_4_0_10", "Reset to 9 bullets."}, {"XS_4_0_11", "Reset to 10 bullets."}, {"XS_4_0_12", "Reset to 11 bullets."}, {"XS_4_0_13", "Reset to 12 bullets."},
@@ -736,18 +746,23 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 
 	{"XS_4_7_0", "Restore knife on recovery."}, {"XS_4_7_1", "Reset to 1 knife."},
 
+	//HITBOXES
 	{"XS_5_0_0", "Do not show hitboxes."}, {"XS_5_0_1", "Show hitboxes."},
-	{"XS_5_1_0", "Show indiviudal box borders."}, {"XS_5_1_1", "Hide box borders within overlap."},
+	{"XS_5_1_0", "Show individual box borders."}, {"XS_5_1_1", "Hide box borders within overlap."},
 	{"XS_5_2_0", "Use default box colors."}, {"XS_5_2_1", "Use color-blind friendly box colors."},
 
 	{"XS_5_4_0", "Draw player origins as a small blue cross."}, {"XS_5_4_1", "Draw player origins extending to the edge of the screen."},
 
 	{"XS_5_6_0", "Do not draw the ground."}, {"XS_5_6_1", "Draw a blue line at ground-level."},
 
+	//SAVE STATES
 	{"XS_6_0_0", "No slot selected."}, {"XS_6_0_1", "Slot 1."}, {"XS_6_0_2", "Slot 2."}, {"XS_6_0_3", "Slot 3."},
+
+	{"XS_6_5_0", "Do not sync saves."}, {"XS_6_5_1", "Sync saves."},
 
 	{"XS_6_8_0", "Do not load RNG saved with state."}, {"XS_6_8_1", "Load RNG saved with state."},
 
+	//FRAME DATA
 	{"XS_7_0_0", "Show the basic level of information."}, {"XS_7_0_1", "Show all information."},
 	{"XS_7_1_0", "Do not show the framebar in-game."}, {"XS_7_1_1", "Show the framebar in-game."},
 
@@ -757,17 +772,20 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 
 	{"XS_7_7_0", "_SCROLL"}, {"XS_7_7_1", "_SCROLL"}, {"XS_7_7_2", "_SCROLL"},
 
+	//RNG
 	{"XS_8_0_0", "No custom RNG."}, {"XS_8_0_1", "Use a seed for custom RNG."}, {"XS_8_0_2", "Use a value for custom RNG."},
 
 	{"XS_8_2_0", "Set RNG every frame."}, {"XS_8_2_1", "Set RNG every reset."},
 	{"XS_8_3_1", "_RNG"},
 
+	//UI
 	{"XS_9_0_0", "Do not show health and guard values."}, {"XS_9_0_1", "Show health and guard values."},
 	{"XS_9_1_0", "Show default combo damage values."}, {"XS_9_1_1", "Show accurate combo damage values."},
 
 	{"XS_9_3_0", "No P1 input display."}, {"XS_9_3_1", "Display P1 inputs as a list."}, {"XS_9_3_2", "Display P1 inputs on an arcade layout."}, {"XS_9_3_3", "Display P1 inputs both ways."},
 	{"XS_9_4_0", "No P2 input display."}, {"XS_9_4_1", "Display P2 inputs as a list."}, {"XS_9_4_2", "Display P2 inputs on an arcade layout."}, {"XS_9_4_3", "Display P2 inputs both ways."},
 
+	//SYSTEM
 	{"XS_10_0_0", "Play the game at 100% speed."}, {"XS_10_0_1", "Play the game at 75% speed."}, {"XS_10_0_2", "Play the game at 50% speed."}, {"XS_10_0_3", "Play the game at 25% speed."},
 
 	{"XS_10_2_0", "Do not hide the HUD."}, {"XS_10_2_1", "Hide the HUD."},

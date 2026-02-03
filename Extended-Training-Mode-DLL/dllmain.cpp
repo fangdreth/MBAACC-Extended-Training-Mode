@@ -97,7 +97,7 @@ bool bShowFrameBarYPreview = false;
 bool bForceGuard = false;
 int dummyDelayTechFramesElapsed = 0;
 
-bool loadSaveFile = false;
+bool initLoadChars = false;
 
 struct TrueComboDamageData {
 	int startingHealth = 11400;
@@ -2388,7 +2388,7 @@ void frameDoneCallback()
 		nREV_ID_3 = 0;
 		nREV_ID_4 = 0;
 
-		loadSaveFile = true;
+		initLoadChars = true;
 
 		QueueTrainingReset();
 	}
@@ -2650,7 +2650,7 @@ void frameDoneCallback()
 	{
 		if (nSAVE_STATE_SLOT > 0) {
 			saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->save();
-			saveStateManager.SaveToFile();
+			if (nSYNC_SAVES_WITH_FILES) saveStateManager.SaveToFile();
 		}
 		nDrawTextTimer = TEXT_TIMER;
 		if (nSAVE_STATE_SLOT == 0)
@@ -2665,7 +2665,7 @@ void frameDoneCallback()
 		if (nClearSaveTimer == SAVE_RESET_TIME)
 		{
 			saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->unsave();
-			saveStateManager.SaveToFile();
+			if (nSYNC_SAVES_WITH_FILES) saveStateManager.SaveToFile();
 			nDrawTextTimer = TEXT_TIMER;
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "CLEARED SAVE", nSAVE_STATE_SLOT);
 		}
@@ -3142,15 +3142,14 @@ __declspec(naked) void _naked_ResetCallback() {
 
 bool doLoad = false;
 void RoundcallCallback() {
-	//maintain dummy recording state
+	if (nSYNC_SAVES_WITH_FILES) saveStateManager.LoadFromFile();
+
 	if (nSAVE_STATE_SLOT > 0 && saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->IsSaved)
 	{
 		doLoad = true;
 	}
 
-	if (loadSaveFile) {
-		saveStateManager.LoadFromFile();
-
+	if (initLoadChars) {
 		p1LoadChar = pP1->subObj.charID;
 		p1LoadMoon = pP1->subObj.moon;
 		p1LoadPal = pP1->subObj.palette + 1;
@@ -3159,7 +3158,7 @@ void RoundcallCallback() {
 		p2LoadMoon = pP2->subObj.moon;
 		p2LoadPal = pP2->subObj.palette + 1;
 
-		loadSaveFile = false;
+		initLoadChars = false;
 	}
 }
 
@@ -5189,6 +5188,19 @@ void ExtendedMenuInputChecking() {
 				}
 			}
 			break;
+		case ePOSITIONS::SET_CURRENT_POSITIONS:
+			if (bAPos) {
+				nTRUE_P1_X_LOC = pP1->subObj.xPos;
+				nTRUE_P2_X_LOC = pP2->subObj.xPos;
+
+				if (pP3->exists && pP3->subObj.charID != (BYTE)eCharID::HIME) {
+					nTRUE_P1_ASSIST_X_LOC = pP3->subObj.xPos;
+				}
+				if (pP4->exists && pP4->subObj.charID != (BYTE)eCharID::HIME) {
+					nTRUE_P2_ASSIST_X_LOC = pP4->subObj.xPos;
+				}
+			}
+			break;
 		case ePOSITIONS::INVERT:
 			if (bAPos) {
 				int temp = nTRUE_P1_X_LOC;
@@ -5270,13 +5282,13 @@ void ExtendedMenuInputChecking() {
 			nSAVE_STATE_SLOT = curElement->selectedItem;
 			if (bAPos) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->unsave();
-				saveStateManager.SaveToFile();
+				if (nSYNC_SAVES_WITH_FILES) saveStateManager.SaveToFile();
 			}
 			break;
 		case eSAVE_STATES::SAVE_STATE:
 			if (bAPos && nSAVE_STATE_SLOT > 0) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->save();
-				saveStateManager.SaveToFile();
+				if (nSYNC_SAVES_WITH_FILES) saveStateManager.SaveToFile();
 			}
 			break;
 		case eSAVE_STATES::CLEAR_ALL_SAVES:
@@ -5284,15 +5296,12 @@ void ExtendedMenuInputChecking() {
 				for (int i = 0; i < MAX_SAVES; i++) {
 					saveStateManager.FullSaves[i]->unsave();
 				}
-				saveStateManager.SaveToFile();
+				if (nSYNC_SAVES_WITH_FILES) saveStateManager.SaveToFile();
 			}
 			break;
 		case eSAVE_STATES::IMPORT_SAVE:
 			if (bAPos) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->nport();
-			}
-			if (bDPos) {
-				saveStateManager.LoadFromFile();
 			}
 			break;
 		case eSAVE_STATES::EXPORT_SAVE:
@@ -6211,7 +6220,7 @@ void CSSCallback() {
 	nREV_ID_3 = 0;
 	nREV_ID_4 = 0;
 
-	loadSaveFile = true;
+	initLoadChars = true;
 }
 
 DWORD CSSCallback_PatchAddr = 0x004271e0;
