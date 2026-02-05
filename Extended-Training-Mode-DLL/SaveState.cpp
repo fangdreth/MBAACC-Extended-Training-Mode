@@ -433,7 +433,7 @@ void FullSave::xport() {
 		if (SaveFileExplorer(wsFileName))
 		{
 			std::ofstream SaveOutFile;
-			SaveOutFile.open(wsFileName);
+			SaveOutFile.open(wsFileName, std::ios::binary);
 			SaveOutFile.write(reinterpret_cast<char*>(this), sizeof(*this));
 			SaveOutFile.close();
 		}
@@ -452,7 +452,7 @@ void FullSave::nport() {
 		if (LoadFileExplorer(wsFileName))
 		{
 			std::ifstream SaveInFile;
-			SaveInFile.open(wsFileName);
+			SaveInFile.open(wsFileName, std::ios::binary);
 			SaveInFile.read(reinterpret_cast<char*>(this), sizeof(*this));
 			SaveInFile.close();
 			IsSaved = true;
