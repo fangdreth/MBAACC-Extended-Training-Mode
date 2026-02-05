@@ -1178,23 +1178,34 @@ bool tryBurst(PlayerData* playerData) {
 	return 0;
 }
 
-void setBuffer(PlayerData* playerData, WORD* dir, WORD buttons[4]) {
-	WORD dirCount = dir[0] * 2 + 3;
-	memcpy(playerData->dirInputs, dir, dirCount * 0x2);
+//dir : input as numeric e.g. 236
+//buttons : logical and, A = 1, B = 2, C = 4, D = 8
+void setBuffer(PlayerData* playerData, WORD dir, WORD buttons) {
+	WORD dirCount = (WORD)log10(dir);
+	playerData->dirInputs[0] = dirCount;
+	int i = dirCount * 2 + 1;
+	while (dir > 0) {
+		playerData->dirInputs[i] = dir % 10;
+		playerData->dirInputs[i + 1] = 1;
+		dir = dir / 10;
+		i -= 2;
+	}
+	//WORD dirCount = dir[0] * 2 + 3;
+	//memcpy(playerData->dirInputs, dir, dirCount * 0x2);
 	playerData->aInputs[0] = 0;
-	playerData->aInputs[1] = buttons[0];
+	playerData->aInputs[1] = buttons & 1;
 	playerData->aInputs[2] = 1;
 
 	playerData->bInputs[0] = 0;
-	playerData->bInputs[1] = buttons[1];
+	playerData->bInputs[1] = buttons & 2;
 	playerData->bInputs[2] = 1;
 
 	playerData->cInputs[0] = 0;
-	playerData->cInputs[1] = buttons[2];
+	playerData->cInputs[1] = buttons & 4;
 	playerData->cInputs[2] = 1;
 
 	playerData->dInputs[0] = 0;
-	playerData->dInputs[1] = buttons[3];
+	playerData->dInputs[1] = buttons & 8;
 	playerData->dInputs[2] = 1;
 }
 
