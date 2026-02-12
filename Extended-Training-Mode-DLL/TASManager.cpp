@@ -10,6 +10,12 @@
 #include "DebugInfo.h"
 #include "dllmain.h"
 
+// these should probs be in dllmain.h, but then id have to include debuginfo there, which would mess with compile time 
+void setBufferCmd(PlayerData* playerData, WORD dir, WORD buttons);
+
+bool tryBufferCmd(PlayerData* playerData);
+
+
 bool enableTAS = false;
 bool randomTAS = false;
 bool regenTAS = true;
@@ -174,7 +180,6 @@ void TASManager::parseLine(const std::string& l) {
 			t->tasData.push_back(res);
 		}}
 
-
 	}};
 
 	std::regex re(R"(^(\S+)(?:\s?)(\S*)?$)");
@@ -206,8 +211,8 @@ void TASManager::parseLine(const std::string& l) {
 				instr = "1";
 			}
 
+			std::string temp = " ";
 			if (data[0] == 's') { // parse sequence
-				std::string temp = " ";
 				for (size_t i = 1; i < data.size(); i++) {
 					TASItem res;
 					res.length = 1;
@@ -215,6 +220,21 @@ void TASManager::parseLine(const std::string& l) {
 					res.setData(temp);
 					tasData.push_back(res);
 				}
+			} else if (data[0] == 'x') { // parse a reversal sequence
+				TASItem res;
+				res.command = TASCommand::SetBuffer;
+				res.commandData = 0;
+				// i can store the direction in commandData, and buttons in buttons
+				for (size_t i = 1; i < data.size(); i++) {
+					if (data[i] >= '0' && data[i] <= '9') { // add the direction to the commandData
+						res.commandData *= 10;
+						res.commandData += data[i] - '0';
+					} else { // set a button
+						temp[0] = data[i];
+						res.setData(temp);
+					}
+				}
+				tasData.push_back(res);
 			} else { // parse a normal input
 				TASItem res;
 				res.setLength(instr);
@@ -391,6 +411,9 @@ void TASManager::setInputs(int playerIndex) {
 		// 2v2 doesnt read the button and then switch, it switches and then writes the button
 		// due to stupid reasons, this needs to be changed at a different point in the code, so that 2v2 can interact with it
 		fn1Press2v2[playerIndex] = true;
+		break;
+	case TASCommand::SetBuffer:
+		setBufferCmd(&playerDataArr[playerIndex], tasData[tasIndex].commandData, tasData[tasIndex].buttons);
 		break;
 	default: 
 		break;

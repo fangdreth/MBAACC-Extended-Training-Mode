@@ -1180,7 +1180,7 @@ bool tryBurst(PlayerData* playerData) {
 
 //dir : input as numeric e.g. 236
 //buttons : logical and, A = 1, B = 2, C = 4, D = 8
-void setBuffer(PlayerData* playerData, WORD dir, WORD buttons) {
+void setBufferCmd(PlayerData* playerData, WORD dir, WORD buttons) {
 	WORD dirCount = (WORD)log10(dir);
 	playerData->dirInputs[0] = dirCount;
 	int i = dirCount * 2 + 1;

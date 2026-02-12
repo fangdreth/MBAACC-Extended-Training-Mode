@@ -27,6 +27,7 @@ enum class TASCommand : uint8_t {
 	StartFF = 12,
 	StopFF = 13,
 	FN1 = 14,
+	SetBuffer = 15,
 };
 
 #pragma pack(push,1)
