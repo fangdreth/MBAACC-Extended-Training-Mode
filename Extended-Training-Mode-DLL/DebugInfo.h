@@ -42,7 +42,7 @@ typedef struct AttackData {
 	WORD hitEffectID;
 	WORD soundEffectID;
 	UNUSED(4);
-	WORD custonHitstop;
+	WORD customHitstop;
 	WORD untechTime;
 	BYTE effect; // 3 is electric right?
 	BYTE hitgrab;
@@ -99,7 +99,7 @@ CHECKOFFSET(standingHitVector, 0x4);
 CHECKOFFSET(crouchingHitVector, 0x8);
 CHECKOFFSET(standingGuardVector, 0x14);
 CHECKOFFSET(hitEffectID, 0x24);
-CHECKOFFSET(custonHitstop, 0x2C);
+CHECKOFFSET(customHitstop, 0x2C);
 CHECKOFFSET(extraGravity, 0x38);
 CHECKOFFSET(damage, 0x44);
 

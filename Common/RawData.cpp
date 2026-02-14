@@ -4,7 +4,8 @@ const std::map<std::string, int> UniversalPatterns_Map =
 {
 	{ "5A", 1 }, { "5B", 2 }, { "5C", 3 }, { "2A", 4 }, { "2B", 5 }, { "2C", 6 },
 	{"j.A", 7}, {"j.B", 8}, {"j.C", 9},
-	{ "JUMP", 36 }, {"DBL JUMP", 39}, { "FORWARD JUMP", 35 }, {"FORWARD DBL JUMP", 38}, {"BACKWARD JUMP", 37}, {"BACKWARD DBL JUMP", 40}, {"SUPER DBL JUMP", 38}
+	{ "JUMP", 36 }, {"DBL JUMP", 39}, { "FORWARD JUMP", 35 }, {"FORWARD DBL JUMP", 38}, {"BACKWARD JUMP", 37}, {"BACKWARD DBL JUMP", 40}, {"SUPER DBL JUMP", 38},
+	{"CUSTOM", 999}
 };
 
 const std::map<std::string, int> CVAKIHA_Map =
