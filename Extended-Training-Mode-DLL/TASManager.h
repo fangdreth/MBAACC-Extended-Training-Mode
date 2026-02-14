@@ -24,12 +24,17 @@ enum class TASCommand : uint8_t {
 	P3Meter = 7,
 	P4Meter = 8,
 	RNG = 9, // not implemented
-	Pause = 10, 
-	Unpause = 11, 
+	Pause = 10,
+	Unpause = 11,
 	StartFF = 12,
 	StopFF = 13,
 	FN1 = 14,
 	SetBuffer = 15,
+	WaitCancel = 16, // weird command. wait for .... something,, like the ability to non ex cancel. ugh
+	WaitHitbox = 17,
+	WaitCanMove = 18,
+	WaitAir = 19,
+	WaitGround = 20,
 };
 
 #pragma pack(push,1)
@@ -57,6 +62,9 @@ typedef struct TASItem {
 		uint32_t commandDataU32;
 	};
 	
+	// remember when i was trying to keep this struct small? funny. but then again that type of programming hurts me in the long run
+	std::string waitCommand = ""; // i could do a const char but.. who cares
+
 	// -----
 
 	void setRand() {
@@ -133,7 +141,7 @@ typedef struct TASItem {
 #pragma pack(pop)
 
 static_assert(sizeof(TASCommand) == 1, "TASCommand must be size of 1");
-static_assert(sizeof(TASItem) == 8, "TASItem must be proper size!");
+//static_assert(sizeof(TASItem) == 8, "TASItem must be proper size!");
 
 class TASManager {
 public:

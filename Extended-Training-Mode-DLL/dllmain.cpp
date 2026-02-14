@@ -1040,6 +1040,38 @@ int getPatternFromInput(PlayerData* PD, const char input[20])
 	return -1;
 }
 
+CommandData* getCommandDataFromInput(PlayerData* PD, const char input[20]) {
+	char buffer[20];
+	char inputCopy[20];
+	char readableInput[20] = { 0 };
+	for (int i = 0; i < PD->cmdFileDataPtr->cmdDataPtr->count; i++) {
+		if (PD->cmdFileDataPtr->cmdDataPtr->array[i] != 0) {
+			int length = 0;
+			snprintf(inputCopy, 20, "%s", PD->cmdFileDataPtr->cmdDataPtr->array[i]->input);
+			for (int j = 0; j < 20; j++) {
+				if (inputCopy[j] == '\xFF') {
+					readableInput[j] = 0;
+					length = j;
+					break;
+				} else if (inputCopy[j] >= 0x0 && inputCopy[j] <= 0x9) {
+					readableInput[j] = inputCopy[j] + 0x30;
+				} else {
+					readableInput[j] = inputCopy[j];
+				}
+			}
+
+			bool isMatch = true;
+			for (int k = 0; k < length; k++) {
+				if (readableInput[k] != input[k]) isMatch = false;
+			}
+			if (isMatch) {
+				return PD->cmdFileDataPtr->cmdDataPtr->array[i];
+			}
+		}
+	}
+	return NULL;
+}
+
 int getIDFromPattern(PlayerData* playerData, int nPattern, int nthMatch = 1)
 {
 	int retVal = -1;
@@ -3150,6 +3182,8 @@ void ResetCallback() {
 	TASManagerObj[1].load("TAS2.txt");
 	TASManagerObj[2].load("TAS3.txt");
 	TASManagerObj[3].load("TAS4.txt");
+
+	didHitboxConnect = 0;
 
 	loadCustomShader();
 }
@@ -6853,6 +6887,26 @@ __declspec(naked) void _naked_LoadSave() {
 	}
 }
 
+DWORD didHitboxConnect = 0;
+__declspec(naked) void _naked_HitboxOnConnect() {
+	// patched at 0x0046f8d0
+
+	__asm {
+		mov didHitboxConnect, 1;
+	}
+
+	// overwritten asm 
+	emitByte(0x80);
+	emitByte(0x83);
+	emitByte(0x76);
+	emitByte(0x01);
+	emitByte(0x00);
+	emitByte(0x00);
+	emitByte(0xFF);
+
+	emitJump(0x0046f8d7);
+
+}
 // init funcs
 
 void initFrameDoneCallback()
@@ -7088,6 +7142,10 @@ void initLoadSave() {
 	patchJump(LoadSave_PatchAddr, _naked_LoadSave);
 }
 
+void initHitboxOnConnect() {
+	patchJump(0x0046f8d0, _naked_HitboxOnConnect);
+}
+
 // dll thread func
 
 void threadFunc() 
@@ -7156,6 +7214,8 @@ void threadFunc()
 	init2v2Hack();
 
 	initLoadSave();
+
+	initHitboxOnConnect();
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 

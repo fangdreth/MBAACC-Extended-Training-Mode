@@ -98,6 +98,8 @@ __asm pop ebp		   \
 __asm pop esp		   \
 }
 
+#define ASM_RET __asm ret;
+
 // this was needed due to the preprocessor being a bitch and not accepting multiple emits on the same line
 // i have had so many issues with the way this compiler works
 #define emitByte(b) __asm _emit b;
@@ -165,6 +167,8 @@ class TASManager;
 extern TASManager TASManagerObj[4];
 
 extern bool fn1Press2v2[4];
+
+extern DWORD didHitboxConnect;
 
 // -----
 
@@ -303,3 +307,4 @@ constexpr DWORD hashString(const std::string_view& str) {
 void nakedFrameDoneCallback_RAW();
 
 void timeMeltyCall(DWORD patchAddr, const char* funcName = "???");
+

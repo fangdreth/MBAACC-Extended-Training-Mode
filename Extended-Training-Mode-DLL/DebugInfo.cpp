@@ -5,6 +5,7 @@
 #include "dllmain.h"
 
 extern bool hasTextureAddr(DWORD test);
+CommandData* getCommandDataFromInput(PlayerData* PD, const char input[20]);
 
 // for reasons unknown to all above and below, this shit wont work with bools
 int verboseShowPlayers = 0; // show player stuff
@@ -16,6 +17,83 @@ int verboseShowVel = 0;
 int verboseShowAccel = 0;
 int verboseShowUntech = 0;
 int verboseShowDamage = 0;
+
+DWORD _naked_getCancelStatusObj;
+DWORD _naked_getCancelStatusSpecial;
+DWORD _naked_getCancelStatusOutput;
+__declspec(naked, noinline) void _naked_getCancelStatus() {
+
+	PUSH_ALL;
+
+	__asm {
+		//mov ecx, 00055134h;
+		mov ecx, _naked_getCancelStatusObj;
+		push _naked_getCancelStatusSpecial; // does this work?
+		//int 3;
+	};
+	emitCall(0x00463330);
+	__asm {
+		add esp, 4;
+		mov _naked_getCancelStatusOutput, eax;
+	};
+
+	POP_ALL;
+
+	ASM_RET;
+}
+
+
+DWORD _naked_canInputOccurObj;
+DWORD _naked_canInputOccurCmd;
+DWORD _naked_canInputOccurRes;
+__declspec(naked, noinline) void _naked_canInputOccur() {
+
+
+	PUSH_ALL;
+
+	__asm {
+		mov eax, _naked_canInputOccurCmd;
+		mov ecx, _naked_canInputOccurObj;
+		push 00000000h;
+		push 00000000h;
+	}
+	emitCall(0x0046cc40);
+	__asm {
+		add esp, 8h;
+		mov _naked_canInputOccurRes, eax;
+	}
+
+	POP_ALL;
+
+	ASM_RET;
+
+
+
+}
+
+DWORD getCancelStatus(int playerIndex, const char* move) {
+
+
+	CommandData* cmd = getCommandDataFromInput(&playerDataArr[playerIndex], move);
+	if (cmd == NULL) {
+			log("getCommandDataFromInput gave NULL for %s", move);
+			return -1; // i should have something else here
+	}
+
+	/*_naked_getCancelStatusOutput = -1;
+	_naked_getCancelStatusObj = (DWORD)(&playerDataArr[playerIndex]) + 4;
+	_naked_getCancelStatusSpecial = cmd->specialFlag;
+	//log("should put %08X on the stack", _naked_getCancelStatusSpecial);
+	_naked_getCancelStatus();
+	return _naked_getCancelStatusOutput;
+	*/
+
+	_naked_canInputOccurRes = -1;
+	_naked_canInputOccurObj = (DWORD)(&playerDataArr[playerIndex]) + 4;
+	_naked_canInputOccurCmd = (DWORD)cmd;
+	_naked_canInputOccur();
+	return _naked_canInputOccurRes;
+}
 
 void EffectData::describe(char* buffer, int bufLen) {
 
@@ -57,7 +135,36 @@ void EffectData::describe(char* buffer, int bufLen) {
 	if (verboseShowDamage && subObj.attackDataPtr != NULL) {
 		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d PROR%d\n", subObj.attackDataPtr->damage, subObj.attackDataPtr->proration);
 	}
-	 
+
+	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "idk%d\n", playerAuxDataArr[1].inactionableFrames);
+	
+	BYTE stance = 0;
+	BYTE canMove = 0;
+	BYTE cancelNorm = 0;
+	BYTE cancelSpec = 0;
+	DWORD flagset1 = 0;
+	DWORD flagset2 = 0;
+	DWORD omfgomfg = -1;
+	if(subObj.animationDataPtr != NULL && subObj.animationDataPtr->stateData != NULL) {
+		stance = subObj.animationDataPtr->stateData->stance;
+		canMove = subObj.animationDataPtr->stateData->canMove;
+		cancelNorm = subObj.animationDataPtr->stateData->cancelNormal;
+		cancelSpec = subObj.animationDataPtr->stateData->cancelSpecial;
+		flagset1 = subObj.animationDataPtr->stateData->flagset1;
+		flagset2 = subObj.animationDataPtr->stateData->flagset2;	 
+		//omfgInput = (DWORD)&subObj;
+		//omfg();
+		//omfgomfg = getCancelStatus(index, "2c");
+	}
+
+	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "IDK: %02X %02X %02X %02X\n", stance, canMove, cancelNorm, cancelSpec);
+
+	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "IDK: %08X\n", flagset1);
+	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "IDK: %08X\n", flagset2);
+
+
+	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "IDK: %08X\n", omfgomfg);
+
 }
 
 PatternData* EffectData::getPatternDataPtr(int p) {
