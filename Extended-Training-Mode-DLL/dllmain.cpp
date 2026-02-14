@@ -1922,6 +1922,7 @@ byte nHoldButtons = 0;
 bool bHoldShield = false;
 bool bDidShield = false;
 int nSaveShieldRevIndex = 0;
+int validIndex = -1;
 
 void HandleReversalsPage() {
 	if (pdP2Data->inactionableFrames == 0) {
@@ -1947,7 +1948,7 @@ void HandleReversalsPage() {
 			totalWeight += nNO_REV_WEIGHT;
 			if (totalWeight == 0) return;
 			int randomWeight = rand() % totalWeight + 1;
-			int validIndex = -1;
+			validIndex = -1;
 			for (int i = 0; i < NUM_REVERSALS; i++) {
 				if (pActiveP2->subObj.shieldSuccessType != 0) {
 					pat = vValidReversals[i] % 1000;
