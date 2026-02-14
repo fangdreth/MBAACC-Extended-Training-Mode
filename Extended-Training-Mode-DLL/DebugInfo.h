@@ -132,7 +132,7 @@ typedef struct StateData { // i am sure of nothing in this struct.
 	MovementData* movementData;
 	short maxXSpeed;
 	UNUSED(6);
-	BYTE stance;
+	BYTE stance; // could be used for tas, for either tks or landing to do a move as soon as able
 	BYTE invincibility;
 	BYTE cancelNormal;
 	BYTE cancelSpecial;
@@ -160,7 +160,7 @@ typedef struct StateData { // i am sure of nothing in this struct.
 	union {
 		DWORD flagset2;
 		struct {
-			BYTE canAlwaysExCancel : 1;
+			BYTE canAlwaysExCancel : 1; 
 			BYTE canOnlyJumpCancel : 1;
 			UNUSEDBITS(6);
 			UNUSEDBITS(8);
@@ -586,7 +586,8 @@ typedef struct ActorData {
 	WORD reversePenalty;
 	WORD reversePenaltyDecayTimer;
 	WORD onHitComboCount;
-	UNUSED(0xA);
+	WORD unknownHitCounter;
+	UNUSED(0x8);
 	BYTE counterhitState;
 	UNUSED(1);
 	AttackData* recievingAttackDataPtrArr[8];
@@ -648,6 +649,8 @@ CHECKOFFSET(momentum, 0x134);
 CHECKOFFSET(thrownXOffset, 0x154);
 CHECKOFFSET(airTime, 0x186);
 CHECKOFFSET(extraVariables, 0x1c0);
+CHECKOFFSET(remainingHits, 0x176);
+CHECKOFFSET(unknownHitCounter, 0x1EC);
 CHECKOFFSET(recievingAttackDataPtrArr, 0x1f8);
 CHECKOFFSET(isControllingSubObjPtr, 0x2c0);
 CHECKOFFSET(gravity, 0x2e0);
@@ -826,3 +829,4 @@ const DWORD MBAA_FullCharacterReload = 0x00448fb0;
 void FullCharacterReload();
 const DWORD MBAA_UpdateCharPointers = 0x0045f650;
 void UpdateCharPointers(ActorData* actorData);
+DWORD getCancelStatus(int playerIndex, const char* move);
