@@ -61,7 +61,8 @@ std::vector<std::string> vEveryPatternName =
 	"624A", "624[A]", "624B", "624[B]", "624C", "624[C]",
 	"j.624A", "j.624[A]", "j.624B", "j.624[B]", "j.624C", "j.624[C]",
 	"ARC DRIVE", "[ARC DRIVE]",
-	"DRUG INSTALL"
+	"DRUG INSTALL",
+	"CUSTOM"
 };
 
 void InitializeCharacterMaps() {

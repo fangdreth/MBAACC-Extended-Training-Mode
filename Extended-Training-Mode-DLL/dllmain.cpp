@@ -1250,6 +1250,17 @@ bool tryBufferCmd(PlayerData* playerData) {
 	return;
 }
 
+DWORD MBAA_ManageNormalAttacksAndMovements = 0x004666b0;
+void tryNormalsAndMovement(ActorData* actorData, byte inputButton, byte inputDirection) {
+	__asm {
+		mov ecx, actorData;
+		push inputDirection;
+		push inputButton;
+		call[MBAA_ManageNormalAttacksAndMovements];
+	}
+	return;
+}
+
 //returns AND of 1 for held shield and 2 for ex shield
 byte getShieldCancel(PlayerData* playerData, int pat) {
 	byte exOnly = playerData->subObj.moon == 0 ? 0x2 : 0x0;
@@ -1985,6 +1996,14 @@ void HandleReversalsPage() {
 						break;
 					}
 					if (tryCmdPattern(pActiveP2, pat)) bDidShield = true;
+				}
+				else if (pat == 999) {
+					enableTAS = true;
+					enableRevTAS = true;
+					TASManagerObj[pActiveP2->subObj.index].load("TAS_REV.txt");
+					TASManagerObj[pActiveP2->subObj.index].setInputs(pActiveP2->subObj.index);
+					revTasDoTrainingActionMem = pActiveP2->subObj.doTrainingAction;
+					pActiveP2->subObj.doTrainingAction = 0;
 				}
 				else if (pat > 40) {
 					tryCmdPattern(pActiveP2, vValidReversals[validIndex] % 1000);
@@ -3145,6 +3164,10 @@ void ResetCallback() {
 	nHoldButtons = 0;
 	bHoldShield = false;
 	bDidShield = false;
+	if (enableRevTAS) {
+		enableRevTAS = false;
+		enableTAS = false;
+	}
 
 	nTempP1MeterGain = 0;
 	nTempP2MeterGain = 0;
@@ -6022,6 +6045,10 @@ void Handle_REV(char* buffer) {
 		snprintf(buffer, 128, "%sNo reversal.", SUB_INFO_PREFIX);
 		return;
 	}
+	else if (strcmp(vPatternNames[nREV_ID_1 % 0x00010000].c_str(), "CUSTOM") == 0) {
+		snprintf(buffer, 128, "%sReversal using TAS_REV.txt (must be in MBAA.exe directory).", SUB_INFO_PREFIX);
+		return;
+	}
 	snprintf(buffer, 128, "%sReversal with %s%s (Press D).", SUB_INFO_PREFIX, REV_SHIELD_PREFIX[nREV_ID_1 >> 16], vPatternNames[nREV_ID_1 % 0x00010000].c_str());
 }
 
@@ -6581,8 +6608,13 @@ void inputCallback() {
 
 	KeyState::updateControllers(); // this call is taking half a ms, and wtf why am i even caring
 	
-	for (int i = 0; i < 4; i++) {	
-		TASManagerObj[i].setInputs(i);
+	if (enableRevTAS) {
+		TASManagerObj[pActiveP2->subObj.index].setInputs(pActiveP2->subObj.index);
+	}
+	else {
+		for (int i = 0; i < 4; i++) {
+			TASManagerObj[i].setInputs(i);
+		}
 	}
 	
 	replayManager.setInputs();

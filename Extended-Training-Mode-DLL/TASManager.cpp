@@ -15,11 +15,15 @@ void setBufferCmd(PlayerData* playerData, WORD dir, WORD buttons);
 
 bool tryBufferCmd(PlayerData* playerData);
 
+void tryNormalsAndMovement(ActorData* actorData, byte inputButton, byte inputDirection);
+
 
 bool enableTAS = false;
 bool randomTAS = false;
 bool regenTAS = true;
 bool fixTAS2v2 = false;
+bool enableRevTAS = false;
+byte revTasDoTrainingActionMem = 1;
 
 unsigned getRand() {
 
@@ -426,7 +430,11 @@ void TASManager::setInputs(int playerIndex) {
 	if (tasIndex >= tasData.size()) {
 		if (!tasDone && tasData.size() != 0) {
 			tasDone = true;
-			//log("TAS fitness %f", fitness);
+			if (enableRevTAS) {
+				enableRevTAS = false;
+				enableTAS = false;
+				playerDataArr[playerIndex].subObj.doTrainingAction = revTasDoTrainingActionMem;
+			}
 		}
 		return;
 	}
@@ -516,6 +524,14 @@ void TASManager::setInputs(int playerIndex) {
 		break;
 	case TASCommand::SetBuffer:
 		setBufferCmd(&playerDataArr[playerIndex], tasData[tasIndex].commandData, tasData[tasIndex].buttons);
+
+		if (tryBufferCmd(&playerDataArr[playerIndex])) {
+			if (tasData[tasIndex].commandData < 10) {
+				playerDataArr[playerIndex].subObj.correctedDirInput = tasData[tasIndex].commandData == 5 ? 0 : tasData[tasIndex].commandData;
+				playerDataArr[playerIndex].subObj.buttonInputs = tasData[tasIndex].buttons + (tasData[tasIndex].buttons << 12);
+				tryNormalsAndMovement(&playerDataArr[playerIndex].subObj, playerDataArr[playerIndex].subObj.buttonInputs, playerDataArr[playerIndex].subObj.correctedDirInput);
+			}
+		}
 		break;
 	case TASCommand::WaitCancel:
 		// this is real stupid, and has a high chance of being 1f late.
@@ -598,7 +614,7 @@ void TASManager::setInputs(int playerIndex) {
 	// additionally, i will sometimes be using the length variable/button data for other things, so i need to inc the index custom here
 	tasIndex++;
 	tasCurrentLen = 1; 
-	setInputs();
+	setInputs(playerIndex);
 		
 }
 

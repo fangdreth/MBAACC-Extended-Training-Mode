@@ -4,6 +4,8 @@ extern bool enableTAS;
 extern bool randomTAS;
 extern bool regenTAS;
 extern bool fixTAS2v2;
+extern bool enableRevTAS;
+extern byte revTasDoTrainingActionMem;
 
 int safeStoi(const std::string& s);
 
