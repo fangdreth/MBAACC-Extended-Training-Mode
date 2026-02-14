@@ -664,8 +664,8 @@ static_assert(sizeof(ActorData) == 0x338, "ActorData MUST be 0x338 large!");
 #pragma pack(push,1)
 typedef struct EffectData {
 	void describe(char* buffer, int bufLen);
-	inline PatternData* getPatternDataPtr(int p);
-	inline AnimationData* getAnimationDataPtr(int p, int s);
+	PatternData* getPatternDataPtr(int p);
+	AnimationData* getAnimationDataPtr(int p, int s);
 	// -----
 	DWORD exists;
 	ActorData subObj;

@@ -180,13 +180,19 @@ void TASManager::parseLine(const std::string& l) {
 			t->tasData.push_back(res);
 		}},
 
+
 		{ hashString("waitcancel"), [](TASManager* t, const std::string& data) -> void { // dont use this
 			TASItem res; 
 			res.command = TASCommand::WaitCancel;
 			t->tasData.push_back(res);
 		}},
 
+		// these waits arent the best/fastest/frame 1, but can be helpful to get a general ideal of timings
 		{ hashString("waithitbox"), [](TASManager* t, const std::string& data) -> void { // while this and waitcanmove work, for specials, you can probs get them sooner. makes prototyping easier tho
+			
+			// you must use this after every hit to clear its flag!
+			// also, this is one frame delayed
+			
 			// im not sure why im putting this here
 			TASItem res;
 			res.command = TASCommand::Nothing;
@@ -379,6 +385,38 @@ void TASManager::reset() {
 
 }
 
+bool canMove(int playerIndex) {
+	// i need to check the NEXT state or whatever. 
+	// at this point it seems that maybe literally rolling the game back/forward would be easier than this shit
+
+	if (playerDataArr[playerIndex].subObj.animationDataPtr->stateData->canMove) {
+		return true;
+	}
+	// the above case is just a baseline, this is the stupid shit case
+	// need to check the nextstate, to the best of my ability
+	// but i straight up have no good/consistent way of doing that 
+	// this is a patchwork fix. not a good one
+
+	DWORD framesInCurrentState = playerDataArr[playerIndex].subObj.framesInCurrentState;
+	BYTE stateLength = playerDataArr[playerIndex].subObj.animationDataPtr->stateDuration;
+
+	if (framesInCurrentState + 1 == stateLength) {
+		// check the next state here
+		DWORD nextState = playerDataArr[playerIndex].subObj.state + 1; // i have literally no guarentee this is it, negative assurance
+		// this could also cause crashes?? which is like
+		// what the fuck am i doing here
+		AnimationData* temp = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, nextState);
+
+		if (temp != NULL && temp->stateData->canMove) {
+			return true;
+		}
+
+	}
+
+
+	return false;
+}
+
 void TASManager::setInputs(int playerIndex) {
 
 	if (!enableTAS) {
@@ -524,9 +562,11 @@ void TASManager::setInputs(int playerIndex) {
 		didHitboxConnect = 0;
 		break;
 	case TASCommand::WaitCanMove:
-		if (!playerDataArr[playerIndex].subObj.animationDataPtr->stateData->canMove) {
+		
+		if (!canMove(playerIndex)) {
 			return;
 		}
+		
 		break;
 	case TASCommand::WaitAir:
 		if (playerDataArr[playerIndex].subObj.animationDataPtr != NULL && 

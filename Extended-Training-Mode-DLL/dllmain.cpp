@@ -6589,6 +6589,14 @@ void inputCallback() {
 
 }
 
+void inputCallbackMidGameUpdate() {
+
+	for (int i = 0; i < 4; i++) {
+		//TASManagerObj[i].setInputs(i);
+	}
+
+}
+
 __declspec(naked) void _naked_inputCallback() {
 
 	// patched at 0x0041f1a6
@@ -6601,6 +6609,23 @@ __declspec(naked) void _naked_inputCallback() {
 		add esp, 0090h;
 		ret;
 	}
+
+}
+
+__declspec(naked, noinline) void _naked_inputCallbackMidGameUpdate() {
+	
+	// patched at 0x0042373d
+
+	// overwritten asm 
+	emitCall(0x004745e0); // maybeReadControlsOrSomething?
+
+	PUSH_ALL;
+	inputCallbackMidGameUpdate();
+	POP_ALL;
+
+	emitCall(0x0046db40); // ControlCharacter
+
+	emitJump(0x00423747);
 
 }
 
@@ -7038,6 +7063,8 @@ void initInputCallback() {
 	// called after controller is read, but not processed. i think?
 
 	patchJump(0x0041f1a6, _naked_inputCallback);
+
+	patchJump(0x0042373d, _naked_inputCallbackMidGameUpdate);
 
 }
 
