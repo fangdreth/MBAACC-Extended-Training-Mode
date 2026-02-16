@@ -268,7 +268,7 @@ typedef struct AnimationData {
 			UNUSEDBITS(4);
 		};
 	};
-	WORD goToData; // i cant use goto as a var name, not sure what this is going to tho! ask gonp!
+	short goToData; // i cant use goto as a var name, im pretty confident this is signed, look at warc arc drive (pattern 224 state 21)
 	WORD landingFrame;
 	WORD loopNTimes;
 	WORD endOfLoop;

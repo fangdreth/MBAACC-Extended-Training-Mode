@@ -19,6 +19,8 @@ void tryNormalsAndMovement(ActorData* actorData, byte inputButton, byte inputDir
 
 AnimationData* predictNextAnim(int playerIndex) {
 
+	// this looks ahead one frame (to the best of its ability) to see what state the char will be in 
+
 	AnimationData* res = NULL; // should i set this to null or what the player is currently in?
 
 	__try {
@@ -29,7 +31,11 @@ AnimationData* predictNextAnim(int playerIndex) {
 
 		BYTE stateDuration = playerDataArr[playerIndex].subObj.animationDataPtr->stateDuration;
 		DWORD framesInCurrentState = playerDataArr[playerIndex].subObj.framesInCurrentState;
-		WORD goToData = playerDataArr[playerIndex].subObj.animationDataPtr->goToData;
+		short goToData = playerDataArr[playerIndex].subObj.animationDataPtr->goToData; // this can be negative, and is fucking weird about it
+
+		if (playerDataArr[playerIndex].subObj.animationDataPtr->gotoRelativeOffset) {
+			goToData = playerDataArr[playerIndex].subObj.state + goToData;
+		}
 
 		if (framesInCurrentState + 1 != stateDuration) {
 			return playerDataArr[playerIndex].subObj.animationDataPtr; // we arent switching state/pattern, so return the current one
@@ -42,7 +48,12 @@ AnimationData* predictNextAnim(int playerIndex) {
 		case 1: // goto next frame
 			res = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, playerDataArr[playerIndex].subObj.state + 1);
 			break;
-		case 2: // goto frame
+		case 2: // goto frame. does this.. perform addition on the state??? im so confused. 
+			// warc arc drive does a -2 for... looping, warc jump, if canceled into jb after 3 frames, jumps from state 2 to 5 of the jump
+			// should i have this thing like,,, subtract if negative and set if positive?
+			// or is it the "end of loop" flag?
+			// or maybe its the "gotoRelativeOffset" flag?
+			// is that only used for this?
 			res = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, goToData);
 			break;
 		default:
@@ -51,7 +62,7 @@ AnimationData* predictNextAnim(int playerIndex) {
 
 	} __except (EXCEPTION_EXECUTE_HANDLER) {
 		log("tas predictNextAnim fucked up horribly. P:%d S:%d", playerDataArr[playerIndex].subObj.pattern, playerDataArr[playerIndex].subObj.state);
-		return false;
+		return NULL;
 	}
 
 	return res;
@@ -429,50 +440,22 @@ void TASManager::reset() {
 }
 
 bool canMove(int playerIndex) {
-	// i need to check the NEXT state or whatever. 
-	// at this point it seems that maybe literally rolling the game back/forward would be easier than this shit
-
 	
-		if (playerDataArr[playerIndex].subObj.animationDataPtr->stateData->canMove) {
-			return true;
-		}
-		// this looks ahead one frame (to the best of its ability) to see what state the char will be in 
+	if (playerDataArr[playerIndex].subObj.animationDataPtr->stateData->canMove) {
+		return true;
+	}
 
-		/*
-		BYTE stateDuration = playerDataArr[playerIndex].subObj.animationDataPtr->stateDuration;
-		DWORD framesInCurrentState = playerDataArr[playerIndex].subObj.framesInCurrentState;
-
-		if (framesInCurrentState + 1 != stateDuration) {
-			return false;
-		}
-
-		WORD goToData = playerDataArr[playerIndex].subObj.animationDataPtr->goToData;
-		AnimationData* temp = NULL;
-
-		switch (playerDataArr[playerIndex].subObj.animationDataPtr->animationType) {
-		case 0: // goto pattern
-			temp = playerDataArr[playerIndex].getAnimationDataPtr(goToData, 0);
-			break;
-		case 1: // goto next frame
-			temp = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, playerDataArr[playerIndex].subObj.state + 1);
-			break;
-		case 2: // goto frame
-			temp = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, goToData);
-			break;
-		default:
-			break;
-		}
-		*/
-
+	__try {
 		AnimationData* temp = predictNextAnim(playerIndex);
-
 		if (temp != NULL && temp->stateData->canMove) {
 			return true;
 		}
-		
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		log("canmove fucked up horribly. P:%d S:%d", playerDataArr[playerIndex].subObj.pattern, playerDataArr[playerIndex].subObj.state);
+		return false;
+	}
 	
-
-
+		
 	return false;
 }
 
