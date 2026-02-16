@@ -268,7 +268,7 @@ typedef struct AnimationData {
 			UNUSEDBITS(4);
 		};
 	};
-	WORD goToFrame; // i cant use goto as a var name, not sure what this is going to tho! ask gonp!
+	WORD goToData; // i cant use goto as a var name, not sure what this is going to tho! ask gonp!
 	WORD landingFrame;
 	WORD loopNTimes;
 	WORD endOfLoop;

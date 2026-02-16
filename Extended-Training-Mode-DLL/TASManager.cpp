@@ -17,6 +17,45 @@ bool tryBufferCmd(PlayerData* playerData);
 
 void tryNormalsAndMovement(ActorData* actorData, byte inputButton, byte inputDirection);
 
+AnimationData* predictNextAnim(int playerIndex) {
+
+	AnimationData* res = NULL; // should i set this to null or what the player is currently in?
+
+	__try {
+
+		if (playerDataArr[playerIndex].subObj.animationDataPtr == NULL) {
+			return NULL;
+		}
+
+		BYTE stateDuration = playerDataArr[playerIndex].subObj.animationDataPtr->stateDuration;
+		DWORD framesInCurrentState = playerDataArr[playerIndex].subObj.framesInCurrentState;
+		WORD goToData = playerDataArr[playerIndex].subObj.animationDataPtr->goToData;
+
+		if (framesInCurrentState + 1 != stateDuration) {
+			return playerDataArr[playerIndex].subObj.animationDataPtr; // we arent switching state/pattern, so return the current one
+		}
+
+		switch (playerDataArr[playerIndex].subObj.animationDataPtr->animationType) {
+		case 0: // goto pattern
+			res = playerDataArr[playerIndex].getAnimationDataPtr(goToData, 0);
+			break;
+		case 1: // goto next frame
+			res = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, playerDataArr[playerIndex].subObj.state + 1);
+			break;
+		case 2: // goto frame
+			res = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, goToData);
+			break;
+		default:
+			break;
+		}
+
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		log("tas predictNextAnim fucked up horribly. P:%d S:%d", playerDataArr[playerIndex].subObj.pattern, playerDataArr[playerIndex].subObj.state);
+		return false;
+	}
+
+	return res;
+}
 
 bool enableTAS = false;
 bool randomTAS = false;
@@ -393,29 +432,45 @@ bool canMove(int playerIndex) {
 	// i need to check the NEXT state or whatever. 
 	// at this point it seems that maybe literally rolling the game back/forward would be easier than this shit
 
-	if (playerDataArr[playerIndex].subObj.animationDataPtr->stateData->canMove) {
-		return true;
-	}
-	// the above case is just a baseline, this is the stupid shit case
-	// need to check the nextstate, to the best of my ability
-	// but i straight up have no good/consistent way of doing that 
-	// this is a patchwork fix. not a good one
+	
+		if (playerDataArr[playerIndex].subObj.animationDataPtr->stateData->canMove) {
+			return true;
+		}
+		// this looks ahead one frame (to the best of its ability) to see what state the char will be in 
 
-	DWORD framesInCurrentState = playerDataArr[playerIndex].subObj.framesInCurrentState;
-	BYTE stateLength = playerDataArr[playerIndex].subObj.animationDataPtr->stateDuration;
+		/*
+		BYTE stateDuration = playerDataArr[playerIndex].subObj.animationDataPtr->stateDuration;
+		DWORD framesInCurrentState = playerDataArr[playerIndex].subObj.framesInCurrentState;
 
-	if (framesInCurrentState + 1 == stateLength) {
-		// check the next state here
-		DWORD nextState = playerDataArr[playerIndex].subObj.state + 1; // i have literally no guarentee this is it, negative assurance
-		// this could also cause crashes?? which is like
-		// what the fuck am i doing here
-		AnimationData* temp = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, nextState);
+		if (framesInCurrentState + 1 != stateDuration) {
+			return false;
+		}
+
+		WORD goToData = playerDataArr[playerIndex].subObj.animationDataPtr->goToData;
+		AnimationData* temp = NULL;
+
+		switch (playerDataArr[playerIndex].subObj.animationDataPtr->animationType) {
+		case 0: // goto pattern
+			temp = playerDataArr[playerIndex].getAnimationDataPtr(goToData, 0);
+			break;
+		case 1: // goto next frame
+			temp = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, playerDataArr[playerIndex].subObj.state + 1);
+			break;
+		case 2: // goto frame
+			temp = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, goToData);
+			break;
+		default:
+			break;
+		}
+		*/
+
+		AnimationData* temp = predictNextAnim(playerIndex);
 
 		if (temp != NULL && temp->stateData->canMove) {
 			return true;
 		}
-
-	}
+		
+	
 
 
 	return false;
