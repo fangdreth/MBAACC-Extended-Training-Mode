@@ -33,8 +33,11 @@ enum class TASCommand : uint8_t {
 	WaitCancel = 16, // weird command. wait for .... something,, like the ability to non ex cancel. ugh
 	WaitHitbox = 17,
 	WaitCanMove = 18,
-	WaitAir = 19,
-	WaitGround = 20,
+	WaitAir = 19, // dont trust these, just use canmove
+	WaitGround = 20, // dont trust these, just use canmove
+	WaitNormalCancel = 21,
+	WaitSpecialCancel = 22,
+
 };
 
 #pragma pack(push,1)

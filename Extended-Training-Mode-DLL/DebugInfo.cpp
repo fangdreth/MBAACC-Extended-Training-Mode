@@ -136,6 +136,8 @@ void EffectData::describe(char* buffer, int bufLen) {
 		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d PROR%d\n", subObj.attackDataPtr->damage, subObj.attackDataPtr->proration);
 	}
 
+	return;
+
 	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "idk%d\n", playerAuxDataArr[1].inactionableFrames);
 	
 	BYTE stance = 0;
@@ -161,7 +163,6 @@ void EffectData::describe(char* buffer, int bufLen) {
 
 	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "IDK: %08X\n", flagset1);
 	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "IDK: %08X\n", flagset2);
-
 
 	bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "IDK: %08X\n", omfgomfg);
 

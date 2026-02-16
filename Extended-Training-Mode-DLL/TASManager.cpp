@@ -137,9 +137,9 @@ void TASManager::parseLine(const std::string& l) {
 	// the format of this map is key(string hash), val is the rest of the string not containing the command
 	// constexpr doesnt like maps, which is why im using an array, the size is small enough that it will probs be better that way
 	#ifdef _DEBUG
-		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 19> parseArr = {{
+		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 21> parseArr = {{
 	#else
-		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 19> parseArr = {{
+		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 21> parseArr = {{
 	#endif
 	
 		{ hashString("pause"), [](TASManager* t, const std::string& data) -> void {
@@ -265,6 +265,28 @@ void TASManager::parseLine(const std::string& l) {
 			t->tasData.push_back(res);
 
 			res.command = TASCommand::WaitCanMove;
+			t->tasData.push_back(res);
+		}},
+
+		{ hashString("waitnormalcancel"), [](TASManager* t, const std::string& data) -> void {
+			// im not sure why im putting this here
+			TASItem res;
+			res.command = TASCommand::Nothing;
+			res.length = 1;
+			t->tasData.push_back(res);
+
+			res.command = TASCommand::WaitNormalCancel;
+			t->tasData.push_back(res);
+		}},
+		
+		{ hashString("waitspecialcancel"), [](TASManager* t, const std::string& data) -> void {
+			// im not sure why im putting this here
+			TASItem res;
+			res.command = TASCommand::Nothing;
+			res.length = 1;
+			t->tasData.push_back(res);
+
+			res.command = TASCommand::WaitSpecialCancel;
 			t->tasData.push_back(res);
 		}},
 
@@ -455,7 +477,58 @@ bool canMove(int playerIndex) {
 		return false;
 	}
 	
-		
+	return false;
+}
+
+bool canNormalCancel(int playerIndex) {
+
+	if (playerDataArr[playerIndex].subObj.animationDataPtr->stateData->cancelNormal == 2) {
+		return true;
+	}
+
+	/*
+	for both normal and special cancel, the values are as such:
+	0: never
+	1: on hit
+	2: always
+	3: on successful hit (what does this exactly mean?)
+
+	basically tho, it would be helpful to change a normal/special cancel command to a hitbox command? 
+	but that would maybe cause issues with the hitbox flag needing to be reset
+
+	or i could just,... have this flag only work on 2.
+
+	*/
+
+	__try {
+		AnimationData* temp = predictNextAnim(playerIndex);
+		if (temp != NULL && temp->stateData->cancelNormal == 2) {
+			return true;
+		}
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		log("canNormalCancel fucked up horribly. P:%d S:%d", playerDataArr[playerIndex].subObj.pattern, playerDataArr[playerIndex].subObj.state);
+		return false;
+	}
+
+	return false;
+}
+
+bool canSpecialCancel(int playerIndex) {
+
+	if (playerDataArr[playerIndex].subObj.animationDataPtr->stateData->cancelSpecial == 2) {
+		return true;
+	}
+
+	__try {
+		AnimationData* temp = predictNextAnim(playerIndex);
+		if (temp != NULL && temp->stateData->cancelSpecial == 2) {
+			return true;
+		}
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		log("canSpecialCancel fucked up horribly. P:%d S:%d", playerDataArr[playerIndex].subObj.pattern, playerDataArr[playerIndex].subObj.state);
+		return false;
+	}
+
 	return false;
 }
 
@@ -616,11 +689,19 @@ void TASManager::setInputs(int playerIndex) {
 		didHitboxConnect = 0;
 		break;
 	case TASCommand::WaitCanMove:
-		
 		if (!canMove(playerIndex)) {
 			return;
 		}
-		
+		break;
+	case TASCommand::WaitNormalCancel:
+		if (!canNormalCancel(playerIndex)) {
+			return;
+		}
+		break;
+	case TASCommand::WaitSpecialCancel:
+		if (!canSpecialCancel(playerIndex)) {
+			return;
+		}
 		break;
 	case TASCommand::WaitAir:
 		if (playerDataArr[playerIndex].subObj.animationDataPtr != NULL && 
@@ -672,6 +753,8 @@ void TASManager::incInputs() {
 		case TASCommand::WaitCanMove:
 		case TASCommand::WaitAir:
 		case TASCommand::WaitGround:
+		case TASCommand::WaitNormalCancel:
+		case TASCommand::WaitSpecialCancel:
 			return;
 		default: 
 			break;
