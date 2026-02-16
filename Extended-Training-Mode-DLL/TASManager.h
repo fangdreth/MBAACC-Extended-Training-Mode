@@ -37,6 +37,7 @@ enum class TASCommand : uint8_t {
 	WaitGround = 20, // dont trust these, just use canmove
 	WaitNormalCancel = 21,
 	WaitSpecialCancel = 22,
+	HitboxFlagClear = 23, // internal use, for clearing the hitbox flag
 
 };
 

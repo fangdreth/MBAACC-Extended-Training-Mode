@@ -246,9 +246,12 @@ void TASManager::parseLine(const std::string& l) {
 			
 			// you must use this after every hit to clear its flag!
 			// also, this is one frame delayed
-			
-			// im not sure why im putting this here
+
 			TASItem res;
+			res.command = TASCommand::HitboxFlagClear;
+			t->tasData.push_back(res);
+
+			// im not sure why im putting this here
 			res.command = TASCommand::Nothing;
 			res.length = 1;
 			t->tasData.push_back(res);
@@ -718,6 +721,9 @@ void TASManager::setInputs(int playerIndex) {
 			//playerDataArr[playerIndex].subObj.animationDataPtr->stateData->canMove) {
 			return;
 		}
+		break;
+	case TASCommand::HitboxFlagClear:
+		didHitboxConnect = 0;
 		break;
 	default: 
 		break;
