@@ -201,6 +201,7 @@ int main(int argc, char* argv[])
             std::cout << "\x1b[K";
 
             GetExitCodeProcess(hMBAAHandle, &dwExitCode);
+            //std::cout << "handle: " << (hMBAAHandle == 0x0) << " exit" << (dwExitCode != 259) << std::endl;
             if (hMBAAHandle == 0x0 || dwExitCode != 259)    //259 is the not-closed return code
             {
                 // I'm not sure why, but when MBAA closes, for a really short
@@ -221,10 +222,17 @@ int main(int argc, char* argv[])
                 std::cout << "\x1b[J";
 
                 hMBAAHandle = GetProcessByName(L"MBAA.exe");
+                /*if (hMBAAHandle == 0) {
+                    hMBAAHandle = GetProcessByName(L"MBAA.exeexe");
+                }*/
+
+                //std::cout << hMBAAHandle << std::endl;
 
                 // don't do anything until we re-attach to mbaa
-                if (hMBAAHandle == 0x0)
+                if (hMBAAHandle == 0x0) {
+                    //Sleep(10000); // debug only pls remove this
                     continue;
+                }
 
                 LogInfo("Attached to MBAA");
 

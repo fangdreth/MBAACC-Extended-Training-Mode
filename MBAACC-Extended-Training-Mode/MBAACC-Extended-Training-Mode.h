@@ -31,6 +31,8 @@
 #include "Logger.h"
 
 #include "..\Common\types.h"
+#include <windows.h>
+
 
 HANDLE hMBAAHandle = 0x0;
 DWORD dwBaseAddress = 0;
@@ -156,6 +158,8 @@ HANDLE GetProcessByName(const wchar_t* name)
     ZeroMemory(&process, sizeof(process));
     process.dwSize = sizeof(process);
 
+    std::wstring goal(name);
+
     // Walkthrough all processes.
     if (Process32First(snapshot, &process))
     {
@@ -163,6 +167,7 @@ HANDLE GetProcessByName(const wchar_t* name)
         {
             // Compare process.szExeFile based on format of name, i.e., trim file path
             // trim .exe if necessary, etc.
+            
             if (std::wcscmp((process.szExeFile), name) == 0)
             {
                 pid = process.th32ProcessID;
@@ -173,9 +178,21 @@ HANDLE GetProcessByName(const wchar_t* name)
 
     CloseHandle(snapshot);
 
+    std::cout << "PID WAS " << pid << std::endl;
+
     if (pid != 0)
     {
-        return OpenProcess(PROCESS_ALL_ACCESS, false, pid);
+
+        HANDLE res = OpenProcess(PROCESS_ALL_ACCESS, false, pid);
+
+        if (res == NULL) {
+            
+            DWORD temp = GetLastError();
+            std::cout << "OpenProcess errored, error: " << temp << std::endl;
+            
+        }
+
+        return res;
     }
 
     return nullptr;
