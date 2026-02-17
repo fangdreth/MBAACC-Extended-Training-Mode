@@ -178,7 +178,7 @@ HANDLE GetProcessByName(const wchar_t* name)
 
     CloseHandle(snapshot);
 
-    std::cout << "PID WAS " << pid << std::endl;
+    //std::cout << "PID WAS " << pid << std::endl;
 
     if (pid != 0)
     {
