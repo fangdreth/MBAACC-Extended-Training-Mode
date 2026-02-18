@@ -20,6 +20,7 @@ void debugImportantDraw();
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
 void drawReplayMenu();
+void loadCustomShader();
 
 //void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 void cursorDraw();
@@ -2670,6 +2671,8 @@ void _drawMiscInfo() {
 		overkillVerboseMode = !overkillVerboseMode;
 	}
 
+
+
 	if (debugMode) {
 
 
@@ -3300,6 +3303,11 @@ void __stdcall _doDrawCalls() {
 
 			patchCall(0x0040e49e, _naked_doDrawCalls);
 		}
+	}
+
+	static KeyState tickKey(VK_OEM_3);
+	if (lShiftKey.keyHeld() && tickKey.keyDown()) {
+		loadCustomShader();
 	}
 
 	if (!renderingEnable) {

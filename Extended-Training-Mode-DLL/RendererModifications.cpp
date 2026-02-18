@@ -144,6 +144,8 @@ constexpr const CharPattern blacklist[] = {
 	{ himeID, 168 }, // more rocks
 	{ himeID, 167 }, // more rocks
 
+	{ himeID, 182 }, // hime kick wallbounce thingy
+
 	{ himeID, 298 }, // AAD
 	{ himeID, 302 }, // AAD
 	{ himeID, 301 }, // AAD
