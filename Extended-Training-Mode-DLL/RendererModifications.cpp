@@ -633,9 +633,9 @@ void renderModificationsFrameDone() {
 
 	device->SetPixelShaderConstantF(223, (float*)&frameFloatOffset, 1);
 
-	if (!enableEffectColors) {
+	/*if (!enableEffectColors) {
 		return;
-	}
+	}*/
 
 	D3DXVECTOR4 temp(effectColorHue, 0.0f, 0.0f, 0.0f);
 
@@ -1152,7 +1152,13 @@ void drawPrimHook() {
 			device->GetPixelShader(&pPixelShader_backup); // does this inc a refcount?
 
 			pixelShaderNeedsReset = true;
-			device->SetPixelShader(pPixelShader);
+
+			if (useCustomShaders) {
+				device->SetPixelShader(pCustomShader);
+			} else {
+				device->SetPixelShader(pPixelShader);
+			}
+			
 		}
 	}
 
