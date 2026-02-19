@@ -244,6 +244,8 @@ void TASManager::parseLine(const std::string& l) {
 		// these waits arent the best/fastest/frame 1, but can be helpful to get a general ideal of timings
 		{ hashString("waithitbox"), [](TASManager* t, const std::string& data) -> void { // while this and waitcanmove work, for specials, you can probs get them sooner. makes prototyping easier tho
 			
+			// i need to add an option to hold a direction for all these wait commands
+			// maybe w should be its own ccommand, just like s, and x
 			// you must use this after every hit to clear its flag!
 			// also, this is one frame delayed
 

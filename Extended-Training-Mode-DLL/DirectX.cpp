@@ -20,6 +20,7 @@ void debugImportantDraw();
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
 void drawReplayMenu();
+void loadCustomShader();
 
 //void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 void cursorDraw();
@@ -291,6 +292,8 @@ IDirect3DPixelShader9* loadPixelShaderFromFile(const std::wstring& filename) {
 	file.read(buffer, size);
 
 	buffer[size] = '\0';
+
+	log("loading custom shader!");
 
 	res = createPixelShader(buffer);
 
@@ -2668,6 +2671,8 @@ void _drawMiscInfo() {
 		overkillVerboseMode = !overkillVerboseMode;
 	}
 
+
+
 	if (debugMode) {
 
 
@@ -3232,7 +3237,8 @@ void __stdcall _doDrawCalls() {
 	if (prevDisableFPSLimit != disableFPSLimit) {
 		// ugh. long story but this changes each caster patch. just open the hook in ghidra and find,, dx end or something
 		// this is one of the stupidest things i have coded, ever.
-		patchByte(dwCasterBaseAddress + 0x66395af0, disableFPSLimit ? 0xC3 : 0x80);
+		// this no longer works. i ... really should have exposed a fps function in casters dll
+		//patchByte(dwCasterBaseAddress + 0x66395af0, disableFPSLimit ? 0xC3 : 0x80);
 		prevDisableFPSLimit = disableFPSLimit;
 	}
 
@@ -3297,6 +3303,11 @@ void __stdcall _doDrawCalls() {
 
 			patchCall(0x0040e49e, _naked_doDrawCalls);
 		}
+	}
+
+	static KeyState tickKey(VK_OEM_3);
+	if (lShiftKey.keyHeld() && tickKey.keyDown()) {
+		loadCustomShader();
 	}
 
 	if (!renderingEnable) {
