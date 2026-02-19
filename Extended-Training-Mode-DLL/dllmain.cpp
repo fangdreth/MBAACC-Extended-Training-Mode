@@ -647,8 +647,8 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 	//int yPos = *(DWORD*)(objAddr + 0x10C);
 	//bool facingLeft = *(BYTE*)(objAddr + 0x314);
 
-	int xPos = effect->subObj.xPos;
-	int yPos = effect->subObj.yPos;
+	int xPos = effect->subObj.xPos + effect->subObj.thrownXOffset;
+	int yPos = effect->subObj.yPos + effect->subObj.thrownYOffset;
 	bool facingLeft = effect->subObj.facingLeft;
 	
 	AnimationData* animationData = effect->subObj.animationDataPtr;
