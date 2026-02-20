@@ -257,6 +257,7 @@ void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n)
 #include "DirectX.h"
 //#include "RendererModifications.h"
 
+void initPaletteLoadPatches();
 
 //#define ENABLEFILELOG 1
 
@@ -6933,6 +6934,7 @@ __declspec(naked) void _naked_HitboxOnConnect() {
 	emitJump(0x0046f8d7);
 
 }
+
 // init funcs
 
 void initFrameDoneCallback()
@@ -7244,6 +7246,8 @@ void threadFunc()
 	initLoadSave();
 
 	initHitboxOnConnect();
+
+	initPaletteLoadPatches();
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 

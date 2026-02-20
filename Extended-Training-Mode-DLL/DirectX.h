@@ -42,12 +42,16 @@ extern int showRoaHiddenCharge;
 
 extern bool doSaveScreenshot;
 
+extern bool arePaletteTexturesLoaded;
+void FullCharacterReload();
+
 //extern IDirectInput8* inputDevice;
 
 
 void _naked_InitDirectXHooks();
 void dualInputDisplay();
 void cursorDraw();
+void loadCharacterPalettes();
 
 extern bool lClick;
 extern bool mClick;

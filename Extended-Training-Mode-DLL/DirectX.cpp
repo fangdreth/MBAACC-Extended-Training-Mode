@@ -3333,10 +3333,15 @@ void __stdcall _doDrawCalls() {
 		}
 	}
 
+	//loadCharacterPalettes(); // calling this even when it isnt in use, might be bad	
+
 	static KeyState tickKey(VK_OEM_3);
 	if (lShiftKey.keyHeld() && tickKey.keyDown()) {
 		loadCustomShader();
+		loadCharacterPalettes();
 	}
+
+	
 
 	if (!renderingEnable) {
 		drawCalls.clear();

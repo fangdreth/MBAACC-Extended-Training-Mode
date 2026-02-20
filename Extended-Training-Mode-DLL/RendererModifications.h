@@ -10,6 +10,8 @@
 extern bool useCustomShaders;
 extern bool useDeerMode;
 
+extern bool arePaletteTexturesLoaded;
+
 bool shouldThisBeColored(BYTE charID, DWORD pattern);
 
 
@@ -49,9 +51,15 @@ std::map<DWORD, LinkedListData> textureToObject;
 
 bool pixelShaderNeedsReset = false;
 IDirect3DPixelShader9* pPixelShader_backup = NULL;
-IDirect3DBaseTexture9* pTextureStageBackup = NULL;
+IDirect3DBaseTexture9* pTextureStage1Backup = NULL;
+IDirect3DBaseTexture9* pTextureStage2Backup = NULL;
 IDirect3DPixelShader9* pPixelShader = NULL;
 IDirect3DPixelShader9* pCustomShader = NULL;
+
+// i was thinking of putting both chars palettes into one texture, and in theory i could do some funny swaps to have it like that
+// actually yea no having 1 texture is the way to go, and i can pass the bs in as a param
+// but having to do that is... annoying!
+IDirect3DTexture9* paletteTexture = NULL;
 
 void loadCustomShader();
 
@@ -100,3 +108,6 @@ void initEffectSelector();
 
 bool initRenderModifications();
 
+void loadCharacterPalettes();
+
+void initPaletteLoadPatches();

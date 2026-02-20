@@ -9,6 +9,7 @@ extern float effectColorHue;
 
 bool useCustomShaders = false;
 bool useDeerMode = false;
+bool arePaletteTexturesLoaded = false;
 
 typedef struct {
 	const WORD charID;
@@ -628,10 +629,10 @@ void renderModificationsFrameDone() {
 	}
 
 	static D3DXVECTOR4 frameFloatOffset(0.0f, 0.0f, 0.0f, 0.0f);
-	frameFloatOffset.x += (1.0f / 60.0f);
-	if (frameFloatOffset.x > 1.0f) {
-		frameFloatOffset.x = 0.0f;
-	}
+	frameFloatOffset.x = fmod((frameFloatOffset.x + (1.0f / 60.0f)) , 1.0f);
+	frameFloatOffset.y = fmod((frameFloatOffset.y + (1.0f / 120.0f)), 1.0f);
+	frameFloatOffset.z = fmod((frameFloatOffset.z + (1.0f / 240.0f)), 1.0f);
+	frameFloatOffset.w = fmod((frameFloatOffset.w + (1.0f / 480.0f)), 1.0f);
 
 	device->SetPixelShaderConstantF(223, (float*)&frameFloatOffset, 1);
 
@@ -1098,7 +1099,7 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 				return;
 			}
 
-			if (enableEffectColors) {
+			if (enableEffectColors || useCustomShaders) {
 
 				BYTE owner = *(BYTE*)(listAppendHook_objAddr - 0x10 + 0x02F4);
 
@@ -1151,17 +1152,20 @@ void drawPrimHook() {
 
 		if (textureToObject[drawPrimHook_texAddr].isDeer) {
 			device->GetPixelShader(&pPixelShader_backup); // does this inc a refcount?
-			device->GetTexture(1, &pTextureStageBackup);
+			device->GetTexture(1, &pTextureStage1Backup);
+			device->GetTexture(2, &pTextureStage2Backup);
 
 			pixelShaderNeedsReset = true;
 			device->SetPixelShader(pCustomShader);
 		} else if (textureToObject[drawPrimHook_texAddr].shouldColor) {
 			device->GetPixelShader(&pPixelShader_backup); // does this inc a refcount?
-			device->GetTexture(1, &pTextureStageBackup);
+			device->GetTexture(1, &pTextureStage1Backup);
+			device->GetTexture(2, &pTextureStage2Backup);
 
 			pixelShaderNeedsReset = true;
 
 			if (useCustomShaders) {
+				pixelShaderNeedsReset = true;
 				device->SetPixelShader(pCustomShader);
 
 				// this gets the palette color (for the display palette, not the whole chars palette) 
@@ -1202,6 +1206,11 @@ void drawPrimHook() {
 				device->SetPixelShaderConstantF(218, (float*)&temp, 1);
 
 				device->SetTexture(1, tempTex);
+
+				// the following sets the palette texture (for all the palette colors)
+
+				device->SetTexture(2, paletteTexture);
+
 			} else {
 				device->SetPixelShader(pPixelShader);
 			}
@@ -1220,9 +1229,11 @@ void drawPrimCallback() {
 	if (pixelShaderNeedsReset) {
 		pixelShaderNeedsReset = false;
 		device->SetPixelShader(pPixelShader_backup);
-		device->SetTexture(1, pTextureStageBackup);
+		device->SetTexture(1, pTextureStage1Backup);
+		device->SetTexture(2, pTextureStage2Backup);
 		pPixelShader_backup = NULL;
-		pTextureStageBackup = NULL;
+		pTextureStage1Backup = NULL;
+		pTextureStage2Backup = NULL;
 	}
 }
 
@@ -1488,4 +1499,154 @@ void loadCustomShader() {
 
 	pCustomShader = loadPixelShaderFromFile(L"testShader.hlsl");
 
+}
+
+int paletteDataIndex = 0;
+DWORD* paletteData = NULL;
+
+void initPaletteStorage() {
+
+	arePaletteTexturesLoaded = false;
+
+	if (paletteTexture != NULL) {
+		paletteTexture->Release();
+		paletteTexture = NULL;
+	}
+
+	if (paletteData != NULL) {
+		free(paletteData);
+		paletteData = NULL;
+	}
+
+	log("setting up palette bs");
+
+	DWORD paletteDataSize = sizeof(DWORD) * 256 * 4; // 256 * sizeof(DWORD) is the size of a palette, 4 bc 4 chars
+	paletteData = (DWORD*)malloc(paletteDataSize);
+	memset(paletteData, 0, paletteDataSize);
+	paletteDataIndex = 0;
+
+}
+
+void loadCharacterPalettes() {
+
+	// patching at 00485e9f means that if someone hooks etm during battle, not css, they wont have the palettes saved. i could do the loading manually? but idk
+	// ugh. tbh i have 2 options, once of which involves more asm, and more restrictions on the user, and one which will cause slight slowdown.
+	// hell i could even figure out threading and... yea
+	// but idefk
+	// my other option is... the reloadallchar thing? 
+	// i think that loads palettes, check out 00448b96
+
+	// ok well 00448bdd has the palette data
+	// i can call FullCharacterReload to... sidetrack this more easily rather than calling the texture loads directly
+	// but that function also calls the texture loads so maybe i should hook there?
+	// i now need to also turn said data into a texture. ugh.
+
+	if ((*(uint8_t*)0x0054EEE8) == 0x01 && !arePaletteTexturesLoaded) { // we are in game, and dont have the bullshit
+		FullCharacterReload();
+	}
+
+	// we arent in css, but dont have the palette textures. load them
+	//; // fullcharacter reload will call my hook defined in initpalettewhatever, and set the arePaletteTexturesLoaded flag.
+
+}
+
+void __stdcall capturePalettes(DWORD ebx) {
+
+	DWORD* colors = (DWORD*)(ebx + 4);
+
+	log("first color: %08X", *colors);
+
+	DWORD size = sizeof(DWORD) * 256;
+	DWORD offset = paletteDataIndex * size;
+	memcpy(paletteData + offset, colors, size);
+
+	paletteDataIndex++;
+}
+
+void setupPaletteTexture() {
+
+	// take the stored data from the capture, and put it in one texture. 
+	// pass the char slot id in as a float in order to have the user determine which horiz slot they should use for palette.
+
+	HRESULT res;
+
+	device->CreateTexture(256, 4, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &paletteTexture, NULL);
+
+
+	D3DLOCKED_RECT rect;
+	res = paletteTexture->LockRect(0, &rect, nullptr, 0);
+
+	log("lockrect was %d", res);
+
+	DWORD* dest = (DWORD*)rect.pBits;
+	for (int i = 0; i < 256 * 4; i++) {
+		dest[i] = paletteData[i];
+		log("%08X %08X", dest[i], paletteData[i]);
+		//dest[i] = paletteData[i] | 0x000000FF;
+		//dest[i] = (i & 1) ? 0xFF00FF00 : 0x00FF00FF;
+	}
+	paletteTexture->UnlockRect(0);
+
+	arePaletteTexturesLoaded = true;
+
+	D3DXSaveTextureToFile(L"temp.png", D3DXIFF_PNG, paletteTexture, NULL);
+
+	log("setup palette texture successfully");
+}
+
+__declspec(naked, noinline) void _naked_capturePalettes() {
+	
+	// patched at 0x00448bbc
+
+	PUSH_ALL;
+
+	__asm {
+		push ebx;
+	}
+	emitCall(capturePalettes);
+
+	POP_ALL;
+
+	// overwritten asm
+	emitByte(0x68);
+	emitByte(0x00);
+	emitByte(0x04);
+	emitByte(0x00);
+	emitByte(0x00);
+
+	emitJump(0x00448bc1);
+}
+
+__declspec(naked, noinline) void _naked_setupPaletteTexture() {
+
+	// patched at 0x00448eb5
+
+	PUSH_ALL;
+	setupPaletteTexture();
+	POP_ALL;
+
+	ASM_RET;
+}
+
+__declspec(naked, noinline) void _naked_initPaletteStorage() {
+
+	// patched at 0x004489e0
+
+	PUSH_ALL;
+	initPaletteStorage();
+	POP_ALL;
+
+	// overwritten asm
+	__asm {
+		sub esp, 024ch;
+	}
+
+	emitJump(0x004489e6);
+
+}
+
+void initPaletteLoadPatches() {
+	patchJump(0x00448bbc, _naked_capturePalettes);
+	patchJump(0x00448eb5, _naked_setupPaletteTexture);
+	patchJump(0x004489e0, _naked_initPaletteStorage);
 }

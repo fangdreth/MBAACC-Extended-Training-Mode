@@ -549,6 +549,7 @@ void initMiscSubmenu() {
 		defaultOnOffNameFunc,
 		L"ENABLEEFFECTHUECOLOR"
 	);
+	enableEffectColors = subColorMenu.getLastItem<int>().optionState;
 
 	subColorMenu.add<float>("effect hue",
 		std::function<void(int, float&)>([](int inc, float& opt) -> void {
