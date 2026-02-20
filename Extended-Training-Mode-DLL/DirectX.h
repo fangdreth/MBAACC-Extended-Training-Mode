@@ -44,6 +44,7 @@ extern bool doSaveScreenshot;
 
 extern bool arePaletteTexturesLoaded;
 void FullCharacterReload();
+extern bool useCustomShaders;
 
 //extern IDirectInput8* inputDevice;
 

@@ -1116,6 +1116,7 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 					textureToObject[listAppendHook_texAddr].charID = charID;
 					textureToObject[listAppendHook_texAddr].pattern = pattern;
 					textureToObject[listAppendHook_texAddr].state = state;
+					textureToObject[listAppendHook_texAddr].owner = owner;
 				}
 			}
 
@@ -1202,7 +1203,7 @@ void drawPrimHook() {
 				
 				}
 
-				D3DXVECTOR4 temp(textureToObject[drawPrimHook_texAddr].pattern, textureToObject[drawPrimHook_texAddr].state, 0.0f, 0.0f);
+				D3DXVECTOR4 temp(textureToObject[drawPrimHook_texAddr].pattern, textureToObject[drawPrimHook_texAddr].state, 0.0f, textureToObject[drawPrimHook_texAddr].owner);
 				device->SetPixelShaderConstantF(218, (float*)&temp, 1);
 
 				device->SetTexture(1, tempTex);
@@ -1522,7 +1523,7 @@ void initPaletteStorage() {
 
 	DWORD paletteDataSize = sizeof(DWORD) * 256 * 4; // 256 * sizeof(DWORD) is the size of a palette, 4 bc 4 chars
 	paletteData = (DWORD*)malloc(paletteDataSize);
-	memset(paletteData, 0, paletteDataSize);
+	memset(paletteData, 0xFF, paletteDataSize);
 	paletteDataIndex = 0;
 
 }
@@ -1550,15 +1551,15 @@ void loadCharacterPalettes() {
 
 }
 
-void __stdcall capturePalettes(DWORD ebx) {
+void __stdcall capturePalettes(DWORD ebx, DWORD esi) {
 
-	DWORD* colors = (DWORD*)(ebx + 4);
+	DWORD* colors = (DWORD*)(ebx + 4 + (esi * 256 * 4));
 
-	log("first color: %08X", *colors);
+	//log("first color: %08X palindex is %d", *colors, paletteDataIndex);
 
-	DWORD size = sizeof(DWORD) * 256;
+	DWORD size = 256;
 	DWORD offset = paletteDataIndex * size;
-	memcpy(paletteData + offset, colors, size);
+	memcpy(paletteData + offset, colors, size * sizeof(DWORD));
 
 	paletteDataIndex++;
 }
@@ -1572,16 +1573,32 @@ void setupPaletteTexture() {
 
 	device->CreateTexture(256, 4, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &paletteTexture, NULL);
 
-
 	D3DLOCKED_RECT rect;
 	res = paletteTexture->LockRect(0, &rect, nullptr, 0);
 
-	log("lockrect was %d", res);
+	//log("lockrect was %d", res);
 
 	DWORD* dest = (DWORD*)rect.pBits;
+	memset(dest, 0xFF, sizeof(DWORD) * 256 * 4);
+
 	for (int i = 0; i < 256 * 4; i++) {
-		dest[i] = paletteData[i];
-		log("%08X %08X", dest[i], paletteData[i]);
+		//DWORD ugh = _byteswap_ulong(paletteData[i]);
+		//ugh = (i & 1) ? 0xFF00FF00 : 0xFF0000FF;
+		D3DCOLOR ugh = paletteData[i];
+
+		BYTE a = (ugh & 0xFF000000) >> 24;
+		BYTE r = (ugh & 0x00FF0000) >> 16;
+		BYTE g = (ugh & 0x0000FF00) >> 8;
+		BYTE b = (ugh & 0x000000FF) >> 0;
+
+		if (a) {
+			a = 0xFF;
+		}
+
+		ugh = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+
+		dest[i] = ugh;
+		//log("%08X %08X", i, ugh);
 		//dest[i] = paletteData[i] | 0x000000FF;
 		//dest[i] = (i & 1) ? 0xFF00FF00 : 0x00FF00FF;
 	}
@@ -1589,9 +1606,10 @@ void setupPaletteTexture() {
 
 	arePaletteTexturesLoaded = true;
 
-	D3DXSaveTextureToFile(L"temp.png", D3DXIFF_PNG, paletteTexture, NULL);
+	//D3DXSaveTextureToFile(L"temp.png", D3DXIFF_PNG, paletteTexture, NULL);
 
 	log("setup palette texture successfully");
+	//log("paletteDataIndex was %d", paletteDataIndex);
 }
 
 __declspec(naked, noinline) void _naked_capturePalettes() {
@@ -1601,7 +1619,8 @@ __declspec(naked, noinline) void _naked_capturePalettes() {
 	PUSH_ALL;
 
 	__asm {
-		push ebx;
+		push esi; // palette index
+		push ebx; // palette data
 	}
 	emitCall(capturePalettes);
 
