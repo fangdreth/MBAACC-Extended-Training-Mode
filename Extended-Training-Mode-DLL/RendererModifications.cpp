@@ -1112,6 +1112,9 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 
 				if (*(DWORD*)(listAppendHook_objAddr - 0x10 + 0x20) != 0x00000101) { // mystery heat detection thingy
 					textureToObject[listAppendHook_texAddr].shouldColor = shouldThisBeColored(charID, pattern); // tbh would having a seperate map for things to be colored be ideal.
+					textureToObject[listAppendHook_texAddr].charID = charID;
+					textureToObject[listAppendHook_texAddr].pattern = pattern;
+					textureToObject[listAppendHook_texAddr].state = state;
 				}
 			}
 
@@ -1141,22 +1144,64 @@ void drawPrimHook() {
 
 
 	// set lookups are trash. there has to be some way of,, getting the index of this texture or something??
+	// also i swear like, does this solution somehow work better than what i have in 2v2?
 	if (skipTextureAddrs.contains(drawPrimHook_texAddr)) {
 		skipTextureDraw = 1;
 	} else if (textureToObject.contains(drawPrimHook_texAddr)) {
 
 		if (textureToObject[drawPrimHook_texAddr].isDeer) {
 			device->GetPixelShader(&pPixelShader_backup); // does this inc a refcount?
+			device->GetTexture(1, &pTextureStageBackup);
 
 			pixelShaderNeedsReset = true;
 			device->SetPixelShader(pCustomShader);
 		} else if (textureToObject[drawPrimHook_texAddr].shouldColor) {
 			device->GetPixelShader(&pPixelShader_backup); // does this inc a refcount?
+			device->GetTexture(1, &pTextureStageBackup);
 
 			pixelShaderNeedsReset = true;
 
 			if (useCustomShaders) {
 				device->SetPixelShader(pCustomShader);
+
+				// this gets the palette color (for the display palette, not the whole chars palette) 
+				// would be better for me to find the whole palette, but this is here as a test
+				// ok so this works. i need to now go find the palette texture and pass that in instead
+
+				// ideally, different shaders would be loaded, and there wouldnt be a ton of branching in shaders, but i could also set... char and pattern as registers.
+				// is the palette texture thrown away after applying it to a char?
+				// the texture is wiped between css and ingame
+				// and i dont believe it reloads the palettes ingame, right?
+				// the issue is if someone attaches training mode to this shit, after loading into battle,,, it wouldnt work
+				// ppl want this as a caster thing, but should it be? 
+				// ive had some issues still with flickering caused by my shaders
+				// its doable tho
+				// i could switch and make this a caster mod.
+				// that was the goal right? 
+				// and then i could.... oh god 
+				// i could either have textures per char, or per palette per char
+				// tbh naw i think that branching based on what pattern is being run is enough branching, and shouldnt fuck the gpu up to much?
+				// so then, shader per character.
+				// for testing purposes i could play around with this more right here? 
+				// the issue is that putting shaders in caster feels,,, like too much? 
+
+				// i know nothing
+				// i have 2 different extremely unreadable texture systems in 2 different programs
+
+				IDirect3DBaseTexture9* tempTex = NULL;
+				__try {
+					DWORD** temp = (DWORD**)0x005642cc;
+					DWORD testVal = **temp + 8;
+					DWORD omfg = *(DWORD*)testVal;
+					tempTex = (IDirect3DTexture9*)omfg;
+				} __except (EXCEPTION_EXECUTE_HANDLER) {
+				
+				}
+
+				D3DXVECTOR4 temp(textureToObject[drawPrimHook_texAddr].pattern, textureToObject[drawPrimHook_texAddr].state, 0.0f, 0.0f);
+				device->SetPixelShaderConstantF(218, (float*)&temp, 1);
+
+				device->SetTexture(1, tempTex);
 			} else {
 				device->SetPixelShader(pPixelShader);
 			}
@@ -1175,7 +1220,9 @@ void drawPrimCallback() {
 	if (pixelShaderNeedsReset) {
 		pixelShaderNeedsReset = false;
 		device->SetPixelShader(pPixelShader_backup);
+		device->SetTexture(1, pTextureStageBackup);
 		pPixelShader_backup = NULL;
+		pTextureStageBackup = NULL;
 	}
 }
 

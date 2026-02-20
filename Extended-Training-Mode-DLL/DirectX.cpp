@@ -22,6 +22,10 @@ void dualInputDisplay();
 void drawReplayMenu();
 void loadCustomShader();
 
+bool isValidTexture(DWORD addr);
+bool isValidResource(DWORD addr);
+bool isValidSurface(DWORD addr);
+
 //void BorderDraw(float x, float y, float w, float h, DWORD ARGB = 0x8042e5f4);
 void cursorDraw();
 unsigned directxFrameCount = 0;
@@ -3260,6 +3264,30 @@ void __stdcall _doDrawCalls() {
 		return;
 	}
 	_freqTimerYVal = 0.0f; 
+
+
+	/*
+	if (device != NULL) {
+		DWORD** temp = (DWORD**)0x005642cc;
+		if (*temp != 0 && **temp != 0) {
+			
+			DWORD testVal = **temp + 8;
+			//[[[0x005642cc]] + 8]
+			if (testVal != 0) {
+				DWORD omfg = *(DWORD*)testVal;
+				//log("is 005642cc ok? %08X %d", omfg, isValidTexture(omfg));
+				//log("is 005642cc ok? %08X %d", omfg, isValidSurface(omfg));
+
+				IDirect3DTexture9* t = (IDirect3DTexture9*)omfg;
+
+				HRESULT r = D3DXSaveTextureToFile(L"test.png", D3DXIFF_PNG, t, NULL);
+
+				log("trying to save something, %d", r);
+			}
+		}
+	}
+	*/
+
 
 	//tempTest();
 	//KeyState::showControllerState();

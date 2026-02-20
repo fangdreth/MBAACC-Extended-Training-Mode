@@ -41,11 +41,15 @@ typedef struct LinkedListData {
 	bool isDeer = false;
 	DWORD object = 0;
 	DWORD caller = 0;
+	DWORD charID = 0;
+	DWORD pattern = 0;
+	DWORD state = 0;
 } LinkedListData;
 std::map<DWORD, LinkedListData> textureToObject;
 
 bool pixelShaderNeedsReset = false;
 IDirect3DPixelShader9* pPixelShader_backup = NULL;
+IDirect3DBaseTexture9* pTextureStageBackup = NULL;
 IDirect3DPixelShader9* pPixelShader = NULL;
 IDirect3DPixelShader9* pCustomShader = NULL;
 
