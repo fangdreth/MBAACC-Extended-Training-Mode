@@ -826,6 +826,7 @@ extern int verboseShowVel;
 extern int verboseShowAccel;
 extern int verboseShowUntech;
 extern int verboseShowDamage;
+extern int verboseShowJumpcancel;
 
 extern bool overkillVerboseMode;
 extern bool doDrawProfiler;

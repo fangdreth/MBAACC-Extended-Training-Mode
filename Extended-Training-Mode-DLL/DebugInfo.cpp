@@ -17,6 +17,7 @@ int verboseShowVel = 0;
 int verboseShowAccel = 0;
 int verboseShowUntech = 0;
 int verboseShowDamage = 0;
+int verboseShowJumpcancel = 0;
 
 DWORD _naked_getCancelStatusObj;
 DWORD _naked_getCancelStatusSpecial;
@@ -125,7 +126,7 @@ void EffectData::describe(char* buffer, int bufLen) {
 	}
 
 	if (verboseShowAccel) {
-		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "a:(%d,%d)\n", subObj.xAccel, subObj.yAccel);		
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "a:(%d,%d)\n", subObj.xAccel, subObj.yAccel);
 	}
 
 	if (verboseShowUntech) {
@@ -134,6 +135,10 @@ void EffectData::describe(char* buffer, int bufLen) {
 
 	if (verboseShowDamage && subObj.attackDataPtr != NULL) {
 		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "DMG%d PROR%d\n", subObj.attackDataPtr->damage, subObj.attackDataPtr->proration);
+	}
+
+	if (verboseShowJumpcancel) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Jump:%d\n", subObj.comboJumpCancel);
 	}
 
 	return;
