@@ -1203,7 +1203,13 @@ void drawPrimHook() {
 				
 				}
 
-				D3DXVECTOR4 temp(textureToObject[drawPrimHook_texAddr].pattern, textureToObject[drawPrimHook_texAddr].state, 0.0f, textureToObject[drawPrimHook_texAddr].owner);
+				DWORD pattern = textureToObject[drawPrimHook_texAddr].pattern;
+				DWORD owner = textureToObject[drawPrimHook_texAddr].owner;
+				DWORD state = textureToObject[drawPrimHook_texAddr].state;
+
+				float healthPercent = (float)playerDataArr[owner].subObj.health / 11000.0;
+
+				D3DXVECTOR4 temp(pattern, state, healthPercent, owner);
 				device->SetPixelShaderConstantF(218, (float*)&temp, 1);
 
 				device->SetTexture(1, tempTex);
