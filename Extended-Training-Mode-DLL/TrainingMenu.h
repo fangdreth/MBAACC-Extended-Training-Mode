@@ -996,7 +996,7 @@ const std::vector<std::vector<const char*>> P8_Options = {
 };
 
 enum class eFRAME_DATA {
-	FRAME_DATA,
+	CONSOLE_DATA,
 	IN_GAME_FRAME_DISPLAY,
 	S0,
 	SHOW_HITSTOP_AND_FREEZE,
@@ -1014,14 +1014,14 @@ enum class eFRAME_DATA {
 	PAGE
 };
 
-const int defFRAME_DATA = 0;
+const int defCONSOLE_DATA = 0;
 const int defIN_GAME_FRAME_DISPLAY = 0;
 const int defSHOW_HITSTOP_AND_FREEZE = 0;
 const int defSHOW_INPUTS = 0;
 const int defSHOW_CANCEL = 0;
 const int defSCROLL_DISPLAY = 2;
 
-extern int nFRAME_DATA;
+extern int nCONSOLE_DATA;
 extern int nIN_GAME_FRAME_DISPLAY;
 extern int nSHOW_HITSTOP_AND_FREEZE;
 extern int nSHOW_INPUTS;
@@ -1037,7 +1037,7 @@ const int defTRUE_SCROLL_DISPLAY = 0;
 extern int nTRUE_SCROLL_DISPLAY;
 
 const std::vector<int*> P8_Settings = {
-	&nFRAME_DATA, &nIN_GAME_FRAME_DISPLAY, &nSHOW_HITSTOP_AND_FREEZE, &nSHOW_INPUTS, &nSHOW_CANCEL_WINDOWS, &nSCROLL_DISPLAY,
+	&nCONSOLE_DATA, &nIN_GAME_FRAME_DISPLAY, &nSHOW_HITSTOP_AND_FREEZE, &nSHOW_INPUTS, &nSHOW_CANCEL_WINDOWS, &nSCROLL_DISPLAY,
 	&nPAGE
 };
 
@@ -1153,7 +1153,7 @@ enum class eUI {
 };
 
 const int defSHOW_STATS = 1;
-const int defACCURATE_COMBO_DAMAGE = 1;
+const int defACCURATE_COMBO_DAMAGE = 0;
 const int defP1_INPUT = 0;
 const int defP2_INPUT = 0;
 

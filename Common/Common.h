@@ -513,15 +513,23 @@ const REGKEY sIDLE_HIGHLIGHT = L"IdleHighlight";
 
 const REGKEY sHITBOX_STYLE = L"HitboxStyle";
 const REGKEY sCOLOR_BLIND_MODE = L"ColorBlindMode";
+const REGKEY sORIGIN_STYLE = L"OriginStyle";
+const REGKEY sDRAW_GROUND = L"DrawGround";
 
-const REGKEY sFRAME_DATA = L"FrameData";
+const REGKEY sCONSOLE_DATA = L"ConsoleData";
 const REGKEY sFRAME_DISPLAY = L"FrameDisplay";
 const REGKEY sDISPLAY_FREEZE = L"DisplayFreeze";
 const REGKEY sDISPLAY_INPUTS = L"DisplayInputs";
 const REGKEY sDISPLAY_CANCELS = L"DisplayCancels";
 
+const REGKEY sDISPLAY_STATS = L"DisplayStats";
+const REGKEY sACCURATE_COMBO_DAMAGE = L"AccurateComboDamage";
 const REGKEY sP1_INPUT_DISPLAY = L"P1InputDisplay";
 const REGKEY sP2_INPUT_DISPLAY = L"P2InputDisplay";
+
+const REGKEY sHIDE_HUD = L"HideHUD";
+const REGKEY sHIDE_SHADOWS = L"HideShadows";
+const REGKEY sHIDE_EXTRAS = L"HideExtras";
 
 const REGKEY sP1_ARCADE_INPUT_X = L"P1ArcadeInputX";
 const REGKEY sP1_ARCADE_INPUT_Y = L"P1ArcadeInputY";
