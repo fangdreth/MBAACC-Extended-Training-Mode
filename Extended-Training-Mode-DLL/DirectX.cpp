@@ -3288,6 +3288,9 @@ void __stdcall _doDrawCalls() {
 	}
 	*/
 
+	if (paletteTexture == NULL) {
+		createPaletteTexture();
+	}
 
 	//tempTest();
 	//KeyState::showControllerState();
@@ -3440,8 +3443,16 @@ void logFPS() {
 
 	if (nHIDE_EXTRAS) return;
 
+	static LARGE_INTEGER baseFreq;
+	static bool isFirstRun = true;
+	if (isFirstRun) {
+		isFirstRun = false;
+		QueryPerformanceFrequency(&baseFreq);
+	}
+
 	if (logVerboseFps) {
 		TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "avg:%6.2lf min:%6.2lf max:%6.2lf stdev:%6.2lf maintainfps: %s", timerData.mean, timerData.min, timerData.max, timerData.stdev, fpsMethod);
+		TextDraw(0.0, 12, 10, 0xFF42e5f4, "perf freq: %d", baseFreq.LowPart);
 	} else {
 		if (shouldDrawHud) {
 			TextDraw(0.0, 0.0, 10, 0xFF42e5f4, "%5.2lf", timerData.mean);
@@ -3563,7 +3574,8 @@ void cleanForDirectXReset() {
 
 	// for unknown reasons, after pressing caster f4, if you alt tab/fullscreen unfull screen, it fixes it
 
-	log("reset resources");
+	log("attempting to reset resources");
+	
 
 	// fonttexture is managed, doesnt need release
 	if (renderTargetTex != NULL) {
@@ -3571,6 +3583,14 @@ void cleanForDirectXReset() {
 		renderTargetTex->Release();
 		renderTargetTex = NULL;
 	}
+
+	if (paletteTexture != NULL) {
+		log("reset paletteTexture");
+		paletteTexture->Release();
+		paletteTexture = NULL;
+	}
+
+	log("reset resources Done");
 }
 
 void reInitAfterDirectXReset() {
@@ -3584,6 +3604,8 @@ void reInitAfterDirectXReset() {
 		fontSprite->OnResetDevice();
 	}
 	*/
+
+	log("reInitAfterDirectXReset was called");
 
 }
 

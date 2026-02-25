@@ -10,6 +10,7 @@ extern float effectColorHue;
 bool useCustomShaders = false;
 bool useDeerMode = false;
 bool arePaletteTexturesLoaded = false;
+IDirect3DTexture9* paletteTexture = NULL;
 
 typedef struct {
 	const WORD charID;
@@ -1143,6 +1144,10 @@ void drawPrimHook() {
 		return;
 	}
 
+	if (paletteTexture == NULL) {
+		//setupPaletteTexture();
+	}
+
 
 
 	// set lookups are trash. there has to be some way of,, getting the index of this texture or something??
@@ -1570,10 +1575,11 @@ void __stdcall capturePalettes(DWORD ebx, DWORD esi) {
 	paletteDataIndex++;
 }
 
-void setupPaletteTexture() {
+void createPaletteTexture() {
 
-	// take the stored data from the capture, and put it in one texture. 
-	// pass the char slot id in as a float in order to have the user determine which horiz slot they should use for palette.
+	if (!arePaletteTexturesLoaded) {
+		return;
+	}
 
 	HRESULT res;
 
@@ -1586,6 +1592,10 @@ void setupPaletteTexture() {
 
 	DWORD* dest = (DWORD*)rect.pBits;
 	memset(dest, 0xFF, sizeof(DWORD) * 256 * 4);
+
+	if (paletteData == NULL) {
+		return;
+	}
 
 	for (int i = 0; i < 256 * 4; i++) {
 		//DWORD ugh = _byteswap_ulong(paletteData[i]);
@@ -1610,7 +1620,19 @@ void setupPaletteTexture() {
 	}
 	paletteTexture->UnlockRect(0);
 
+	
+}
+
+void setupPaletteTexture() {
+
+	// take the stored data from the capture, and put it in one texture. 
+	// pass the char slot id in as a float in order to have the user determine which horiz slot they should use for palette.
+
+	log("attempting to load palette textures");
+
 	arePaletteTexturesLoaded = true;
+	createPaletteTexture();
+	
 
 	//D3DXSaveTextureToFile(L"temp.png", D3DXIFF_PNG, paletteTexture, NULL);
 

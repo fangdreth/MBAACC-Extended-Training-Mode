@@ -60,7 +60,9 @@ IDirect3DPixelShader9* pCustomShader = NULL;
 // i was thinking of putting both chars palettes into one texture, and in theory i could do some funny swaps to have it like that
 // actually yea no having 1 texture is the way to go, and i can pass the bs in as a param
 // but having to do that is... annoying!
-IDirect3DTexture9* paletteTexture = NULL;
+extern IDirect3DTexture9* paletteTexture;
+
+void setupPaletteTexture();
 
 void loadCustomShader();
 
@@ -112,3 +114,5 @@ bool initRenderModifications();
 void loadCharacterPalettes();
 
 void initPaletteLoadPatches();
+
+void createPaletteTexture();
