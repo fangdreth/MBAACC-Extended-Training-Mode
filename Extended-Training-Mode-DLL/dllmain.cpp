@@ -178,17 +178,26 @@ void initRegistryValues()
 
 	ReadFromRegistry(sHITBOX_STYLE, &nHITBOX_STYLE);
 	ReadFromRegistry(sCOLOR_BLIND_MODE, &nCOLOR_BLIND_MODE);
+	ReadFromRegistry(sORIGIN_STYLE, &nORIGIN_STYLE);
+	ReadFromRegistry(sDRAW_GROUND, &nDRAW_GROUND);
 
-	ReadFromRegistry(sFRAME_DATA, &nFRAME_DATA);
+	ReadFromRegistry(sCONSOLE_DATA, &nCONSOLE_DATA);
+	ReadFromRegistry(sFRAME_DISPLAY, &nIN_GAME_FRAME_DISPLAY);
 	ReadFromRegistry(sDISPLAY_FREEZE, &nSHOW_HITSTOP_AND_FREEZE);
 	ReadFromRegistry(sDISPLAY_INPUTS, &nSHOW_INPUTS);
 	ReadFromRegistry(sDISPLAY_CANCELS, &nSHOW_CANCEL_WINDOWS);
 
+	ReadFromRegistry(sDISPLAY_STATS, &nSHOW_STATS);
+	ReadFromRegistry(sACCURATE_COMBO_DAMAGE, &nACCURATE_COMBO_DAMAGE);
 	ReadFromRegistry(sP1_INPUT_DISPLAY, &nP1_INPUT_DISPLAY);
 	ReadFromRegistry(sP2_INPUT_DISPLAY, &nP2_INPUT_DISPLAY);
 	if (nP1_INPUT_DISPLAY != 0 || nP2_INPUT_DISPLAY != 0) {
 		*(bool*)(INPUTDISPLAYTOGGLE) = true;
 	}
+
+	ReadFromRegistry(sHIDE_HUD, &nHIDE_HUD);
+	ReadFromRegistry(sHIDE_SHADOWS, &nHIDE_SHADOWS);
+	ReadFromRegistry(sHIDE_EXTRAS, &nHIDE_EXTRAS);
 
 	ReadFromRegistry(sP1_LIST_INPUT_X, &fP1_LIST_INPUT_X);
 	ReadFromRegistry(sP1_LIST_INPUT_Y, &fP1_LIST_INPUT_Y);
@@ -213,7 +222,7 @@ void initRegistryValues()
 
 void initSharedValues()
 {
-	*(byte*)(adMBAABase + adXS_frameData) = nFRAME_DATA;
+	*(byte*)(adMBAABase + adXS_frameData) = nCONSOLE_DATA;
 	*(byte*)(adMBAABase + adXS_showHitstopAndFreeze) = nSHOW_HITSTOP_AND_FREEZE;
 	*(byte*)(adMBAABase + adXS_showInputs) = nSHOW_INPUTS;
 	*(byte*)(adMBAABase + adXS_showCancel) = nSHOW_CANCEL_WINDOWS;
@@ -5332,6 +5341,12 @@ void ExtendedMenuInputChecking() {
 		case eHITBOXES::COLOR_BLIND_MODE:
 			SetRegistryValue(sCOLOR_BLIND_MODE, curElement->selectedItem);
 			break;
+		case eHITBOXES::ORIGIN_STYLE:
+			SetRegistryValue(sORIGIN_STYLE, curElement->selectedItem);
+			break;
+		case eHITBOXES::DRAW_GROUND:
+			SetRegistryValue(sDRAW_GROUND, curElement->selectedItem);
+			break;
 		case eHITBOXES::DEFAULT:
 			if (bAPos) DefaultP6(curMenuInfo);
 			break;
@@ -5405,9 +5420,9 @@ void ExtendedMenuInputChecking() {
 	case eXS_PAGES::FRAME_DATA:
 	{
 		switch ((eFRAME_DATA)curMenuInfo->selectedElement) {
-		case eFRAME_DATA::FRAME_DATA:
+		case eFRAME_DATA::CONSOLE_DATA:
 			*(byte*)(adMBAABase + adXS_frameData) = curElement->selectedItem;
-			SetRegistryValue(sFRAME_DATA, curElement->selectedItem);
+			SetRegistryValue(sCONSOLE_DATA, curElement->selectedItem);
 			break;
 		case eFRAME_DATA::IN_GAME_FRAME_DISPLAY:
 			SetRegistryValue(sFRAME_DISPLAY, curElement->selectedItem);
@@ -5496,6 +5511,12 @@ void ExtendedMenuInputChecking() {
 	case eXS_PAGES::UI:
 	{
 		switch ((eUI)curMenuInfo->selectedElement) {
+		case eUI::SHOW_STATS:
+			SetRegistryValue(sDISPLAY_STATS, curElement->selectedItem);
+			break;
+		case eUI::ACCURATE_COMBO_DAMAGE:
+			SetRegistryValue(sACCURATE_COMBO_DAMAGE, curElement->selectedItem);
+			break;
 		case eUI::P1_INPUT_DISPLAY:
 			SetRegistryValue(sP1_INPUT_DISPLAY, curElement->selectedItem);
 			break;
@@ -5519,12 +5540,15 @@ void ExtendedMenuInputChecking() {
 	{
 		switch ((eSYSTEM)curMenuInfo->selectedElement) {
 		case eSYSTEM::HIDE_HUD: // set these options in-menu for live preview
+			SetRegistryValue(sHIDE_HUD, curElement->selectedItem);
 			nHIDE_HUD = curElement->selectedItem;
 			break;
 		case eSYSTEM::HIDE_SHADOWS:
+			SetRegistryValue(sHIDE_SHADOWS, curElement->selectedItem);
 			nHIDE_SHADOWS = curElement->selectedItem;
 			break;
 		case eSYSTEM::HIDE_EXTRAS:
+			SetRegistryValue(sHIDE_EXTRAS, curElement->selectedItem);
 			nHIDE_EXTRAS = curElement->selectedItem;
 			break;
 		case eSYSTEM::BACKGROUND:

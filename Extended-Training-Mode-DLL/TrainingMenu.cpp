@@ -368,7 +368,7 @@ void DefaultP7(MenuInfo* menuInfo) {
 }
 
 //Page 8
-int nFRAME_DATA = defFRAME_DATA;
+int nCONSOLE_DATA = defCONSOLE_DATA;
 int nIN_GAME_FRAME_DISPLAY = defIN_GAME_FRAME_DISPLAY;
 int nSHOW_HITSTOP_AND_FREEZE = defSHOW_HITSTOP_AND_FREEZE;
 int nSHOW_INPUTS = defSHOW_INPUTS;
@@ -380,7 +380,7 @@ bool bCOLOR_GUIDE = defCOLOR_GUIDE;
 int nTRUE_SCROLL_DISPLAY = defTRUE_SCROLL_DISPLAY;
 
 void DefaultP8(MenuInfo* menuInfo) {
-	nFRAME_DATA = defFRAME_DATA;
+	nCONSOLE_DATA = defCONSOLE_DATA;
 	nIN_GAME_FRAME_DISPLAY = defIN_GAME_FRAME_DISPLAY;
 	nSHOW_HITSTOP_AND_FREEZE = defSHOW_HITSTOP_AND_FREEZE;
 	nSHOW_INPUTS = defSHOW_INPUTS;
@@ -391,7 +391,7 @@ void DefaultP8(MenuInfo* menuInfo) {
 
 	nTRUE_SCROLL_DISPLAY = defTRUE_SCROLL_DISPLAY;
 
-	(menuInfo->elementList).listStart[(int)eFRAME_DATA::FRAME_DATA]->selectedItem = defFRAME_DATA;
+	(menuInfo->elementList).listStart[(int)eFRAME_DATA::CONSOLE_DATA]->selectedItem = defCONSOLE_DATA;
 	(menuInfo->elementList).listStart[(int)eFRAME_DATA::IN_GAME_FRAME_DISPLAY]->selectedItem = defIN_GAME_FRAME_DISPLAY;
 	(menuInfo->elementList).listStart[(int)eFRAME_DATA::SHOW_HITSTOP_AND_FREEZE]->selectedItem = defSHOW_HITSTOP_AND_FREEZE;
 	(menuInfo->elementList).listStart[(int)eFRAME_DATA::SHOW_INPUTS]->selectedItem = defSHOW_INPUTS;
