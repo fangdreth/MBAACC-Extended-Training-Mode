@@ -1064,9 +1064,19 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 
 		if (listAppendHook_objAddr >= 0x0067BDE8) { // effect
 
-			char source = *(char*)(listAppendHook_objAddr - 8);
-			DWORD pattern = *(DWORD*)(listAppendHook_objAddr + 0x0);
-			DWORD state = *(DWORD*)(listAppendHook_objAddr + 0x4);
+			ActorData* actor = (ActorData*)(listAppendHook_objAddr - 12);
+
+			//char source = *(char*)(listAppendHook_objAddr - 8);
+			//DWORD pattern = *(DWORD*)(listAppendHook_objAddr + 0x0);
+			//DWORD state = *(DWORD*)(listAppendHook_objAddr + 0x4);
+			//DWORD numFrameAndPatternTransitions = *(DWORD*)(listAppendHook_objAddr + )
+			
+			char source = actor->source;
+			DWORD pattern = actor->pattern;
+			DWORD state = actor->state;
+			//DWORD numFrameAndPatternTransitions = actor->numFrameAndPatternTransitions;
+
+			//log("pattern: %d", pattern);
 
 			// what the hell is this doing??? is this doing something??? when did i write this????
 			// ok maddy thanks for the shit comments
@@ -1118,6 +1128,7 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 					textureToObject[listAppendHook_texAddr].pattern = pattern;
 					textureToObject[listAppendHook_texAddr].state = state;
 					textureToObject[listAppendHook_texAddr].owner = owner;
+					//textureToObject[listAppendHook_texAddr].numFrameAndPatternTransitions = numFrameAndPatternTransitions;
 				}
 			}
 
@@ -1214,8 +1225,14 @@ void drawPrimHook() {
 
 				float healthPercent = (float)playerDataArr[owner].subObj.health / 11000.0;
 
+				//DWORD numPatternTransitions = textureToObject[drawPrimHook_texAddr].numFrameAndPatternTransitions;
+
+				//log("%d %d", state,  numPatternTransitions);
 				D3DXVECTOR4 temp(pattern, state, healthPercent, owner);
 				device->SetPixelShaderConstantF(218, (float*)&temp, 1);
+
+				//temp = D3DXVECTOR4(numPatternTransitions, 0.0, 0.0, 0.0);
+				device->SetPixelShaderConstantF(217, (float*)&temp, 1);
 
 				device->SetTexture(1, tempTex);
 
@@ -1508,7 +1525,8 @@ void loadCustomShader() {
 		pCustomShader->Release();
 		pCustomShader = NULL;
 	}
-
+	
+	log("omfg");
 	pCustomShader = loadPixelShaderFromFile(L"testShader.hlsl");
 
 }

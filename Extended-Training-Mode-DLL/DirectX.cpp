@@ -3341,6 +3341,7 @@ void __stdcall _doDrawCalls() {
 	static KeyState tickKey(VK_OEM_3);
 	if (lShiftKey.keyHeld() && tickKey.keyDown()) {
 		if (useCustomShaders) {
+			log("trying shaders");
 			loadCustomShader();
 			loadCharacterPalettes();
 		}

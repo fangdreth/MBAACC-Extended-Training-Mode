@@ -46,7 +46,8 @@ typedef struct LinkedListData {
 	DWORD charID = 0;
 	DWORD pattern = 0;
 	DWORD state = 0;
-	DWORD owner = 0;
+	DWORD owner = 0; // why do i not just,,, pass a pointer to the object in here?
+	DWORD numFrameAndPatternTransitions = 0;
 } LinkedListData;
 std::map<DWORD, LinkedListData> textureToObject;
 
