@@ -2271,8 +2271,23 @@ void frameStartCallback() {
 
 bool logSaveState = false;
 
+void (*setDesiredFPS)(double) = NULL;
+
 void setFPSLimiter(bool b) {
 	disableFPSLimit = b;
+
+	static bool isFirstRun = true;
+	if (isFirstRun) {
+		isFirstRun = false;
+
+
+
+	}
+
+	if (setDesiredFPS != NULL) {
+		//log("setting fps");
+		//setDesiredFPS(b ? 60.0 : 1000.0);
+	}
 
 	// i,, i do not know what to do here.
 	// i wish i designed the menu with this in mind, but not all menu elements have/need globals
@@ -7009,6 +7024,26 @@ void initCasterMods()
 
 	// make presentFrameEnd just ret
 	//patchByte(dwCasterBaseAddress + 0x6638c020, 0xC3);
+
+
+	// the following is for ... seeing if i can call caster funcs from here
+
+	HMODULE casterHook = GetModuleHandleA("hook.dll");
+	//log("casterhook was %08X", (DWORD)casterHook);
+	setDesiredFPS = (setDesiredFPSType)GetProcAddress(casterHook, "setDesiredFPS");
+	//log("setDesiredFPS was %08X", (DWORD)setDesiredFPS);
+
+	// ok to be honest, wanting to have draws in both caster and training mode is greed beyond human comprehension
+	// but having 2v2, etm, and shock collar be able to share code (mostly the debug info here) and all use the same draw code instead of overwriting each other 
+	// would be soso nice
+	// but also having everything in one project would be,, difficult
+	// i wanted to make the next shock collar revision in caster, but maybe i should keep it as a mod.
+	// idk
+	// msvc also has some things, mainly the use of __try and nicer asm syntax.. idk
+	// ig for now, ill just keep things as is.
+	// putting shock collar and 2v2 into melty just,, thats for another day
+
+
 
 }
 

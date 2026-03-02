@@ -3244,6 +3244,13 @@ void __stdcall _doDrawCalls() {
 		// this no longer works. i ... really should have exposed a fps function in casters dll
 		//patchByte(dwCasterBaseAddress + 0x66395af0, disableFPSLimit ? 0xC3 : 0x80);
 		prevDisableFPSLimit = disableFPSLimit;
+
+		if (setDesiredFPS != NULL) {
+			setDesiredFPS(prevDisableFPSLimit ? 1000.0 : 60);
+		}
+		
+
+
 	}
 
 	// hihi gonp

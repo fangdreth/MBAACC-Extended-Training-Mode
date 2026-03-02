@@ -170,6 +170,9 @@ extern bool fn1Press2v2[4];
 
 extern DWORD didHitboxConnect;
 
+typedef void (*setDesiredFPSType)(double);
+extern void (*setDesiredFPS)(double);
+
 // -----
 
 void __stdcall ___log(const char* msg);
