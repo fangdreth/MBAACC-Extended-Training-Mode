@@ -2,6 +2,7 @@
 #include <cstddef>
 //#include <windows.h>
 #include "..\Common\Common.h"
+#include <d3d9.h>
 
 #define CONCATENATE_DETAIL(x, y) x##y
 #define CONCATENATE(x, y) CONCATENATE_DETAIL(x, y)
@@ -804,6 +805,175 @@ typedef struct HitEffectData {
 
 } HitEffectData; // remember when i reversed this whole thing and then proceded to accidentally wipe all my work?
 #pragma pack(pop)
+
+
+// below is the render stuff from 2v2, trust none of it
+
+#define packedStruct typedef struct 
+
+#pragma pack(push,1)
+packedStruct RawMeltyVert{
+	float x;
+	float y;
+	float z;
+	float w;
+	DWORD diffuse;
+	DWORD specular;
+	float u;
+	float v;
+} RawMeltyVert;
+static_assert(sizeof(RawMeltyVert) == 0x20, "RawMeltyVert must be size 0x20");
+#pragma pack(pop)
+
+#pragma pack(push,1)
+packedStruct RenderList {
+
+	packedStruct LinkedListRenderList {
+
+		packedStruct LinkedListRenderElement {
+
+			packedStruct LinkedListRenderData {
+			// straight up? not fuckin sure about the size of this
+			// its either going to point to another 
+
+			LinkedListRenderElement * nextElement; // loops back to where this thing would have been if,, yea, yk
+
+			// not sure about this one at all
+			union {
+				DWORD flags; //
+				struct {
+					BYTE flag0; // most likely a D3DRESOURCETYPE. very weird that its only,,, one byte though,,, so it might be something else. check out 004c0243 for an explanation
+					BYTE flag1;
+					BYTE flag2;
+					BYTE flag3;
+				};
+			};
+
+			bool isTexData() {
+				// is flag0 here correct?? in terms of byte order/endianness
+				return flag0 == 0x01;
+			}
+
+			union {
+				RawMeltyVert verts[4];
+				struct {
+					RawMeltyVert v0;
+					RawMeltyVert v1;
+					RawMeltyVert v2;
+					RawMeltyVert v3;
+				};
+			};
+
+			IDirect3DTexture9* tex; // at 0x88
+
+			// why do i feel like these look similar to that weird memory area i used to,,, see if something was heat?
+			// check out 0041650b
+			BYTE unknown1; // 0x8C
+			BYTE unknown2; // 0x8D
+			WORD unknown3; // 0x8E
+			WORD unknown4; // 0x90;
+			WORD unknown5; // 0x92; // might just be padding
+
+		} LinkedListRenderData;
+		static_assert(sizeof(LinkedListRenderData) == 0x94 , "LinkedListRenderData size error"); // created at 00414EEA
+
+		// dawg. i got NO FUCKING CLUE WHATS HAPPENING
+		// basically, if this ptr + 4 is nonzero, then hit it with the switch at 004c03cb
+		// and its an alloc size 94. if not, then just keep chugging down the list!
+
+		// if this is a nextElement, [choice + 4] == 0
+		// if this is an actual fucking thing with draw details, [choice + 4] != 0
+
+		union {
+			LinkedListRenderElement* nextElement;
+			LinkedListRenderData* nextData; // this is for textures. but there is a different kind of struct for each directx type. look at 004c0243 for more info
+		};
+
+		//LinkedListAssetsElementChoice choice; 
+		DWORD stupidFlags; // 00414e48 sets this to 0, 004C0566 skips drawing if its,, not 0?
+		DWORD unknown2; // swaps between 0 and 1, not sure why. this is what doesThingsIfList+8=0 interacts with
+		DWORD possibleCount; // 1600. why? im not sure
+
+		bool isTexChoice() {
+			if (nextData == NULL) {
+				return false;
+			}
+			return nextData->isTexData();
+		}
+
+		} LinkedListRenderElement;
+		static_assert(sizeof(LinkedListRenderElement) == 0x10, "LinkedListRenderElement != 0x10");
+
+		// i could, maybe should, have this whole struct be a union of LinkedListAssets and LinkedListAssetsData
+		// tbh i will
+		// although, is this fucker always accessed as a linked list? or also as an array??
+		// theres no fucking way that its,, i,,,
+		LinkedListRenderElement elements[1600];
+		} LinkedListRenderList;
+		static_assert(sizeof(LinkedListRenderList) == 0x6400, "LinkedListRenderList != 0x6400");
+
+		packedStruct LinkedListAllAssets {
+
+			packedStruct LinkedListAssetsList {
+			   LinkedListRenderList::LinkedListRenderElement * elements[8000];
+			} LinkedListAssetsList;
+			static_assert(sizeof(LinkedListAssetsList) == 0x7D00, "LinkedListAssetsList != 0x7D00"); // alloced at 00401BDF
+
+			DWORD unknown1; // set to one
+			LinkedListAssetsList* assetsList;
+			DWORD numDraws; // set to,, 4? but i believe that, holy fuck. i knew from previous bs this was the number of gameplay drawss on screen. im in css now, but im drawing 4 char sprites!!
+			DWORD unknown3; // 8000
+			DWORD unknown4; // 8000. this is the length
+
+		} LinkedListAllAssets;
+		static_assert(sizeof(LinkedListAllAssets) == 0x14, "LinkedListAllAssets != 0x14"); // created at 0041513E
+
+		/*
+
+			going off of nothing but vibes here, but i think i had the two lists reversed
+			which explains why i could never find the one at 5550b0 in the directx area, but could with 5550a0
+			justifications:
+				A0 is only 1600 long, sprite ids for chars go up to,,, what is it ~1000? 2 chars couldnt fit
+				B0 is 8000. plenty of space
+
+				B0 is offset by addr too, for example, sprite index probs!!!
+
+				this is beautiful.
+				i will now go sleep
+
+			as for how the game draws 2 of the same thing, twice at the same time, check out 0041618
+
+		*/
+
+		LinkedListRenderList* linkedListRenderList; // malloced at 0041507D with size 0x6400
+		DWORD linkedListAssetsCount; // 1600, the malloc was 0x6400, 0x6400 / 0x10 is 1600.
+
+		LinkedListAllAssets* linkedListAllAssets;
+
+		DWORD unknownCount1;
+		DWORD unknownCount1_sub;
+
+		DWORD unknownCount2;
+		DWORD unknownCount2_sub;
+
+} RenderList;
+#pragma pack(push,1)
+
+static_assert(sizeof(RenderList) == 7 * sizeof(DWORD), "RenderList != 0x1C (7 * 0x4)");
+
+static RenderList* renderList = (RenderList*)0x005550A8;
+
+// the following is horrible, but i want access to nested types. 
+
+typedef RenderList::LinkedListRenderList                                                            LinkedListRenderList;
+typedef RenderList::LinkedListRenderList::LinkedListRenderElement                                   LinkedListRenderElement;
+typedef RenderList::LinkedListRenderList::LinkedListRenderElement::LinkedListRenderData             LinkedListRenderData;
+//typedef RenderList::LinkedListRenderList::LinkedListRenderElement::LinkedListAssetsElementChoice    LinkedListAssetsElementChoice;
+
+typedef RenderList::LinkedListAllAssets                                                             LinkedListAllAssets;
+typedef RenderList::LinkedListAllAssets::LinkedListAssetsList									LinkedListAssetsList;
+
+
 
 extern PlayerData* playerDataArr;
 extern PlayerAuxData* playerAuxDataArr;

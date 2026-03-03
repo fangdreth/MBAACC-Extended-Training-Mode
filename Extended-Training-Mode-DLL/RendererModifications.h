@@ -48,6 +48,8 @@ typedef struct LinkedListData {
 	DWORD state = 0;
 	DWORD owner = 0; // why do i not just,,, pass a pointer to the object in here?
 	DWORD numFrameAndPatternTransitions = 0;
+	float width = 0.0;
+	float height = 0.0;
 } LinkedListData;
 std::map<DWORD, LinkedListData> textureToObject;
 
@@ -57,6 +59,8 @@ IDirect3DBaseTexture9* pTextureStage1Backup = NULL;
 IDirect3DBaseTexture9* pTextureStage2Backup = NULL;
 IDirect3DPixelShader9* pPixelShader = NULL;
 IDirect3DPixelShader9* pCustomShader = NULL;
+IDirect3DVertexShader9* pCustomVertexShader = NULL;
+IDirect3DVertexShader9* vertexShaderBackup = NULL;
 
 // i was thinking of putting both chars palettes into one texture, and in theory i could do some funny swaps to have it like that
 // actually yea no having 1 texture is the way to go, and i can pass the bs in as a param
@@ -82,6 +86,8 @@ void describeObject(char* buffer, size_t buflen, const LinkedListData& info);
 DWORD listAppendHook_effectRetAddr = 0;
 DWORD listAppendHook_objAddr = 0;
 DWORD listAppendHook_texAddr = 0;
+
+DWORD listAppendHook_newElement = 0; // this is LinkedListRenderData*
 
 DWORD listAppendHook_effectRetAddr_pat = 0;
 DWORD listAppendHook_objAddr_pat = 0;

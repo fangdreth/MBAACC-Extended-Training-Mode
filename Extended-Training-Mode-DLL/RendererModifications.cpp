@@ -716,12 +716,12 @@ void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
 
 // -----
 
-void drawLoopHook() {
+void drawLoopHook() { // patched at 0x004be46e
 
 	/*
-	if (!debugMode) {
-		return;
-	}
+	
+	this code draws the renderer debugger (enable with F9)
+
 	*/
 
 
@@ -1029,8 +1029,6 @@ void drawLoopHook() {
 
 	//TextDraw(0, drawY, 6, 0xFFFFFFFF, "%4d %08X %08X %08X %08X %08X", linkedListLength, _naked_drawCallHook_ebx, unknown1, unknown2, unknown3, unknown4);
 
-
-
 	if (hasExtraDetail && verboseMode) {
 		TextDraw(firstOutVert.x, firstOutVert.y, 6, lineCol, extraDetail);
 	}
@@ -1048,7 +1046,19 @@ void drawLoopHook() {
 
 }
 
-void listAppendHook() { // for the life of me, why didnt i just not append this thing to the list??? i feel like that would have been better
+float vertDist(const RawMeltyVert& a, const RawMeltyVert& b) {
+
+	float x = (a.x - b.x);
+	float y = (a.y - b.y);
+
+	return sqrt((x * x) + (y * y));
+}
+
+void listAppendHook() { // patched at 0x004c026b
+	
+	// for the life of me, why didnt i just not append this thing to the list??? i feel like that would have been better
+
+	// drawtexture has the texturewidth, and height, and i need that in here!!!!
 
 	if (listAppendHook_effectRetAddr_pat == 0x0045410F) {
 		listAppendHook_objAddr = listAppendHook_objAddr_pat;
@@ -1063,6 +1073,29 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 	if (listAppendHook_effectRetAddr == 0x0045410F || listAppendHook_effectRetAddr_pat == 0x0045410F) {
 
 		if (listAppendHook_objAddr >= 0x0067BDE8) { // effect
+
+
+			/*
+			
+			listAppendHook_newElement
+			should be a ... god
+			there HAS to be a easy solution to get the width/height of the texture. not the power of 2 bs
+			i know there is. i did it in the past
+			this sucks but
+			its the best i have
+
+			i could get it from before this data is calculated but god im so tired
+			
+
+			*/
+
+			LinkedListRenderData* renderData = (LinkedListRenderData*)listAppendHook_newElement;
+			// ok, i have the verts here, i just need to calc the distance, AND PRAY THAT SCALING DOESNT BONE ME and that they are all squards.
+			// wow i really wrote squares and quads at the same time
+			// i hate this solution
+
+			float width = vertDist(renderData->verts[0], renderData->verts[1]);
+			float height = vertDist(renderData->verts[0], renderData->verts[2]);
 
 			ActorData* actor = (ActorData*)(listAppendHook_objAddr - 12);
 
@@ -1128,6 +1161,9 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 					textureToObject[listAppendHook_texAddr].pattern = pattern;
 					textureToObject[listAppendHook_texAddr].state = state;
 					textureToObject[listAppendHook_texAddr].owner = owner;
+
+					textureToObject[listAppendHook_texAddr].width = width;
+					textureToObject[listAppendHook_texAddr].height = height;
 					//textureToObject[listAppendHook_texAddr].numFrameAndPatternTransitions = numFrameAndPatternTransitions;
 				}
 			}
@@ -1147,7 +1183,9 @@ void listAppendHook() { // for the life of me, why didnt i just not append this 
 	}
 }
 
-void drawPrimHook() {
+void drawPrimHook() { // patched at 0x004be290
+
+	
 
 	if (leadToDrawPrimHook_ret != 0x004331D9) {
 		skipTextureAddrs.clear(); // calling this repeatedly is wasteful!
@@ -1169,6 +1207,7 @@ void drawPrimHook() {
 
 		if (textureToObject[drawPrimHook_texAddr].isDeer) {
 			device->GetPixelShader(&pPixelShader_backup); // does this inc a refcount?
+			device->GetVertexShader(&vertexShaderBackup);
 			device->GetTexture(1, &pTextureStage1Backup);
 			device->GetTexture(2, &pTextureStage2Backup);
 
@@ -1176,6 +1215,7 @@ void drawPrimHook() {
 			device->SetPixelShader(pCustomShader);
 		} else if (textureToObject[drawPrimHook_texAddr].shouldColor) {
 			device->GetPixelShader(&pPixelShader_backup); // does this inc a refcount?
+			device->GetVertexShader(&vertexShaderBackup);
 			device->GetTexture(1, &pTextureStage1Backup);
 			device->GetTexture(2, &pTextureStage2Backup);
 
@@ -1184,6 +1224,8 @@ void drawPrimHook() {
 			if (useCustomShaders) {
 				pixelShaderNeedsReset = true;
 				device->SetPixelShader(pCustomShader);
+				
+				device->SetVertexShader(pCustomVertexShader);
 
 				// this gets the palette color (for the display palette, not the whole chars palette) 
 				// would be better for me to find the whole palette, but this is here as a test
@@ -1223,6 +1265,10 @@ void drawPrimHook() {
 				DWORD owner = textureToObject[drawPrimHook_texAddr].owner;
 				DWORD state = textureToObject[drawPrimHook_texAddr].state;
 
+				// i despise this. why does dx9 work this way
+				float width = textureToObject[drawPrimHook_texAddr].width;
+				float height = textureToObject[drawPrimHook_texAddr].height;
+
 				float healthPercent = (float)playerDataArr[owner].subObj.health / 11000.0;
 
 				//DWORD numPatternTransitions = textureToObject[drawPrimHook_texAddr].numFrameAndPatternTransitions;
@@ -1240,6 +1286,28 @@ void drawPrimHook() {
 
 				device->SetTexture(2, paletteTexture);
 
+
+
+				// so shit wasnt being mapped from (0,0) -> (1,1) this whole time. i swear i fixed this
+				// ok so, ideas.
+				// my bullshit isnt always... 
+				// the shit being put on the screen isnt always a power of 2, but dx is sorta clipping its bullshit to make it that?
+				// for example, a texture would have 128 width, but if it only had 100, its still only going to display that 100, but the texcoord wont be updated for this
+				// i need to pass in some bullshit to fix this
+				// i have the dims of the texture (sorta, well i do
+				// i need the dims of whats actually underneath the directx abstraction
+				
+				IDirect3DTexture9* pTex = (IDirect3DTexture9*)drawPrimHook_texAddr;
+				if (isAddrValid(drawPrimHook_texAddr)) {
+					D3DSURFACE_DESC desc;
+					pTex->GetLevelDesc(0, &desc);
+
+					D3DXVECTOR4 textureSize((float)desc.Width, (float)desc.Height, width, height);
+					device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
+				}
+
+			
+
 			} else {
 				device->SetPixelShader(pPixelShader);
 			}
@@ -1252,6 +1320,8 @@ void drawPrimHook() {
 		device->SetPixelShader(pCustomShader);
 	}
 
+
+
 }
 
 void drawPrimCallback() {
@@ -1260,9 +1330,11 @@ void drawPrimCallback() {
 		device->SetPixelShader(pPixelShader_backup);
 		device->SetTexture(1, pTextureStage1Backup);
 		device->SetTexture(2, pTextureStage2Backup);
+		device->SetVertexShader(vertexShaderBackup);
 		pPixelShader_backup = NULL;
 		pTextureStage1Backup = NULL;
 		pTextureStage2Backup = NULL;
+		vertexShaderBackup = NULL;
 	}
 }
 
@@ -1285,6 +1357,9 @@ __declspec(naked) void _naked_drawPrimCallback() {
 }
 
 __declspec(naked) void _naked_drawIndexPrimHook() {
+
+	// patched at 0x004be46e
+
 	__asm {
 		mov _naked_drawCallHook_ebx, ebx;
 	}
@@ -1334,6 +1409,7 @@ __declspec(naked) void _naked_listAppendHook() { // at 0x004c026b
 		mov eax, [esp + 1ECh];
 		mov listAppendHook_objAddr_hit, eax;
 
+		mov listAppendHook_newElement, esi; 
 
 		mov eax, listAppendHook_texAddr;
 	};
@@ -1380,6 +1456,8 @@ __declspec(naked) void _naked_listAppendHook() { // at 0x004c026b
 DWORD _naked_drawPrimHook_reg;
 DWORD _naked_drawPrimHook_jmp = 0x004be296;
 __declspec(naked) void _naked_drawPrimHook() {
+
+	// patched at 0x004be290
 	__asm {
 		mov _naked_drawPrimHook_reg, eax;
 
@@ -1412,7 +1490,7 @@ __declspec(naked) void _naked_drawPrimHook() {
 	}
 }
 
-__declspec(naked) void _naked_leadToDrawPrimHook() {
+__declspec(naked) void _naked_leadToDrawPrimHook() { // patched at 0x004c0380
 	__asm {
 		mov eax, [esp + 8h];
 		mov leadToDrawPrimHook_ret, eax;
@@ -1525,9 +1603,10 @@ void loadCustomShader() {
 		pCustomShader->Release();
 		pCustomShader = NULL;
 	}
-	
-	log("omfg");
+
 	pCustomShader = loadPixelShaderFromFile(L"testShader.hlsl");
+
+	pCustomVertexShader = loadVertexShaderFromFile(L"testVertexShader.hlsl");
 
 }
 
