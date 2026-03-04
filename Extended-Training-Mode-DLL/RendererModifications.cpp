@@ -509,6 +509,9 @@ constexpr const CharPattern blacklist[] = {
 	{ nacID, 236 }, // AD
 	{ nacID, 237 }, // AAD
 
+	//{ nacID, 191 }, // weird thing which summons the neros
+	//{ nacID, 186 },
+
 	// nec
 
 	{ necoID, 115 }, // lil necos on 214
@@ -1367,7 +1370,7 @@ void drawPrimHook() { // patched at 0x004be290
 					pTex->GetLevelDesc(0, &desc);
 
 					D3DXVECTOR4 textureSize((float)desc.Width, (float)desc.Height, width, height);
-					device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
+					device->SetPixelShaderConstantF(210, (float*)&textureSize, 1);
 
 
 					float cameraZoom = *(float*)0x0054eb70;
