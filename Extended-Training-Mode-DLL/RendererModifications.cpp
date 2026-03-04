@@ -716,6 +716,19 @@ void describeObject(char* buffer, size_t buflen, const LinkedListData& info) {
 
 // -----
 
+D3DMATRIX stupidTransformMatrix = { 0 };
+
+float vertDist(const RawMeltyVert& a, const RawMeltyVert& b) {
+
+
+	// this  shouldnt be needed, right?
+
+	float x = (a.x - b.x);// * renderModificationFactor.x;
+	float y = (a.y - b.y);// * renderModificationFactor.y;
+
+	return sqrt((x * x) + (y * y));
+}
+
 void drawLoopHook() { // patched at 0x004be46e
 
 	/*
@@ -962,6 +975,20 @@ void drawLoopHook() { // patched at 0x004be46e
 			meltyLineData.add(outVerts[0], outVerts[2]);
 			meltyLineData.add(outVerts[1], outVerts[2]);
 
+			if (j == 0) {
+
+				RawMeltyVert v0 = *(RawMeltyVert*)&ptrVertexStreamZeroData[ptrIndexData[0 + (j * 3)]];
+				RawMeltyVert v1 = *(RawMeltyVert*)&ptrVertexStreamZeroData[ptrIndexData[1 + (j * 3)]];
+				RawMeltyVert v2 = *(RawMeltyVert*)&ptrVertexStreamZeroData[ptrIndexData[2 + (j * 3)]];
+				float width = vertDist(v0, v1);
+				float height = vertDist(v0, v2);
+
+				//log("omfg %f %f", width, height);
+
+				D3DXVECTOR4 temp(width, height, 0, 0);
+				device->SetPixelShaderConstantF(217, (float*)&temp, 1);
+			}
+
 			//meltyLineData.add(outVerts[1], outVerts[2]);
 			//meltyLineData.add(outVerts[1], outVerts[3]);
 			//meltyLineData.add(outVerts[2], outVerts[3]);
@@ -1046,14 +1073,6 @@ void drawLoopHook() { // patched at 0x004be46e
 
 }
 
-float vertDist(const RawMeltyVert& a, const RawMeltyVert& b) {
-
-	float x = (a.x - b.x);
-	float y = (a.y - b.y);
-
-	return sqrt((x * x) + (y * y));
-}
-
 void listAppendHook() { // patched at 0x004c026b
 	
 	// for the life of me, why didnt i just not append this thing to the list??? i feel like that would have been better
@@ -1092,11 +1111,36 @@ void listAppendHook() { // patched at 0x004c026b
 			LinkedListRenderData* renderData = (LinkedListRenderData*)listAppendHook_newElement;
 			// ok, i have the verts here, i just need to calc the distance, AND PRAY THAT SCALING DOESNT BONE ME and that they are all squards.
 			// wow i really wrote squares and quads at the same time
-			// i hate this solution
+			// i hate this 
+
+			//log("%08X", (DWORD) & renderData->verts[0]);
 
 			float width = vertDist(renderData->verts[0], renderData->verts[1]);
 			float height = vertDist(renderData->verts[0], renderData->verts[2]);
 
+			// this  shouldnt be needed, right?
+			//width *= renderModificationFactor.x;
+			//height *= renderModificationFactor.y;
+			/*
+			MeltyVert outVerts[4];
+
+			for (int i = 0; i < 4; i++) {
+				outVerts[i].x = renderData->verts[i].x;
+				outVerts[i].y = renderData->verts[i].y;
+
+				outVerts[i].color = 0xFF00FF00;
+
+				outVerts[i].position.x += topLeftPos.x;
+				outVerts[i].position.y += topLeftPos.y;
+
+				outVerts[i].position.x *= renderModificationFactor.x;
+				outVerts[i].position.y *= renderModificationFactor.y;
+
+			}
+
+			meltyLineData.add(outVerts[0], outVerts[1]);
+			meltyLineData.add(outVerts[0], outVerts[2]);
+			*/
 			ActorData* actor = (ActorData*)(listAppendHook_objAddr - 12);
 
 			//char source = *(char*)(listAppendHook_objAddr - 8);
@@ -1164,6 +1208,21 @@ void listAppendHook() { // patched at 0x004c026b
 
 					textureToObject[listAppendHook_texAddr].width = width;
 					textureToObject[listAppendHook_texAddr].height = height;
+
+					textureToObject[listAppendHook_texAddr].xScale = actor->animationDataPtr->xScale;
+					textureToObject[listAppendHook_texAddr].yScale = actor->animationDataPtr->yScale;
+
+					textureToObject[listAppendHook_texAddr].stateDuration = actor->animationDataPtr->stateDuration;
+
+					textureToObject[listAppendHook_texAddr].interp = actor->animationDataPtr->interp;
+
+					for (int i = 0; i < 4; i++) {
+						for (int j = 0; j < 4; j++) {
+							textureToObject[listAppendHook_texAddr].matrix.m[i][j] = stupidTransformMatrix.m[i][j];
+							stupidTransformMatrix.m[i][j] = 0.0f;
+						}
+					}
+
 					//textureToObject[listAppendHook_texAddr].numFrameAndPatternTransitions = numFrameAndPatternTransitions;
 				}
 			}
@@ -1269,7 +1328,12 @@ void drawPrimHook() { // patched at 0x004be290
 				float width = textureToObject[drawPrimHook_texAddr].width;
 				float height = textureToObject[drawPrimHook_texAddr].height;
 
+				float xScale = textureToObject[drawPrimHook_texAddr].xScale;
+				float yScale = textureToObject[drawPrimHook_texAddr].yScale;
+
 				float healthPercent = (float)playerDataArr[owner].subObj.health / 11000.0;
+
+				DWORD stateDuration = textureToObject[drawPrimHook_texAddr].stateDuration;
 
 				//DWORD numPatternTransitions = textureToObject[drawPrimHook_texAddr].numFrameAndPatternTransitions;
 
@@ -1278,7 +1342,7 @@ void drawPrimHook() { // patched at 0x004be290
 				device->SetPixelShaderConstantF(218, (float*)&temp, 1);
 
 				//temp = D3DXVECTOR4(numPatternTransitions, 0.0, 0.0, 0.0);
-				device->SetPixelShaderConstantF(217, (float*)&temp, 1);
+				//device->SetPixelShaderConstantF(217, (float*)&temp, 1);
 
 				device->SetTexture(1, tempTex);
 
@@ -1304,6 +1368,36 @@ void drawPrimHook() { // patched at 0x004be290
 
 					D3DXVECTOR4 textureSize((float)desc.Width, (float)desc.Height, width, height);
 					device->SetPixelShaderConstantF(219, (float*)&textureSize, 1);
+
+
+					float cameraZoom = *(float*)0x0054eb70;
+
+					D3DXVECTOR4 scaleStuff(xScale, yScale, cameraZoom, 0);
+					device->SetPixelShaderConstantF(216, (float*)&scaleStuff, 1);
+
+					// 00419c00
+					// theres some "interp" thingy which is used in the matrix calcs
+					// takes framesintostate, and state duration
+
+					D3DXVECTOR4 stateStuff(0, 0, 0, 0);
+					device->SetPixelShaderConstantF(215, (float*)&stateStuff, 1);
+					
+
+					//log("%5.2f %5.2f %5.2f %5.2f", textureSize.x, textureSize.y, textureSize.z, textureSize.w);
+
+					if (!textureToObject[drawPrimHook_texAddr].interp) {
+						
+						textureToObject[drawPrimHook_texAddr].matrix.m[0][0] = 2.0f;
+						textureToObject[drawPrimHook_texAddr].matrix.m[1][1] = 2.0f;
+					}
+
+					device->SetPixelShaderConstantF(211, (float*)textureToObject[drawPrimHook_texAddr].matrix.m, 4);
+					
+	
+					
+
+					//device->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+
 				}
 
 			
@@ -1336,6 +1430,24 @@ void drawPrimCallback() {
 		pTextureStage2Backup = NULL;
 		vertexShaderBackup = NULL;
 	}
+}
+
+void __stdcall matrixGrabber(DWORD eax) {
+
+	// 0x004076bd
+
+	D3DMATRIX* matrix = (D3DMATRIX*)eax;
+
+	for (int i = 0; i < 4; i++) {
+		log("%6.2f %6.2f %6.2f %6.2f", matrix->m[i][0], matrix->m[i][1], matrix->m[i][2], matrix->m[i][3]);
+		for (int j = 0; j < 4; j++) {
+			stupidTransformMatrix.m[i][j] = matrix->m[i][j];
+		}
+	}
+	log("-");
+
+
+
 }
 
 // -----
@@ -1509,6 +1621,35 @@ __declspec(naked) void _naked_leadToDrawPrimHook() { // patched at 0x004c0380
 
 }
 
+__declspec(naked) void _naked_matrixGrabber() {
+
+	// patched at 0x004076bd
+
+	// eax is about to be overwritten by the asm, so ill be using that, as a treat
+	_asm {
+		lea eax, [esp + 0x80];
+	}
+
+	PUSH_ALL;
+	_asm {
+		push eax;
+	}
+	emitCall(matrixGrabber);
+
+	POP_ALL;
+
+	// overwritten asm
+	emitByte(0x0F);
+	emitByte(0xBF);
+	emitByte(0x06);
+
+	emitByte(0x83);
+	emitByte(0xE8);
+	emitByte(0x00);
+
+	emitJump(0x004076c3);
+
+}
 // -----
 
 
@@ -1527,6 +1668,14 @@ void initEffectSelector() {
 
 }
 
+void initMatrixGrabber() {
+
+	// some bs at 004076bd. the matrix is at esp+80
+	// i could maybe do a stack lookback for this, but honestly i am just not in the mood.
+
+	patchJump(0x004076bd, _naked_matrixGrabber);
+}
+
 bool initRenderModifications() {
 
 	if (device == NULL) {
@@ -1536,6 +1685,8 @@ bool initRenderModifications() {
 	initDrawIndexPrimHook();
 
 	initEffectSelector();
+
+	initMatrixGrabber();
 
 	pPixelShader = createPixelShader(R"(
 

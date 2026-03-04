@@ -50,6 +50,11 @@ typedef struct LinkedListData {
 	DWORD numFrameAndPatternTransitions = 0;
 	float width = 0.0;
 	float height = 0.0;
+	float xScale = 0.0;
+	float yScale = 0.0;
+	DWORD stateDuration = 0;
+	DWORD interp = 0;
+	D3DMATRIX matrix; // remember when i used to care about the size of this thing
 } LinkedListData;
 std::map<DWORD, LinkedListData> textureToObject;
 
