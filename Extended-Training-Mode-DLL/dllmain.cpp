@@ -2060,7 +2060,7 @@ void HandleReversalsPage() {
 
 	switch (nREVERSAL_TYPE) {
 	case 1:
-		if (pActiveP2->subObj.hitstunTimeRemaining != 0 || pActiveP2->subObj.shieldSuccessType != 0) {
+		if (pActiveP2->subObj.hitstunTimeRemaining != 0 || pActiveP2->subObj.recievedHitVector != 0xFF || pActiveP2->subObj.shieldSuccessType != 0) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
 			nHoldButtons = 0;
@@ -2076,7 +2076,7 @@ void HandleReversalsPage() {
 		}
 		break;
 	case 3:
-		if (pActiveP2->subObj.hitstunTimeRemaining != 0 && pActiveP2->subObj.inBlockstun == 0) {
+		if ((pActiveP2->subObj.hitstunTimeRemaining != 0 || pActiveP2->subObj.recievedHitVector != 0xFF) && pActiveP2->subObj.inBlockstun == 0) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
 			nHoldButtons = 0;
@@ -2084,7 +2084,7 @@ void HandleReversalsPage() {
 		}
 		break;
 	case 4:
-		if (pActiveP2->subObj.hitstunTimeRemaining == -3 || pActiveP2->subObj.isGroundTech) {
+		if (pActiveP2->subObj.hitstunTimeRemaining == -3 || pActiveP2->subObj.pattern == 352 || pActiveP2->subObj.isGroundTech) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
 			nHoldButtons = 0;
