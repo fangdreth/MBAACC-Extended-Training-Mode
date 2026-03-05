@@ -160,6 +160,17 @@ void UpdatePlayers(HANDLE hMBAAHandle)
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_StateDataPointer), &P.dwAnimation_StateDataPointer, 4, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_ConditionCount), &P.cAnimation_ConditionCount, 1, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + adAnimationData_BoxIndex), &P.cAnimation_BoxIndex, 1, 0);
+		P.bBoxInvuln = true;
+		for (int i = 0; i < P.cAnimation_BoxIndex; i++) {
+			DWORD boxPtr = 0x0;
+			ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimationDataPointer + 0x4C), &boxPtr, 4, 0);
+			DWORD temp = 0x0;
+			ReadProcessMemory(hMBAAHandle, (LPVOID)(boxPtr + 0x4 * i), &temp, 4, 0);
+			if (i > 0 && i < 9 && temp != 0)
+			{
+				P.bBoxInvuln = false;
+			}
+		}
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_Stance), &P.cState_Stance, 1, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_Invuln), &P.cState_Invuln, 1, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(P.dwAnimation_StateDataPointer + adStateData_NormalCancel), &P.cState_NormalCancel, 1, 0);
@@ -403,7 +414,7 @@ void UpdateBars(Player& P, Player& Assist)
 	{
 		sFont = FD_THROW_ACTIVE;
 	}
-	else if (P.cAnimation_BoxIndex <= 1 ||
+	else if (P.bBoxInvuln ||
 		P.sStrikeInvuln != 0 ||
 		P.cState_Invuln == 3)
 	{

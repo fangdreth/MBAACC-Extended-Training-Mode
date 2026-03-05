@@ -2060,7 +2060,7 @@ void HandleReversalsPage() {
 
 	switch (nREVERSAL_TYPE) {
 	case 1:
-		if (pActiveP2->subObj.hitstunTimeRemaining != 0 || pActiveP2->subObj.recievedHitVector != 0xFF || pActiveP2->subObj.shieldSuccessType != 0) {
+		if (pActiveP2->subObj.hitstunTimeRemaining != 0 || pActiveP2->subObj.receivedHitVector != 0xFF || pActiveP2->subObj.shieldSuccessType != 0) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
 			nHoldButtons = 0;
@@ -2076,7 +2076,7 @@ void HandleReversalsPage() {
 		}
 		break;
 	case 3:
-		if ((pActiveP2->subObj.hitstunTimeRemaining != 0 || pActiveP2->subObj.recievedHitVector != 0xFF) && pActiveP2->subObj.inBlockstun == 0) {
+		if ((pActiveP2->subObj.hitstunTimeRemaining != 0 || pActiveP2->subObj.receivedHitVector != 0xFF) && pActiveP2->subObj.inBlockstun == 0) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
 			nHoldButtons = 0;
@@ -6913,7 +6913,7 @@ void LoadSave() {
 				for (int j = 0; j < 8; j++) {
 					if (curPlayer->subObj.attackingSubObjPtrArr[j] != 0) {
 						ActorData* attackingSubObj = curPlayer->subObj.attackingSubObjPtrArr[j];
-						curPlayer->subObj.recievingAttackDataPtrArr[j] = attackingSubObj->attackDataPtr;
+						curPlayer->subObj.receivingAttackDataPtrArr[j] = attackingSubObj->attackDataPtr;
 					}
 				}
 			}

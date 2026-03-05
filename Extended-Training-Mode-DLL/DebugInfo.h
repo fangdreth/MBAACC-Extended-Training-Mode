@@ -559,14 +559,14 @@ typedef struct ActorData {
 	WORD armorTimer;
 	WORD reversedControlsTimer;
 	UNUSED(8);
-	BYTE recievedHitstop;
+	BYTE receivedHitstop;
 	BYTE isHitboxConnect;
 	UNUSED(2);
 	DWORD hitstunBlockstunTimeElapsed;
 	int hitstunTimeRemaining; // -2 if airborne
 	BYTE completedHitVectors;
 	BYTE didHitVectorFaceLeft;
-	BYTE recievedHitVector;
+	BYTE receivedHitVector;
 	UNUSED(0x2);
 	BYTE someDeathFlagMaybe;
 	UNUSED(1);
@@ -591,7 +591,7 @@ typedef struct ActorData {
 	UNUSED(0x8);
 	BYTE counterhitState;
 	UNUSED(1);
-	AttackData* recievingAttackDataPtrArr[8];
+	AttackData* receivingAttackDataPtrArr[8];
 	CameraBoxData hitboxOverlapArr[8];
 	ActorData* attackingSubObjPtrArr[8];
 	ActorData* lastHitBySubObjPtr;
@@ -652,7 +652,7 @@ CHECKOFFSET(airTime, 0x186);
 CHECKOFFSET(extraVariables, 0x1c0);
 CHECKOFFSET(remainingHits, 0x176);
 CHECKOFFSET(unknownHitCounter, 0x1EC);
-CHECKOFFSET(recievingAttackDataPtrArr, 0x1f8);
+CHECKOFFSET(receivingAttackDataPtrArr, 0x1f8);
 CHECKOFFSET(isControllingSubObjPtr, 0x2c0);
 CHECKOFFSET(gravity, 0x2e0);
 CHECKOFFSET(numSpawnedEffects, 0x2f2);

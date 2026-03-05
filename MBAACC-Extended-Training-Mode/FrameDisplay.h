@@ -160,6 +160,7 @@ struct Player
 	int nActiveProjectileCount = 0;
 	bool bLastOnRight = false;
 	char cLastStance = 0;
+	bool bBoxInvuln = false;
 
 	Player(char _cPlayerNumber, DWORD _adPlayerBase, DWORD _adInactionable) {
 		cPlayerNumber = _cPlayerNumber;
