@@ -1442,12 +1442,12 @@ void __stdcall matrixGrabber(DWORD eax) {
 	D3DMATRIX* matrix = (D3DMATRIX*)eax;
 
 	for (int i = 0; i < 4; i++) {
-		log("%6.2f %6.2f %6.2f %6.2f", matrix->m[i][0], matrix->m[i][1], matrix->m[i][2], matrix->m[i][3]);
+		//log("%6.2f %6.2f %6.2f %6.2f", matrix->m[i][0], matrix->m[i][1], matrix->m[i][2], matrix->m[i][3]);
 		for (int j = 0; j < 4; j++) {
 			stupidTransformMatrix.m[i][j] = matrix->m[i][j];
 		}
 	}
-	log("-");
+	//log("-");
 
 
 
