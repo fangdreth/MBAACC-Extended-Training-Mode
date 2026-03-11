@@ -189,6 +189,7 @@ HANDLE GetProcessByName(const wchar_t* name)
             
             DWORD temp = GetLastError();
             std::cout << "OpenProcess errored, error: " << temp << std::endl;
+            std::cout << "Please restart your caster and try again" << std::endl;
             
         }
 
