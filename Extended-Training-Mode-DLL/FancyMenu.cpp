@@ -733,6 +733,21 @@ void initObjViewSubmenu() {
 	// tbh i could reduce this further to just a name and a variable. but id have to do some stringified bs, or maybe just take the name of the setting. actually,,, that sounds kinda nice. 
 	// ima just do that. can these things have spaces in reg keys?
 
+	Menu HA6ViewSubmenu("HA6 Data");
+
+	HA6ViewSubmenu.addSimpleOnOff<int*>("Show Player HA6", L"verboseShowPlayerHA6", &verboseShowPlayerHA6);
+	HA6ViewSubmenu.addSimpleOnOff<int*>("Show Effect HA6", L"verboseShowEffectHA6", &verboseShowEffectHA6);
+	HA6ViewSubmenu.addSimpleOnOff<int*>("Show Pattern Data", L"verboseShowPatternData", &verboseShowPatternData);
+	HA6ViewSubmenu.addSimpleOnOff<int*>("Show State Data", L"verboseShowStateData", &verboseShowStateData);
+	HA6ViewSubmenu.addSimpleOnOff<int*>("Show Movement Data", L"verboseShowMovementData", &verboseShowMovementData);
+	HA6ViewSubmenu.addSimpleOnOff<int*>("Show Sine Data", L"verboseShowSineData", &verboseShowSineData);
+	HA6ViewSubmenu.addSimpleOnOff<int*>("Show Animation Data", L"verboseShowAnimationData", &verboseShowAnimationData);
+	HA6ViewSubmenu.addSimpleOnOff<int*>("Show Attack Data", L"verboseShowAttackData", &verboseShowAttackData);
+	HA6ViewSubmenu.addSimpleOnOff<int*>("Show Effects", L"verboseShowEFs", &verboseShowEFs);
+	HA6ViewSubmenu.addSimpleOnOff<int*>("Show Conditions", L"verboseShowIFs", &verboseShowIFs);
+
+	objInfo.add(HA6ViewSubmenu);
+
 	baseMenu.add(objInfo);
 	
 }

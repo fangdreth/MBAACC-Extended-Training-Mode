@@ -831,6 +831,17 @@ extern int verboseShowUntech;
 extern int verboseShowDamage;
 extern int verboseShowJumpcancel;
 
+extern int verboseShowPlayerHA6;
+extern int verboseShowEffectHA6;
+extern int verboseShowPatternData;
+extern int verboseShowStateData;
+extern int verboseShowMovementData;
+extern int verboseShowSineData;
+extern int verboseShowAnimationData;
+extern int verboseShowAttackData;
+extern int verboseShowEFs;
+extern int verboseShowIFs;
+
 extern bool overkillVerboseMode;
 extern bool doDrawProfiler;
 extern bool doDrawVertexInfo;

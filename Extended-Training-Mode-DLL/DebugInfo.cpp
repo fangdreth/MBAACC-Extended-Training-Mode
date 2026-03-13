@@ -19,6 +19,18 @@ int verboseShowUntech = 0;
 int verboseShowDamage = 0;
 int verboseShowJumpcancel = 0;
 
+//show HA6 info
+int verboseShowPlayerHA6 = 0;
+int verboseShowEffectHA6 = 0;
+int verboseShowPatternData = 0;
+int verboseShowStateData = 0;
+int verboseShowMovementData = 0;
+int verboseShowSineData = 0;
+int verboseShowAnimationData = 0;
+int verboseShowAttackData = 0;
+int verboseShowEFs = 0;
+int verboseShowIFs = 0;
+
 DWORD _naked_getCancelStatusObj;
 DWORD _naked_getCancelStatusSpecial;
 DWORD _naked_getCancelStatusOutput;
@@ -139,6 +151,278 @@ void EffectData::describe(char* buffer, int bufLen) {
 
 	if (verboseShowJumpcancel) {
 		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Jump:%d\n", subObj.comboJumpCancel);
+	}
+
+	//HA6 display
+	if ((verboseShowPlayerHA6 && offset < 0x0067BDE8) || (verboseShowEffectHA6 && offset >= 0x0067BDE8)) {
+		if (verboseShowPatternData) {
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Pattern: %d\n", subObj.pattern);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >PSTS: %d\n", subObj.patternDataPtr->PSTS);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Level: %d\n", subObj.patternDataPtr->level);
+		}
+
+		if (verboseShowStateData) {
+			const char* stanceMap[3] = { "Standing", "Airborne", "Crouching" };
+			const char* invincibilityMap[5] = { "None", "Stand blockable", "Crouch blockable", "All but throw", "Throw only" };
+			const char* counterhitMap[4] = { "No change", "Set high", "Set low", "Clear" };
+			const char* cancelMap[4] = { "Never", "On hit", "Always", "On successful hit" };
+			const char* flagset1[32] = { "Give momentum", "Clear momentum", "No walk/crouch", "3", "Can ground tech", "5", "6", "7",
+			"Stand-guard point", "Air-guard point", "Crouch-guard point", "11", "12", "13", "14", "15",
+			"16", "17", "18", "19", "20", "21", "22", "23",
+			"24", "25", "26", "27", "28", "29", "30", "Vector init only at beginning(?)" };
+			const char* flagset2[32] = { "EX cancel", "1", "Jump cancel only", "3", "4", "5", "6", "7",
+			"8", "9", "10", "11", "12", "13", "14", "15",
+			"16", "17", "18", "19", "20", "21", "22", "23",
+			"24", "25", "26", "27", "28", "29", "30", "No block" };
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "State: %d\n", subObj.state);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Stance: %s\n", stanceMap[subObj.animationDataPtr->stateData->stance]);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Invincibility: %s\n", invincibilityMap[subObj.animationDataPtr->stateData->invincibility]);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Counterhit: %s\n", counterhitMap[subObj.animationDataPtr->stateData->counterHit]);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Cancel Normal: %s\n", cancelMap[subObj.animationDataPtr->stateData->cancelNormal]);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Cancel Special: %s\n", cancelMap[subObj.animationDataPtr->stateData->cancelSpecial]);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Num hits: %d\n", subObj.animationDataPtr->stateData->hitCount);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Can move: %d\n", subObj.animationDataPtr->stateData->canMove);
+			
+			int bit = 1;
+			bool hasFlag = false;
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Flagset 1: ");
+			for (int i = 0; i < 32; i++) {
+				if (subObj.animationDataPtr->stateData->flagset1 & bit) {
+					if (hasFlag) {
+						bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, ", ");
+					}
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s", flagset1[i]);
+					hasFlag = true;
+				}
+				bit = bit * 2;
+			}
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n");
+
+			bit = 1;
+			hasFlag = false;
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Flagset 2: ");
+			for (int i = 0; i < 32; i++) {
+				if (subObj.animationDataPtr->stateData->flagset2 & bit) {
+					if (hasFlag) {
+						bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, ", ");
+					}
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s", flagset2[i]);
+					hasFlag = true;
+				}
+				bit = bit * 2;
+			}
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n");
+		}
+
+		if (verboseShowMovementData) {
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Movement:\n");
+			const char* moveFlags[8] = { "Set Y", "Add Y", "", "", "Set X", "Add X", "", "" };
+			if (subObj.animationDataPtr->stateData->movementData) {
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >X Speed: %d\n", subObj.animationDataPtr->stateData->movementData->xVel);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >X Accel: %d\n", subObj.animationDataPtr->stateData->movementData->xAccel);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >X Clamp: %d\n", subObj.animationDataPtr->stateData->maxXSpeed);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Y Speed: %d\n", subObj.animationDataPtr->stateData->movementData->yVel);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Y Accel: %d\n", subObj.animationDataPtr->stateData->movementData->yAccel);
+				int bit = 1;
+				bool hasFlag = false;
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Movement flags: ");
+				for (int i = 0; i < 8; i++) {
+					if (subObj.animationDataPtr->stateData->movementData->movementFlags & bit) {
+						if (hasFlag) {
+							bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, ", ");
+						}
+						bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s", moveFlags[i]);
+						hasFlag = true;
+					}
+					bit = bit * 2;
+				}
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n");
+			}
+		}
+
+		if (verboseShowSineData) {
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Sine:\n");
+			const char* sineFlags[8] = { "Use Y", "Use X" };
+			if (subObj.animationDataPtr->stateData->sineData) {
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >X Distance: %d\n", subObj.animationDataPtr->stateData->sineData->xDistance);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >X Frequency: %d\n", subObj.animationDataPtr->stateData->sineData->xFrequency);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Y Distance: %d\n", subObj.animationDataPtr->stateData->sineData->yDistance);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Y Frequency: %d\n", subObj.animationDataPtr->stateData->sineData->yFrequency);
+				int bit = 15;
+				bool hasFlag = false;
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Sine flags: ");
+				for (int i = 0; i < 2; i++) {
+					if (subObj.animationDataPtr->stateData->sineData->sineFlags & bit) {
+						if (hasFlag) {
+							bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, ", ");
+						}
+						bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s", sineFlags[i]);
+						hasFlag = true;
+					}
+					bit = bit * 16;
+				}
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n");
+			}
+		}
+
+		if (verboseShowAnimationData) {
+			const char* transitionMap[3] = {"Go to pattern", "Next frame", "Go to frame"};
+			const char* animationFlags[4] = { "Land to pattern", "Decrement loops", "Go to relative offset", "Relative loop end" };
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Animation: \n");
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Sprite: %d\n", subObj.animationDataPtr->currentSprite);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Use pat: %d\n", subObj.animationDataPtr->usePat);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Transition: %s\n", transitionMap[subObj.animationDataPtr->animationType]);
+			if (subObj.animationDataPtr->animationType != 1) {
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Go to: %d\n", subObj.animationDataPtr->goToData);
+			}
+			else {
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Go to: \n");
+			}
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Landing state: %d\n", subObj.animationDataPtr->landingFrame);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Set Z: %d\n", subObj.animationDataPtr->zPrio);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Set loops: %d\n", subObj.animationDataPtr->loopNTimes);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Loop end: %d\n", subObj.animationDataPtr->endOfLoop);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Duration: %d\n", subObj.animationDataPtr->stateDuration);
+			
+			int bit = 1;
+			bool hasFlag = false;
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Animation flags: ");
+			for (int i = 0; i < 4; i++) {
+				if (subObj.animationDataPtr->animationFlags & bit) {
+					if (hasFlag) {
+						bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, ", ");
+					}
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s", animationFlags[i]);
+					hasFlag = true;
+				}
+				bit = bit * 2;
+			}
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n");
+			
+			const char* interpMap[6] = { "None", "Linear", "Slow->Fast", "Fast->Slow", "Fast middle", "Slow middle" };
+			const char* blendMap[4] = { "Default", "Normal", "Additive", "Subtractive" };
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Interpolation: %s\n", interpMap[subObj.animationDataPtr->interp]);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Offset: %d, %d\n", subObj.animationDataPtr->xOffset, subObj.animationDataPtr->yOffset);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Blend: %s\n", blendMap[subObj.animationDataPtr->blendMode]);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >RGBA: %02x%02x%02x%02x\n",
+				subObj.animationDataPtr->r, subObj.animationDataPtr->g, subObj.animationDataPtr->b, subObj.animationDataPtr->a);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Rotation: %.03f, %.03f, %.03f\n",
+				subObj.animationDataPtr->xRot, subObj.animationDataPtr->yRot, subObj.animationDataPtr->zRot);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Scale: %.03f, %.03f\n",
+				subObj.animationDataPtr->xScale, subObj.animationDataPtr->yScale);
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Rotation keeps scale set by EF: %d\n", subObj.animationDataPtr->rotKeepsEFScale);
+		}
+
+		if (verboseShowAttackData) {
+			const char* prorateMap[3] = { "O", "M", "S" };
+			const char* hitstopMap[7] = { "Weak (6f)", "Medium (8f)", "Strong (10f)", "None (0f)", "Stronger (15f)", "Strongest (29f)", "Weakest (3f)" };
+			const char* guardFlags[32] = { "Stand blockable", "Air blockable", "Crouch blockable", "3", "4", "5", "6", "7",
+			"Miss standong", "Miss airborne", "Miss crouching", "Miss hitstun", "Miss blockstun", "Miss OTG", "Only hit hitstun", "Only hit partner",
+			"16", "17", "18", "19", "20", "21", "22", "23",
+			"24", "25", "26", "27", "28", "29", "30", "31" };
+			const char* hitFlags[32] = { "Do chip damage", "No KO", "Make unhittable", "No clash", "Superjump cancel", "Don't increase combo count", "Screen shake", "No air tech",
+			"No ground tech", "Friendly fire", "No self hitstop", "11", "Lock burst", "No shield", "No crit", "15",
+			"Use custom blockstop", "OTG Relaunch", "No CH", "Always knockback away", "Weaker circuit break/No bounce reset", "No priority change", "Remove 1f untech", "23",
+			"24", "25", "26", "27", "28", "29", "30", "31" };
+			const char* hitEffectMap[22] = { "Weak punch", "Medium punch", "Strong punch", "Weak kick", "Medium kick", "Strong kick", "Super punch", "Super kick",
+			"Slash", "Burn", "Freeze", "Shock", "Big flash", "Small flash", "None", "Strong hit",
+			"Double slash", "Super slash", "Weak cut", "Medium cut", "Strong cut", "Faint wave" };
+			const char* addedEffectMap[5] = { "None", "Burn", "Freeze", "Shock", "Confusion" };
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Attack Data:\n");
+			if (subObj.attackDataPtr) {
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Damage: %d\n", subObj.attackDataPtr->damage);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >VS damage: %d\n", subObj.attackDataPtr->vsDamage);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Guard damage: %d\n", subObj.attackDataPtr->guardDamage);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Meter gain: %d\n", subObj.attackDataPtr->meterGain);
+				byte proration = subObj.attackDataPtr->proration;
+				if (proration == 0) proration = 100;
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Proration: %d (%s)\n", proration, prorateMap[subObj.attackDataPtr->prorationType]);
+				if (subObj.attackDataPtr->customHitstop != 0) {
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Hitstop: Custom (%d)\n", subObj.attackDataPtr->customHitstop);
+				}
+				else {
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Hitstop: %s\n", hitstopMap[subObj.attackDataPtr->hitstop]);
+				}
+				
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Custom blockstop: %d\n", subObj.attackDataPtr->blockstop);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Custom untech: %d\n", subObj.attackDataPtr->untechTime);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Circuit break time: %d\n", subObj.attackDataPtr->circuitBreakTime);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Extra scaling: %0.3f\n", subObj.attackDataPtr->extraGravity);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Hitgrab: %d\n", subObj.attackDataPtr->hitgrab);
+
+				int bit = 1;
+				bool hasFlag = false;
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Guard flags: ");
+				for (int i = 0; i < 32; i++) {
+					if (subObj.attackDataPtr->guardFlags & bit) {
+						if (hasFlag) {
+							bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, ", ");
+						}
+						bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s", guardFlags[i]);
+						hasFlag = true;
+					}
+					bit = bit * 2;
+				}
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n");
+
+				bit = 1;
+				hasFlag = false;
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Hit flags: ");
+				for (int i = 0; i < 32; i++) {
+					if (subObj.attackDataPtr->hitFlags & bit) {
+						if (hasFlag) {
+							bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, ", ");
+						}
+						bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "%s", hitFlags[i]);
+						hasFlag = true;
+					}
+					bit = bit * 2;
+				}
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n");
+
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Guard vectors: %d, %d, %d\n",
+					subObj.attackDataPtr->standingGuardVector, subObj.attackDataPtr->airGuardVector, subObj.attackDataPtr->crouchingGuardVector);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Hit vectors: %d, %d, %d\n",
+					subObj.attackDataPtr->standingHitVector, subObj.attackDataPtr->airborneHitVector, subObj.attackDataPtr->crouchingHitVector);
+
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Hit effect: %s\n", hitEffectMap[subObj.attackDataPtr->hitEffectID]);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Sound effect: %d\n", subObj.attackDataPtr->soundEffectID);
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >Added effect: %s\n", addedEffectMap[subObj.attackDataPtr->effect]);
+
+			}
+		}
+
+		if (verboseShowEFs) {
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "EFs:\n");
+			for (int i = 0; i < subObj.animationDataPtr->highestEFIndex; i++) {
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >EF%d:\n", i);
+				if (subObj.animationDataPtr->EFs[i]) {
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "  >Type: %d\n", subObj.animationDataPtr->EFs[i]->EFTP);
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "  >Number: %d\n", subObj.animationDataPtr->EFs[i]->EFNO);
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "  >Params: %d", subObj.animationDataPtr->EFs[i]->EFPR[0]);
+					for (int j = 1; j < 12; j++) {
+						bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, ", %d", subObj.animationDataPtr->EFs[i]->EFPR[j]);
+					}
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n");
+				}
+			}
+		}
+
+		if (verboseShowIFs) {
+			bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "IFs:\n");
+			for (int i = 0; i < subObj.animationDataPtr->highestIFIndex; i++) {
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, " >IF%d:\n", i);
+				if (subObj.animationDataPtr->IFs[i]) {
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "  >Type: %d\n", subObj.animationDataPtr->IFs[i]->IFTP);
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "  >Params: %d", subObj.animationDataPtr->IFs[i]->IFPR[0]);
+					for (int j = 1; j < 9; j++) {
+						bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, ", %d", subObj.animationDataPtr->IFs[i]->IFPR[j]);
+					}
+					bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n");
+				}
+			}
+		}
+			
 	}
 
 	return;

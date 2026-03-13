@@ -88,7 +88,7 @@ typedef struct AttackData {
 	WORD damage;
 	WORD meterGain;
 	WORD vsDamage;
-	WORD guardBreak;
+	WORD guardDamage;
 	WORD circuitBreakTime;
 	UNUSED(2);
 } AttackData;
@@ -129,10 +129,28 @@ typedef struct MovementData {
 #pragma pack(pop)
 
 #pragma pack(push,1)
+typedef struct SineData {
+	union {
+		BYTE sineFlags;
+		struct {
+			BYTE useY : 4;
+			BYTE useX : 4;
+		};
+	};
+	UNUSED(1);
+	short xDistance;
+	short yDistance;
+	short xFrequency;
+	short yFrequency;
+} SineData;
+#pragma pack(pop)
+
+#pragma pack(push,1)
 typedef struct StateData { // i am sure of nothing in this struct.
 	MovementData* movementData;
 	short maxXSpeed;
-	UNUSED(6);
+	UNUSED(2);
+	SineData* sineData;
 	BYTE stance; // could be used for tas, for either tks or landing to do a move as soon as able
 	BYTE invincibility;
 	BYTE cancelNormal;
@@ -184,27 +202,20 @@ static_assert(sizeof(StateData) == 0x1C, "StateData MUST be 0x1C large!");
 #undef CHECKOFFSET
 
 #pragma pack(push,1)
+typedef struct EF { // Effect
+	int EFTP;
+	int EFNO;
+	int EFPR[12];
+} EF;
+#pragma pack(pop)
+
+#pragma pack(push,1)
 typedef struct IF { // Condition
 	int IFTP;
-	int IFPR1;
-	int IFPR2;
-	int IFPR3;
-	int IFPR4;
-	int IFPR5;
-	int IFPR6;
-	int IFPR7;
-	int IFPR8;
-	int IFPR9;
+	int IFPR[9];
 } IF;
 #pragma pack(pop)
 
-#define CHECKOFFSET(v, n) static_assert(offsetof(IF, v) == n, "IF offset incorrect for " #v);
-
-CHECKOFFSET(IFPR1, 0x4);
-
-static_assert(sizeof(IF) == 0x28, "IF MUST be 0x28 large!");
-
-#undef CHECKOFFSET
 
 #pragma pack(push,1)
 typedef struct CameraBoxData {
@@ -295,7 +306,7 @@ typedef struct AnimationData {
 	BYTE highestNonHitboxIndex;
 	BYTE highestHitboxIndex;
 	IF** IFs;
-	DWORD EFs;
+	EF** EFs;
 	NonHitboxData* nonHitboxData;
 	HitboxData* hitboxData;
 } AnimationData;
