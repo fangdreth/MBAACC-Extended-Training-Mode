@@ -11,6 +11,7 @@ char cP1Freeze = 0; //Used for EXFlashes where initiator still moves (ex. Satsuk
 char cP2Freeze = 0;
 char cP3Freeze = 0;
 char cP4Freeze = 0;
+bool bJustDidPlayerFreeze = false;
 int nFrameCount = 0; //Counts slower during slowdown
 int nLastFrameCount = 0;
 int nTrueFrameCount = 0; //Counts all frames during slowdown
@@ -92,6 +93,7 @@ void UpdateGlobals(HANDLE hMBAAHandle)
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP2Freeze), &cP2Freeze, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP3Freeze), &cP3Freeze, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adP4Freeze), &cP4Freeze, 1, 0);
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adJustDidPlayerFreeze), &bJustDidPlayerFreeze, 1, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adFrameCount), &nFrameCount, 4, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adTrueFrameCount), &nTrueFrameCount, 4, 0);
 	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adGlobalFreeze), &cGlobalFreeze, 1, 0);
@@ -389,7 +391,8 @@ void UpdateBars(Player& P, Player& Assist)
 		sFont = FD_CLEAR + sFont;
 	}
 
-	if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0 || cP3Freeze != 0 || cP4Freeze != 0) //Screen is frozen
+	if (cGlobalFreeze != 0 ||
+		((cP1Freeze != 0 || cP2Freeze != 0 || cP3Freeze != 0 || cP4Freeze != 0) && !bJustDidPlayerFreeze)) //Screen is frozen
 	{
 		sFont = FD_FREEZE;
 	}

@@ -331,8 +331,10 @@ void UpdateBars(Player& P, Player& Assist)
 	}
 
 	if (*(char*)(adMBAABase + adGlobalFreeze) != 0 || //Screen is frozen
-		*(int*)(adMBAABase + adP1Freeze) != 0 ||
-		*(int*)(adMBAABase + adP2Freeze) != 0)
+		((*(int*)(adMBAABase + adP1Freeze) != 0 ||
+		*(int*)(adMBAABase + adP2Freeze) != 0 ||
+		*(int*)(adMBAABase + adP3Freeze) != 0 ||
+		*(int*)(adMBAABase + adP4Freeze) != 0) && *(byte*)(adMBAABase + adJustDidPlayerFreeze) == 0))
 	{
 		dwMainColor = FB_FREEZE;
 		if (P.PlayerData->subObj.attackDataPtr != 0) //Attacking

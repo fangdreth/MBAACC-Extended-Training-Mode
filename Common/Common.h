@@ -420,6 +420,7 @@ const ADDRESS adP1Freeze = 0x158908;
 const ADDRESS adP2Freeze = 0x158C14;
 const ADDRESS adP3Freeze = 0x158F20;
 const ADDRESS adP4Freeze = 0x15922C;
+const ADDRESS adJustDidPlayerFreeze = 0x1595BC;
 const ADDRESS adFrameCount = 0x15D1CC;
 
 const ADDRESS adSaveCurrentCamX = 0x15DEC4;
