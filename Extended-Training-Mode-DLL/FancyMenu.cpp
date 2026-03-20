@@ -729,6 +729,8 @@ void initObjViewSubmenu() {
 
 	objInfo.addSimpleOnOff<int*>("Show Jump Cancel", L"verboseShowJumpcancel", &verboseShowJumpcancel);
 
+	objInfo.addSimpleOnOff<int*>("Show Variables", L"verboseShowVars", &verboseShowVars);
+
 
 	// tbh i could reduce this further to just a name and a variable. but id have to do some stringified bs, or maybe just take the name of the setting. actually,,, that sounds kinda nice. 
 	// ima just do that. can these things have spaces in reg keys?

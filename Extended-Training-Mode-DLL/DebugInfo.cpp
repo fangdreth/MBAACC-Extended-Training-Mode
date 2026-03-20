@@ -18,6 +18,7 @@ int verboseShowAccel = 0;
 int verboseShowUntech = 0;
 int verboseShowDamage = 0;
 int verboseShowJumpcancel = 0;
+int verboseShowVars = 0;
 
 //show HA6 info
 int verboseShowPlayerHA6 = 0;
@@ -151,6 +152,32 @@ void EffectData::describe(char* buffer, int bufLen) {
 
 	if (verboseShowJumpcancel) {
 		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Jump:%d\n", subObj.comboJumpCancel);
+	}
+
+	if (verboseShowVars) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Special Variables:\n > %d", subObj.specialVariables[0]);
+		for (int i = 1; i < 10; i++) {
+			if (i == 5) {
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n > %d", subObj.specialVariables[i]);
+			}
+			else {
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, ", %d", subObj.specialVariables[i]);
+			}
+		}
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n");
+
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Dash Variable: %d\n", subObj.dashVariable);
+
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Extra Variables:\n > %d", subObj.extraVariables[0]);
+		for (int i = 1; i < 10; i++) {
+			if (i == 5) {
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n > %d", subObj.extraVariables[i]);
+			}
+			else {
+				bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, ", %d", subObj.extraVariables[i]);
+			}
+		}
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "\n");
 	}
 
 	//HA6 display

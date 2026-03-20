@@ -830,6 +830,7 @@ extern int verboseShowAccel;
 extern int verboseShowUntech;
 extern int verboseShowDamage;
 extern int verboseShowJumpcancel;
+extern int verboseShowVars;
 
 extern int verboseShowPlayerHA6;
 extern int verboseShowEffectHA6;
