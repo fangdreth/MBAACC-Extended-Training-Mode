@@ -2615,7 +2615,6 @@ void frameDoneCallback()
 	}
 	
 	//drawTextWithBorder(300, 300, 36, 48	, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
-
 	if (bFreeze && shouldDrawHud)
 	{
 		try
@@ -2910,8 +2909,9 @@ void frameDoneCallback()
 
 	bool doDraw = false;
 	if ((safeWrite() && !isPaused() && nIN_GAME_FRAME_DISPLAY) || (isPaused() && ((bVIEW_SCREEN && nIN_GAME_FRAME_DISPLAY) || bShowFrameBarPreview))) doDraw = true;
+	drawFrameBar(doDraw);
 
-	if (safeWrite()) DoFrameBar(doDraw);
+	if (safeWrite()) UpdateFrameBar(P1, P2, P3, P4);
 
 	if (bCOLOR_GUIDE)
 	{

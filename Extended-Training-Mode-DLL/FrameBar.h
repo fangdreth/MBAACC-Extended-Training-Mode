@@ -130,4 +130,4 @@ void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist);
 
 void UpdateFrameBar(Player& P1, Player& P2, Player& P3, Player& P4);
 
-void DoFrameBar(bool doDraw);
+void drawFrameBar(bool doDraw);

@@ -617,13 +617,6 @@ void UpdateFrameBar(Player& P1_, Player& P2_, Player& P3_, Player& P4_)
 	nLastFrameCount = *(int*)(adMBAABase + adFrameCount);
 	nLastTrueFrameCount = *(int*)(adMBAABase + adTrueFrameCount);
 
-}
-
-void DoFrameBar(bool doDraw)
-{
-
-	UpdateFrameBar(P1, P2, P3, P4);
-
 	int nBarDrawCounter = 0;
 
 	short sAdjustedScroll = min(min(nBarCounter - frameBar.numCells, BAR_MEMORY_SIZE - frameBar.numCells), -nTRUE_SCROLL_DISPLAY);
@@ -636,6 +629,10 @@ void DoFrameBar(bool doDraw)
 		nForEnd = nBarCounter;
 	}
 
+}
+
+void drawFrameBar(bool doDraw)
+{
 	frameBar.dragInfo.enable = doDraw;
 	if (frameBar.dragInfo.enable)
 	{
