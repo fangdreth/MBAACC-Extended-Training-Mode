@@ -490,6 +490,7 @@ typedef LPCTSTR REGKEY;
 
 //extended menu registry keys
 const REGKEY sFREEZE_KEY_REG = L"HOTKEY_Freeze";
+const REGKEY sADVANCE_FRAME_KEY_REG = L"HOTKEY_AdvanceFrame";
 const REGKEY sNEXT_FRAME_KEY_REG = L"HOTKEY_NextFrame";
 const REGKEY sPREV_FRAME_KEY_REG = L"HOTKEY_PrevFrame";
 const REGKEY sTOGGLE_HITBOXES_KEY_REG = L"HOTKEY_ToggleHitboxes";

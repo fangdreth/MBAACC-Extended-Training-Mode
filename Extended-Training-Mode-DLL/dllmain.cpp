@@ -96,6 +96,7 @@ bool bShowFrameBarPreview = false;
 bool bShowFrameBarYPreview = false;
 bool bForceGuard = false;
 int dummyDelayTechFramesElapsed = 0;
+bool showFrameScrubber = false;
 
 bool initLoadChars = false;
 
@@ -150,6 +151,7 @@ PlayerData* pDummy = pP2;
 void initHotkeys()
 {
 	oFreezeHotkey.setKeyFromRegistry(sFREEZE_KEY_REG);
+	oAdvanceFrameHotkey.setKeyFromRegistry(sADVANCE_FRAME_KEY_REG);
 	oNextFrameHotkey.setKeyFromRegistry(sNEXT_FRAME_KEY_REG);
 	oPrevFrameHotkey.setKeyFromRegistry(sPREV_FRAME_KEY_REG);
 	oToggleHitboxesHotkey.setKeyFromRegistry(sTOGGLE_HITBOXES_KEY_REG);
@@ -2359,7 +2361,7 @@ void frameDoneCallback()
 
 		if (bFreeze)
 		{
-			/*if (UpKey.keyDownHeldFreq<4, 24>()) {
+			if (oNextFrameHotkey.keyDownHeldFreq<4, 24>()) {
 				bool needNewFrame = saveStateManager.load(1);
 				if (!alreadyRolledReplayManager) {
 					//log("calling rollforward 2");
@@ -2370,10 +2372,17 @@ void frameDoneCallback()
 					rollFancyInputDisplay(1);
 				}
 			}
-			else */if (oPrevFrameHotkey.keyDownHeldFreq<4, 24>()) {
+			else if (oPrevFrameHotkey.keyDownHeldFreq<4, 24>()) {
+				if (saveStateManager.currentState > 0) {
+					saveStateManager.load(-1);
+					rollFancyInputDisplay(-1);
+					replayManager.rollBack();
+				}
+				/*
 				saveStateManager.load(-1);
 				rollFancyInputDisplay(-1);
 				replayManager.rollBack();
+				*/
 			}
 		}
 
@@ -2519,6 +2528,11 @@ void frameDoneCallback()
 		nVolTextTimer--;
 	}
 
+	static KeyState zKey('Z');
+	if (lShiftKey.keyHeld() && zKey.keyDown()) {
+		showFrameScrubber = !showFrameScrubber;
+	}
+
 	renderModificationsFrameDone();
 
 	if (device != NULL) {
@@ -2630,7 +2644,7 @@ void frameDoneCallback()
 			TextDraw(100.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Freeze Key: <corrupt>");
 		}
 
-		if (nFrameCount % 240 > 120)
+		if (nFrameCount > 170)
 		{
 			try
 			{
@@ -2642,10 +2656,10 @@ void frameDoneCallback()
 			}
 			catch (...)
 			{
-				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Frame Step Key: <corrupt>");
+				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Next Frame: <corrupt>");
 			}
 		}
-		else
+		else if (nFrameCount > 85)
 		{
 			try
 			{
@@ -2658,6 +2672,44 @@ void frameDoneCallback()
 			catch (...)
 			{
 				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Prev Frame: <corrupt>");
+			}
+		}
+		else
+		{
+			try
+			{
+				char pcPrevFrameKey[256];
+				char pcName[19];
+				oAdvanceFrameHotkey.getKeyName(pcName);
+				snprintf(pcPrevFrameKey, sizeof(pcPrevFrameKey), "Advance Frame: %s", pcName);
+				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, pcPrevFrameKey);
+			}
+			catch (...)
+			{
+				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Advance Frame: <corrupt>");
+			}
+		}
+
+		if (showFrameScrubber) {
+			float x = 10.0f;
+			float y = 390.0f;
+			float unitW = (640.0f - 2 * x) / (float)(saveStateManager.states.size() - 1);
+			float maxW = (640.0f - 2 * x);
+			float h = 10.0f;
+			RectDraw(x, y, maxW, h, 0x99000000); //BG
+			for (int i = 0; i < saveStateManager.currentState; i++) {
+				float x1 = x + unitW * i;
+				RectDraw(x1, y, unitW, h, 0xFF00FF00);
+			}
+
+			if (lHeld && mousePos.y > 380.0f && mousePos.y < 410.0f) {
+				float usedX = mousePos.x;
+				float ratio = (mousePos.x - 10.0f) / 620.0f;
+				int newState = floor(ratio * saveStateManager.states.size());
+				if (newState < 0) newState = 0;
+				else if (newState >= saveStateManager.states.size()) newState = saveStateManager.states.size() - 1;
+				saveStateManager.currentState = newState;
+				saveStateManager.states[newState]->load();
 			}
 		}
 	}
@@ -3316,7 +3368,7 @@ void newPauseCallback2()
 			_naked_newPauseCallback2_IsPaused = false;
 	}
 
-	else if (!bFreeze && (oNextFrameHotkey.keyDown() || oPrevFrameHotkey.keyDown()))
+	else if (!bFreeze && (oAdvanceFrameHotkey.keyDown() || oNextFrameHotkey.keyDown() || oPrevFrameHotkey.keyDown()))
 	{
 		bFreeze = true;
 		bSlow = false;
@@ -3344,11 +3396,11 @@ void newPauseCallback2()
 	static uint8_t nFrameNumber = 0;
 	nFrameNumber++;
 
-	if (oNextFrameHotkey.keyHeld())
-		oNextFrameHotkey.nHeldKeyCounter++;
+	if (oAdvanceFrameHotkey.keyHeld())
+		oAdvanceFrameHotkey.nHeldKeyCounter++;
 	else
-		oNextFrameHotkey.nHeldKeyCounter = 0;
-	if (_naked_newPauseCallback2_IsPaused && (oNextFrameHotkey.keyDown() || oNextFrameHotkey.nHeldKeyCounter >= 20 || (bSlow && nFrameNumber % 4 >= nGAME_SPEED)))
+		oAdvanceFrameHotkey.nHeldKeyCounter = 0;
+	if (_naked_newPauseCallback2_IsPaused && (oAdvanceFrameHotkey.keyDown() || oAdvanceFrameHotkey.nHeldKeyCounter >= 20 || (bSlow && nFrameNumber % 4 >= nGAME_SPEED)))
 	{
 		needPause = true;
 		_naked_newPauseCallback2_IsPaused = false;
@@ -5657,6 +5709,9 @@ void HotkeyMenuInputChecking() {
 		case eHK_PAGE1::FREEZE:
 			CheckNewHotkey(bAPos, oFreezeHotkey, sFREEZE_KEY_REG);
 			break;
+		case eHK_PAGE1::ADVANCE_FRAME:
+			CheckNewHotkey(bAPos, oAdvanceFrameHotkey, sADVANCE_FRAME_KEY_REG);
+			break;
 		case eHK_PAGE1::NEXT_FRAME:
 			CheckNewHotkey(bAPos, oNextFrameHotkey, sNEXT_FRAME_KEY_REG);
 			break;
@@ -5691,6 +5746,8 @@ void HotkeyMenuInputChecking() {
 
 		GetKeyStateMenuLabel(labelBuf, oFreezeHotkey);
 		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::FREEZE]->SetCurItemLabel(labelBuf);
+		GetKeyStateMenuLabel(labelBuf, oAdvanceFrameHotkey);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::ADVANCE_FRAME]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oNextFrameHotkey);
 		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::NEXT_FRAME]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oPrevFrameHotkey);

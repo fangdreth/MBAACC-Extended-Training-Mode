@@ -480,6 +480,7 @@ bool bOldFN2Input = 0;
 int nHOTKEYS = 0; //The hotkey menu elements dont need to save their index, but they still need a location to save to
 
 KeyState oFreezeHotkey(0);
+KeyState oAdvanceFrameHotkey(0);
 KeyState oNextFrameHotkey(0);
 KeyState oPrevFrameHotkey(0);
 KeyState oToggleHitboxesHotkey(0);
@@ -638,16 +639,17 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 
 	//HOTKEYS 1
 	{"HK_0_0", "Set hotkey to \\@COLOR@<015, 183, 255, 255>freeze the game."},
-	{"HK_0_1", "Set hotkey to \\@COLOR@<015, 183, 255, 255>advance to the next frame."},
-	{"HK_0_2", "Set hotkey to \\@COLOR@<015, 183, 255, 255>rewind to the previous frame."},
-	{"HK_0_3", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle hitbox display."},
-	{"HK_0_4", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle the in-game frame bar."},
-	{"HK_0_5", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle highlights."},
-	{"HK_0_6", "Set hotkey to \\@COLOR@<015, 183, 255, 255>queue up a reversal regardless of settings."},
-	{"HK_0_7", "Set hotkey to \\@COLOR@<015, 183, 255, 255>increment the RNG Seed / Value."},
-	{"HK_0_8", "Set hotkey to \\@COLOR@<015, 183, 255, 255>decrement the RNG Seed / Value."},
-	{"HK_0_10_n", RETURN_INFO},
-	{"HK_0_12", PAGE_INFO},
+	{"HK_0_1", "Set hotkey to \\@COLOR@<015, 183, 255, 255>advance to a new frame." },
+	{"HK_0_2", "Set hotkey to \\@COLOR@<015, 183, 255, 255>load the next saved frame."},
+	{"HK_0_3", "Set hotkey to \\@COLOR@<015, 183, 255, 255>load the previous saved frame."},
+	{"HK_0_4", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle hitbox display."},
+	{"HK_0_5", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle the in-game frame bar."},
+	{"HK_0_6", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle highlights."},
+	{"HK_0_7", "Set hotkey to \\@COLOR@<015, 183, 255, 255>queue up a reversal regardless of settings."},
+	{"HK_0_8", "Set hotkey to \\@COLOR@<015, 183, 255, 255>increment the RNG Seed / Value."},
+	{"HK_0_9", "Set hotkey to \\@COLOR@<015, 183, 255, 255>decrement the RNG Seed / Value."},
+	{"HK_0_11_n", RETURN_INFO},
+	{"HK_0_13", PAGE_INFO},
 
 	//HOTKEYS 2
 	{"HK_1_0", "Set hotkey to \\@COLOR@<015, 183, 255, 255>save the current game state."},

@@ -1307,6 +1307,11 @@ const std::vector<const char*> vFREEZE = {
 	"X"
 };
 
+const std::vector<const char*> vADVANCE_FRAME = {
+	"ADVANCE FRAME",
+	"X"
+};
+
 const std::vector<const char*> vNEXT_FRAME = {
 	"NEXT FRAME",
 	"X"
@@ -1348,7 +1353,7 @@ const std::vector<const char*> vDECREMENT_RNG = {
 };
 
 const std::vector<std::vector<const char*>> HK_P1_Options = {
-	vFREEZE, vNEXT_FRAME, vPREV_FRAME, vTOGGLE_HITBOXES, vTOGGLE_FRAME_BAR, vTOGGLE_HIGHLIGHTS, vQUEUE_REVERSAL, vINCREMENT_RNG, vDECREMENT_RNG, vSPACE_ELEMENT,
+	vFREEZE, vADVANCE_FRAME, vNEXT_FRAME, vPREV_FRAME, vTOGGLE_HITBOXES, vTOGGLE_FRAME_BAR, vTOGGLE_HIGHLIGHTS, vQUEUE_REVERSAL, vINCREMENT_RNG, vDECREMENT_RNG, vSPACE_ELEMENT,
 	vRETURN_ELEMENT, vSPACE_ELEMENT,
 	vP1_PAGE
 };
@@ -1356,6 +1361,7 @@ const std::vector<std::vector<const char*>> HK_P1_Options = {
 extern int nHOTKEYS;
 
 extern KeyState oFreezeHotkey;
+extern KeyState oAdvanceFrameHotkey;
 extern KeyState oNextFrameHotkey;
 extern KeyState oPrevFrameHotkey;
 extern KeyState oToggleHitboxesHotkey;
@@ -1366,11 +1372,12 @@ extern KeyState oIncrementRNGHotkey;
 extern KeyState oDecrementRNGHotkey;
 
 const std::vector<int*> HK_P1_Settings = {
-	&nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nPAGE
+	&nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nHOTKEYS, &nPAGE
 };
 
 enum class eHK_PAGE1 {
 	FREEZE,
+	ADVANCE_FRAME,
 	NEXT_FRAME,
 	PREV_FRAME,
 	TOGGLE_HITBOXES,
