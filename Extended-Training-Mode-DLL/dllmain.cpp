@@ -100,6 +100,8 @@ bool showFrameScrubber = false;
 
 bool initLoadChars = false;
 
+Point customCameraMouseTracker;
+
 struct TrueComboDamageData {
 	int startingHealth = 11400;
 	int damage = 0;
@@ -2987,6 +2989,22 @@ void frameDoneCallback()
 			SetSeed(nTRUE_SEED);
 		if (nCUSTOM_RNG == RNG_RN)
 			SetRN(nTRUE_SEED);
+	}
+
+	if (freezeCamera)
+	{
+		if (lClick) {
+			customCameraMouseTracker = mousePos;
+		}
+		else if (lHeld) {
+			customCameraX += (customCameraMouseTracker.x - mousePos.x) * 128;
+			customCameraY += (customCameraMouseTracker.y - mousePos.y) * 128;
+			customCameraMouseTracker = mousePos;
+		}
+		*(byte*)(adMBAABase + 0x00157d2b) = 0x1;
+		*(float*)(adMBAABase + 0x0014eb70) = customCameraZoom;
+		*(int*)(adMBAABase + 0x00155124) = customCameraX;
+		*(int*)(adMBAABase + 0x00155128) = customCameraY;
 	}
 
 	//some janky linking of the extended input display options to the vanilla one

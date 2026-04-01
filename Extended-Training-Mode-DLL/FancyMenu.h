@@ -98,5 +98,10 @@ extern bool reloadCheckFile;
 
 extern int dummyTechDelay;
 
+extern bool freezeCamera;
+extern float customCameraZoom;
+extern int customCameraX;
+extern int customCameraY;
+
 void drawFancyMenu();
 

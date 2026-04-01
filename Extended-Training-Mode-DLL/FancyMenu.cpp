@@ -54,6 +54,12 @@ bool reloadCheckFile = false;
 
 int dummyTechDelay = 0;
 
+bool freezeCamera = false;
+float customCameraZoom = 1.0;
+int customCameraX = 0;
+int customCameraY = 0;
+int customCameraCoordInterval = 1;
+
 template <typename T>
 struct always_false : std::false_type { };
 
@@ -1068,6 +1074,82 @@ void initReloadSubmenu() {
 
 }
 
+void initCameraSubmenu() {
+
+	Menu camera("Camera");
+
+	camera.add<int>("Custom Camera",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			freezeCamera = opt != 0;
+		},
+		defaultOnOffNameFunc,
+		L"",
+		0
+	);
+
+	camera.add<float*>("Custom Zoom",
+		[](int inc, float*& opt) {
+			*opt += (inc * 0.01f);
+			*opt = CLAMP(*opt, 0.0f, 1.0f);
+		},
+		pointerSliderNameFunc,
+		L"",
+		&customCameraZoom
+	);
+
+	camera.add<int*>("Custom X",
+		[](int inc, int*& opt) {
+			*opt += inc * customCameraCoordInterval;
+			*opt = CLAMP(*opt, -65536, 65536);
+		},
+		pointerIntSliderNameFunc,
+		L"",
+		&customCameraX
+	);
+
+	camera.add<int*>("Custom Y",
+		[](int inc, int*& opt) {
+			*opt += inc * customCameraCoordInterval;
+			*opt = CLAMP(*opt, -65536, 65536);
+		},
+		pointerIntSliderNameFunc,
+		L"",
+		&customCameraY
+	);
+
+	camera.add<int*>(" > Interval",
+		[](int inc, int*& opt) {
+			if (inc > 0) {
+				*opt *= 10;
+			}
+			else {
+				*opt /= 10;
+			}
+			*opt = CLAMP(*opt, 1, 10000);
+		},
+		pointerIntSliderNameFunc,
+		L"",
+		&customCameraCoordInterval
+	);
+
+	camera.add<int>("Set to current",
+		[](int inc, int& opt) {
+			customCameraZoom = *(float*)(adMBAABase + 0x0014eb70);
+			customCameraX = *(int*)(adMBAABase + 0x00155124);
+			customCameraY = *(int*)(adMBAABase + 0x00155128);
+		},
+		buttonNameFunc,
+		L"",
+		0
+	);
+
+	baseMenu.add(camera);
+
+}
+
 void initMenu() {
 
 	initUISubmenu();
@@ -1081,6 +1163,8 @@ void initMenu() {
 	initDebugSubmenu();
 
 	initReloadSubmenu();
+
+	initCameraSubmenu();
 
 	baseMenu.unfolded = true;
 
