@@ -56,9 +56,14 @@ int dummyTechDelay = 0;
 
 bool freezeCamera = false;
 float customCameraZoom = 1.0;
+int customCameraZoomInterval = 1;
 int customCameraX = 0;
 int customCameraY = 0;
 int customCameraCoordInterval = 1;
+
+bool compactView = false;
+int bgAlpha = 0x00;
+float menuFontSize = 10.0f;
 
 template <typename T>
 struct always_false : std::false_type { };
@@ -196,9 +201,18 @@ void Menu<T>::draw(Point& p) {
 	bool inside = false;
 	DWORD col = 0xFFFFFFFF;
 
-	if (items.size() == 0) {
+	int subUnfolded = -1;
+	for (int i = 0; i < items.size(); i++) {
+		if (std::visit([](auto& m) -> bool { return m.unfolded; }, items[i])) subUnfolded = i;
+	}
 
-		bounds = TextDraw(p, 10, 0xFFFFFFFF, "%s %s", name.c_str(), nameFunc(optionState).c_str());
+	if (subUnfolded > -1 && compactView) {
+		p -= Point(10.0f, 0.0f);
+		std::visit([&p](auto& m) { m.draw(p); }, items[subUnfolded]);
+	}
+	else if (items.size() == 0) {
+
+		bounds = TextDraw(p, menuFontSize, 0xFFFFFFFF, "%s %s", name.c_str(), nameFunc(optionState).c_str());
 		inside = bounds.isInside(mousePos);
 
 		if (lClick && inside) {
@@ -222,12 +236,12 @@ void Menu<T>::draw(Point& p) {
 		}
 
 	} else {
-		bounds = TextDraw(p, 10, 0xFFFFFFFF, "%s", name.c_str());
+		bounds = TextDraw(p, menuFontSize, 0xFFFFFFFF, "%s", name.c_str());
 		inside = bounds.isInside(mousePos);
 
 		if (unfolded) {
 			for (int i = 0; i < items.size(); i++) {
-				p += Point(0.0f, 10.0f);
+				p += Point(0.0f, menuFontSize);
 				//items[i].draw(p);
 				std::visit([&p](auto& m) { m.draw(p); }, items[i]);
 			}
@@ -244,7 +258,8 @@ void Menu<T>::draw(Point& p) {
 	}
 
 	//log("%s %f %f %f %f", name.c_str(), bounds.x1, bounds.y1, bounds.x2, bounds.y2);
-
+	if (subUnfolded > -1 && compactView) return;
+	if (bgAlpha > 0) RectDraw(bounds, bgAlpha << 24);
 	BorderDraw(bounds, col);
 }
 
@@ -414,7 +429,7 @@ void initUISubmenu() {
 			enableCursor = opt;
 		},
 		defaultOnOffNameFunc,
-		L"",
+		sDISPLAY_CURSOR,
 		true
 	);
 
@@ -1092,12 +1107,31 @@ void initCameraSubmenu() {
 
 	camera.add<float*>("Custom Zoom",
 		[](int inc, float*& opt) {
-			*opt += (inc * 0.01f);
-			*opt = CLAMP(*opt, 0.0f, 1.0f);
+			*opt += (inc * 0.01f * customCameraZoomInterval);
+			*opt = CLAMP(*opt, 0.0f, 10.0f);
 		},
 		pointerSliderNameFunc,
 		L"",
 		&customCameraZoom
+	);
+
+	camera.add<int*>(" > Interval",
+		[](int inc, int*& opt) {
+			if (inc > 0) {
+				*opt *= 10;
+			}
+			else {
+				*opt /= 10;
+			}
+			*opt = CLAMP(*opt, 1, 100);
+		},
+		[](int* opt) -> std::string {
+			static char buffer[256];
+			snprintf(buffer, 256, "%.02f", (float)*opt / 100.0f);
+			return std::string(buffer);
+		},
+		L"",
+		&customCameraZoomInterval
 	);
 
 	camera.add<int*>("Custom X",
@@ -1146,7 +1180,54 @@ void initCameraSubmenu() {
 		0
 	);
 
+	camera.add<int>("Try Click and Drag!",
+		[](int inc, int& opt) {},
+		buttonNameFunc,
+		L"",
+		0
+	);
+
 	baseMenu.add(camera);
+
+}
+
+void initViewSubmenu() {
+
+	Menu view("View");
+
+	view.add<float*>("Font Size",
+		[](int inc, float*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 1.0f, 30.0f);
+		},
+		pointerSliderNameFunc,
+		sDEBUG_MENU_FONT_SIZE,
+		&menuFontSize
+	);
+
+	view.add<int*>("BG Alpha",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0x00, 0xFF);
+		},
+		pointerIntSliderNameFunc,
+		sDEBUG_MENU_BG_ALPHA,
+		&bgAlpha
+	);
+
+	view.add<int>("Compact View",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			compactView = opt != 0;
+		},
+		defaultOnOffNameFunc,
+		sDEBUG_MENU_COMPACT_VIEW,
+		0
+	);
+
+	baseMenu.add(view);
 
 }
 
@@ -1165,6 +1246,8 @@ void initMenu() {
 	initReloadSubmenu();
 
 	initCameraSubmenu();
+
+	initViewSubmenu();
 
 	baseMenu.unfolded = true;
 

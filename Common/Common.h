@@ -548,6 +548,11 @@ const REGKEY sFRAME_BAR_W = L"FrameBarW";
 const REGKEY sFRAME_BAR_H = L"FrameBarH";
 const REGKEY sFRAME_BAR_NUMCELLS = L"FrameBarNumCells";
 
+const REGKEY sDISPLAY_CURSOR = L"DisplayCursor";
+const REGKEY sDEBUG_MENU_FONT_SIZE = L"DebugMenuFontSize";
+const REGKEY sDEBUG_MENU_BG_ALPHA = L"DebugMenuBGAlpha";
+const REGKEY sDEBUG_MENU_COMPACT_VIEW = L"DebugMenuCompactView";
+
 #define VK_KEY_UNSET 0x0;
 
 #define VK_KEY_0 0x30

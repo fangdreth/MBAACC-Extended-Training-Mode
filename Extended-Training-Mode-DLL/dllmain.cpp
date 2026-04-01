@@ -222,6 +222,8 @@ void initRegistryValues()
 	ReadFromRegistry(sFRAME_BAR_W, &frameBar.w);
 	ReadFromRegistry(sFRAME_BAR_H, &frameBar.h);
 	ReadFromRegistry(sFRAME_BAR_NUMCELLS, &frameBar.numCells);
+
+	ReadFromRegistry(sDISPLAY_CURSOR, &enableCursor);
 }
 
 void initSharedValues()
@@ -2997,8 +2999,8 @@ void frameDoneCallback()
 			customCameraMouseTracker = mousePos;
 		}
 		else if (lHeld) {
-			customCameraX += (customCameraMouseTracker.x - mousePos.x) * 128;
-			customCameraY += (customCameraMouseTracker.y - mousePos.y) * 128;
+			customCameraX += (customCameraMouseTracker.x - mousePos.x) * 128 / customCameraZoom;
+			customCameraY += (customCameraMouseTracker.y - mousePos.y) * 128 / customCameraZoom;
 			customCameraMouseTracker = mousePos;
 		}
 		*(byte*)(adMBAABase + 0x00157d2b) = 0x1;
