@@ -489,7 +489,7 @@ typedef struct ActorData {
 	WORD onBlockComboCount;
 	WORD guardQualityStop;
 	float quardQuality;
-	WORD exMoveMeterPenaltyTimer;
+	WORD exGuardMeterPenaltyTimer;
 	UNUSED(2);
 	DWORD magicCircuit;
 	DWORD heatTimeLeft;
@@ -739,7 +739,7 @@ typedef struct ComboCalcData {
 	short isInvalid;
 	short field_0xe;
 	short proration;
-	short field_0x12;
+	short otgMeterMult;
 	byte drawComboData;
 	byte field_0x15;
 	short timer1;

@@ -103,5 +103,7 @@ extern float customCameraZoom;
 extern int customCameraX;
 extern int customCameraY;
 
+extern bool compactView;
+
 void drawFancyMenu();
 

@@ -224,6 +224,7 @@ void initRegistryValues()
 	ReadFromRegistry(sFRAME_BAR_NUMCELLS, &frameBar.numCells);
 
 	ReadFromRegistry(sDISPLAY_CURSOR, &enableCursor);
+	ReadFromRegistry(sDEBUG_MENU_COMPACT_VIEW, &compactView);
 }
 
 void initSharedValues()
@@ -1725,6 +1726,50 @@ void drawStats()
 				}
 			}
 		}
+	}
+
+	//meter multipliers
+	if (shouldDrawMeter) {
+		nResetOffset = 0;
+		if (fScroll > 0)
+			nResetOffset = 48.0f * fScroll;
+
+		int exGuardMultTimer = pActiveP1->subObj.exGuardMeterPenaltyTimer;
+		float otgMeterMult = playerAuxDataArr[0].comboCalcData[playerAuxDataArr[0].comboCalcIndex].otgMeterMult / 100.0f;
+		int meterMultTimer = pActiveP1->subObj.meterMultTimer;
+		float y = 464.0f + nResetOffset;
+		if (exGuardMultTimer > 0) {
+			TextDraw(240, y, 10, 0xFFFFFFFF, "x0.10");
+			RectDraw(240, y + 11, 38.0f * exGuardMultTimer / 120.0f, 2, 0xFF20A020);
+		}
+		y -= 12.0f;
+		if (otgMeterMult > 0 && pActiveP2->subObj.hitstunTimeRemaining != 0) {
+			TextDraw(240, y, 10, 0xFFFFFFFF, "x%0.2f", otgMeterMult);
+		}
+		y -= 12.0f;
+		if (meterMultTimer > 0) {
+			TextDraw(240, y, 10, 0xFFFFFFFF, "x%0.2f", pActiveP1->subObj.meterGainMultiplier / 255.0f);
+			RectDraw(240, y + 11, 38.0f * (float)meterMultTimer / pActiveP1->subObj.meterMultTimerTotal, 2, 0xFF20A020);
+		}
+		
+		exGuardMultTimer = pActiveP2->subObj.exGuardMeterPenaltyTimer;
+		otgMeterMult = playerAuxDataArr[1].comboCalcData[playerAuxDataArr[1].comboCalcIndex].otgMeterMult / 100.0f;
+		meterMultTimer = pActiveP2->subObj.meterMultTimer;
+		y = 464.0f + nResetOffset;
+		if (exGuardMultTimer > 0) {
+			TextDraw(362, y, 10, 0xFFFFFFFF, "x0.10");
+			RectDraw(362, y + 11, 38.0f * exGuardMultTimer / 120.0f, 2, 0xFF20A020);
+		}
+		y -= 12.0f;
+		if (otgMeterMult > 0 && pActiveP1->subObj.hitstunTimeRemaining != 0) {
+			TextDraw(362, y, 10, 0xFFFFFFFF, "x%0.2f", otgMeterMult);
+		}
+		y -= 12.0f;
+		if (meterMultTimer > 0) {
+			TextDraw(362, y, 10, 0xFFFFFFFF, "x%0.2f", pActiveP2->subObj.meterGainMultiplier / 255.0f);
+			RectDraw(362, y + 11, 38.0f * (float)meterMultTimer / pActiveP2->subObj.meterMultTimerTotal, 2, 0xFF20A020);
+		}
+		
 	}
 }
 
