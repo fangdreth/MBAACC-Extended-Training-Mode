@@ -80,6 +80,7 @@ int showDebugMenu = 0;
 int showReplayMenu = 0;
 bool bFreeze = false;
 bool bSlow = false;
+int nInputHeldFrameAdvanceCounter = 0;
 bool bFrameDataDisplay = false;
 bool bHitboxesDisplay = false;
 bool bHighlightsOn = true;
@@ -3054,6 +3055,15 @@ void frameDoneCallback()
 		*(int*)(adMBAABase + 0x00155128) = customCameraY;
 	}
 
+	int inputsPt1 = *(int*)(adMBAABase + 0x00371398);
+	int inputsPt2 = *(int*)(adMBAABase + 0x0037139C);
+	if (inputsPt1 != 0 || inputsPt2 != 0) {
+		nInputHeldFrameAdvanceCounter++;
+	}
+	else {
+		nInputHeldFrameAdvanceCounter = 0;
+	}
+
 	//some janky linking of the extended input display options to the vanilla one
 	bool nInputDisplaySettings = nP1_INPUT_DISPLAY || nP2_INPUT_DISPLAY;
 	if (nInputDisplaySettings != nLastCustomInputDisplay) {
@@ -3465,10 +3475,16 @@ void newPauseCallback2()
 		oAdvanceFrameHotkey.nHeldKeyCounter++;
 	else
 		oAdvanceFrameHotkey.nHeldKeyCounter = 0;
-	if (_naked_newPauseCallback2_IsPaused && (oAdvanceFrameHotkey.keyDown() || oAdvanceFrameHotkey.nHeldKeyCounter >= 20 || (bSlow && nFrameNumber % 4 >= nGAME_SPEED)))
+
+	if (_naked_newPauseCallback2_IsPaused &&
+		(oAdvanceFrameHotkey.keyDown() ||
+		oAdvanceFrameHotkey.nHeldKeyCounter >= 20 ||
+		(bSlow && nFrameNumber % 4 >= nGAME_SPEED)) ||
+		nInputHeldFrameAdvanceCounter >= 20)
 	{
 		needPause = true;
 		_naked_newPauseCallback2_IsPaused = false;
+		nInputHeldFrameAdvanceCounter = 0;
 	}
 	else if (needPause == 1)
 	{
