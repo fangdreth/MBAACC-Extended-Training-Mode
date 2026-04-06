@@ -636,11 +636,11 @@ typedef struct ActorData {
 	BYTE facingLeft;
 	BYTE isOpponentToLeft;
 	BYTE needToCrossupInputs;
-	UNUSED(0x1);
-	BYTE delayedStance;
+	BYTE justShielded;
+	BYTE justEnteredNewPattern;
 	BYTE doLanding;
 	BYTE justLanded;
-	UNUSED(0x1);
+	BYTE delayedStance;
 	PatternData* patternDataPtr;
 	AnimationData* animationDataPtr;
 	AttackData* attackDataPtr;

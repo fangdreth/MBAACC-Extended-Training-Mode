@@ -33,6 +33,8 @@ char pcTextPattern[256];
 int nDrawTextTimer = 0;
 int nClearSaveTimer = 0;
 
+int nAdjustNumbersForFreeze = 0;
+
 FrameBarPlayerData FB_P1{ 0, (PlayerData*)(adMBAABase + adP1Base), adMBAABase + adP1Inaction };
 FrameBarPlayerData FB_P2{ 1, (PlayerData*)(adMBAABase + adP2Base), adMBAABase + adP2Inaction };
 FrameBarPlayerData FB_P3{ 2, (PlayerData*)(adMBAABase + adP3Base), adMBAABase + adP1Inaction };
@@ -131,10 +133,14 @@ void FrameBar::draw()
 		nBarDrawCounter++;
 	}
 	static char buffer[256];
-	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", FB_Main1->nFirstActive % 1000, FB_Main1->nInactionableMemory % 1000, nPlayerAdvantage % 1000);
+	int total = FB_Main1->nInactionableMemory % 1000;
+	if(nAdjustNumbersForFreeze) total = FB_Main1->nInactionCounterMemory % 1000;
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", FB_Main1->nFirstActive % 1000, total, nPlayerAdvantage % 1000);
 	TextDraw(l, t - 12, 10, 0xFFFFFFFF, buffer);
 
-	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", FB_Main2->nFirstActive % 1000, FB_Main2->nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
+	total = FB_Main2->nInactionableMemory % 1000;
+	if (nAdjustNumbersForFreeze) total = FB_Main2->nInactionCounterMemory % 1000;
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", FB_Main2->nFirstActive % 1000, total, -nPlayerAdvantage % 1000);
 	TextDraw(l, t + h + 3, 10, 0xFFFFFFFF, buffer);
 }
 
@@ -275,7 +281,7 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 	if (*(int*)(P.adInaction) != 0) //Doing something with limited actionability
 	{
 		dwMainColor = FB_INACTIONABLE;
-		nNumber = *(int*)P.adInaction;
+		nNumber = -2;//*(int*)P.adInaction;
 		if (P.PlayerData->subObj.pattern >= 35 && P.PlayerData->subObj.pattern <= 37) //Jump Startup
 		{
 			dwMainColor = FB_JUMP;
@@ -321,8 +327,9 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 	else //Fully actionable
 	{
 		dwMainColor = FB_ACTIONABLE;
+		P.nInactionCounter = 0;
 
-		if (P.nLastInactionableFrames != 0) //Neutral frame
+		if (P.nLastInactionableFrames != 0 || (P.PlayerData->subObj.delayedStance == 1 && P.PlayerData->subObj.animationDataPtr->stateData->stance != 1)) //Neutral frame
 		{
 			dwMainColor = FB_NEUTRAL;
 		}
@@ -440,6 +447,12 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 		}
 	}
 
+	if (nNumber == -2)
+	{
+		if (nAdjustNumbersForFreeze == 0) nNumber = *(int*)P.adInaction;
+		else nNumber = P.nInactionCounter;
+	}
+
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].mainColor = dwMainColor;
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].subColor = dwSubColor;
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].subActiveColor = dwSubActiveColor;
@@ -492,11 +505,23 @@ void IncrementActive(FrameBarPlayerData& P)
 
 void IncrementFirstActive(FrameBarPlayerData& P1_, FrameBarPlayerData& P2_)
 {
-	if (P1_.PlayerData->subObj.hitstop == 0 &&
-		P1_.PlayerData->subObj.heatTimeCounter != P1_.nLastFrameCount &&
-		P2_.PlayerData->subObj.heatTimeCounter != P2_.nLastFrameCount)
-	{
-		P1_.nFirstActiveCounter += *(int*)(adMBAABase + adFrameCount) - nLastFrameCount;
+	int globalFreeze = *(int*)(adMBAABase + adGlobalFreeze);
+	bool isAnyPlayerFreeze = false;
+	if (*(int*)(adMBAABase + 0x001595bc) == 0) {
+		for (int i = 0; i < 4; i++) {
+			if (*(int*)(adMBAABase + 0x00158908 + 0x30c * i) != 0) isAnyPlayerFreeze = true;
+		}
+	}
+	short slowTimer = *(short*)(adMBAABase + 0x0015d208);
+	int timer = *(int*)(adMBAABase + 0x00162a40);
+	if (globalFreeze == 0 &&
+		isAnyPlayerFreeze == false &&
+		(slowTimer == 0 ||
+		(timer == (timer / 3) * 3))) {
+		if (P1_.PlayerData->subObj.hitstop == 0 && P1_.PlayerData->subObj.animationDataPtr->stateData->canMove == false) {
+			P1_.nInactionCounter += 1;
+			P1_.nFirstActiveCounter += 1;
+		}
 	}
 }
 
@@ -505,6 +530,7 @@ void HandleInactive(FrameBarPlayerData& P)
 	if (*(int*)(P.adInaction) != 0)
 	{
 		P.nInactionableMemory = *(int*)(P.adInaction);
+		P.nInactionCounterMemory = P.nInactionCounter;
 	}
 }
 

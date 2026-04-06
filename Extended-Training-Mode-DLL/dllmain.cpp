@@ -2814,7 +2814,7 @@ void frameDoneCallback()
 	if ((safeWrite() && !isPaused() && nIN_GAME_FRAME_DISPLAY) || (isPaused() && ((bVIEW_SCREEN && nIN_GAME_FRAME_DISPLAY) || bShowFrameBarPreview))) doDraw = true;
 	drawFrameBar(doDraw);
 
-	if (safeWrite()) UpdateFrameBar();
+	if (safeWrite() && !isPaused()) UpdateFrameBar();
 
 	if (bCOLOR_GUIDE)
 	{

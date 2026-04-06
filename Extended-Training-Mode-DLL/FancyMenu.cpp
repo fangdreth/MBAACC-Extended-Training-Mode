@@ -327,78 +327,6 @@ void initUISubmenu() {
 		sP2_INPUT_DISPLAY
 	);
 
-	ui.add<int>("Show Framebar",
-		[](int inc, int& opt) {
-			opt += inc;
-			opt &= 0b1;
-
-			nIN_GAME_FRAME_DISPLAY = opt;
-		},
-		defaultOnOffNameFunc,
-		sFRAME_DISPLAY
-	);
-
-	ui.add<float*>("Framebar X",
-		[](int inc, float*& opt) {
-			*opt += inc;
-			*opt = CLAMP(*opt, 0.0f, 640.0f);
-		},
-		pointerSliderNameFunc,
-		sFRAME_BAR_X,
-		&(frameBar.x)
-	);
-
-	ui.add<float*>("Framebar Y",
-		[](float inc, float*& opt) {
-			*opt += inc;
-			*opt = CLAMP(*opt, 0.0f, 480.0f);
-		},
-		pointerSliderNameFunc,
-		sFRAME_BAR_Y,
-		&frameBar.y
-	);
-
-	ui.add<float*>("Framebar Width",
-		[](float inc, float*& opt) {
-			*opt += inc;
-			*opt = CLAMP(*opt, 1.0f, 640.0f);
-		},
-		pointerSliderNameFunc,
-		sFRAME_BAR_W,
-		&frameBar.w
-	);
-
-	ui.add<float*>("Framebar Height",
-		[](float inc, float*& opt) {
-			*opt += inc;
-			*opt = CLAMP(*opt, 1.0f, 480.0f);
-		},
-		pointerSliderNameFunc,
-		sFRAME_BAR_H,
-		&frameBar.h
-	);
-
-	ui.add<int*>("Framebar Number of Frames Displayed",
-		[](int inc, int*& opt) {
-			*opt += inc;
-			*opt = CLAMP(*opt, 1, 400);
-		},
-		pointerIntSliderNameFunc,
-		sFRAME_BAR_NUMCELLS,
-		&frameBar.numCells
-	);
-
-	ui.add<int>("Default Framebar",
-		[](int inc, int& opt) {
-			frameBar.x = 320.0f;
-			frameBar.y = 410.0f;
-			frameBar.w = 600.0f;
-			frameBar.h = 26.0f;
-			frameBar.numCells = 75;
-		},
-		buttonNameFunc
-	);
-
 	ui.add<int>("Show Stats",
 		[](int inc, int& opt) {
 			opt += inc;
@@ -431,19 +359,6 @@ void initUISubmenu() {
 		defaultOnOffNameFunc,
 		sDISPLAY_CURSOR,
 		true
-	);
-
-	ui.add<int*>("Framebar Display Numbers",
-		[](int inc, int*& opt) {
-			*opt += inc;
-			*opt &= 0b1;
-		},
-		[](int* opt) -> std::string {
-			if (*opt == 0) return "OFF";
-			return "ON";
-		},
-		L"",
-		&displayNumbers
 	);
 
 	baseMenu.add(ui);
@@ -503,6 +418,114 @@ void initHitboxSubmenu() {
 	std::get<Menu<float>>(hitboxes.items[hitboxes.items.size() - 1]).optionState = 0.20f;
 
 	baseMenu.add(hitboxes);
+
+}
+
+void initFramebarSubmenu() {
+
+	// -----
+
+	Menu Framebar("Framebar");
+
+	Framebar.add<int>("Show Framebar",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			nIN_GAME_FRAME_DISPLAY = opt;
+		},
+		defaultOnOffNameFunc,
+		sFRAME_DISPLAY
+	);
+
+	Framebar.add<float*>("X-Position",
+		[](int inc, float*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0.0f, 640.0f);
+		},
+		pointerSliderNameFunc,
+		sFRAME_BAR_X,
+		&(frameBar.x)
+	);
+
+	Framebar.add<float*>("Y-Position",
+		[](float inc, float*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0.0f, 480.0f);
+		},
+		pointerSliderNameFunc,
+		sFRAME_BAR_Y,
+		&frameBar.y
+	);
+
+	Framebar.add<float*>("Width",
+		[](float inc, float*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 1.0f, 640.0f);
+		},
+		pointerSliderNameFunc,
+		sFRAME_BAR_W,
+		&frameBar.w
+	);
+
+	Framebar.add<float*>("Height",
+		[](float inc, float*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 1.0f, 480.0f);
+		},
+		pointerSliderNameFunc,
+		sFRAME_BAR_H,
+		&frameBar.h
+	);
+
+	Framebar.add<int*>("Number of Frames Displayed",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 1, 400);
+		},
+		pointerIntSliderNameFunc,
+		sFRAME_BAR_NUMCELLS,
+		&frameBar.numCells
+	);
+
+	Framebar.add<int*>("Display Numbers",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt &= 0b1;
+		},
+		[](int* opt) -> std::string {
+			if (*opt == 0) return "OFF";
+			return "ON";
+		},
+		L"",
+		&displayNumbers
+	);
+
+	Framebar.add<int*>("Adjust Numbers for Type 2 Freeze",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt &= 0b1;
+		},
+		[](int* opt) -> std::string {
+			if (*opt == 0) return "OFF";
+			return "ON";
+		},
+		L"",
+		&nAdjustNumbersForFreeze
+	);
+
+	Framebar.add<int>("Default Settings",
+		[](int inc, int& opt) {
+			frameBar.x = 320.0f;
+			frameBar.y = 410.0f;
+			frameBar.w = 600.0f;
+			frameBar.h = 26.0f;
+			frameBar.numCells = 75;
+		},
+		buttonNameFunc
+	);
+
+	baseMenu.add(Framebar);
 
 }
 
@@ -1236,6 +1259,8 @@ void initMenu() {
 	initUISubmenu();
 
 	initHitboxSubmenu();
+
+	initFramebarSubmenu();
 
 	initMiscSubmenu();
 

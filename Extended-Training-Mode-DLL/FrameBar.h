@@ -40,6 +40,8 @@ extern char pcTextPattern[256];
 extern int nDrawTextTimer;
 extern int nClearSaveTimer;
 
+extern int nAdjustNumbersForFreeze;
+
 class FrameBar
 {
 public:
@@ -86,6 +88,8 @@ struct FrameBarPlayerData
 
 	int nActiveCounter = 0;
 	int nInactionableMemory = 0;
+	int nInactionCounter = 0;
+	int nInactionCounterMemory = 0;
 	int nAdvantageCounter = 0;
 	int nFirstActiveCounter = 0;
 	DWORD nLastFrameCount = 0;
