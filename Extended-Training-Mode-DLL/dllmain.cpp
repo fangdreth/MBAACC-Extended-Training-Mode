@@ -3429,9 +3429,6 @@ __declspec(naked) void _naked_CharInputCallback() {
 int needPause = false;
 void newPauseCallback2()
 {
-
-	HandleExtendedTrainingEffects();
-
 	if (oFreezeHotkey.keyDown()) {
 		bFreeze = !bFreeze;
 		if (bFreeze)
@@ -3510,6 +3507,9 @@ void newPauseCallback2()
 		}
 		
 	}
+
+	if (!_naked_newPauseCallback2_IsPaused)
+		HandleExtendedTrainingEffects();
 
 }
 
