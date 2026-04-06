@@ -33,21 +33,48 @@ char pcTextPattern[256];
 int nDrawTextTimer = 0;
 int nClearSaveTimer = 0;
 
-Player P1{ 0, (PlayerData*)(adMBAABase + adP1Base), adMBAABase + adP1Inaction };
-Player P2{ 1, (PlayerData*)(adMBAABase + adP2Base), adMBAABase + adP2Inaction };
-Player P3{ 2, (PlayerData*)(adMBAABase + adP3Base), adMBAABase + adP1Inaction };
-Player P4{ 3, (PlayerData*)(adMBAABase + adP4Base), adMBAABase + adP2Inaction };
+FrameBarPlayerData FB_P1{ 0, (PlayerData*)(adMBAABase + adP1Base), adMBAABase + adP1Inaction };
+FrameBarPlayerData FB_P2{ 1, (PlayerData*)(adMBAABase + adP2Base), adMBAABase + adP2Inaction };
+FrameBarPlayerData FB_P3{ 2, (PlayerData*)(adMBAABase + adP3Base), adMBAABase + adP1Inaction };
+FrameBarPlayerData FB_P4{ 3, (PlayerData*)(adMBAABase + adP4Base), adMBAABase + adP2Inaction };
 
-Player* paPlayerArray[4] = { &P1, &P2, &P3, &P4 };
+FrameBarPlayerData* FB_PlayerArray[4] = { &FB_P1, &FB_P2, &FB_P3, &FB_P4 };
 
-Player* Main1 = &P1;
-Player* Main2 = &P2;
-Player* Assist1 = &P3;
-Player* Assist2 = &P4;
+FrameBarPlayerData* FB_Main1 = &FB_P1;
+FrameBarPlayerData* FB_Main2 = &FB_P2;
+FrameBarPlayerData* FB_Assist1 = &FB_P3;
+FrameBarPlayerData* FB_Assist2 = &FB_P4;
 
-//Point frameBarDragPoint(20.0f, 410.0f);
-//DragInfo frameBarDrag = DragInfo(&frameBarDragPoint.x, &frameBarDragPoint.y);
-//DragInfo frameBarDragInfo(&fFrameBarX, &fFrameBarY);
+const DWORD METER_COLOR_MAP[3] = { 0xFFC80000, 0xFFC8C800, 0xFF00C800 };
+const DWORD HEAT_COLOR = 0xFF5A5AE6;
+const DWORD HEATFONT_COLOR = 0xFFFA5300;
+const DWORD MAX_COLOR = 0xFFFAA000;
+const DWORD MAXFONT_COLOR = 0xFF2796FD;
+const DWORD BLOODHEAT_COLOR = 0xFFB4B4B4;
+const DWORD BLOODHEATFONT_COLOR = 0xFF8C0000;
+const DWORD UNLIMITED_COLOR = 0xFF3296FF;
+const DWORD UNLIMITEDFONT_COLOR = 0xFFFEABFF;
+const DWORD CIRCUITBREAK_COLOR = 0xFFBE64C8;
+const DWORD CIRCUITBREAKFONT_COLOR = 0xFFB06ED7;
+
+const DWORD FB_INACTIONABLE = 0xFF41C800;
+const DWORD FB_JUMP = 0xFFF1E084;
+const DWORD FB_HITSTUN = 0xFF8C8C8C;
+const DWORD FB_BLOCKSTUN = 0xFFB4B4B4;
+const DWORD FB_ACTIVE = 0xFFFF0000;
+const DWORD FB_ACTIONABLE = 0xFF202020;
+const DWORD FB_ADVANTAGE = 0xFF101010;
+const DWORD FB_NEUTRAL = 0xFF205A00;
+const DWORD FB_FREEZE = 0xFF3C3C3C;
+const DWORD FB_FREEZE_ACTIVE = 0xFFFF8080;
+const DWORD FB_THROWN = 0xFF6E6E6E;
+const DWORD FB_HITSTOP = 0xFF3C5080;
+const DWORD FB_SHIELD = 0xFF91C2FF;
+const DWORD FB_THROW_ACTIVE = 0xFFC00080;
+const DWORD FB_CLASH = 0xFFE1B800;
+const DWORD FB_INVULN = 0xFFFFFFFF;
+const DWORD FB_ASSIST_ACTIVE = 0xFFFF8000;
+const DWORD FB_COUNTER = 0xFFC485EA;
 
 FrameBar::FrameBar(float x_, float y_, float w_, float h_, int numCells_)
 {
@@ -98,16 +125,16 @@ void FrameBar::draw()
 
 		float cellX = l + w / (float)numCells * (float)nBarDrawCounter;
 		float cellW = w / (float)numCells;
-		Main1->cells[j].draw(cellX, t + h * 0.06, cellW, h * 0.38);
-		Main2->cells[j].draw(cellX, t + h * 0.56, cellW, h * 0.38);
+		FB_Main1->cells[j].draw(cellX, t + h * 0.06, cellW, h * 0.38);
+		FB_Main2->cells[j].draw(cellX, t + h * 0.56, cellW, h * 0.38);
 
 		nBarDrawCounter++;
 	}
 	static char buffer[256];
-	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", Main1->nFirstActive % 1000, Main1->nInactionableMemory % 1000, nPlayerAdvantage % 1000);
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", FB_Main1->nFirstActive % 1000, FB_Main1->nInactionableMemory % 1000, nPlayerAdvantage % 1000);
 	TextDraw(l, t - 12, 10, 0xFFFFFFFF, buffer);
 
-	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", Main2->nFirstActive % 1000, Main2->nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", FB_Main2->nFirstActive % 1000, FB_Main2->nInactionableMemory % 1000, -nPlayerAdvantage % 1000);
 	TextDraw(l, t + h + 3, 10, 0xFFFFFFFF, buffer);
 }
 
@@ -145,7 +172,7 @@ void FrameBarCell::reset()
 void UpdatePlayers() //Called after bar handling
 {
 	for (int i = 0; i < 4; i++) {
-		Player& P = *paPlayerArray[i];
+		FrameBarPlayerData& P = *FB_PlayerArray[i];
 		P.nLastInactionableFrames = *(int*)(P.adInaction);
 		P.nLastFrameCount = P.PlayerData->subObj.heatTimeCounter;
 		P.bLastOnRight = P.PlayerData->subObj.isOpponentToLeft;
@@ -160,14 +187,10 @@ void UpdatePlayers() //Called after bar handling
 
 void CheckProjectiles()
 {
-	P1.bLastProjectileActive = P1.bProjectileActive;
-	P1.bProjectileActive = false;
-	P2.bLastProjectileActive = P2.bProjectileActive;
-	P2.bProjectileActive = false;
-	P3.bLastProjectileActive = P3.bProjectileActive;
-	P3.bProjectileActive = false;
-	P4.bLastProjectileActive = P4.bProjectileActive;
-	P4.bProjectileActive = false;
+	for (int i = 0; i < 4; i++) {
+		FB_PlayerArray[i]->bLastProjectileActive = FB_PlayerArray[i]->bProjectileActive;
+		FB_PlayerArray[i]->bProjectileActive = false;
+	}
 	char cBlankEffectCount = 0;
 	EffectData* curFX = (EffectData*)(adMBAABase + adEffectBase);
 	for (int i = 0; i < 200; i++) //Check Projectiles for active
@@ -180,7 +203,7 @@ void CheckProjectiles()
 			if (curFX->subObj.attackDataPtr != 0 &&
 				curFX->subObj.someFlag == 0xFF)
 			{
-				Player& P = *paPlayerArray[curFX->subObj.index];
+				FrameBarPlayerData& P = *FB_PlayerArray[curFX->subObj.index];
 				P.bProjectileActive = true;
 			}
 		}
@@ -188,7 +211,7 @@ void CheckProjectiles()
 	}
 }
 
-void CalculateAdvantage(Player& P1_, Player& P2_)
+void CalculateAdvantage(FrameBarPlayerData& P1_, FrameBarPlayerData& P2_)
 {
 	if (*(int*)(P1_.adInaction) == 0 && *(int*)(P2_.adInaction) == 0)
 	{
@@ -227,7 +250,7 @@ void ResetBars()
 	nBarIntervalMax = frameBar.numCells;
 	for (int i = 0; i < 4; i++)
 	{
-		Player& P = *paPlayerArray[i];
+		FrameBarPlayerData& P = *FB_PlayerArray[i];
 		for (int j = 0; j < BAR_MEMORY_SIZE; j++)
 		{
 			P.cells[j].reset();
@@ -238,7 +261,7 @@ void ResetBars()
 	*(short*)(adMBAABase + adXS_frameScroll) = -nTRUE_SCROLL_DISPLAY;
 }
 
-void UpdateBars(Player& P, Player& Assist)
+void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 {
 	DWORD dwMainColor = 0x0;
 	DWORD dwSubColor = 0x0;
@@ -330,19 +353,7 @@ void UpdateBars(Player& P, Player& Assist)
 		}
 	}
 
-	if (*(char*)(adMBAABase + adGlobalFreeze) != 0 || //Screen is frozen
-		((*(int*)(adMBAABase + adP1Freeze) != 0 ||
-		*(int*)(adMBAABase + adP2Freeze) != 0 ||
-		*(int*)(adMBAABase + adP3Freeze) != 0 ||
-		*(int*)(adMBAABase + adP4Freeze) != 0) && *(byte*)(adMBAABase + adJustDidPlayerFreeze) == 0))
-	{
-		dwMainColor = FB_FREEZE;
-		if (P.PlayerData->subObj.attackDataPtr != 0) //Attacking
-		{
-			dwMainColor = FB_FREEZE_ACTIVE;
-		}
-	}
-	else if (P.PlayerData->subObj.throwFlag) //Being thrown
+	if (P.PlayerData->subObj.throwFlag) //Being thrown
 	{
 		dwMainColor = FB_THROWN;
 	}
@@ -371,6 +382,19 @@ void UpdateBars(Player& P, Player& Assist)
 			P.bAlreadyGotFirstActive = true;
 		}
 		dwMainColor = FB_THROW_ACTIVE;
+	}
+
+	if (*(char*)(adMBAABase + adGlobalFreeze) != 0 || //Screen is frozen
+		((*(int*)(adMBAABase + adP1Freeze) != 0 ||
+			*(int*)(adMBAABase + adP2Freeze) != 0 ||
+			*(int*)(adMBAABase + adP3Freeze) != 0 ||
+			*(int*)(adMBAABase + adP4Freeze) != 0) && *(byte*)(adMBAABase + adJustDidPlayerFreeze) == 0))
+	{
+		dwMainColor = FB_FREEZE;
+		if (dwMainColor == FB_ACTIVE) //Attacking
+		{
+			dwMainColor = FB_FREEZE_ACTIVE;
+		}
 	}
 
 	if (P.PlayerData->subObj.animationDataPtr->highestNonHitboxIndex == 12) //Clash
@@ -454,7 +478,7 @@ void UpdateBars(Player& P, Player& Assist)
 	}
 }
 
-void IncrementActive(Player& P)
+void IncrementActive(FrameBarPlayerData& P)
 {
 	if (P.PlayerData->subObj.attackDataPtr && P.PlayerData->subObj.hitstop == 0 && P.PlayerData->subObj.heatTimeCounter != P.nLastFrameCount)
 	{
@@ -466,7 +490,7 @@ void IncrementActive(Player& P)
 	}
 }
 
-void IncrementFirstActive(Player& P1_, Player& P2_)
+void IncrementFirstActive(FrameBarPlayerData& P1_, FrameBarPlayerData& P2_)
 {
 	if (P1_.PlayerData->subObj.hitstop == 0 &&
 		P1_.PlayerData->subObj.heatTimeCounter != P1_.nLastFrameCount &&
@@ -476,7 +500,7 @@ void IncrementFirstActive(Player& P1_, Player& P2_)
 	}
 }
 
-void HandleInactive(Player& P)
+void HandleInactive(FrameBarPlayerData& P)
 {
 	if (*(int*)(P.adInaction) != 0)
 	{
@@ -484,7 +508,7 @@ void HandleInactive(Player& P)
 	}
 }
 
-void BarHandling(Player& P1_, Player& P2_, Player& P1Assist, Player& P2Assist)
+void BarHandling(FrameBarPlayerData& P1_, FrameBarPlayerData& P2_, FrameBarPlayerData& P1Assist, FrameBarPlayerData& P2Assist)
 {
 	CalculateAdvantage(P1_, P2_);
 
@@ -577,32 +601,32 @@ void BarHandling(Player& P1_, Player& P2_, Player& P1Assist, Player& P2Assist)
 	}
 }
 
-void UpdateFrameBar(Player& P1_, Player& P2_, Player& P3_, Player& P4_)
+void UpdateFrameBar()
 {
 	bDisplayFreeze = nSHOW_HITSTOP_AND_FREEZE != 0;
 	bDisplayInputs = nSHOW_INPUTS != 0; //currently unused, may add input display to framebar at some point
 	nBarScrolling = nTRUE_SCROLL_DISPLAY;
 
-	Main1 = &P1_;
-	Main2 = &P2_;
-	Assist1 = &P3_;
-	Assist2 = &P4_;
-	if (P1_.PlayerData->subObj.tagFlag)
+	FB_Main1 = &FB_P1;
+	FB_Main2 = &FB_P2;
+	FB_Assist1 = &FB_P3;
+	FB_Assist2 = &FB_P4;
+	if (FB_P1.PlayerData->subObj.tagFlag)
 	{
-		Main1 = &P3_;
-		Assist1 = &P1_;
+		FB_Main1 = &FB_P3;
+		FB_Assist1 = &FB_P1;
 	}
-	if (P2_.PlayerData->subObj.tagFlag)
+	if (FB_P2.PlayerData->subObj.tagFlag)
 	{
-		Main2 = &P4_;
-		Assist2 = &P2_;
+		FB_Main2 = &FB_P4;
+		FB_Assist2 = &FB_P2;
 	}
 
 	CheckProjectiles();
 
 	if (*(int*)(adMBAABase + adTrueFrameCount) != nLastTrueFrameCount)
 	{
-		BarHandling(*Main1, *Main2, *Assist1, *Assist2);
+		BarHandling(*FB_Main1, *FB_Main2, *FB_Assist1, *FB_Assist2);
 	}
 
 	if (*(int*)(adMBAABase + adTrueFrameCount) == 1)
@@ -610,7 +634,7 @@ void UpdateFrameBar(Player& P1_, Player& P2_, Player& P3_, Player& P4_)
 		ResetBars();
 	}
 
-	nPlayerAdvantage = (Main1->nAdvantageCounter - Main2->nAdvantageCounter) % 100;
+	nPlayerAdvantage = (FB_Main1->nAdvantageCounter - FB_Main2->nAdvantageCounter) % 100;
 
 	UpdatePlayers();
 
@@ -644,4 +668,201 @@ void drawFrameBar(bool doDraw)
 		SetRegistryValue(sFRAME_BAR_NUMCELLS, frameBar.numCells);
 	}
 
+}
+
+void drawColorGuide()
+{
+	RectDraw(0, 8, 640, 50, 0xFF000000);
+
+	RectDraw(10, 10, 7, 10, FB_INACTIONABLE);
+	TextDraw(17, 10, 10, 0xFFFFFFFF, "INACTIONABLE");
+	RectDraw(120, 10, 7, 10, FB_JUMP);
+	TextDraw(127, 10, 10, 0xFFFFFFFF, "JUMP STARTUP");
+	RectDraw(230, 10, 7, 10, FB_HITSTUN);
+	TextDraw(237, 10, 10, 0xFFFFFFFF, "HITSTUN");
+	RectDraw(300, 10, 7, 10, FB_BLOCKSTUN);
+	TextDraw(307, 10, 10, 0xFFFFFFFF, "BLOCKSTUN");
+	RectDraw(390, 10, 7, 10, FB_ACTIVE);
+	TextDraw(397, 10, 10, 0xFFFFFFFF, "ACTIVE FRAMES");
+	RectDraw(500, 10, 7, 10, FB_ACTIONABLE);
+	TextDraw(507, 10, 10, 0xFFFFFFFF, "FULLY ACTIONABLE");
+	RectDraw(10, 22, 7, 10, FB_ADVANTAGE);
+	TextDraw(17, 22, 10, 0xFFFFFFFF, "FRAME ADVANTAGE");
+	RectDraw(140, 22, 7, 10, FB_NEUTRAL);
+	TextDraw(147, 22, 10, 0xFFFFFFFF, "NEUTRAL FRAME");
+	RectDraw(260, 22, 7, 10, FB_FREEZE);
+	TextDraw(267, 22, 10, 0xFFFFFFFF, "SCREEN FREEZE");
+	RectDraw(370, 22, 7, 10, FB_FREEZE_ACTIVE);
+	TextDraw(377, 22, 10, 0xFFFFFFFF, "ACTIVE DURING FREEZE");
+	RectDraw(530, 22, 7, 10, FB_THROWN);
+	TextDraw(537, 22, 10, 0xFFFFFFFF, "BEING THROWN");
+	RectDraw(10, 34, 7, 10, FB_HITSTOP);
+	TextDraw(17, 34, 10, 0xFFFFFFFF, "HITSTOP");
+	RectDraw(80, 34, 7, 10, FB_SHIELD);
+	TextDraw(87, 34, 10, 0xFFFFFFFF, "SHIELD");
+	RectDraw(140, 34, 7, 10, FB_THROW_ACTIVE);
+	TextDraw(147, 34, 10, 0xFFFFFFFF, "THROW ACTIVE FRAME");
+
+	RectDraw(10, 45, 7, 10, FB_INACTIONABLE);
+	RectDraw(14, 45, 3, 10, FB_CLASH);
+	TextDraw(17, 45, 10, 0xFFFFFFFF, "CLASH");
+	RectDraw(70, 45, 7, 10, FB_INACTIONABLE);
+	RectDraw(74, 45, 3, 10, FB_INVULN);
+	TextDraw(77, 45, 10, 0xFFFFFFFF, "INVULN");
+	RectDraw(130, 45, 7, 10, FB_INACTIONABLE);
+	RectDraw(134, 45, 3, 10, FB_COUNTER);
+	TextDraw(137, 45, 10, 0xFFFFFFFF, "COUNTER");
+	RectDraw(200, 45, 7, 10, FB_INACTIONABLE);
+	RectDraw(200, 44, 7, 2, FB_JUMP);
+	TextDraw(207, 45, 10, 0xFFFFFFFF, "AIRBORNE");
+	RectDraw(280, 45, 7, 10, FB_INACTIONABLE);
+	RectDraw(280, 54, 7, 2, FB_ACTIVE);
+	TextDraw(287, 45, 10, 0xFFFFFFFF, "ACTIVE PROJECTILE");
+	RectDraw(450, 45, 7, 10, FB_INACTIONABLE);
+	RectDraw(450, 54, 7, 2, FB_ASSIST_ACTIVE);
+	TextDraw(457, 45, 10, 0xFFFFFFFF, "ACTIVE ASSIST");
+}
+
+void drawSimpleMeter()
+{
+	float fScroll = *(float*)(adMBAABase + adTrainingResetScroll);
+	int nResetOffset = 0;
+	if (fScroll > 0)
+		nResetOffset = 320.0f * fScroll;
+
+	int Y = 19;
+
+	DWORD P1Base = adP1SubBase + (*(uint8_t*)(adMBAABase + adP1SubBase + adTagFlag) * dwPlayerStructSize * 2);
+	int nP1Meter = *(int*)(adMBAABase + P1Base + adMagicCircuit);
+	int nP1MeterTime = *(int*)(adMBAABase + P1Base + adMagicCircuitTime);
+	uint8_t nP1MeterMode = *(uint8_t*)(adMBAABase + P1Base + adMagicCircuitMode);
+	short sP1CircuitBreakTimer = *(short*)(adMBAABase + P1Base + adCircuitBreakTimer);
+	short sP1CircuitBreakTotal = *(short*)(adMBAABase + P1Base + adCircuitBreakTotal);
+	short sP1CircuitBreakFlag = *(short*)(adMBAABase + P1Base + adBreakOrPenalty);
+	uint8_t nP1Moon = *(uint8_t*)(adMBAABase + dwP1CharMoon);
+
+	DWORD P2Base = adP2SubBase + (*(uint8_t*)(adMBAABase + adP2SubBase + adTagFlag) * dwPlayerStructSize * 2);
+	int nP2Meter = *(int*)(adMBAABase + P2Base + adMagicCircuit);
+	int nP2MeterTime = *(int*)(adMBAABase + P2Base + adMagicCircuitTime);
+	uint8_t nP2MeterMode = *(uint8_t*)(adMBAABase + P2Base + adMagicCircuitMode);
+	short sP2CircuitBreakTimer = *(short*)(adMBAABase + P2Base + adCircuitBreakTimer);
+	short sP2CircuitBreakTotal = *(short*)(adMBAABase + P2Base + adCircuitBreakTotal);
+	short sP2CircuitBreakFlag = *(short*)(adMBAABase + P2Base + adBreakOrPenalty);
+	uint8_t nP2Moon = *(uint8_t*)(adMBAABase + dwP2CharMoon);
+
+	static char buffer[8];
+
+	RectDraw(60 - nResetOffset, Y, 214, 12, 0x99000000); //BG
+	switch (nP1MeterMode)
+	{
+	case 0: //Normal, out of 30000
+	{
+		float fMeterScale = nP1Moon == 2 ? 94.3396 : 141.5094;
+		DWORD dwMeterColor = METER_COLOR_MAP[nP1Meter / 10000];
+		if (nP1Moon == 2 && nP1Meter >= 15000) dwMeterColor = METER_COLOR_MAP[2];
+		RectDraw(61 - nResetOffset, Y + 1, nP1Meter / fMeterScale, 10, dwMeterColor);
+		snprintf(buffer, 8, "%3.2f", nP1Meter / 100.0);
+		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		break;
+	}
+	case 1: //HEAT, out of 550
+	{
+		RectDraw(61 - nResetOffset, Y + 1, nP1MeterTime / 2.5943, 10, HEAT_COLOR);
+		snprintf(buffer, 8, "%3i", nP1MeterTime);
+		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(61 + 212 - 4 * 7.7777 - nResetOffset, Y + 1, 10, HEATFONT_COLOR, "HEAT");
+		break;
+	}
+	case 2: //MAX out of 600
+	{
+		RectDraw(61 - nResetOffset, Y + 1, nP1MeterTime / 2.8301, 10, MAX_COLOR);
+		snprintf(buffer, 8, "%3i", nP1MeterTime);
+		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(61 + 212 - 3 * 7.7777 - nResetOffset, Y + 1, 10, MAXFONT_COLOR, "MAX");
+		break;
+	}
+	case 3: //BLOOD HEAT out of 502
+	{
+		RectDraw(61 - nResetOffset, Y + 1, nP1MeterTime / 2.3679, 10, BLOODHEAT_COLOR);
+		snprintf(buffer, 8, "%3i", nP1MeterTime);
+		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(61 + 212 - 10 * 7.7777 - nResetOffset, Y + 1, 10, BLOODHEATFONT_COLOR, "BLOOD HEAT");
+		break;
+	}
+	case 5: //UNLIMITED
+	{
+		RectDraw(61 - nResetOffset, Y + 1, 212, 10, UNLIMITED_COLOR);
+		TextDraw(61 - nResetOffset, Y + 1, 10, UNLIMITEDFONT_COLOR, "UNLIMITED");
+		break;
+	}
+	}
+
+	RectDraw(580 - 214 + nResetOffset, Y, 214, 12, 0x99000000); //BG
+	switch (nP2MeterMode)
+	{
+	case 0: //NORMAL
+	{
+		float fMeterScale = nP2Moon == 2 ? 94.3396 : 141.5094;
+		DWORD dwMeterColor = METER_COLOR_MAP[nP2Meter / 10000];
+		if (nP2Moon == 2 && nP2Meter >= 15000) dwMeterColor = METER_COLOR_MAP[2];
+		RectDraw(579 - nP2Meter / fMeterScale + nResetOffset, Y + 1, nP2Meter / fMeterScale, 10, dwMeterColor);
+		snprintf(buffer, 8, "%6.2f", nP2Meter / 100.0);
+		TextDraw(579 - 6 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		break;
+	}
+	case 1: //HEAT
+	{
+		RectDraw(579 - nP2MeterTime / 2.5943 + nResetOffset, Y + 1, nP2MeterTime / 2.5943, 10, HEAT_COLOR);
+		snprintf(buffer, 8, "%3i", nP2MeterTime);
+		TextDraw(579 - 3 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(579 - 212 + nResetOffset, Y + 1, 10, HEATFONT_COLOR, "HEAT");
+		break;
+	}
+	case 2: //MAX
+	{
+		RectDraw(579 - nP2MeterTime / 2.8301 + nResetOffset, Y + 1, nP2MeterTime / 2.8301, 10, MAX_COLOR);
+		snprintf(buffer, 8, "%3i", nP2MeterTime);
+		TextDraw(579 - 3 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(579 - 212 + nResetOffset, Y + 1, 10, MAXFONT_COLOR, "MAX");
+		break;
+	}
+	case 3: //BLOOD HEAT
+	{
+		RectDraw(579 - nP2MeterTime / 2.3679 + nResetOffset, Y + 1, nP2MeterTime / 2.3679, 10, BLOODHEAT_COLOR);
+		snprintf(buffer, 8, "%3i", nP2MeterTime);
+		TextDraw(579 - 3 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
+		TextDraw(579 - 212 + nResetOffset, Y + 1, 10, BLOODHEATFONT_COLOR, "BLOOD HEAT");
+		break;
+	}
+	case 5: //UNLIMITED
+	{
+		RectDraw(579 - 212 + nResetOffset, Y + 1, 212, 10, UNLIMITED_COLOR);
+		TextDraw(579 - 9 * 7.7777 + nResetOffset, Y + 1, 10, UNLIMITEDFONT_COLOR, "UNLIMITED");
+		break;
+	}
+	}
+
+	DWORD dwBorderColor = (sP1CircuitBreakTimer && !sP1CircuitBreakFlag) ? CIRCUITBREAK_COLOR : 0xFFFFFFFF;
+	RectDraw(59 - nResetOffset, Y - 2, 216, 2, dwBorderColor);
+	RectDraw(58 - nResetOffset, Y - 1, 2, 14, dwBorderColor);
+	RectDraw(59 - nResetOffset, Y + 12, 216, 2, dwBorderColor);
+	RectDraw(274 - nResetOffset, Y - 1, 2, 14, dwBorderColor);
+	if (sP1CircuitBreakTimer && !sP1CircuitBreakFlag)
+	{
+		snprintf(buffer, 8, "%3i", sP1CircuitBreakTimer);
+		RectDraw(61 - nResetOffset, Y + 1, sP1CircuitBreakTimer / (sP1CircuitBreakTotal / 212.0), 10, CIRCUITBREAK_COLOR & 0x60FFFFFF);
+		TextDraw(61 + 106 - 1.5 * 7.7777 - nResetOffset, Y + 1, 10, CIRCUITBREAKFONT_COLOR, buffer);
+	}
+
+	dwBorderColor = (sP2CircuitBreakTimer && !sP2CircuitBreakFlag) ? CIRCUITBREAK_COLOR : 0xFFFFFFFF;
+	RectDraw(59 + 306 + nResetOffset, Y - 2, 216, 2, dwBorderColor);
+	RectDraw(58 + 306 + nResetOffset, Y - 1, 2, 14, dwBorderColor);
+	RectDraw(59 + 306 + nResetOffset, Y + 12, 216, 2, dwBorderColor);
+	RectDraw(274 + 306 + nResetOffset, Y - 1, 2, 14, dwBorderColor);
+	if (sP2CircuitBreakTimer && !sP2CircuitBreakFlag)
+	{
+		snprintf(buffer, 8, "%3i", sP2CircuitBreakTimer);
+		RectDraw(579 - sP2CircuitBreakTimer / (sP2CircuitBreakTotal / 212.0) + nResetOffset, Y + 1, sP2CircuitBreakTimer / (sP2CircuitBreakTotal / 212.0), 10, CIRCUITBREAK_COLOR & 0x60FFFFFF);
+		TextDraw(579 - 106 - 1.5 * 7.7777 + nResetOffset, Y + 1, 10, CIRCUITBREAKFONT_COLOR, buffer);
+	}
 }

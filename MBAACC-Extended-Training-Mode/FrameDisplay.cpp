@@ -108,17 +108,17 @@ void UpdateGlobals(HANDLE hMBAAHandle)
 //Player P3{ .cPlayerNumber = 2, .adPlayerBase = adMBAABase + adP3Base, .adInactionable = adMBAABase + adP1Inaction };
 //Player P4{ .cPlayerNumber = 3, .adPlayerBase = adMBAABase + adP4Base, .adInactionable = adMBAABase + adP2Inaction };
 
-Player P1(0, adMBAABase + adP1Base, adMBAABase + adP1Inaction);
-Player P2(0, adMBAABase + adP2Base, adMBAABase + adP2Inaction);
-Player P3(0, adMBAABase + adP3Base, adMBAABase + adP1Inaction);
-Player P4(0, adMBAABase + adP4Base, adMBAABase + adP2Inaction);
+FrameDisplayPlayerData FD_P1(0, adMBAABase + adP1Base, adMBAABase + adP1Inaction);
+FrameDisplayPlayerData FD_P2(0, adMBAABase + adP2Base, adMBAABase + adP2Inaction);
+FrameDisplayPlayerData FD_P3(0, adMBAABase + adP3Base, adMBAABase + adP1Inaction);
+FrameDisplayPlayerData FD_P4(0, adMBAABase + adP4Base, adMBAABase + adP2Inaction);
 
-Player* paPlayerArray[4] = { &P1, &P2, &P3, &P4 };
+FrameDisplayPlayerData* FD_PlayerArray[4] = { &FD_P1, &FD_P2, &FD_P3, &FD_P4 };
 
-Player* Main1 = &P1;
-Player* Main2 = &P2;
-Player* Assist1 = &P3;
-Player* Assist2 = &P4;
+FrameDisplayPlayerData* FD_Main1 = &FD_P1;
+FrameDisplayPlayerData* FD_Main2 = &FD_P2;
+FrameDisplayPlayerData* FD_Assist1 = &FD_P3;
+FrameDisplayPlayerData* FD_Assist2 = &FD_P4;
 
 void CheckProjectiles(HANDLE hMBAAHandle)
 {
@@ -128,10 +128,10 @@ void CheckProjectiles(HANDLE hMBAAHandle)
 	char cProjectileOwner = 0;
 	int nProjectilePattern = 0;
 	DWORD dwProjectileAttackDataPointer = 0;
-	P1.nActiveProjectileCount = 0;
-	P2.nActiveProjectileCount = 0;
-	P3.nActiveProjectileCount = 0;
-	P4.nActiveProjectileCount = 0;
+	FD_P1.nActiveProjectileCount = 0;
+	FD_P2.nActiveProjectileCount = 0;
+	FD_P3.nActiveProjectileCount = 0;
+	FD_P4.nActiveProjectileCount = 0;
 	for (int i = 0; i < 200; i++)
 	{
 		if (cBlankEffectCount > 16) break;
@@ -143,7 +143,7 @@ void CheckProjectiles(HANDLE hMBAAHandle)
 		if (cProjectileStatus != 0xFF) continue;
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectSubBase + dwEffectStructSize * i + adEffectOwner), &cProjectileOwner, 1, 0);
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectSubBase + dwEffectStructSize * i + adAttackDataPointer), &dwProjectileAttackDataPointer, 4, 0);
-		if (dwProjectileAttackDataPointer) (*paPlayerArray[cProjectileOwner]).nActiveProjectileCount++;
+		if (dwProjectileAttackDataPointer) (*FD_PlayerArray[cProjectileOwner]).nActiveProjectileCount++;
 	}
 }
 
@@ -151,7 +151,7 @@ void UpdatePlayers(HANDLE hMBAAHandle)
 {
 	for (int i = 0; i < 4; i++)
 	{
-		Player& P = *paPlayerArray[i];
+		FrameDisplayPlayerData& P = *FD_PlayerArray[i];
 		P.nLastInactionableFrames = P.nInactionableFrames;
 		P.nLastFrameCount = P.nFrameCount;
 		P.bLastOnRight = P.bIsOnRight;
@@ -240,7 +240,7 @@ void PrintColorGuide()
 	std::cout << FD_INACTIONABLE + FD_UNDERLINE << "00" << FD_CLEAR << " EX CANCEL\n";
 }
 
-void CalculateAdvantage(Player& P1, Player& P2)
+void CalculateAdvantage(FrameDisplayPlayerData& P1, FrameDisplayPlayerData& P2)
 {
 	if (P1.nInactionableFrames == 0 && P2.nInactionableFrames == 0)
 	{
@@ -279,7 +279,7 @@ void ResetBars(HANDLE hMBAAHandle)
 	nBarIntervalMax = nBarDisplayRange;
 	for (int i = 0; i < 4; i++)
 	{
-		Player& P = *paPlayerArray[i];
+		FrameDisplayPlayerData& P = *FD_PlayerArray[i];
 		for (int j = 0; j < BAR_MEMORY_SIZE; j++)
 		{
 			P.sBar1[j][1] = "";
@@ -302,7 +302,7 @@ void ResetBars(HANDLE hMBAAHandle)
 	std::cout << "\x1b[J";
 }
 
-void UpdateBars(Player& P, Player& Assist)
+void UpdateBars(FrameDisplayPlayerData& P, FrameDisplayPlayerData& Assist)
 {
 	std::string sFont = FD_CLEAR;
 	std::string sBarValue = "  ";
@@ -606,7 +606,7 @@ void UpdateBars(Player& P, Player& Assist)
 	}
 }
 
-void IncrementActive(Player& P)
+void IncrementActive(FrameDisplayPlayerData& P)
 {
 	if (P.dwAttackDataPointer != 0 && P.cHitstop == 0 && nFrameCount != nLastFrameCount)
 	{
@@ -618,7 +618,7 @@ void IncrementActive(Player& P)
 	}
 }
 
-void HandleInactive(Player& P)
+void HandleInactive(FrameDisplayPlayerData& P)
 {
 	if (P.nInactionableFrames != 0)
 	{
@@ -626,7 +626,7 @@ void HandleInactive(Player& P)
 	}
 }
 
-void BarHandling(HANDLE hMBAAHandle, Player& P1, Player& P2, Player& P1Assist, Player& P2Assist)
+void BarHandling(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisplayPlayerData& P2, FrameDisplayPlayerData& P1Assist, FrameDisplayPlayerData& P2Assist)
 {
 	CalculateAdvantage(P1, P2);
 
@@ -712,7 +712,7 @@ void BarHandling(HANDLE hMBAAHandle, Player& P1, Player& P2, Player& P1Assist, P
 	}
 }
 
-void PrintFrameDisplay(HANDLE hMBAAHandle, Player& P1, Player& P2, Player& P3, Player& P4)
+void PrintFrameDisplay(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisplayPlayerData& P2, FrameDisplayPlayerData& P3, FrameDisplayPlayerData& P4)
 {
 	if (nBarDisplayRange != nLastBarDisplayRange || sColumnHeader == "")
 	{
@@ -934,19 +934,19 @@ void FrameDisplay(HANDLE hMBAAHandle)
 
 	UpdateGlobals(hMBAAHandle);
 
-	Main1 = &P1;
-	Main2 = &P2;
-	Assist1 = &P3;
-	Assist2 = &P4;
-	if (P1.bTagFlag)
+	FD_Main1 = &FD_P1;
+	FD_Main2 = &FD_P2;
+	FD_Assist1 = &FD_P3;
+	FD_Assist2 = &FD_P4;
+	if (FD_P1.bTagFlag)
 	{
-		Main1 = &P3;
-		Assist1 = &P1;
+		FD_Main1 = &FD_P3;
+		FD_Assist1 = &FD_P1;
 	}
-	if (P2.bTagFlag)
+	if (FD_P2.bTagFlag)
 	{
-		Main2 = &P4;
-		Assist2 = &P2;
+		FD_Main2 = &FD_P4;
+		FD_Assist2 = &FD_P2;
 	}
 
 	if (nTrueFrameCount == 0)
@@ -959,7 +959,7 @@ void FrameDisplay(HANDLE hMBAAHandle)
 		UpdatePlayers(hMBAAHandle);
 		CheckProjectiles(hMBAAHandle);
 
-		BarHandling(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
+		BarHandling(hMBAAHandle, *FD_Main1, *FD_Main2, *FD_Assist1, *FD_Assist2);
 		nLastFrameCount = nFrameCount;
 		nLastTrueFrameCount = nTrueFrameCount;
 
@@ -969,7 +969,7 @@ void FrameDisplay(HANDLE hMBAAHandle)
 		}
 		else
 		{
-			PrintFrameDisplay(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
+			PrintFrameDisplay(hMBAAHandle, *FD_Main1, *FD_Main2, *FD_Assist1, *FD_Assist2);
 		}
 	}
 
@@ -981,11 +981,11 @@ void FrameDisplay(HANDLE hMBAAHandle)
 		}
 		else
 		{
-			PrintFrameDisplay(hMBAAHandle, *Main1, *Main2, *Assist1, *Assist2);
+			PrintFrameDisplay(hMBAAHandle, *FD_Main1, *FD_Main2, *FD_Assist1, *FD_Assist2);
 		}
 	}
 
-	nPlayerAdvantage = ((*Main1).nAdvantageCounter - (*Main2).nAdvantageCounter) % 100;
+	nPlayerAdvantage = ((*FD_Main1).nAdvantageCounter - (*FD_Main2).nAdvantageCounter) % 100;
 
 }
 

@@ -73,7 +73,7 @@ struct FrameBarCell
 	void draw(float x, float y, float w, float h);
 };
 
-struct Player
+struct FrameBarPlayerData
 {
 	char cPlayerNumber = 0;
 
@@ -98,36 +98,40 @@ struct Player
 	bool bLastProjectileActive = false;
 };
 
-extern Player P1;
-extern Player P2;
-extern Player P3;
-extern Player P4;
+extern FrameBarPlayerData FB_P1;
+extern FrameBarPlayerData FB_P2;
+extern FrameBarPlayerData FB_P3;
+extern FrameBarPlayerData FB_P4;
 
-extern Player* paPlayerArray[4];
+extern FrameBarPlayerData* FB_PlayerArray[4];
 
-extern Player* Main1;
-extern Player* Main2;
-extern Player* Assist1;
-extern Player* Assist2;
+extern FrameBarPlayerData* FB_Main1;
+extern FrameBarPlayerData* FB_Main2;
+extern FrameBarPlayerData* FB_Assist1;
+extern FrameBarPlayerData* FB_Assist2;
 
 void UpdatePlayers(); //Called after bar handling
 
 void CheckProjectiles();
 
-void CalculateAdvantage(Player& P1, Player& P2);
+void CalculateAdvantage(FrameBarPlayerData& P1, FrameBarPlayerData& P2);
 
 void ResetBars();
 
-void UpdateBars(Player& P, Player& Assist);
+void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist);
 
-void IncrementActive(Player& P);
+void IncrementActive(FrameBarPlayerData& P);
 
-void IncrementFirstActive(Player& P1, Player& P2);
+void IncrementFirstActive(FrameBarPlayerData& P1, FrameBarPlayerData& P2);
 
-void HandleInactive(Player& P);
+void HandleInactive(FrameBarPlayerData& P);
 
-void BarHandling(Player& P1, Player& P2, Player& P1Assist, Player& P2Assist);
+void BarHandling(FrameBarPlayerData& P1, FrameBarPlayerData& P2, FrameBarPlayerData& P1Assist, FrameBarPlayerData& P2Assist);
 
-void UpdateFrameBar(Player& P1, Player& P2, Player& P3, Player& P4);
+void UpdateFrameBar();
 
 void drawFrameBar(bool doDraw);
+
+void drawColorGuide();
+
+void drawSimpleMeter();

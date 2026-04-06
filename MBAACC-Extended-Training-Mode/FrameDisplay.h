@@ -60,7 +60,7 @@ void CheckGameState(HANDLE hMBAAHandle);
 
 void UpdateGlobals(HANDLE hMBAAHandle);
 
-struct Player
+struct FrameDisplayPlayerData
 {
 	char cExists = 0; //0x0
 	char padding0[0xF];
@@ -162,7 +162,7 @@ struct Player
 	char cLastStance = 0;
 	bool bBoxInvuln = false;
 
-	Player(char _cPlayerNumber, DWORD _adPlayerBase, DWORD _adInactionable) {
+	FrameDisplayPlayerData(char _cPlayerNumber, DWORD _adPlayerBase, DWORD _adInactionable) {
 		cPlayerNumber = _cPlayerNumber;
 		adPlayerBase = _adPlayerBase;
 		adInactionable = _adInactionable;
@@ -170,17 +170,17 @@ struct Player
 
 };
 
-extern Player P1;
-extern Player P2;
-extern Player P3;
-extern Player P4;
+extern FrameDisplayPlayerData FD_P1;
+extern FrameDisplayPlayerData FD_P2;
+extern FrameDisplayPlayerData FD_P3;
+extern FrameDisplayPlayerData FD_P4;
 
-extern Player* paPlayerArray[4];
+extern FrameDisplayPlayerData* FD_PlayerArray[4];
 
-extern Player* Main1;
-extern Player* Main2;
-extern Player* Assist1;
-extern Player* Assist2;
+extern FrameDisplayPlayerData* FD_Main1;
+extern FrameDisplayPlayerData* FD_Main2;
+extern FrameDisplayPlayerData* FD_Assist1;
+extern FrameDisplayPlayerData* FD_Assist2;
 
 void CheckProjectiles(HANDLE hMBAAHandle);
 
@@ -188,18 +188,18 @@ void UpdatePlayers(HANDLE hMBAAHandle);
 
 void PrintColorGuide();
 
-void CalculateAdvantage(Player& P1, Player& P2);
+void CalculateAdvantage(FrameDisplayPlayerData& P1, FrameDisplayPlayerData& P2);
 
 void ResetBars(HANDLE hMBAAHandle);
 
-void UpdateBars(Player& P, Player& Assist);
+void UpdateBars(FrameDisplayPlayerData& P, FrameDisplayPlayerData& Assist);
 
-void IncrementActive(Player& P);
+void IncrementActive(FrameDisplayPlayerData& P);
 
-void HandleInactive(Player& P);
+void HandleInactive(FrameDisplayPlayerData& P);
 
-void BarHandling(HANDLE hMBAAHandle, Player& P1, Player& P2, Player& P1Assist, Player& P2Assist);
+void BarHandling(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisplayPlayerData& P2, FrameDisplayPlayerData& P1Assist, FrameDisplayPlayerData& P2Assist);
 
-void PrintFrameDisplay(HANDLE hMBAAHandle, Player& P1, Player& P2, Player& P3, Player& P4);
+void PrintFrameDisplay(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisplayPlayerData& P2, FrameDisplayPlayerData& P3, FrameDisplayPlayerData& P4);
 
 void FrameDisplay(HANDLE hMBAAHandle);

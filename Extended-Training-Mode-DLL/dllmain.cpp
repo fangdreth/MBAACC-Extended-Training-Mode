@@ -962,59 +962,6 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 	return true;
 }
 
-void drawColorGuide()
-{
-	RectDraw(0, 8, 640, 50, 0xFF000000);
-
-	RectDraw(10, 10, 7, 10, FB_INACTIONABLE);
-	TextDraw(17, 10, 10, 0xFFFFFFFF, "INACTIONABLE");
-	RectDraw(120, 10, 7, 10, FB_JUMP);
-	TextDraw(127, 10, 10, 0xFFFFFFFF, "JUMP STARTUP");
-	RectDraw(230, 10, 7, 10, FB_HITSTUN);
-	TextDraw(237, 10, 10, 0xFFFFFFFF, "HITSTUN");
-	RectDraw(300, 10, 7, 10, FB_BLOCKSTUN);
-	TextDraw(307, 10, 10, 0xFFFFFFFF, "BLOCKSTUN");
-	RectDraw(390, 10, 7, 10, FB_ACTIVE);
-	TextDraw(397, 10, 10, 0xFFFFFFFF, "ACTIVE FRAMES");
-	RectDraw(500, 10, 7, 10, FB_ACTIONABLE);
-	TextDraw(507, 10, 10, 0xFFFFFFFF, "FULLY ACTIONABLE");
-	RectDraw(10, 22, 7, 10, FB_ADVANTAGE);
-	TextDraw(17, 22, 10, 0xFFFFFFFF, "FRAME ADVANTAGE");
-	RectDraw(140, 22, 7, 10, FB_NEUTRAL);
-	TextDraw(147, 22, 10, 0xFFFFFFFF, "NEUTRAL FRAME");
-	RectDraw(260, 22, 7, 10, FB_FREEZE);
-	TextDraw(267, 22, 10, 0xFFFFFFFF, "SCREEN FREEZE");
-	RectDraw(370, 22, 7, 10, FB_FREEZE_ACTIVE);
-	TextDraw(377, 22, 10, 0xFFFFFFFF, "ACTIVE DURING FREEZE");
-	RectDraw(530, 22, 7, 10, FB_THROWN);
-	TextDraw(537, 22, 10, 0xFFFFFFFF, "BEING THROWN");
-	RectDraw(10, 34, 7, 10, FB_HITSTOP);
-	TextDraw(17, 34, 10, 0xFFFFFFFF, "HITSTOP");
-	RectDraw(80, 34, 7, 10, FB_SHIELD);
-	TextDraw(87, 34, 10, 0xFFFFFFFF, "SHIELD");
-	RectDraw(140, 34, 7, 10, FB_THROW_ACTIVE);
-	TextDraw(147, 34, 10, 0xFFFFFFFF, "THROW ACTIVE FRAME");
-
-	RectDraw(10, 45, 7, 10, FB_INACTIONABLE);
-	RectDraw(14, 45, 3, 10, FB_CLASH);
-	TextDraw(17, 45, 10, 0xFFFFFFFF, "CLASH");
-	RectDraw(70, 45, 7, 10, FB_INACTIONABLE);
-	RectDraw(74, 45, 3, 10, FB_INVULN);
-	TextDraw(77, 45, 10, 0xFFFFFFFF, "INVULN");
-	RectDraw(130, 45, 7, 10, FB_INACTIONABLE);
-	RectDraw(134, 45, 3, 10, FB_COUNTER);
-	TextDraw(137, 45, 10, 0xFFFFFFFF, "COUNTER");
-	RectDraw(200, 45, 7, 10, FB_INACTIONABLE);
-	RectDraw(200, 44, 7, 2, FB_JUMP);
-	TextDraw(207, 45, 10, 0xFFFFFFFF, "AIRBORNE");
-	RectDraw(280, 45, 7, 10, FB_INACTIONABLE);
-	RectDraw(280, 54, 7, 2, FB_ACTIVE);
-	TextDraw(287, 45, 10, 0xFFFFFFFF, "ACTIVE PROJECTILE");
-	RectDraw(450, 45, 7, 10, FB_INACTIONABLE);
-	RectDraw(450, 54, 7, 2, FB_ASSIST_ACTIVE);
-	TextDraw(457, 45, 10, 0xFFFFFFFF, "ACTIVE ASSIST");
-}
-
 int getPatternFromInput(PlayerData* PD, const char input[20])
 {
 	char buffer[20];
@@ -1356,152 +1303,6 @@ byte getPatStance(PlayerData* playerData, int pat) {
 	}
 	int ID = getIDFromPattern(playerData, pat);
 	return getCmdStance(playerData, ID);
-}
-
-void drawSimpleMeter()
-{
-	if (!shouldDrawHud) return;
-
-	float fScroll = *(float*)(dwBaseAddress + adTrainingResetScroll);
-	int nResetOffset = 0;
-	if (fScroll > 0)
-		nResetOffset = 320.0f * fScroll;
-
-	int Y = 19;
-
-	DWORD P1Base = adP1SubBase + (*(uint8_t*)(adMBAABase + adP1SubBase + adTagFlag) * dwPlayerStructSize * 2);
-	int nP1Meter = *(int*)(adMBAABase + P1Base + adMagicCircuit);
-	int nP1MeterTime = *(int*)(adMBAABase + P1Base + adMagicCircuitTime);
-	uint8_t nP1MeterMode = *(uint8_t*)(adMBAABase + P1Base + adMagicCircuitMode);
-	short sP1CircuitBreakTimer = *(short*)(adMBAABase + P1Base + adCircuitBreakTimer);
-	short sP1CircuitBreakTotal = *(short*)(adMBAABase + P1Base + adCircuitBreakTotal);
-	short sP1CircuitBreakFlag = *(short*)(adMBAABase + P1Base + adBreakOrPenalty);
-	uint8_t nP1Moon = *(uint8_t*)(adMBAABase + dwP1CharMoon);
-
-	DWORD P2Base = adP2SubBase + (*(uint8_t*)(adMBAABase + adP2SubBase + adTagFlag) * dwPlayerStructSize * 2);
-	int nP2Meter = *(int*)(adMBAABase + P2Base + adMagicCircuit);
-	int nP2MeterTime = *(int*)(adMBAABase + P2Base + adMagicCircuitTime);
-	uint8_t nP2MeterMode = *(uint8_t*)(adMBAABase + P2Base + adMagicCircuitMode);
-	short sP2CircuitBreakTimer = *(short*)(adMBAABase + P2Base + adCircuitBreakTimer);
-	short sP2CircuitBreakTotal = *(short*)(adMBAABase + P2Base + adCircuitBreakTotal);
-	short sP2CircuitBreakFlag = *(short*)(adMBAABase + P2Base + adBreakOrPenalty);
-	uint8_t nP2Moon = *(uint8_t*)(adMBAABase + dwP2CharMoon);
-
-	static char buffer[8];
-
-	RectDraw(60 - nResetOffset, Y, 214, 12, 0x99000000); //BG
-	switch (nP1MeterMode)
-	{
-	case 0: //Normal, out of 30000
-	{
-		float fMeterScale = nP1Moon == 2 ? 94.3396 : 141.5094;
-		DWORD dwMeterColor = METER_COLOR_MAP[nP1Meter / 10000];
-		if (nP1Moon == 2 && nP1Meter >= 15000) dwMeterColor = METER_COLOR_MAP[2];
-		RectDraw(61 - nResetOffset, Y + 1, nP1Meter / fMeterScale, 10, dwMeterColor);
-		snprintf(buffer, 8, "%3.2f", nP1Meter / 100.0);
-		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
-		break;
-	}
-	case 1: //HEAT, out of 550
-	{
-		RectDraw(61 - nResetOffset, Y + 1, nP1MeterTime / 2.5943, 10, HEAT_COLOR);
-		snprintf(buffer, 8, "%3i", nP1MeterTime);
-		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
-		TextDraw(61 + 212 - 4 * 7.7777 - nResetOffset, Y + 1, 10, HEATFONT_COLOR, "HEAT");
-		break;
-	}
-	case 2: //MAX out of 600
-	{
-		RectDraw(61 - nResetOffset, Y + 1, nP1MeterTime / 2.8301, 10, MAX_COLOR);
-		snprintf(buffer, 8, "%3i", nP1MeterTime);
-		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
-		TextDraw(61 + 212 - 3 * 7.7777 - nResetOffset, Y + 1, 10, MAXFONT_COLOR, "MAX");
-		break;
-	}
-	case 3: //BLOOD HEAT out of 502
-	{
-		RectDraw(61 - nResetOffset, Y + 1, nP1MeterTime / 2.3679, 10, BLOODHEAT_COLOR);
-		snprintf(buffer, 8, "%3i", nP1MeterTime);
-		TextDraw(61 - nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
-		TextDraw(61 + 212 - 10 * 7.7777 - nResetOffset, Y + 1, 10, BLOODHEATFONT_COLOR, "BLOOD HEAT");
-		break;
-	}
-	case 5: //UNLIMITED
-	{
-		RectDraw(61 - nResetOffset, Y + 1, 212, 10, UNLIMITED_COLOR);
-		TextDraw(61 - nResetOffset, Y + 1, 10, UNLIMITEDFONT_COLOR, "UNLIMITED");
-		break;
-	}
-	}
-
-	RectDraw(580 - 214 + nResetOffset, Y, 214, 12, 0x99000000); //BG
-	switch (nP2MeterMode)
-	{
-	case 0: //NORMAL
-	{
-		float fMeterScale = nP2Moon == 2 ? 94.3396 : 141.5094;
-		DWORD dwMeterColor = METER_COLOR_MAP[nP2Meter / 10000];
-		if (nP2Moon == 2 && nP2Meter >= 15000) dwMeterColor = METER_COLOR_MAP[2];
-		RectDraw(579 - nP2Meter / fMeterScale + nResetOffset, Y + 1, nP2Meter / fMeterScale, 10, dwMeterColor);
-		snprintf(buffer, 8, "%6.2f", nP2Meter / 100.0);
-		TextDraw(579 - 6 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
-		break;
-	}
-	case 1: //HEAT
-	{
-		RectDraw(579 - nP2MeterTime / 2.5943 + nResetOffset, Y + 1, nP2MeterTime / 2.5943, 10, HEAT_COLOR);
-		snprintf(buffer, 8, "%3i", nP2MeterTime);
-		TextDraw(579 - 3 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
-		TextDraw(579 - 212 + nResetOffset, Y + 1, 10, HEATFONT_COLOR, "HEAT");
-		break;
-	}
-	case 2: //MAX
-	{
-		RectDraw(579 - nP2MeterTime / 2.8301 + nResetOffset, Y + 1, nP2MeterTime / 2.8301, 10, MAX_COLOR);
-		snprintf(buffer, 8, "%3i", nP2MeterTime);
-		TextDraw(579 - 3 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
-		TextDraw(579 - 212 + nResetOffset, Y + 1, 10, MAXFONT_COLOR, "MAX");
-		break;
-	}
-	case 3: //BLOOD HEAT
-	{
-		RectDraw(579 - nP2MeterTime / 2.3679 + nResetOffset, Y + 1, nP2MeterTime / 2.3679, 10, BLOODHEAT_COLOR);
-		snprintf(buffer, 8, "%3i", nP2MeterTime);
-		TextDraw(579 - 3 * 7.7777 + nResetOffset, Y + 1, 10, 0xFFFFFFFF, buffer);
-		TextDraw(579 - 212 + nResetOffset, Y + 1, 10, BLOODHEATFONT_COLOR, "BLOOD HEAT");
-		break;
-	}
-	case 5: //UNLIMITED
-	{
-		RectDraw(579 - 212 + nResetOffset, Y + 1, 212, 10, UNLIMITED_COLOR);
-		TextDraw(579 - 9 * 7.7777 + nResetOffset, Y + 1, 10, UNLIMITEDFONT_COLOR, "UNLIMITED");
-		break;
-	}
-	}
-
-	DWORD dwBorderColor = (sP1CircuitBreakTimer && !sP1CircuitBreakFlag) ? CIRCUITBREAK_COLOR : 0xFFFFFFFF;
-	RectDraw(59 - nResetOffset, Y - 2, 216, 2, dwBorderColor);
-	RectDraw(58 - nResetOffset, Y - 1, 2, 14, dwBorderColor);
-	RectDraw(59 - nResetOffset, Y + 12, 216, 2, dwBorderColor);
-	RectDraw(274 - nResetOffset, Y - 1, 2, 14, dwBorderColor);
-	if (sP1CircuitBreakTimer && !sP1CircuitBreakFlag)
-	{
-		snprintf(buffer, 8, "%3i", sP1CircuitBreakTimer);
-		RectDraw(61 - nResetOffset, Y + 1, sP1CircuitBreakTimer / (sP1CircuitBreakTotal / 212.0), 10, CIRCUITBREAK_COLOR & 0x60FFFFFF);
-		TextDraw(61 + 106 - 1.5 * 7.7777 - nResetOffset, Y + 1, 10, CIRCUITBREAKFONT_COLOR, buffer);
-	}
-
-	dwBorderColor = (sP2CircuitBreakTimer && !sP2CircuitBreakFlag) ? CIRCUITBREAK_COLOR : 0xFFFFFFFF;
-	RectDraw(59 + 306 + nResetOffset, Y - 2, 216, 2, dwBorderColor);
-	RectDraw(58 + 306 + nResetOffset, Y - 1, 2, 14, dwBorderColor);
-	RectDraw(59 + 306 + nResetOffset, Y + 12, 216, 2, dwBorderColor);
-	RectDraw(274 + 306 + nResetOffset, Y - 1, 2, 14, dwBorderColor);
-	if (sP2CircuitBreakTimer && !sP2CircuitBreakFlag)
-	{
-		snprintf(buffer, 8, "%3i", sP2CircuitBreakTimer);
-		RectDraw(579 - sP2CircuitBreakTimer / (sP2CircuitBreakTotal / 212.0) + nResetOffset, Y + 1, sP2CircuitBreakTimer / (sP2CircuitBreakTotal / 212.0), 10, CIRCUITBREAK_COLOR & 0x60FFFFFF);
-		TextDraw(579 - 106 - 1.5 * 7.7777 + nResetOffset, Y + 1, 10, CIRCUITBREAKFONT_COLOR, buffer);
-	}
 }
 
 void drawStats()
@@ -3002,7 +2803,7 @@ void frameDoneCallback()
 		if (nDISPLAY_HITBOXES)
 			drawFrameData();
 
-		if (!shouldDrawMeter)
+		if (!shouldDrawMeter && shouldDrawHud)
 			drawSimpleMeter();
 
 		if (nSHOW_STATS)
@@ -3013,7 +2814,7 @@ void frameDoneCallback()
 	if ((safeWrite() && !isPaused() && nIN_GAME_FRAME_DISPLAY) || (isPaused() && ((bVIEW_SCREEN && nIN_GAME_FRAME_DISPLAY) || bShowFrameBarPreview))) doDraw = true;
 	drawFrameBar(doDraw);
 
-	if (safeWrite()) UpdateFrameBar(P1, P2, P3, P4);
+	if (safeWrite()) UpdateFrameBar();
 
 	if (bCOLOR_GUIDE)
 	{
