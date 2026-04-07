@@ -98,6 +98,7 @@ bool bShowFrameBarYPreview = false;
 bool bForceGuard = false;
 int dummyDelayTechFramesElapsed = 0;
 bool showFrameScrubber = false;
+int comboTimer = 0;
 
 bool initLoadChars = false;
 
@@ -1574,6 +1575,46 @@ void drawStats()
 		}
 		
 	}
+
+	//combo timer
+	bool showTimer = false;
+	for (int i = 0; i < 4; i++) {
+		PlayerData* P = &playerDataArr[i];
+		if (!P->exists) continue;
+		if (!P->subObj.notInCombo ||
+			P->subObj.throwFlag ||
+			P->subObj.inBlockstun) {
+			showTimer = true;
+		}
+	}
+
+	if (showTimer) {
+		if (*(int*)(adMBAABase + 0x0015df00) == 0 && *(int*)(adMBAABase + adGlobalFreeze) == 0 && !_naked_newPauseCallback2_IsPaused) {
+			bool incrementTimer = true;
+			for (int i = 0; i < 4; i++) {
+				PlayerData* P = &playerDataArr[i];
+				if (!P->exists) continue;
+				if (P->subObj.magicCircuitState == 1 ||
+					P->subObj.magicCircuitState == 3) {
+					incrementTimer = false;
+				}
+			}
+			if (incrementTimer) comboTimer++;
+		}
+
+		float length = floor(log10(max(comboTimer / 48.0f, 1.0f))) + 1.5f;
+		if (*(int*)(adMBAABase + 0x0015df00) == 0 && *(int*)(adMBAABase + adGlobalFreeze) == 0) {
+			TextDraw(320 - (7.2 * length), 15, 10, 0xFFFFFFFF, "%.02f", comboTimer / 48.0f);
+		}
+		else {
+			TextDraw(320 - (7.2 * length), 15, 10, 0x80FFFFFF, "%.02f", comboTimer / 48.0f);
+		}
+		
+	}
+	else {
+		comboTimer = 0;
+	}
+		
 }
 
 void drawFrameData()
