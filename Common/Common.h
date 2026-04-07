@@ -522,6 +522,9 @@ const REGKEY sDEBUG_MENU_FONT_SIZE = L"DebugMenuFontSize";
 const REGKEY sDEBUG_MENU_BG_ALPHA = L"DebugMenuBGAlpha";
 const REGKEY sDEBUG_MENU_COMPACT_VIEW = L"DebugMenuCompactView";
 
+const REGKEY sDO_FRAMESTEP_AUTO_ADVANCE = L"DoFramestepAutoAdvance";
+const REGKEY sFRAMESTEP_AUTO_ADVANCE_FRAMES = L"FramestepAutoAdvanceFrames";
+
 #define VK_KEY_UNSET 0x0;
 
 #define VK_KEY_0 0x30

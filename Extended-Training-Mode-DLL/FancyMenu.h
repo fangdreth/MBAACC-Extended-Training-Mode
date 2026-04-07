@@ -105,5 +105,8 @@ extern int customCameraY;
 
 extern bool compactView;
 
+extern int autoAdvanceFrames;
+extern bool doAutoAdvance;
+
 void drawFancyMenu();
 

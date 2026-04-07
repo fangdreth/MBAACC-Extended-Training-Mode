@@ -65,6 +65,9 @@ bool compactView = false;
 int bgAlpha = 0x00;
 float menuFontSize = 10.0f;
 
+int autoAdvanceFrames = 60;
+bool doAutoAdvance = false;
+
 template <typename T>
 struct always_false : std::false_type { };
 
@@ -547,6 +550,18 @@ void initMiscSubmenu() {
 		&showRoaHiddenCharge
 	);
 
+	miscMenu.add<int*>("Show Roa hidden charge",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 1);
+		},
+		[](int* opt) -> std::string {
+			return *opt ? "ON" : "OFF";
+		},
+		L"SHOWROAHIDDENCHARGE",
+		&showRoaHiddenCharge
+	);
+
 	misc.add(miscMenu);
 
 	Menu tasMenu("TAS options");
@@ -729,6 +744,28 @@ void initMiscSubmenu() {
 		},
 		L"",
 		&dummyTechDelay
+	);
+
+	misc.add<int>("Framestep on held input",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			doAutoAdvance = opt != 0;
+		},
+		defaultOnOffNameFunc,
+		sDO_FRAMESTEP_AUTO_ADVANCE,
+		0
+	);
+
+	misc.add<int*>(" >Number of frames",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 120);
+		},
+		pointerIntSliderNameFunc,
+		sFRAMESTEP_AUTO_ADVANCE_FRAMES,
+		& autoAdvanceFrames
 	);
 
 	baseMenu.add(misc);

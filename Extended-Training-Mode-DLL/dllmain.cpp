@@ -3278,7 +3278,7 @@ void newPauseCallback2()
 		(oAdvanceFrameHotkey.keyDown() ||
 		oAdvanceFrameHotkey.nHeldKeyCounter >= 20 ||
 		(bSlow && nFrameNumber % 4 >= nGAME_SPEED)) ||
-		nInputHeldFrameAdvanceCounter >= 60)
+		(doAutoAdvance && nInputHeldFrameAdvanceCounter > autoAdvanceFrames))
 	{
 		needPause = true;
 		_naked_newPauseCallback2_IsPaused = false;
