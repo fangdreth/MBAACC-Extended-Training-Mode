@@ -203,3 +203,36 @@ void BarHandling(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisplayPla
 void PrintFrameDisplay(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisplayPlayerData& P2, FrameDisplayPlayerData& P3, FrameDisplayPlayerData& P4);
 
 void FrameDisplay(HANDLE hMBAAHandle);
+
+// Foreground color -> \x1b[38;2;R;G;Bm
+// Background color -> \x1b[48;2;R;G;Bm
+const std::string FD_CLEAR = "\x1b[0m";
+const std::string FD_ITALICS = "\x1b[3m";
+const std::string FD_UNDERLINE = "\x1b[4m";
+const std::string FD_INACTIONABLE = "\x1b[38;2;255;255;255m\x1b[48;2;65;200;0m";
+const std::string FD_JUMP = "\x1b[38;2;177;177;255m\x1b[48;2;241;224;132m";
+const std::string FD_HITSTUN = "\x1b[38;2;255;255;255m\x1b[48;2;140;140;140m";
+const std::string FD_BLOCKSTUN = "\x1b[38;2;255;255;255m\x1b[48;2;180;180;180m";
+const std::string FD_ACTIONABLE = "\x1b[38;2;92;92;92m\x1b[48;2;0;0;0m";
+const std::string FD_ADVANTAGE = "\x1b[38;2;255;255;255m\x1b[48;2;0;0;0m";
+const std::string FD_NEUTRAL = "\x1b[38;2;255;255;255m\x1b[48;2;32;90;0m";
+const std::string FD_THROW_ACTIVE = "\x1b[38;2;255;255;255m\x1b[48;2;192;0;128m";
+const std::string FD_THROWN = "\x1b[38;2;255;255;255m\x1b[48;2;110;110;110m";
+const std::string FD_CLASH = "\x1b[38;2;255;255;255m\x1b[48;2;225;184;0m";
+const std::string FD_SHIELD = "\x1b[38;2;255;255;255m\x1b[48;2;145;194;255m";
+const std::string FD_INACTIONABLE_INVULN = "\x1b[38;2;160;160;160m\x1b[48;2;255;255;255m";
+const std::string FD_ACTIONABLE_INVULN = "\x1b[38;2;100;100;100m\x1b[48;2;255;255;255m";
+const std::string FD_FREEZE = "\x1b[38;2;255;255;255m\x1b[48;2;60;60;60m";
+const std::string FD_HITSTOP = "\x1b[38;2;255;255;255m\x1b[48;2;60;80;128m";
+const std::string FD_ACTIVE = "\x1b[38;2;255;255;255m\x1b[48;2;255;0;0m";
+const std::string FD_ASSIST_ACTIVE = "\x1b[38;2;255;255;255m\x1b[48;2;255;128;0m";
+const std::string FD_BUTTON_PRESSED = "\x1b[38;2;255;255;255m\x1b[48;2;128;128;128m";
+const std::string FD_A_PRESSED = "\x1b[38;2;255;143;169m\x1b[48;2;170;27;58m";
+const std::string FD_B_PRESSED = "\x1b[38;2;255;255;137m\x1b[48;2;169;91;7m";
+const std::string FD_C_PRESSED = "\x1b[38;2;143;255;195m\x1b[48;2;18;132;62m";
+const std::string FD_D_PRESSED = "\x1b[38;2;137;255;255m\x1b[48;2;21;66;161m";
+
+const std::string FD_SPECIAL_GUIDE_BG = "\x1b[48;2;65;200;0m";
+const std::string SPECIAL_CANCEL_FONTS[4] = { "\x1b[38;2;255;255;255m", "\x1b[38;2;128;80;128m", "\x1b[38;2;0;0;0m", "\x1b[38;2;128;80;128m" };
+const std::string FD_NORMAL_GUIDE_FG = "\x1b[38;2;255;255;255m";
+const std::string NORMAL_CANCEL_FONTS[4] = { "\x1b[48;2;65;200;0m", "\x1b[48;2;65;150;30m", "\x1b[48;2;65;80;65m", "\x1b[48;2;65;150;30m" };
