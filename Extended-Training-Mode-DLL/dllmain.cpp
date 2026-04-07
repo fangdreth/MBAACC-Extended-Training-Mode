@@ -223,6 +223,7 @@ void initRegistryValues()
 	ReadFromRegistry(sFRAME_BAR_W, &frameBar.w);
 	ReadFromRegistry(sFRAME_BAR_H, &frameBar.h);
 	ReadFromRegistry(sFRAME_BAR_NUMCELLS, &frameBar.numCells);
+	ReadFromRegistry(sFRAME_BAR_CELLWIDTH, &frameBar.cellWidth);
 
 	ReadFromRegistry(sDISPLAY_CURSOR, &enableCursor);
 	ReadFromRegistry(sDEBUG_MENU_COMPACT_VIEW, &compactView);

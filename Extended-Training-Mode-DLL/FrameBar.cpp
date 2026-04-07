@@ -20,14 +20,6 @@ int displayNumbers = true;
 int nPlayerAdvantage;
 int nSharedHitstop;
 
-float fFrameBarX = 20.0f;
-float fFrameBarY = 410.0f;
-float fFrameBarW = 600; // total inside width of framebar
-float fFrameBarH = 26; // total inside height of framebar
-
-int nFrameBarY = 410;
-int nFrameBarDisplayRange = 75;
-
 char pcTextToDisplay[256];
 char pcTextPattern[256];
 int nDrawTextTimer = 0;
@@ -78,13 +70,14 @@ const DWORD FB_INVULN = 0xFFFFFFFF;
 const DWORD FB_ASSIST_ACTIVE = 0xFFFF8000;
 const DWORD FB_COUNTER = 0xFFC485EA;
 
-FrameBar::FrameBar(float x_, float y_, float w_, float h_, int numCells_)
+FrameBar::FrameBar(float x_, float y_, float w_, float h_, int numCells_, float cellWidth_)
 {
 	x = x_;
 	y = y_;
 	w = w_;
 	h = h_;
 	numCells = numCells_;
+	cellWidth = cellWidth_;
 
 	dragInfo.dragPointX = &x;
 	dragInfo.dragPointY = &y;
@@ -126,9 +119,9 @@ void FrameBar::draw()
 		j = i < 0 ? i + BAR_MEMORY_SIZE : i;
 
 		float cellX = l + w / (float)numCells * (float)nBarDrawCounter;
-		float cellW = w / (float)numCells;
-		FB_Main1->cells[j].draw(cellX, t + h * 0.06, cellW, h * 0.38);
-		FB_Main2->cells[j].draw(cellX, t + h * 0.56, cellW, h * 0.38);
+		float fullCellW = w / (float)numCells;
+		FB_Main1->cells[j].draw(cellX, t + h * 0.06, fullCellW, h * 0.38, cellWidth);
+		FB_Main2->cells[j].draw(cellX, t + h * 0.56, fullCellW, h * 0.38, cellWidth);
 
 		nBarDrawCounter++;
 	}
@@ -144,13 +137,18 @@ void FrameBar::draw()
 	TextDraw(l, t + h + 3, 10, 0xFFFFFFFF, buffer);
 }
 
-FrameBar frameBar(320.0f, 410.0f, 600.0f, 26.0f, 75);
+FrameBar frameBar(320.0f, 410.0f, 600.0f, 26.0f, 75, 0.90f);
 
-void FrameBarCell::draw(float x, float y, float w, float h)
+void FrameBarCell::draw(float x, float y, float w, float h, float widthMult)
 {
-	float adjW = w * 0.90f;
+	float adjW = w * widthMult;
 	if (mainColor != 0x0) RectDraw(x, y, adjW, h, mainColor);
-	if (subColor != 0x0) RectDraw(x + (adjW / 2), y, adjW / 2, h, subColor);
+	if (subColor != 0x0) {
+		//RectDraw(x + (adjW / 2), y, adjW / 2, h, subColor);
+		for (float i = 0.0f; i < h; i += 2) {
+			RectDraw(x, y + i, adjW, 1.0f, subColor);
+		}
+	}
 	if (subActiveColor != 0x0) RectDraw(x, y + (0.9 * h), adjW, 0.2 * h, subActiveColor);
 	if (airborneColor != 0x0) RectDraw(x, y - (0.1 * h), adjW, 0.2 * h, airborneColor);
 

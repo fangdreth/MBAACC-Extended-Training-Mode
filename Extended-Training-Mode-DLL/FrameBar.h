@@ -29,12 +29,6 @@ extern int displayNumbers;
 extern int nPlayerAdvantage;
 extern int nSharedHitstop;
 
-extern float fFrameBarW;
-extern float fFrameBarH;
-
-extern int nFrameBarY;
-extern int nFrameBarDisplayRange;
-
 extern char pcTextToDisplay[256];
 extern char pcTextPattern[256];
 extern int nDrawTextTimer;
@@ -45,7 +39,7 @@ extern int nAdjustNumbersForFreeze;
 class FrameBar
 {
 public:
-	FrameBar(float x_, float y_, float w_, float h_, int numCells_);
+	FrameBar(float x_, float y_, float w_, float h_, int numCells_, float cellWidth_);
 
 	void draw();
 
@@ -54,6 +48,7 @@ public:
 	float w;
 	float h;
 	int numCells;
+	float cellWidth;
 
 	DragInfo dragInfo;
 };
@@ -72,7 +67,7 @@ struct FrameBarCell
 
 	void reset();
 
-	void draw(float x, float y, float w, float h);
+	void draw(float x, float y, float w, float h, float widthMult);
 };
 
 struct FrameBarPlayerData

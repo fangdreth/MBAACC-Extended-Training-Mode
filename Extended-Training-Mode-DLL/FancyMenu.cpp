@@ -491,6 +491,16 @@ void initFramebarSubmenu() {
 		&frameBar.numCells
 	);
 
+	Framebar.add<float*>("Cell Width Ratio",
+		[](float inc, float*& opt) {
+			*opt += inc * 0.01;
+			*opt = CLAMP(*opt, 0.50f, 1.00f);
+		},
+		pointerSliderNameFunc,
+		sFRAME_BAR_CELLWIDTH,
+		&frameBar.cellWidth
+	);
+
 	Framebar.add<int*>("Display Numbers",
 		[](int inc, int*& opt) {
 			*opt += inc;
@@ -524,6 +534,7 @@ void initFramebarSubmenu() {
 			frameBar.w = 600.0f;
 			frameBar.h = 26.0f;
 			frameBar.numCells = 75;
+			frameBar.cellWidth = 0.90f;
 		},
 		buttonNameFunc
 	);
