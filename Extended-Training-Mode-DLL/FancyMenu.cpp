@@ -41,6 +41,7 @@ Menu<int>* disableFpsMenuOption = NULL;
 bool enableEffectColors = false;
 float effectColorHue = 0.0f;
 bool enableCursor = true;
+bool displayComboTimer = false;
 
 int p1LoadMoon = 0;
 int p1LoadChar = 0;
@@ -340,6 +341,18 @@ void initUISubmenu() {
 		defaultOnOffNameFunc,
 		L"",
 		1
+	);
+
+	ui.add<int>("Show Combo Timer",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			displayComboTimer = opt;
+		},
+		defaultOnOffNameFunc,
+		L"",
+		0
 	);
 
 	ui.add<int>("Hide Extras",

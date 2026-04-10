@@ -2438,19 +2438,20 @@ void HitboxBatchDrawNoBlend(const BoxObjects* b) {
 
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
+		LineDraw((*b)[i][0].x, ((*b)[i][0].y + (*b)[i][0].h), ((*b)[i][0].x + (*b)[i][0].w), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+		LineDraw(((*b)[i][0].x + (*b)[i][0].w / 2.0f), (*b)[i][0].y, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+	}
 
-		if (nORIGIN_STYLE) {
-			//_drawLine2(0.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, 1.3333f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			//_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, 1.0f, arrColors[i]);
-			LineDraw(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
-			LineDraw(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
-		}
-		else {
-			//_drawLine2((*b)[i][0].x / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, ((*b)[i][0].x + (*b)[i][0].w) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			//_drawLine2(((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, (*b)[i][0].y / 480.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f) / 480.0f, ((*b)[i][0].y + (*b)[i][0].h) / 480.0f, arrColors[i]);
-			LineDraw((*b)[i][0].x, ((*b)[i][0].y + (*b)[i][0].h), ((*b)[i][0].x + (*b)[i][0].w), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
-			LineDraw(((*b)[i][0].x + (*b)[i][0].w / 2.0f), (*b)[i][0].y, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
-		}
+	i = static_cast<int>(BoxType::ExtendedP1Origin);
+	if ((*b)[i].size() == 1) {
+		LineDraw(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+		LineDraw(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::ExtendedP2Origin);
+	if ((*b)[i].size() == 1) {
+		LineDraw(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+		LineDraw(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
 	}
 
 }
@@ -2520,18 +2521,20 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 
 	i = static_cast<int>(BoxType::Origin);
 	if ((*b)[i].size() == 1) {
-		if (nORIGIN_STYLE) {
-			//LineDrawBlend(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
-			//LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
-			LineDrawBlend(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
-			LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
-		}
-		else {
-			//LineDrawBlend((*b)[i][0].x, ((*b)[i][0].y + (*b)[i][0].h), ((*b)[i][0].x + (*b)[i][0].w), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
-			//LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), (*b)[i][0].y, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
-			LineDrawBlend((*b)[i][0].x, ((*b)[i][0].y + (*b)[i][0].h), ((*b)[i][0].x + (*b)[i][0].w), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
-			LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), (*b)[i][0].y, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
-		}
+		LineDrawBlend((*b)[i][0].x, ((*b)[i][0].y + (*b)[i][0].h), ((*b)[i][0].x + (*b)[i][0].w), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+		LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), (*b)[i][0].y, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::ExtendedP1Origin);
+	if ((*b)[i].size() == 1) {
+		LineDrawBlend(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+		LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::ExtendedP2Origin);
+	if ((*b)[i].size() == 1) {
+		LineDrawBlend(0.0f, ((*b)[i][0].y + (*b)[i][0].h), 640.0f, ((*b)[i][0].y + (*b)[i][0].h), arrColors[i]);
+		LineDrawBlend(((*b)[i][0].x + (*b)[i][0].w / 2.0f), 0.0f, ((*b)[i][0].x + (*b)[i][0].w / 2.0f), 480.0f, arrColors[i]);
 	}
 
 }

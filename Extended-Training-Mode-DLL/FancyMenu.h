@@ -85,6 +85,7 @@ extern Menu<int>* disableFpsMenuOption;
 extern bool enableEffectColors;
 extern float effectColorHue;
 extern bool enableCursor;
+extern bool displayComboTimer;
 
 extern int p1LoadMoon;
 extern int p1LoadChar;

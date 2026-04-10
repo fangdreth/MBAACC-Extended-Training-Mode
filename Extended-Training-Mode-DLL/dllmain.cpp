@@ -716,6 +716,10 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 
 	drawColor = 0xFF42E5F4;
 	boxType = BoxType::Origin;
+	if (nORIGIN_STYLE != 0) {
+		if (playerIndex % 2 == 0) boxType = BoxType::ExtendedP1Origin;
+		else boxType = BoxType::ExtendedP2Origin;
+	}
 
 	x1Cord = ((float)xCamTemp - (windowWidth / 640.0f) * cameraZoom * 5.0f);
 	x2Cord = ((windowWidth / 640.0f) * cameraZoom * 5.0f + (float)xCamTemp);
@@ -1575,8 +1579,11 @@ void drawStats()
 		}
 		
 	}
+		
+}
 
-	//combo timer
+void drawComboTimer()
+{
 	bool showTimer = false;
 	for (int i = 0; i < 4; i++) {
 		PlayerData* P = &playerDataArr[i];
@@ -1609,12 +1616,11 @@ void drawStats()
 		else {
 			TextDraw(320 - (7.2 * length), 15, 10, 0x80FFFFFF, "%.02f", comboTimer / 48.0f);
 		}
-		
+
 	}
 	else {
 		comboTimer = 0;
 	}
-		
 }
 
 void drawFrameData()
@@ -1635,10 +1641,15 @@ void drawFrameData()
 	prevFrameCalled = currentFrame;
 	*/
 
-	drawObject(0x00555130 + (0xAFC * 0), false, 0); // P1
-	drawObject(0x00555130 + (0xAFC * 1), false, 1); // P2
-	if (*(bool*)(0x00555130 + (0xAFC * 2))) drawObject(0x00555130 + (0xAFC * 2), false, 2); // P3
-	if (*(bool*)(0x00555130 + (0xAFC * 3))) drawObject(0x00555130 + (0xAFC * 3), false, 3); // P4
+	PlayerData** drawOrderArray = (PlayerData**)(adMBAABase + 0x00346048);
+	for (int i = 3; i >= 0; i--) {
+		if (drawOrderArray[i]->exists) drawObject((DWORD)drawOrderArray[i], false, drawOrderArray[i]->subObj.index);
+	}
+
+	//drawObject(0x00555130 + (0xAFC * 0), false, 0); // P1
+	//drawObject(0x00555130 + (0xAFC * 1), false, 1); // P2
+	//if (*(bool*)(0x00555130 + (0xAFC * 2))) drawObject(0x00555130 + (0xAFC * 2), false, 2); // P3
+	//if (*(bool*)(0x00555130 + (0xAFC * 3))) drawObject(0x00555130 + (0xAFC * 3), false, 3); // P4
 
 	// draw all effects
 
@@ -2850,6 +2861,9 @@ void frameDoneCallback()
 
 		if (nSHOW_STATS)
 			drawStats();
+
+		if (displayComboTimer)
+			drawComboTimer();
 	}
 
 	bool doDraw = false;
