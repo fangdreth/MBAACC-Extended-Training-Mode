@@ -86,6 +86,7 @@ extern bool enableEffectColors;
 extern float effectColorHue;
 extern bool enableCursor;
 extern bool displayComboTimer;
+extern bool displayHitstunBar;
 
 extern int p1LoadMoon;
 extern int p1LoadChar;

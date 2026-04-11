@@ -1517,25 +1517,6 @@ void drawStats()
 		TextDraw(395 + nResetOffset, 24, 6, 0xFFFFFFFF, std::format("{:.3f}", P2AdjGuts[3]).c_str());
 	}
 
-	//combo damage
-	if (nACCURATE_COMBO_DAMAGE)
-	{
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 8; j++) {
-				PlayerAuxData* playerData = &playerAuxDataArr[i];
-				if (trueComboData[i][j].damage != 0 &&
-					playerData->comboCalcData[j].someFlag != -1 &&
-					trueComboData[i][j].damage != playerData->comboCalcData[j].damage) {
-					float xPos = playerData->comboCalcData[j].xPos;
-					float yPos = playerData->comboCalcData[j].yPos;
-					byte alpha = playerData->comboCalcData[j].alpha;
-					DWORD ARGB = (alpha << 24) | 0x00FFFFFF;
-					TextDraw(xPos + 137.0f, yPos + 62.0f, 10, ARGB, "%i", trueComboData[i][j].damage);
-				}
-			}
-		}
-	}
-
 	//meter multipliers
 	if (shouldDrawMeter) {
 		nResetOffset = 0;
@@ -1584,6 +1565,10 @@ void drawStats()
 
 void drawComboTimer()
 {
+	if (!shouldDrawHud) {
+		return;
+	}
+
 	bool showTimer = false;
 	for (int i = 0; i < 4; i++) {
 		PlayerData* P = &playerDataArr[i];
@@ -1620,6 +1605,85 @@ void drawComboTimer()
 	}
 	else {
 		comboTimer = 0;
+	}
+}
+
+void drawAccurateComboDamage()
+{
+	if (!shouldDrawHud) {
+		return;
+	}
+
+	for (int i = 0; i < 2; i++) {
+		for (int j = 0; j < 8; j++) {
+			PlayerAuxData* playerData = &playerAuxDataArr[i];
+			if (trueComboData[i][j].damage != 0 &&
+				playerData->comboCalcData[j].someFlag != -1 &&
+				trueComboData[i][j].damage != playerData->comboCalcData[j].damage) {
+				float xPos = playerData->comboCalcData[j].xPos;
+				float yPos = playerData->comboCalcData[j].yPos;
+				byte alpha = playerData->comboCalcData[j].alpha;
+				DWORD ARGB = (alpha << 24) | 0x00FFFFFF;
+				TextDraw(xPos + 137.0f, yPos + 62.0f, 10, ARGB, "%i", trueComboData[i][j].damage);
+			}
+		}
+	}
+}
+
+void drawHitstunBar()
+{
+	if (!shouldDrawHud) {
+		return;
+	}
+
+	for (int i = 0; i < 2; i++) {
+		for (int j = 0; j < 8; j++) {
+			PlayerAuxData* playerData = &playerAuxDataArr[i];
+			if (trueComboData[i][j].damage != 0 &&
+				playerData->comboCalcData[j].someFlag != -1) {
+				float xPos = playerData->comboCalcData[j].xPos;
+				float yPos = playerData->comboCalcData[j].yPos;
+				byte alpha = playerData->comboCalcData[j].alpha;
+				DWORD ARGB = (alpha << 24) | 0x00FFFFFF;
+				DWORD bgARGB = (alpha << 24) | 0x00808080;
+				PlayerData* opponent = i == 0 ? pActiveP2 : pActiveP1;
+				float width = 0.0f;
+				float bgWidth = 0.0f;
+				if (opponent->subObj.hitstunTimeRemaining == -2) { //airborne
+					if (opponent->subObj.canAirTech) {
+						width = (float)(opponent->subObj.totalUntechTime - opponent->subObj.untechTimeElapsed) / 30.0f;
+						bgWidth = (float)(opponent->subObj.totalUntechTime - 1) / 30.0f;
+					}
+					else {
+						width = 1.0f;
+						bgWidth = 1.0f;
+						ARGB = (alpha << 24) | 0x00FFA020;
+					}
+				}
+				else if (opponent->subObj.hitstunTimeRemaining > 0) { //grounded
+					width = (float)(opponent->subObj.hitstunTimeRemaining - 1) / 30.0f;
+					bgWidth = (float)(opponent->subObj.hitstunTimeRemaining + opponent->subObj.hitstunBlockstunTimeElapsed - 2) / 30.0f;
+				}
+				else if (opponent->subObj.hitstunTimeRemaining == -3) { //knockdown
+					if (opponent->subObj.canGroundTech) {
+						width = 1.0f;
+						bgWidth = 1.0f;
+					}
+					else {
+						width = 1.0f;
+						bgWidth = 1.0f;
+						ARGB = (alpha << 24) | 0x00FFA020;
+					}
+					
+				}
+				bgWidth = CLAMP(bgWidth, 0.0f, 1.0f);
+				bgWidth *= 276.0f;
+				RectDraw(xPos + 276.0f - bgWidth, yPos + 42.0f, bgWidth, 4, bgARGB);
+				width = CLAMP(width, 0.0f, 1.0f);
+				width *= 276.0f;
+				RectDraw(xPos + 276.0f - width, yPos + 42.0f, width, 4, ARGB);
+			}
+		}
 	}
 }
 
@@ -2862,8 +2926,14 @@ void frameDoneCallback()
 		if (nSHOW_STATS)
 			drawStats();
 
+		if (nACCURATE_COMBO_DAMAGE)
+			drawAccurateComboDamage();
+
 		if (displayComboTimer)
 			drawComboTimer();
+
+		if (displayHitstunBar)
+			drawHitstunBar();
 	}
 
 	bool doDraw = false;

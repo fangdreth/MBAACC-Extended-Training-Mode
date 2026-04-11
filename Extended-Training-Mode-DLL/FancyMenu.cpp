@@ -42,6 +42,7 @@ bool enableEffectColors = false;
 float effectColorHue = 0.0f;
 bool enableCursor = true;
 bool displayComboTimer = false;
+bool displayHitstunBar = false;
 
 int p1LoadMoon = 0;
 int p1LoadChar = 0;
@@ -349,6 +350,18 @@ void initUISubmenu() {
 			opt &= 0b1;
 
 			displayComboTimer = opt;
+		},
+		defaultOnOffNameFunc,
+		L"",
+		0
+	);
+
+	ui.add<int>("Show Hitstun Bar",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			displayHitstunBar = opt;
 		},
 		defaultOnOffNameFunc,
 		L"",
