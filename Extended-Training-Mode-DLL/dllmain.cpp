@@ -1650,32 +1650,22 @@ void drawHitstunBar()
 				float width = 0.0f;
 				float bgWidth = 0.0f;
 				if (opponent->subObj.hitstunTimeRemaining == -2) { //airborne
-					if (opponent->subObj.canAirTech) {
-						width = (float)(opponent->subObj.totalUntechTime - opponent->subObj.untechTimeElapsed) / 30.0f;
-						bgWidth = (float)(opponent->subObj.totalUntechTime - 1) / 30.0f;
-					}
-					else {
-						width = 1.0f;
-						bgWidth = 1.0f;
-						ARGB = (alpha << 24) | 0x00FFA020;
-					}
+					width = (float)(opponent->subObj.totalUntechTime - opponent->subObj.untechTimeElapsed) / 30.0f;
+					bgWidth = (float)(opponent->subObj.totalUntechTime - 1) / 30.0f;
 				}
 				else if (opponent->subObj.hitstunTimeRemaining > 0) { //grounded
 					width = (float)(opponent->subObj.hitstunTimeRemaining - 1) / 30.0f;
 					bgWidth = (float)(opponent->subObj.hitstunTimeRemaining + opponent->subObj.hitstunBlockstunTimeElapsed - 2) / 30.0f;
 				}
 				else if (opponent->subObj.hitstunTimeRemaining == -3) { //knockdown
-					if (opponent->subObj.canGroundTech) {
-						width = 1.0f;
-						bgWidth = 1.0f;
-					}
-					else {
-						width = 1.0f;
-						bgWidth = 1.0f;
-						ARGB = (alpha << 24) | 0x00FFA020;
-					}
-					
+					width = 1.0f;
+					bgWidth = 1.0f;	
 				}
+
+				if (opponent->subObj.bounceCount > 2) {
+					ARGB = (alpha << 24) | 0x00FFA020;
+				}
+
 				bgWidth = CLAMP(bgWidth, 0.0f, 1.0f);
 				bgWidth *= 276.0f;
 				RectDraw(xPos + 276.0f - bgWidth, yPos + 42.0f, bgWidth, 4, bgARGB);
