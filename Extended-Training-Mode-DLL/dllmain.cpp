@@ -1639,13 +1639,14 @@ void drawHitstunBar()
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 8; j++) {
 			PlayerAuxData* playerData = &playerAuxDataArr[i];
-			if (trueComboData[i][j].damage != 0 &&
+			if (playerData->comboCalcData[j].damage != 0 &&
+				playerData->comboCalcData[j].numHits > 1 &&
 				playerData->comboCalcData[j].someFlag != -1) {
 				float xPos = playerData->comboCalcData[j].xPos;
 				float yPos = playerData->comboCalcData[j].yPos;
 				byte alpha = playerData->comboCalcData[j].alpha;
 				DWORD ARGB = (alpha << 24) | 0x00FFFFFF;
-				DWORD bgARGB = (alpha << 24) | 0x00808080;
+				DWORD bgARGB = (alpha << 24) | 0x0046A0E6;
 				PlayerData* opponent = i == 0 ? pActiveP2 : pActiveP1;
 				float width = 0.0f;
 				float bgWidth = 0.0f;
@@ -1662,16 +1663,41 @@ void drawHitstunBar()
 					bgWidth = 1.0f;	
 				}
 
+				int untechDecay = 0;
+				if (opponent->subObj.gravity > 0.072) untechDecay = max(0, (int)256 - floor(256 - (opponent->subObj.gravity - 0.072f) / 0.928f * 19)); //(opponent->subObj.gravity - 0.072f) / 0.928f * 19.0f;
+
 				if (opponent->subObj.bounceCount > 2) {
-					ARGB = (alpha << 24) | 0x00FFA020;
+					ARGB = (alpha << 24) | 0x00BF6716;
+					bgARGB = (alpha << 24) | 0x00000000;
+				}
+				else if (untechDecay + opponent->subObj.untechPenalty > 2) {
+					bgARGB = (alpha << 24) | 0x00000000;
+				}
+				else if (untechDecay + opponent->subObj.untechPenalty > 1) {
+					bgARGB = (alpha << 24) | 0x00808080;
+				}
+				else if (untechDecay + opponent->subObj.untechPenalty > 0) {
+					bgARGB = (alpha << 24) | 0x0078F0F0;
 				}
 
-				bgWidth = CLAMP(bgWidth, 0.0f, 1.0f);
-				bgWidth *= 276.0f;
-				RectDraw(xPos + 276.0f - bgWidth, yPos + 42.0f, bgWidth, 4, bgARGB);
-				width = CLAMP(width, 0.0f, 1.0f);
-				width *= 276.0f;
-				RectDraw(xPos + 276.0f - width, yPos + 42.0f, width, 4, ARGB);
+				RectDraw(xPos - 1, yPos + 42.0f, 278.0f, 4, 0xFF000000);
+				if (i == 0) {
+					bgWidth = CLAMP(bgWidth, 0.0f, 1.0f);
+					bgWidth *= 276.0f;
+					RectDraw(xPos + 276.0f - bgWidth, yPos + 43.0f, bgWidth, 2, bgARGB);
+					width = CLAMP(width, 0.0f, 1.0f);
+					width *= 276.0f;
+					RectDraw(xPos + 276.0f - width, yPos + 43.0f, width, 2, ARGB);
+				}
+				else {
+					bgWidth = CLAMP(bgWidth, 0.0f, 1.0f);
+					bgWidth *= 276.0f;
+					RectDraw(xPos, yPos + 43.0f, bgWidth, 2, bgARGB);
+					width = CLAMP(width, 0.0f, 1.0f);
+					width *= 276.0f;
+					RectDraw(xPos, yPos + 43.0f, width, 2, ARGB);
+				}
+				
 			}
 		}
 	}
