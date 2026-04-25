@@ -87,6 +87,10 @@ struct FrameBarPlayerData
 	int nInactionCounterMemory = 0;
 	int nAdvantageCounter = 0;
 	int nFirstActiveCounter = 0;
+	int nLinkWindowCounter = 0;
+	int nLinkWindowCounterMemory = 0;
+	int nLinkOTGWindow = 0;
+	int nLinkOTGWindowMemory = 0;
 	DWORD nLastFrameCount = 0;
 	byte bLastOnRight = 0;
 	DWORD dwLastActivePointer = 0x0;
@@ -95,6 +99,7 @@ struct FrameBarPlayerData
 	bool bAlreadyGotFirstActive = false;
 	bool bProjectileActive = false;
 	bool bLastProjectileActive = false;
+	bool bDoLinkWindowCounting = false;
 };
 
 extern FrameBarPlayerData FB_P1;

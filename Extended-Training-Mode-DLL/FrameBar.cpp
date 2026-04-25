@@ -128,12 +128,12 @@ void FrameBar::draw()
 	static char buffer[256];
 	int total = FB_Main1->nInactionableMemory % 1000;
 	if(nAdjustNumbersForFreeze) total = FB_Main1->nInactionCounterMemory % 1000;
-	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", FB_Main1->nFirstActive % 1000, total, nPlayerAdvantage % 1000);
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF / Link Window %3iF (%3iF)", FB_Main1->nFirstActive % 1000, total, nPlayerAdvantage % 1000, FB_Main1->nLinkWindowCounterMemory % 1000, FB_Main1->nLinkOTGWindowMemory % 1000);
 	TextDraw(l, t - 12, 10, 0xFFFFFFFF, buffer);
 
 	total = FB_Main2->nInactionableMemory % 1000;
 	if (nAdjustNumbersForFreeze) total = FB_Main2->nInactionCounterMemory % 1000;
-	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF", FB_Main2->nFirstActive % 1000, total, -nPlayerAdvantage % 1000);
+	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF / Link Window %3iF (%3iF)", FB_Main2->nFirstActive % 1000, total, -nPlayerAdvantage % 1000, FB_Main2->nLinkWindowCounterMemory % 1000, FB_Main2->nLinkOTGWindowMemory % 1000);
 	TextDraw(l, t + h + 3, 10, 0xFFFFFFFF, buffer);
 }
 
@@ -519,6 +519,30 @@ void IncrementFirstActive(FrameBarPlayerData& P1_, FrameBarPlayerData& P2_)
 		if (P1_.PlayerData->subObj.hitstop == 0 && P1_.PlayerData->subObj.animationDataPtr->stateData->canMove == false) {
 			P1_.nInactionCounter += 1;
 			P1_.nFirstActiveCounter += 1;
+		}
+
+		bool p2Invuln = P2_.PlayerData->subObj.strikeInvuln != 0 || P2_.PlayerData->subObj.animationDataPtr->highestNonHitboxIndex == 1 || P2_.PlayerData->subObj.bounceCount > 2;
+		if (P2_.PlayerData->subObj.hitstunTimeRemaining != 0 && !p2Invuln && P1_.nLastInactionableFrames == 0) {
+			if (P2_.PlayerData->subObj.hitstunTimeRemaining == -3) {
+				P1_.nLinkOTGWindow += 1;
+				P1_.nLinkOTGWindowMemory = P1_.nLinkOTGWindow;
+			}
+			else {
+				P1_.nLinkWindowCounter += 1;
+				P1_.nLinkWindowCounterMemory = P1_.nLinkWindowCounter;
+			}
+		}
+
+		if (P2_.PlayerData->subObj.hitstunTimeRemaining == 0 && P1_.nLinkWindowCounter != 0) {
+			P1_.nLinkWindowCounterMemory = P1_.nLinkWindowCounter;
+			P1_.nLinkWindowCounter = 0;
+			P1_.nLinkOTGWindowMemory = P1_.nLinkOTGWindow;
+			P1_.nLinkOTGWindow = 0;
+		}
+
+		if (P2_.PlayerData->subObj.isHitboxConnect || P1_.PlayerData->subObj.animationDataPtr->stateData->canMove == false) {
+			P1_.nLinkWindowCounter = 0;
+			P1_.nLinkOTGWindow = 0;
 		}
 	}
 }
