@@ -2860,7 +2860,8 @@ void frameDoneCallback()
 	}
 
 	if (*(byte*)(adMBAABase + adP1FN2Input) &&
-		(*(byte*)(adMBAABase + adDummyState) == 0xFF || *(byte*)(adMBAABase + adDummyState) == 0x5))
+		(*(byte*)(adMBAABase + adDummyState) == 0xFF || *(byte*)(adMBAABase + adDummyState) == 0x5) &&
+		safeWrite())
 	{
 		*(byte*)(adMBAABase + adNewSceneFlag) = 0xFF;
 	}
