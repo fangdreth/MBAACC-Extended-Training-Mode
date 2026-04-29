@@ -43,7 +43,7 @@ std::map<short, std::map<short, bool>> MBAACC_PatternMap = { {} };
 std::vector<std::string> vEveryPatternName =
 {
 	"5A", "2A", "6A", "6[A]", "5B", "5[B]", "2B", "2[B]", "4B", "4[B]", "6B", "6[B]", "3B", "3[B]", "5C", "5[C]", "2C", "2[C]", "4C", "4[C]", "6C", "6[C]", "3C", "3[C]",
-	"j.A", "j.[A]", "j.2A", "j.6A", "j.B", "j.2B", "j.[B]", "j.6B", "j.C", "j.[C]", "j.2C", "j.6C",
+	"j.A", "j.[A]", "j.2A", "j.6A", "j.B", "j.2B", "j.[B]", "j.6B", "j.C", "j.[C]", "j.2C", "j.2[C]", "j.6C",
 	"A DIVEKICK", "B DIVEKICK", "C DIVEKICK",
 	"BUNKER", "LOW SHIELD COUNTER", "SHIELD COUNTER", "5D", "2D", "j.D", "DODGE", "AIR DODGE", "HEAT", "THROW", "AIR THROW", "FLOAT", "AIR FLOAT",
 	"BACK DASH", "BACK AIRDASH", "FORWARD DASH", "FORWARD AIRDASH", "FASTFALL", "JUMP", "DBL JUMP", "FORWARD JUMP", "FORWARD DBL JUMP", "BACKWARD JUMP", "BACKWARD DBL JUMP", "FORWARD SUPER JUMP", "SUPER JUMP", "SUPER DBL JUMP",
@@ -186,6 +186,22 @@ std::vector<std::string> GetPatternList(int nCharacterID) {
 	return vReturnList;
 }
 
+std::vector<std::string> GetMaidsPatternList(int nCharacterID, bool tagFlag) {
+	std::vector<std::string> vReturnList = { "OFF" };
+
+	for (std::string& sPatternName : vEveryPatternName) {
+		if (MBAACC_Map[eCharacterValues::UNIVERSAL][sPatternName] != 0)
+			vReturnList.push_back(sPatternName);
+
+		std::string prefix = tagFlag ? "K-" : "H-";
+		std::string maidsPatternName = prefix + sPatternName;
+		if (MBAACC_Map[nCharacterID][maidsPatternName] != 0)
+			vReturnList.push_back(maidsPatternName);
+	}
+
+	return vReturnList;
+}
+
 std::string GetPatternNameFromID(int nPattern, int nCharacterID) {
 	for (std::string& sPatternName : vEveryPatternName) {
 		if (MBAACC_Map[eCharacterValues::UNIVERSAL][sPatternName] == nPattern || MBAACC_Map[nCharacterID][sPatternName] == nPattern)
@@ -199,7 +215,7 @@ std::vector<std::string> GetEmptyPatternList() {
 }
 
 bool IsAir(std::string sMove) {
-	return sMove.substr(0, 1) == "j" || sMove.find("DIVEKICK") != std::string::npos || sMove.find("AIR") != std::string::npos || sMove.find("DBL") != std::string::npos || sMove == "FASTFALL";
+	return sMove.substr(0, 1) == "j" || sMove.find("DIVEKICK") != std::string::npos || sMove.find("AIR") != std::string::npos || sMove.find("DBL") != std::string::npos || sMove == "FASTFALL" || sMove.substr(0,3) == "H-j" || sMove.substr(0, 3) == "K-j";
 }
 
 void PopulateAirAndGroundReversals(std::vector<int>* vAirReversals, std::vector<int>* vGroundReversals, int nP2CharacterID, std::vector<std::string>* vPatternNames, int nReversalIndex1, int nReversalIndex2, int nReversalIndex3, int nReversalIndex4) {

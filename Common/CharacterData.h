@@ -57,6 +57,8 @@ std::string GetCharacterNameFromID(int nCharacterID);
 
 std::vector<std::string> GetPatternList(int nCharacterID);
 
+std::vector<std::string> GetMaidsPatternList(int nCharacterID, bool tagFlag);
+
 std::string GetPatternNameFromID(int nPattern, int nCharacterID);
 
 std::vector<std::string> GetEmptyPatternList();

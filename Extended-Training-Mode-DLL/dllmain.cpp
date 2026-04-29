@@ -2046,7 +2046,7 @@ void HandleReversalsPage() {
 
 	switch (nREVERSAL_TYPE) {
 	case 1:
-		if (pActiveP2->subObj.hitstunTimeRemaining != 0 || pActiveP2->subObj.receivedHitVector != 0xFF || pActiveP2->subObj.shieldSuccessType != 0) {
+		if (pActiveP2->subObj.hitstunTimeRemaining != 0 || (pActiveP2->subObj.receivedHitVector != 0xFF && (pActiveP2->subObj.receivedHitVector < 90 || pActiveP2->subObj.receivedHitVector > 95)) || pActiveP2->subObj.shieldSuccessType != 0) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
 			nHoldButtons = 0;
@@ -2062,7 +2062,7 @@ void HandleReversalsPage() {
 		}
 		break;
 	case 3:
-		if ((pActiveP2->subObj.hitstunTimeRemaining != 0 || pActiveP2->subObj.receivedHitVector != 0xFF) && pActiveP2->subObj.inBlockstun == 0) {
+		if ((pActiveP2->subObj.hitstunTimeRemaining != 0 || (pActiveP2->subObj.receivedHitVector != 0xFF && (pActiveP2->subObj.receivedHitVector < 90 || pActiveP2->subObj.receivedHitVector > 95))) && pActiveP2->subObj.inBlockstun == 0) {
 			bDoReversal = true;
 			nReversalDelayFramesLeft = nREVERSAL_DELAY;
 			nHoldButtons = 0;
@@ -3029,6 +3029,22 @@ void frameDoneCallback()
 			SetRegistryValue(sP2_INPUT_DISPLAY, 0);
 		}
 		nInputDisplaySettings = nP1_INPUT_DISPLAY || nP2_INPUT_DISPLAY;
+	}
+
+	if (nP2CharacterID >= 190 && nP2CharacterID <= 192) {
+		vPatternNames = GetMaidsPatternList(nP2CharacterID, pP2->subObj.tagFlag);
+		if (nREV_ID_1 % 1000 > vPatternNames.size() - 1) {
+			nREV_ID_1 = 0;
+		}
+		if (nREV_ID_2 % 1000 > vPatternNames.size() - 1) {
+			nREV_ID_2 = 0;
+		}
+		if (nREV_ID_3 % 1000 > vPatternNames.size() - 1) {
+			nREV_ID_3 = 0;
+		}
+		if (nREV_ID_4 % 1000 > vPatternNames.size() - 1) {
+			nREV_ID_4 = 0;
+		}
 	}
 
 	nLastCustomInputDisplay = nInputDisplaySettings;
