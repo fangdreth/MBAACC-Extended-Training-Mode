@@ -3047,6 +3047,20 @@ void frameDoneCallback()
 		}
 	}
 
+	if (safeWrite()) {
+		byte curComboData;
+		if (pActiveP2->subObj.notInCombo) {
+			curComboData = playerAuxDataArr[0].comboCalcData[0].index;
+			trueComboData[0][curComboData].startingHealth = pActiveP2->subObj.health;
+			trueComboData[0][curComboData].defender = &(pActiveP2->subObj);
+		}
+		if (pActiveP1->subObj.notInCombo) {
+			curComboData = playerAuxDataArr[1].comboCalcData[0].index;
+			trueComboData[1][curComboData].startingHealth = pActiveP1->subObj.health;
+			trueComboData[1][curComboData].defender = &(pActiveP1->subObj);
+		}
+	}
+
 	nLastCustomInputDisplay = nInputDisplaySettings;
 	nLastVanillaInputDisplay = *(bool*)(INPUTDISPLAYTOGGLE);
 
@@ -6927,7 +6941,7 @@ __declspec(naked) void _naked_GetInitialHealthForTrueComboDamage() {
 	}
 }
 
-void DrawTrueComboDamage() {
+void SetTrueComboDamage() {
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 8; j++) {
 			PlayerAuxData* playerData = &playerAuxDataArr[i];
@@ -6946,10 +6960,10 @@ void DrawTrueComboDamage() {
 }
 
 //DWORD DrawTrueComboDamage_PatchAddr = 0x0047698a;
-DWORD DrawTrueComboDamage_PatchAddr = 0x00476a81;
-__declspec(naked) void _naked_DrawTrueComboDamage() {
+DWORD SetTrueComboDamage_PatchAddr = 0x00476a81;
+__declspec(naked) void _naked_SetTrueComboDamage() {
 	PUSH_ALL;
-	DrawTrueComboDamage();
+	SetTrueComboDamage();
 	POP_ALL;
 
 	__asm {
@@ -7313,8 +7327,8 @@ void initDisabledExit() {
 }
 
 void initTrueComboDamage() {
-	patchJump(GetInitialHealthForTrueComboDamage_PatchAddr, _naked_GetInitialHealthForTrueComboDamage);
-	patchJump(DrawTrueComboDamage_PatchAddr, _naked_DrawTrueComboDamage);
+	//patchJump(GetInitialHealthForTrueComboDamage_PatchAddr, _naked_GetInitialHealthForTrueComboDamage);
+	patchJump(SetTrueComboDamage_PatchAddr, _naked_SetTrueComboDamage);
 }
 
 void initDummyDelayTech() {
