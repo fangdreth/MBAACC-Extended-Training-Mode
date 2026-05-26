@@ -2524,6 +2524,12 @@ void frameDoneCallback()
 		dragManager.handleDrag();
 	}
 	
+	static bool etmMenuInit = false;
+	if (!etmMenuInit) {
+		initExtendedMenu();
+		initHotkeyMenu();
+		etmMenuInit = true;
+	}
 
 	shouldDrawBackground = true;
 	shouldDrawHud = !nHIDE_HUD;
@@ -4228,46 +4234,50 @@ MenuWindow* InitMenuWindow(MenuWindow* menuWindow) {
 	return menuWindow;
 }
 
-void AddSelectElement(MenuInfo* menuInfo, std::vector<const char*> elementVector, int pageNum, int elementNum) {
-	int vSize = size(elementVector);
+Element* AddSelectElement(MenuInfo* menuInfo, std::string label, std::vector<std::string> itemLabels, int pageNum, int elementNum) {
 	Element* element = NEW_SELECT_ELEMENT();
 	char tempTag[16];
 	snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
-	InitSelectElement(element, elementVector[0], tempTag, 0xa0);
+	InitSelectElement(element, label.c_str(), tempTag, 0xa0);
 	element->vftable = (void*)0x00536654;
-	for (int i = 1; i < vSize; i++) {
+	int itemNum = 0;
+	for (auto& itemLabel : itemLabels) {
 		Item* item = (Item*)NEW_ITEM();
-		snprintf(tempTag, 15, "%i_%i_%i", pageNum, elementNum, i);
-		InitItem(item, elementVector[i], tempTag, i - 1);
+		snprintf(tempTag, 15, "%i_%i_%i", pageNum, elementNum, itemNum);
+		InitItem(item, itemLabel.c_str(), tempTag, itemNum);
 		EnterIntoList((void*)(&element->itemList), (void*)(item));
+		itemNum++;
 	}
-	if (elementVector[0] == " ") {
+	if (label == " ") {
 		element->selectItemLabelXOffset = 64;
 	}
 	EnterIntoList((void*)(&menuInfo->elementList), (void*)(element));
+	return element;
 }
 
-void AddNormalElement(MenuInfo* menuInfo, std::vector<const char*> elementVector, int pageNum, int elementNum) {
+Element* AddNormalElement(MenuInfo* menuInfo, std::string label, int pageNum, int elementNum) {
 	Element* element = NEW_NORMAL_ELEMENT();
 	char tempTag[16];
-	snprintf(tempTag, 15, "%i_%i_n", pageNum, elementNum);
-	InitNormalElement(element, elementVector[0], tempTag, 0);
+	snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
+	InitNormalElement(element, label.c_str(), tempTag, 0);
 	element->canSelect = 1;
 	element->elementType = 1;
 	element->vftable = (void*)0x0053604c;
 	EnterIntoList((void*)(&menuInfo->elementList), (void*)(element));
+	return element;
 }
 
-void AddSpaceElement(MenuInfo* menuInfo, int pageNum, int elementNum, int margin = 8) {
+Element* AddSpaceElement(MenuInfo* menuInfo, int pageNum, int elementNum, int margin = 8) {
 	Element* element = NEW_NORMAL_ELEMENT();
 	char tempTag[16];
-	snprintf(tempTag, 15, "%i_%i_s", pageNum, elementNum);
+	snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
 	InitNormalElement(element, "", "", 0);
 	element->canSelect = 0;
 	element->elementType = 2;
 	element->bottomMargin = margin;
 	element->vftable = (void*)0x00536094;
 	EnterIntoList((void*)(&menuInfo->elementList), (void*)(element));
+	return element;
 }
 
 //wrapper for call to FUN_00429b00
@@ -4314,72 +4324,39 @@ Element* GetElementPointer(MenuInfo* menuInfo, const char* tag) {
 	return retElement;
 }
 
-//get a single setting from persistent location
-bool GetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
-	Element* element = GetElementPointer(menuInfo, tag);
-	if (element != 0x0 && element->GetItemListSize() != 0x0) {
+bool GetSetting(Setting* setting) {
+	if (setting->element != nullptr && setting->element->GetItemListSize() != 0x0) {
 		int iterator = 0;
 		while (true) {
-			int CurItemValue = element->GetItemValue(iterator);
-			if (CurItemValue == *setting) break;
+			int CurItemValue = setting->element->GetItemValue(iterator);
+			if (CurItemValue == setting->storage) break;
 			iterator++;
-			if (element->GetItemListSize() <= iterator) return false;
+			if (setting->element->GetItemListSize() <= iterator) return false;
 		}
-		element->selectedItem = iterator;
+		setting->element->selectedItem = iterator;
 		return true;
 	}
 	return false;
 }
 
-//get settings from persistent locations to init menu window
-void GetExtendedSettings(MenuWindow* extendedWindow) {
-	if ((extendedWindow->menuInfoList).listStart == 0x0 || (extendedWindow->menuInfoList).listEnd - (extendedWindow->menuInfoList).listStart == 0) {
+void LoadMenuSettings(MenuWindow* window, MenuContainer& container) {
+	if ((window->menuInfoList).listStart == 0x0 || (window->menuInfoList).listEnd - (window->menuInfoList).listStart == 0) {
 		__asm {
 			call[MBAA_UnrecoveredJumptable];
 		}
 	}
-	char tempTag[16];
-	MenuInfo* extendedInfo;
-	for (int pageNum = 0; pageNum <= XS_NUM_PAGES; pageNum++) {
-		extendedInfo = (extendedWindow->menuInfoList).listStart[pageNum];
-		int settingNum = 0;
-		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
-			if (GetSetting(extendedInfo, Page_Settings[pageNum][settingNum], tempTag)) {
-				settingNum++;
-			};
-		}
-	}
-	
-	extendedWindow->menuInfoIndex = nEXTENDED_SETTINGS_PAGE;
-	for (int i = 0; i <= XS_NUM_PAGES; i++) {
-		(extendedWindow->menuInfoList).listStart[i]->selectedElement = nEXTENDED_SETTINGS_CURSOR[i];
-	}
-}
 
-//get settings from persistent locations to init menu window
-void GetHotkeySettings(MenuWindow* hotkeyWindow) {
-	if ((hotkeyWindow->menuInfoList).listStart == 0x0 || (hotkeyWindow->menuInfoList).listEnd - (hotkeyWindow->menuInfoList).listStart == 0) {
-		__asm {
-			call[MBAA_UnrecoveredJumptable];
-		}
-	}
-	char tempTag[16];
-	MenuInfo* hotkeyInfo;
-	for (int pageNum = 0; pageNum <= HK_NUM_PAGES; pageNum++) {
-		hotkeyInfo = (hotkeyWindow->menuInfoList).listStart[pageNum];
-		int settingNum = 0;
-		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
-			if (GetSetting(hotkeyInfo, HK_Page_Settings[pageNum][settingNum], tempTag)) {
-				settingNum++;
-			};
+	for (auto pageKey : container.keys) {
+		Page* page = container.get(pageKey);
+		for (auto settingKey : page->keys) {
+			Setting* setting = page->get(settingKey);
+			GetSetting(setting);
 		}
 	}
 
-	hotkeyWindow->menuInfoIndex = nHOTKEY_SETTINGS_PAGE;
-	for (int i = 0; i <= HK_NUM_PAGES; i++) {
-		(hotkeyWindow->menuInfoList).listStart[i]->selectedElement = nHOTKEY_SETTINGS_CURSOR[i];
+	window->menuInfoIndex = container.savedSelection;
+	for (int i = 0; i < container.pages.size(); i++) {
+		(window->menuInfoList).listStart[i]->selectedElement = container.get(i)->savedSelection;
 	}
 }
 
@@ -4387,34 +4364,35 @@ void GetHotkeySettings(MenuWindow* hotkeyWindow) {
 MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 	InitMenuWindow(extendedWindow);
 	ReadDataFile(&extendedWindow->label, "EXTENDED SETTINGS", 18);
-	for (int pageNum = 0; pageNum < size(Page_Options); pageNum++)
+	int pageNum = 0;
+	for (auto& pageKey : XS_Menu.keys)
 	{
+		Page* page = XS_Menu.get(pageKey);
 		MenuInfo* extendedInfo = NEW_MENU_INFO();
 		if (extendedInfo != 0x0)
 		{
 			InitExtendedSettingsMenuInfo(extendedInfo, extendedWindow);
 		}
-		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
-			std::vector<const char*> elementVector = Page_Options[pageNum][elementNum];
-			int vSize = size(elementVector);
-			switch (vSize)
-			{
-			case 0:
+		int elementNum = 0;
+		for (auto& settingKey : page->keys) {
+			Setting* setting = page->get(settingKey);
+			if (setting->label == "") {
 				AddSpaceElement(extendedInfo, pageNum, elementNum);
-				break;
-			case 1:
-				AddNormalElement(extendedInfo, elementVector, pageNum, elementNum);
-				break;
-			default:
-				AddSelectElement(extendedInfo, elementVector, pageNum, elementNum);
-				break;
 			}
+			else if (setting->itemLabels.size() == 0) {
+				AddNormalElement(extendedInfo, setting->label, pageNum, elementNum);
+			}
+			else {
+				setting->element = AddSelectElement(extendedInfo, setting->label, setting->itemLabels, pageNum, elementNum);
+			}
+			elementNum++;
 		}
 		EnterIntoList((void*)(&extendedWindow->menuInfoList), (void*)(extendedInfo));
+		pageNum++;
 		//_FUN_00429b00(extendedInfo, "EXTENDED_SETTING");
 	}
 
-	GetExtendedSettings(extendedWindow);
+	LoadMenuSettings(extendedWindow, XS_Menu);
 	extendedWindow->dimScreenPercentage = 0.0;
 	extendedWindow->u_layer = 0x2f1;
 	extendedWindow->isMenuLit = 1;
@@ -4429,33 +4407,34 @@ MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 MenuWindow* InitHotkeySettingsMenu(MenuWindow* hotkeyWindow) {
 	InitMenuWindow(hotkeyWindow);
 	ReadDataFile(&hotkeyWindow->label, "HOTKEY SETTINGS", 18);
-	for (int pageNum = 0; pageNum < size(HK_Page_Options); pageNum++)
+	int pageNum = 0;
+	for (auto& pageKey : HK_Menu.keys)
 	{
+		Page* page = HK_Menu.get(pageKey);
 		MenuInfo* hotkeyInfo = NEW_MENU_INFO();
 		if (hotkeyInfo != 0x0)
 		{
 			InitHotkeySettingsMenuInfo(hotkeyInfo, hotkeyWindow);
 		}
-		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
-			std::vector<const char*> elementVector = HK_Page_Options[pageNum][elementNum];
-			int vSize = size(elementVector);
-			switch (vSize)
-			{
-			case 0:
+		int elementNum = 0;
+		for (auto& settingKey : page->keys) {
+			Setting* setting = page->get(settingKey);
+			if (setting->label == "") {
 				AddSpaceElement(hotkeyInfo, pageNum, elementNum);
-				break;
-			case 1:
-				AddNormalElement(hotkeyInfo, elementVector, pageNum, elementNum);
-				break;
-			default:
-				AddSelectElement(hotkeyInfo, elementVector, pageNum, elementNum);
-				break;
 			}
+			else if (setting->itemLabels.size() == 0) {
+				AddNormalElement(hotkeyInfo, setting->label, pageNum, elementNum);
+			}
+			else {
+				setting->element = AddSelectElement(hotkeyInfo, setting->label, setting->itemLabels, pageNum, elementNum);
+			}
+			elementNum++;
 		}
 		EnterIntoList((void*)(&hotkeyWindow->menuInfoList), (void*)(hotkeyInfo));
+		pageNum++;
 	}
 
-	GetHotkeySettings(hotkeyWindow);
+	LoadMenuSettings(hotkeyWindow, HK_Menu);
 	hotkeyWindow->dimScreenPercentage = 0.0;
 	hotkeyWindow->u_layer = 0x2f1;
 	hotkeyWindow->isMenuLit = 1;
@@ -4487,73 +4466,40 @@ void _FUN_0047ce20(const char* TRAINING_XX_MENU, void* field24) {
 
 }
 
-//Sets a single setting to its persistent location
-bool SetSetting(MenuInfo* menuInfo, int* setting, const char* tag) {
-	Element* element = GetElementPointer(menuInfo, tag);
-	if (element != 0x0) {
-		int selectionIndex = element->selectedItem;
-		int value = (element->itemList).listStart[selectionIndex]->value;
-		*setting = value;
+bool SetSetting(Setting* setting) {
+	if (setting->element != nullptr && setting->element->GetItemListSize() != 0x0) {
+		int selectionIndex = setting->element->selectedItem;
+		int elementValue = (setting->element->itemList).listStart[selectionIndex]->value;
+		setting->storage = elementValue;
 		return true;
 	}
 	return false;
 }
 
-//save extended settings to persistent locations
-void SetExtendedSettings(MenuWindow* extendedWindow) {
-	if ((extendedWindow->menuInfoList).listStart == 0x0 || (extendedWindow->menuInfoList).listEnd - (extendedWindow->menuInfoList).listStart == 0) {
+void SaveMenuSettings(MenuWindow* window, MenuContainer& container) {
+	if ((window->menuInfoList).listStart == 0x0 || (window->menuInfoList).listEnd - (window->menuInfoList).listStart == 0) {
 		__asm {
 			call[MBAA_UnrecoveredJumptable];
 		}
 	}
-	char tempTag[16];
-	MenuInfo* extendedInfo;
-	for (int pageNum = 0; pageNum <= XS_NUM_PAGES; pageNum++) {
-		extendedInfo = (extendedWindow->menuInfoList).listStart[pageNum];
-		int settingNum = 0;
-		for (int elementNum = 0; elementNum < size(Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
-			if (SetSetting(extendedInfo, Page_Settings[pageNum][settingNum], tempTag)) {
-				settingNum++;
-			};
+
+	for (auto pageKey : container.keys) {
+		Page* page = container.get(pageKey);
+		for (auto settingKey : page->keys) {
+			Setting* setting = page->get(settingKey);
+			SetSetting(setting);
 		}
 	}
 
-	nEXTENDED_SETTINGS_PAGE = extendedWindow->menuInfoIndex;
-	for (int i = 0; i <= XS_NUM_PAGES; i++) {
-		nEXTENDED_SETTINGS_CURSOR[i] = (extendedWindow->menuInfoList).listStart[i]->selectedElement;
-	}
-}
-
-//save hotkey settings to persistent locations
-void SetHotkeySettings(MenuWindow* hotkeyWindow) {
-	if ((hotkeyWindow->menuInfoList).listStart == 0x0 || (hotkeyWindow->menuInfoList).listEnd - (hotkeyWindow->menuInfoList).listStart == 0) {
-		__asm {
-			call[MBAA_UnrecoveredJumptable];
-		}
-	}
-	char tempTag[16];
-	MenuInfo* hotkeyInfo;
-	for (int pageNum = 0; pageNum <= HK_NUM_PAGES; pageNum++) {
-		hotkeyInfo = (hotkeyWindow->menuInfoList).listStart[pageNum];
-		int settingNum = 0;
-		for (int elementNum = 0; elementNum < size(HK_Page_Options[pageNum]); elementNum++) {
-			snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
-			if (SetSetting(hotkeyInfo, HK_Page_Settings[pageNum][settingNum], tempTag)) {
-				settingNum++;
-			};
-		}
-	}
-
-	nHOTKEY_SETTINGS_PAGE = hotkeyWindow->menuInfoIndex;
-	for (int i = 0; i <= HK_NUM_PAGES; i++) {
-		nHOTKEY_SETTINGS_CURSOR[i] = (hotkeyWindow->menuInfoList).listStart[i]->selectedElement;
+	window->menuInfoIndex = container.savedSelection;
+	for (int i = 0; i < container.pages.size(); i++) {
+		container.get(i)->savedSelection = (window->menuInfoList).listStart[i]->selectedElement;
 	}
 }
 
 //save extended settings and free everything
 void CloseExtendedSettings(MenuWindow* extendedWindow) {
-	SetExtendedSettings(extendedWindow);
+	SaveMenuSettings(extendedWindow, XS_Menu);
 
 	bCOLOR_GUIDE = false;
 	*(bool*)(adMBAABase + adXS_colorGuide) = bCOLOR_GUIDE;
@@ -4575,7 +4521,7 @@ void CloseExtendedSettings(MenuWindow* extendedWindow) {
 
 //save hotkey settings and free everything
 void CloseHotkeySettings(MenuWindow* hotkeyWindow) {
-	SetHotkeySettings(hotkeyWindow);
+	SaveMenuSettings(hotkeyWindow, HK_Menu);
 
 	__asm {
 		mov ecx, hotkeyWindow;

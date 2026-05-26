@@ -222,6 +222,76 @@ CHECKSIZE(MenuWindow, 0xe8)
 #undef CHECKOFFSET
 #undef CHECKSIZE
 
+struct Setting {
+	std::string label = "";
+	std::vector<std::string> itemLabels = {};
+	int storage = 0;
+	int storageDefault = 0;
+	int value = 0;
+	int valueDefault = 0;
+	Element* element = nullptr;
+	KeyState* hotkey = nullptr;
+
+	Setting();
+	Setting(std::string label_);
+	Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int valueDefault_);
+
+	void _default();
+};
+
+struct Page {
+	std::string label = "";
+	std::map<std::string, Setting> settings = {};
+	std::vector<std::string> keys = {};
+	int savedSelection = 0;
+
+	Page();
+	Page(std::string label_);
+
+	void add(Setting& setting_);
+	void add(std::string label_);
+	void add(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int valueDefault_);
+	void addCustom(std::string label_, int storageDefault_ = 1, int valueDefault_ = 0);
+	void addNumeric(std::string label_, int min, int max, int default_, int interval = 1);
+	void addHotkey(std::string label_);
+	void addDefault();
+	void addReturn();
+	void addPage();
+	void addSpace();
+	void addFooter();
+
+	Setting* get(std::string key_);
+	int getValue(std::string key_);
+	int getStorage(std::string key_);
+	void setValue(std::string key_, int value_);
+	void setStorage(std::string key_, int storage_);
+
+	void _default();
+};
+
+struct MenuContainer {
+	std::string label = "";
+	std::map<std::string, Page> pages = {};
+	std::vector<std::string> keys = {};
+	int savedSelection = 0;
+
+	MenuContainer(std::string label_);
+
+	void add(Page& page_);
+	void add(std::string key_, Page& page_);
+
+	Page* get(std::string key_);
+	Page* get(int index);
+};
+
+const std::vector<std::string> defaultCustomItems = { "X1", "X2", "X3" };
+
+extern MenuContainer XS_Menu;
+extern MenuContainer HK_Menu;
+
+void initExtendedMenu();
+void initHotkeyMenu();
+
 // --- Vectors guide ---
 //Empty vectors are blank spaces (only need the one defined)
 //Vectors with one value are elements with only a label (like the vanilla "default" and "return" elements)

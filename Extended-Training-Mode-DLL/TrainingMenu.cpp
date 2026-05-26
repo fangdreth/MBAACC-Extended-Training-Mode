@@ -144,6 +144,334 @@ void MenuWindow::SetLabel(const char* newLabel) {
 	ReadDataFile((void*)(&label), newLabel, strlen(newLabel));
 }
 
+Setting::Setting() {
+
+}
+
+Setting::Setting(std::string label_) {
+	label = label_;
+}
+
+Setting::Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int valueDefault_) {
+	label = label_;
+	itemLabels = itemLabels_;
+	storageDefault = storageDefault_;
+	storage = storageDefault_;
+	valueDefault = valueDefault_;
+	value = valueDefault_;
+}
+
+void Setting::_default() {
+	storage = storageDefault;
+	value = valueDefault;
+
+	if (element != nullptr) {
+		element->selectedItem = storageDefault;
+	}
+	if (hotkey != nullptr) {
+		hotkey = nullptr;
+	}
+}
+
+Page::Page() {
+
+}
+
+Page::Page(std::string label_) {
+	label = label_;
+}
+
+void Page::add(Setting& setting_) {
+	settings.emplace(setting_.label, setting_);
+	keys.emplace_back(setting_.label);
+}
+
+void Page::add(std::string label_) {
+	settings.emplace(label_, Setting(label_));
+	keys.emplace_back(label_);
+}
+
+void Page::add(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int valueDefault_) {
+	settings.emplace(label_, Setting(label_, itemLabels_, storageDefault_, valueDefault_));
+	keys.emplace_back(label_);
+}
+
+void Page::addCustom(std::string label_, int storageDefault_, int valueDefault_) {
+	settings.emplace(label_, Setting(label_, defaultCustomItems, storageDefault_, valueDefault_));
+	keys.emplace_back(label_);
+}
+
+void Page::addNumeric(std::string label_, int min, int max, int default_, int interval) {
+	std::vector<std::string> itemLabels = {};
+	for (int i = min; i <= max; i += interval) {
+		itemLabels.emplace_back(std::to_string(i));
+	}
+	settings.emplace(label_, Setting(label_, itemLabels, default_, default_));
+	keys.emplace_back(label_);
+}
+
+void Page::addHotkey(std::string label_) {
+	settings.emplace(label_, Setting(label_, {"X"}, 0, 0));
+	keys.emplace_back(label_);
+}
+
+void Page::addDefault() {
+	settings.emplace("DEFAULT", Setting("DEFAULT"));
+	keys.emplace_back("DEFAULT");
+}
+
+void Page::addReturn() {
+	settings.emplace("RETURN", Setting("RETURN"));
+	keys.emplace_back("RETURN");
+}
+
+void Page::addPage() {
+	settings.emplace("PAGE", Setting(" ", defaultCustomItems, 1, 1));
+	keys.emplace_back("PAGE");
+}
+
+void Page::addSpace() {
+	settings.emplace("SPACE", Setting(""));
+	keys.emplace_back("SPACE");
+}
+
+void Page::addFooter() {
+	addDefault();
+	addSpace();
+	addReturn();
+	addSpace();
+	addPage();
+}
+
+Setting* Page::get(std::string key_) {
+	return &settings[key_];
+}
+
+int Page::getValue(std::string key_) {
+	return settings[key_].value;
+}
+
+int Page::getStorage(std::string key_) {
+	return settings[key_].storage;
+}
+
+void Page::setValue(std::string key_, int value_) {
+	settings[key_].value = value_;
+}
+
+void Page::setStorage(std::string key_, int storage_) {
+	settings[key_].storage = storage_;
+}
+
+void Page::_default() {
+	for (auto pair : settings) {
+		pair.second._default();
+	}
+}
+
+MenuContainer::MenuContainer(std::string label_) {
+	label = label_;
+}
+
+void MenuContainer::add(Page& page_) {
+	pages.emplace(page_.label, page_);
+	keys.emplace_back(page_.label);
+}
+
+void MenuContainer::add(std::string key_, Page& page_) {
+	pages.emplace(key_, page_);
+	keys.emplace_back(key_);
+}
+
+Page* MenuContainer::get(std::string key_) {
+	return &pages[key_];
+}
+
+Page* MenuContainer::get(int index) {
+	return &pages[keys[index]];
+}
+
+MenuContainer XS_Menu("EXTENDED SETTINGS");
+MenuContainer HK_Menu("HOTKEY SETTINGS");
+
+void initExtendedMenu() {
+	Page reversals("REVERSALS");
+	reversals.add("REVERSALS", { "OFF", "ON", "ON GUARD", "ON HIT", "ON WAKEUP", "ON SHIELD" }, 1, 1);
+	reversals.addSpace();
+	reversals.addCustom("REVERSAL SLOT 1");
+	reversals.addNumeric("WEIGHT 1", 0, 10, 1);
+	reversals.addCustom("REVERSAL SLOT 2");
+	reversals.addNumeric("WEIGHT 2", 0, 10, 1);
+	reversals.addCustom("REVERSAL SLOT 3");
+	reversals.addNumeric("WEIGHT 3", 0, 10, 1);
+	reversals.addCustom("REVERSAL SLOT 4");
+	reversals.addNumeric("WEIGHT 4", 0, 10, 1);
+	reversals.addSpace();
+	reversals.addNumeric("NO REVERSAL WEIGHT", 0, 10, 1);
+	reversals.addSpace();
+	reversals.addNumeric("REVERSAL DELAY", 0, 20, 1);
+	reversals.addSpace();
+	reversals.addFooter();
+	XS_Menu.add(reversals);
+
+	Page training("TRAINING");
+	training.add("PENALTY RESET", { "NORMAL", "INSTANT" }, 0, 0);
+	training.add("GUARD BAR RESET", { "NORMAL", "INSTANT" }, 0, 0);
+	training.add("EX GUARD", { "OFF", "ON", "RANDOM" }, 0, 0);
+	training.addSpace();
+	training.addCustom("P1 METER", 10000);
+	training.addCustom("P2 METER", 10000);
+	training.addSpace();
+	training.addCustom("P1 HEALTH", 11400);
+	training.addCustom("P2 HEALTH", 11400);
+	training.addSpace();
+	training.addCustom("HITS UNTIL BURST");
+	training.addCustom("HITS UNTIL BUNKER");
+	training.addCustom("HITS UNTIL FORCE GUARD");
+	training.addCustom("FORCE GUARD STANCE");
+	training.addSpace();
+	training.addFooter();
+	XS_Menu.add(training);
+
+	Page highlights("HIGHLIGHTS");
+	highlights.add("HIGHLIGHTS", { "OFF", "ON" }, 0, 0);
+	highlights.addSpace();
+	highlights.add("GUARD", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
+	highlights.add("HIT", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
+	highlights.add("ARMOR", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
+	highlights.add("THROW PROTECTION", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
+	highlights.add("IDLE", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
+	highlights.addSpace();
+	highlights.addFooter();
+	XS_Menu.add(highlights);
+
+	Page positions("POSITIONS");
+	positions.add("RESET TO POSITIONS", { "OFF", "ON" }, 0, 0);
+	positions.addSpace();
+	positions.addCustom("P1 POSITION", 1, -16384);
+	positions.addCustom("P1 ASSIST POSITION", 1, -29184);
+	positions.addSpace();
+	positions.addCustom("P2 POSITION", 1, 16384);
+	positions.addCustom("P2 ASSIST POSITION", 1, 29184);
+	positions.addSpace();
+	positions.add("MOVE TO POSITIONS");
+	positions.add("SET CURRENT POSITIONS");
+	positions.add("INVERT");
+	positions.addSpace();
+	positions.addFooter();
+	XS_Menu.add(positions);
+
+	Page character("CHARACTER");
+	character.add("SION BULLETS", { "INFINITE", "NORMAL", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1" }, 1, 1);
+	character.addSpace();
+	character.add("ROA VISIBLE CHARGE", { "INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, 1, 1);
+	character.add("ROA HIDDEN CHARGE", { "INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, 1, 1);
+	character.addSpace();
+	character.add("F-MAIDS HEARTS", { "INFINITE", "NORMAL", "4", "3", "2", "1", "0"}, 1, 1);
+	character.addSpace();
+	character.add("RYOUGI KNIFE", { "INFINITE", "NORMAL" }, 1, 1);
+	character.addSpace();
+	character.addFooter();
+	XS_Menu.add(character);
+
+	Page hitboxes("HITBOXES");
+	hitboxes.add("DISPLAY HITBOXES", { "OFF", "ON" }, 0, 0);
+	hitboxes.add("HITBOX STYLE", { "LAYERED", "BLENDED" }, 0, 0);
+	hitboxes.add("COLOR BLIND MODE", { "OFF", "ON" }, 0, 0);
+	hitboxes.addSpace();
+	hitboxes.add("ORIGIN STYLE", { "STANDARD", "EXTENDED" }, 0, 0);
+	hitboxes.addSpace();
+	hitboxes.add("DRAW GROUND", { "OFF", "ON" }, 0, 0);
+	hitboxes.addSpace();
+	hitboxes.addFooter();
+	XS_Menu.add(hitboxes);
+
+	Page savestates("SAVE STATES");
+	savestates.add("SAVE STATE SLOT", { "NONE", "SLOT 01", "SLOT 02", "SLOT 03" }, 1, 1);
+	savestates.addSpace();
+	savestates.add("SAVE STATE");
+	savestates.add("CLEAR ALL SAVES");
+	savestates.addSpace();
+	savestates.add("SYNC SAVES WITH FILES", { "OFF", "ON" }, 0, 0);
+	savestates.add("IMPORT SAVE");
+	savestates.add("EXPORT SAVE");
+	savestates.addSpace();
+	savestates.add("LOAD RNG", { "OFF", "ON" }, 0, 0);
+	savestates.addSpace();
+	savestates.addFooter();
+	XS_Menu.add(savestates);
+
+	Page framedata("FRAME DATA");
+	framedata.add("CONSOLE DATA", { "NORMAL", "ADVANCED" }, 0, 0);
+	framedata.add("IN-GAME FRAME DISPLAY", { "OFF", "ON" }, 0, 0);
+	framedata.addSpace();
+	framedata.add("SHOW HITSTOP & FREEZE", { "OFF", "ON" }, 0, 0);
+	framedata.add("SHOW INPUTS", { "OFF", "ON" }, 0, 0);
+	framedata.add("SHOW CANCEL WINDOWS", { "OFF", "ON" }, 0, 0);
+	framedata.addSpace();
+	framedata.addCustom("SCROLL DISPLAY", 2, 0);
+	framedata.addSpace();
+	framedata.add("COLOR GUIDE");
+	framedata.addSpace();
+	framedata.addFooter();
+	XS_Menu.add(framedata);
+
+	Page rng("RNG");
+	rng.add("CUSTOM RNG", { "OFF", "SEED", "VALUE" }, 0, 0);
+	rng.addSpace();
+	rng.add("RATE", { "EVERY FRAME", "EVERY RESET" }, 0, 0);
+	rng.addSpace();
+	rng.addCustom("SEED / VALUE");
+	rng.addSpace();
+	rng.addFooter();
+	XS_Menu.add(rng);
+
+	Page ui("UI");
+	ui.add("SHOW STATS", { "OFF", "ON" }, 0, 0);
+	ui.add("ACCURATE COMBO DAMAGE", { "OFF", "ON" }, 0, 0);
+	ui.addSpace();
+	ui.add("P1 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, 0, 0);
+	ui.add("P2 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, 0, 0);
+	ui.addSpace();
+	ui.addFooter();
+	XS_Menu.add(ui);
+
+	Page system("SYSTEM");
+	system.add("GAME SPEED", { "100%", "75%", "50%", "25%" }, 0, 0);
+	system.addSpace();
+	system.add("HIDE HUD", { "OFF", "ON" }, 0, 0);
+	system.add("HIDE SHADOWS", { "OFF", "ON" }, 0, 0);
+	system.add("HIDE EXTRAS", { "OFF", "ON" }, 0, 0);
+	system.addSpace();
+	system.add("BACKGROUND", { "NORMAL", "WHITE", "GRAY", "BLACK", "RED", "YELLOW", "GREEN", "BLUE", "PURPEL" }, 0, 0);
+	system.addSpace();
+	system.addFooter();
+	XS_Menu.add(system);
+}
+
+void initHotkeyMenu() {
+	Page page1("HOTKEY SETTINGS");
+	page1.addHotkey("FREEZE");
+	page1.addHotkey("ADVANCE FRAME");
+	page1.addHotkey("NEXT FRAME");
+	page1.addHotkey("PREV FRAME");
+	page1.addHotkey("TOGGLE HITBOXES");
+	page1.addHotkey("TOGGLE FRAME BAR");
+	page1.addHotkey("TOGGLE HIGHLIGHTS");
+	page1.addHotkey("QUEUE REVERSAL");
+	HK_Menu.add("PAGE 1", page1);
+
+	Page page2("HOTKEY SETTINGS");
+	page2.addHotkey("SAVE STATE");
+	page2.addHotkey("PREV SAVE SLOT");
+	page2.addHotkey("NEXT SAVE SLOT");
+	page2.addHotkey("FRAME BAR LEFT");
+	page2.addHotkey("FRAME BAR RIGHT");
+	page2.addHotkey("INCREMENT RNG");
+	page2.addHotkey("DECREMENT RNG");
+	HK_Menu.add("PAGE 2", page2);
+}
+
 // --- Vectors guide ---
 //Empty vectors are blank spaces (only need the one defined)
 //Vectors with one value are elements with only a label (like the vanilla "default" and "return" elements)
