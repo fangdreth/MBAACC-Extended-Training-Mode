@@ -56,7 +56,9 @@ bool reloadCheckFile = false;
 
 int dummyTechDelay = 0;
 int dummyBurstChance = 100;
+int dummyDelayBurstChance = 100;
 int dummyBunkerChance = 100;
+int dummyDelayBunkerChance = 100;
 
 bool freezeCamera = false;
 float customCameraZoom = 1.0;
@@ -795,6 +797,16 @@ void initMiscSubmenu() {
 		& dummyBurstChance
 	);
 
+	misc.add<int*>(" >Delay Burst Chance / Frame",
+		[](int inc, int*& opt) {
+			*opt += 10 * inc;
+			*opt = CLAMP(*opt, 0, 100);
+		},
+		pointerIntSliderNameFunc,
+		L"",
+		&dummyDelayBurstChance
+	);
+
 	misc.add<int*>("Dummy Bunker Chance",
 		[](int inc, int*& opt) {
 			*opt += 10 * inc;
@@ -803,6 +815,16 @@ void initMiscSubmenu() {
 		pointerIntSliderNameFunc,
 		L"",
 		& dummyBunkerChance
+	);
+
+	misc.add<int*>(" >Delay Bunker Chance / Frame",
+		[](int inc, int*& opt) {
+			*opt += 10 * inc;
+			*opt = CLAMP(*opt, 0, 100);
+		},
+		pointerIntSliderNameFunc,
+		L"",
+		& dummyDelayBunkerChance
 	);
 
 	misc.add<int>("Framestep on held input",

@@ -2091,10 +2091,6 @@ void HandleReversalsPage() {
 	}
 }
 
-
-bool bDoBurst = true;
-bool bDoBunker = true;
-
 void HandleTrainingPage() {
 	if (nPENALTY_RESET == 1) {
 		doFastReversePenalty();
@@ -2121,17 +2117,20 @@ void HandleTrainingPage() {
 		}
 	}
 
-	static int burstFailHitCount;
+	static bool doBurst = true;
+	static int burstFailHitCount = -1;
+	static int queuedBurstHitCount = -1;
 	if (nTRUE_HITS_UNTIL_BURST != 0) {
 		int hitcount = max(pActiveP2->subObj.onBlockComboCount, pActiveP2->subObj.onHitComboCount);
 		if (pActiveP2->subObj.hitstop == 0) {
-			if (bDoBurst &&
+			if (doBurst &&
 				rand() % 100 < dummyBurstChance) {
 				if (hitcount >= nTRUE_HITS_UNTIL_BURST &&
 					hitcount != burstFailHitCount) {
-					if (tryBurst(pActiveP2)) {
-						bDoBurst = false;
+					if (dummyDelayBunkerChance < 200) {
+						doBurst = false;
 						burstFailHitCount = -1;
+						queuedBurstHitCount = hitcount;
 					}
 				}
 			}
@@ -2139,37 +2138,59 @@ void HandleTrainingPage() {
 				burstFailHitCount = hitcount;
 			}
 		}
-		
 
-		if (!bDoBurst && pActiveP2->subObj.onBlockComboCount == 0 && pActiveP2->subObj.onHitComboCount == 0) {
-			bDoBurst = true;
+		if (queuedBurstHitCount == hitcount && rand() % 100 < dummyDelayBunkerChance) {
+			if (tryBurst(pActiveP2)) {
+				doBurst = false;
+				burstFailHitCount = -1;
+				queuedBurstHitCount = -1;
+			}
+		}
+
+		if (!doBurst && pActiveP2->subObj.onBlockComboCount == 0 && pActiveP2->subObj.onHitComboCount == 0) {
+			doBurst = true;
 			burstFailHitCount = -1;
+			queuedBurstHitCount = -1;
 		}
 	}
 
-	static int bunkerFailHitCount;
+	static bool doBunker = true;
+	static int bunkerFailHitCount = -1;
+	static int queuedBunkerHitCount = -1;
 	if (nTRUE_HITS_UNTIL_BUNKER != 0) {
-		if (bDoBunker &&
-			rand() % 100 < dummyBunkerChance) {
-			if (pActiveP2->subObj.onBlockComboCount >= nTRUE_HITS_UNTIL_BUNKER &&
-				pActiveP2->subObj.onBlockComboCount != bunkerFailHitCount &&
-				pActiveP2->subObj.animationDataPtr->stateData->stance != 1) {
-				int bunkerPat = getPatternFromCmd(pActiveP2, "\2\1\4D\xff");
-				pActiveP2->subObj.targetPattern = bunkerPat;
-				DWORD bunkerFlags[7] = { 4, 0, 0, 0, 0, 0, 0 };
-				memcpy(&pActiveP2->subObj.defensiveStateQueue, bunkerFlags, 7 * 0x4);
-				pActiveP2->subObj.hitstunTimeRemaining = 0;
-				bDoBunker = false;
-				bunkerFailHitCount = -1;
+		if (pActiveP2->subObj.hitstop < 2) {
+			if (doBunker &&
+				rand() % 100 < dummyBunkerChance) {
+				if (pActiveP2->subObj.onBlockComboCount >= nTRUE_HITS_UNTIL_BUNKER &&
+					pActiveP2->subObj.onBlockComboCount != bunkerFailHitCount &&
+					pActiveP2->subObj.animationDataPtr->stateData->stance != 1) {
+					if (dummyDelayBunkerChance < 200) {
+						doBunker = false;
+						bunkerFailHitCount = -1;
+						queuedBunkerHitCount = pActiveP2->subObj.onBlockComboCount;
+					}
+				}
+			}
+			else {
+				bunkerFailHitCount = pActiveP2->subObj.onBlockComboCount;
 			}
 		}
-		else {
-			bunkerFailHitCount = pActiveP2->subObj.onBlockComboCount;
+
+		if (queuedBunkerHitCount == pActiveP2->subObj.onBlockComboCount && rand() % 100 < dummyDelayBunkerChance && pActiveP2->subObj.untechTimeElapsed < 11) {
+			int bunkerPat = getPatternFromCmd(pActiveP2, "\2\1\4D\xff");
+			pActiveP2->subObj.targetPattern = bunkerPat;
+			DWORD bunkerFlags[7] = { 4, 0, 0, 0, 0, 0, 0 };
+			memcpy(&pActiveP2->subObj.defensiveStateQueue, bunkerFlags, 7 * 0x4);
+			pActiveP2->subObj.hitstunTimeRemaining = 0;
+			doBunker = false;
+			bunkerFailHitCount = -1;
+			queuedBunkerHitCount = -1;
 		}
 
-		if (!bDoBunker && pActiveP2->subObj.onBlockComboCount == 0) {
-			bDoBunker = true;
+		if (!doBunker && pActiveP2->subObj.onBlockComboCount == 0) {
+			doBunker = true;
 			bunkerFailHitCount = -1;
+			queuedBunkerHitCount = -1;
 		}
 	}
 

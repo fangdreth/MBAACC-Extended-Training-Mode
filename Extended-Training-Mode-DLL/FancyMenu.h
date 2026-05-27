@@ -100,7 +100,9 @@ extern bool reloadCheckFile;
 
 extern int dummyTechDelay;
 extern int dummyBurstChance;
+extern int dummyDelayBurstChance;
 extern int dummyBunkerChance;
+extern int dummyDelayBunkerChance;
 
 extern bool freezeCamera;
 extern float customCameraZoom;
