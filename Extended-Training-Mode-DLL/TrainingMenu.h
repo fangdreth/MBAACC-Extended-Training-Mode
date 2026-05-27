@@ -231,6 +231,7 @@ struct Setting {
 	int valueDefault = 0;
 	Element* element = nullptr;
 	KeyState* hotkey = nullptr;
+	REGKEY registryKey = L"";
 
 	Setting();
 	Setting(std::string label_);
@@ -285,6 +286,7 @@ struct MenuContainer {
 };
 
 const std::vector<std::string> defaultCustomItems = { "X1", "X2", "X3" };
+const std::vector<std::string> offONItems = { "OFF", "ON" };
 
 extern MenuContainer XS_Menu;
 extern MenuContainer HK_Menu;

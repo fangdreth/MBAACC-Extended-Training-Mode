@@ -334,7 +334,7 @@ void initExtendedMenu() {
 	XS_Menu.add(training);
 
 	Page highlights("HIGHLIGHTS");
-	highlights.add("HIGHLIGHTS", { "OFF", "ON" }, 0, 0);
+	highlights.add("HIGHLIGHTS", offONItems, 0, 0);
 	highlights.addSpace();
 	highlights.add("GUARD", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
 	highlights.add("HIT", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
@@ -346,7 +346,7 @@ void initExtendedMenu() {
 	XS_Menu.add(highlights);
 
 	Page positions("POSITIONS");
-	positions.add("RESET TO POSITIONS", { "OFF", "ON" }, 0, 0);
+	positions.add("RESET TO POSITIONS", offONItems, 0, 0);
 	positions.addSpace();
 	positions.addCustom("P1 POSITION", 1, -16384);
 	positions.addCustom("P1 ASSIST POSITION", 1, -29184);
@@ -375,13 +375,13 @@ void initExtendedMenu() {
 	XS_Menu.add(character);
 
 	Page hitboxes("HITBOXES");
-	hitboxes.add("DISPLAY HITBOXES", { "OFF", "ON" }, 0, 0);
+	hitboxes.add("DISPLAY HITBOXES", offONItems, 0, 0);
 	hitboxes.add("HITBOX STYLE", { "LAYERED", "BLENDED" }, 0, 0);
-	hitboxes.add("COLOR BLIND MODE", { "OFF", "ON" }, 0, 0);
+	hitboxes.add("COLOR BLIND MODE", offONItems, 0, 0);
 	hitboxes.addSpace();
 	hitboxes.add("ORIGIN STYLE", { "STANDARD", "EXTENDED" }, 0, 0);
 	hitboxes.addSpace();
-	hitboxes.add("DRAW GROUND", { "OFF", "ON" }, 0, 0);
+	hitboxes.add("DRAW GROUND", offONItems, 0, 0);
 	hitboxes.addSpace();
 	hitboxes.addFooter();
 	XS_Menu.add(hitboxes);
@@ -392,7 +392,7 @@ void initExtendedMenu() {
 	savestates.add("SAVE STATE");
 	savestates.add("CLEAR ALL SAVES");
 	savestates.addSpace();
-	savestates.add("SYNC SAVES WITH FILES", { "OFF", "ON" }, 0, 0);
+	savestates.add("SYNC SAVES WITH FILES", offONItems, 0, 0);
 	savestates.add("IMPORT SAVE");
 	savestates.add("EXPORT SAVE");
 	savestates.addSpace();
@@ -427,8 +427,8 @@ void initExtendedMenu() {
 	XS_Menu.add(rng);
 
 	Page ui("UI");
-	ui.add("SHOW STATS", { "OFF", "ON" }, 0, 0);
-	ui.add("ACCURATE COMBO DAMAGE", { "OFF", "ON" }, 0, 0);
+	ui.add("SHOW STATS", offONItems, 0, 0);
+	ui.add("ACCURATE COMBO DAMAGE", offONItems, 0, 0);
 	ui.addSpace();
 	ui.add("P1 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, 0, 0);
 	ui.add("P2 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, 0, 0);
@@ -439,9 +439,9 @@ void initExtendedMenu() {
 	Page system("SYSTEM");
 	system.add("GAME SPEED", { "100%", "75%", "50%", "25%" }, 0, 0);
 	system.addSpace();
-	system.add("HIDE HUD", { "OFF", "ON" }, 0, 0);
-	system.add("HIDE SHADOWS", { "OFF", "ON" }, 0, 0);
-	system.add("HIDE EXTRAS", { "OFF", "ON" }, 0, 0);
+	system.add("HIDE HUD", offONItems, 0, 0);
+	system.add("HIDE SHADOWS", offONItems, 0, 0);
+	system.add("HIDE EXTRAS", offONItems, 0, 0);
 	system.addSpace();
 	system.add("BACKGROUND", { "NORMAL", "WHITE", "GRAY", "BLACK", "RED", "YELLOW", "GREEN", "BLUE", "PURPEL" }, 0, 0);
 	system.addSpace();
