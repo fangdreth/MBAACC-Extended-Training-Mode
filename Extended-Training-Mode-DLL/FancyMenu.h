@@ -99,6 +99,8 @@ extern int p2LoadPal;
 extern bool reloadCheckFile;
 
 extern int dummyTechDelay;
+extern int dummyBurstChance;
+extern int dummyBunkerChance;
 
 extern bool freezeCamera;
 extern float customCameraZoom;

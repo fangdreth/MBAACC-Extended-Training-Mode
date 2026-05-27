@@ -2121,31 +2121,55 @@ void HandleTrainingPage() {
 		}
 	}
 
+	static int burstFailHitCount;
 	if (nTRUE_HITS_UNTIL_BURST != 0) {
-		if (bDoBurst &&
-			(pActiveP2->subObj.onBlockComboCount >= nTRUE_HITS_UNTIL_BURST ||
-			pActiveP2->subObj.onHitComboCount >= nTRUE_HITS_UNTIL_BURST)) {
- 			if(tryBurst(pActiveP2)) bDoBurst = false;
+		int hitcount = max(pActiveP2->subObj.onBlockComboCount, pActiveP2->subObj.onHitComboCount);
+		if (pActiveP2->subObj.hitstop == 0) {
+			if (bDoBurst &&
+				rand() % 100 < dummyBurstChance) {
+				if (hitcount >= nTRUE_HITS_UNTIL_BURST &&
+					hitcount != burstFailHitCount) {
+					if (tryBurst(pActiveP2)) {
+						bDoBurst = false;
+						burstFailHitCount = -1;
+					}
+				}
+			}
+			else {
+				burstFailHitCount = hitcount;
+			}
 		}
+		
 
 		if (!bDoBurst && pActiveP2->subObj.onBlockComboCount == 0 && pActiveP2->subObj.onHitComboCount == 0) {
 			bDoBurst = true;
+			burstFailHitCount = -1;
 		}
 	}
 
+	static int bunkerFailHitCount;
 	if (nTRUE_HITS_UNTIL_BUNKER != 0) {
-		if (bDoBunker && pActiveP2->subObj.onBlockComboCount >= nTRUE_HITS_UNTIL_BUNKER &&
-			pActiveP2->subObj.animationDataPtr->stateData->stance != 1) {
-			int bunkerPat = getPatternFromCmd(pActiveP2, "\2\1\4D\xff");
-			pActiveP2->subObj.targetPattern = bunkerPat;
-			DWORD bunkerFlags[7] = { 4, 0, 0, 0, 0, 0, 0 };
-			memcpy(&pActiveP2->subObj.defensiveStateQueue, bunkerFlags, 7 * 0x4);
-			pActiveP2->subObj.hitstunTimeRemaining = 0;
-			bDoBunker = false;
+		if (bDoBunker &&
+			rand() % 100 < dummyBunkerChance) {
+			if (pActiveP2->subObj.onBlockComboCount >= nTRUE_HITS_UNTIL_BUNKER &&
+				pActiveP2->subObj.onBlockComboCount != bunkerFailHitCount &&
+				pActiveP2->subObj.animationDataPtr->stateData->stance != 1) {
+				int bunkerPat = getPatternFromCmd(pActiveP2, "\2\1\4D\xff");
+				pActiveP2->subObj.targetPattern = bunkerPat;
+				DWORD bunkerFlags[7] = { 4, 0, 0, 0, 0, 0, 0 };
+				memcpy(&pActiveP2->subObj.defensiveStateQueue, bunkerFlags, 7 * 0x4);
+				pActiveP2->subObj.hitstunTimeRemaining = 0;
+				bDoBunker = false;
+				bunkerFailHitCount = -1;
+			}
+		}
+		else {
+			bunkerFailHitCount = pActiveP2->subObj.onBlockComboCount;
 		}
 
 		if (!bDoBunker && pActiveP2->subObj.onBlockComboCount == 0) {
 			bDoBunker = true;
+			bunkerFailHitCount = -1;
 		}
 	}
 
@@ -2338,6 +2362,8 @@ void frameDoneCallback()
 			//long long endTime = getMicroSec();
 			//long long totalTime = endTime - startTime;
 			//log("%3lld.%03lld", totalTime / 1000, totalTime % 1000);
+
+			//HandleExtendedTrainingEffects();
 		}
 
 		static KeyState UpKey(VK_UP);

@@ -55,6 +55,8 @@ int p2LoadPal = 1;
 bool reloadCheckFile = false;
 
 int dummyTechDelay = 0;
+int dummyBurstChance = 100;
+int dummyBunkerChance = 100;
 
 bool freezeCamera = false;
 float customCameraZoom = 1.0;
@@ -781,6 +783,26 @@ void initMiscSubmenu() {
 		},
 		L"",
 		&dummyTechDelay
+	);
+
+	misc.add<int*>("Dummy Burst Chance",
+		[](int inc, int*& opt) {
+			*opt += 10 * inc;
+			*opt = CLAMP(*opt, 0, 100);
+		},
+		pointerIntSliderNameFunc,
+		L"",
+		& dummyBurstChance
+	);
+
+	misc.add<int*>("Dummy Bunker Chance",
+		[](int inc, int*& opt) {
+			*opt += 10 * inc;
+			*opt = CLAMP(*opt, 0, 100);
+		},
+		pointerIntSliderNameFunc,
+		L"",
+		& dummyBunkerChance
 	);
 
 	misc.add<int>("Framestep on held input",
