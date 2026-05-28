@@ -2957,6 +2957,10 @@ void frameDoneCallback()
 
 		if (displayHitstunBar)
 			drawHitstunBar();
+
+		TextDraw(50, 50, 10, 0xFFFFFFFF, "%i", XS_reversalSlot1);
+
+		TextDraw(50, 70, 10, 0xFFFFFFFF, "%i", nREV_ID_1);
 	}
 
 	bool doDraw = false;
@@ -4324,16 +4328,16 @@ Element* GetElementPointer(MenuInfo* menuInfo, const char* tag) {
 	return retElement;
 }
 
-bool GetSetting(Setting* setting) {
-	if (setting->element != nullptr && setting->element->GetItemListSize() != 0x0) {
+bool GetSetting(Setting& setting) {
+	if (setting.element != nullptr && setting.element->GetItemListSize() != 0x0) {
 		int iterator = 0;
 		while (true) {
-			int CurItemValue = setting->element->GetItemValue(iterator);
-			if (CurItemValue == setting->storage) break;
+			int CurItemValue = setting.element->GetItemValue(iterator);
+			if (CurItemValue == setting.storage) break;
 			iterator++;
-			if (setting->element->GetItemListSize() <= iterator) return false;
+			if (setting.element->GetItemListSize() <= iterator) return false;
 		}
-		setting->element->selectedItem = iterator;
+		setting.element->selectedItem = iterator;
 		return true;
 	}
 	return false;
@@ -4346,10 +4350,8 @@ void LoadMenuSettings(MenuWindow* window, MenuContainer& container) {
 		}
 	}
 
-	for (auto pageKey : container.keys) {
-		Page* page = container.get(pageKey);
-		for (auto settingKey : page->keys) {
-			Setting* setting = page->get(settingKey);
+	for (auto& page : container.pages) {
+		for (auto& setting : page.settings) {
 			GetSetting(setting);
 		}
 	}
@@ -4365,25 +4367,23 @@ MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 	InitMenuWindow(extendedWindow);
 	ReadDataFile(&extendedWindow->label, "EXTENDED SETTINGS", 18);
 	int pageNum = 0;
-	for (auto& pageKey : XS_Menu.keys)
+	for (auto& page : XS_Menu.pages)
 	{
-		Page* page = XS_Menu.get(pageKey);
 		MenuInfo* extendedInfo = NEW_MENU_INFO();
 		if (extendedInfo != 0x0)
 		{
 			InitExtendedSettingsMenuInfo(extendedInfo, extendedWindow);
 		}
 		int elementNum = 0;
-		for (auto& settingKey : page->keys) {
-			Setting* setting = page->get(settingKey);
-			if (setting->label == "") {
+		for (auto& setting : page.settings) {
+			if (setting.label == "") {
 				AddSpaceElement(extendedInfo, pageNum, elementNum);
 			}
-			else if (setting->itemLabels.size() == 0) {
-				AddNormalElement(extendedInfo, setting->label, pageNum, elementNum);
+			else if (setting.itemLabels.size() == 0) {
+				AddNormalElement(extendedInfo, setting.label, pageNum, elementNum);
 			}
 			else {
-				setting->element = AddSelectElement(extendedInfo, setting->label, setting->itemLabels, pageNum, elementNum);
+				setting.element = AddSelectElement(extendedInfo, setting.label, setting.itemLabels, pageNum, elementNum);
 			}
 			elementNum++;
 		}
@@ -4408,25 +4408,23 @@ MenuWindow* InitHotkeySettingsMenu(MenuWindow* hotkeyWindow) {
 	InitMenuWindow(hotkeyWindow);
 	ReadDataFile(&hotkeyWindow->label, "HOTKEY SETTINGS", 18);
 	int pageNum = 0;
-	for (auto& pageKey : HK_Menu.keys)
+	for (auto& page : HK_Menu.pages)
 	{
-		Page* page = HK_Menu.get(pageKey);
 		MenuInfo* hotkeyInfo = NEW_MENU_INFO();
 		if (hotkeyInfo != 0x0)
 		{
 			InitHotkeySettingsMenuInfo(hotkeyInfo, hotkeyWindow);
 		}
 		int elementNum = 0;
-		for (auto& settingKey : page->keys) {
-			Setting* setting = page->get(settingKey);
-			if (setting->label == "") {
+		for (auto& setting : page.settings) {
+			if (setting.label == "") {
 				AddSpaceElement(hotkeyInfo, pageNum, elementNum);
 			}
-			else if (setting->itemLabels.size() == 0) {
-				AddNormalElement(hotkeyInfo, setting->label, pageNum, elementNum);
+			else if (setting.itemLabels.size() == 0) {
+				AddNormalElement(hotkeyInfo, setting.label, pageNum, elementNum);
 			}
 			else {
-				setting->element = AddSelectElement(hotkeyInfo, setting->label, setting->itemLabels, pageNum, elementNum);
+				setting.element = AddSelectElement(hotkeyInfo, setting.label, setting.itemLabels, pageNum, elementNum);
 			}
 			elementNum++;
 		}
@@ -4466,11 +4464,11 @@ void _FUN_0047ce20(const char* TRAINING_XX_MENU, void* field24) {
 
 }
 
-bool SetSetting(Setting* setting) {
-	if (setting->element != nullptr && setting->element->GetItemListSize() != 0x0) {
-		int selectionIndex = setting->element->selectedItem;
-		int elementValue = (setting->element->itemList).listStart[selectionIndex]->value;
-		setting->storage = elementValue;
+bool SetSetting(Setting& setting) {
+	if (setting.element != nullptr && setting.element->GetItemListSize() != 0x0) {
+		int selectionIndex = setting.element->selectedItem;
+		int elementValue = (setting.element->itemList).listStart[selectionIndex]->value;
+		setting.storage = elementValue;
 		return true;
 	}
 	return false;
@@ -4483,10 +4481,8 @@ void SaveMenuSettings(MenuWindow* window, MenuContainer& container) {
 		}
 	}
 
-	for (auto pageKey : container.keys) {
-		Page* page = container.get(pageKey);
-		for (auto settingKey : page->keys) {
-			Setting* setting = page->get(settingKey);
+	for (auto& page : container.pages) {
+		for (auto& setting : page.settings) {
 			SetSetting(setting);
 		}
 	}
@@ -5065,8 +5061,6 @@ void XS_Reversal_Slots(Element* element, int &reversal_value, bool APos, bool DP
 	}
 }
 
-bool bAPrev = false;
-bool bDPrev = false;
 void ExtendedMenuInputChecking() {
 	MenuWindow* extendedWindow;
 	MenuInfo* curMenuInfo;
@@ -5075,10 +5069,12 @@ void ExtendedMenuInputChecking() {
 		mov extendedWindow, ecx;
 	}
 	char labelBuf[32];
-	bool bA = *(bool*)(adMBAABase + adP1AInput) && extendedWindow->openSubmenuIndex == 2; //A is pressed
-	bool bAPos = bA && !bAPrev; //A Press Positive Edge
-	bool bD = *(bool*)(adMBAABase + adP1DInput) && extendedWindow->openSubmenuIndex == 2; //D is pressed
-	bool bDPos = bD && !bDPrev; //D Press Positive Edge
+	static bool aPrev = false;
+	static bool dPrev = false;
+	bool aHeld = *(bool*)(adMBAABase + adP1AInput) && extendedWindow->openSubmenuIndex == 2;
+	bool aPressed = aHeld && !aPrev;
+	bool dHeld = *(bool*)(adMBAABase + adP1DInput) && extendedWindow->openSubmenuIndex == 2;
+	bool dPressed = dHeld && !dPrev;
 	bShowFrameBarPreview = false;
 	bShowFrameBarYPreview = false;
 	curMenuInfo = extendedWindow->menuInfoList.listStart[extendedWindow->menuInfoIndex];
@@ -5096,22 +5092,22 @@ void ExtendedMenuInputChecking() {
 
 		switch ((eREVERSALS)curMenuInfo->selectedElement) {
 		case eREVERSALS::REVERSAL_SLOT_1:
-			XS_Reversal_Slots(curElement, nREV_ID_1, bAPos, bDPos);
+			XS_Reversal_Slots(curElement, nREV_ID_1, aPressed, dPressed);
 			break;
 		case eREVERSALS::REVERSAL_SLOT_2:
-			XS_Reversal_Slots(curElement, nREV_ID_2, bAPos, bDPos);
+			XS_Reversal_Slots(curElement, nREV_ID_2, aPressed, dPressed);
 			break;
 		case eREVERSALS::REVERSAL_SLOT_3:
-			XS_Reversal_Slots(curElement, nREV_ID_3, bAPos, bDPos);
+			XS_Reversal_Slots(curElement, nREV_ID_3, aPressed, dPressed);
 			break;
 		case eREVERSALS::REVERSAL_SLOT_4:
-			XS_Reversal_Slots(curElement, nREV_ID_4, bAPos, bDPos);
+			XS_Reversal_Slots(curElement, nREV_ID_4, aPressed, dPressed);
 			break;
 		case eREVERSALS::DEFAULT:
-			if (bAPos) DefaultP1(curMenuInfo);
+			if (aPressed) DefaultP1(curMenuInfo);
 			break;
 		case eREVERSALS::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eREVERSALS::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5141,23 +5137,23 @@ void ExtendedMenuInputChecking() {
 	}
 	case eXS_PAGES::TRAINING:
 	{
-		int healthInterval = bA ? 1 : 114;
-		int healthAccel = bA ? 10 : 570;
+		int healthInterval = aHeld ? 1 : 114;
+		int healthAccel = aHeld ? 10 : 570;
 		switch ((eTRAINING)curMenuInfo->selectedElement) {
 		case eTRAINING::P1_METER:
 			if (pP1->subObj.moon != 2) {
-				CFMeterScrolling(curElement, nTRUE_P1_METER, bA);
+				CFMeterScrolling(curElement, nTRUE_P1_METER, aHeld);
 			}
 			else {
-				HMeterScrolling(curElement, nTRUE_P1_METER, bA);
+				HMeterScrolling(curElement, nTRUE_P1_METER, aHeld);
 			}
 			break;
 		case eTRAINING::P2_METER:
 			if (pP2->subObj.moon != 2) {
-				CFMeterScrolling(curElement, nTRUE_P2_METER, bA);
+				CFMeterScrolling(curElement, nTRUE_P2_METER, aHeld);
 			}
 			else {
-				HMeterScrolling(curElement, nTRUE_P2_METER, bA);
+				HMeterScrolling(curElement, nTRUE_P2_METER, aHeld);
 			}
 			break;
 		case eTRAINING::P1_HEALTH:
@@ -5176,10 +5172,10 @@ void ExtendedMenuInputChecking() {
 			NormalScrolling(curElement, nTRUE_HITS_UNTIL_FORCE_GUARD, 0, 101);
 			break;
 		case eTRAINING::DEFAULT:
-			if (bAPos) DefaultP2(curMenuInfo);
+			if (aPressed) DefaultP2(curMenuInfo);
 			break;
 		case eTRAINING::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eTRAINING::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5281,10 +5277,10 @@ void ExtendedMenuInputChecking() {
 			SetRegistryValue(sIDLE_HIGHLIGHT, curElement->selectedItem);
 			break;
 		case eHIGHLIGHTS::DEFAULT:
-			if (bAPos) DefaultP3(curMenuInfo);
+			if (aPressed) DefaultP3(curMenuInfo);
 			break;
 		case eHIGHLIGHTS::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eHIGHLIGHTS::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5297,19 +5293,19 @@ void ExtendedMenuInputChecking() {
 	{
 		switch ((ePOSITIONS)curMenuInfo->selectedElement) {
 		case ePOSITIONS::P1_POSITION:
-			PositionScrolling(curElement, nTRUE_P1_X_LOC, bA);
+			PositionScrolling(curElement, nTRUE_P1_X_LOC, aHeld);
 			break;
 		case ePOSITIONS::P1_ASSIST_POSITION:
-			PositionScrolling(curElement, nTRUE_P1_ASSIST_X_LOC, bA);
+			PositionScrolling(curElement, nTRUE_P1_ASSIST_X_LOC, aHeld);
 			break;
 		case ePOSITIONS::P2_POSITION:
-			PositionScrolling(curElement, nTRUE_P2_X_LOC, bA);
+			PositionScrolling(curElement, nTRUE_P2_X_LOC, aHeld);
 			break;
 		case ePOSITIONS::P2_ASSIST_POSITION:
-			PositionScrolling(curElement, nTRUE_P2_ASSIST_X_LOC, bA);
+			PositionScrolling(curElement, nTRUE_P2_ASSIST_X_LOC, aHeld);
 			break;
 		case ePOSITIONS::MOVE_TO_POSITIONS:
-			if (bAPos) {
+			if (aPressed) {
 				pP1->subObj.xPos = nTRUE_P1_X_LOC;
 				pP2->subObj.xPos = nTRUE_P2_X_LOC;
 				bool p1LookLeft = pP1->subObj.xPos > pP2->subObj.xPos;
@@ -5336,7 +5332,7 @@ void ExtendedMenuInputChecking() {
 			}
 			break;
 		case ePOSITIONS::SET_CURRENT_POSITIONS:
-			if (bAPos) {
+			if (aPressed) {
 				nTRUE_P1_X_LOC = pP1->subObj.xPos;
 				nTRUE_P2_X_LOC = pP2->subObj.xPos;
 
@@ -5349,7 +5345,7 @@ void ExtendedMenuInputChecking() {
 			}
 			break;
 		case ePOSITIONS::INVERT:
-			if (bAPos) {
+			if (aPressed) {
 				int temp = nTRUE_P1_X_LOC;
 				nTRUE_P1_X_LOC = nTRUE_P2_X_LOC;
 				nTRUE_P2_X_LOC = temp;
@@ -5360,10 +5356,10 @@ void ExtendedMenuInputChecking() {
 			}
 			break;
 		case ePOSITIONS::DEFAULT:
-			if (bAPos) DefaultP4(curMenuInfo);
+			if (aPressed) DefaultP4(curMenuInfo);
 			break;
 		case ePOSITIONS::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case ePOSITIONS::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5388,10 +5384,10 @@ void ExtendedMenuInputChecking() {
 	{
 		switch ((eCHARACTER)curMenuInfo->selectedElement) {
 		case eCHARACTER::DEFAULT:
-			if (bAPos) DefaultP5(curMenuInfo);
+			if (aPressed) DefaultP5(curMenuInfo);
 			break;
 		case eCHARACTER::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eCHARACTER::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5416,10 +5412,10 @@ void ExtendedMenuInputChecking() {
 			SetRegistryValue(sDRAW_GROUND, curElement->selectedItem);
 			break;
 		case eHITBOXES::DEFAULT:
-			if (bAPos) DefaultP6(curMenuInfo);
+			if (aPressed) DefaultP6(curMenuInfo);
 			break;
 		case eHITBOXES::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eHITBOXES::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5433,19 +5429,19 @@ void ExtendedMenuInputChecking() {
 		switch ((eSAVE_STATES)curMenuInfo->selectedElement) {
 		case eSAVE_STATES::SAVE_STATE_SLOT:
 			nSAVE_STATE_SLOT = curElement->selectedItem;
-			if (bAPos) {
+			if (aPressed) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->unsave();
 				if (nSYNC_SAVES_WITH_FILES) saveStateManager.SaveToFile();
 			}
 			break;
 		case eSAVE_STATES::SAVE_STATE:
-			if (bAPos && nSAVE_STATE_SLOT > 0) {
+			if (aPressed && nSAVE_STATE_SLOT > 0) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->save();
 				if (nSYNC_SAVES_WITH_FILES) saveStateManager.SaveToFile();
 			}
 			break;
 		case eSAVE_STATES::CLEAR_ALL_SAVES:
-			if (bAPos) {
+			if (aPressed) {
 				for (int i = 0; i < MAX_SAVES; i++) {
 					saveStateManager.FullSaves[i]->unsave();
 				}
@@ -5453,20 +5449,20 @@ void ExtendedMenuInputChecking() {
 			}
 			break;
 		case eSAVE_STATES::IMPORT_SAVE:
-			if (bAPos) {
+			if (aPressed) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->nport();
 			}
 			break;
 		case eSAVE_STATES::EXPORT_SAVE:
-			if (bAPos) {
+			if (aPressed) {
 				saveStateManager.FullSaves[nSAVE_STATE_SLOT - 1]->xport();
 			}
 			break;
 		case eSAVE_STATES::DEFAULT:
-			if (bAPos) DefaultP7(curMenuInfo);
+			if (aPressed) DefaultP7(curMenuInfo);
 			break;
 		case eSAVE_STATES::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eSAVE_STATES::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5527,16 +5523,16 @@ void ExtendedMenuInputChecking() {
 			break;
 		}
 		case eFRAME_DATA::COLOR_GUIDE:
-			if (bAPos) {
+			if (aPressed) {
 				bCOLOR_GUIDE = !bCOLOR_GUIDE;
 				*(bool*)(adMBAABase + adXS_colorGuide) = bCOLOR_GUIDE;
 			}
 			break;
 		case eFRAME_DATA::DEFAULT:
-			if (bAPos) DefaultP8(curMenuInfo);
+			if (aPressed) DefaultP8(curMenuInfo);
 			break;
 		case eFRAME_DATA::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eFRAME_DATA::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5558,10 +5554,10 @@ void ExtendedMenuInputChecking() {
 			LoopingScrolling(curElement, nTRUE_SEED, 0, 0x0000ffff, 1, 10);
 			break;
 		case eRNG::DEFAULT:
-			if (bAPos) DefaultP9(curMenuInfo);
+			if (aPressed) DefaultP9(curMenuInfo);
 			break;
 		case eRNG::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eRNG::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5592,10 +5588,10 @@ void ExtendedMenuInputChecking() {
 			SetRegistryValue(sP2_INPUT_DISPLAY, curElement->selectedItem);
 			break;
 		case eUI::DEFAULT:
-			if (bAPos) DefaultP10(curMenuInfo);
+			if (aPressed) DefaultP10(curMenuInfo);
 			break;
 		case eUI::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eUI::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5623,10 +5619,10 @@ void ExtendedMenuInputChecking() {
 			nBACKGROUND = curElement->selectedItem;
 			break;
 		case eSYSTEM::DEFAULT:
-			if (bAPos) DefaultP11(curMenuInfo);
+			if (aPressed) DefaultP11(curMenuInfo);
 			break;
 		case eSYSTEM::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eSYSTEM::PAGE:
 			PageScrolling(curElement, extendedWindow, XS_NUM_PAGES);
@@ -5660,8 +5656,8 @@ void ExtendedMenuInputChecking() {
 	}
 	bOldFN2Input = CurFN2Input;
 
-	bAPrev = bA;
-	bDPrev = bD;
+	aPrev = aHeld;
+	dPrev = dHeld;
 }
 
 //init hotkey menu if not already open, close and free if set to close
@@ -5700,45 +5696,46 @@ void HotkeyMenuInputChecking() {
 		mov hotkeyWindow, ecx;
 	}
 	char labelBuf[32];
-	bool bA = *(bool*)(adMBAABase + adP1AInput) && hotkeyWindow->openSubmenuIndex == 2; //A is pressed
-	bool bAPos = bA && !bAPrev; //A Press Positive Edge
+	static bool aPrev = false;
+	bool aHeld = *(bool*)(adMBAABase + adP1AInput) && hotkeyWindow->openSubmenuIndex == 2;
+	bool aPressed = aHeld && !aPrev;
 	curMenuInfo = (hotkeyWindow->menuInfoList).listStart[hotkeyWindow->menuInfoIndex];
 	curElement = (curMenuInfo->elementList).listStart[curMenuInfo->selectedElement];
 	switch (hotkeyWindow->menuInfoIndex) {
 	case 0:
 		switch ((eHK_PAGE1)curMenuInfo->selectedElement) {
 		case eHK_PAGE1::FREEZE:
-			CheckNewHotkey(bAPos, oFreezeHotkey, sFREEZE_KEY_REG);
+			CheckNewHotkey(aPressed, oFreezeHotkey, sFREEZE_KEY_REG);
 			break;
 		case eHK_PAGE1::ADVANCE_FRAME:
-			CheckNewHotkey(bAPos, oAdvanceFrameHotkey, sADVANCE_FRAME_KEY_REG);
+			CheckNewHotkey(aPressed, oAdvanceFrameHotkey, sADVANCE_FRAME_KEY_REG);
 			break;
 		case eHK_PAGE1::NEXT_FRAME:
-			CheckNewHotkey(bAPos, oNextFrameHotkey, sNEXT_FRAME_KEY_REG);
+			CheckNewHotkey(aPressed, oNextFrameHotkey, sNEXT_FRAME_KEY_REG);
 			break;
 		case eHK_PAGE1::PREV_FRAME:
-			CheckNewHotkey(bAPos, oPrevFrameHotkey, sPREV_FRAME_KEY_REG);
+			CheckNewHotkey(aPressed, oPrevFrameHotkey, sPREV_FRAME_KEY_REG);
 			break;
 		case eHK_PAGE1::TOGGLE_HITBOXES:
-			CheckNewHotkey(bAPos, oToggleHitboxesHotkey, sTOGGLE_HITBOXES_KEY_REG);
+			CheckNewHotkey(aPressed, oToggleHitboxesHotkey, sTOGGLE_HITBOXES_KEY_REG);
 			break;
 		case eHK_PAGE1::TOGGLE_FRAME_BAR:
-			CheckNewHotkey(bAPos, oToggleFrameBarHotkey, sTOGGLE_FRAME_BAR_KEY_REG);
+			CheckNewHotkey(aPressed, oToggleFrameBarHotkey, sTOGGLE_FRAME_BAR_KEY_REG);
 			break;
 		case eHK_PAGE1::TOGGLE_HIGHLIGHTS:
-			CheckNewHotkey(bAPos, oToggleHighlightsHotkey, sTOGGLE_HIGHLIGHTS_KEY_REG);
+			CheckNewHotkey(aPressed, oToggleHighlightsHotkey, sTOGGLE_HIGHLIGHTS_KEY_REG);
 			break;
 		case eHK_PAGE1::QUEUE_REVERSAL:
-			CheckNewHotkey(bAPos, oQueueReversalHotkey, sQUEUE_REVERSAL_KEY_REG);
+			CheckNewHotkey(aPressed, oQueueReversalHotkey, sQUEUE_REVERSAL_KEY_REG);
 			break;
 		case eHK_PAGE1::INCREMENT_RNG:
-			CheckNewHotkey(bAPos, oIncrementRNGHotkey, sINCREMENT_RNG_KEY_REG);
+			CheckNewHotkey(aPressed, oIncrementRNGHotkey, sINCREMENT_RNG_KEY_REG);
 			break;
 		case eHK_PAGE1::DECREMENT_RNG:
-			CheckNewHotkey(bAPos, oDecrementRNGHotkey, sDECREMENT_RNG_KEY_REG);
+			CheckNewHotkey(aPressed, oDecrementRNGHotkey, sDECREMENT_RNG_KEY_REG);
 			break;
 		case eHK_PAGE1::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eHK_PAGE1::PAGE:
 			PageScrolling(curElement, hotkeyWindow, HK_NUM_PAGES);
@@ -5770,22 +5767,22 @@ void HotkeyMenuInputChecking() {
 	case 1:
 		switch ((eHK_PAGE2)curMenuInfo->selectedElement) {
 		case eHK_PAGE2::SAVE_STATE:
-			CheckNewHotkey(bAPos, oSaveStateHotkey, sSAVE_STATE_KEY_REG);
+			CheckNewHotkey(aPressed, oSaveStateHotkey, sSAVE_STATE_KEY_REG);
 			break;
 		case eHK_PAGE2::PREV_SAVE_SLOT:
-			CheckNewHotkey(bAPos, oPrevSaveSlotHotkey, sPREV_SAVE_SLOT_KEY_REG);
+			CheckNewHotkey(aPressed, oPrevSaveSlotHotkey, sPREV_SAVE_SLOT_KEY_REG);
 			break;
 		case eHK_PAGE2::NEXT_SAVE_SLOT:
-			CheckNewHotkey(bAPos, oNextSaveSlotHotkey, sNEXT_SAVE_SLOT_KEY_REG);
+			CheckNewHotkey(aPressed, oNextSaveSlotHotkey, sNEXT_SAVE_SLOT_KEY_REG);
 			break;
 		case eHK_PAGE2::FRAME_BAR_LEFT:
-			CheckNewHotkey(bAPos, oFrameBarLeftHotkey, sFRAME_BAR_LEFT_KEY_REG);
+			CheckNewHotkey(aPressed, oFrameBarLeftHotkey, sFRAME_BAR_LEFT_KEY_REG);
 			break;
 		case eHK_PAGE2::FRAME_BAR_RIGHT:
-			CheckNewHotkey(bAPos, oFrameBarRightHotkey, sFRAME_BAR_RIGHT_KEY_REG);
+			CheckNewHotkey(aPressed, oFrameBarRightHotkey, sFRAME_BAR_RIGHT_KEY_REG);
 			break;
 		case eHK_PAGE2::RETURN:
-			if (bAPos) curMenuInfo->close = 1;
+			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eHK_PAGE2::PAGE:
 			PageScrolling(curElement, hotkeyWindow, HK_NUM_PAGES);
@@ -5825,6 +5822,8 @@ void HotkeyMenuInputChecking() {
 	bOldFN2Input = CurFN2Input;
 
 	if (nHOTKEY_CD_TIMER > 0) nHOTKEY_CD_TIMER--;
+
+	aPrev = aHeld;
 }
 
 DWORD ExtendedSettingsMenuItem_PatchAddr = 0x0047d493;

@@ -222,12 +222,14 @@ CHECKSIZE(MenuWindow, 0xe8)
 #undef CHECKOFFSET
 #undef CHECKSIZE
 
+//storage is for remembering the in-game option scroll state (always 1 for looping custom scroll options)
+//value is the value you actually care about
 struct Setting {
 	std::string label = "";
 	std::vector<std::string> itemLabels = {};
 	int storage = 0;
 	int storageDefault = 0;
-	int value = 0;
+	int* valuePtr = nullptr;
 	int valueDefault = 0;
 	Element* element = nullptr;
 	KeyState* hotkey = nullptr;
@@ -235,15 +237,14 @@ struct Setting {
 
 	Setting();
 	Setting(std::string label_);
-	Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int valueDefault_);
+	Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int* valuePtr = nullptr);
 
 	void _default();
 };
 
 struct Page {
 	std::string label = "";
-	std::map<std::string, Setting> settings = {};
-	std::vector<std::string> keys = {};
+	std::vector<Setting> settings = {};
 	int savedSelection = 0;
 
 	Page();
@@ -251,42 +252,43 @@ struct Page {
 
 	void add(Setting& setting_);
 	void add(std::string label_);
-	void add(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int valueDefault_);
-	void addCustom(std::string label_, int storageDefault_ = 1, int valueDefault_ = 0);
-	void addNumeric(std::string label_, int min, int max, int default_, int interval = 1);
+	void add(std::string label_, std::vector<std::string> itemLabels_, int* valuePtr_);
+
+	void addCustom(std::string label_, int* valuePtr_, int storageDefault_ = 1);
+	void addNumeric(std::string label_, int min, int max, int* valuePtr_);
 	void addHotkey(std::string label_);
+
 	void addDefault();
 	void addReturn();
 	void addPage();
 	void addSpace();
 	void addFooter();
 
-	Setting* get(std::string key_);
-	int getValue(std::string key_);
-	int getStorage(std::string key_);
-	void setValue(std::string key_, int value_);
-	void setStorage(std::string key_, int storage_);
+	Setting* get(int i);
+	int* getValuePtr(int i);
+	int getValue(int i);
+	int getStorage(int i);
+	void setValue(int i, int value_);
+	void setStorage(int i, int storage_);
 
 	void _default();
 };
 
 struct MenuContainer {
 	std::string label = "";
-	std::map<std::string, Page> pages = {};
-	std::vector<std::string> keys = {};
+	std::vector<Page> pages = {};
 	int savedSelection = 0;
 
 	MenuContainer(std::string label_);
 
 	void add(Page& page_);
-	void add(std::string key_, Page& page_);
 
-	Page* get(std::string key_);
-	Page* get(int index);
+	Page* get(int i);
 };
 
 const std::vector<std::string> defaultCustomItems = { "X1", "X2", "X3" };
 const std::vector<std::string> offONItems = { "OFF", "ON" };
+const std::vector<std::string> hotkeyItems = { "X" };
 
 extern MenuContainer XS_Menu;
 extern MenuContainer HK_Menu;
@@ -407,6 +409,18 @@ enum class eREVERSALS {
 	S5,
 	PAGE
 };
+
+extern int XS_reversals;
+extern int XS_reversalSlot1;
+extern int XS_weight1;
+extern int XS_reversalSlot2;
+extern int XS_weight2;
+extern int XS_reversalSlot3;
+extern int XS_weight3;
+extern int XS_reversalSlot4;
+extern int XS_weight4;
+extern int XS_noReversalWeight;
+extern int XS_reversalDelay;
 
 const int defREVERSAL_TYPE = 1;
 const int defREVERSAL_SLOT_1 = 1;
@@ -553,6 +567,18 @@ enum class eTRAINING {
 	PAGE
 };
 
+extern int XS_penaltyReset;
+extern int XS_guardBarReset;
+extern int XS_exGuard;
+extern int XS_p1Meter;
+extern int XS_p2Meter;
+extern int XS_p1Health;
+extern int XS_p2Health;
+extern int XS_hitsUntilBurst;
+extern int XS_hitsUntilBunker;
+extern int XS_hitsUntilForceGuard;
+extern int XS_forceGuardStance;
+
 const int defPEN_RESET = 0;
 const int defGUARD_RESET = 0;
 const int defEX_GUARD = 0;
@@ -662,6 +688,13 @@ enum class eHIGHLIGHTS {
 	PAGE
 };
 
+extern int XS_highlights;
+extern int XS_guardHighlight;
+extern int XS_hitHighlight;
+extern int XS_armorHighlight;
+extern int XS_throwProtectionHighlight;
+extern int XS_idleHighlight;
+
 const int defHIGHLIGHTS = 0;
 const int defGUARD_HIGHLIGHT = 0;
 const int defHIT_HIGHLIGHT = 0;
@@ -756,6 +789,12 @@ enum class ePOSITIONS {
 	PAGE
 };
 
+extern int XS_resetToPositions;
+extern int XS_p1Position;
+extern int XS_p1AssistPosition;
+extern int XS_p2Position;
+extern int XS_p2AssistPosition;
+
 const int defRESET_POS = 0;
 const int defP1_X = 1;
 const int defP1_ASSIST_X = 1;
@@ -842,6 +881,12 @@ enum class eCHARACTER {
 	PAGE
 };
 
+extern int XS_sionBullets;
+extern int XS_roaVisibleCharges;
+extern int XS_roaHiddenCharges;
+extern int XS_fMaidsHearts;
+extern int XS_ryougiKnife;
+
 const int defSION_BULLETS = 1;
 const int defROA_VISIBLE = 1;
 const int defROA_HIDDEN = 1;
@@ -916,6 +961,12 @@ enum class eHITBOXES {
 	S4,
 	PAGE
 };
+
+extern int XS_displayHitboxes;
+extern int XS_hitboxStyle;
+extern int XS_colorBlindMode;
+extern int XS_originStyle;
+extern int XS_drawGround;
 
 const int defDISPLAY_HITBOXES = 0;
 const int defHITBOX_STYLE = 0;
@@ -1002,6 +1053,10 @@ enum class eSAVE_STATES {
 	PAGE
 };
 
+extern int XS_saveStateSlot;
+extern int XS_syncSavesWithFiles;
+extern int XS_loadRNG;
+
 const int defSAVE_SLOT = 1;
 const int defLOAD_RNG = 0;
 const int defSYNC_SAVES_WITH_FILES = 0;
@@ -1086,6 +1141,13 @@ enum class eFRAME_DATA {
 	PAGE
 };
 
+extern int XS_consoleData;
+extern int XS_inGameFrameDisplay;
+extern int XS_showHitstopAndFreeze;
+extern int XS_showInputs;
+extern int XS_showCancelWindows;
+extern int XS_scrollDisplay;
+
 const int defCONSOLE_DATA = 0;
 const int defIN_GAME_FRAME_DISPLAY = 0;
 const int defSHOW_HITSTOP_AND_FREEZE = 0;
@@ -1157,6 +1219,10 @@ enum class eRNG {
 	PAGE
 };
 
+extern int XS_customRNG;
+extern int XS_rate;
+extern int XS_seed;
+
 const int defCUSTOM_RNG = 0;
 const int defRATE = 0;
 const int defSEED = 1;
@@ -1223,6 +1289,11 @@ enum class eUI {
 	S3,
 	PAGE
 };
+
+extern int XS_showStats;
+extern int XS_accurateComboDamage;
+extern int XS_p1InputDisplay;
+extern int XS_p2InputDisplay;
 
 const int defSHOW_STATS = 1;
 const int defACCURATE_COMBO_DAMAGE = 0;
@@ -1316,6 +1387,12 @@ enum class eSYSTEM {
 	S4,
 	PAGE
 };
+
+extern int XS_gameSpeed;
+extern int XS_hideHUD;
+extern int XS_hideShadows;
+extern int XS_hideExtras;
+extern int XS_background;
 
 const int defGAME_SPEED = 0;
 const int defHIDE_HUD = 0;

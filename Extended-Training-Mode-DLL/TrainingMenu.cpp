@@ -152,18 +152,19 @@ Setting::Setting(std::string label_) {
 	label = label_;
 }
 
-Setting::Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int valueDefault_) {
+Setting::Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int* valuePtr_) {
 	label = label_;
 	itemLabels = itemLabels_;
-	storageDefault = storageDefault_;
 	storage = storageDefault_;
-	valueDefault = valueDefault_;
-	value = valueDefault_;
+	storageDefault = storageDefault_;
+	valuePtr = valuePtr_;
+	if (valuePtr_ != nullptr)
+		valueDefault = *valuePtr_;
 }
 
 void Setting::_default() {
 	storage = storageDefault;
-	value = valueDefault;
+	*valuePtr = valueDefault;
 
 	if (element != nullptr) {
 		element->selectedItem = storageDefault;
@@ -182,57 +183,47 @@ Page::Page(std::string label_) {
 }
 
 void Page::add(Setting& setting_) {
-	settings.emplace(setting_.label, setting_);
-	keys.emplace_back(setting_.label);
+	settings.emplace_back(setting_);
 }
 
 void Page::add(std::string label_) {
-	settings.emplace(label_, Setting(label_));
-	keys.emplace_back(label_);
+	settings.emplace_back(label_);
 }
 
-void Page::add(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int valueDefault_) {
-	settings.emplace(label_, Setting(label_, itemLabels_, storageDefault_, valueDefault_));
-	keys.emplace_back(label_);
+void Page::add(std::string label_, std::vector<std::string> itemLabels_, int* valuePtr_) {
+	settings.emplace_back(label_, itemLabels_, *valuePtr_, valuePtr_);
 }
 
-void Page::addCustom(std::string label_, int storageDefault_, int valueDefault_) {
-	settings.emplace(label_, Setting(label_, defaultCustomItems, storageDefault_, valueDefault_));
-	keys.emplace_back(label_);
+void Page::addCustom(std::string label_, int* valuePtr_, int storageDefault_) {
+	settings.emplace_back(label_, defaultCustomItems, storageDefault_, valuePtr_);
 }
 
-void Page::addNumeric(std::string label_, int min, int max, int default_, int interval) {
+void Page::addNumeric(std::string label_, int min, int max, int* valuePtr_) {
 	std::vector<std::string> itemLabels = {};
-	for (int i = min; i <= max; i += interval) {
+	for (int i = min; i <= max; i ++) {
 		itemLabels.emplace_back(std::to_string(i));
 	}
-	settings.emplace(label_, Setting(label_, itemLabels, default_, default_));
-	keys.emplace_back(label_);
+	settings.emplace_back(label_, itemLabels, *valuePtr_, valuePtr_);
 }
 
 void Page::addHotkey(std::string label_) {
-	settings.emplace(label_, Setting(label_, {"X"}, 0, 0));
-	keys.emplace_back(label_);
+	settings.emplace_back(label_, hotkeyItems, 0);
 }
 
 void Page::addDefault() {
-	settings.emplace("DEFAULT", Setting("DEFAULT"));
-	keys.emplace_back("DEFAULT");
+	settings.emplace_back("DEFAULT");
 }
 
 void Page::addReturn() {
-	settings.emplace("RETURN", Setting("RETURN"));
-	keys.emplace_back("RETURN");
+	settings.emplace_back("RETURN");
 }
 
 void Page::addPage() {
-	settings.emplace("PAGE", Setting(" ", defaultCustomItems, 1, 1));
-	keys.emplace_back("PAGE");
+	settings.emplace_back(" ", defaultCustomItems, 1);
 }
 
 void Page::addSpace() {
-	settings.emplace("SPACE", Setting(""));
-	keys.emplace_back("SPACE");
+	settings.emplace_back("");
 }
 
 void Page::addFooter() {
@@ -243,29 +234,33 @@ void Page::addFooter() {
 	addPage();
 }
 
-Setting* Page::get(std::string key_) {
-	return &settings[key_];
+Setting* Page::get(int i) {
+	return &settings[i];
 }
 
-int Page::getValue(std::string key_) {
-	return settings[key_].value;
+int* Page::getValuePtr(int i) {
+	return settings[i].valuePtr;
 }
 
-int Page::getStorage(std::string key_) {
-	return settings[key_].storage;
+int Page::getValue(int i) {
+	return *(settings[i].valuePtr);
 }
 
-void Page::setValue(std::string key_, int value_) {
-	settings[key_].value = value_;
+int Page::getStorage(int i) {
+	return settings[i].storage;
 }
 
-void Page::setStorage(std::string key_, int storage_) {
-	settings[key_].storage = storage_;
+void Page::setValue(int i, int value_) {
+	*(settings[i].valuePtr) = value_;
+}
+
+void Page::setStorage(int i, int storage_) {
+	settings[i].storage = storage_;
 }
 
 void Page::_default() {
-	for (auto pair : settings) {
-		pair.second._default();
+	for (auto setting : settings) {
+		setting._default();
 	}
 }
 
@@ -274,85 +269,150 @@ MenuContainer::MenuContainer(std::string label_) {
 }
 
 void MenuContainer::add(Page& page_) {
-	pages.emplace(page_.label, page_);
-	keys.emplace_back(page_.label);
+	pages.emplace_back(page_);
 }
 
-void MenuContainer::add(std::string key_, Page& page_) {
-	pages.emplace(key_, page_);
-	keys.emplace_back(key_);
-}
-
-Page* MenuContainer::get(std::string key_) {
-	return &pages[key_];
-}
-
-Page* MenuContainer::get(int index) {
-	return &pages[keys[index]];
+Page* MenuContainer::get(int i) {
+	return &pages[i];
 }
 
 MenuContainer XS_Menu("EXTENDED SETTINGS");
 MenuContainer HK_Menu("HOTKEY SETTINGS");
 
+int XS_reversalType = 0;
+int XS_reversalSlot1 = 0;
+int XS_weight1 = 1;
+int XS_reversalSlot2 = 0;
+int XS_weight2 = 1;
+int XS_reversalSlot3 = 0;
+int XS_weight3 = 1;
+int XS_reversalSlot4 = 0;
+int XS_weight4 = 1;
+int XS_noReversalWeight = 0;
+int XS_reversalDelay = 0;
+
+int XS_penaltyReset = 0;
+int XS_guardBarReset = 0;
+int XS_exGuard = 0;
+int XS_p1Meter = 10000;
+int XS_p2Meter = 10000;
+int XS_p1Health = 11400;
+int XS_p2Health = 11400;
+int XS_hitsUntilBurst = 0;
+int XS_hitsUntilBunker = 0;
+int XS_hitsUntilForceGuard = 0;
+int XS_forceGuardStance = 0;
+
+int XS_highlights = 0;
+int XS_guardHighlight = 0;
+int XS_hitHighlight = 0;
+int XS_armorHighlight = 0;
+int XS_throwProtectionHighlight = 0;
+int XS_idleHighlight = 0;
+
+int XS_resetToPositions = 0;
+int XS_p1Position = -16384;
+int XS_p1AssistPosition = -29184;
+int XS_p2Position = 16384;
+int XS_p2AssistPosition = 29184;
+
+int XS_sionBullets = 1;
+int XS_roaVisibleCharges = 1;
+int XS_roaHiddenCharges = 1;
+int XS_fMaidsHearts = 1;
+int XS_ryougiKnife = 1;
+
+int XS_displayHitboxes = 0;
+int XS_hitboxStyle = 0;
+int XS_colorBlindMode = 0;
+int XS_originStyle = 0;
+int XS_drawGround = 0;
+
+int XS_saveStateSlot = 1;
+int XS_syncSavesWithFiles = 0;
+int XS_loadRNG = 0;
+
+int XS_consoleData = 0;
+int XS_inGameFrameDisplay = 0;
+int XS_showHitstopAndFreeze = 0;
+int XS_showInputs = 0;
+int XS_showCancelWindows = 0;
+int XS_scrollDisplay = 0;
+
+int XS_customRNG = 0;
+int XS_rate = 0;
+int XS_seed = 0;
+
+int XS_showStats = 0;
+int XS_accurateComboDamage = 0;
+int XS_p1InputDisplay = 0;
+int XS_p2InputDisplay = 0;
+
+int XS_gameSpeed = 0;
+int XS_hideHUD = 0;
+int XS_hideShadows = 0;
+int XS_hideExtras = 0;
+int XS_background = 0;
+
 void initExtendedMenu() {
 	Page reversals("REVERSALS");
-	reversals.add("REVERSALS", { "OFF", "ON", "ON GUARD", "ON HIT", "ON WAKEUP", "ON SHIELD" }, 1, 1);
+	reversals.add("REVERSALS", { "OFF", "ON", "ON GUARD", "ON HIT", "ON WAKEUP", "ON SHIELD" }, &XS_reversalType);
 	reversals.addSpace();
-	reversals.addCustom("REVERSAL SLOT 1");
-	reversals.addNumeric("WEIGHT 1", 0, 10, 1);
-	reversals.addCustom("REVERSAL SLOT 2");
-	reversals.addNumeric("WEIGHT 2", 0, 10, 1);
-	reversals.addCustom("REVERSAL SLOT 3");
-	reversals.addNumeric("WEIGHT 3", 0, 10, 1);
-	reversals.addCustom("REVERSAL SLOT 4");
-	reversals.addNumeric("WEIGHT 4", 0, 10, 1);
+	reversals.addCustom("REVERSAL SLOT 1", &XS_reversalSlot1);
+	reversals.addNumeric("WEIGHT 1", 0, 10, &XS_weight1);
+	reversals.addCustom("REVERSAL SLOT 2", &XS_reversalSlot2);
+	reversals.addNumeric("WEIGHT 2", 0, 10, &XS_weight2);
+	reversals.addCustom("REVERSAL SLOT 3", &XS_reversalSlot3);
+	reversals.addNumeric("WEIGHT 3", 0, 10, &XS_weight3);
+	reversals.addCustom("REVERSAL SLOT 4", &XS_reversalSlot4);
+	reversals.addNumeric("WEIGHT 4", 0, 10, &XS_weight4);
 	reversals.addSpace();
-	reversals.addNumeric("NO REVERSAL WEIGHT", 0, 10, 1);
+	reversals.addNumeric("NO REVERSAL WEIGHT", 0, 10, &XS_noReversalWeight);
 	reversals.addSpace();
-	reversals.addNumeric("REVERSAL DELAY", 0, 20, 1);
+	reversals.addNumeric("REVERSAL DELAY", 0, 20, &XS_reversalDelay);
 	reversals.addSpace();
 	reversals.addFooter();
 	XS_Menu.add(reversals);
 
 	Page training("TRAINING");
-	training.add("PENALTY RESET", { "NORMAL", "INSTANT" }, 0, 0);
-	training.add("GUARD BAR RESET", { "NORMAL", "INSTANT" }, 0, 0);
-	training.add("EX GUARD", { "OFF", "ON", "RANDOM" }, 0, 0);
+	training.add("PENALTY RESET", { "NORMAL", "INSTANT" }, &XS_penaltyReset);
+	training.add("GUARD BAR RESET", { "NORMAL", "INSTANT" }, &XS_guardBarReset);
+	training.add("EX GUARD", { "OFF", "ON", "RANDOM" }, &XS_exGuard);
 	training.addSpace();
-	training.addCustom("P1 METER", 10000);
-	training.addCustom("P2 METER", 10000);
+	training.addCustom("P1 METER", &XS_p1Meter, 2);
+	training.addCustom("P2 METER", &XS_p2Meter, 2);
 	training.addSpace();
-	training.addCustom("P1 HEALTH", 11400);
-	training.addCustom("P2 HEALTH", 11400);
+	training.addCustom("P1 HEALTH", &XS_p1Health, 2);
+	training.addCustom("P2 HEALTH", &XS_p2Health, 2);
 	training.addSpace();
-	training.addCustom("HITS UNTIL BURST");
-	training.addCustom("HITS UNTIL BUNKER");
-	training.addCustom("HITS UNTIL FORCE GUARD");
-	training.addCustom("FORCE GUARD STANCE");
+	training.addCustom("HITS UNTIL BURST", &XS_hitsUntilBurst);
+	training.addCustom("HITS UNTIL BUNKER", &XS_hitsUntilBunker);
+	training.addCustom("HITS UNTIL FORCE GUARD", &XS_hitsUntilForceGuard);
+	training.addCustom("FORCE GUARD STANCE", &XS_forceGuardStance);
 	training.addSpace();
 	training.addFooter();
 	XS_Menu.add(training);
 
 	Page highlights("HIGHLIGHTS");
-	highlights.add("HIGHLIGHTS", offONItems, 0, 0);
+	highlights.add("HIGHLIGHTS", offONItems, &XS_highlights);
 	highlights.addSpace();
-	highlights.add("GUARD", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
-	highlights.add("HIT", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
-	highlights.add("ARMOR", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
-	highlights.add("THROW PROTECTION", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
-	highlights.add("IDLE", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, 0, 0);
+	highlights.add("GUARD", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_guardHighlight);
+	highlights.add("HIT", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_hitHighlight);
+	highlights.add("ARMOR", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_armorHighlight);
+	highlights.add("THROW PROTECTION", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_throwProtectionHighlight);
+	highlights.add("IDLE", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_idleHighlight);
 	highlights.addSpace();
 	highlights.addFooter();
 	XS_Menu.add(highlights);
 
 	Page positions("POSITIONS");
-	positions.add("RESET TO POSITIONS", offONItems, 0, 0);
+	positions.add("RESET TO POSITIONS", offONItems, &XS_resetToPositions);
 	positions.addSpace();
-	positions.addCustom("P1 POSITION", 1, -16384);
-	positions.addCustom("P1 ASSIST POSITION", 1, -29184);
+	positions.addCustom("P1 POSITION", &XS_p1Position);
+	positions.addCustom("P1 ASSIST POSITION", &XS_p1AssistPosition);
 	positions.addSpace();
-	positions.addCustom("P2 POSITION", 1, 16384);
-	positions.addCustom("P2 ASSIST POSITION", 1, 29184);
+	positions.addCustom("P2 POSITION", &XS_p2Position);
+	positions.addCustom("P2 ASSIST POSITION", &XS_p2AssistPosition);
 	positions.addSpace();
 	positions.add("MOVE TO POSITIONS");
 	positions.add("SET CURRENT POSITIONS");
@@ -362,54 +422,54 @@ void initExtendedMenu() {
 	XS_Menu.add(positions);
 
 	Page character("CHARACTER");
-	character.add("SION BULLETS", { "INFINITE", "NORMAL", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1" }, 1, 1);
+	character.add("SION BULLETS", { "INFINITE", "NORMAL", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1" }, &XS_sionBullets);
 	character.addSpace();
-	character.add("ROA VISIBLE CHARGE", { "INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, 1, 1);
-	character.add("ROA HIDDEN CHARGE", { "INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, 1, 1);
+	character.add("ROA VISIBLE CHARGE", { "INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, &XS_roaVisibleCharges);
+	character.add("ROA HIDDEN CHARGE", { "INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, &XS_roaHiddenCharges);
 	character.addSpace();
-	character.add("F-MAIDS HEARTS", { "INFINITE", "NORMAL", "4", "3", "2", "1", "0"}, 1, 1);
+	character.add("F-MAIDS HEARTS", { "INFINITE", "NORMAL", "4", "3", "2", "1", "0"}, &XS_fMaidsHearts);
 	character.addSpace();
-	character.add("RYOUGI KNIFE", { "INFINITE", "NORMAL" }, 1, 1);
+	character.add("RYOUGI KNIFE", { "INFINITE", "NORMAL" }, &XS_ryougiKnife);
 	character.addSpace();
 	character.addFooter();
 	XS_Menu.add(character);
 
 	Page hitboxes("HITBOXES");
-	hitboxes.add("DISPLAY HITBOXES", offONItems, 0, 0);
-	hitboxes.add("HITBOX STYLE", { "LAYERED", "BLENDED" }, 0, 0);
-	hitboxes.add("COLOR BLIND MODE", offONItems, 0, 0);
+	hitboxes.add("DISPLAY HITBOXES", offONItems, &XS_displayHitboxes);
+	hitboxes.add("HITBOX STYLE", { "LAYERED", "BLENDED" }, &XS_hitboxStyle);
+	hitboxes.add("COLOR BLIND MODE", offONItems, &XS_colorBlindMode);
 	hitboxes.addSpace();
-	hitboxes.add("ORIGIN STYLE", { "STANDARD", "EXTENDED" }, 0, 0);
+	hitboxes.add("ORIGIN STYLE", { "STANDARD", "EXTENDED" }, &XS_originStyle);
 	hitboxes.addSpace();
-	hitboxes.add("DRAW GROUND", offONItems, 0, 0);
+	hitboxes.add("DRAW GROUND", offONItems, &XS_drawGround);
 	hitboxes.addSpace();
 	hitboxes.addFooter();
 	XS_Menu.add(hitboxes);
 
 	Page savestates("SAVE STATES");
-	savestates.add("SAVE STATE SLOT", { "NONE", "SLOT 01", "SLOT 02", "SLOT 03" }, 1, 1);
+	savestates.add("SAVE STATE SLOT", { "NONE", "SLOT 01", "SLOT 02", "SLOT 03" }, &XS_saveStateSlot);
 	savestates.addSpace();
 	savestates.add("SAVE STATE");
 	savestates.add("CLEAR ALL SAVES");
 	savestates.addSpace();
-	savestates.add("SYNC SAVES WITH FILES", offONItems, 0, 0);
+	savestates.add("SYNC SAVES WITH FILES", offONItems, &XS_syncSavesWithFiles);
 	savestates.add("IMPORT SAVE");
 	savestates.add("EXPORT SAVE");
 	savestates.addSpace();
-	savestates.add("LOAD RNG", { "OFF", "ON" }, 0, 0);
+	savestates.add("LOAD RNG", { "OFF", "ON" }, &XS_loadRNG);
 	savestates.addSpace();
 	savestates.addFooter();
 	XS_Menu.add(savestates);
 
 	Page framedata("FRAME DATA");
-	framedata.add("CONSOLE DATA", { "NORMAL", "ADVANCED" }, 0, 0);
-	framedata.add("IN-GAME FRAME DISPLAY", { "OFF", "ON" }, 0, 0);
+	framedata.add("CONSOLE DATA", { "NORMAL", "ADVANCED" }, &XS_consoleData);
+	framedata.add("IN-GAME FRAME DISPLAY", { "OFF", "ON" }, &XS_inGameFrameDisplay);
 	framedata.addSpace();
-	framedata.add("SHOW HITSTOP & FREEZE", { "OFF", "ON" }, 0, 0);
-	framedata.add("SHOW INPUTS", { "OFF", "ON" }, 0, 0);
-	framedata.add("SHOW CANCEL WINDOWS", { "OFF", "ON" }, 0, 0);
+	framedata.add("SHOW HITSTOP & FREEZE", { "OFF", "ON" }, &XS_showHitstopAndFreeze);
+	framedata.add("SHOW INPUTS", { "OFF", "ON" }, &XS_showInputs);
+	framedata.add("SHOW CANCEL WINDOWS", { "OFF", "ON" }, &XS_showCancelWindows);
 	framedata.addSpace();
-	framedata.addCustom("SCROLL DISPLAY", 2, 0);
+	framedata.addCustom("SCROLL DISPLAY", &XS_scrollDisplay, 2);
 	framedata.addSpace();
 	framedata.add("COLOR GUIDE");
 	framedata.addSpace();
@@ -417,39 +477,40 @@ void initExtendedMenu() {
 	XS_Menu.add(framedata);
 
 	Page rng("RNG");
-	rng.add("CUSTOM RNG", { "OFF", "SEED", "VALUE" }, 0, 0);
+	rng.add("CUSTOM RNG", { "OFF", "SEED", "VALUE" }, &XS_customRNG);
 	rng.addSpace();
-	rng.add("RATE", { "EVERY FRAME", "EVERY RESET" }, 0, 0);
+	rng.add("RATE", { "EVERY FRAME", "EVERY RESET" }, &XS_rate);
 	rng.addSpace();
-	rng.addCustom("SEED / VALUE");
+	rng.addCustom("SEED / VALUE", &XS_seed);
 	rng.addSpace();
 	rng.addFooter();
 	XS_Menu.add(rng);
 
 	Page ui("UI");
-	ui.add("SHOW STATS", offONItems, 0, 0);
-	ui.add("ACCURATE COMBO DAMAGE", offONItems, 0, 0);
+	ui.add("SHOW STATS", offONItems, &XS_showStats);
+	ui.add("ACCURATE COMBO DAMAGE", offONItems, &XS_accurateComboDamage);
 	ui.addSpace();
-	ui.add("P1 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, 0, 0);
-	ui.add("P2 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, 0, 0);
+	ui.add("P1 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, &XS_p1InputDisplay);
+	ui.add("P2 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, &XS_p2InputDisplay);
 	ui.addSpace();
 	ui.addFooter();
 	XS_Menu.add(ui);
 
 	Page system("SYSTEM");
-	system.add("GAME SPEED", { "100%", "75%", "50%", "25%" }, 0, 0);
+	system.add("GAME SPEED", { "100%", "75%", "50%", "25%" }, &XS_gameSpeed);
 	system.addSpace();
-	system.add("HIDE HUD", offONItems, 0, 0);
-	system.add("HIDE SHADOWS", offONItems, 0, 0);
-	system.add("HIDE EXTRAS", offONItems, 0, 0);
+	system.add("HIDE HUD", offONItems, &XS_hideHUD);
+	system.add("HIDE SHADOWS", offONItems, &XS_hideShadows);
+	system.add("HIDE EXTRAS", offONItems, &XS_hideExtras);
 	system.addSpace();
-	system.add("BACKGROUND", { "NORMAL", "WHITE", "GRAY", "BLACK", "RED", "YELLOW", "GREEN", "BLUE", "PURPEL" }, 0, 0);
+	system.add("BACKGROUND", { "NORMAL", "WHITE", "GRAY", "BLACK", "RED", "YELLOW", "GREEN", "BLUE", "PURPEL" }, &XS_background);
 	system.addSpace();
 	system.addFooter();
 	XS_Menu.add(system);
 }
 
 void initHotkeyMenu() {
+	/*
 	Page page1("HOTKEY SETTINGS");
 	page1.addHotkey("FREEZE");
 	page1.addHotkey("ADVANCE FRAME");
@@ -470,6 +531,7 @@ void initHotkeyMenu() {
 	page2.addHotkey("INCREMENT RNG");
 	page2.addHotkey("DECREMENT RNG");
 	HK_Menu.add("PAGE 2", page2);
+	*/
 }
 
 // --- Vectors guide ---
