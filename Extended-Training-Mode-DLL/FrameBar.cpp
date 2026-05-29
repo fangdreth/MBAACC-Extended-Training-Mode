@@ -88,7 +88,7 @@ void FrameBar::draw()
 {
 	int nBarDrawCounter = 0;
 
-	short sAdjustedScroll = min(min(nBarCounter - numCells, BAR_MEMORY_SIZE - numCells), -nTRUE_SCROLL_DISPLAY);
+	short sAdjustedScroll = min(min(nBarCounter - numCells, BAR_MEMORY_SIZE - numCells), -XS_scrollDisplay);
 
 	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - numCells - sAdjustedScroll;
 	int nForEnd = (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll;
@@ -260,9 +260,9 @@ void ResetBars()
 			P.cells[j].reset();
 		}
 	}
-	nTRUE_SCROLL_DISPLAY = 0;
-	nSCROLL_DISPLAY = 2;
-	*(short*)(adMBAABase + adXS_frameScroll) = -nTRUE_SCROLL_DISPLAY;
+	XS_scrollDisplay = 0;
+	//nSCROLL_DISPLAY = 2;
+	*(short*)(adMBAABase + adXS_frameScroll) = -XS_scrollDisplay;
 }
 
 void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
@@ -651,9 +651,9 @@ void BarHandling(FrameBarPlayerData& P1_, FrameBarPlayerData& P2_, FrameBarPlaye
 
 void UpdateFrameBar()
 {
-	bDisplayFreeze = nSHOW_HITSTOP_AND_FREEZE != 0;
-	bDisplayInputs = nSHOW_INPUTS != 0; //currently unused, may add input display to framebar at some point
-	nBarScrolling = nTRUE_SCROLL_DISPLAY;
+	bDisplayFreeze = XS_showHitstopAndFreeze != 0;
+	bDisplayInputs = XS_showInputs != 0; //currently unused, may add input display to framebar at some point
+	nBarScrolling = XS_scrollDisplay;
 
 	FB_Main1 = &FB_P1;
 	FB_Main2 = &FB_P2;
@@ -691,7 +691,7 @@ void UpdateFrameBar()
 
 	int nBarDrawCounter = 0;
 
-	short sAdjustedScroll = min(min(nBarCounter - frameBar.numCells, BAR_MEMORY_SIZE - frameBar.numCells), -nTRUE_SCROLL_DISPLAY);
+	short sAdjustedScroll = min(min(nBarCounter - frameBar.numCells, BAR_MEMORY_SIZE - frameBar.numCells), -XS_scrollDisplay);
 
 	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - frameBar.numCells - sAdjustedScroll;
 	int nForEnd = (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll;

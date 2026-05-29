@@ -164,6 +164,13 @@ Setting::Setting(std::string label_, std::vector<std::string> itemLabels_, int s
 	storageRegKey = storageRegKey_;
 }
 
+Setting::Setting(std::string label_, std::vector<std::string> itemLabels_, KeyState* hotkey_, REGKEY hotkeyRegKey) {
+	label = label_;
+	itemLabels = itemLabels_;
+	hotkey = hotkey_;
+	valueRegKey = hotkeyRegKey;
+}
+
 void Setting::_default() {
 	storage = storageDefault;
 	*valuePtr = valueDefault;
@@ -208,8 +215,8 @@ void Page::addNumeric(std::string label_, int min, int max, int* valuePtr_, REGK
 	settings.emplace_back(label_, itemLabels, *valuePtr_, valuePtr_, registryKey_, registryKey_);
 }
 
-void Page::addHotkey(std::string label_, REGKEY registryKey_) {
-	settings.emplace_back(label_, hotkeyItems, 0, nullptr, registryKey_);
+void Page::addHotkey(std::string label_, KeyState* hotkey_, REGKEY registryKey_) {
+	settings.emplace_back(label_, hotkeyItems, hotkey_, registryKey_);
 }
 
 void Page::addDefault() {
@@ -292,6 +299,8 @@ int XS_reversalSlot4 = 0;
 int XS_weight4 = 1;
 int XS_noReversalWeight = 0;
 int XS_reversalDelay = 0;
+int* XS_reversalSlots[4] = { &XS_reversalSlot1, &XS_reversalSlot2, &XS_reversalSlot3, &XS_reversalSlot4 };
+int* XS_reversalWeights[4] = { &XS_weight1, &XS_weight2, &XS_weight3, &XS_weight4 };
 
 int XS_penaltyReset = 0;
 int XS_guardBarReset = 0;
@@ -341,6 +350,8 @@ int XS_showInputs = 0;
 int XS_showCancelWindows = 0;
 int XS_scrollDisplay = 0;
 
+bool XS_colorGuide = false;
+
 int XS_customRNG = 0;
 int XS_rate = 0;
 int XS_seed = 0;
@@ -349,6 +360,16 @@ int XS_showStats = 0;
 int XS_accurateComboDamage = 0;
 int XS_p1InputDisplay = 0;
 int XS_p2InputDisplay = 0;
+
+float fP1_LIST_INPUT_X = defP1_LIST_INPUT_X;
+float fP1_LIST_INPUT_Y = defP1_LIST_INPUT_Y;
+float fP2_LIST_INPUT_X = defP2_LIST_INPUT_X;
+float fP2_LIST_INPUT_Y = defP2_LIST_INPUT_Y;
+
+float fP1_ARCADE_INPUT_X = defP1_ARCADE_INPUT_X;
+float fP1_ARCADE_INPUT_Y = defP1_ARCADE_INPUT_Y;
+float fP2_ARCADE_INPUT_X = defP2_ARCADE_INPUT_X;
+float fP2_ARCADE_INPUT_Y = defP2_ARCADE_INPUT_Y;
 
 int XS_gameSpeed = 0;
 int XS_hideHUD = 0;
@@ -511,26 +532,51 @@ void initExtendedMenu() {
 	XS_Menu.add(system);
 }
 
+KeyState oFreezeHotkey(0);
+KeyState oAdvanceFrameHotkey(0);
+KeyState oNextFrameHotkey(0);
+KeyState oPrevFrameHotkey(0);
+KeyState oToggleHitboxesHotkey(0);
+KeyState oToggleFrameBarHotkey(0);
+KeyState oToggleHighlightsHotkey(0);
+KeyState oQueueReversalHotkey(0);
+KeyState oIncrementRNGHotkey(0);
+KeyState oDecrementRNGHotkey(0);
+
+KeyState oSaveStateHotkey(0);
+KeyState oPrevSaveSlotHotkey(0);
+KeyState oNextSaveSlotHotkey(0);
+KeyState oFrameBarLeftHotkey(0);
+KeyState oFrameBarRightHotkey(0);
+
 void initHotkeyMenu() {
 	Page page1("HOTKEY SETTINGS");
-	page1.addHotkey("FREEZE", sFREEZE_KEY_REG);
-	page1.addHotkey("ADVANCE FRAME", sADVANCE_FRAME_KEY_REG);
-	page1.addHotkey("NEXT FRAME", sNEXT_FRAME_KEY_REG);
-	page1.addHotkey("PREV FRAME", sPREV_FRAME_KEY_REG);
-	page1.addHotkey("TOGGLE HITBOXES", sTOGGLE_HITBOXES_KEY_REG);
-	page1.addHotkey("TOGGLE FRAME BAR", sTOGGLE_FRAME_BAR_KEY_REG);
-	page1.addHotkey("TOGGLE HIGHLIGHTS", sTOGGLE_HIGHLIGHTS_KEY_REG);
-	page1.addHotkey("QUEUE REVERSAL", sQUEUE_REVERSAL_KEY_REG);
+	page1.addHotkey("FREEZE", &oFreezeHotkey, sFREEZE_KEY_REG);
+	page1.addHotkey("ADVANCE FRAME", &oAdvanceFrameHotkey, sADVANCE_FRAME_KEY_REG);
+	page1.addHotkey("NEXT FRAME", &oNextFrameHotkey, sNEXT_FRAME_KEY_REG);
+	page1.addHotkey("PREV FRAME", &oPrevFrameHotkey, sPREV_FRAME_KEY_REG);
+	page1.addHotkey("TOGGLE HITBOXES", &oToggleHitboxesHotkey, sTOGGLE_HITBOXES_KEY_REG);
+	page1.addHotkey("TOGGLE FRAME BAR", &oToggleFrameBarHotkey, sTOGGLE_FRAME_BAR_KEY_REG);
+	page1.addHotkey("TOGGLE HIGHLIGHTS", &oToggleHighlightsHotkey, sTOGGLE_HIGHLIGHTS_KEY_REG);
+	page1.addHotkey("QUEUE REVERSAL", &oQueueReversalHotkey, sQUEUE_REVERSAL_KEY_REG);
+	page1.addSpace();
+	page1.addReturn();
+	page1.addSpace();
+	page1.addPage();
 	HK_Menu.add(page1);
 
 	Page page2("HOTKEY SETTINGS");
-	page2.addHotkey("SAVE STATE", sSAVE_STATE_KEY_REG);
-	page2.addHotkey("PREV SAVE SLOT", sPREV_SAVE_SLOT_KEY_REG);
-	page2.addHotkey("NEXT SAVE SLOT", sNEXT_SAVE_SLOT_KEY_REG);
-	page2.addHotkey("FRAME BAR LEFT", sFRAME_BAR_LEFT_KEY_REG);
-	page2.addHotkey("FRAME BAR RIGHT", sFRAME_BAR_RIGHT_KEY_REG);
-	page2.addHotkey("INCREMENT RNG", sINCREMENT_RNG_KEY_REG);
-	page2.addHotkey("DECREMENT RNG", sDECREMENT_RNG_KEY_REG);
+	page2.addHotkey("SAVE STATE", &oSaveStateHotkey, sSAVE_STATE_KEY_REG);
+	page2.addHotkey("PREV SAVE SLOT", &oPrevSaveSlotHotkey, sPREV_SAVE_SLOT_KEY_REG);
+	page2.addHotkey("NEXT SAVE SLOT", &oNextSaveSlotHotkey, sNEXT_SAVE_SLOT_KEY_REG);
+	page2.addHotkey("FRAME BAR LEFT", &oFrameBarLeftHotkey, sFRAME_BAR_LEFT_KEY_REG);
+	page2.addHotkey("FRAME BAR RIGHT", &oFrameBarRightHotkey, sFRAME_BAR_RIGHT_KEY_REG);
+	page2.addHotkey("INCREMENT RNG", &oIncrementRNGHotkey, sINCREMENT_RNG_KEY_REG);
+	page2.addHotkey("DECREMENT RNG", &oDecrementRNGHotkey, sDECREMENT_RNG_KEY_REG);
+	page2.addSpace();
+	page2.addReturn();
+	page2.addSpace();
+	page2.addPage();
 	HK_Menu.add(page2);
 }
 
@@ -558,364 +604,6 @@ void initMenuFromRegistry() {
 		}
 	}
 }
-
-// --- Vectors guide ---
-//Empty vectors are blank spaces (only need the one defined)
-//Vectors with one value are elements with only a label (like the vanilla "default" and "return" elements)
-//Vectors with more than one value are elements with selectable options
-
-int nPAGE = 1;
-
-//Page 1
-int nREVERSAL_TYPE = defREVERSAL_TYPE;
-int nREVERSAL_SLOT_1 = defREVERSAL_SLOT_1;
-int nREV_SLOT_1_WEIGHT = defREV_SLOT_1_WEIGHT;
-int nREVERSAL_SLOT_2 = defREVERSAL_SLOT_2;
-int nREV_SLOT_2_WEIGHT = defREV_SLOT_2_WEIGHT;
-int nREVERSAL_SLOT_3 = defREVERSAL_SLOT_3;
-int nREV_SLOT_3_WEIGHT = defREV_SLOT_3_WEIGHT;
-int nREVERSAL_SLOT_4 = defREVERSAL_SLOT_4;
-int nREV_SLOT_4_WEIGHT = defREV_SLOT_4_WEIGHT;
-int nNO_REV_WEIGHT = defNO_REV_WEIGHT;
-int nREVERSAL_DELAY = defREVERSAL_DELAY;
-
-int nREV_ID_1 = defREV_ID;
-int nREV_ID_2 = defREV_ID;
-int nREV_ID_3 = defREV_ID;
-int nREV_ID_4 = defREV_ID;
-
-void DefaultP1(MenuInfo* menuInfo) {
-	nREVERSAL_TYPE = defREVERSAL_TYPE;
-	nREVERSAL_SLOT_1 = defREVERSAL_SLOT_1;
-	nREV_SLOT_1_WEIGHT = defREV_SLOT_1_WEIGHT;
-	nREVERSAL_SLOT_2 = defREVERSAL_SLOT_2;
-	nREV_SLOT_2_WEIGHT = defREV_SLOT_2_WEIGHT;
-	nREVERSAL_SLOT_3 = defREVERSAL_SLOT_3;
-	nREV_SLOT_3_WEIGHT = defREV_SLOT_3_WEIGHT;
-	nREVERSAL_SLOT_4 = defREVERSAL_SLOT_4;
-	nREV_SLOT_4_WEIGHT = defREV_SLOT_4_WEIGHT;
-	nNO_REV_WEIGHT = defNO_REV_WEIGHT;
-	nREVERSAL_DELAY = defREVERSAL_DELAY;
-
-	nREV_ID_1 = defREV_ID;
-	nREV_ID_2 = defREV_ID;
-	nREV_ID_3 = defREV_ID;
-	nREV_ID_4 = defREV_ID;
-
-	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_TYPE]->selectedItem = defREVERSAL_TYPE;
-	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_1]->selectedItem = defREVERSAL_SLOT_1;
-	(menuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_1]->selectedItem = defREV_SLOT_1_WEIGHT;
-	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_2]->selectedItem = defREVERSAL_SLOT_2;
-	(menuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_2]->selectedItem = defREV_SLOT_2_WEIGHT;
-	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_3]->selectedItem = defREVERSAL_SLOT_3;
-	(menuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_3]->selectedItem = defREV_SLOT_3_WEIGHT;
-	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_SLOT_4]->selectedItem = defREVERSAL_SLOT_4;
-	(menuInfo->elementList).listStart[(int)eREVERSALS::WEIGHT_4]->selectedItem = defREV_SLOT_4_WEIGHT;
-	(menuInfo->elementList).listStart[(int)eREVERSALS::NO_REVERSAL_WEIGHT]->selectedItem = defNO_REV_WEIGHT;
-	(menuInfo->elementList).listStart[(int)eREVERSALS::REVERSAL_DELAY]->selectedItem = defREVERSAL_DELAY;
-}
-
-//Page 2
-int nPENALTY_RESET = defPEN_RESET;
-int nGUARD_BAR_RESET = defGUARD_RESET;
-int nEX_GUARD = defEX_GUARD;
-int nP1_METER = defP1_METER;
-int nP2_METER = defP2_METER;
-int nP1_HEALTH = defP1_HEALTH;
-int nP2_HEALTH = defP2_HEALTH;
-int nHITS_UNTIL_BURST = defHITS_BURST;
-int nHITS_UNTIL_BUNKER = defHITS_BUNKER;
-int nHITS_UNTIL_FORCE_GUARD = defHITS_FORCE_GUARD;
-int nFORCE_GUARD_STANCE = defFORCE_GUARD_STANCE;
-
-int nTRUE_P1_METER = defTRUE_P1_METER;
-int nTRUE_P2_METER = defTRUE_P2_METER;
-int nTRUE_P1_HEALTH = defTRUE_P1_HEALTH;
-int nTRUE_P2_HEALTH = defTRUE_P2_HEALTH;
-int nTRUE_HITS_UNTIL_BURST = defTRUE_HITS_BURST;
-int nTRUE_HITS_UNTIL_BUNKER = defTRUE_HITS_BUNKER;
-int nTRUE_HITS_UNTIL_FORCE_GUARD = defTRUE_HITS_FORCE_GUARD;
-
-void DefaultP2(MenuInfo* menuInfo) {
-	nPENALTY_RESET = defPEN_RESET;
-	nGUARD_BAR_RESET = defGUARD_RESET;
-	nEX_GUARD = defEX_GUARD;
-	nP1_METER = defP1_METER;
-	nP2_METER = defP2_METER;
-	nP1_HEALTH = defP1_HEALTH;
-	nP2_HEALTH = defP2_HEALTH;
-	nHITS_UNTIL_BURST = defHITS_BURST;
-	nHITS_UNTIL_BUNKER = defHITS_BUNKER;
-	nHITS_UNTIL_FORCE_GUARD = defHITS_FORCE_GUARD;
-	nFORCE_GUARD_STANCE = defFORCE_GUARD_STANCE;
-
-	nTRUE_P1_METER = defTRUE_P1_METER;
-	nTRUE_P2_METER = defTRUE_P2_METER;
-	nTRUE_P1_HEALTH = defTRUE_P1_HEALTH;
-	nTRUE_P2_HEALTH = defTRUE_P2_HEALTH;
-	nTRUE_HITS_UNTIL_BURST = defTRUE_HITS_BURST;
-	nTRUE_HITS_UNTIL_BUNKER = defTRUE_HITS_BUNKER;
-	nTRUE_HITS_UNTIL_FORCE_GUARD = defTRUE_HITS_FORCE_GUARD;
-
-	(menuInfo->elementList).listStart[(int)eTRAINING::PENALTY_RESET]->selectedItem = defPEN_RESET;
-	(menuInfo->elementList).listStart[(int)eTRAINING::GUARD_BAR_RESET]->selectedItem = defGUARD_RESET;
-	(menuInfo->elementList).listStart[(int)eTRAINING::EX_GUARD]->selectedItem = defEX_GUARD;
-	(menuInfo->elementList).listStart[(int)eTRAINING::P1_METER]->selectedItem = defP1_METER;
-	(menuInfo->elementList).listStart[(int)eTRAINING::P2_METER]->selectedItem = defP2_METER;
-	(menuInfo->elementList).listStart[(int)eTRAINING::P1_HEALTH]->selectedItem = defP1_HEALTH;
-	(menuInfo->elementList).listStart[(int)eTRAINING::P2_HEALTH]->selectedItem = defP2_HEALTH;
-	(menuInfo->elementList).listStart[(int)eTRAINING::HITS_UNTIL_BURST]->selectedItem = defHITS_BURST;
-	(menuInfo->elementList).listStart[(int)eTRAINING::HITS_UNTIL_BUNKER]->selectedItem = defHITS_BUNKER;
-	(menuInfo->elementList).listStart[(int)eTRAINING::HITS_UNTIL_FORCE_GUARD]->selectedItem = defHITS_FORCE_GUARD;
-	(menuInfo->elementList).listStart[(int)eTRAINING::FORCE_GUARD_STANCE]->selectedItem = defFORCE_GUARD_STANCE;
-}
-
-//Page 3
-int nHIGHLIGHTS = defHIGHLIGHTS;
-int nGUARD_HIGHLIGHT = defGUARD_HIGHLIGHT;
-int nHIT_HIGHLIGHT = defHIT_HIGHLIGHT;
-int nARMOR_HIGHLIGHT = defARMOR_HIGHLIGHT;
-int nTHROW_PROTECTION_HIGHLIGHT = defTHROW_PROT_HIGHLIGHT;
-int nIDLE_HIGHLIGHT = defIDLE_HIGHLIGHT;
-
-void DefaultP3(MenuInfo* menuInfo) {
-	nHIGHLIGHTS = defHIGHLIGHTS;
-	nGUARD_HIGHLIGHT = defGUARD_HIGHLIGHT;
-	nHIT_HIGHLIGHT = defHIT_HIGHLIGHT;
-	nARMOR_HIGHLIGHT = defARMOR_HIGHLIGHT;
-	nTHROW_PROTECTION_HIGHLIGHT = defTHROW_PROT_HIGHLIGHT;
-	nIDLE_HIGHLIGHT = defIDLE_HIGHLIGHT;
-
-	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::HIGHLIGHTS]->selectedItem = defHIGHLIGHTS;
-	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::GUARD]->selectedItem = defGUARD_HIGHLIGHT;
-	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::HIT]->selectedItem = defHIT_HIGHLIGHT;
-	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::ARMOR]->selectedItem = defARMOR_HIGHLIGHT;
-	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::THROW_PROTECTION]->selectedItem = defTHROW_PROT_HIGHLIGHT;
-	(menuInfo->elementList).listStart[(int)eHIGHLIGHTS::IDLE]->selectedItem = defIDLE_HIGHLIGHT;
-}
-
-//Page 4
-int nRESET_TO_POSITIONS = defRESET_POS;
-int nP1_X_LOC = defP1_X;
-int nP1_ASSIST_X_LOC = defP1_ASSIST_X;
-int nP2_X_LOC = defP2_X;
-int nP2_ASSIST_X_LOC = defP2_ASSIST_X;
-
-int nTRUE_P1_X_LOC = defTRUE_P1_X;
-int nTRUE_P1_ASSIST_X_LOC = defTRUE_P1_ASSIST_X;
-int nTRUE_P2_X_LOC = defTRUE_P2_X;
-int nTRUE_P2_ASSIST_X_LOC = defTRUE_P2_ASSIST_X;
-
-void DefaultP4(MenuInfo* menuInfo) {
-	nRESET_TO_POSITIONS = defRESET_POS;
-	nP1_X_LOC = defP1_X;
-	nP1_ASSIST_X_LOC = defP1_ASSIST_X;
-	nP2_X_LOC = defP2_X;
-	nP2_ASSIST_X_LOC = defP2_ASSIST_X;
-
-	nTRUE_P1_X_LOC = defTRUE_P1_X;
-	nTRUE_P1_ASSIST_X_LOC = defTRUE_P1_ASSIST_X;
-	nTRUE_P2_X_LOC = defTRUE_P2_X;
-	nTRUE_P2_ASSIST_X_LOC = defTRUE_P2_ASSIST_X;
-
-	(menuInfo->elementList).listStart[(int)ePOSITIONS::RESET_TO_POSITIONS]->selectedItem = defRESET_POS;
-	(menuInfo->elementList).listStart[(int)ePOSITIONS::P1_POSITION]->selectedItem = defP1_X;
-	(menuInfo->elementList).listStart[(int)ePOSITIONS::P1_ASSIST_POSITION]->selectedItem = defP1_ASSIST_X;
-	(menuInfo->elementList).listStart[(int)ePOSITIONS::P2_POSITION]->selectedItem = defP2_X;
-	(menuInfo->elementList).listStart[(int)ePOSITIONS::P2_ASSIST_POSITION]->selectedItem = defP2_ASSIST_X;
-}
-
-//Page 5
-int nSION_BULLETS = defSION_BULLETS;
-int nROA_VISIBLE_CHARGE = defROA_VISIBLE;
-int nROA_HIDDEN_CHARGE = defROA_HIDDEN;
-int nF_MAIDS_HEARTS = defMAIDS_HEARTS;
-int nRYOUGI_KNIFE = defRYOUGI_KNIFE;
-
-void DefaultP5(MenuInfo* menuInfo) {
-	nSION_BULLETS = defSION_BULLETS;
-	nROA_VISIBLE_CHARGE = defROA_VISIBLE;
-	nROA_HIDDEN_CHARGE = defROA_HIDDEN;
-	nF_MAIDS_HEARTS = defMAIDS_HEARTS;
-	nRYOUGI_KNIFE = defRYOUGI_KNIFE;
-
-	(menuInfo->elementList).listStart[(int)eCHARACTER::SION_BULLETS]->selectedItem = defSION_BULLETS;
-	(menuInfo->elementList).listStart[(int)eCHARACTER::ROA_VISIBLE_CHARGES]->selectedItem = defROA_VISIBLE;
-	(menuInfo->elementList).listStart[(int)eCHARACTER::ROA_HIDDEN_CHARGES]->selectedItem = defROA_HIDDEN;
-	(menuInfo->elementList).listStart[(int)eCHARACTER::F_MAIDS_HEARTS]->selectedItem = defMAIDS_HEARTS;
-	(menuInfo->elementList).listStart[(int)eCHARACTER::RYOUGI_KNIFE]->selectedItem = defRYOUGI_KNIFE;
-}
-
-//Page 6
-int nDISPLAY_HITBOXES = defDISPLAY_HITBOXES;
-int nHITBOX_STYLE = defHITBOX_STYLE;
-int nCOLOR_BLIND_MODE = defCOLOR_BLIND;
-int nORIGIN_STYLE = defORIGIN_STYLE;
-int nDRAW_GROUND = defDRAW_GROUND;
-
-void DefaultP6(MenuInfo* menuInfo) {
-	nDISPLAY_HITBOXES = defDISPLAY_HITBOXES;
-	nHITBOX_STYLE = defHITBOX_STYLE;
-	nCOLOR_BLIND_MODE = defCOLOR_BLIND;
-	nORIGIN_STYLE = defORIGIN_STYLE;
-	nDRAW_GROUND = defDRAW_GROUND;
-
-	(menuInfo->elementList).listStart[(int)eHITBOXES::DISPLAY_HITBOXES]->selectedItem = defDISPLAY_HITBOXES;
-	(menuInfo->elementList).listStart[(int)eHITBOXES::HITBOX_STYLE]->selectedItem = defHITBOX_STYLE;
-	(menuInfo->elementList).listStart[(int)eHITBOXES::COLOR_BLIND_MODE]->selectedItem = defCOLOR_BLIND;
-	(menuInfo->elementList).listStart[(int)eHITBOXES::ORIGIN_STYLE]->selectedItem = defORIGIN_STYLE;
-	(menuInfo->elementList).listStart[(int)eHITBOXES::DRAW_GROUND]->selectedItem = defDRAW_GROUND;
-}
-
-//Page 7
-int nSAVE_STATE_SLOT = defSAVE_SLOT;
-int nLOAD_RNG = defLOAD_RNG;
-int nSYNC_SAVES_WITH_FILES = defSYNC_SAVES_WITH_FILES;
-
-void DefaultP7(MenuInfo* menuInfo) {
-	nSAVE_STATE_SLOT = defSAVE_SLOT;
-	nLOAD_RNG = defLOAD_RNG;
-	nSYNC_SAVES_WITH_FILES = defSYNC_SAVES_WITH_FILES;
-
-	(menuInfo->elementList).listStart[(int)eSAVE_STATES::SAVE_STATE_SLOT]->selectedItem = defSAVE_SLOT;
-	(menuInfo->elementList).listStart[(int)eSAVE_STATES::LOAD_RNG]->selectedItem = defLOAD_RNG;
-	(menuInfo->elementList).listStart[(int)eSAVE_STATES::SYNC_SAVES_WITH_FILES]->selectedItem = defSYNC_SAVES_WITH_FILES;
-}
-
-//Page 8
-int nCONSOLE_DATA = defCONSOLE_DATA;
-int nIN_GAME_FRAME_DISPLAY = defIN_GAME_FRAME_DISPLAY;
-int nSHOW_HITSTOP_AND_FREEZE = defSHOW_HITSTOP_AND_FREEZE;
-int nSHOW_INPUTS = defSHOW_INPUTS;
-int nSHOW_CANCEL_WINDOWS = defSHOW_CANCEL;
-int nSCROLL_DISPLAY = defSCROLL_DISPLAY;
-
-bool bCOLOR_GUIDE = defCOLOR_GUIDE;
-
-int nTRUE_SCROLL_DISPLAY = defTRUE_SCROLL_DISPLAY;
-
-void DefaultP8(MenuInfo* menuInfo) {
-	nCONSOLE_DATA = defCONSOLE_DATA;
-	nIN_GAME_FRAME_DISPLAY = defIN_GAME_FRAME_DISPLAY;
-	nSHOW_HITSTOP_AND_FREEZE = defSHOW_HITSTOP_AND_FREEZE;
-	nSHOW_INPUTS = defSHOW_INPUTS;
-	nSHOW_CANCEL_WINDOWS = defSHOW_CANCEL;
-	nSCROLL_DISPLAY = defSCROLL_DISPLAY;
-
-	bCOLOR_GUIDE = defCOLOR_GUIDE;
-
-	nTRUE_SCROLL_DISPLAY = defTRUE_SCROLL_DISPLAY;
-
-	(menuInfo->elementList).listStart[(int)eFRAME_DATA::CONSOLE_DATA]->selectedItem = defCONSOLE_DATA;
-	(menuInfo->elementList).listStart[(int)eFRAME_DATA::IN_GAME_FRAME_DISPLAY]->selectedItem = defIN_GAME_FRAME_DISPLAY;
-	(menuInfo->elementList).listStart[(int)eFRAME_DATA::SHOW_HITSTOP_AND_FREEZE]->selectedItem = defSHOW_HITSTOP_AND_FREEZE;
-	(menuInfo->elementList).listStart[(int)eFRAME_DATA::SHOW_INPUTS]->selectedItem = defSHOW_INPUTS;
-	(menuInfo->elementList).listStart[(int)eFRAME_DATA::SHOW_CANCEL_WINDOWS]->selectedItem = defSHOW_CANCEL;
-	(menuInfo->elementList).listStart[(int)eFRAME_DATA::SCROLL_DISPLAY]->selectedItem = defSCROLL_DISPLAY;
-}
-
-//Page 9
-int nCUSTOM_RNG = defCUSTOM_RNG;
-int nRATE = defRATE;
-int nSEED = defSEED;
-
-int nTRUE_SEED = defTRUE_SEED;
-
-void DefaultP9(MenuInfo* menuInfo) {
-	nCUSTOM_RNG = defCUSTOM_RNG;
-	nRATE = defRATE;
-	nSEED = defSEED;
-
-	nTRUE_SEED = defTRUE_SEED;
-
-	(menuInfo->elementList).listStart[(int)eRNG::CUSTOM_RNG]->selectedItem = defCUSTOM_RNG;
-	(menuInfo->elementList).listStart[(int)eRNG::RATE]->selectedItem = defRATE;
-	(menuInfo->elementList).listStart[(int)eRNG::SEED]->selectedItem = defSEED;
-}
-
-//Page 10
-int nSHOW_STATS = defSHOW_STATS;
-int nACCURATE_COMBO_DAMAGE = defACCURATE_COMBO_DAMAGE;
-int nP1_INPUT_DISPLAY = defP1_INPUT;
-int nP2_INPUT_DISPLAY = defP2_INPUT;
-
-extern float fP1_LIST_INPUT_X = defP1_LIST_INPUT_X;
-extern float fP1_LIST_INPUT_Y = defP1_LIST_INPUT_Y;
-extern float fP2_LIST_INPUT_X = defP2_LIST_INPUT_X;
-extern float fP2_LIST_INPUT_Y = defP2_LIST_INPUT_Y;
-
-extern float fP1_ARCADE_INPUT_X = defP1_ARCADE_INPUT_X;
-extern float fP1_ARCADE_INPUT_Y = defP1_ARCADE_INPUT_Y;
-extern float fP2_ARCADE_INPUT_X = defP2_ARCADE_INPUT_X;
-extern float fP2_ARCADE_INPUT_Y = defP2_ARCADE_INPUT_Y;
-
-void DefaultP10(MenuInfo* menuInfo) {
-	nSHOW_STATS = defSHOW_STATS;
-	nACCURATE_COMBO_DAMAGE = defACCURATE_COMBO_DAMAGE;
-	nP1_INPUT_DISPLAY = defP1_INPUT;
-	nP2_INPUT_DISPLAY = defP2_INPUT;
-
-	(menuInfo->elementList).listStart[(int)eUI::SHOW_STATS]->selectedItem = defSHOW_STATS;
-	(menuInfo->elementList).listStart[(int)eUI::ACCURATE_COMBO_DAMAGE]->selectedItem = defACCURATE_COMBO_DAMAGE;
-	(menuInfo->elementList).listStart[(int)eUI::P1_INPUT_DISPLAY]->selectedItem = defP1_INPUT;
-	(menuInfo->elementList).listStart[(int)eUI::P2_INPUT_DISPLAY]->selectedItem = defP2_INPUT;
-}
-
-//Page 11
-int nGAME_SPEED = defGAME_SPEED;
-int nHIDE_HUD = defHIDE_HUD;
-int nHIDE_SHADOWS = defHIDE_SHADOWS;
-int nHIDE_EXTRAS = defHIDE_EXTRAS;
-int nBACKGROUND = defBACKGROUND;
-
-void DefaultP11(MenuInfo* menuInfo) {
-	nGAME_SPEED = defGAME_SPEED;
-	nHIDE_HUD = defHIDE_HUD;
-	nHIDE_SHADOWS = defHIDE_SHADOWS;
-	nHIDE_EXTRAS = defHIDE_EXTRAS;
-	nBACKGROUND = defBACKGROUND;
-
-	(menuInfo->elementList).listStart[(int)eSYSTEM::GAME_SPEED]->selectedItem = defGAME_SPEED;
-	(menuInfo->elementList).listStart[(int)eSYSTEM::HIDE_HUD]->selectedItem = defHIDE_HUD;
-	(menuInfo->elementList).listStart[(int)eSYSTEM::HIDE_SHADOWS]->selectedItem = defHIDE_SHADOWS;
-	(menuInfo->elementList).listStart[(int)eSYSTEM::HIDE_EXTRAS]->selectedItem = defHIDE_EXTRAS;
-	(menuInfo->elementList).listStart[(int)eSYSTEM::BACKGROUND]->selectedItem = defBACKGROUND;
-}
-
-//All pages
-uint8_t nEXTENDED_SETTINGS_PAGE = 0;
-uint8_t nEXTENDED_SETTINGS_CURSOR[XS_NUM_PAGES + 1] = { 0 };
-
-bool bOldFN1Input = 0;
-bool bOldFN2Input = 0;
-
-//Hotkey settings
-
-//Page 1
-int nHOTKEYS = 0; //The hotkey menu elements dont need to save their index, but they still need a location to save to
-
-KeyState oFreezeHotkey(0);
-KeyState oAdvanceFrameHotkey(0);
-KeyState oNextFrameHotkey(0);
-KeyState oPrevFrameHotkey(0);
-KeyState oToggleHitboxesHotkey(0);
-KeyState oToggleFrameBarHotkey(0);
-KeyState oToggleHighlightsHotkey(0);
-KeyState oQueueReversalHotkey(0);
-KeyState oIncrementRNGHotkey(0);
-KeyState oDecrementRNGHotkey(0);
-
-//Page 2
-
-KeyState oSaveStateHotkey(0);
-KeyState oPrevSaveSlotHotkey(0);
-KeyState oNextSaveSlotHotkey(0);
-KeyState oFrameBarLeftHotkey(0);
-KeyState oFrameBarRightHotkey(0);
-
-//All pages
-uint8_t nHOTKEY_SETTINGS_PAGE = 0;
-uint8_t nHOTKEY_SETTINGS_CURSOR[HK_NUM_PAGES + 1] = { 0 };
 
 int nHOTKEY_CD_TIMER = 0;
 

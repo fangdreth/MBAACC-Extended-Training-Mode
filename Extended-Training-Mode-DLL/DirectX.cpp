@@ -2390,7 +2390,7 @@ void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {
 void HitboxBatchDrawNoBlend(const BoxObjects* b) {
 
 	const DWORD* arrColors;
-	if (nCOLOR_BLIND_MODE)
+	if (XS_colorBlindMode)
 		arrColors = arrColorBlindColors;
 	else
 		arrColors = arrNormalColors;
@@ -2478,7 +2478,7 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 	// i could have avoided a div stage, but ugh, another time
 
 	const DWORD* arrColors;
-	if (nCOLOR_BLIND_MODE)
+	if (XS_colorBlindMode)
 		arrColors = arrColorBlindColors;
 	else
 		arrColors = arrNormalColors;
@@ -2574,7 +2574,7 @@ void _drawHitboxes() {
 	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
 
-	if (nHITBOX_STYLE) {
+	if (XS_hitboxStyle) {
 		for (int i = 0; i < boxObjectList.size(); i++) {
 			HitboxBatchDrawBlend(boxObjectList[i]);
 			delete boxObjectList[i];
@@ -3414,7 +3414,7 @@ void __stdcall _doDrawCalls() {
 	_drawMiscInfo();
 	displayDebugInfo();
 	_drawDebugMenu();
-	if (!nHIDE_EXTRAS) {
+	if (!XS_hideExtras) {
 		if (shouldDrawHud) {
 			_drawBuildInfo();
 		}
@@ -3481,7 +3481,7 @@ void logFPS() {
 
 	FreqTimerData timerData = fpsTimer.getData();
 
-	if (nHIDE_EXTRAS) return;
+	if (XS_hideExtras) return;
 
 	static LARGE_INTEGER baseFreq;
 	static bool isFirstRun = true;

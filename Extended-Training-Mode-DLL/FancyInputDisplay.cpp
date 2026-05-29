@@ -614,7 +614,7 @@ void dualInputDisplay() {
 	}
 
 	//P1InputBar.dragInfo.enable = *(BYTE*)(0x00400000 + adXS_P1InputDisplay) == INPUT_LIST || *(BYTE*)(0x00400000 + adXS_P1InputDisplay) == INPUT_BOTH;
-	P1InputBar.dragInfo.enable = nP1_INPUT_DISPLAY == INPUT_LIST || nP1_INPUT_DISPLAY == INPUT_BOTH;
+	P1InputBar.dragInfo.enable = XS_p1InputDisplay == INPUT_LIST || XS_p1InputDisplay == INPUT_BOTH;
 	P1InputBar.dragInfo.enable &= !(!safeWrite() || isPaused());
 	if (P1InputBar.dragInfo.enable) {
 		P1InputBar.draw();
@@ -633,7 +633,7 @@ void dualInputDisplay() {
 	}
 
 	//P2InputBar.dragInfo.enable = *(BYTE*)(0x00400000 + adXS_P2InputDisplay) == INPUT_LIST || *(BYTE*)(0x00400000 + adXS_P2InputDisplay) == INPUT_BOTH;
-	P2InputBar.dragInfo.enable = nP2_INPUT_DISPLAY == INPUT_LIST || nP2_INPUT_DISPLAY == INPUT_BOTH;
+	P2InputBar.dragInfo.enable = XS_p2InputDisplay == INPUT_LIST || XS_p2InputDisplay == INPUT_BOTH;
 	P2InputBar.dragInfo.enable &= !(!safeWrite() || isPaused());
 	if (P2InputBar.dragInfo.enable) {
 		P2InputBar.draw();
@@ -670,7 +670,7 @@ void drawFancyInputDisplay() {
 	dualInputDisplay();
 
 	//P1InputDisplay.dragInfo.enable = *(BYTE*)(0x00400000 + adXS_P1InputDisplay) == INPUT_ARCADE || *(BYTE*)(0x00400000 + adXS_P1InputDisplay) == INPUT_BOTH;
-	P1InputDisplay.dragInfo.enable = nP1_INPUT_DISPLAY == INPUT_ARCADE || nP1_INPUT_DISPLAY == INPUT_BOTH;
+	P1InputDisplay.dragInfo.enable = XS_p1InputDisplay == INPUT_ARCADE || XS_p1InputDisplay == INPUT_BOTH;
 	P1InputDisplay.dragInfo.enable &= !(!safeWrite() || isPaused());
 	if (P1InputDisplay.dragInfo.enable)
 	{
@@ -692,7 +692,7 @@ void drawFancyInputDisplay() {
 	}
 
 	//P2InputDisplay.dragInfo.enable = *(BYTE*)(0x00400000 + adXS_P2InputDisplay) == INPUT_ARCADE || *(BYTE*)(0x00400000 + adXS_P2InputDisplay) == INPUT_BOTH;
-	P2InputDisplay.dragInfo.enable = nP2_INPUT_DISPLAY == INPUT_ARCADE || nP2_INPUT_DISPLAY == INPUT_BOTH;
+	P2InputDisplay.dragInfo.enable = XS_p2InputDisplay == INPUT_ARCADE || XS_p2InputDisplay == INPUT_BOTH;
 	P2InputDisplay.dragInfo.enable &= !(!safeWrite() || isPaused());
 	if (P2InputDisplay.dragInfo.enable) {
 		P2InputDisplay.draw();
