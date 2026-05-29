@@ -237,20 +237,21 @@ void Page::addReturn() {
 	settings.emplace_back("RETURN");
 }
 
-void Page::addPage() {
-	settings.emplace_back(" ", defaultCustomItems, nullptr, 1, 4);
+void Page::addPage(std::string pageNumLabel) {
+	std::vector<std::string> pageNumLabels = { "X1", pageNumLabel, "X2" };
+	settings.emplace_back(" ", pageNumLabels, nullptr, 1, 4);
 }
 
 void Page::addSpace() {
 	settings.emplace_back("");
 }
 
-void Page::addFooter() {
+void Page::addFooter(std::string pageNumLabel) {
 	addDefault();
 	addSpace();
 	addReturn();
 	addSpace();
-	addPage();
+	addPage(pageNumLabel);
 }
 
 Setting* Page::get(int i) {
@@ -404,7 +405,7 @@ void initExtendedMenu() {
 	reversals.addSpace();
 	reversals.addNumeric("REVERSAL DELAY", 0, 20, &XS_reversalDelay);
 	reversals.addSpace();
-	reversals.addFooter();
+	reversals.addFooter("PAGE 1");
 	XS_Menu.add(reversals);
 
 	Page training("TRAINING");
@@ -423,7 +424,7 @@ void initExtendedMenu() {
 	training.addCustom("HITS UNTIL FORCE GUARD", &XS_hitsUntilForceGuard, 0, true);
 	training.add("FORCE GUARD STANCE", { "STAND", "CROUCH" }, &XS_forceGuardStance);
 	training.addSpace();
-	training.addFooter();
+	training.addFooter("PAGE 2");
 	XS_Menu.add(training);
 
 	Page highlights("HIGHLIGHTS");
@@ -435,7 +436,7 @@ void initExtendedMenu() {
 	highlights.add("THROW PROTECTION", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_throwProtectionHighlight, sTHROW_PROTECTION_HIGHLIGHT);
 	highlights.add("IDLE", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_idleHighlight, sIDLE_HIGHLIGHT);
 	highlights.addSpace();
-	highlights.addFooter();
+	highlights.addFooter("PAGE 3");
 	XS_Menu.add(highlights);
 
 	Page positions("POSITIONS");
@@ -451,7 +452,7 @@ void initExtendedMenu() {
 	positions.add("SET CURRENT POSITIONS");
 	positions.add("INVERT");
 	positions.addSpace();
-	positions.addFooter();
+	positions.addFooter("PAGE 4");
 	XS_Menu.add(positions);
 
 	Page character("CHARACTER");
@@ -464,7 +465,7 @@ void initExtendedMenu() {
 	character.addSpace();
 	character.add("RYOUGI KNIFE", { "INFINITE", "NORMAL" }, &XS_ryougiKnife);
 	character.addSpace();
-	character.addFooter();
+	character.addFooter("PAGE 5");
 	XS_Menu.add(character);
 
 	Page hitboxes("HITBOXES");
@@ -476,7 +477,7 @@ void initExtendedMenu() {
 	hitboxes.addSpace();
 	hitboxes.add("DRAW GROUND", offONItems, &XS_drawGround, sDRAW_GROUND);
 	hitboxes.addSpace();
-	hitboxes.addFooter();
+	hitboxes.addFooter("PAGE 6");
 	XS_Menu.add(hitboxes);
 
 	Page savestates("SAVE STATES");
@@ -491,7 +492,7 @@ void initExtendedMenu() {
 	savestates.addSpace();
 	savestates.add("LOAD RNG", { "OFF", "ON" }, &XS_loadRNG);
 	savestates.addSpace();
-	savestates.addFooter();
+	savestates.addFooter("PAGE 7");
 	XS_Menu.add(savestates);
 
 	Page framedata("FRAME DATA");
@@ -506,17 +507,16 @@ void initExtendedMenu() {
 	framedata.addSpace();
 	framedata.add("COLOR GUIDE");
 	framedata.addSpace();
-	framedata.addFooter();
+	framedata.addFooter("PAGE 8");
 	XS_Menu.add(framedata);
 
 	Page rng("RNG");
 	rng.add("CUSTOM RNG", { "OFF", "SEED", "VALUE" }, &XS_customRNG);
 	rng.addSpace();
 	rng.add("RATE", { "EVERY FRAME", "EVERY RESET" }, &XS_rate);
-	rng.addSpace();
 	rng.addCustom("SEED / VALUE", &XS_seed, 1, false);
 	rng.addSpace();
-	rng.addFooter();
+	rng.addFooter("PAGE 9");
 	XS_Menu.add(rng);
 
 	Page ui("UI");
@@ -526,7 +526,7 @@ void initExtendedMenu() {
 	ui.add("P1 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, &XS_p1InputDisplay, sP1_INPUT_DISPLAY);
 	ui.add("P2 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, &XS_p2InputDisplay, sP2_INPUT_DISPLAY);
 	ui.addSpace();
-	ui.addFooter();
+	ui.addFooter("PAGE 10");
 	XS_Menu.add(ui);
 
 	Page system("SYSTEM");
@@ -538,7 +538,7 @@ void initExtendedMenu() {
 	system.addSpace();
 	system.add("BACKGROUND", { "NORMAL", "WHITE", "GRAY", "BLACK", "RED", "YELLOW", "GREEN", "BLUE", "PURPEL" }, &XS_background);
 	system.addSpace();
-	system.addFooter();
+	system.addFooter("PAGE 11");
 	XS_Menu.add(system);
 }
 
@@ -572,7 +572,7 @@ void initHotkeyMenu() {
 	page1.addSpace();
 	page1.addReturn();
 	page1.addSpace();
-	page1.addPage();
+	page1.addPage("PAGE 1");
 	HK_Menu.add(page1);
 
 	Page page2("HOTKEY SETTINGS");
@@ -586,7 +586,7 @@ void initHotkeyMenu() {
 	page2.addSpace();
 	page2.addReturn();
 	page2.addSpace();
-	page2.addPage();
+	page2.addPage("PAGE 2");
 	HK_Menu.add(page2);
 }
 
@@ -634,8 +634,8 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_0_9", "Set weight of \\@COLOR@<015, 183, 255, 255>reversal slot 4."},
 	{"XS_0_11", "Set weight of \\@COLOR@<015, 183, 255, 255>no reversal."},
 	{"XS_0_13", "Set \\@COLOR@<015, 183, 255, 255>delay before a reversal is performed."},
-	{"XS_0_15_n", DEFAULT_INFO},
-	{"XS_0_17_n", RETURN_INFO},
+	{"XS_0_15", DEFAULT_INFO},
+	{"XS_0_17", RETURN_INFO},
 	{"XS_0_19", PAGE_INFO},
 
 	//TRAINING
@@ -650,8 +650,8 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_1_11", "Set \\@COLOR@<015, 183, 255, 255>hits until the dummy will bunker."},
 	{"XS_1_12", "Set \\@COLOR@<015, 183, 255, 255>hits until the dummy will guard with forced stance."},
 	{"XS_1_13", "Set \\@COLOR@<015, 183, 255, 255>stance to force the dummy to guard with."},
-	{"XS_1_15_n", DEFAULT_INFO},
-	{"XS_1_17_n", RETURN_INFO},
+	{"XS_1_15", DEFAULT_INFO},
+	{"XS_1_17", RETURN_INFO},
 	{"XS_1_19", PAGE_INFO},
 
 	//HIGHLIGHTS
@@ -661,8 +661,8 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_2_4", "Set color to highlight \\@COLOR@<015, 183, 255, 255>Armor state."},
 	{"XS_2_5", "Set color to highlight \\@COLOR@<015, 183, 255, 255>Throw Protection state."},
 	{"XS_2_6", "Set color to highlight \\@COLOR@<015, 183, 255, 255>Idle state."},
-	{"XS_2_8_n", DEFAULT_INFO},
-	{"XS_2_10_n", RETURN_INFO},
+	{"XS_2_8", DEFAULT_INFO},
+	{"XS_2_10", RETURN_INFO},
 	{"XS_2_12", PAGE_INFO},
 
 	//POSITIONS
@@ -671,11 +671,11 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_3_3", "Set \\@COLOR@<015, 183, 255, 255>P1 assist position on reset."},
 	{"XS_3_5", "Set \\@COLOR@<015, 183, 255, 255>P2 position on reset."},
 	{"XS_3_6", "Set \\@COLOR@<015, 183, 255, 255>P2 assist position on reset."},
-	{"XS_3_8_n", "Move \\@COLOR@<015, 183, 255, 255>players to the set positions."},
-	{"XS_3_9_n", "Set \\@COLOR@<015, 183, 255, 255>positions to current positions."},
-	{"XS_3_10_n", "Swap \\@COLOR@<015, 183, 255, 255>P1 and P2 positions."},
-	{"XS_3_12_n", DEFAULT_INFO},
-	{"XS_3_14_n", RETURN_INFO},
+	{"XS_3_8", "Move \\@COLOR@<015, 183, 255, 255>players to the set positions."},
+	{"XS_3_9", "Set \\@COLOR@<015, 183, 255, 255>positions to current positions."},
+	{"XS_3_10", "Swap \\@COLOR@<015, 183, 255, 255>P1 and P2 positions."},
+	{"XS_3_12", DEFAULT_INFO},
+	{"XS_3_14", RETURN_INFO},
 	{"XS_3_16", PAGE_INFO},
 
 	//CHARACTER
@@ -684,8 +684,8 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_4_3", "Set \\@COLOR@<015, 183, 255, 255>C-Roa hidden charges on reset."},
 	{"XS_4_5", "Set \\@COLOR@<015, 183, 255, 255>F-Maids hearts on reset."},
 	{"XS_4_7", "Set \\@COLOR@<015, 183, 255, 255>Ryougi knives."},
-	{"XS_4_9_n", DEFAULT_INFO},
-	{"XS_4_11_n", RETURN_INFO},
+	{"XS_4_9", DEFAULT_INFO},
+	{"XS_4_11", RETURN_INFO},
 	{"XS_4_13", PAGE_INFO},
 
 	//HITBOXES
@@ -694,20 +694,20 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_5_2", "Set \\@COLOR@<015, 183, 255, 255>color-blind mode."},
 	{"XS_5_4", "Set \\@COLOR@<015, 183, 255, 255>draw style of player origins."},
 	{"XS_5_6", "Set \\@COLOR@<015, 183, 255, 255>ground draw."},
-	{"XS_5_8_n", DEFAULT_INFO},
-	{"XS_5_10_n", RETURN_INFO},
+	{"XS_5_8", DEFAULT_INFO},
+	{"XS_5_10", RETURN_INFO},
 	{"XS_5_12", PAGE_INFO},
 
 	//SAVE STATES
 	{"XS_6_0", "Set \\@COLOR@<015, 183, 255, 255>save slot."},
-	{"XS_6_2_n", "Save \\@COLOR@<015, 183, 255, 255>current state."},
-	{"XS_6_3_n", "Clear \\@COLOR@<015, 183, 255, 255>all saved states."},
+	{"XS_6_2", "Save \\@COLOR@<015, 183, 255, 255>current state."},
+	{"XS_6_3", "Clear \\@COLOR@<015, 183, 255, 255>all saved states."},
 	{"XS_6_5", "Sync \\@COLOR@<015, 183, 255, 255>saves with files in ETMSaveStates." },
-	{"XS_6_6_n", "Import \\@COLOR@<015, 183, 255, 255>save from file."},
-	{"XS_6_7_n", "Export \\@COLOR@<015, 183, 255, 255>save to file."},
+	{"XS_6_6", "Import \\@COLOR@<015, 183, 255, 255>save from file."},
+	{"XS_6_7", "Export \\@COLOR@<015, 183, 255, 255>save to file."},
 	{"XS_6_9", "Set \\@COLOR@<015, 183, 255, 255>RNG loading."},
-	{"XS_6_11_n", DEFAULT_INFO},
-	{"XS_6_13_n", RETURN_INFO},
+	{"XS_6_11", DEFAULT_INFO},
+	{"XS_6_13", RETURN_INFO},
 	{"XS_6_15", PAGE_INFO},
 
 	//FRAME DATA
@@ -717,17 +717,17 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_7_4", "Set \\@COLOR@<015, 183, 255, 255>input display (console only)."},
 	{"XS_7_5", "Set \\@COLOR@<015, 183, 255, 255>cancel window display (console only)."},
 	{"XS_7_7", "Scroll \\@COLOR@<015, 183, 255, 255>frame display."},
-	{"XS_7_9_n", "Show \\@COLOR@<015, 183, 255, 255>color guide."},
-	{"XS_7_11_n", DEFAULT_INFO},
-	{"XS_7_13_n", RETURN_INFO},
+	{"XS_7_9", "Show \\@COLOR@<015, 183, 255, 255>color guide."},
+	{"XS_7_11", DEFAULT_INFO},
+	{"XS_7_13", RETURN_INFO},
 	{"XS_7_15", PAGE_INFO},
 
 	//RNG
 	{"XS_8_0", "Set \\@COLOR@<015, 183, 255, 255>RNG mode."},
 	{"XS_8_2", "Set \\@COLOR@<015, 183, 255, 255>rate of RNG setting."},
 	{"XS_8_3", "Set \\@COLOR@<015, 183, 255, 255>seed / value of RNG to be set."},
-	{"XS_8_5_n", DEFAULT_INFO},
-	{"XS_8_7_n", RETURN_INFO},
+	{"XS_8_5", DEFAULT_INFO},
+	{"XS_8_7", RETURN_INFO},
 	{"XS_8_9", PAGE_INFO},
 
 	//UI
@@ -736,8 +736,8 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_9_3", "Set \\@COLOR@<015, 183, 255, 255>P1 input display."},
 	{"XS_9_4", "Set \\@COLOR@<015, 183, 255, 255>P2 input display."},
 	{"XS_9_6", "Set \\@COLOR@<015, 183, 255, 255>Y-Position of frame display."},
-	{"XS_9_7_n", DEFAULT_INFO},
-	{"XS_9_10_n", RETURN_INFO},
+	{"XS_9_7", DEFAULT_INFO},
+	{"XS_9_10", RETURN_INFO},
 	{"XS_9_12", PAGE_INFO},
 
 	//SYSTEM
@@ -746,8 +746,8 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_10_3", "Set \\@COLOR@<015, 183, 255, 255>shadow display."},
 	{"XS_10_4", "Set \\@COLOR@<015, 183, 255, 255>extras display."},
 	{"XS_10_6", "Set \\@COLOR@<015, 183, 255, 255>background color."},
-	{"XS_10_8_n", DEFAULT_INFO},
-	{"XS_10_10_n", RETURN_INFO},
+	{"XS_10_8", DEFAULT_INFO},
+	{"XS_10_10", RETURN_INFO},
 	{"XS_10_12", PAGE_INFO},
 
 	//HOTKEYS 1
@@ -761,7 +761,7 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"HK_0_7", "Set hotkey to \\@COLOR@<015, 183, 255, 255>queue up a reversal regardless of settings."},
 	{"HK_0_8", "Set hotkey to \\@COLOR@<015, 183, 255, 255>increment the RNG Seed / Value."},
 	{"HK_0_9", "Set hotkey to \\@COLOR@<015, 183, 255, 255>decrement the RNG Seed / Value."},
-	{"HK_0_11_n", RETURN_INFO},
+	{"HK_0_11", RETURN_INFO},
 	{"HK_0_13", PAGE_INFO},
 
 	//HOTKEYS 2
@@ -770,7 +770,7 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"HK_1_2", "Set hotkey to \\@COLOR@<015, 183, 255, 255>select the next save slot."},
 	{"HK_1_3", "Set hotkey to \\@COLOR@<015, 183, 255, 255>scroll the frame bar to the left."},
 	{"HK_1_4", "Set hotkey to \\@COLOR@<015, 183, 255, 255>scroll the frame bar to the right."},
-	{"HK_1_6_n", RETURN_INFO},
+	{"HK_1_6", RETURN_INFO},
 	{"HK_1_8", PAGE_INFO},
 };
 

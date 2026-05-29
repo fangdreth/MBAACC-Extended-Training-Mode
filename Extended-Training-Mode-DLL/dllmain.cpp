@@ -2478,6 +2478,7 @@ void frameDoneCallback()
 		initExtendedMenu();
 		initHotkeyMenu();
 		initMenuFromRegistry();
+		initSharedValues();
 		etmMenuInit = true;
 	}
 
@@ -3163,7 +3164,7 @@ void ResetCallback() {
 		switch (pActiveP1->subObj.charID) {
 		case 0: //sion
 			if (XS_sionBullets > 1) {
-				pActiveP1->subObj.extraVariables[1] = 14 - XS_sionBullets;
+				pActiveP1->subObj.extraVariables[1] = XS_sionBullets - 1;
 			}
 			break;
 		case 4: //maids
@@ -3185,7 +3186,7 @@ void ResetCallback() {
 		switch (pActiveP2->subObj.charID) {
 		case 0: //sion
 			if (XS_sionBullets > 1) {
-				pActiveP2->subObj.extraVariables[1] = 14 - XS_sionBullets;
+				pActiveP2->subObj.extraVariables[1] = XS_sionBullets - 1;
 			}
 			break;
 		case 4: //maids
@@ -5060,7 +5061,7 @@ void ExtendedMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eREVERSALS::PAGE:
-			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size());
+			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5128,7 +5129,7 @@ void ExtendedMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eTRAINING::PAGE:
-			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size());
+			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5233,7 +5234,7 @@ void ExtendedMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eHIGHLIGHTS::PAGE:
-			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size());
+			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5312,7 +5313,7 @@ void ExtendedMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case ePOSITIONS::PAGE:
-			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size());
+			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5340,7 +5341,7 @@ void ExtendedMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eCHARACTER::PAGE:
-			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size());
+			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5368,7 +5369,7 @@ void ExtendedMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eHITBOXES::PAGE:
-			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size());
+			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5415,7 +5416,7 @@ void ExtendedMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eSAVE_STATES::PAGE:
-			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size());
+			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5485,7 +5486,7 @@ void ExtendedMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eFRAME_DATA::PAGE:
-			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size());
+			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5510,7 +5511,7 @@ void ExtendedMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eRNG::PAGE:
-			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size());
+			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5544,7 +5545,7 @@ void ExtendedMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eUI::PAGE:
-			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size());
+			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5575,7 +5576,7 @@ void ExtendedMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eSYSTEM::PAGE:
-			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size());
+			PageScrolling(curElement, extendedWindow, XS_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5593,7 +5594,7 @@ void ExtendedMenuInputChecking() {
 	if (curFN1Input && !oldFN1Input) {
 		extendedWindow->menuInfoIndex--;
 		if (extendedWindow->menuInfoIndex < 0) {
-			extendedWindow->menuInfoIndex = XS_Menu.pages.size();
+			extendedWindow->menuInfoIndex = XS_Menu.pages.size() - 1;
 		}
 	}
 	oldFN1Input = curFN1Input;
@@ -5602,7 +5603,7 @@ void ExtendedMenuInputChecking() {
 	bool curFN2Input = *(bool*)(adMBAABase + adP1FN2Input);
 	if (curFN2Input && !oldFN2Input) {
 		extendedWindow->menuInfoIndex++;
-		if (extendedWindow->menuInfoIndex > XS_Menu.pages.size()) {
+		if (extendedWindow->menuInfoIndex > XS_Menu.pages.size() - 1) {
 			extendedWindow->menuInfoIndex = 0;
 		}
 	}
@@ -5684,7 +5685,7 @@ void HotkeyMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eHK_PAGE1::PAGE:
-			PageScrolling(curElement, hotkeyWindow, HK_Menu.pages.size());
+			PageScrolling(curElement, hotkeyWindow, HK_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5733,7 +5734,7 @@ void HotkeyMenuInputChecking() {
 			if (aPressed) curMenuInfo->close = 1;
 			break;
 		case eHK_PAGE2::PAGE:
-			PageScrolling(curElement, hotkeyWindow, HK_Menu.pages.size());
+			PageScrolling(curElement, hotkeyWindow, HK_Menu.pages.size() - 1);
 			break;
 		}
 
@@ -5760,7 +5761,7 @@ void HotkeyMenuInputChecking() {
 	if (curFN1Input && !oldFN1Input) {
 		hotkeyWindow->menuInfoIndex--;
 		if (hotkeyWindow->menuInfoIndex < 0) {
-			hotkeyWindow->menuInfoIndex = HK_Menu.pages.size();
+			hotkeyWindow->menuInfoIndex = HK_Menu.pages.size() - 1;
 		}
 	}
 	oldFN1Input = curFN1Input;
@@ -5769,7 +5770,7 @@ void HotkeyMenuInputChecking() {
 	bool curFN2Input = *(bool*)(adMBAABase + adP1FN2Input);
 	if (curFN2Input && !oldFN2Input) {
 		hotkeyWindow->menuInfoIndex++;
-		if (hotkeyWindow->menuInfoIndex > HK_Menu.pages.size()) {
+		if (hotkeyWindow->menuInfoIndex > HK_Menu.pages.size() - 1) {
 			hotkeyWindow->menuInfoIndex = 0;
 		}
 	}
@@ -7309,7 +7310,6 @@ void threadFunc()
 	initDummyDelayTech();
 
 	initRegistryValues();
-	initSharedValues();
 	init2v2Hack();
 
 	initLoadSave();

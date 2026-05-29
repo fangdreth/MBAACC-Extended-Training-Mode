@@ -264,9 +264,9 @@ struct Page {
 
 	void addDefault();
 	void addReturn();
-	void addPage();
+	void addPage(std::string pageNumLabel);
 	void addSpace();
-	void addFooter();
+	void addFooter(std::string pageNumLabel);
 
 	Setting* get(int i);
 	int* getValuePtr(int i);
