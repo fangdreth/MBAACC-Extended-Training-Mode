@@ -287,7 +287,7 @@ void initUISubmenu() {
 			opt += inc;
 			opt = CLAMP(opt, INPUT_OFF, INPUT_BOTH);
 
-			nP1_INPUT_DISPLAY = opt;
+			XS_p1InputDisplay = opt;
 		},
 		[](int opt) mutable -> std::string {
 
@@ -314,7 +314,7 @@ void initUISubmenu() {
 			opt += inc;
 			opt = CLAMP(opt, INPUT_OFF, INPUT_BOTH);
 
-			nP2_INPUT_DISPLAY = opt;
+			XS_p2InputDisplay = opt;
 		},
 		[](int opt) -> std::string {
 
@@ -341,7 +341,7 @@ void initUISubmenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			nSHOW_STATS = opt;
+			XS_showStats = opt;
 		},
 		defaultOnOffNameFunc,
 		L"",
@@ -377,7 +377,7 @@ void initUISubmenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			nHIDE_EXTRAS = opt;
+			XS_hideExtras = opt;
 		},
 		defaultOnOffNameFunc
 	);
@@ -409,7 +409,7 @@ void initHitboxSubmenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			nHITBOX_STYLE = opt;
+			XS_hitboxStyle = opt;
 		},
 		[](int opt) -> std::string {
 
@@ -432,7 +432,7 @@ void initHitboxSubmenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			nCOLOR_BLIND_MODE = opt;
+			XS_colorBlindMode = opt;
 		},
 		defaultOnOffNameFunc
 	);
@@ -465,7 +465,7 @@ void initFramebarSubmenu() {
 			opt += inc;
 			opt &= 0b1;
 
-			nIN_GAME_FRAME_DISPLAY = opt;
+			XS_inGameFrameDisplay = opt;
 		},
 		defaultOnOffNameFunc,
 		sFRAME_DISPLAY
