@@ -152,14 +152,22 @@ Setting::Setting(std::string label_) {
 	label = label_;
 }
 
-Setting::Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int* valuePtr_, REGKEY valueRegKey_, REGKEY storageRegKey_) {
+Setting::Setting(std::string label_, std::vector<std::string> itemLabels_, int* valuePtr_, int storageDefault_, int settingType_, REGKEY valueRegKey_, REGKEY storageRegKey_) {
 	label = label_;
 	itemLabels = itemLabels_;
+	settingType = settingType_;
+	if (valuePtr_ == nullptr) {
+		storageDefault = 1;
+		storage = 1;
+		return;
+	}
+
 	storage = storageDefault_;
 	storageDefault = storageDefault_;
 	valuePtr = valuePtr_;
 	if (valuePtr_ != nullptr)
 		valueDefault = *valuePtr_;
+	settingType = settingType_;
 	valueRegKey = valueRegKey_;
 	storageRegKey = storageRegKey_;
 }
@@ -168,19 +176,20 @@ Setting::Setting(std::string label_, std::vector<std::string> itemLabels_, KeySt
 	label = label_;
 	itemLabels = itemLabels_;
 	hotkey = hotkey_;
+	settingType = 1;
 	valueRegKey = hotkeyRegKey;
 }
 
 void Setting::_default() {
 	storage = storageDefault;
-	*valuePtr = valueDefault;
+	if (valuePtr != nullptr)
+		*valuePtr = valueDefault;
 
-	if (element != nullptr) {
+	if (element != nullptr)
 		element->selectedItem = storageDefault;
-	}
-	if (hotkey != nullptr) {
+
+	if (hotkey != nullptr)
 		hotkey = nullptr;
-	}
 }
 
 Page::Page() {
@@ -200,11 +209,12 @@ void Page::add(std::string label_) {
 }
 
 void Page::add(std::string label_, std::vector<std::string> itemLabels_, int* valuePtr_, REGKEY registryKey_) {
-	settings.emplace_back(label_, itemLabels_, *valuePtr_, valuePtr_, registryKey_, registryKey_);
+	settings.emplace_back(label_, itemLabels_, valuePtr_, *valuePtr_, 0, registryKey_, registryKey_);
 }
 
-void Page::addCustom(std::string label_, int* valuePtr_, int storageDefault_, REGKEY valueRegKey_, REGKEY storageRegKey_) {
-	settings.emplace_back(label_, defaultCustomItems, storageDefault_, valuePtr_, valueRegKey_, storageRegKey_);
+void Page::addCustom(std::string label_, int* valuePtr_, int storageDefault_, bool isBound, REGKEY valueRegKey_, REGKEY storageRegKey_) {
+	int settingType_ = isBound ? 3 : 4;
+	settings.emplace_back(label_, defaultCustomItems, valuePtr_, storageDefault_, settingType_, valueRegKey_, storageRegKey_);
 }
 
 void Page::addNumeric(std::string label_, int min, int max, int* valuePtr_, REGKEY registryKey_) {
@@ -212,7 +222,7 @@ void Page::addNumeric(std::string label_, int min, int max, int* valuePtr_, REGK
 	for (int i = min; i <= max; i ++) {
 		itemLabels.emplace_back(std::to_string(i));
 	}
-	settings.emplace_back(label_, itemLabels, *valuePtr_, valuePtr_, registryKey_, registryKey_);
+	settings.emplace_back(label_, itemLabels, valuePtr_, *valuePtr_, 0,  registryKey_, registryKey_);
 }
 
 void Page::addHotkey(std::string label_, KeyState* hotkey_, REGKEY registryKey_) {
@@ -228,7 +238,7 @@ void Page::addReturn() {
 }
 
 void Page::addPage() {
-	settings.emplace_back(" ", defaultCustomItems, 1);
+	settings.emplace_back(" ", defaultCustomItems, nullptr, 1, 4);
 }
 
 void Page::addSpace() {
@@ -288,7 +298,7 @@ Page* MenuContainer::get(int i) {
 MenuContainer XS_Menu("EXTENDED SETTINGS");
 MenuContainer HK_Menu("HOTKEY SETTINGS");
 
-int XS_reversalType = 0;
+int XS_reversalType = 1;
 int XS_reversalSlot1 = 0;
 int XS_weight1 = 1;
 int XS_reversalSlot2 = 0;
@@ -381,13 +391,13 @@ void initExtendedMenu() {
 	Page reversals("REVERSALS");
 	reversals.add("REVERSALS", { "OFF", "ON", "ON GUARD", "ON HIT", "ON WAKEUP", "ON SHIELD" }, &XS_reversalType);
 	reversals.addSpace();
-	reversals.addCustom("REVERSAL SLOT 1", &XS_reversalSlot1);
+	reversals.addCustom("REVERSAL SLOT 1", &XS_reversalSlot1, 1, false);
 	reversals.addNumeric("WEIGHT 1", 0, 10, &XS_weight1);
-	reversals.addCustom("REVERSAL SLOT 2", &XS_reversalSlot2);
+	reversals.addCustom("REVERSAL SLOT 2", &XS_reversalSlot2, 1, false);
 	reversals.addNumeric("WEIGHT 2", 0, 10, &XS_weight2);
-	reversals.addCustom("REVERSAL SLOT 3", &XS_reversalSlot3);
+	reversals.addCustom("REVERSAL SLOT 3", &XS_reversalSlot3, 1, false);
 	reversals.addNumeric("WEIGHT 3", 0, 10, &XS_weight3);
-	reversals.addCustom("REVERSAL SLOT 4", &XS_reversalSlot4);
+	reversals.addCustom("REVERSAL SLOT 4", &XS_reversalSlot4, 1, false);
 	reversals.addNumeric("WEIGHT 4", 0, 10, &XS_weight4);
 	reversals.addSpace();
 	reversals.addNumeric("NO REVERSAL WEIGHT", 0, 10, &XS_noReversalWeight);
@@ -402,16 +412,16 @@ void initExtendedMenu() {
 	training.add("GUARD BAR RESET", { "NORMAL", "INSTANT" }, &XS_guardBarReset);
 	training.add("EX GUARD", { "OFF", "ON", "RANDOM" }, &XS_exGuard);
 	training.addSpace();
-	training.addCustom("P1 METER", &XS_p1Meter, 2);
-	training.addCustom("P2 METER", &XS_p2Meter, 2);
+	training.addCustom("P1 METER", &XS_p1Meter, 1, true);
+	training.addCustom("P2 METER", &XS_p2Meter, 1, true);
 	training.addSpace();
-	training.addCustom("P1 HEALTH", &XS_p1Health, 2);
-	training.addCustom("P2 HEALTH", &XS_p2Health, 2);
+	training.addCustom("P1 HEALTH", &XS_p1Health, 2, true);
+	training.addCustom("P2 HEALTH", &XS_p2Health, 2, true);
 	training.addSpace();
-	training.addCustom("HITS UNTIL BURST", &XS_hitsUntilBurst);
-	training.addCustom("HITS UNTIL BUNKER", &XS_hitsUntilBunker);
-	training.addCustom("HITS UNTIL FORCE GUARD", &XS_hitsUntilForceGuard);
-	training.addCustom("FORCE GUARD STANCE", &XS_forceGuardStance);
+	training.addCustom("HITS UNTIL BURST", &XS_hitsUntilBurst, 0 , true);
+	training.addCustom("HITS UNTIL BUNKER", &XS_hitsUntilBunker, 0, true);
+	training.addCustom("HITS UNTIL FORCE GUARD", &XS_hitsUntilForceGuard, 0, true);
+	training.add("FORCE GUARD STANCE", { "STAND", "CROUCH" }, &XS_forceGuardStance);
 	training.addSpace();
 	training.addFooter();
 	XS_Menu.add(training);
@@ -431,11 +441,11 @@ void initExtendedMenu() {
 	Page positions("POSITIONS");
 	positions.add("RESET TO POSITIONS", offONItems, &XS_resetToPositions);
 	positions.addSpace();
-	positions.addCustom("P1 POSITION", &XS_p1Position);
-	positions.addCustom("P1 ASSIST POSITION", &XS_p1AssistPosition);
+	positions.addCustom("P1 POSITION", &XS_p1Position, 1, true);
+	positions.addCustom("P1 ASSIST POSITION", &XS_p1AssistPosition, 1, true);
 	positions.addSpace();
-	positions.addCustom("P2 POSITION", &XS_p2Position);
-	positions.addCustom("P2 ASSIST POSITION", &XS_p2AssistPosition);
+	positions.addCustom("P2 POSITION", &XS_p2Position, 1, true);
+	positions.addCustom("P2 ASSIST POSITION", &XS_p2AssistPosition, 1, true);
 	positions.addSpace();
 	positions.add("MOVE TO POSITIONS");
 	positions.add("SET CURRENT POSITIONS");
@@ -492,7 +502,7 @@ void initExtendedMenu() {
 	framedata.add("SHOW INPUTS", { "OFF", "ON" }, &XS_showInputs, sDISPLAY_INPUTS);
 	framedata.add("SHOW CANCEL WINDOWS", { "OFF", "ON" }, &XS_showCancelWindows, sDISPLAY_CANCELS);
 	framedata.addSpace();
-	framedata.addCustom("SCROLL DISPLAY", &XS_scrollDisplay, 2);
+	framedata.addCustom("SCROLL DISPLAY", &XS_scrollDisplay, 2, true);
 	framedata.addSpace();
 	framedata.add("COLOR GUIDE");
 	framedata.addSpace();
@@ -504,7 +514,7 @@ void initExtendedMenu() {
 	rng.addSpace();
 	rng.add("RATE", { "EVERY FRAME", "EVERY RESET" }, &XS_rate);
 	rng.addSpace();
-	rng.addCustom("SEED / VALUE", &XS_seed);
+	rng.addCustom("SEED / VALUE", &XS_seed, 1, false);
 	rng.addSpace();
 	rng.addFooter();
 	XS_Menu.add(rng);

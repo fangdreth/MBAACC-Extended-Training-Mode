@@ -236,10 +236,11 @@ struct Setting {
 	KeyState* hotkey = nullptr;
 	REGKEY valueRegKey = L"";
 	REGKEY storageRegKey = L"";
+	int settingType = 0; //0 = selection, 1 = button/label, 2 = space, 3 = bound custom, 4 = looping custom
 
 	Setting();
 	Setting(std::string label_);
-	Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int* valuePtr = nullptr, REGKEY valueRegKey_ = L"", REGKEY storageRegKey_ = L"");
+	Setting(std::string label_, std::vector<std::string> itemLabels_, int* valuePtr, int storageDefault_, int settingType, REGKEY valueRegKey_ = L"", REGKEY storageRegKey_ = L"");
 	Setting(std::string label_, std::vector<std::string> itemLabels_, KeyState* hotkey_, REGKEY hotkeyRegKey = L"");
 
 	void _default();
@@ -257,7 +258,7 @@ struct Page {
 	void add(std::string label_);
 	void add(std::string label_, std::vector<std::string> itemLabels_, int* valuePtr_, REGKEY registryKey_ = L"");
 
-	void addCustom(std::string label_, int* valuePtr_, int storageDefault_ = 1, REGKEY valueRegKey_ = L"", REGKEY storageRegKey_ = L"");
+	void addCustom(std::string label_, int* valuePtr_, int storageDefault_, bool isBound, REGKEY valueRegKey_ = L"", REGKEY storageRegKey_ = L"");
 	void addNumeric(std::string label_, int min, int max, int* valuePtr_, REGKEY registryKey_ = L"");
 	void addHotkey(std::string label_, KeyState* hotkey_, REGKEY registryKey_ = L"");
 

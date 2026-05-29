@@ -4416,6 +4416,9 @@ bool SetSetting(Setting& setting) {
 		int selectionIndex = setting.element->selectedItem;
 		int elementValue = (setting.element->itemList).listStart[selectionIndex]->value;
 		setting.storage = elementValue;
+		if (setting.settingType == 0) {
+			*setting.valuePtr = elementValue;
+		}
 		return true;
 	}
 	return false;
@@ -4434,7 +4437,7 @@ void SaveMenuSettings(MenuWindow* window, MenuContainer& container) {
 		}
 	}
 
-	window->menuInfoIndex = container.savedSelection;
+	container.savedSelection = window->menuInfoIndex;
 	for (int i = 0; i < container.pages.size(); i++) {
 		container.get(i)->savedSelection = (window->menuInfoList).listStart[i]->selectedElement;
 	}
