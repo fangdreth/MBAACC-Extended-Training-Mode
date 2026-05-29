@@ -152,7 +152,7 @@ Setting::Setting(std::string label_) {
 	label = label_;
 }
 
-Setting::Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int* valuePtr_) {
+Setting::Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int* valuePtr_, REGKEY valueRegKey_, REGKEY storageRegKey_) {
 	label = label_;
 	itemLabels = itemLabels_;
 	storage = storageDefault_;
@@ -160,6 +160,8 @@ Setting::Setting(std::string label_, std::vector<std::string> itemLabels_, int s
 	valuePtr = valuePtr_;
 	if (valuePtr_ != nullptr)
 		valueDefault = *valuePtr_;
+	valueRegKey = valueRegKey_;
+	storageRegKey = storageRegKey_;
 }
 
 void Setting::_default() {
@@ -190,24 +192,24 @@ void Page::add(std::string label_) {
 	settings.emplace_back(label_);
 }
 
-void Page::add(std::string label_, std::vector<std::string> itemLabels_, int* valuePtr_) {
-	settings.emplace_back(label_, itemLabels_, *valuePtr_, valuePtr_);
+void Page::add(std::string label_, std::vector<std::string> itemLabels_, int* valuePtr_, REGKEY registryKey_) {
+	settings.emplace_back(label_, itemLabels_, *valuePtr_, valuePtr_, registryKey_, registryKey_);
 }
 
-void Page::addCustom(std::string label_, int* valuePtr_, int storageDefault_) {
-	settings.emplace_back(label_, defaultCustomItems, storageDefault_, valuePtr_);
+void Page::addCustom(std::string label_, int* valuePtr_, int storageDefault_, REGKEY valueRegKey_, REGKEY storageRegKey_) {
+	settings.emplace_back(label_, defaultCustomItems, storageDefault_, valuePtr_, valueRegKey_, storageRegKey_);
 }
 
-void Page::addNumeric(std::string label_, int min, int max, int* valuePtr_) {
+void Page::addNumeric(std::string label_, int min, int max, int* valuePtr_, REGKEY registryKey_) {
 	std::vector<std::string> itemLabels = {};
 	for (int i = min; i <= max; i ++) {
 		itemLabels.emplace_back(std::to_string(i));
 	}
-	settings.emplace_back(label_, itemLabels, *valuePtr_, valuePtr_);
+	settings.emplace_back(label_, itemLabels, *valuePtr_, valuePtr_, registryKey_, registryKey_);
 }
 
-void Page::addHotkey(std::string label_) {
-	settings.emplace_back(label_, hotkeyItems, 0);
+void Page::addHotkey(std::string label_, REGKEY registryKey_) {
+	settings.emplace_back(label_, hotkeyItems, 0, nullptr, registryKey_);
 }
 
 void Page::addDefault() {
@@ -394,13 +396,13 @@ void initExtendedMenu() {
 	XS_Menu.add(training);
 
 	Page highlights("HIGHLIGHTS");
-	highlights.add("HIGHLIGHTS", offONItems, &XS_highlights);
+	highlights.add("HIGHLIGHTS", offONItems, &XS_highlights, sHIGHLIGHTS);
 	highlights.addSpace();
-	highlights.add("GUARD", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_guardHighlight);
-	highlights.add("HIT", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_hitHighlight);
-	highlights.add("ARMOR", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_armorHighlight);
-	highlights.add("THROW PROTECTION", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_throwProtectionHighlight);
-	highlights.add("IDLE", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_idleHighlight);
+	highlights.add("GUARD", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_guardHighlight, sBLOCKING_HIGHLIGHT);
+	highlights.add("HIT", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_hitHighlight, sHIT_HIGHLIGHT);
+	highlights.add("ARMOR", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_armorHighlight, sARMOR_HIGHLIGHT);
+	highlights.add("THROW PROTECTION", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_throwProtectionHighlight, sTHROW_PROTECTION_HIGHLIGHT);
+	highlights.add("IDLE", { "OFF", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE", "BLACK" }, &XS_idleHighlight, sIDLE_HIGHLIGHT);
 	highlights.addSpace();
 	highlights.addFooter();
 	XS_Menu.add(highlights);
@@ -436,12 +438,12 @@ void initExtendedMenu() {
 
 	Page hitboxes("HITBOXES");
 	hitboxes.add("DISPLAY HITBOXES", offONItems, &XS_displayHitboxes);
-	hitboxes.add("HITBOX STYLE", { "LAYERED", "BLENDED" }, &XS_hitboxStyle);
-	hitboxes.add("COLOR BLIND MODE", offONItems, &XS_colorBlindMode);
+	hitboxes.add("HITBOX STYLE", { "LAYERED", "BLENDED" }, &XS_hitboxStyle, sHITBOX_STYLE);
+	hitboxes.add("COLOR BLIND MODE", offONItems, &XS_colorBlindMode, sCOLOR_BLIND_MODE);
 	hitboxes.addSpace();
-	hitboxes.add("ORIGIN STYLE", { "STANDARD", "EXTENDED" }, &XS_originStyle);
+	hitboxes.add("ORIGIN STYLE", { "STANDARD", "EXTENDED" }, &XS_originStyle, sORIGIN_STYLE);
 	hitboxes.addSpace();
-	hitboxes.add("DRAW GROUND", offONItems, &XS_drawGround);
+	hitboxes.add("DRAW GROUND", offONItems, &XS_drawGround, sDRAW_GROUND);
 	hitboxes.addSpace();
 	hitboxes.addFooter();
 	XS_Menu.add(hitboxes);
@@ -462,12 +464,12 @@ void initExtendedMenu() {
 	XS_Menu.add(savestates);
 
 	Page framedata("FRAME DATA");
-	framedata.add("CONSOLE DATA", { "NORMAL", "ADVANCED" }, &XS_consoleData);
-	framedata.add("IN-GAME FRAME DISPLAY", { "OFF", "ON" }, &XS_inGameFrameDisplay);
+	framedata.add("CONSOLE DATA", { "NORMAL", "ADVANCED" }, &XS_consoleData, sCONSOLE_DATA);
+	framedata.add("IN-GAME FRAME DISPLAY", { "OFF", "ON" }, &XS_inGameFrameDisplay, sFRAME_DISPLAY);
 	framedata.addSpace();
-	framedata.add("SHOW HITSTOP & FREEZE", { "OFF", "ON" }, &XS_showHitstopAndFreeze);
-	framedata.add("SHOW INPUTS", { "OFF", "ON" }, &XS_showInputs);
-	framedata.add("SHOW CANCEL WINDOWS", { "OFF", "ON" }, &XS_showCancelWindows);
+	framedata.add("SHOW HITSTOP & FREEZE", { "OFF", "ON" }, &XS_showHitstopAndFreeze, sDISPLAY_FREEZE);
+	framedata.add("SHOW INPUTS", { "OFF", "ON" }, &XS_showInputs, sDISPLAY_INPUTS);
+	framedata.add("SHOW CANCEL WINDOWS", { "OFF", "ON" }, &XS_showCancelWindows, sDISPLAY_CANCELS);
 	framedata.addSpace();
 	framedata.addCustom("SCROLL DISPLAY", &XS_scrollDisplay, 2);
 	framedata.addSpace();
@@ -487,11 +489,11 @@ void initExtendedMenu() {
 	XS_Menu.add(rng);
 
 	Page ui("UI");
-	ui.add("SHOW STATS", offONItems, &XS_showStats);
-	ui.add("ACCURATE COMBO DAMAGE", offONItems, &XS_accurateComboDamage);
+	ui.add("SHOW STATS", offONItems, &XS_showStats, sDISPLAY_STATS);
+	ui.add("ACCURATE COMBO DAMAGE", offONItems, &XS_accurateComboDamage, sACCURATE_COMBO_DAMAGE);
 	ui.addSpace();
-	ui.add("P1 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, &XS_p1InputDisplay);
-	ui.add("P2 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, &XS_p2InputDisplay);
+	ui.add("P1 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, &XS_p1InputDisplay, sP1_INPUT_DISPLAY);
+	ui.add("P2 INPUT DISPLAY", { "OFF", "LIST", "ARCADE", "BOTH" }, &XS_p2InputDisplay, sP2_INPUT_DISPLAY);
 	ui.addSpace();
 	ui.addFooter();
 	XS_Menu.add(ui);
@@ -499,9 +501,9 @@ void initExtendedMenu() {
 	Page system("SYSTEM");
 	system.add("GAME SPEED", { "100%", "75%", "50%", "25%" }, &XS_gameSpeed);
 	system.addSpace();
-	system.add("HIDE HUD", offONItems, &XS_hideHUD);
-	system.add("HIDE SHADOWS", offONItems, &XS_hideShadows);
-	system.add("HIDE EXTRAS", offONItems, &XS_hideExtras);
+	system.add("HIDE HUD", offONItems, &XS_hideHUD, sHIDE_HUD);
+	system.add("HIDE SHADOWS", offONItems, &XS_hideShadows, sHIDE_SHADOWS);
+	system.add("HIDE EXTRAS", offONItems, &XS_hideExtras, sHIDE_EXTRAS);
 	system.addSpace();
 	system.add("BACKGROUND", { "NORMAL", "WHITE", "GRAY", "BLACK", "RED", "YELLOW", "GREEN", "BLUE", "PURPEL" }, &XS_background);
 	system.addSpace();
@@ -510,28 +512,51 @@ void initExtendedMenu() {
 }
 
 void initHotkeyMenu() {
-	/*
 	Page page1("HOTKEY SETTINGS");
-	page1.addHotkey("FREEZE");
-	page1.addHotkey("ADVANCE FRAME");
-	page1.addHotkey("NEXT FRAME");
-	page1.addHotkey("PREV FRAME");
-	page1.addHotkey("TOGGLE HITBOXES");
-	page1.addHotkey("TOGGLE FRAME BAR");
-	page1.addHotkey("TOGGLE HIGHLIGHTS");
-	page1.addHotkey("QUEUE REVERSAL");
-	HK_Menu.add("PAGE 1", page1);
+	page1.addHotkey("FREEZE", sFREEZE_KEY_REG);
+	page1.addHotkey("ADVANCE FRAME", sADVANCE_FRAME_KEY_REG);
+	page1.addHotkey("NEXT FRAME", sNEXT_FRAME_KEY_REG);
+	page1.addHotkey("PREV FRAME", sPREV_FRAME_KEY_REG);
+	page1.addHotkey("TOGGLE HITBOXES", sTOGGLE_HITBOXES_KEY_REG);
+	page1.addHotkey("TOGGLE FRAME BAR", sTOGGLE_FRAME_BAR_KEY_REG);
+	page1.addHotkey("TOGGLE HIGHLIGHTS", sTOGGLE_HIGHLIGHTS_KEY_REG);
+	page1.addHotkey("QUEUE REVERSAL", sQUEUE_REVERSAL_KEY_REG);
+	HK_Menu.add(page1);
 
 	Page page2("HOTKEY SETTINGS");
-	page2.addHotkey("SAVE STATE");
-	page2.addHotkey("PREV SAVE SLOT");
-	page2.addHotkey("NEXT SAVE SLOT");
-	page2.addHotkey("FRAME BAR LEFT");
-	page2.addHotkey("FRAME BAR RIGHT");
-	page2.addHotkey("INCREMENT RNG");
-	page2.addHotkey("DECREMENT RNG");
-	HK_Menu.add("PAGE 2", page2);
-	*/
+	page2.addHotkey("SAVE STATE", sSAVE_STATE_KEY_REG);
+	page2.addHotkey("PREV SAVE SLOT", sPREV_SAVE_SLOT_KEY_REG);
+	page2.addHotkey("NEXT SAVE SLOT", sNEXT_SAVE_SLOT_KEY_REG);
+	page2.addHotkey("FRAME BAR LEFT", sFRAME_BAR_LEFT_KEY_REG);
+	page2.addHotkey("FRAME BAR RIGHT", sFRAME_BAR_RIGHT_KEY_REG);
+	page2.addHotkey("INCREMENT RNG", sINCREMENT_RNG_KEY_REG);
+	page2.addHotkey("DECREMENT RNG", sDECREMENT_RNG_KEY_REG);
+	HK_Menu.add(page2);
+}
+
+void initMenuFromRegistry() {
+	for (auto& page : XS_Menu.pages) {
+		for (auto& setting : page.settings) {
+			if (setting.valueRegKey != L"") {
+				ReadFromRegistry(setting.valueRegKey, setting.valuePtr);
+			}
+			if (setting.storageRegKey != L"") {
+				ReadFromRegistry(setting.storageRegKey, &setting.storage);
+			}
+		}
+	}
+
+	if (XS_p1InputDisplay != 0 || XS_p2InputDisplay != 0) {
+		*(bool*)(adMBAABase + 0x001585f8) = true; // vanilla training input display setting
+	}
+
+	for (auto& page : HK_Menu.pages) {
+		for (auto& setting : page.settings) {
+			if (setting.valueRegKey != L"") {
+				setting.hotkey->setKeyFromRegistry(setting.valueRegKey);
+			}
+		}
+	}
 }
 
 // --- Vectors guide ---

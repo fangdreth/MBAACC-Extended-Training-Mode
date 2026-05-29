@@ -222,6 +222,7 @@ CHECKSIZE(MenuWindow, 0xe8)
 #undef CHECKOFFSET
 #undef CHECKSIZE
 
+//Setting struct for custom menu initialization and memory
 //storage is for remembering the in-game option scroll state (always 1 for looping custom scroll options)
 //value is the value you actually care about
 struct Setting {
@@ -233,11 +234,12 @@ struct Setting {
 	int valueDefault = 0;
 	Element* element = nullptr;
 	KeyState* hotkey = nullptr;
-	REGKEY registryKey = L"";
+	REGKEY valueRegKey = L"";
+	REGKEY storageRegKey = L"";
 
 	Setting();
 	Setting(std::string label_);
-	Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int* valuePtr = nullptr);
+	Setting(std::string label_, std::vector<std::string> itemLabels_, int storageDefault_, int* valuePtr = nullptr, REGKEY valueRegKey_ = L"", REGKEY storageRegKey_ = L"");
 
 	void _default();
 };
@@ -252,11 +254,11 @@ struct Page {
 
 	void add(Setting& setting_);
 	void add(std::string label_);
-	void add(std::string label_, std::vector<std::string> itemLabels_, int* valuePtr_);
+	void add(std::string label_, std::vector<std::string> itemLabels_, int* valuePtr_, REGKEY registryKey_ = L"");
 
-	void addCustom(std::string label_, int* valuePtr_, int storageDefault_ = 1);
-	void addNumeric(std::string label_, int min, int max, int* valuePtr_);
-	void addHotkey(std::string label_);
+	void addCustom(std::string label_, int* valuePtr_, int storageDefault_ = 1, REGKEY valueRegKey_ = L"", REGKEY storageRegKey_ = L"");
+	void addNumeric(std::string label_, int min, int max, int* valuePtr_, REGKEY registryKey_ = L"");
+	void addHotkey(std::string label_, REGKEY registryKey_ = L"");
 
 	void addDefault();
 	void addReturn();
@@ -295,6 +297,8 @@ extern MenuContainer HK_Menu;
 
 void initExtendedMenu();
 void initHotkeyMenu();
+
+void initMenuFromRegistry();
 
 // --- Vectors guide ---
 //Empty vectors are blank spaces (only need the one defined)

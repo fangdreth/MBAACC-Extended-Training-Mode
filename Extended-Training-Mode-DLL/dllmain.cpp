@@ -232,10 +232,10 @@ void initRegistryValues()
 
 void initSharedValues()
 {
-	*(byte*)(adMBAABase + adXS_frameData) = nCONSOLE_DATA;
-	*(byte*)(adMBAABase + adXS_showHitstopAndFreeze) = nSHOW_HITSTOP_AND_FREEZE;
-	*(byte*)(adMBAABase + adXS_showInputs) = nSHOW_INPUTS;
-	*(byte*)(adMBAABase + adXS_showCancel) = nSHOW_CANCEL_WINDOWS;
+	*(byte*)(adMBAABase + adXS_frameData) = XS_consoleData;
+	*(byte*)(adMBAABase + adXS_showHitstopAndFreeze) = XS_showHitstopAndFreeze;
+	*(byte*)(adMBAABase + adXS_showInputs) = XS_showInputs;
+	*(byte*)(adMBAABase + adXS_showCancel) = XS_showCancelWindows;
 }
 
 bool __stdcall safeWrite()
@@ -7354,8 +7354,9 @@ void threadFunc()
 
 	initDummyDelayTech();
 
-	initHotkeys();
-	initRegistryValues();
+	//initHotkeys();
+	//initRegistryValues();
+	initMenuFromRegistry();
 	initSharedValues();
 	init2v2Hack();
 
