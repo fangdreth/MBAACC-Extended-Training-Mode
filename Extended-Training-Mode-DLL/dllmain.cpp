@@ -1874,7 +1874,7 @@ void HandleReversalsPage() {
 		nHoldButtons = 0;
 		bHoldShield = false;
 	}
-	if ((XS_reversalType == 0 && !bDoReversal) || pActiveP2->subObj.doTrainingAction != 1 || pActiveP2->subObj.targetPatternPriority != 0xFFFF) return;
+	if ((XS_reversalType == 0 && !bDoReversal) || pActiveP2->subObj.doTrainingAction != 1 || pActiveP2->subObj.targetPatternPriority == 30000) return;
 	std::vector<int> vValidReversals = (pActiveP2->subObj.yPos == 0 && pActiveP2->subObj.prevYPos == 0 ? vGroundReversals : vAirReversals);
 	int pat;
 	if (vValidReversals.size() != 0 && bDoReversal && (pdP2Data->inactionableFrames == 0 || pActiveP2->subObj.shieldSuccessType != 0)) {
@@ -1941,7 +1941,10 @@ void HandleReversalsPage() {
 						bHoldShield = true;
 						break;
 					}
-					if (tryCmdPattern(pActiveP2, pat)) bDidShield = true;
+					if (tryCmdPattern(pActiveP2, pat)) {
+						bDidShield = true;
+						pActiveP2->subObj.targetPatternPriority = 30000;
+					}
 				}
 				else if (pat == 999) {
 					enableTAS = true;
@@ -1953,6 +1956,7 @@ void HandleReversalsPage() {
 				}
 				else if (pat > 40) {
 					tryCmdPattern(pActiveP2, vValidReversals[validIndex] % 1000);
+					pActiveP2->subObj.targetPatternPriority = 30000;
 				}
 				else {
 					pActiveP2->subObj.targetPattern = vValidReversals[validIndex] % 1000;
@@ -1979,6 +1983,7 @@ void HandleReversalsPage() {
 			pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Air ||
 			pat == pActiveP2->cmdFileDataPtr->ShieldCounter_Crouch)) {
 			tryCmdPattern(pActiveP2, vValidReversals[nSaveShieldRevIndex] % 1000);
+			pActiveP2->subObj.targetPatternPriority = 30000;
 		}
 		else {
 			pActiveP2->subObj.targetPattern = vValidReversals[nSaveShieldRevIndex] % 1000;
@@ -1991,7 +1996,7 @@ void HandleReversalsPage() {
 		bDoReversal = false;
 	}
 
-	if (pActiveP2->subObj.targetPatternPriority != 0xFFFF) return;
+	if (pActiveP2->subObj.targetPatternPriority == 30000) return;
 
 	switch (XS_reversalType) {
 	case 1:
