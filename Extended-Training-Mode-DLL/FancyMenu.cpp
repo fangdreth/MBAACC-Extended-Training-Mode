@@ -1372,6 +1372,203 @@ void initViewSubmenu() {
 
 }
 
+const DWORD MBAA_Change_Volume = 0x00418030;
+void ChangeVolume_Debug() {
+	PUSH_ALL;
+	__asm {
+		call[MBAA_Change_Volume];
+	}
+	POP_ALL;
+}
+
+const DWORD MBAA_Save_Game_Settings = 0x00401540;
+void SaveGameSettings_Debug() {
+	PUSH_ALL;
+	__asm {
+		call[MBAA_Save_Game_Settings];
+	}
+	POP_ALL;
+}
+
+void initGameOptionsSubmenu() {
+
+	Menu gameOptions("Game Options");
+
+	struct Settings {
+		DWORD base;
+		int difficulty;
+		int winCount;
+		int damageLevel;
+		int timerSpeed;
+		byte unused1[8];
+		int winCountVS;
+		byte unused2[8];
+		int replaySave;
+		byte unused3[280];
+		int bgmVolume;
+		int seVolume;
+		int unknown1;
+		int unknown2;
+		int unknown3;
+		int useOldVectors;
+		int unknown4;
+		int characterFilter;
+		int stageAnimations;
+		int viewFPS;
+		int frameRate;
+		int unknown5;
+		int screenFilter;
+		int aspectRatio;
+		byte unused4[4];
+	};
+
+	Settings* settings = *(Settings**)(adMBAABase + 0x00154140);
+
+	gameOptions.add<int*>("BGM Volume",
+		[](int inc, int*& opt) {
+			*opt -= inc;
+			*opt = CLAMP(*opt, 0, 20);
+			if (*opt == 20) *opt -= inc;
+			ChangeVolume_Debug();
+			SaveGameSettings_Debug();
+		},
+		[](int* opt) -> std::string {
+			if (*opt == 21) return "OFF";
+			static char buffer[256];
+			snprintf(buffer, 256, "%i", 20 - *opt);
+			return std::string(buffer);
+		},
+		L"",
+		& settings->bgmVolume
+	);
+
+	gameOptions.add<int*>("SE Volume",
+		[](int inc, int*& opt) {
+			*opt -= inc;
+			*opt = CLAMP(*opt, 0, 20);
+			if (*opt == 20) *opt -= inc;
+			ChangeVolume_Debug();
+			SaveGameSettings_Debug();
+		},
+		[](int* opt) -> std::string {
+			if (*opt == 21) return "OFF";
+			static char buffer[256];
+			snprintf(buffer, 256, "%i", 20 - *opt);
+			return std::string(buffer);
+		},
+		L"",
+		& settings->seVolume
+	);
+
+	gameOptions.add<int*>("Stage Animations",
+		[](int inc, int*& opt) {
+			*opt -= inc;
+			*opt = CLAMP(*opt, 0, 1);
+			SaveGameSettings_Debug();
+		},
+		[](int* opt) -> std::string {
+			std::string strs[2] = { "ON", "OFF"};
+			return strs[*opt];
+		},
+		L"",
+		& settings->stageAnimations
+	);
+
+	gameOptions.add<int*>("Character Filter",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 3);
+			*(int*)(adMBAABase + 0x0034d858) = *opt;
+			*(int*)(adMBAABase + 0x0034d884) = *opt;
+			SaveGameSettings_Debug();
+		},
+		[](int* opt) -> std::string {
+			std::string strs[4] = { "OFF", "EDGE", "FULL", "LINEAR"};
+			return strs[*opt];
+		},
+		L"",
+		& settings->characterFilter
+	);
+
+	gameOptions.add<int*>("Replay Save",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 1);
+			SaveGameSettings_Debug();
+		},
+		[](int* opt) -> std::string {
+			std::string strs[2] = { "MANUAL", "AUTO" };
+			return strs[*opt];
+		},
+		L"",
+		& settings->replaySave
+	);
+
+	gameOptions.add<int*>("View FPS",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 1);
+			SaveGameSettings_Debug();
+		},
+		[](int* opt) -> std::string {
+			std::string strs[2] = { "OFF", "ON" };
+			return strs[*opt];
+		},
+		L"",
+		& settings->viewFPS
+	);
+
+	gameOptions.add<int*>("Aspect Ratio",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 6);
+			SaveGameSettings_Debug();
+		},
+		[](int* opt) -> std::string {
+			std::string strs[7] = { "NORMAL", "AUTO", "4:3", "16:9", "16:10", "5:4", "15:9" };
+			return strs[*opt];
+		},
+		L"",
+		& settings->aspectRatio
+	);
+
+	gameOptions.add<int*>("Screen Filter",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 1);
+			SaveGameSettings_Debug();
+		},
+		[](int* opt) -> std::string {
+			std::string strs[2] = { "OFF", "ON"};
+			return strs[*opt];
+		},
+		L"",
+		& settings->screenFilter
+	);
+
+	gameOptions.add<int>(" [ Default ]",
+		[](int inc, int& opt) {
+			Settings* settings_ = *(Settings**)(adMBAABase + 0x00154140);
+			settings_->characterFilter = 2;
+			settings_->bgmVolume = 0;
+			settings_->seVolume = 0;
+			settings_->stageAnimations = 0;
+			settings_->viewFPS = 0;
+			settings_->screenFilter = 0;
+			settings_->aspectRatio = 0;
+			*(int*)(adMBAABase + 0x0034d858) = 2;
+			*(int*)(adMBAABase + 0x0034d884) = 2;
+			ChangeVolume_Debug();
+			SaveGameSettings_Debug();
+		},
+		buttonNameFunc,
+		L"",
+		0
+	);
+
+	baseMenu.add(gameOptions);
+}
+
 void initMenu() {
 
 	initUISubmenu();
@@ -1391,6 +1588,8 @@ void initMenu() {
 	initCameraSubmenu();
 
 	initViewSubmenu();
+
+	initGameOptionsSubmenu();
 
 	baseMenu.unfolded = true;
 
