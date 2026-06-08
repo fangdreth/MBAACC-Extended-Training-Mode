@@ -499,6 +499,7 @@ enum class eFRAME_DATA {
 	IN_GAME_FRAME_DISPLAY,
 	S0,
 	SHOW_HITSTOP_AND_FREEZE,
+	SHOW_COUNTERHIT,
 	SHOW_INPUTS,
 	SHOW_CANCEL_WINDOWS,
 	S1,
@@ -516,6 +517,7 @@ enum class eFRAME_DATA {
 extern int XS_consoleData;
 extern int XS_inGameFrameDisplay;
 extern int XS_showHitstopAndFreeze;
+extern int XS_showCounterhit;
 extern int XS_showInputs;
 extern int XS_showCancelWindows;
 extern int XS_scrollDisplay;

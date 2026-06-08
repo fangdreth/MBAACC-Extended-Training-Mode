@@ -69,6 +69,7 @@ const DWORD FB_CLASH = 0xFFE1B800;
 const DWORD FB_INVULN = 0xFFFFFFFF;
 const DWORD FB_ASSIST_ACTIVE = 0xFFFF8000;
 const DWORD FB_COUNTER = 0xFFC485EA;
+const DWORD FB_NOCOUNTERHIT = 0xFF0870BC;
 
 FrameBar::FrameBar(float x_, float y_, float w_, float h_, int numCells_, float cellWidth_)
 {
@@ -279,6 +280,9 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 	if (*(int*)(P.adInaction) != 0) //Doing something with limited actionability
 	{
 		dwMainColor = FB_INACTIONABLE;
+		if (XS_showCounterhit && P.PlayerData->subObj.counterhitState == 0) {
+			dwMainColor = FB_NOCOUNTERHIT;
+		}
 		nNumber = -2;//*(int*)P.adInaction;
 		if (P.PlayerData->subObj.pattern >= 35 && P.PlayerData->subObj.pattern <= 37) //Jump Startup
 		{

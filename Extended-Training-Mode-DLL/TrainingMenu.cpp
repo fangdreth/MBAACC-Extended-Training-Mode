@@ -364,6 +364,7 @@ int XS_loadRNG = 0;
 int XS_consoleData = 0;
 int XS_inGameFrameDisplay = 0;
 int XS_showHitstopAndFreeze = 0;
+int XS_showCounterhit = 0;
 int XS_showInputs = 0;
 int XS_showCancelWindows = 0;
 int XS_scrollDisplay = 0;
@@ -507,6 +508,7 @@ void initExtendedMenu() {
 	framedata.add("IN-GAME FRAME DISPLAY", { "OFF", "ON" }, &XS_inGameFrameDisplay, sFRAME_DISPLAY);
 	framedata.addSpace();
 	framedata.add("SHOW HITSTOP & FREEZE", { "OFF", "ON" }, &XS_showHitstopAndFreeze, sDISPLAY_FREEZE);
+	framedata.add("SHOW COUNTERHIT", { "OFF", "ON" }, &XS_showCounterhit, sDISPLAY_COUNTERHIT);
 	framedata.add("SHOW INPUTS", { "OFF", "ON" }, &XS_showInputs, sDISPLAY_INPUTS);
 	framedata.add("SHOW CANCEL WINDOWS", { "OFF", "ON" }, &XS_showCancelWindows, sDISPLAY_CANCELS);
 	framedata.addSpace();
@@ -721,13 +723,14 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_7_0",  "Set \\@COLOR@<015, 183, 255, 255>console data detail level."},
 	{"XS_7_1", "Set \\@COLOR@<015, 183, 255, 255>in-game frame display."},
 	{"XS_7_3", "Set \\@COLOR@<015, 183, 255, 255>hitstop and freeze display."},
-	{"XS_7_4", "Set \\@COLOR@<015, 183, 255, 255>input display (console only)."},
-	{"XS_7_5", "Set \\@COLOR@<015, 183, 255, 255>cancel window display (console only)."},
-	{"XS_7_7", "Scroll \\@COLOR@<015, 183, 255, 255>frame display."},
-	{"XS_7_9", "Show \\@COLOR@<015, 183, 255, 255>color guide."},
-	{"XS_7_11", DEFAULT_INFO},
-	{"XS_7_13", RETURN_INFO},
-	{"XS_7_15", PAGE_INFO},
+	{"XS_7_4", "Set \\@COLOR@<015, 183, 255, 255>counterhit display (in-game only)."},
+	{"XS_7_5", "Set \\@COLOR@<015, 183, 255, 255>input display (console only)."},
+	{"XS_7_6", "Set \\@COLOR@<015, 183, 255, 255>cancel window display (console only)."},
+	{"XS_7_8", "Scroll \\@COLOR@<015, 183, 255, 255>frame display."},
+	{"XS_7_10", "Show \\@COLOR@<015, 183, 255, 255>color guide."},
+	{"XS_7_12", DEFAULT_INFO},
+	{"XS_7_14", RETURN_INFO},
+	{"XS_7_16", PAGE_INFO},
 
 	//RNG
 	{"XS_8_0", "Set \\@COLOR@<015, 183, 255, 255>RNG mode."},
@@ -889,10 +892,11 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 	{"XS_7_1_0", "Do not show the framebar in-game."}, {"XS_7_1_1", "Show the framebar in-game."},
 
 	{"XS_7_3_0", "Do not show frames where both players are frozen."}, {"XS_7_3_1", "Show all frames."},
-	{"XS_7_4_0", "Do not show inputs."}, {"XS_7_4_1", "Show inputs."},
-	{"XS_7_5_0", "Do not show cancel windows."}, {"XS_7_5_1", "Show cancel windows."},
+	{"XS_7_4_0", "Do not show counterhit." }, { "XS_7_4_1", "Show counterhit."},
+	{"XS_7_5_0", "Do not show inputs."}, {"XS_7_5_1", "Show inputs."},
+	{"XS_7_6_0", "Do not show cancel windows."}, {"XS_7_6_1", "Show cancel windows."},
 
-	{"XS_7_7_0", "_SCROLL"}, {"XS_7_7_1", "_SCROLL"}, {"XS_7_7_2", "_SCROLL"},
+	{"XS_7_8_0", "_SCROLL"}, {"XS_7_8_1", "_SCROLL"}, {"XS_7_8_2", "_SCROLL"},
 
 	//RNG
 	{"XS_8_0_0", "No custom RNG."}, {"XS_8_0_1", "Use a seed for custom RNG."}, {"XS_8_0_2", "Use a value for custom RNG."},

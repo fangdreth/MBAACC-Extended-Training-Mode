@@ -5504,6 +5504,9 @@ void ExtendedMenuInputChecking() {
 				SetRegistryValue(sDISPLAY_INPUTS, 0);
 			}
 			break;
+		case eFRAME_DATA::SHOW_COUNTERHIT:
+			SetRegistryValue(sDISPLAY_COUNTERHIT, curElement->selectedItem);
+			break;
 		case eFRAME_DATA::SHOW_INPUTS:
 			*(byte*)(adMBAABase + adXS_showInputs) = curElement->selectedItem;
 			SetRegistryValue(sDISPLAY_INPUTS, curElement->selectedItem);

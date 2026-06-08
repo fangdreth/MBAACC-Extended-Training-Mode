@@ -457,6 +457,7 @@ const REGKEY sDRAW_GROUND = L"DrawGround";
 const REGKEY sCONSOLE_DATA = L"ConsoleData";
 const REGKEY sFRAME_DISPLAY = L"FrameDisplay";
 const REGKEY sDISPLAY_FREEZE = L"DisplayFreeze";
+const REGKEY sDISPLAY_COUNTERHIT = L"DisplayCounterhit";
 const REGKEY sDISPLAY_INPUTS = L"DisplayInputs";
 const REGKEY sDISPLAY_CANCELS = L"DisplayCancels";
 
