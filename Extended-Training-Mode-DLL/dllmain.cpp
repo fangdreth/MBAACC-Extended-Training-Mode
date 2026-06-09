@@ -4331,6 +4331,10 @@ Element* GetElementPointer(MenuInfo* menuInfo, const char* tag) {
 
 bool GetSetting(Setting& setting) {
 	if (setting.element != nullptr && setting.element->GetItemListSize() != 0x0) {
+		if (setting.settingType == 0) {
+			setting.element->selectedItem = *setting.valuePtr;
+			return true;
+		}
 		int iterator = 0;
 		while (true) {
 			int CurItemValue = setting.element->GetItemValue(iterator);
