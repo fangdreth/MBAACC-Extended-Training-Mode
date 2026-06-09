@@ -72,10 +72,11 @@ struct FrameBarCell
 
 struct FrameBarPlayerData
 {
-	char cPlayerNumber = 0;
+	char playerNum = 0;
 
-	PlayerData* PlayerData = 0x0;
-	DWORD adInaction = 0x0;
+	PlayerData* playerData = nullptr;
+	PlayerAuxData* playerAuxData = nullptr;
+	//DWORD adInaction = 0x0;
 
 	int nLastInactionableFrames = 0;
 
@@ -100,6 +101,8 @@ struct FrameBarPlayerData
 	bool bProjectileActive = false;
 	bool bLastProjectileActive = false;
 	bool bDoLinkWindowCounting = false;
+
+	FrameBarPlayerData(char playerNum_, DWORD playerDataAddress, DWORD playerAuxDataAddress);
 };
 
 extern FrameBarPlayerData FB_P1;
