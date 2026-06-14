@@ -891,6 +891,8 @@ void initObjViewSubmenu() {
 
 	objInfo.addSimpleOnOff<int*>("Show Jump Cancel", L"verboseShowJumpcancel", &verboseShowJumpcancel);
 
+	objInfo.addSimpleOnOff<int*>("Show Gravity", L"verboseShowGravity", &verboseShowGravity);
+
 	objInfo.addSimpleOnOff<int*>("Show Variables", L"verboseShowVars", &verboseShowVars);
 
 

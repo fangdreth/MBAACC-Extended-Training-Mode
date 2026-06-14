@@ -18,6 +18,7 @@ int verboseShowAccel = 0;
 int verboseShowUntech = 0;
 int verboseShowDamage = 0;
 int verboseShowJumpcancel = 0;
+int verboseShowGravity = 0;
 int verboseShowVars = 0;
 
 //show HA6 info
@@ -152,6 +153,10 @@ void EffectData::describe(char* buffer, int bufLen) {
 
 	if (verboseShowJumpcancel) {
 		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "Jump:%d\n", subObj.comboJumpCancel);
+	}
+
+	if (verboseShowGravity) {
+		bufferOffset += snprintf(buffer + bufferOffset, bufLen - bufferOffset, "G:%6.4f\n", subObj.gravity);
 	}
 
 	if (verboseShowVars) {
