@@ -41,6 +41,65 @@ enum class TASCommand : uint8_t {
 
 };
 
+static const char* getTASCommandName(TASCommand t) {
+
+	switch (t) {
+	case TASCommand::Nothing: 
+		return "Nothing";
+	case TASCommand::P1XPos:
+		return "P1XPos";
+	case TASCommand::P2XPos:
+		return "P2XPos";
+	case TASCommand::P3XPos:
+		return "P3XPos";
+	case TASCommand::P4XPos:
+		return "P4XPos";
+	case TASCommand::P1Meter:
+		return "P1Meter";
+	case TASCommand::P2Meter:
+		return "P2Meter";
+	case TASCommand::P3Meter:
+		return "P3Meter";
+	case TASCommand::P4Meter:
+		return "P4Meter";
+	case TASCommand::RNG:
+		return "RNG";
+	case TASCommand::Pause:
+		return "Pause";
+	case TASCommand::Unpause:
+		return "Unpause";
+	case TASCommand::StartFF:
+		return "StartFF";
+	case TASCommand::StopFF:
+		return "StopFF";
+	case TASCommand::FN1:
+		return "FN1";
+	case TASCommand::SetBuffer:
+		return "SetBuffer";
+	case TASCommand::WaitCancel:
+		return "WaitCancel";
+	case TASCommand::WaitHitbox:
+		return "WaitHitbox";
+	case TASCommand::WaitCanMove:
+		return "WaitCanMove";
+	case TASCommand::WaitAir:
+		return "WaitAir";
+	case TASCommand::WaitGround:
+		return "WaitGround";
+	case TASCommand::WaitNormalCancel:
+		return "WaitNormalCancel";
+	case TASCommand::WaitSpecialCancel:
+		return "WaitSpecialCancel";
+	case TASCommand::HitboxFlagClear:
+		return "HitboxFlagClear";
+	default:
+		break;
+	}
+
+	return "UNKNOWN VALUE";
+
+}
+
 #pragma pack(push,1)
 typedef struct TASItem {
 	union {
@@ -109,7 +168,7 @@ typedef struct TASItem {
 	}
 
 	void logItem() {
-		log("%.4d %d %d%d%d%d", length, dir, a, b, c, d);
+		log("%10s L:%4d D:%d %d%d%d%d", getTASCommandName(command), length, dir, a, b, c, d);
 	}
 
 	inline void setLength(const std::string& s) {

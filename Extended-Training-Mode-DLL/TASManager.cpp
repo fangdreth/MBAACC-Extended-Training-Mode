@@ -123,6 +123,11 @@ float TASManager::buttonMutationRate = 0.05f;
 float TASManager::directionMutationRate = 0.05f;
 float TASManager::lengthMutationRate = 0.10f;
 
+void addTasData(std::vector<TASItem>& tasArray, TASItem& item) {
+	item.logItem();
+	tasArray.push_back(item);
+};
+
 void TASManager::parseLine(const std::string& l) {
 
 	std::string s = l;
@@ -145,100 +150,100 @@ void TASManager::parseLine(const std::string& l) {
 		{ hashString("pause"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::Pause;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("unpause"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::Unpause;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("p1pos"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::P1XPos;
 			res.commandData = safeStoi(data);
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("p2pos"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::P2XPos;
 			res.commandData = safeStoi(data);
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("p3pos"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::P3XPos;
 			res.commandData = safeStoi(data);
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("p4pos"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::P4XPos;
 			res.commandData = safeStoi(data);
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("p1meter"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::P1Meter;
 			res.commandData = safeStoi(data);
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("p2meter"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::P2Meter;
 			res.commandData = safeStoi(data);
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("p3meter"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::P3Meter;
 			res.commandData = safeStoi(data);
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("p4meter"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::P4Meter;
 			res.commandData = safeStoi(data);
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("startff"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::StartFF;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("stopff"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::StopFF;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("fn1"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::FN1;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("dl"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.length = safeStoi(data);
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 
 		{ hashString("waitcancel"), [](TASManager* t, const std::string& data) -> void { // dont use this
 			TASItem res; 
 			res.command = TASCommand::WaitCancel;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		// these waits arent the best/fastest/frame 1, but can be helpful to get a general ideal of timings
@@ -251,15 +256,15 @@ void TASManager::parseLine(const std::string& l) {
 
 			TASItem res;
 			res.command = TASCommand::HitboxFlagClear;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 
 			// im not sure why im putting this here
 			res.command = TASCommand::Nothing;
 			res.length = 1;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 			
 			res.command = TASCommand::WaitHitbox;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("waitcanmove"), [](TASManager* t, const std::string& data) -> void {
@@ -267,10 +272,10 @@ void TASManager::parseLine(const std::string& l) {
 			TASItem res;
 			res.command = TASCommand::Nothing;
 			res.length = 1;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 
 			res.command = TASCommand::WaitCanMove;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("waitnormalcancel"), [](TASManager* t, const std::string& data) -> void {
@@ -278,10 +283,10 @@ void TASManager::parseLine(const std::string& l) {
 			TASItem res;
 			res.command = TASCommand::Nothing;
 			res.length = 1;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 
 			res.command = TASCommand::WaitNormalCancel;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 		
 		{ hashString("waitspecialcancel"), [](TASManager* t, const std::string& data) -> void {
@@ -289,22 +294,22 @@ void TASManager::parseLine(const std::string& l) {
 			TASItem res;
 			res.command = TASCommand::Nothing;
 			res.length = 1;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 
 			res.command = TASCommand::WaitSpecialCancel;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("waitair"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::WaitAir;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}},
 
 		{ hashString("waitground"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::WaitGround;
-			t->tasData.push_back(res);
+			addTasData(t->tasData, res);
 		}}
 
 	}};
@@ -345,7 +350,8 @@ void TASManager::parseLine(const std::string& l) {
 					res.length = 1;
 					temp[0] = data[i];
 					res.setData(temp);
-					tasData.push_back(res);
+					//tasData.push_back(res);
+					addTasData(tasData, res);
 				}
 			} else if (data[0] == 'x') { // parse a reversal sequence
 				TASItem res;
@@ -361,7 +367,8 @@ void TASManager::parseLine(const std::string& l) {
 						res.setData(temp);
 					}
 				}
-				tasData.push_back(res);
+				//tasData.push_back(res);
+				addTasData(tasData, res);
 			} else if(data[0] == 'w') { // wait for an input to be... doable? and then do it? the second number is what direction should be held, for, reasons beyond my knowing
 				
 				// this shouldnt be used
@@ -373,18 +380,21 @@ void TASManager::parseLine(const std::string& l) {
 				temp[0] = data[1];
 				res.length = 1;
 				res.setData(temp); // the direction to hold, prevents things like 22 coming out
-				tasData.push_back(res);
-
+				//tasData.push_back(res);
+				addTasData(tasData, res);
+				
 				res.length = 0;
 				res.command = TASCommand::WaitCancel;
 				res.waitCommand = data.substr(2); // remove the w, and the hold direction take all else
 				
-				tasData.push_back(res);
+				//tasData.push_back(res);
+				addTasData(tasData, res);
 			} else { // parse a normal input
 				TASItem res;
 				res.setLength(instr);
 				res.setData(data);
-				tasData.push_back(res);
+				//tasData.push_back(res);
+				addTasData(tasData, res);
 			}
 
 		} else {
