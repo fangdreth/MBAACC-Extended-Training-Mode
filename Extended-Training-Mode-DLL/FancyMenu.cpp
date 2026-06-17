@@ -4,6 +4,9 @@
 #include "DebugInfo.h"
 #include "dllmain.h"
 #include "..\Common\Common.h"
+#include <shobjidl.h> 
+#include <fstream>
+#include <filesystem>
 
 #include "TrainingMenu.h"
 
@@ -73,6 +76,58 @@ float menuFontSize = 10.0f;
 
 int autoAdvanceFrames = 60;
 bool doAutoAdvance = false;
+
+bool customLoadReplay = false;
+char customLoadReplayPath[256] = "";
+char* customLoadReplayPathPtr = customLoadReplayPath;
+
+static bool LoadFileExplorer(std::wstring& filePath)
+{
+	IFileOpenDialog* pFileOpen;
+	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
+
+	if (SUCCEEDED(hr))
+	{
+		hr = pFileOpen->Show(NULL); // Display the dialog
+		if (SUCCEEDED(hr))
+		{
+			IShellItem* pItem;
+			hr = pFileOpen->GetResult(&pItem);
+			if (SUCCEEDED(hr))
+			{
+				PWSTR pszFilePath;
+				hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+				if (SUCCEEDED(hr))
+				{
+					filePath = pszFilePath;
+					CoTaskMemFree(pszFilePath);
+					pItem->Release();
+					pFileOpen->Release();
+					return true;
+				}
+				pItem->Release();
+			}
+		}
+		pFileOpen->Release();
+	}
+	return false;
+}
+
+void LoadReplayFromExplorer() {
+	try
+	{
+		std::wstring wsFileName;
+		if (LoadFileExplorer(wsFileName))
+		{
+			size_t c;
+			wcstombs_s(&c, customLoadReplayPath, 255, wsFileName.c_str(), wcslen(wsFileName.c_str()));
+		}
+	}
+	catch (...)
+	{
+
+	}
+}
 
 template <typename T>
 struct always_false : std::false_type { };
@@ -847,6 +902,19 @@ void initMiscSubmenu() {
 		pointerIntSliderNameFunc,
 		sFRAMESTEP_AUTO_ADVANCE_FRAMES,
 		& autoAdvanceFrames
+	);
+
+	misc.add<int>("Load Replay",
+		[](int inc, int& opt) {
+			if (*(int*)(adMBAABase + 0x0015d1d0) != 26) return;
+			LoadReplayFromExplorer();
+			customLoadReplay = true;
+			*(int*)(adMBAABase + 0x0014f97c) = 2;
+			DWORD replayData = *(DWORD*)(adMBAABase + 0x0014f980);
+			*(int*)(replayData + 0x4) = 3;
+			ReadDataFile((void*)(adMBAABase + 0x0014f984), customLoadReplayPathPtr, strlen(customLoadReplayPathPtr));
+		},
+		buttonNameFunc
 	);
 
 	baseMenu.add(misc);

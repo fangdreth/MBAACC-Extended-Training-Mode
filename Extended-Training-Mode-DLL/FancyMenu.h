@@ -114,5 +114,10 @@ extern bool compactView;
 extern int autoAdvanceFrames;
 extern bool doAutoAdvance;
 
+extern bool customLoadReplay;
+
+extern char customLoadReplayPath[256];
+extern char* customLoadReplayPathPtr;
+
 void drawFancyMenu();
 

@@ -7046,6 +7046,25 @@ __declspec(naked) void _naked_HitboxOnConnect() {
 
 }
 
+DWORD MBAA_GetHoveredReplayPath = 0x0043d340;
+DWORD CustomLoadReplay_PatchAddr = 0x00437d66;
+__declspec(naked) void _naked_CustomLoadReplay() {
+	__asm {
+		cmp customLoadReplay, 1;
+		JE _CUSTOM;
+		call[MBAA_GetHoveredReplayPath];
+		jmp _END;
+
+	_CUSTOM:
+		mov eax, customLoadReplayPathPtr;
+		mov customLoadReplay, 0;
+	
+	_END:
+		push 0x00437d6b;
+		ret;
+	}
+}
+
 // init funcs
 
 void initFrameDoneCallback()
@@ -7307,6 +7326,10 @@ void initHitboxOnConnect() {
 	patchJump(0x0046f8d0, _naked_HitboxOnConnect);
 }
 
+void initCustomLoadReplay() {
+	patchJump(CustomLoadReplay_PatchAddr, _naked_CustomLoadReplay);
+}
+
 // dll thread func
 
 void threadFunc() 
@@ -7375,6 +7398,8 @@ void threadFunc()
 	initLoadSave();
 
 	initHitboxOnConnect();
+
+	initCustomLoadReplay();
 
 	initPaletteLoadPatches();
 
