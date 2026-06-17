@@ -533,14 +533,12 @@ void IncrementFirstActive(FrameBarPlayerData& P1_, FrameBarPlayerData& P2_)
 
 		bool p2Invuln = P2_.playerData->subObj.strikeInvuln != 0 || P2_.playerData->subObj.animationDataPtr->highestNonHitboxIndex == 1 || P2_.playerData->subObj.bounceCount > 2;
 		if (P2_.playerData->subObj.hitstunTimeRemaining != 0 && !p2Invuln && P1_.nLastInactionableFrames == 0) {
-			if (P2_.playerData->subObj.hitstunTimeRemaining == -3) {
-				P1_.nLinkOTGWindow += 1;
-				P1_.nLinkOTGWindowMemory = P1_.nLinkOTGWindow;
-			}
-			else {
+			if (P2_.playerData->subObj.hitstunTimeRemaining != -3) {
 				P1_.nLinkWindowCounter += 1;
 				P1_.nLinkWindowCounterMemory = P1_.nLinkWindowCounter;
 			}
+			P1_.nLinkOTGWindow += 1;
+			P1_.nLinkOTGWindowMemory = P1_.nLinkOTGWindow;
 		}
 
 		if (P2_.playerData->subObj.hitstunTimeRemaining == 0 && P1_.nLinkWindowCounter != 0) {
