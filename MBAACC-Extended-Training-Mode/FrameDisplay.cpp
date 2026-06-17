@@ -453,7 +453,12 @@ void UpdateBars(FrameDisplayPlayerData& P, FrameDisplayPlayerData& Assist)
 	else if (P.cState_Stance == 1)
 	{
 		sFont = FD_CLEAR;
-		sBarValue = " ^";
+		if (P.bDoLanding) {
+			sBarValue = " *";
+		}
+		else {
+			sBarValue = " ^";
+		}
 	}
 	else
 	{

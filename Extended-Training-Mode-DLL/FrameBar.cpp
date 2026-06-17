@@ -59,6 +59,7 @@ const DWORD CIRCUITBREAKFONT_COLOR = 0xFFB06ED7;
 
 const DWORD FB_INACTIONABLE = 0xFF41C800;
 const DWORD FB_JUMP = 0xFFF1E084;
+const DWORD FB_LANDING = 0xFFE184F1;
 const DWORD FB_HITSTUN = 0xFF8C8C8C;
 const DWORD FB_BLOCKSTUN = 0xFFB4B4B4;
 const DWORD FB_ACTIVE = 0xFFFF0000;
@@ -430,7 +431,12 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 
 	if (P.playerData->subObj.animationDataPtr->stateData->stance == 1) //Airborne
 	{
-		dwAirborneColor = FB_JUMP;
+		if (P.playerData->subObj.doLanding != 0) {
+			dwAirborneColor = FB_LANDING;
+		}
+		else {
+			dwAirborneColor = FB_JUMP;
+		}
 	}
 
 	if (P.bProjectileActive || Assist.bProjectileActive)

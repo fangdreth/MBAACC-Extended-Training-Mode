@@ -114,7 +114,10 @@ struct FrameDisplayPlayerData
 	char cMacroInput = 0; //0x2EE
 	char padding18[0x26];
 	bool bIsOnRight = false; //0x315
-	char padding19[0xA];
+	char padding19[0x3];
+	bool bDoLanding = false;
+	char padding20[0x2];
+	DWORD dwPatternDataPointer = 0x0;
 	DWORD dwAnimationDataPointer = 0x0; //0x320
 	DWORD dwAttackDataPointer = 0x0; //0x324
 
