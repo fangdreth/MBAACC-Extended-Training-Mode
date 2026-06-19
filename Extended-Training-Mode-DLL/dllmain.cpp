@@ -6964,6 +6964,12 @@ __declspec(naked) void _naked_DummyDelayTech() {
 	}
 }
 
+void DummyTechGuardFix() {
+	if (pDummy->subObj.doTrainingAction != 0 && pDummy->subObj.onHitComboCount != 0) {
+		pDummy->subObj.willBlock = 0;
+	}
+}
+
 void LoadSave() {
 	if (doLoad && XS_saveStateSlot > 0 && saveStateManager.FullSaves[XS_saveStateSlot - 1]->IsSaved)
 	{
@@ -7012,10 +7018,16 @@ void LoadSave() {
 	}
 }
 
-DWORD LoadSave_PatchAddr = 0x004540b8;
-__declspec(naked) void _naked_LoadSave() {
-	PUSH_ALL;
+//called once per game frame after all other gameplay processing
+void EndUpdateBattleScene() {
+	DummyTechGuardFix();
 	LoadSave();
+}
+
+DWORD EndUpdateBattleScene_PatchAddr = 0x004540b8;
+__declspec(naked) void _naked_EndUpdateBattleScene() {
+	PUSH_ALL;
+	EndUpdateBattleScene();
 	POP_ALL;
 
 	__asm {
@@ -7318,8 +7330,8 @@ void init2v2Hack() {
 	patchJump(0x0040e3ab, _naked_init2v2Hack);
 }
 
-void initLoadSave() {
-	patchJump(LoadSave_PatchAddr, _naked_LoadSave);
+void initEndUpdateBattleScene() {
+	patchJump(EndUpdateBattleScene_PatchAddr, _naked_EndUpdateBattleScene);
 }
 
 void initHitboxOnConnect() {
@@ -7395,7 +7407,7 @@ void threadFunc()
 	initRegistryValues();
 	init2v2Hack();
 
-	initLoadSave();
+	initEndUpdateBattleScene();
 
 	initHitboxOnConnect();
 
