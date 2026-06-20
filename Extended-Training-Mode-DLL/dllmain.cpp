@@ -2754,6 +2754,7 @@ void frameDoneCallback()
 	if (oToggleFrameBarHotkey.keyDown())
 	{
 		XS_inGameFrameDisplay = !XS_inGameFrameDisplay;
+		SetRegistryValue(sFRAME_DISPLAY, XS_inGameFrameDisplay);
 		nDrawTextTimer = TEXT_TIMER;
 		if (XS_inGameFrameDisplay)
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s", "FRAME DATA ON");
