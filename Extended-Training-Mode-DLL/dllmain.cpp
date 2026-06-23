@@ -2303,6 +2303,103 @@ void SaveGameSettings() {
 	POP_ALL;
 }
 
+void MenuSound() {
+	*(byte*)(adMBAABase + 0x0036e0a0) = 1;
+}
+
+void SelectSound() {
+	*(byte*)(adMBAABase + 0x0036e09f) = 1;
+}
+
+bool MenuControlsMouseInBounds = false;
+bool MenuControlsClickIsPress = false;
+bool MenuControlsScrollUp = false;
+bool MenuControlsScrollDown = false;
+void DoSingleMenuMouseControls(MenuWindow* menu) {
+	MenuControlsScrollUp = false;
+	MenuControlsScrollDown = false;
+	if (menu != 0) {
+		int middle = menu->yOffset;
+		MenuInfo* menuInfo = menu->menuInfoList.listStart[menu->menuInfoIndex];
+		int numElements = (menuInfo->elementList.listEnd - menuInfo->elementList.listStart);
+		int totalHeight = 0;
+		for (int i = 0; i < numElements; i++) {
+			totalHeight += menuInfo->elementList.listStart[i]->drawHeight;
+		}
+		int top = middle - (totalHeight / 2);
+		int bottom = middle + (totalHeight / 2);
+		if (mousePos.y < top - 5 || mousePos.y > bottom + 5) {
+			MenuControlsMouseInBounds = false;
+		}
+		else {
+			MenuControlsMouseInBounds = true;
+		}
+		MenuControlsClickIsPress = true;
+		if (MenuControlsMouseInBounds) {
+			int curPos = top;
+			int selection = 0;
+			bool canSelect = true;
+			for (int i = 0; i < numElements; i++) {
+				if (curPos < mousePos.y) {
+					selection = i;
+					canSelect = menuInfo->elementList.listStart[i]->canSelect;
+				}
+				curPos += menuInfo->elementList.listStart[i]->drawHeight;
+			}
+
+			if ((DWORD)menuInfo->elementList.listStart[selection]->vftable == 0x00536654 && mousePos.x > menu->elementsXOffset) {
+				MenuControlsClickIsPress = false;
+			}
+
+			if (canSelect) {
+				if (menuInfo->selectedElement != selection) MenuSound();
+				menuInfo->selectedElement = selection;
+			}
+		}
+	}
+}
+
+void DoMenuMouseControls() {
+	static Point prevMousePos;
+
+	bool idleMouse = false;
+	if (prevMousePos == mousePos && !lClick && !rClick) {
+		idleMouse = true;
+	}
+	prevMousePos = mousePos;
+	if (idleMouse) return;
+
+	MenuWindow* training = *(MenuWindow**)(adMBAABase + adTrainingMenu);
+	if (training != 0) {
+		switch (training->openSubmenuIndex) {
+		case 2:
+			DoSingleMenuMouseControls(training);
+			break;
+		case 6:
+			if (training->BattleSettings != 0) DoSingleMenuMouseControls(training->BattleSettings);
+			break;
+		case 7:
+			if (training->EnemySettings != 0) DoSingleMenuMouseControls(training->EnemySettings);
+			break;
+		case 8:
+			if (training->TrainingDisplay != 0) DoSingleMenuMouseControls(training->TrainingDisplay);
+			break;
+		case 9:
+			if (training->DummySettings != 0) DoSingleMenuMouseControls(training->DummySettings);
+			break;
+		case 10:
+		case 11:
+		case 14:
+			if (training->YesNoMenu != 0) DoSingleMenuMouseControls(training->YesNoMenu);
+			break;
+		case 17:
+			if (training->ExtendedSettings != 0) DoSingleMenuMouseControls(training->ExtendedSettings);
+		case 18:
+			if (training->HotkeySettings != 0) DoSingleMenuMouseControls(training->HotkeySettings);
+		}
+	}
+}
+
 void frameDoneCallback()
 {
 	profileFunction();
@@ -3078,6 +3175,11 @@ void frameDoneCallback()
 
 	nSavedP1ActiveChar = pdP1Data->activeCharacter;
 	nSavedP2ActiveChar = pdP2Data->activeCharacter;
+
+	if (enableMouseControls && !showDebugMenu) {
+		DoMenuMouseControls();
+	}
+
 }
 
 __declspec(naked) void nakedFrameDoneCallback()
@@ -4273,14 +4375,14 @@ Element* AddNormalElement(MenuInfo* menuInfo, std::string label, int pageNum, in
 	return element;
 }
 
-Element* AddSpaceElement(MenuInfo* menuInfo, int pageNum, int elementNum, int margin = 8) {
+Element* AddSpaceElement(MenuInfo* menuInfo, int pageNum, int elementNum, int height = 8) {
 	Element* element = NEW_NORMAL_ELEMENT();
 	char tempTag[16];
 	snprintf(tempTag, 15, "%i_%i", pageNum, elementNum);
 	InitNormalElement(element, "", "", 0);
 	element->canSelect = 0;
 	element->elementType = 2;
-	element->bottomMargin = margin;
+	element->drawHeight = height;
 	element->vftable = (void*)0x00536094;
 	EnterIntoList((void*)(&menuInfo->elementList), (void*)(element));
 	return element;
@@ -5080,7 +5182,8 @@ void ExtendedMenuInputChecking() {
 	char labelBuf[32];
 	static bool aPrev = false;
 	static bool dPrev = false;
-	bool aHeld = *(bool*)(adMBAABase + adP1AInput) && extendedWindow->openSubmenuIndex == 2;
+	bool mouseAPress = lClick && MenuControlsClickIsPress;
+	bool aHeld = (*(bool*)(adMBAABase + adP1AInput) || mouseAPress) && extendedWindow->openSubmenuIndex == 2;
 	bool aPressed = aHeld && !aPrev;
 	bool dHeld = *(bool*)(adMBAABase + adP1DInput) && extendedWindow->openSubmenuIndex == 2;
 	bool dPressed = dHeld && !dPrev;
@@ -5711,7 +5814,8 @@ void HotkeyMenuInputChecking() {
 	}
 	char labelBuf[32];
 	static bool aPrev = false;
-	bool aHeld = *(bool*)(adMBAABase + adP1AInput) && hotkeyWindow->openSubmenuIndex == 2;
+	bool mouseAPress = lClick && MenuControlsClickIsPress;
+	bool aHeld = (*(bool*)(adMBAABase + adP1AInput) || mouseAPress) && hotkeyWindow->openSubmenuIndex == 2;
 	bool aPressed = aHeld && !aPrev;
 	curMenuInfo = (hotkeyWindow->menuInfoList).listStart[hotkeyWindow->menuInfoIndex];
 	curElement = (curMenuInfo->elementList).listStart[curMenuInfo->selectedElement];
@@ -6034,9 +6138,48 @@ __declspec(naked) void _naked_CheckOpenNewSettings() {
 	}
 }
 
-DWORD UpdateMenus_PatchAddr = 0x0047e1da;
+DWORD UpdateMenus_PatchAddr = 0x0047e1b6;
 //add menus to update if-chain
 __declspec(naked) void _naked_UpdateMenus() {
+	__asm {
+		cmp enableMouseControls, 0;
+		je _EXIT;
+		cmp showDebugMenu, 0;
+		jne _EXIT;
+		cmp MenuControlsScrollUp, 0;
+		jne _SETUP;
+		cmp MenuControlsScrollDown, 0;
+		jne _SETDOWN;
+		cmp MenuControlsClickIsPress, 0;
+		je _CHECKDIRECTION;
+		cmp lClick, 0;
+		je _EXIT;
+		cmp MenuControlsMouseInBounds, 0;
+		je _EXIT;
+	_SETPRESS:
+		mov dword ptr[esp + 0x64], 1;
+		jmp _EXIT;
+	_CHECKDIRECTION:
+		cmp lClick, 0;
+		jne _SETLEFT;
+		cmp rClick, 0;
+		jne _SETRIGHT;
+		jmp _EXIT;
+	_SETRIGHT:
+		mov dword ptr[esp + 0x60], 6;
+		jmp _EXIT;
+	_SETLEFT:
+		mov dword ptr[esp + 0x60], 4;
+		jmp _EXIT;
+	_SETUP:
+		mov dword ptr[esp + 0x60], 8;
+		jmp _EXIT;
+	_SETDOWN:
+		mov dword ptr[esp + 0x60], 2;
+	_EXIT:
+
+	}
+
 	__asm {
 		cmp dword ptr[edi + 0xe0], ebx;
 		jz _CHECK_HOTKEY;
@@ -6059,7 +6202,7 @@ __declspec(naked) void _naked_UpdateMenus() {
 
 	_CHECK_HOTKEY:
 		cmp dword ptr[edi + 0xe4], ebx;
-		jz _CHECK_BATTLE;
+		jz _CHECK_YESNO;
 		mov eax, dword ptr[esp + 0x64];
 		mov ecx, dword ptr[edi + 0xe4];
 		mov edx, dword ptr[ecx];
@@ -6075,14 +6218,16 @@ __declspec(naked) void _naked_UpdateMenus() {
 	POP_ALL;
 
 	__asm {
-	_CHECK_BATTLE:
-		cmp dword ptr[edi + 0xc8], ebx;
-		jz _CHECK_ENEMY;
-		push 0x0047e1e2;
+		jmp _EXIT_CHAIN;
+
+	_CHECK_YESNO:
+		cmp dword ptr[edi + 0xc4], ebx;
+		jz _CHECK_BATTLE;
+		push 0x0047e1be;
 		ret;
 
-	_CHECK_ENEMY:
-		push 0x0047e1fb;
+	_CHECK_BATTLE:
+		push 0x0047e1da;
 		ret;
 
 	_EXIT_CHAIN:
@@ -6396,6 +6541,276 @@ __declspec(naked) void _naked_InformationWindowSetTargetWindow() {
 
 //CSS funcs
 
+int CSSGetRandomChar() {
+	const DWORD MBAA_CSSGetRandomChar = 0x0048c4f0;
+	__asm {
+		call[MBAA_CSSGetRandomChar];
+	}
+}
+
+int CSSCheckMoonAvailable(int port, int moonID) {
+	const DWORD MBAA_CheckMoon = 0x0048c310;
+	__asm {
+		push port;
+		mov ebx, moonID;
+		call[MBAA_CheckMoon];
+		add esp, 0x4;
+	}
+}
+
+void CSSDoPalette(int port, byte directionalInput, int buttonInput) {
+	const DWORD MBAA_DoPalette = 0x0048ab00;
+	__asm {
+		mov esi, port;
+		push buttonInput;
+		push directionalInput;
+		call[MBAA_DoPalette];
+	}
+}
+
+int ChangeStage(int movement, int stageID) {
+	const DWORD MBAA_ChangeStage = 0x00488760;
+	__asm {
+		mov eax, movement;
+		mov ecx, stageID;
+		call[MBAA_ChangeStage];
+	}
+}
+
+int ResetCSSState() {
+	const DWORD MBAA_ResetCSSState = 0x0048c880;
+	__asm {
+		push 0x1;
+		call[MBAA_ResetCSSState];
+		add esp, 0x4;
+	}
+}
+
+void MouseControlsDoCharSelect() {
+	struct CSSInfo {
+		int base;
+		int state;
+		int port;
+		int x0c;
+		int gridPos;
+		int charID;
+		int moon;
+		int pal;
+		int x20;
+	};
+
+	int portSelecting = 0;
+	CSSInfo* cssInfo = (CSSInfo*)(adMBAABase + 0x0034d8e8);
+	if (cssInfo->state == 5) {
+		cssInfo = (CSSInfo*)(adMBAABase + 0x0034d90c);
+		portSelecting = 1;
+	}
+
+	struct CSSMoonSelect {
+		int queueShowMoonSelection;
+		int showMoonSelection;
+		int selectedMoon;
+		int timer;
+		float rotationDegrees;
+		float rotationProgress;
+		int x18;
+		int x1c;
+		float fadeProgress;
+		int x24;
+		int x28;
+		int x2c;
+		int x30;
+		int x34;
+	};
+
+	CSSMoonSelect* moonSelectArr = *(CSSMoonSelect**)(adMBAABase + 0x003717dc);
+	CSSMoonSelect* moonSelect = &moonSelectArr[portSelecting];
+
+	switch (cssInfo->state) {
+	case 0: //character
+	{
+		struct Portrait {
+			int id;
+			int idCopy;
+			int charID;
+			int x;
+			int y;
+			float turnAnim;
+		};
+		//portrait textures are 48 x 64
+		//portrait visuals are 34 x 42
+		int target = -1;
+		Portrait* portraitPtr = *(Portrait**)(adMBAABase + 0x0037181C);
+		if (portraitPtr == 0x0) return;
+		for (int i = 0; i < 63; i++) {
+			Point center = Point(portraitPtr[i].x + 24, portraitPtr[i].y + 32);
+			if (abs(mousePos.x - center.x) < 17 && abs(mousePos.y - center.y) < 21) {
+				target = i;
+			}
+		}
+
+		if (target != -1 && portraitPtr[target].charID != -1) {
+			if (cssInfo->gridPos != target) MenuSound();
+			cssInfo->gridPos = target;
+			int* charIDMap = (int*)(adMBAABase + 0x00151d28);
+			cssInfo->charID = charIDMap[target];
+			if (lClick) {
+				if (cssInfo->charID == 99) {
+					cssInfo->charID = CSSGetRandomChar();
+				}
+				cssInfo->state = 1;
+				moonSelect->x2c = 0;
+				moonSelect->queueShowMoonSelection = 1;
+				moonSelect->x24 = 0;
+				moonSelect->x28 = 0;
+				SelectSound();
+			}
+		}
+		break;
+	}
+	case 1: //moon
+	{
+		if (rClick) {
+			moonSelect->showMoonSelection = 0;
+			cssInfo->state = 0;
+		}
+		else if (lClick) {
+			bool inXRange = portSelecting == 0 ? (mousePos.x < 275) : (mousePos.x > 365);
+			if (mousePos.y > 225 && inXRange) {
+				if (mousePos.y < 400 && mousePos.y > 300) {
+					cssInfo->state = 2;
+					moonSelect->showMoonSelection = 100;
+					moonSelect->fadeProgress = 1.0f;
+					SelectSound();
+				}
+				else {
+					int movement = mousePos.y > 350 ? 1 : -1;
+					int avail = 0;
+					do {
+						moonSelect->selectedMoon += movement;
+						if (moonSelect->selectedMoon > 4) {
+							moonSelect->selectedMoon = 0;
+						}
+						else if (moonSelect->selectedMoon < 0) {
+							moonSelect->selectedMoon = 4;
+						}
+						int* moonMap2 = (int*)(adMBAABase + 0x0014d3f4);
+						int moonID = moonMap2[moonSelect->selectedMoon];
+						avail = CSSCheckMoonAvailable(portSelecting, moonID);
+					} while (avail == 0);
+					moonSelect->rotationProgress = 1.0f * movement;
+					moonSelect->rotationDegrees = moonSelect->rotationDegrees + 60.0f * movement;
+					int* moonMap = (int*)(adMBAABase + 0x0014d3cc);
+					cssInfo->moon = moonMap[moonSelect->selectedMoon];
+					MenuSound();
+				}
+			}
+		}
+		break;
+	}
+	case 2: //palette
+	{
+		bool inYRange = mousePos.y > 288 && mousePos.y < 400;
+		bool inSelectRange = portSelecting == 0 ? (mousePos.x > 110 && mousePos.x < 220) : (mousePos.x > 420 && mousePos.x < 530);
+		bool inGeneralRange = portSelecting == 0 ? (mousePos.x < 275) : (mousePos.x > 365);
+		int movementCheck = portSelecting == 0 ? 165 : 475;
+		int movement = mousePos.x > movementCheck ? 1 : -1;
+		if (inYRange && inSelectRange) {
+			struct SomeCSSStruct {
+				byte x0[0x34];
+				int paletteSelectedTime;
+				int isRandomPaletteSelected;
+				byte x3c[0x1a0];
+			};
+			SomeCSSStruct* someStruct = *(SomeCSSStruct**)(adMBAABase + 0x0034d808);
+			if (mousePos.y < 384) {
+				int basePal = (cssInfo->pal / 6) * 6;
+				int newPal = basePal + (mousePos.y - 288.0f) / 16;
+				if (cssInfo->pal != newPal) MenuSound();
+				cssInfo->pal = newPal;
+				someStruct[portSelecting].isRandomPaletteSelected = 0;
+			}
+			else {
+				if (someStruct[portSelecting].isRandomPaletteSelected != 1) {
+					someStruct[portSelecting].paletteSelectedTime = 0;
+					MenuSound();
+				}
+				someStruct[portSelecting].isRandomPaletteSelected = 1;
+			}
+		}
+
+		if (rClick) {
+			cssInfo->state = 0;
+		}
+		else if (lClick && inYRange) {
+			if (inSelectRange) {
+				CSSDoPalette(portSelecting, 0, 1);
+				cssInfo->state = 4;
+			}
+			else if (inGeneralRange) {
+				CSSDoPalette(portSelecting, 6 * movement, 0);
+			}
+
+		}
+		break;
+	}
+	}
+}
+
+void MouseControlsDoStageSelect() {
+	struct cssGamestate {
+		byte x00[0x3c];
+		int state;
+	};
+	cssGamestate* gs = (cssGamestate*)(adMBAABase + 0x00373158);
+
+	if (rClick) {
+		ResetCSSState();
+		gs->state = 0;
+	}
+	if (lClick) {
+		if (mousePos.y > 224 && mousePos.y < 248) {
+			gs->state = 4;
+			SelectSound();
+		}
+		else {
+			int movement = mousePos.y > 236 ? 1 : -1;
+			int stageID = *(int*)(adMBAABase + 0x0034fd98);
+			*(int*)(adMBAABase + 0x0036e988) = stageID;
+			int newStageID = ChangeStage(movement, stageID);
+			*(int*)(adMBAABase + 0x0034fd98) = newStageID;
+			*(float*)(adMBAABase + 0x0036e980) = -1.0f * movement;
+			MenuSound();
+		}
+	}
+}
+
+void DoCSSMouseControls() {
+	static Point prevMousePos;
+
+	bool idleMouse = false;
+	if (prevMousePos == mousePos && !lClick && !rClick) {
+		idleMouse = true;
+	}
+	prevMousePos = mousePos;
+	if (idleMouse) return;
+
+
+	struct cssGamestate {
+		byte x00[0x3c];
+		int state;
+	};
+	cssGamestate* gs = (cssGamestate*)(adMBAABase + 0x00373158);
+
+	switch (gs->state) {
+	case 0: //char select
+		MouseControlsDoCharSelect();
+		break;
+	case 1: //stage select
+		MouseControlsDoStageSelect();
+	}
+}
+
 void CSSCallback() {
 	for (int i = 0; i < MAX_SAVES; i++)
 		saveStateManager.FullSaves[i]->unsave();
@@ -6407,6 +6822,11 @@ void CSSCallback() {
 	XS_reversalSlot4 = 0;
 
 	initLoadChars = true;
+
+	if (enableMouseControls && !showDebugMenu) {
+		DoCSSMouseControls();
+	}
+		
 }
 
 DWORD CSSCallback_PatchAddr = 0x004271e0;

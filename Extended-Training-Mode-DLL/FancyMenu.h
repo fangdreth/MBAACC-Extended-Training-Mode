@@ -115,6 +115,7 @@ extern int autoAdvanceFrames;
 extern bool doAutoAdvance;
 
 extern bool customLoadReplay;
+extern int enableMouseControls;
 
 extern char customLoadReplayPath[256];
 extern char* customLoadReplayPathPtr;

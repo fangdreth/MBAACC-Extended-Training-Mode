@@ -81,6 +81,8 @@ bool customLoadReplay = false;
 char customLoadReplayPath[256] = "";
 char* customLoadReplayPathPtr = customLoadReplayPath;
 
+int enableMouseControls = 0;
+
 static bool LoadFileExplorer(std::wstring& filePath)
 {
 	IFileOpenDialog* pFileOpen;
@@ -915,6 +917,19 @@ void initMiscSubmenu() {
 			ReadDataFile((void*)(adMBAABase + 0x0014f984), customLoadReplayPathPtr, strlen(customLoadReplayPathPtr));
 		},
 		buttonNameFunc
+	);
+
+	misc.add<int*>("Enable Mouse Controls",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt &= 0b1;
+		},
+		[](int* opt) -> std::string {
+			if (*opt == 0) return "OFF";
+			return "ON";
+		},
+		L"",
+		&enableMouseControls
 	);
 
 	baseMenu.add(misc);

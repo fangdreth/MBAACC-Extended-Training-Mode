@@ -75,7 +75,7 @@ struct Element //listed elements on left
 	int canSelect;
 	int timeHovered;
 	int timeNotHovered;
-	int bottomMargin;
+	int drawHeight;
 	float textOpacity;
 	MenuString label;
 	MenuString tag;
@@ -200,7 +200,7 @@ struct MenuWindow
 	float dimScreenPercentage;
 	MenuWindow* YesNoMenu;
 	MenuWindow* BattleSettings;
-	MenuWindow* EnemyStatus;
+	MenuWindow* EnemySettings;
 	MenuWindow* TrainingDisplay;
 	MenuWindow* DummySettings;
 	int u_hideMenu;
