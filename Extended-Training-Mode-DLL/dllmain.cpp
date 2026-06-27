@@ -2284,9 +2284,8 @@ void setFPSLimiter(bool b) {
 	
 }
 
-int nVolTextTimer = 0;
-const DWORD MBAA_Change_Volume = 0x00418030;
 void ChangeVolume() {
+	const DWORD MBAA_Change_Volume = 0x00418030;
 	PUSH_ALL;
 	__asm {
 		call[MBAA_Change_Volume];
@@ -2294,8 +2293,8 @@ void ChangeVolume() {
 	POP_ALL;
 }
 
-const DWORD MBAA_Save_Game_Settings = 0x00401540;
 void SaveGameSettings() {
+	const DWORD MBAA_Save_Game_Settings = 0x00401540;
 	PUSH_ALL;
 	__asm {
 		call[MBAA_Save_Game_Settings];
@@ -2577,38 +2576,6 @@ void frameDoneCallback()
 		setFPSLimiter(!disableFPSLimit); // sorry :3
 	}
 	////setFPSLimiter(bDisableFPSLimit);
-
-	static KeyState oKey('O');
-	if (lShiftKey.keyHeld() && oKey.keyDown()) {
-		int i = *(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144);
-		i--;
-		if (i < 0) i = 0;
-		if (i > 19) i = 19;
-		*(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144) = i;
-		ChangeVolume();
-		SaveGameSettings();
-		nVolTextTimer = 20;
-	}
-
-	static KeyState pKey('P');
-	if (lShiftKey.keyHeld() && pKey.keyDown()) {
-		int i = *(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144);
-		i++;
-		if (i > 19) i = 21;
-		*(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144) = i;
-		ChangeVolume();
-		SaveGameSettings();
-		nVolTextTimer = 20;
-	}
-
-	if (nVolTextTimer > 0) {
-		int i = *(int*)(*(DWORD*)(adMBAABase + 0x00154140) + 0x144);
-		int volume = 20 - i;
-		char buffer[8];
-		snprintf(buffer, 8, "%i", volume);
-		TextDraw(315, 10, 10, 0xFFFFFFFF, buffer);
-		nVolTextTimer--;
-	}
 
 	static KeyState zKey('Z');
 	if (lShiftKey.keyHeld() && zKey.keyDown()) {
@@ -2995,45 +2962,6 @@ void frameDoneCallback()
 		nDrawTextTimer--;
 	}
 
-	// heres a lil example for the new draw funcs
-	// i can change the syntax up if desired
-	// also, i dont have any new text funcs yet, sry
-	// top left of screen is (0.0, 0.0), bottom right is (1.333333, 1.0)
-
-	/*
-	
-	//         x1   x2   y1   y2    A R G B
-	LineDraw( 0.1, 0.1, 0.9, 0.9, 0x800000FF );
-
-	//        x    y    w    h		A R G B
-	RectDraw(0.1, 0.1, 0.2, 0.2, 0x80FF0000 );
-
-	for (float i = 0.0; i < 1.0; i += 0.1) {
-		RectDraw( i, 0.9f - i, 0.1, 0.1, 0x8000FF00 );
-		RectDraw( i+0.05f, 0.9f - i - 0.05f, 0.1, 0.1, 0x8000FF00 );
-	}
-
-	RectDraw( 1.23333, 0.5, 0.1, 0.1, 0xFFFF0000 );
-	RectDraw( 1.23333, 0.6, 0.1, 0.1, 0xFFFFFFFF );
-	RectDraw( 1.23333, 0.7, 0.1, 0.1, 0xFFFF0000 );
-
-	BorderDraw( 1.23333, 0.6, 0.1, 0.1, 0x800000FF );
-
-	DWORD _tempCol = 0x8000FFFF;
-	for (float i = 0.0; i < 1.0; i += 0.1) {
-		BorderRectDraw( 0.7, i, 0.1, 0.1, _tempCol );
-		_tempCol ^= 0x00FF00000;
-	}
-
-	LineDraw(0.0, 1.0, 1.3333, 0.0, 0xFFFF00FF);
-	
-	
-	//LineDraw(0.0, 1.0, 1.3333, 0.0, 0xFFFF00FF);
-
-	TextDraw(0.1, 0.1, 0.025, 0xFF00FFFF, "test %d %s %d", 123, "abc", 456);
-	
-	*/
-
 	// don't draw on the pause menu, but do on VIEW SCREEN
 	MenuWindow* trainingMenu = *(MenuWindow**)(adMBAABase + adTrainingMenu);
 	bool bVIEW_SCREEN = false;
@@ -3064,8 +2992,6 @@ void frameDoneCallback()
 	bool doDraw = false;
 	if ((safeWrite() && !isPaused() && XS_inGameFrameDisplay) || (isPaused() && ((bVIEW_SCREEN && XS_inGameFrameDisplay) || bShowFrameBarPreview))) doDraw = true;
 	drawFrameBar(doDraw);
-
-	if (safeWrite() && !isPaused()) UpdateFrameBar();
 
 	if (XS_colorGuide)
 	{
@@ -7441,8 +7367,11 @@ void LoadSave() {
 
 //called once per game frame after all other gameplay processing
 void EndUpdateBattleScene() {
-	DummyTechGuardFix();
 	LoadSave();
+	if (*(byte*)(adMBAABase + 0x0015d203) == 0) { //is not paused
+		DummyTechGuardFix();
+		UpdateFrameBar();
+	}
 }
 
 DWORD EndUpdateBattleScene_PatchAddr = 0x004540b8;
