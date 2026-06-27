@@ -758,6 +758,20 @@ constexpr DWORD arrColorBlindColors[] = {
 	0xFF42E5F4, //P2 extended origin
 };
 
+constexpr DWORD arrWikiColors[] = {
+	0xFF42E5F4, // origin
+	0xFFC2C2C2, // collision
+	0xFFDD4444, // hitbox
+	0xFF44DD44, // hurtbox
+	0xFFDDDD44, // clash
+	0xFF00ffcf, // projectile
+	0xFFffffff, // shield
+	0xFFC00080, // reflect
+	0xFFFF8080, // throw
+	0xFFF45142, //P1 extended origin
+	0xFF42E5F4, //P2 extended origin
+};
+
 void HitboxBatchDrawNoBlend(const BoxObjects* b);
 
 void HitboxBatchDrawBlend(const BoxObjects* b);

@@ -2539,6 +2539,51 @@ void HitboxBatchDrawBlend(const BoxObjects* b) {
 
 }
 
+void WikiHitboxDraw(const BoxObjects* b) {
+	const DWORD* arrColors;
+	arrColors = arrWikiColors;
+
+	int i;
+
+	i = static_cast<int>(BoxType::Collision);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Hurtbox);
+	drawBatchHitboxes((*b)[i], arrColors[i]);
+	for (int j = 0; j < (*b)[i].size(); j++) {
+		drawSingleHitbox((*b)[i][j], arrColors[i], false);
+	}
+
+	i = static_cast<int>(BoxType::Hitbox);
+	drawBatchHitboxes((*b)[i], arrColors[i]);
+	for (int j = 0; j < (*b)[i].size(); j++) {
+		drawSingleHitbox((*b)[i][j], arrColors[i], false);
+	}
+
+	i = static_cast<int>(BoxType::Blue);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Clash);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Shield);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], arrColors[i]);
+	}
+
+	i = static_cast<int>(BoxType::Throw);
+	if ((*b)[i].size() == 1) {
+		drawSingleHitbox((*b)[i][0], arrColors[i]);
+	}
+
+}
+
 // ----- horrid Profiler, as a treat 
 
 std::vector<std::function<void(void)>> drawCalls;
@@ -2574,7 +2619,13 @@ void _drawHitboxes() {
 	device->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &antiAliasBackup);
 	device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
 
-	if (XS_hitboxStyle) {
+	if (wikiBoxMode) {
+		for (int i = 0; i < boxObjectList.size(); i++) {
+			WikiHitboxDraw(boxObjectList[i]);
+			delete boxObjectList[i];
+		}
+	}
+	else if (XS_hitboxStyle) {
 		for (int i = 0; i < boxObjectList.size(); i++) {
 			HitboxBatchDrawBlend(boxObjectList[i]);
 			delete boxObjectList[i];

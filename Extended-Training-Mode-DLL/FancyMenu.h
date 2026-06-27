@@ -120,5 +120,7 @@ extern int enableMouseControls;
 extern char customLoadReplayPath[256];
 extern char* customLoadReplayPathPtr;
 
+extern bool wikiBoxMode;
+
 void drawFancyMenu();
 

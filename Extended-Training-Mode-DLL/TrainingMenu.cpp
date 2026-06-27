@@ -545,7 +545,7 @@ void initExtendedMenu() {
 	system.add("HIDE SHADOWS", offONItems, &XS_hideShadows, sHIDE_SHADOWS);
 	system.add("HIDE EXTRAS", offONItems, &XS_hideExtras, sHIDE_EXTRAS);
 	system.addSpace();
-	system.add("BACKGROUND", { "NORMAL", "WHITE", "GRAY", "BLACK", "RED", "YELLOW", "GREEN", "BLUE", "PURPEL" }, &XS_background);
+	system.add("BACKGROUND", { "NORMAL", "WHITE", "GRAY", "BLACK", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE" }, &XS_background);
 	system.addSpace();
 	system.addFooter("PAGE 11");
 	XS_Menu.add(system);

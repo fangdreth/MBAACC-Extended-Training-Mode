@@ -81,6 +81,8 @@ bool customLoadReplay = false;
 char customLoadReplayPath[256] = "";
 char* customLoadReplayPathPtr = customLoadReplayPath;
 
+bool wikiBoxMode = false;
+
 int enableMouseControls = 0;
 
 static bool LoadFileExplorer(std::wstring& filePath)
@@ -494,18 +496,61 @@ void initHitboxSubmenu() {
 		defaultOnOffNameFunc
 	);
 
-	hitboxes.add<float>("Opacity",
-		std::function<void(int, float&)>([](int inc, float& opt) -> void {
-			opt += (inc * 0.1f);
-			opt = CLAMP(opt, 0.0f, 1.0f);
+	hitboxes.add<float*>("Opacity",
+		[](int inc, float*& opt) -> void {
+			*opt += (inc * 0.05f);
+			*opt = CLAMP(*opt, 0.0f, 1.0f);
+		},
+		pointerSliderNameFunc,
+		L"",
+		& hitboxOpacity
+	);
 
-			hitboxOpacity = opt;
-			}),
-		defaultSliderNameFunc
+	hitboxes.add<int>("Wiki Box Mode",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			wikiBoxMode = opt != 0;
+			if (opt != 0) {
+				hitboxOpacity = 0.35f;
+				XS_hideHUD = 1;
+				XS_background = 1;
+				XS_hideShadows = 1;
+			}
+		},
+		defaultOnOffNameFunc,
+		L"",
+		0
+	);
+
+	hitboxes.add<int*>(" > BG",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 8);
+		},
+		pointerIntSliderNameFunc,
+		L"",
+		& XS_background
+	);
+
+	hitboxes.add<int>(" > Hide enemy",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			if (opt != 0) {
+				*(byte*)(adMBAABase + 0x00155C2C) = 0;
+				*(byte*)(adMBAABase + 0x00157224) = 0;
+			}
+		},
+		defaultOnOffNameFunc,
+		L"",
+		0
 	);
 
 	// wow thats some syntax
-	std::get<Menu<float>>(hitboxes.items[hitboxes.items.size() - 1]).optionState = 0.20f;
+	//std::get<Menu<float>>(hitboxes.items[hitboxes.items.size() - 1]).optionState = 0.20f;
 
 	baseMenu.add(hitboxes);
 
