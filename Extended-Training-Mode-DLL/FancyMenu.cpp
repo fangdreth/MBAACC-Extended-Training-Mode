@@ -506,6 +506,16 @@ void initHitboxSubmenu() {
 		& hitboxOpacity
 	);
 
+	hitboxes.add<float*>("Border Opacity",
+		[](int inc, float*& opt) -> void {
+			*opt += (inc * 0.05f);
+			*opt = CLAMP(*opt, 0.0f, 1.0f);
+		},
+		pointerSliderNameFunc,
+		L"",
+		&hitboxBorderOpacity
+	);
+
 	hitboxes.add<int>("Wiki Box Mode",
 		[](int inc, int& opt) {
 			opt += inc;
@@ -514,6 +524,7 @@ void initHitboxSubmenu() {
 			wikiBoxMode = opt != 0;
 			if (opt != 0) {
 				hitboxOpacity = 0.35f;
+				hitboxBorderOpacity = 1.0f;
 				XS_hideHUD = 1;
 				XS_background = 1;
 				XS_hideShadows = 1;

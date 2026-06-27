@@ -33,6 +33,7 @@ double _freqTimerYVal = 0.0;
 bool logPowerInfo = false;
 bool logVerboseFps = false;
 float hitboxOpacity = 0.20f;
+float hitboxBorderOpacity = 0.90f;
 bool renderingEnable = true;
 
 //IDirectInput8* inputDevice = NULL;
@@ -2115,14 +2116,14 @@ void drawSingleHitbox(const BoxData& box, DWORD ARGB, bool shade) {
 	if (shade) {
 		RectDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | (((BYTE)(255.0f * hitboxOpacity)) << 24)); // make sure to sync these alpha values with the ones in the outline shader
 	}
-	BorderDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0xE0000000);
+	BorderDraw(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | (((BYTE)(255.0f * hitboxBorderOpacity)) << 24));
 }
 
 void drawSingleHitboxBlend(const BoxData& box, DWORD ARGB, bool shade) {
 	if (shade) {
 		RectDrawBlend(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | (((BYTE)(255.0f * hitboxOpacity)) << 24)); // make sure to sync these alpha values with the ones in the outline shader
 	}
-	BorderDrawBlend(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | 0xE0000000);
+	BorderDrawBlend(box.x, box.y, box.w, box.h, (ARGB & 0x00FFFFFF) | (((BYTE)(255.0f * hitboxBorderOpacity)) << 24));
 }
 
 void drawBatchHitboxes(const BoxList& boxList, DWORD ARGB) {

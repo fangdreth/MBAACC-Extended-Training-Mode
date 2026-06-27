@@ -31,6 +31,7 @@ extern IDirect3DDevice9* device;
 extern bool logPowerInfo;
 extern bool logVerboseFps;
 extern float hitboxOpacity;
+extern float hitboxBorderOpacity;
 extern bool renderingEnable;
 
 extern int enableWaraSearch;
