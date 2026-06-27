@@ -6,6 +6,9 @@
 #include <cstdarg>
 #include <format>
 
+bool vtEnabled = true;
+HANDLE CONSOLEHANDLE = 0x0;
+
 char cGameState = 0; // 1:In-Game 2:Title 3:Logos 8:Loading 9:Arcade Cutscene 10:Next Stage 12:Options 20:CSS 25:Main Menu
 char cP1Freeze = 0; //Used for EXFlashes where initiator still moves (ex. Satsuki 214C winds up during flash)
 char cP2Freeze = 0;
@@ -75,7 +78,8 @@ void writeBuffer(const char* fmt, ...) {
 	outBufferIndex += res;
 }
 
-void displayBuffer() {
+void displayBuffer(COORD dwCursorPosition) {
+	if (CONSOLEHANDLE != 0x0) SetConsoleCursorPosition(CONSOLEHANDLE, dwCursorPosition);
 
 	printf("%s", outBuffer);
 
@@ -282,24 +286,24 @@ void ResetBars(HANDLE hMBAAHandle)
 		FrameDisplayPlayerData& P = *FD_PlayerArray[i];
 		for (int j = 0; j < BAR_MEMORY_SIZE; j++)
 		{
-			P.sBar1[j][1] = "";
-			P.sBar1[j][2] = "";
-			P.sBar2[j][1] = "";
-			P.sBar2[j][2] = "";
-			P.sBar3[j][1] = "";
-			P.sBar3[j][2] = "";
-			P.sBar4[j][1] = "";
+			P.sBar1[j][0] = "";
+			P.sBar1[j][1] = "  ";
+			P.sBar2[j][0] = "";
+			P.sBar2[j][1] = "  ";
+			P.sBar3[j][0] = "";
+			P.sBar3[j][1] = "  ";
+			P.sBar4[j][0] = "";
+			P.sBar4[j][1] = "  ";
 			P.sBar4[j][2] = "";
-			P.sBar4[j][3] = "";
-			P.sBar4[j][4] = "";
-			P.sBar5[j][1] = "";
+			P.sBar4[j][3] = "  ";
+			P.sBar5[j][0] = "";
+			P.sBar5[j][1] = "  ";
 			P.sBar5[j][2] = "";
-			P.sBar5[j][3] = "";
-			P.sBar5[j][4] = "";
+			P.sBar5[j][3] = "  ";
 		}
 	}
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameScroll), &nBarScrolling, 2, 0);
-	std::cout << "\x1b[J";
+	PrintClear();
 }
 
 void UpdateBars(FrameDisplayPlayerData& P, FrameDisplayPlayerData& Assist)
@@ -449,6 +453,11 @@ void UpdateBars(FrameDisplayPlayerData& P, FrameDisplayPlayerData& Assist)
 		{
 			sFont += FD_UNDERLINE;
 		}
+	}
+	else if (P.dwCondition1_ConditionType == 52 || P.dwCondition2_ConditionType == 52) //Throw active frame
+	{
+		sFont = FD_THROW_ACTIVE;
+		sBarValue = " t";
 	}
 	else if (P.cState_Stance == 1)
 	{
@@ -611,6 +620,179 @@ void UpdateBars(FrameDisplayPlayerData& P, FrameDisplayPlayerData& Assist)
 	}
 }
 
+void NoVTUpdateBars(FrameDisplayPlayerData& P, FrameDisplayPlayerData& Assist)
+{
+	std::string sBarValue = "  ";
+	std::string sLeftValue = " ";
+	std::string sRightValue = " ";
+	bool bIsButtonPressed = P.cButtonInput != 0 || P.cMacroInput != 0;
+	bool bHasInvuln = P.cAnimation_BoxIndex <= 1 || P.sStrikeInvuln != 0 || P.cState_Invuln == 3;
+
+	//Bar 1 - General action information
+	sBarValue = "  ";
+	if (P.nInactionableFrames != 0) //Doing something with limited actionability
+	{
+		if (P.nPattern >= 35 && P.nPattern <= 37) //Jump Startup
+		{
+			sBarValue = "/\\";
+		}
+		else if (P.nHitstunRemaining != 0 && P.bBlockstunFlag == 0) //Hitstun
+		{
+			sBarValue = "()";
+			if (P.cState_Stance == 1) //Airborne
+			{
+				if (P.sUntechCounter >= P.sUntechTotal) //Still has untech remaining
+				{
+					sBarValue = "{}";
+				}
+			}
+		}
+		else if (P.bBlockstunFlag) //Blockstun
+		{
+			sBarValue = "()";
+		}
+		else
+		{
+			sBarValue = "[]";
+		}
+	}
+	else //Fully actionable
+	{
+		sBarValue = " .";
+		if (bDoAdvantage) //Has advantage
+		{
+			sBarValue = " +";
+		}
+		if (P.nLastInactionableFrames != 0 || (P.cLastStance == 1 && P.cState_Stance != 1)) //Neutral frame
+		{
+			sBarValue = " n";
+		}
+	}
+
+	if (cGlobalFreeze != 0 ||
+		((cP1Freeze != 0 || cP2Freeze != 0 || cP3Freeze != 0 || cP4Freeze != 0) && !bJustDidPlayerFreeze)) //Screen is frozen
+	{
+		sBarValue = " f";
+	}
+	else if (P.bThrowFlag != 0) //Being thrown
+	{
+		sBarValue = " t";
+	}
+	else if (P.cHitstop != 0) //in hitstop
+	{
+		sBarValue = "XX";
+	}
+	else if (P.cAnimation_BoxIndex == 12) //Clash
+	{
+		sBarValue = "||";
+	}
+	else if (P.dwCondition1_ConditionType == 51) //Shield
+	{
+		sBarValue = "||";
+	}
+
+	P.sBar1[nBarCounter % BAR_MEMORY_SIZE][1] = sBarValue;
+
+	//Bar 2 - Active frames
+	if (P.dwAttackDataPointer != 0)
+	{
+		sBarValue = std::format("{:2}", P.nActiveCounter % 100);
+		if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0)
+		{
+			sBarValue = " f";
+		}
+		else if (P.cHitstop != 0)
+		{
+			sBarValue = "XX";
+		}
+		else
+		{
+			sBarValue = "[]";
+		}
+	}
+	else if (P.dwCondition1_ConditionType == 52 || P.dwCondition2_ConditionType == 52) //Throw active frame
+	{
+		sBarValue = " t";
+	}
+	else if (P.cState_Stance == 1)
+	{
+		if (P.bDoLanding) {
+			sBarValue = " *";
+		}
+		else {
+			sBarValue = " ^";
+		}
+	}
+	else
+	{
+		sBarValue = "  ";
+	}
+
+	P.sBar2[nBarCounter % BAR_MEMORY_SIZE][1] = sBarValue;
+
+	//Bar 3 - Projectile and assist active frames
+	if (Assist.cExists && Assist.dwAttackDataPointer != 0)
+	{
+		sBarValue = std::format("{:2}", Assist.nActiveCounter % 100);
+		if (cGlobalFreeze != 0 || cP1Freeze != 0 || cP2Freeze != 0)
+		{
+			sBarValue = " f";
+		}
+		else if (Assist.cHitstop != 0)
+		{
+			sBarValue = "XX";
+		}
+		else
+		{
+			sBarValue = "[]";
+		}
+	}
+	else if (P.nActiveProjectileCount != 0 || Assist.nActiveProjectileCount != 0)
+	{
+		sBarValue = "[]";
+	}
+	else
+	{
+		sBarValue = "  ";
+	}
+
+	P.sBar3[nBarCounter % BAR_MEMORY_SIZE][1] = sBarValue;
+
+	if (bDisplayInputs)
+	{
+		//Bar 4
+		sRightValue = std::to_string(P.cButtonInput >> 0x4);
+		if (P.cMacroInput != 0)
+		{
+			sLeftValue = "1";
+		}
+
+		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][1] = sLeftValue;
+		P.sBar4[nBarCounter % BAR_MEMORY_SIZE][3] = sRightValue;
+
+		//Bar 5
+		if (P.cRawDirectionalInput == 0)
+		{
+			sRightValue = ".";
+		}
+		else if (P.cState_Stance == 1)
+		{
+			sRightValue = std::to_string(P.cAirDirectionalInput);
+		}
+		else if (P.bIsOnRight)
+		{
+			sRightValue = std::to_string(REVERSE_INPUT_MAP[P.cRawDirectionalInput]);
+		}
+		else
+		{
+			sRightValue = std::to_string(P.cRawDirectionalInput);
+		}
+
+		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][1] = " ";
+		P.sBar5[nBarCounter % BAR_MEMORY_SIZE][3] = sRightValue;
+	}
+}
+
 void IncrementActive(FrameDisplayPlayerData& P)
 {
 	if (P.dwAttackDataPointer != 0 && P.cHitstop == 0 && nFrameCount != nLastFrameCount)
@@ -700,15 +882,19 @@ void BarHandling(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisplayPla
 			if (P1Assist.cExists)
 			{
 				IncrementActive(P1Assist);
-				UpdateBars(P1Assist, P1);
+				if (vtEnabled) UpdateBars(P1Assist, P1);
+				else NoVTUpdateBars(P1Assist, P1);
 			}
 			if (P2Assist.cExists)
 			{
 				IncrementActive(P2Assist);
-				UpdateBars(P2Assist, P2);
+				if (vtEnabled) UpdateBars(P2Assist, P2);
+				else NoVTUpdateBars(P2Assist, P2);
 			}
-			UpdateBars(P1, P1Assist);
-			UpdateBars(P2, P2Assist);
+			if (vtEnabled) UpdateBars(P1, P1Assist);
+			else NoVTUpdateBars(P1, P1Assist);
+			if (vtEnabled) UpdateBars(P2, P2Assist);
+			else NoVTUpdateBars(P2, P2Assist);
 			nBarCounter += nTrueFrameCount - nLastTrueFrameCount;
 			if (nBarCounter < 0) {
 				nBarCounter = 0;
@@ -907,6 +1093,129 @@ void PrintFrameDisplay(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisp
 	displayBuffer();
 }
 
+void NoVTPrintFrameDisplay(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisplayPlayerData& P2, FrameDisplayPlayerData& P3, FrameDisplayPlayerData& P4)
+{
+	if (nBarDisplayRange != nLastBarDisplayRange || sColumnHeader == "")
+	{
+		sColumnHeader = "";
+		for (int i = 1; i <= nBarDisplayRange; i++)
+		{
+			sColumnHeader += std::format("{:2}", i % 10);
+		}
+		sColumnHeader += "\n";
+	}
+
+	nLastBarScrolling = nBarScrolling;
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameScroll), &nBarScrolling, 4, 0);
+	short sAdjustedScroll = min(min(nBarCounter - nBarDisplayRange, BAR_MEMORY_SIZE - nBarDisplayRange), nBarScrolling);
+
+	int nForStart = (nBarCounter % BAR_MEMORY_SIZE) - nBarDisplayRange - sAdjustedScroll;
+	int nForEnd = (nBarCounter % BAR_MEMORY_SIZE) - sAdjustedScroll;
+	if (nBarCounter <= nBarDisplayRange)
+	{
+		nForStart = 0;
+		nForEnd = nBarCounter;
+	}
+
+	P1.sBarString1 = "";
+	P1.sBarString2 = "";
+	P1.sBarString3 = "";
+	P1.sBarString4 = "";
+	P1.sBarString5 = "";
+	P2.sBarString1 = "";
+	P2.sBarString2 = "";
+	P2.sBarString3 = "";
+	P2.sBarString4 = "";
+	P2.sBarString5 = "";
+	for (int i = nForStart; i < nForEnd; i++)
+	{
+		int c = i < 0 ? i + BAR_MEMORY_SIZE : i;
+		P1.sBarString1 += P1.sBar1[c][1];
+		P1.sBarString2 += P1.sBar2[c][1];
+		P1.sBarString3 += P1.sBar3[c][1];
+		P1.sBarString4 += P1.sBar4[c][1];
+		P1.sBarString4 += P1.sBar4[c][3];
+		P1.sBarString5 += P1.sBar5[c][1];
+		P1.sBarString5 += P1.sBar5[c][3];
+
+		P2.sBarString1 += P2.sBar1[c][1];
+		P2.sBarString2 += P2.sBar2[c][1];
+		P2.sBarString3 += P2.sBar3[c][1];
+		P2.sBarString4 += P2.sBar4[c][1];
+		P2.sBarString4 += P2.sBar4[c][3];
+		P2.sBarString5 += P2.sBar5[c][1];
+		P2.sBarString5 += P2.sBar5[c][3];
+	}
+	P1.sBarString1 += "\n";
+	P1.sBarString2 += "\n";
+	P1.sBarString3 += "\n";
+	P1.sBarString4 += "\n";
+	P1.sBarString5 += "\n";
+	P2.sBarString1 += "\n";
+	P2.sBarString2 += "\n";
+	P2.sBarString3 += "\n";
+	P2.sBarString4 += "\n";
+	P2.sBarString5 += "\n";
+
+
+	int nP1XPixelPosition = (int)floor(P1.nXPosition / 128.0);
+	int nP1YPixelPosition = (int)floor(P1.nYPosition / 128.0);
+	char cP1CounterHit = CH_MAP[P1.cCounterHit];
+	int nP1GuardGauge = (int)P1.fGuardGauge;
+	int nP1Gravity = max(0, (int)100 - floor(100 - (P1.fGravity - 0.072f) / 0.928f * 19));
+	int nP1GravityHits = (int)round(P1.fGravity / 0.008);
+
+	int nP2XPixelPosition = (int)floor(P2.nXPosition / 128.0);
+	int nP2YPixelPosition = (int)floor(P2.nYPosition / 128.0);
+	char cP2CounterHit = CH_MAP[P2.cCounterHit];
+	int nP2GuardGauge = (int)P2.fGuardGauge;
+	int nP2Gravity = max(0, (int)100 - floor(100 - (P2.fGravity - 0.072f) / 0.928f * 19));
+	int nP2GravityHits = (int)round(P2.fGravity / 0.008);
+
+	int nXDistance = (int)abs(P1.nXPosition - P2.nXPosition);
+	int nYDistance = (int)abs(P1.nYPosition - P2.nYPosition);
+	int nXPixelDistance = (int)abs(floor(P1.nXPosition / 128.0) - floor(P2.nXPosition / 128.0));
+	int nYPixelDistance = (int)abs(floor(P1.nYPosition / 128.0) - floor(P2.nYPosition / 128.0));
+
+	ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameData), &bAdvancedFrameData, 1, 0);
+
+	if (!bAdvancedFrameData)
+	{
+		writeBuffer("Total %3i / Advantage %3i / Distance %3i\n", P1.nInactionableMemory, nPlayerAdvantage, nXPixelDistance);
+	}
+
+	if (bAdvancedFrameData)
+	{
+		writeBuffer("(%6i, %6i)|(%4i, %4i)|pat %3i [%2i]|"
+			"x-spd %5i|x-acc %5i|y-spd %5i|y-acc %5i|hp %5i|mc %5i\n"
+			"(%6i, %6i)|(%4i, %4i)|pat %3i [%2i]|"
+			"x-spd %5i|x-acc %5i|y-spd %5i|y-acc %5i|hp %5i|mc %5i\n"
+			 "(%6i, %6i)|(%4i, %4i)|adv %3i\n",
+			P1.nXPosition, P1.nYPosition, nP1XPixelPosition, nP1YPixelPosition, P1.nPattern, P1.nState,
+			P1.nXSpeed + P1.nMomentum, P1.sXAcceleration, P1.nYSpeed, P1.sYAcceleration, P1.nHealth, P1.nMagicCircuit,
+			P2.nXPosition, P2.nYPosition, nP2XPixelPosition, nP2YPixelPosition, P2.nPattern, P2.nState,
+			P2.nXSpeed + P2.nMomentum, P2.sXAcceleration, P2.nYSpeed, P2.sYAcceleration, P2.nHealth, P2.nMagicCircuit,
+			nXDistance, nYDistance, nXPixelDistance, nYPixelDistance, nPlayerAdvantage);
+	}
+
+	writeBuffer("%s%s%s%s%s%s%s", sColumnHeader.c_str(), P1.sBarString1.c_str(), P1.sBarString2.c_str(), P1.sBarString3.c_str(), P2.sBarString1.c_str(), P2.sBarString2.c_str(), P2.sBarString3.c_str());
+
+	if (bAdvancedFrameData)
+	{
+		writeBuffer("ex %2i|ch %c|partner %3i [%2i]|scaling %3i [%2i+%i]|rhp %5i|gg %5i [%.3f]|total %3i\n"
+			"ex %2i|ch %c|partner %3i [%2i]|scaling %3i [%2i+%i]|rhp %5i|gg %5i [%.3f]|total %3i\n",
+			cP1Freeze, cP1CounterHit, P3.nPattern, P3.nState, nP1GravityHits, nP1Gravity % 100, P1.sUntechPenalty % 10, P1.nRedHealth, nP1GuardGauge, P1.fGuardQuality, P1.nInactionableMemory % 1000,
+			cP2Freeze, cP2CounterHit, P4.nPattern, P4.nState, nP2GravityHits, nP2Gravity % 100, P2.sUntechPenalty % 10, P2.nRedHealth, nP2GuardGauge, P2.fGuardQuality, P2.nInactionableMemory % 1000);
+	}
+
+	if (bDisplayInputs)
+	{
+		writeBuffer("%s%s%s%s%s", sColumnHeader.c_str(), P1.sBarString4.c_str(), P1.sBarString5.c_str(), P2.sBarString4.c_str(), P2.sBarString5.c_str());
+	}
+
+	displayBuffer();
+}
+
 void FrameDisplay(HANDLE hMBAAHandle)
 {
 	//this was somehow getting overwritten between here and when the print function checks it??? so moved into the function
@@ -922,11 +1231,17 @@ void FrameDisplay(HANDLE hMBAAHandle)
 
 	CheckGameState(hMBAAHandle);
 
+	static char lastGameState = 1;
 	if (cGameState != 1) //If not in game (any gamemode)
 	{
-		std::cout << "\x1b[J";
+		//std::cout << "\x1b[J";
+		if (cGameState != lastGameState) {
+			PrintClear();
+		}
+		lastGameState = cGameState;
 		return;
 	}
+	lastGameState = cGameState;
 
 	nLastBarDisplayRange = nBarDisplayRange;
 	CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
@@ -934,7 +1249,7 @@ void FrameDisplay(HANDLE hMBAAHandle)
 	nBarDisplayRange = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left) / 2;
 	if (nBarDisplayRange != nLastBarDisplayRange || cDisplayOptions != cLastDisplayOptions)
 	{
-		std::cout << "\x1b[J";
+		FullClear();
 	}
 
 	UpdateGlobals(hMBAAHandle);
@@ -968,25 +1283,35 @@ void FrameDisplay(HANDLE hMBAAHandle)
 		nLastFrameCount = nFrameCount;
 		nLastTrueFrameCount = nTrueFrameCount;
 
-		if (bPrintColorGuide)
-		{
-			PrintColorGuide();
+		if (vtEnabled) {
+			if (bPrintColorGuide)
+			{
+				PrintColorGuide();
+			}
+			else
+			{
+				PrintFrameDisplay(hMBAAHandle, *FD_Main1, *FD_Main2, *FD_Assist1, *FD_Assist2);
+			}
 		}
-		else
-		{
-			PrintFrameDisplay(hMBAAHandle, *FD_Main1, *FD_Main2, *FD_Assist1, *FD_Assist2);
+		else {
+			NoVTPrintFrameDisplay(hMBAAHandle, *FD_Main1, *FD_Main2, *FD_Assist1, *FD_Assist2);
 		}
 	}
 
 	if (cDisplayOptions != cLastDisplayOptions || nBarScrolling != nLastBarScrolling || nBarDisplayRange != nLastBarDisplayRange)
 	{
-		if (bPrintColorGuide)
-		{
-			PrintColorGuide();
+		if (vtEnabled) {
+			if (bPrintColorGuide)
+			{
+				PrintColorGuide();
+			}
+			else
+			{
+				PrintFrameDisplay(hMBAAHandle, *FD_Main1, *FD_Main2, *FD_Assist1, *FD_Assist2);
+			}
 		}
-		else
-		{
-			PrintFrameDisplay(hMBAAHandle, *FD_Main1, *FD_Main2, *FD_Assist1, *FD_Assist2);
+		else {
+			NoVTPrintFrameDisplay(hMBAAHandle, *FD_Main1, *FD_Main2, *FD_Assist1, *FD_Assist2);
 		}
 	}
 
@@ -994,3 +1319,31 @@ void FrameDisplay(HANDLE hMBAAHandle)
 
 }
 
+void PrintClear() {
+	CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screenBufferInfo);
+	int width = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left);
+	int height = (screenBufferInfo.srWindow.Bottom - screenBufferInfo.srWindow.Top);
+	int printHeight = height - 9;
+	outBufferIndex = 0;
+	std::string s = "";
+	for (int i = 0; i < width * printHeight; i++) {
+		s += " ";
+	}
+	writeBuffer(s.c_str());
+	displayBuffer();
+}
+
+void FullClear() {
+	CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screenBufferInfo);
+	int width = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left);
+	int height = (screenBufferInfo.srWindow.Bottom - screenBufferInfo.srWindow.Top);
+	outBufferIndex = 0;
+	std::string s = "";
+	for (int i = 0; i < width * height; i++) {
+		s += " ";
+	}
+	writeBuffer(s.c_str());
+	displayBuffer({ 0, 0 });
+}

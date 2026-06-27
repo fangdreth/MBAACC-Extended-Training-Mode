@@ -4,6 +4,9 @@
 #include "Logger.h"
 #include "..\Common\Common.h"
 
+extern bool vtEnabled;
+extern HANDLE CONSOLEHANDLE;
+
 extern char cGameState; // 1:In-Game 2:Title 3:Logos 8:Loading 9:Arcade Cutscene 10:Next Stage 12:Options 20:CSS 25:Main Menu
 extern char cP1Freeze; //Used for EXFlashes where initiator still moves (ex. Satsuki 214C winds up during flash)
 extern char cP2Freeze;
@@ -54,7 +57,7 @@ extern int outBufferIndex;
 extern char outBuffer[outBufferSize];
 void writeBuffer(const char* fmt, ...);
 
-void displayBuffer();
+void displayBuffer(COORD dwCursorPosition = { 0, 9 });
 
 void CheckGameState(HANDLE hMBAAHandle);
 
@@ -197,6 +200,8 @@ void ResetBars(HANDLE hMBAAHandle);
 
 void UpdateBars(FrameDisplayPlayerData& P, FrameDisplayPlayerData& Assist);
 
+void NoVTUpdateBars(FrameDisplayPlayerData& P, FrameDisplayPlayerData& Assist);
+
 void IncrementActive(FrameDisplayPlayerData& P);
 
 void HandleInactive(FrameDisplayPlayerData& P);
@@ -205,7 +210,13 @@ void BarHandling(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisplayPla
 
 void PrintFrameDisplay(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisplayPlayerData& P2, FrameDisplayPlayerData& P3, FrameDisplayPlayerData& P4);
 
+void NoVTPrintFrameDisplay(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, FrameDisplayPlayerData& P2, FrameDisplayPlayerData& P3, FrameDisplayPlayerData& P4);
+
 void FrameDisplay(HANDLE hMBAAHandle);
+
+void PrintClear();
+
+void FullClear();
 
 // Foreground color -> \x1b[38;2;R;G;Bm
 // Background color -> \x1b[48;2;R;G;Bm

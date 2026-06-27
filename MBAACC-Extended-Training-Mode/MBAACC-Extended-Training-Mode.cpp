@@ -16,7 +16,10 @@ int main(int argc, char* argv[])
     consoleMode |= ENABLE_PROCESSED_INPUT;
     consoleMode |= ENABLE_LINE_INPUT;
     consoleMode |= ENABLE_ECHO_INPUT;
+    //consoleMode &= (0xFFFFFFFF - ENABLE_VIRTUAL_TERMINAL_PROCESSING); //disabled virtual terminal for testing wine compatability
     SetConsoleMode(hConsoleHandle, consoleMode); 
+
+    vtEnabled = consoleMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 
     if (!writeDLL()) {
         fprintf(stderr, "FAILED TO WRITE DLL\n");
@@ -187,18 +190,17 @@ int main(int argc, char* argv[])
 
             
             SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
-            std::cout << "===========================================================================\x1b[K" << "\n";
-            std::cout << "|   Fang, gonp, and meepster99(Inana)'s Extended Training Mode Mod " << VERSION << "   |\x1b[K" << "\n";
-            std::cout << "|                                                                         |\x1b[K" << "\n";
-            std::cout << "|   " << GITHUB_RELEASE << "   |\x1b[K" << "\n";
+            std::cout << "===========================================================================" << "\n";
+            std::cout << "|   Fang, gonp, and meepster99(Inana)'s Extended Training Mode Mod " << VERSION << "   |" << "\n";
+            std::cout << "|                                                                         |" << "\n";
+            std::cout << "|   " << GITHUB_RELEASE << "   |" << "\n";
             if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
-                std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                  |\x1b[K" << "\n";
+                std::cout << "|   NEW VERSION " << sOnlineVersion << " AVAILABLE ON GITHUB                                  |" << "\n";
             else
-                std::cout << "|                                                                         |\x1b[K" << "\n";
-            std::cout << "===========================================================================\x1b[K" << "\n";
+                std::cout << "|                                                                         |" << "\n";
+            std::cout << "===========================================================================" << "\n";
             
             SetConsoleCursorPosition(hConsoleHandle, { 0, 6 });
-            std::cout << "\x1b[K";
 
             GetExitCodeProcess(hMBAAHandle, &dwExitCode);
             //std::cout << "handle: " << (hMBAAHandle == 0x0) << " exit" << (dwExitCode != 259) << std::endl;
@@ -214,12 +216,12 @@ int main(int argc, char* argv[])
                 hMBAAHandle = 0x0;
 
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
-                std::string sLookingForMelty = "Please launch Melty Blood with CCCaster        \x1b[K";
+                std::string sLookingForMelty = "Please launch Melty Blood with CCCaster        ";
                 for (int i = 0; i < nCurrentTime % 8; i++)
                     sLookingForMelty[39 + i] = '.';
                 std::cout << sLookingForMelty;
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 8 });
-                std::cout << "\x1b[J";
+                //std::cout << "\x1b[J";
 
                 hMBAAHandle = GetProcessByName(L"MBAA.exe");
                 /*if (hMBAAHandle == 0) {
@@ -252,7 +254,7 @@ int main(int argc, char* argv[])
             //if(false)
             {
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
-                std::cout << "Cannot attach to versus mode....\x1b[K";
+                std::cout << "Cannot attach to versus mode....        ";
                 //LogInfo("MBAA is in versus mode");
                 continue;
             }
@@ -260,14 +262,14 @@ int main(int argc, char* argv[])
             //else if(false)
             {
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
-                std::cout << "Cannot attach while training menu is open....\x1b[K";
+                std::cout << "Cannot attach while training menu is open....        ";
                 continue;
             }
             else if (nGameMode == 4112 || (nGameMode == 1 && nVersusCheck == 2)) //Training OR Replay
             //else if(true)
             {
                 SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });               
-                std::cout << "Attached to MBAA.exe\x1b[K" << "\n\x1b[K\n";
+                std::cout << "Attached to MBAA.exe        \n\n";
                 
                 if (!bInjected)
                 {
@@ -283,6 +285,7 @@ int main(int argc, char* argv[])
 
             long long start = getMicroSec();
 
+            CONSOLEHANDLE = hConsoleHandle;
             FrameDisplay(hMBAAHandle);
             
             long long totalTime = getMicroSec() - start;
