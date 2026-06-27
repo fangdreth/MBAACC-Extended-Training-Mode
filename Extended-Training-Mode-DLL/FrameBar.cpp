@@ -509,7 +509,7 @@ void IncrementActive(FrameBarPlayerData& P)
 {
 	if (P.playerData->subObj.attackDataPtr && P.playerData->subObj.hitstop == 0 && P.playerData->subObj.heatTimeCounter != P.nLastFrameCount)
 	{
-		P.nActiveCounter++;
+		P.nActiveCounter += *(int*)(adMBAABase + adFrameCount) > nLastFrameCount ? 1 : -1;
 	}
 	else if (P.playerData->subObj.attackDataPtr == 0)
 	{
@@ -647,7 +647,7 @@ void BarHandling(FrameBarPlayerData& P1_, FrameBarPlayerData& P2_, FrameBarPlaye
 			if (P1Assist.playerData->exists) UpdateBars(P1Assist, P1_);
 			if (P2Assist.playerData->exists) UpdateBars(P2Assist, P2_);
 
-			nBarCounter++;
+			nBarCounter += *(int*)(adMBAABase + adFrameCount) > nLastFrameCount ? 1 : -1;
 			if (nBarCounter < 0) nBarCounter = 0;
 		}
 	}
@@ -676,15 +676,15 @@ void UpdateFrameBar()
 
 	CheckProjectiles();
 
-	//if (*(int*)(adMBAABase + adTrueFrameCount) != nLastTrueFrameCount)
-	//{
-	BarHandling(*FB_Main1, *FB_Main2, *FB_Assist1, *FB_Assist2);
-	//}
-
-	if (*(int*)(adMBAABase + adTrueFrameCount) <= 1)
+	if (*(int*)(adMBAABase + adTrueFrameCount) != nLastTrueFrameCount)
 	{
-		ResetBars();
+		BarHandling(*FB_Main1, *FB_Main2, *FB_Assist1, *FB_Assist2);
 	}
+
+	//if (*(int*)(adMBAABase + adTrueFrameCount) <= 1)
+	//{
+	//	ResetBars();
+	//}
 
 	nPlayerAdvantage = (FB_Main1->nAdvantageCounter - FB_Main2->nAdvantageCounter) % 100;
 

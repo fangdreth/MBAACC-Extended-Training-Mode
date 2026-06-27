@@ -102,8 +102,6 @@ int comboTimer = 0;
 
 bool initLoadChars = false;
 
-Point customCameraMouseTracker;
-
 struct TrueComboDamageData {
 	int startingHealth = 11400;
 	int damage = 0;
@@ -2993,10 +2991,9 @@ void frameDoneCallback()
 	if ((safeWrite() && !isPaused() && XS_inGameFrameDisplay) || (isPaused() && ((bVIEW_SCREEN && XS_inGameFrameDisplay) || bShowFrameBarPreview))) doDraw = true;
 	drawFrameBar(doDraw);
 
-	if (XS_colorGuide)
-	{
-		drawColorGuide();
-	}
+	if (safeWrite() && !isPaused()) UpdateFrameBar();
+
+	if (XS_colorGuide) drawColorGuide();
 
 	if (doDraw && frameBar.y + (frameBar.h / 2) > 436)
 	{
@@ -3019,6 +3016,7 @@ void frameDoneCallback()
 
 	if (freezeCamera)
 	{
+		static Point customCameraMouseTracker;
 		if (lClick) {
 			customCameraMouseTracker = mousePos;
 		}
@@ -3027,10 +3025,29 @@ void frameDoneCallback()
 			customCameraY += (customCameraMouseTracker.y - mousePos.y) * 128 / customCameraZoom;
 			customCameraMouseTracker = mousePos;
 		}
+
+		static Point customCameraMouseTracker2;
+		if (rClick) {
+			customCameraMouseTracker2 = mousePos;
+		}
+		else if (rHeld) {
+			float xDist = 320.0f - customCameraMouseTracker2.x;
+			float yDist = 240.0f - customCameraMouseTracker2.y;
+			float trackerCenterDist = sqrt(xDist * xDist + yDist * yDist);
+			xDist = 320.0f - mousePos.x;
+			yDist = 240.0f - mousePos.y;
+			float mouseCenterDist = sqrt(xDist * xDist + yDist * yDist);
+			customCameraZoom += (mouseCenterDist - trackerCenterDist) / 100.0f;
+			customCameraMouseTracker2 = mousePos;
+		}
+
 		*(byte*)(adMBAABase + 0x00157d2b) = 0x1;
 		*(float*)(adMBAABase + 0x0014eb70) = customCameraZoom;
 		*(int*)(adMBAABase + 0x00155124) = customCameraX;
 		*(int*)(adMBAABase + 0x00155128) = customCameraY;
+	}
+	else {
+		*(byte*)(adMBAABase + 0x00157d2b) = 0x0;
 	}
 
 	int inputsPt1 = *(int*)(adMBAABase + 0x00371398);
@@ -3287,11 +3304,10 @@ void ResetCallback() {
 			break;
 		}
 
-		int gauges[3] = { 8000, 7000, 10500 };
-		pP1->subObj.guardGauge = gauges[pP1->subObj.moon];
-		pP2->subObj.guardGauge = gauges[pP2->subObj.moon];
-		if (pP3->exists) pP3->subObj.guardGauge = gauges[pP3->subObj.moon];
-		if (pP4->exists) pP4->subObj.guardGauge = gauges[pP4->subObj.moon];
+		pP1->subObj.guardGaugeHeal = 50000.0f;
+		pP2->subObj.guardGaugeHeal = 50000.0f;
+		if (pP3->exists) pP3->subObj.guardGaugeHeal = 50000.0f;
+		if (pP4->exists) pP4->subObj.guardGaugeHeal = 50000.0f;
 
 		pP1->subObj.guardGaugeState = 1;
 		pP2->subObj.guardGaugeState = 1;
@@ -3335,6 +3351,8 @@ void ResetCallback() {
 		enableRevTAS = false;
 		enableTAS = false;
 	}
+
+	ResetBars();
 
 	nTempP1MeterGain = 0;
 	nTempP2MeterGain = 0;
@@ -7370,7 +7388,6 @@ void EndUpdateBattleScene() {
 	LoadSave();
 	if (*(byte*)(adMBAABase + 0x0015d203) == 0) { //is not paused
 		DummyTechGuardFix();
-		UpdateFrameBar();
 	}
 }
 

@@ -1390,6 +1390,7 @@ void initCameraSubmenu() {
 	camera.add<float*>("Custom Zoom",
 		[](int inc, float*& opt) {
 			*opt += (inc * 0.01f * customCameraZoomInterval);
+			*opt = (float)(int(round(*opt * 100)) / 100.0f);
 			*opt = CLAMP(*opt, 0.0f, 10.0f);
 		},
 		pointerSliderNameFunc,
