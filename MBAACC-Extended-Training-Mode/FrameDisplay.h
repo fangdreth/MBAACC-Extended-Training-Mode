@@ -113,7 +113,7 @@ struct FrameDisplayPlayerData
 	char cAirDirectionalInput = 0; //0x2EA
 	char cRawDirectionalInput = 0; //0x2EB
 	char padding17[0x1];
-	char cButtonInput = 0; //0x2ED
+	unsigned char cButtonInput = 0; //0x2ED
 	char cMacroInput = 0; //0x2EE
 	char padding18[0x26];
 	bool bIsOnRight = false; //0x315

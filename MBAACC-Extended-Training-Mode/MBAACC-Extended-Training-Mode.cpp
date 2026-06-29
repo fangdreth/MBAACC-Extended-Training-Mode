@@ -19,7 +19,11 @@ int main(int argc, char* argv[])
     //consoleMode &= (0xFFFFFFFF - ENABLE_VIRTUAL_TERMINAL_PROCESSING); //disabled virtual terminal for testing wine compatability
     SetConsoleMode(hConsoleHandle, consoleMode); 
 
-    vtEnabled = consoleMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    //vtEnabled = consoleMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    vtEnabled = true;
+    if (GetAsyncKeyState(VK_CONTROL)) {
+        vtEnabled = false;
+    }
 
     if (!writeDLL()) {
         fprintf(stderr, "FAILED TO WRITE DLL\n");
@@ -201,6 +205,8 @@ int main(int argc, char* argv[])
             std::cout << "===========================================================================" << "\n";
             
             SetConsoleCursorPosition(hConsoleHandle, { 0, 6 });
+            if (vtEnabled) std::cout << "            \n";
+            else std::cout << "[ NO VT ] \n";
 
             GetExitCodeProcess(hMBAAHandle, &dwExitCode);
             //std::cout << "handle: " << (hMBAAHandle == 0x0) << " exit" << (dwExitCode != 259) << std::endl;
