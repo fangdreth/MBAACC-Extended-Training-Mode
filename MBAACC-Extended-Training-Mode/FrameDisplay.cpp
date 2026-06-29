@@ -417,10 +417,6 @@ void UpdateBars(FrameDisplayPlayerData& P, FrameDisplayPlayerData& Assist)
 	{
 		sFont = FD_SHIELD;
 	}
-	else if (P.dwCondition1_ConditionType == 52 || P.dwCondition2_ConditionType == 52) //Throw active frame
-	{
-		sFont = FD_THROW_ACTIVE;
-	}
 	else if (P.bBoxInvuln ||
 		P.sStrikeInvuln != 0 ||
 		P.cState_Invuln == 3)
