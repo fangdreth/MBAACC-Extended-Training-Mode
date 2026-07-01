@@ -287,19 +287,19 @@ void ResetBars(HANDLE hMBAAHandle)
 		for (int j = 0; j < BAR_MEMORY_SIZE; j++)
 		{
 			P.sBar1[j][0] = "";
-			P.sBar1[j][1] = "  ";
+			P.sBar1[j][1] = "";
 			P.sBar2[j][0] = "";
-			P.sBar2[j][1] = "  ";
+			P.sBar2[j][1] = "";
 			P.sBar3[j][0] = "";
-			P.sBar3[j][1] = "  ";
+			P.sBar3[j][1] = "";
 			P.sBar4[j][0] = "";
-			P.sBar4[j][1] = "  ";
+			P.sBar4[j][1] = "";
 			P.sBar4[j][2] = "";
-			P.sBar4[j][3] = "  ";
+			P.sBar4[j][3] = "";
 			P.sBar5[j][0] = "";
-			P.sBar5[j][1] = "  ";
+			P.sBar5[j][1] = "";
 			P.sBar5[j][2] = "";
-			P.sBar5[j][3] = "  ";
+			P.sBar5[j][3] = "";
 		}
 	}
 	WriteProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adXS_frameScroll), &nBarScrolling, 2, 0);
