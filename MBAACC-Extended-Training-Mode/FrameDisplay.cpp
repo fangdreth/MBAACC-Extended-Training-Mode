@@ -1315,12 +1315,12 @@ void FrameDisplay(HANDLE hMBAAHandle)
 
 }
 
-void PrintClear() {
+void PrintClear(int top) {
 	CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screenBufferInfo);
 	int width = (screenBufferInfo.srWindow.Right - screenBufferInfo.srWindow.Left);
 	int height = (screenBufferInfo.srWindow.Bottom - screenBufferInfo.srWindow.Top);
-	int printHeight = height - 9;
+	int printHeight = height - top;
 	outBufferIndex = 0;
 	std::string s = "";
 	for (int i = 0; i < width * printHeight; i++) {

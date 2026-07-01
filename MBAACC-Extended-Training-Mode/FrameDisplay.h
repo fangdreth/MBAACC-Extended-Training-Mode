@@ -214,7 +214,7 @@ void NoVTPrintFrameDisplay(HANDLE hMBAAHandle, FrameDisplayPlayerData& P1, Frame
 
 void FrameDisplay(HANDLE hMBAAHandle);
 
-void PrintClear();
+void PrintClear(int top = 9);
 
 void FullClear();
 

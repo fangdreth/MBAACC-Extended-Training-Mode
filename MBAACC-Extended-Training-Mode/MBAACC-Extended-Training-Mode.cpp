@@ -239,6 +239,7 @@ int main(int argc, char* argv[])
                 // don't do anything until we re-attach to mbaa
                 if (hMBAAHandle == 0x0) {
                     //Sleep(10000); // debug only pls remove this
+                    PrintClear(8);
                     continue;
                 }
 
