@@ -3994,7 +3994,7 @@ bool HookDirectX() {
 
 
 	// disable their fps counter
-	patchByte(0x00554128, 0x00);
+	//patchByte(0x00554128, 0x00);
 
 	// this specifically checks if our hooks were overwritten, and then rehooks
 	log("attempting to init directx rehook");
