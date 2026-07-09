@@ -22,6 +22,8 @@ const std::map<std::string, int> CVAKIHA_Map =
 	{ "HEAT", 260 },
 	{ "THROW", 62 },
 	{ "AIR THROW", 271 },
+	{ "BACK DASH", 45 },
+	{ "BACK AIRDASH", 47 },
 	{ "FORWARD DASH", 43 },
 	{ "FORWARD AIRDASH", 46 },
 	{ "FORWARD SUPER JUMP", 95 },
