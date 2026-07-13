@@ -98,6 +98,10 @@ extern int p2LoadPal;
 
 extern bool reloadCheckFile;
 
+extern int dummyGuardFirstHitOnly;
+extern int dummyGuardFirstHitNumGaps;
+extern int dummyGuardFirstHitDropChance;
+extern int dummyGuardUntilCrossUp;
 extern int dummyTechDelay;
 extern int dummyBurstChance;
 extern int dummyDelayBurstChance;

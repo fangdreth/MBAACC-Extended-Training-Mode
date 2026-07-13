@@ -7335,6 +7335,61 @@ void DummyTechGuardFix() {
 	}
 }
 
+void DummyFirstHitGuard() {
+	if (pDummy->subObj.doTrainingAction != 0 && dummyGuardFirstHitOnly != 0) {
+		static int numGuards = 0;
+		static int framesOutOfGuard = 0;
+		static bool inGuardLastFrame = false;
+		if (pDummy->subObj.onBlockComboCount == 0) {
+			framesOutOfGuard += 1;
+		}
+		else {
+			framesOutOfGuard = 0;
+		}
+
+		if (pDummy->subObj.animationDataPtr->stateData->canMove && numGuards < dummyGuardFirstHitNumGaps) {
+			pDummy->subObj.willBlock = 1;
+		}
+		else {
+			if (rand() % 100 < dummyGuardFirstHitDropChance) {
+				pDummy->subObj.willBlock = 0;
+			}
+			else {
+				pDummy->subObj.willBlock = 1;
+			}
+		}
+
+		if (framesOutOfGuard > 30) {
+			numGuards = 0;
+			framesOutOfGuard = 31;
+		}
+		else if (inGuardLastFrame && framesOutOfGuard != 0) {
+			numGuards += 1;
+		}
+
+		inGuardLastFrame = framesOutOfGuard == 0;
+	}
+}
+
+void DummyCrossUpNoGuard() {
+	if (pDummy->subObj.doTrainingAction != 0 && dummyGuardUntilCrossUp != 0) {
+		static int crossUpTimer = 0;
+		bool dummyIsOppLeft = pDummy->subObj.isOpponentToLeft;
+		static bool lastDummyIsOppLeft = false;
+		if (dummyIsOppLeft != lastDummyIsOppLeft) {
+			crossUpTimer = 1;
+		}
+		if (crossUpTimer != 0) {
+			pDummy->subObj.willBlock = 0;
+			crossUpTimer += 1;
+			if (crossUpTimer > 30) {
+				crossUpTimer = 0;
+			}
+		}
+		lastDummyIsOppLeft = pDummy->subObj.isOpponentToLeft;
+	}
+}
+
 void LoadSave() {
 	if (doLoad && XS_saveStateSlot > 0 && saveStateManager.FullSaves[XS_saveStateSlot - 1]->IsSaved)
 	{
@@ -7387,6 +7442,8 @@ void LoadSave() {
 void EndUpdateBattleScene() {
 	LoadSave();
 	if (*(byte*)(adMBAABase + 0x0015d203) == 0) { //is not paused
+		DummyFirstHitGuard();
+		DummyCrossUpNoGuard();
 		DummyTechGuardFix();
 	}
 }
