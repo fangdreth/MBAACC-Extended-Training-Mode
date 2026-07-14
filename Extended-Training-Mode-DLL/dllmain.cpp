@@ -1021,12 +1021,13 @@ int getIDFromCmd(PlayerData* playerData, const char* cmd, int nthMatch = 1) {
 	return -1;
 }
 
-int getPatternFromCmd(PlayerData* playerData, const char* cmd, int nthMatch = 1) {
+int getPatternFromCmd(PlayerData* playerData, const char* cmd, int stance = 7, int nthMatch = 1) {
 	int retVal = -1;
 	for (int i = 0; i < playerData->cmdFileDataPtr->cmdDataPtr->count; i++) {
 		if (playerData->cmdFileDataPtr->cmdDataPtr->array[i])
 		{
-			if (strcmp(cmd, playerData->cmdFileDataPtr->cmdDataPtr->array[i]->input) == 0) {
+			if (strcmp(cmd, playerData->cmdFileDataPtr->cmdDataPtr->array[i]->input) == 0 &&
+				playerData->cmdFileDataPtr->cmdDataPtr->array[i]->flagsets[0] & stance) {
 				retVal = playerData->cmdFileDataPtr->cmdDataPtr->array[i]->pattern;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
@@ -1918,24 +1919,30 @@ void HandleReversalsPage() {
 					pat = -1;
 					switch (*XS_reversalSlots[validIndex] >> 16) {
 					case 1:
-						pat = GetPattern(p2CharacterID, "5D");
+						//pat = GetPattern(p2CharacterID, "5D");
+						pat = getPatternFromCmd(pActiveP2, "D\xff", 5);
 						break;
 					case 2:
-						pat = GetPattern(p2CharacterID, "5D");
+						//pat = GetPattern(p2CharacterID, "5D");
+						pat = getPatternFromCmd(pActiveP2, "D\xff", 5);
 						bHoldShield = true;
 						break;
 					case 3:
-						pat = GetPattern(p2CharacterID, "2D");
+						//pat = GetPattern(p2CharacterID, "2D");
+						pat = getPatternFromCmd(pActiveP2, "V+D\xff", 5);
 						break;
 					case 4:
-						pat = GetPattern(p2CharacterID, "2D");
+						//pat = GetPattern(p2CharacterID, "2D");
+						pat = getPatternFromCmd(pActiveP2, "V+D\xff", 5);
 						bHoldShield = true;
 						break;
 					case 5:
-						pat = GetPattern(p2CharacterID, "j.D");
+						//pat = GetPattern(p2CharacterID, "j.D");
+						pat = getPatternFromCmd(pActiveP2, "D\xff", 4);
 						break;
 					case 6:
-						pat = GetPattern(p2CharacterID, "j.D");
+						//pat = GetPattern(p2CharacterID, "j.D");
+						pat = getPatternFromCmd(pActiveP2, "D\xff", 4);
 						bHoldShield = true;
 						break;
 					}
@@ -3080,23 +3087,6 @@ void frameDoneCallback()
 			SetRegistryValue(sP2_INPUT_DISPLAY, 0);
 		}
 		nInputDisplaySettings = XS_p1InputDisplay || XS_p2InputDisplay;
-	}
-
-	//clear maids reversal on switch if no longer valid
-	if (nP2CharacterID >= 190 && nP2CharacterID <= 192) {
-		vPatternNames = GetMaidsPatternList(nP2CharacterID, pP2->subObj.tagFlag);
-		if (XS_reversalSlot1 % 1000 > vPatternNames.size() - 1) {
-			XS_reversalSlot1 = 0;
-		}
-		if (XS_reversalSlot2 % 1000 > vPatternNames.size() - 1) {
-			XS_reversalSlot2 = 0;
-		}
-		if (XS_reversalSlot3 % 1000 > vPatternNames.size() - 1) {
-			XS_reversalSlot3 = 0;
-		}
-		if (XS_reversalSlot4 % 1000 > vPatternNames.size() - 1) {
-			XS_reversalSlot4 = 0;
-		}
 	}
 
 	if (safeWrite()) {
@@ -5144,6 +5134,22 @@ void ExtendedMenuInputChecking() {
 			int nP2Moon = *(int*)(adMBAABase + dwP2CharMoon);
 			nP2CharacterID = 10 * nP2CharacterNumber + nP2Moon;
 			vPatternNames = GetPatternList(nP2CharacterID);
+		}
+		//clear maids reversal on switch if no longer valid
+		if (nP2CharacterID >= 190 && nP2CharacterID <= 192) {
+			vPatternNames = GetMaidsPatternList(nP2CharacterID, pP2->subObj.tagFlag);
+			if ((XS_reversalSlot1 & 0xFFFF) % 1000 > vPatternNames.size() - 1) {
+				XS_reversalSlot1 = 0;
+			}
+			if ((XS_reversalSlot2 & 0xFFFF) % 1000 > vPatternNames.size() - 1) {
+				XS_reversalSlot2 = 0;
+			}
+			if ((XS_reversalSlot3 & 0xFFFF) % 1000 > vPatternNames.size() - 1) {
+				XS_reversalSlot3 = 0;
+			}
+			if ((XS_reversalSlot4 & 0xFFFF) % 1000 > vPatternNames.size() - 1) {
+				XS_reversalSlot4 = 0;
+			}
 		}
 
 		switch ((eREVERSALS)curMenuInfo->selectedElement) {
