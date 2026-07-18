@@ -3172,50 +3172,66 @@ void drawRoaHiddenCharge() {
 bool doSaveScreenshot = false; // add a menu option for this lest i murder everyones pcs
 
 std::mutex screenShotDataLock;
-//std::deque<std::pair<std::string, LPD3DXBUFFER>> screenShots;
-std::deque<std::pair<std::string, IDirect3DSurface9*>> screenShots;
+std::deque<std::pair<std::string, LPD3DXBUFFER>> screenShots;
+//std::deque<std::pair<std::string, IDirect3DSurface9*>> screenShots;
 std::atomic<bool> stopSaveScreenshotThread = false;
 
 std::thread saveScreenshotThread;
 void saveScreenshotThreadFunc() {
 	
+	std::deque<std::pair<std::string, LPD3DXBUFFER>> screenShotsBuffer;
+
 	HRESULT hr; 
 	while (true) {
 
-		//if (screenShots.size() > 4 || stopSaveScreenshotThread) {
-		screenShotDataLock.lock();
-		while (screenShots.size() != 0) {
+		if (screenShots.size() != 0) {
+			screenShotDataLock.lock(); 
+			while (screenShots.size() != 0) {	
+				auto pair = screenShots.front();
+				screenShots.pop_front();
+				screenShotsBuffer.push_back(pair);
+			}
+			screenShotDataLock.unlock();
+		}
 
+
+
+		if (screenShots.size() > 4 || stopSaveScreenshotThread) {
 			//screenShotDataLock.lock();
-			auto pair = screenShots.front();
-			screenShots.pop_front();
-			if (screenShots.size() == 0) { // early unlock here instead of at the end of the while loop.
-				//screenShotDataLock.unlock();
+			while (screenShots.size() != 0) {
+
+				screenShotDataLock.lock();
+				auto pair = screenShots.front();
+				screenShots.pop_front();
+				if (screenShots.size() == 0) { // early unlock here instead of at the end of the while loop.
+				//	screenShotDataLock.unlock();
+				}
+				screenShotDataLock.unlock();
+
+				std::ofstream file(pair.first, std::ios::binary);
+				const char* data = static_cast<const char*>(pair.second->GetBufferPointer());
+				file.write(data, pair.second->GetBufferSize());
+				file.close();
+
+				/*
+				D3DSURFACE_DESC sDesc;
+				pair.second->GetDesc(&sDesc);
+
+				RECT rect = { 0, 0, sDesc.Width, sDesc.Height };
+
+				// this one func is the source of my issues (assuming you are using png) even with threading, it slows down everything too much.
+				//hr = D3DXSaveSurfaceToFileA(pair.first.c_str(), D3DXIFF_PNG, pair.second, NULL, &rect);
+				hr = D3DXSaveSurfaceToFileA(pair.first.c_str(), D3DXIFF_BMP, pair.second, NULL, &rect);
+				//hr = D3DXSaveSurfaceToFileA(pair.first.c_str(), D3DXIFF_TGA, pair.second, NULL, &rect);
+
+				if (hr != S_OK) {
+					log("thread D3DXSaveSurfaceToFileA failed");
+				}*/
+
+				pair.second->Release();
 			}
 			//screenShotDataLock.unlock();
-
-			//std::ofstream file(pair.first, std::ios::binary);
-			//const char* data = static_cast<const char*>(pair.second->GetBufferPointer());
-			//file.write(data, pair.second->GetBufferSize());
-			//file.close();
-
-			D3DSURFACE_DESC sDesc;
-			pair.second->GetDesc(&sDesc);
-
-			RECT rect = { 0, 0, sDesc.Width, sDesc.Height };
-
-			// this one func is the source of my issues (assuming you are using png) even with threading, it slows down everything too much. 
-			hr = D3DXSaveSurfaceToFileA(pair.first.c_str(), D3DXIFF_PNG, pair.second, NULL, &rect);
-			//hr = D3DXSaveSurfaceToFileA(pair.first.c_str(), D3DXIFF_BMP, pair.second, NULL, &rect);
-			//hr = D3DXSaveSurfaceToFileA(pair.first.c_str(), D3DXIFF_TGA, pair.second, NULL, &rect);
-
-			if (hr != S_OK) {
-				log("thread D3DXSaveSurfaceToFileA failed");
-			}
-
-			pair.second->Release();
 		}
-		screenShotDataLock.unlock();
 			
 		//}
 
@@ -3224,7 +3240,7 @@ void saveScreenshotThreadFunc() {
 			stopSaveScreenshotThread = false;
 			break;
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(16));
+		std::this_thread::sleep_for(std::chrono::milliseconds(16 * 10));
 	
 	}
 
@@ -3302,12 +3318,15 @@ void saveScreenshot() {
 	surf->GetDesc(&sDesc);
 
 	RECT rect = { 0, 0, sDesc.Width, sDesc.Height };
-
 	
 	static char filename[256];
 
-	snprintf(filename, 256, "./%s/ugh%d.png", folderName.c_str(), _frameIndex);
-	//snprintf(filename, 256, "./%s/ugh%d.bmp", folderName.c_str(), _frameIndex);
+	// todo, should really add a setting to swap between png and bpm. 
+	// bmp is large, but the speed makes it worth it.
+
+	// gaku said she prefers fast, lots of space, vs the alt. bmp it is
+	//snprintf(filename, 256, "./%s/ugh%d.png", folderName.c_str(), _frameIndex);
+	snprintf(filename, 256, "./%s/ugh%d.bmp", folderName.c_str(), _frameIndex);
 	//snprintf(filename, 256, "./%s/ugh%d.tga", folderName.c_str(), _frameIndex);
 	_frameIndex++;
 
@@ -3321,11 +3340,12 @@ void saveScreenshot() {
 	
 	//hr = D3DXSaveSurfaceToFileA(filename, D3DXIFF_PNG, surf, NULL, &rect);
 	
-	//LPD3DXBUFFER buffer = NULL;
-	//hr = D3DXSaveSurfaceToFileInMemory(&buffer, D3DXIFF_BMP, surf, NULL, &rect);
+	LPD3DXBUFFER buffer = NULL;
+	hr = D3DXSaveSurfaceToFileInMemory(&buffer, D3DXIFF_BMP, surf, NULL, &rect);
 	// this isnt ideal. this might make another surface in the backend? but god i dont want bpm format. converting this to png is a pain as well
 	// and getting the raw pixels, without using this func is a pain
 
+	/*
 	IDirect3DSurface9* plainSurf = NULL;
 	hr = device->CreateOffscreenPlainSurface(
 		sDesc.Width, sDesc.Height,
@@ -3336,6 +3356,7 @@ void saveScreenshot() {
 	);
 
 	if (hr != S_OK) {
+		// if E_OUTOFMEMORY, the writer thread is behind.
 		log("CreateOffscreenPlainSurface failed");
 		printDirectXError(hr);
 		return;
@@ -3346,11 +3367,12 @@ void saveScreenshot() {
 	if (hr != S_OK) {
 		log("D3DXSaveSurfaceToFileA failed");
 		printDirectXError(hr);
-	}
+	}*/
 
 	screenShotDataLock.lock();
-	//screenShots.push_back(std::make_pair(std::string(filename), buffer));
-	screenShots.push_back(std::make_pair(std::string(filename), plainSurf));
+	screenShots.push_back(std::make_pair(std::string(filename), buffer));
+	//screenShots.push_back(std::make_pair(std::string(filename), plainSurf));
+	//log("%d frames processing", screenShots.size());
 	screenShotDataLock.unlock();
 
 	//long long beforeRelease = getMicroSec();
