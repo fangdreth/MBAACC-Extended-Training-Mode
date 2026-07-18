@@ -13,6 +13,9 @@
 #include "dllmain.h"
 #include <fstream>
 #include <filesystem>
+#include <deque>
+#include <mutex>
+#include <thread>
 
 void debugLinkedList();
 void displayDebugInfo();
@@ -3167,11 +3170,56 @@ void drawRoaHiddenCharge() {
 }
 
 bool doSaveScreenshot = false; // add a menu option for this lest i murder everyones pcs
+
+std::mutex screenShotDataLock;
+std::deque<std::pair<std::string, LPD3DXBUFFER>> screenShots;
+
+std::atomic<bool> stopSaveScreenshotThread = false;
+
+std::thread saveScreenshotThread;
+void saveScreenshotThreadFunc() {
+	while (true) {
+
+		if (screenShots.size() != 0) {
+			screenShotDataLock.lock();
+			while (screenShots.size() != 0) {
+				auto pair = screenShots.front();
+				screenShots.pop_front();
+
+				std::ofstream file(pair.first, std::ios::binary);
+				const char* data = static_cast<const char*>(pair.second->GetBufferPointer());
+				file.write(data, pair.second->GetBufferSize());
+				file.close();
+
+				pair.second->Release();
+
+			}
+			screenShotDataLock.unlock();
+		}
+		
+
+		
+		if (stopSaveScreenshotThread) {
+			stopSaveScreenshotThread = false;
+			break;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	
+	}
+
+	log("thread done");
+}
+
 void saveScreenshot() {
 
 	// saves a screenshot, hopefully at full resolution
 
 	static bool prevDoSaveScreenshot = false;
+
+	if (prevDoSaveScreenshot && !doSaveScreenshot) { // falling edge, tell the thread to die
+		stopSaveScreenshotThread = true;
+		saveScreenshotThread.join();
+	}
 
 	if (!doSaveScreenshot) {
 		prevDoSaveScreenshot = doSaveScreenshot;
@@ -3188,11 +3236,11 @@ void saveScreenshot() {
 		}
 	}
 
-
 	static int _frameIndex = 0;
 	static std::string folderName = "";
 
 	if (!prevDoSaveScreenshot && doSaveScreenshot) { // rising edge, generate a new folder, reset the counter
+		
 		_frameIndex = 0;
 
 		time_t timeVal;
@@ -3206,6 +3254,11 @@ void saveScreenshot() {
 		if (!std::filesystem::is_directory(folderName)) {
 			std::filesystem::create_directories(folderName);
 		}
+
+		stopSaveScreenshotThread = false;
+
+		saveScreenshotThread = std::thread(saveScreenshotThreadFunc);
+
 	}
 	prevDoSaveScreenshot = doSaveScreenshot;
 
@@ -3230,9 +3283,10 @@ void saveScreenshot() {
 	RECT rect = { 0, 0, sDesc.Width, sDesc.Height };
 
 	
-	static char buffer[256];
+	static char filename[256];
 
-	snprintf(buffer, 256, "./%s/ugh%d.png", folderName.c_str(), _frameIndex);
+	//snprintf(filename, 256, "./%s/ugh%d.png", folderName.c_str(), _frameIndex);
+	snprintf(filename, 256, "./%s/ugh%d.bmp", folderName.c_str(), _frameIndex);
 	_frameIndex++;
 
 	//long long startSaveFile = getMicroSec();
@@ -3243,15 +3297,23 @@ void saveScreenshot() {
 	// 004bd280 shows how melty is getting the screen, and doing it faster
 	// also they use bmp
 	
-	hr = D3DXSaveSurfaceToFileA(buffer, D3DXIFF_PNG, surf, NULL, &rect);
+	//hr = D3DXSaveSurfaceToFileA(filename, D3DXIFF_PNG, surf, NULL, &rect);
 	
+	LPD3DXBUFFER buffer = NULL;
+	hr = D3DXSaveSurfaceToFileInMemory(&buffer, D3DXIFF_BMP, surf, NULL, &rect);
+
 	if (hr != S_OK) {
 		log("D3DXSaveSurfaceToFileA failed");
 		printDirectXError(hr);
 	}
 
+	screenShotDataLock.lock();
+	screenShots.push_back(std::make_pair(std::string(filename), buffer));
+	screenShotDataLock.unlock();
+
 	//long long beforeRelease = getMicroSec();
 
+	//buffer->Release();
 	surf->Release();
 
 	//long long end = getMicroSec();
