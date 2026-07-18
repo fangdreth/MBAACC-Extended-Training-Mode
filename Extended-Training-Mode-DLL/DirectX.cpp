@@ -3172,42 +3172,63 @@ void drawRoaHiddenCharge() {
 bool doSaveScreenshot = false; // add a menu option for this lest i murder everyones pcs
 
 std::mutex screenShotDataLock;
-std::deque<std::pair<std::string, LPD3DXBUFFER>> screenShots;
-
+//std::deque<std::pair<std::string, LPD3DXBUFFER>> screenShots;
+std::deque<std::pair<std::string, IDirect3DSurface9*>> screenShots;
 std::atomic<bool> stopSaveScreenshotThread = false;
 
 std::thread saveScreenshotThread;
 void saveScreenshotThreadFunc() {
+	
+	HRESULT hr; 
 	while (true) {
 
-		if (screenShots.size() != 0) {
-			screenShotDataLock.lock();
-			while (screenShots.size() != 0) {
-				auto pair = screenShots.front();
-				screenShots.pop_front();
+		//if (screenShots.size() > 4 || stopSaveScreenshotThread) {
+		screenShotDataLock.lock();
+		while (screenShots.size() != 0) {
 
-				std::ofstream file(pair.first, std::ios::binary);
-				const char* data = static_cast<const char*>(pair.second->GetBufferPointer());
-				file.write(data, pair.second->GetBufferSize());
-				file.close();
-
-				pair.second->Release();
-
+			//screenShotDataLock.lock();
+			auto pair = screenShots.front();
+			screenShots.pop_front();
+			if (screenShots.size() == 0) { // early unlock here instead of at the end of the while loop.
+				//screenShotDataLock.unlock();
 			}
-			screenShotDataLock.unlock();
+			//screenShotDataLock.unlock();
+
+			//std::ofstream file(pair.first, std::ios::binary);
+			//const char* data = static_cast<const char*>(pair.second->GetBufferPointer());
+			//file.write(data, pair.second->GetBufferSize());
+			//file.close();
+
+			D3DSURFACE_DESC sDesc;
+			pair.second->GetDesc(&sDesc);
+
+			RECT rect = { 0, 0, sDesc.Width, sDesc.Height };
+
+			// this one func is the source of my issues (assuming you are using png) even with threading, it slows down everything too much. 
+			hr = D3DXSaveSurfaceToFileA(pair.first.c_str(), D3DXIFF_PNG, pair.second, NULL, &rect);
+			//hr = D3DXSaveSurfaceToFileA(pair.first.c_str(), D3DXIFF_BMP, pair.second, NULL, &rect);
+			//hr = D3DXSaveSurfaceToFileA(pair.first.c_str(), D3DXIFF_TGA, pair.second, NULL, &rect);
+
+			if (hr != S_OK) {
+				log("thread D3DXSaveSurfaceToFileA failed");
+			}
+
+			pair.second->Release();
 		}
-		
+		screenShotDataLock.unlock();
+			
+		//}
 
 		
-		if (stopSaveScreenshotThread) {
+		if (stopSaveScreenshotThread && screenShots.size() == 0) {
 			stopSaveScreenshotThread = false;
 			break;
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(16));
 	
 	}
 
-	log("thread done");
+	log("screenshot thread done");
 }
 
 void saveScreenshot() {
@@ -3285,8 +3306,9 @@ void saveScreenshot() {
 	
 	static char filename[256];
 
-	//snprintf(filename, 256, "./%s/ugh%d.png", folderName.c_str(), _frameIndex);
-	snprintf(filename, 256, "./%s/ugh%d.bmp", folderName.c_str(), _frameIndex);
+	snprintf(filename, 256, "./%s/ugh%d.png", folderName.c_str(), _frameIndex);
+	//snprintf(filename, 256, "./%s/ugh%d.bmp", folderName.c_str(), _frameIndex);
+	//snprintf(filename, 256, "./%s/ugh%d.tga", folderName.c_str(), _frameIndex);
 	_frameIndex++;
 
 	//long long startSaveFile = getMicroSec();
@@ -3299,8 +3321,27 @@ void saveScreenshot() {
 	
 	//hr = D3DXSaveSurfaceToFileA(filename, D3DXIFF_PNG, surf, NULL, &rect);
 	
-	LPD3DXBUFFER buffer = NULL;
-	hr = D3DXSaveSurfaceToFileInMemory(&buffer, D3DXIFF_BMP, surf, NULL, &rect);
+	//LPD3DXBUFFER buffer = NULL;
+	//hr = D3DXSaveSurfaceToFileInMemory(&buffer, D3DXIFF_BMP, surf, NULL, &rect);
+	// this isnt ideal. this might make another surface in the backend? but god i dont want bpm format. converting this to png is a pain as well
+	// and getting the raw pixels, without using this func is a pain
+
+	IDirect3DSurface9* plainSurf = NULL;
+	hr = device->CreateOffscreenPlainSurface(
+		sDesc.Width, sDesc.Height,
+		sDesc.Format,
+		D3DPOOL_SYSTEMMEM,
+		&plainSurf,
+		nullptr
+	);
+
+	if (hr != S_OK) {
+		log("CreateOffscreenPlainSurface failed");
+		printDirectXError(hr);
+		return;
+	}
+	
+	hr = device->GetRenderTargetData(surf, plainSurf);
 
 	if (hr != S_OK) {
 		log("D3DXSaveSurfaceToFileA failed");
@@ -3308,7 +3349,8 @@ void saveScreenshot() {
 	}
 
 	screenShotDataLock.lock();
-	screenShots.push_back(std::make_pair(std::string(filename), buffer));
+	//screenShots.push_back(std::make_pair(std::string(filename), buffer));
+	screenShots.push_back(std::make_pair(std::string(filename), plainSurf));
 	screenShotDataLock.unlock();
 
 	//long long beforeRelease = getMicroSec();
