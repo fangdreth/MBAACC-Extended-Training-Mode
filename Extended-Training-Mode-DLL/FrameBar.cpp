@@ -150,14 +150,30 @@ FrameBar frameBar(320.0f, 410.0f, 600.0f, 26.0f, 75, 0.90f);
 void FrameBarCell::draw(float x, float y, float w, float h, float widthMult)
 {
 	float adjW = w * widthMult;
+
+	if (edgeFlag < 0)
+	{
+		float edgeX = x - (w - adjW);
+		float edgeY = y - (0.1 * h);
+		RectDraw(edgeX, edgeY, w, 1.2 * h, 0xFFE0E0E0);
+	}
+	else if (edgeFlag > 0)
+	{
+		float edgeY = y - (0.1 * h);
+		RectDraw(x, edgeY, w, 1.2 * h, 0xFFE0E0E0);
+	}
+
 	if (mainColor != 0x0) RectDraw(x, y, adjW, h, mainColor);
+
 	if (subColor != 0x0) {
 		//RectDraw(x + (adjW / 2), y, adjW / 2, h, subColor);
 		for (float i = 0.0f; i < h; i += 2) {
 			RectDraw(x, y + i, adjW, 1.0f, subColor);
 		}
 	}
+
 	if (subActiveColor != 0x0) RectDraw(x, y + (0.9 * h), adjW, 0.2 * h, subActiveColor);
+
 	if (airborneColor != 0x0) RectDraw(x, y - (0.1 * h), adjW, 0.2 * h, airborneColor);
 
 	static char buffer[8];
@@ -281,7 +297,8 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 	DWORD dwAirborneColor = 0x0;
 
 	int nNumber = -1;
-	int nNumFlag = 0; //0 = default, go away on next info; 1 = persist always; 2 = persist and delete prior 2s; 3 = get deleted and pass it on if followed by 2
+	int nNumFlag = 0; //0 = default, go away on next info; 1 = persist always; 2 = persist and delete prior 2s; 3 = get deleted and pass it on if followed by 2; 4 = clear previous
+	int nEdgeFlag = 0;
 
 	//Bar 1 - General action information
 	if (P.playerAuxData->inactionableFrames != 0) //Doing something with limited actionability
@@ -376,7 +393,7 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 	else if (P.playerData->subObj.hitstop != 0) //in hitstop
 	{
 		dwMainColor = FB_HITSTOP;
-		if (!P.playerData->subObj.notInCombo && P.cLastHitstop == 0)
+		if (P.playerData->subObj.didAdvanceFramesIntoCurrentPattern != 0)
 		{
 			nNumFlag = 1;
 		}
@@ -400,12 +417,15 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 		dwMainColor = FB_THROW_ACTIVE;
 	}
 
+	bool screenFreeze = false;
 	if (*(char*)(adMBAABase + adGlobalFreeze) != 0 || //Screen is frozen
 		((*(int*)(adMBAABase + adP1Freeze) != 0 ||
 			*(int*)(adMBAABase + adP2Freeze) != 0 ||
 			*(int*)(adMBAABase + adP3Freeze) != 0 ||
-			*(int*)(adMBAABase + adP4Freeze) != 0) && *(byte*)(adMBAABase + adJustDidPlayerFreeze) == 0))
+			*(int*)(adMBAABase + adP4Freeze) != 0) &&
+			*(byte*)(adMBAABase + adJustDidPlayerFreeze) == 0))
 	{
+		screenFreeze = true;
 		dwMainColor = FB_FREEZE;
 		if (dwMainColor == FB_ACTIVE) //Attacking
 		{
@@ -467,6 +487,91 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 		else nNumber = P.nInactionCounter;
 	}
 
+	if (P.playerData->subObj.animationDataPtr->stateData->canMove == 0 &&
+		P.playerData->subObj.didAdvanceFramesIntoCurrentPattern != 0 &&
+		!screenFreeze)
+	{
+		if (P.playerData->subObj.framesIntoCurrentPattern == 0 &&
+			!(P.playerData->subObj.pattern == 28 || P.playerData->subObj.pattern == 31)) //deal with techs being weird
+		{
+			nEdgeFlag = -1;
+		}
+
+		if (P.playerData->subObj.animationDataPtr->stateDuration <= P.playerData->subObj.framesInCurrentState + 1)
+		{
+			if (P.playerData->subObj.animationDataPtr->animationType == 0)
+			{
+				int curPat = P.playerData->subObj.pattern;
+				int targetPat = P.playerData->subObj.animationDataPtr->goToData;
+				if (P.playerData->subObj.animationDataPtr->gotoRelativeOffset) {
+					targetPat += P.playerData->subObj.pattern;
+				}
+				AnimationData* animData = P.playerData->getAnimationDataPtr(targetPat, 0);
+				if (animData) {
+					bool newCanMove = animData->stateData->canMove;
+					if (newCanMove) {
+						nEdgeFlag = 1;
+					}
+				}
+			}
+			else if (P.playerData->subObj.animationDataPtr->animationType == 1)
+			{
+				int curPat = P.playerData->subObj.pattern;
+				int targetState = P.playerData->subObj.state + 1;
+				AnimationData* animData = P.playerData->getAnimationDataPtr(curPat, targetState);
+				if (animData) {
+					bool newCanMove = animData->stateData->canMove;
+					if (newCanMove) {
+						nEdgeFlag = 1;
+					}
+				}
+			}
+			else if (P.playerData->subObj.animationDataPtr->animationType == 2)
+			{
+				int curPat = P.playerData->subObj.pattern;
+				int targetState = P.playerData->subObj.animationDataPtr->goToData;
+				if (P.playerData->subObj.animationDataPtr->gotoRelativeOffset) {
+					targetState += P.playerData->subObj.state;
+				}
+				AnimationData* animData = P.playerData->getAnimationDataPtr(curPat, targetState);
+				if (animData) {
+					bool newCanMove = animData->stateData->canMove;
+					if (newCanMove) {
+						nEdgeFlag = 1;
+					}
+				}
+			}
+		}
+
+		if (P.playerData->subObj.doLanding != 0) {
+			int curPat = P.playerData->subObj.pattern;
+			int target = P.playerData->subObj.animationDataPtr->landingFrame;
+			int targetPat;
+			int targetState;
+			if (P.playerData->subObj.animationDataPtr->landToPattern)
+			{
+				targetPat = target;
+				targetState = 0;
+			}
+			else {
+				targetPat = curPat;
+				targetState = target;
+			}
+			AnimationData* animData = P.playerData->getAnimationDataPtr(targetPat, targetState);
+			if (animData) {
+				bool newCanMove = animData->stateData->canMove;
+				if (newCanMove) {
+					nEdgeFlag = 1;
+				}
+			}
+		}
+
+		if (P.playerData->subObj.hitstunTimeRemaining == 2)
+		{
+			nEdgeFlag = 1;
+		}
+	}
+	
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].mainColor = dwMainColor;
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].subColor = dwSubColor;
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].subActiveColor = dwSubActiveColor;
@@ -474,6 +579,7 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].number = nNumber;
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].numFlag = nNumFlag;
+	P.cells[nBarCounter % BAR_MEMORY_SIZE].edgeFlag = nEdgeFlag;
 
 	auto posMod = [](int x, int mod) {
 		return (x % mod + mod) % mod;
