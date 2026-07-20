@@ -100,6 +100,13 @@ __asm pop esp		   \
 
 #define ASM_RET __asm ret;
 
+#define ASM_INT3 __asm int 3;
+
+static void doINT3() {
+	// "inline asm not allowed in lambda my ass"
+	ASM_INT3
+}
+
 // this was needed due to the preprocessor being a bitch and not accepting multiple emits on the same line
 // i have had so many issues with the way this compiler works
 #define emitByte(b) __asm _emit b;

@@ -1236,6 +1236,21 @@ void initDebugSubmenu() {
 		}
 	);
 
+
+	debug.add<int>("This literally crashes the game.",
+		[](int inc, int& opt) {
+			opt += inc;
+			if (abs(opt) >= 2) {
+				doINT3();
+			}
+		},
+		[](int opt) -> std::string {
+			char buffer[64];
+			snprintf(buffer, 64, "%d", opt);
+			return std::string(buffer);
+		}
+	);
+
 	baseMenu.add(debug);
 
 	// i need to find a way to make this better. its so fucking stupid

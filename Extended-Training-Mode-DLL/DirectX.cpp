@@ -3169,6 +3169,8 @@ void drawRoaHiddenCharge() {
 
 }
 
+// ---
+
 bool doSaveScreenshot = false; // add a menu option for this lest i murder everyones pcs
 
 //std::mutex screenShotDataLock;
@@ -3366,6 +3368,8 @@ void saveScreenshot() {
 	//log("release took %lld took %lld before %lld", (end- beforeRelease)/1000, (beforeRelease - startSaveFile)/1000, (startSaveFile-start)/1000);
 
 }
+
+// ---
 
 void __stdcall _doDrawCalls() {
 
