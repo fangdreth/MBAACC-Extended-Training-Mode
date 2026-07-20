@@ -96,7 +96,7 @@ extern int p2LoadMoon;
 extern int p2LoadChar;
 extern int p2LoadPal;
 
-extern bool reloadCheckFile;
+extern bool doCharacterReload;
 
 extern int dummyGuardFirstHitOnly;
 extern int dummyGuardFirstHitNumGaps;

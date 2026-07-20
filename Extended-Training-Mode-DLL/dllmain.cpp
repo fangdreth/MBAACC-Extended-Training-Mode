@@ -2404,6 +2404,16 @@ void DoMenuMouseControls() {
 	}
 }
 
+bool CheckLoadedGameFile(LPCSTR filePath)
+{
+	const DWORD MBAA_FUN_004db9b0 = 0x004db9b0;
+	__asm {
+		push filePath;
+		mov esi, 0x0076e9c4; //this is the game's list of loaded files
+		call[MBAA_FUN_004db9b0];
+	}
+}
+
 void frameDoneCallback()
 {
 	profileFunction();
@@ -2501,39 +2511,37 @@ void frameDoneCallback()
 	}
 
 	static KeyState nKey('N');
-	if (lShiftKey.keyHeld() && nKey.keyDown())
+	if ((lShiftKey.keyHeld() && nKey.keyDown()) || doCharacterReload)
 	{
-		if (reloadCheckFile)
+		doCharacterReload = false;
+		ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
+		if (cssArray.array[p1LoadChar] != 0x0)
 		{
-			ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
-			if (cssArray.array[p1LoadChar] != 0x0)
-			{
-				char buffer[256];
-				char* charName = cssArray.array[p1LoadChar]->File1;
-				snprintf(buffer, 256, "%s%s%s_%01d.txt", ".\\data", "\\", charName, p1LoadMoon);
-				if (!std::filesystem::exists(buffer)) return;
+			char buffer[256];
+			char* charName = cssArray.array[p1LoadChar]->File1;
+			snprintf(buffer, 256, "%s%s_%0d.txt", ".\\data\\", charName, p1LoadMoon);
+			if (!CheckLoadedGameFile(buffer)) return;
 
-				if (cssArray.array[p1LoadChar]->File2[0] != '0')
-				{
-					charName = cssArray.array[p1LoadChar]->File2;
-					snprintf(buffer, 256, "%s%s%s_%01d.txt", ".\\data", "\\", charName, p1LoadMoon);
-					if (!std::filesystem::exists(buffer)) return;
-				}
+			if (cssArray.array[p1LoadChar]->File2[0] != '0')
+			{
+				charName = cssArray.array[p1LoadChar]->File2;
+				snprintf(buffer, 256, "%s%s_%0d.txt", ".\\data\\", charName, p1LoadMoon);
+				if (!CheckLoadedGameFile(buffer)) return;
 			}
+		}
 
-			if (cssArray.array[p2LoadChar] != 0x0)
+		if (cssArray.array[p2LoadChar] != 0x0)
+		{
+			char buffer[256];
+			char* charName = cssArray.array[p2LoadChar]->File1;
+			snprintf(buffer, 256, "%s%s_%0d.txt", ".\\data\\", charName, p2LoadMoon);
+			if (!CheckLoadedGameFile(buffer)) return;
+
+			if (cssArray.array[p2LoadChar]->File2[0] != '0')
 			{
-				char buffer[256];
-				char* charName = cssArray.array[p2LoadChar]->File1;
-				snprintf(buffer, 256, "%s%s%s_%01d.txt", ".\\data", "\\", charName, p2LoadMoon);
-				if (!std::filesystem::exists(buffer)) return;
-
-				if (cssArray.array[p2LoadChar]->File2[0] != '0')
-				{
-					charName = cssArray.array[p2LoadChar]->File2;
-					snprintf(buffer, 256, "%s%s%s_%01d.txt", ".\\data", "\\", charName, p2LoadMoon);
-					if (!std::filesystem::exists(buffer)) return;
-				}
+				charName = cssArray.array[p2LoadChar]->File2;
+				snprintf(buffer, 256, "%s%s_%0d.txt", ".\\data\\", charName, p2LoadMoon);
+				if (!CheckLoadedGameFile(buffer)) return;
 			}
 		}
 

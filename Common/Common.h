@@ -7,6 +7,7 @@
 //#include "../MBAACC-Extended-Training-Mode/Logger.h"
 
 #include <string>
+#include <map>
 
 #if !defined(DWORD)
 //typedef unsigned DWORD;
@@ -85,7 +86,7 @@ enum class eCharID {
 	HIME = 51
 };
 
-const std::string CharNameMap[52] = {
+const std::string CharNameArray[52] = {
 	"SION", "ARC", "CIEL", "AKIHA", "MAIDS", "HISUI", "KOHAKU", "TOHNO", "MIYAKO", "WARA",
 	"NERO", "VSION", "WARC", "VAKIHA", "MECH", "NANAYA", "GAKIHA", "SATSUKI", "LEN", "PCIEL",
 	"NECO", "_21", "AOKO", "WLEN", "_24", "NAC", "_26", "GCHAOS", "KOUMA", "SEI",
@@ -94,8 +95,24 @@ const std::string CharNameMap[52] = {
 	"_50", "HIME"
 };
 
-const std::string MoonMap[10] = {
+const std::map<int, std::string> CharNameMap = {
+	{ 0, "SION" }, { 1, "ARC" }, { 2, "CIEL" }, { 3, "AKIHA" }, { 4, "MAIDS" }, { 5, "HISUI" }, { 6, "KOHAKU" }, { 7, "TOHNO" }, { 8, "MIYAKO" }, { 9, "WARA" },
+	{ 10, "NERO" }, { 11, "VSION" }, { 12, "WARC" }, { 13, "VAKIHA" }, { 14, "MECH" }, { 15, "NANAYA" }, { 16, "GAKIHA" }, { 17, "SATSUKI" }, { 18, "LEN" }, { 19, "PCIEL" },
+	{ 20, "NECO" }, { 22, "AOKO" }, { 23, "WLEN" }, { 25, "NAC" }, { 27, "GCHAOS" }, { 28, "KOUMA" }, { 29, "SEI" },
+	{ 30, "RIES" }, { 31, "ROA" }, { 32, "HERMES" }, { 33, "RYOUGI" }, { 34, "NECOMECH" }, { 35, "KOHAMECH" },
+	{ 51, "HIME" },
+};
+
+const std::string MoonArray[10] = {
 	"CRESCENT", "FULL", "HALF", "_3", "_4", "_5", "_6", "_7", "BOSS HALF", "ECLIPSE"
+};
+
+const std::map<int, std::string> MoonMap = {
+	{ 0, "CRESCENT" },
+	{ 1, "FULL" },
+	{ 2, "HALF" },
+	{ 8, "BOSS HALF" },
+	{ 9, "ECLIPSE" },
 };
 
 const std::string VERSION = "v2.1";
