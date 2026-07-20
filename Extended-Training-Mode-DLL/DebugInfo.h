@@ -648,7 +648,8 @@ typedef struct ActorData {
 	ActorData* partnerPtr;
 	CharFileData* charFileDataPtr;
 	DWORD framesIntoCurrentPattern;
-	UNUSED(4);
+	BYTE didAdvanceFramesIntoCurrentPattern;
+	UNUSED(3);
 } ActorData;
 #pragma pack(pop)
 

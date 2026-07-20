@@ -64,6 +64,7 @@ struct FrameBarCell
 
 	int number = -1;
 	int numFlag = 0;
+	int edgeFlag = 0;
 
 	void reset();
 

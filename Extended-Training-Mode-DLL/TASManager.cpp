@@ -33,27 +33,26 @@ AnimationData* predictNextAnim(int playerIndex) {
 		DWORD framesInCurrentState = playerDataArr[playerIndex].subObj.framesInCurrentState;
 		short goToData = playerDataArr[playerIndex].subObj.animationDataPtr->goToData; // this can be negative, and is fucking weird about it
 
-		if (playerDataArr[playerIndex].subObj.animationDataPtr->gotoRelativeOffset) {
-			goToData = playerDataArr[playerIndex].subObj.state + goToData;
-		}
-
 		if (framesInCurrentState + 1 != stateDuration) {
 			return playerDataArr[playerIndex].subObj.animationDataPtr; // we arent switching state/pattern, so return the current one
 		}
 
 		switch (playerDataArr[playerIndex].subObj.animationDataPtr->animationType) {
-		case 0: // goto pattern
+		case 0: // goto pattern. affected by relative offset flag
+			if (playerDataArr[playerIndex].subObj.animationDataPtr->gotoRelativeOffset)
+			{
+				goToData = playerDataArr[playerIndex].subObj.pattern + goToData;
+			}
 			res = playerDataArr[playerIndex].getAnimationDataPtr(goToData, 0);
 			break;
 		case 1: // goto next frame
 			res = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, playerDataArr[playerIndex].subObj.state + 1);
 			break;
-		case 2: // goto frame. does this.. perform addition on the state??? im so confused. 
-			// warc arc drive does a -2 for... looping, warc jump, if canceled into jb after 3 frames, jumps from state 2 to 5 of the jump
-			// should i have this thing like,,, subtract if negative and set if positive?
-			// or is it the "end of loop" flag?
-			// or maybe its the "gotoRelativeOffset" flag?
-			// is that only used for this?
+		case 2: // goto frame. affected by relative offset flag
+			if (playerDataArr[playerIndex].subObj.animationDataPtr->gotoRelativeOffset)
+			{
+				goToData = playerDataArr[playerIndex].subObj.state + goToData;
+			}
 			res = playerDataArr[playerIndex].getAnimationDataPtr(playerDataArr[playerIndex].subObj.pattern, goToData);
 			break;
 		default:
