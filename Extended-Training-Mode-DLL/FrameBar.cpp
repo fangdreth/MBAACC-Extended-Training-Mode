@@ -300,6 +300,11 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 	int nNumFlag = 0; //0 = default, go away on next info; 1 = persist always; 2 = persist and delete prior 2s; 3 = get deleted and pass it on if followed by 2; 4 = clear previous
 	int nEdgeFlag = 0;
 
+	auto posMod = [](int x, int mod) {
+		return (x % mod + mod) % mod;
+		};
+	int previousIndex = posMod(nBarCounter - 1, BAR_MEMORY_SIZE);
+
 	//Bar 1 - General action information
 	if (P.playerAuxData->inactionableFrames != 0) //Doing something with limited actionability
 	{
@@ -466,7 +471,7 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 		{
 			P.nFirstActive = P.nFirstActiveCounter;
 			P.bAlreadyGotFirstActive = true;
-			P.cells[(nBarCounter - 1) % BAR_MEMORY_SIZE].numFlag = 1;
+			P.cells[previousIndex].numFlag = 1;
 		}
 	}
 
@@ -477,7 +482,7 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 		{
 			P.nFirstActive = P.nFirstActiveCounter;
 			P.bAlreadyGotFirstActive = true;
-			P.cells[(nBarCounter - 1) % BAR_MEMORY_SIZE].numFlag = 1;
+			P.cells[previousIndex].numFlag = 1;
 		}
 	}
 
@@ -580,12 +585,6 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].number = nNumber;
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].numFlag = nNumFlag;
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].edgeFlag = nEdgeFlag;
-
-	auto posMod = [](int x, int mod) {
-		return (x % mod + mod) % mod;
-		};
-
-	int previousIndex = posMod(nBarCounter - 1, BAR_MEMORY_SIZE);
 
 	if (nNumFlag != 2 &&
 		nNumber >= 0 &&
