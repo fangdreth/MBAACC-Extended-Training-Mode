@@ -530,6 +530,16 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 						nEdgeFlag = 1;
 					}
 				}
+				else
+				{
+					animData = P.playerData->getAnimationDataPtr(0, 0);
+					if (animData) {
+						bool newCanMove = animData->stateData->canMove;
+						if (newCanMove) {
+							nEdgeFlag = 1;
+						}
+					}
+				}
 			}
 			else if (P.playerData->subObj.animationDataPtr->animationType == 2)
 			{

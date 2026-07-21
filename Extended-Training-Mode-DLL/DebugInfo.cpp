@@ -495,7 +495,7 @@ PatternData* EffectData::getPatternDataPtr(int p) {
 		HA6Data* ha6 = subObj.charFileDataPtr->DataFile;
 		if (!ha6) return 0;
 		ArrayContainer<PatternData*>* patCont = ha6->patternContainer;
-		if (!patCont || patCont->count < p) return 0;
+		if (!patCont || patCont->count <= p) return 0;
 		PatternData* pat = (patCont->array)[p];
 		if (!pat) return 0;
 		return pat;
@@ -507,8 +507,7 @@ PatternData* EffectData::getPatternDataPtr(int p) {
 AnimationData* EffectData::getAnimationDataPtr(int p, int s) { 
 	__try {
 		PatternData* pattern = getPatternDataPtr(p);
-		//DWORD temp = (DWORD)pattern->ptrToAnimationDataArr->animationDataArr;
-		//return (AnimationData*)(temp + (0x54 * s));
+		if (pattern->animationDataContainer->count <= s) return 0;
 		return &(pattern->animationDataContainer->array[s]);
 	} __except (EXCEPTION_EXECUTE_HANDLER) {
 		return NULL;
