@@ -20,7 +20,17 @@ int main(int argc, char* argv[])
     SetConsoleMode(hConsoleHandle, consoleMode); 
 
     //vtEnabled = consoleMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    vtEnabled = true;
+
+    // detect if we are running through wine using the registry and disable vt escape codes
+    LPCTSTR subKey = L"Software\\Wine";
+	HKEY res = nullptr;
+	LONG isWine = RegOpenKeyEx(HKEY_CURRENT_USER,subKey,0,KEY_READ,&res);
+	RegCloseKey(res);
+	if (isWine == ERROR_SUCCESS) {
+	    vtEnabled = false;
+	} else {
+        vtEnabled = true;
+	}
     if (GetAsyncKeyState(VK_CONTROL)) {
         vtEnabled = false;
     }
