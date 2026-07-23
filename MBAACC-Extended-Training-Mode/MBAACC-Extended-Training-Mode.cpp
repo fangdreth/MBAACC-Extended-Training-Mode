@@ -205,7 +205,12 @@ int main(int argc, char* argv[])
             
             SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
             std::cout << "===========================================================================" << "\n";
-            std::cout << "|   Fang, gonp, and meepster99(Inana)'s Extended Training Mode Mod " << VERSION << "   |" << "\n";
+            std::cout << "|   Fang, gonp, NaN, and meepster99(Inana) present                        |" << "\n";
+            std::cout << "|   ";
+            SetConsoleTextAttribute(hConsoleHandle, nCurrentTime % 14 + 1);
+            std::cout << "Extended Training Mode Mod " << VERSION;
+            SetConsoleTextAttribute(hConsoleHandle, 15);
+            std::cout << "                                       |" << "\n";
             std::cout << "|                                                                         |" << "\n";
             std::cout << "|   " << GITHUB_RELEASE << "   |" << "\n";
             if (bNeedToAnnounceNewVersion && nCurrentTime % 3 != 0)
