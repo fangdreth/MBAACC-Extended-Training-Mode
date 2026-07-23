@@ -123,6 +123,9 @@ Yes.  Concerto is just an external program for CCCaster, so it will work just fi
 ### I found a bug, how do I report it?
 You can join our Discord linked above, or send a message to Fang
 
+### Where do I put the executable?
+Anywhere you want.  It does not need to be in the same directory as Melty.
+
 ### "Please launch Melty Blood with CCCaster..." when MBAA.exe is already open
 Check Task Manager too see if you have a zombie MBAA.exe process running.  You may have to restart your computer to kill this program.
 
@@ -133,11 +136,11 @@ This means your VC++ redistributable is missing or needs repaired.  There are st
 There is a good chance this is being caused by your DirectX9 installation.  Try to reinstall DirectX9 if you can, and if you still have this problem, please reach out and we can try to help you.
 
 ### Can I make my own version?
-Yes.
+Yes, absolutely.
 
 ### Is there Linux support?
 
-The official version of the mod does not support Linux at this point in time, but several people have made forks in the past which reportedly worked.  You may be able to find them by using the discord search feature.
+Yes!
 
 ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/NewReadMe/Images/changelog.png?raw=true)
 
