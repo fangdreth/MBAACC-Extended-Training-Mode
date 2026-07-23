@@ -204,6 +204,7 @@
     <ClInclude Include="SaveState.h" />
     <ClInclude Include="TASManager.h" />
     <ClInclude Include="TrainingMenu.h" />
+    <ClInclude Include="DirectXHook.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\CharacterData.cpp" />
@@ -223,6 +224,7 @@
     <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="TASManager.cpp" />
     <ClCompile Include="TrainingMenu.cpp" />
+    <ClCompile Include="DirectXHook.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DLLAsmFuncs.asm">

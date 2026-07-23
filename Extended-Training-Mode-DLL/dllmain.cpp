@@ -53,6 +53,8 @@ DWORD addrEndScenePatch = 0x663fb996;
 bool bCasterInit = false;
 DWORD dwCasterBaseAddress = 0;
 
+LONG isWine;
+
 DWORD dwDevice = 0; // MASM is horrid when it comes to writing pointers vs value of pointer bc it has type checking. thats why this cant be a pointer
 IDirect3DDevice9* device = NULL;
 
@@ -221,6 +223,7 @@ void __stdcall asmPatchMemcpy(void* dest, void* source, DWORD n)
 // -----
 
 #include "DirectX.h"
+#include "DirectXHook.h"
 //#include "RendererModifications.h"
 
 void initPaletteLoadPatches();
@@ -2242,7 +2245,13 @@ void __stdcall legacyPauseCallback(DWORD dwMilliseconds)
 	// please never move this
 	static bool isDirectXHooked = false;
 	if (!isDirectXHooked) {
-		isDirectXHooked = HookDirectX();
+        if (isWine == ERROR_SUCCESS) {
+            isDirectXHooked = true;
+            memcpy(pTable, *reinterpret_cast<void***>(device), sizeof(pTable));
+            oPresent = (tPresent)trampolineHook((char*)pTable[17], (char*)hkPresent, 7);
+	    } else {
+			isDirectXHooked = HookDirectX();
+		}
 	}
 
 	static bool isRendererHooked = false;
@@ -7802,6 +7811,13 @@ void threadFunc()
 		dwCasterBaseAddress = ((DWORD)hModule) - 0x66380000;
 		initCasterMods();
 	}
+
+
+	// detect if we are running through wine using the registry
+	LPCTSTR subKey = L"Software\\Wine";
+	HKEY res = nullptr;
+	isWine = RegOpenKeyEx(HKEY_CURRENT_USER,subKey,0,KEY_READ,&res);
+	RegCloseKey(res);
 
 	initPauseCallback();
 	initFrameDoneCallback();
