@@ -52,7 +52,7 @@ jobs:
       with:
         tag_name: bleeding-edge
         name: Current Version
-        prerelease: true
+        prerelease: false
         fail_on_unmatched_files: true
         files: |
           ./Release/MBAACC-Extended-Training-Mode-Launcher.exe
