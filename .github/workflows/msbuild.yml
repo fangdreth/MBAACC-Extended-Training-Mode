@@ -57,6 +57,6 @@ jobs:
         files: |
           ./Release/MBAACC-Extended-Training-Mode-Launcher.exe
         body: | 
-          ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Images/Extended%20Training%20Mode%20v2.1%20Corner.png?raw=true)
+          ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Images/Extended%20Training%20Mode%20Thumbnail.png?raw=true)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
