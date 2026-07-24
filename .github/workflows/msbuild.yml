@@ -51,12 +51,12 @@ jobs:
       uses: softprops/action-gh-release@v2.2.1
       with:
         tag_name: bleeding-edge
-        name: Bleeding Edge
+        name: Current Version
         prerelease: true
         fail_on_unmatched_files: true
         files: |
           ./Release/MBAACC-Extended-Training-Mode-Launcher.exe
         body: | 
-          This is a bleeding edge release. There are bugs. To get an actual release, please scroll down.
+          ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Images/Extended%20Training%20Mode%20v2.1%20Corner.png?raw=true)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
