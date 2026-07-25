@@ -141,9 +141,9 @@ void TASManager::parseLine(const std::string& l) {
 	// the format of this map is key(string hash), val is the rest of the string not containing the command
 	// constexpr doesnt like maps, which is why im using an array, the size is small enough that it will probs be better that way
 	#ifdef _DEBUG
-		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 21> parseArr = {{
+		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 23> parseArr = {{
 	#else
-		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 21> parseArr = {{
+		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 23> parseArr = {{
 	#endif
 	
 		{ hashString("pause"), [](TASManager* t, const std::string& data) -> void {
@@ -168,6 +168,20 @@ void TASManager::parseLine(const std::string& l) {
 		{ hashString("p2pos"), [](TASManager* t, const std::string& data) -> void {
 			TASItem res;
 			res.command = TASCommand::P2XPos;
+			res.commandData = safeStoi(data);
+			addTasData(t->tasData, res);
+		}},
+
+		{ hashString("p1posy"), [](TASManager* t, const std::string& data) -> void {
+			TASItem res;
+			res.command = TASCommand::P1YPos;
+			res.commandData = safeStoi(data);
+			addTasData(t->tasData, res);
+		}},
+
+		{ hashString("p2posy"), [](TASManager* t, const std::string& data) -> void {
+			TASItem res;
+			res.command = TASCommand::P2YPos;
 			res.commandData = safeStoi(data);
 			addTasData(t->tasData, res);
 		}},
@@ -604,6 +618,12 @@ void TASManager::setInputs(int playerIndex) {
 		break;
 	case TASCommand::P2XPos:
 		playerDataArr[1].subObj.xPos = tasData[tasIndex].commandData;
+		break;
+	case TASCommand::P1YPos:
+		playerDataArr[0].subObj.yPos = tasData[tasIndex].commandData;
+		break;
+	case TASCommand::P2YPos:
+		playerDataArr[1].subObj.yPos = tasData[tasIndex].commandData;
 		break;
 	case TASCommand::P3XPos:
 		playerDataArr[2].subObj.xPos = tasData[tasIndex].commandData;

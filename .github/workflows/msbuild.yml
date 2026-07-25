@@ -52,11 +52,11 @@ jobs:
       with:
         tag_name: bleeding-edge
         name: Bleeding Edge
-        prerelease: true
+        prerelease: false
         fail_on_unmatched_files: true
         files: |
           ./Release/MBAACC-Extended-Training-Mode-Launcher.exe
         body: | 
-          This is a bleeding edge release. There are bugs. To get an actual release, please scroll down.
+          ![alt text](https://github.com/fangdreth/MBAACC-Extended-Training-Mode/blob/main/Images/Extended%20Training%20Mode%20Thumbnail.png?raw=true)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
