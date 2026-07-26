@@ -53,7 +53,7 @@ std::string exec(const char* cmd) {
 std::string GetLatestVersion()
 {
     char pcCommand[1024];
-    strcpy_s(pcCommand, ("curl -s " + GITHUB_LATEST).c_str());
+    strcpy_s(pcCommand, ("powershell -Command \"Invoke-WebRequest '"  + GITHUB_LATEST + "'\"").c_str());
     std::string sOutputJSONBuffer = exec(pcCommand);
     auto json = nlohmann::json::parse(sOutputJSONBuffer);
     std::string sVersion = "";
