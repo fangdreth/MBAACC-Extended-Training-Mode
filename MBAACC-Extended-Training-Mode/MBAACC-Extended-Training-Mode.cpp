@@ -219,7 +219,7 @@ int main(int argc, char* argv[])
                 std::cout << "|                                                                         |" << "\n";
             std::cout << "===========================================================================" << "\n";
             
-            SetConsoleCursorPosition(hConsoleHandle, { 0, 6 });
+            SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
             if (vtEnabled) std::cout << "            \n";
             else std::cout << "[ NO VT ] \n";
 
@@ -236,12 +236,12 @@ int main(int argc, char* argv[])
                 bInjected = false;
                 hMBAAHandle = 0x0;
 
-                SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
+                SetConsoleCursorPosition(hConsoleHandle, { 0, 8 });
                 std::string sLookingForMelty = "Please launch Melty Blood with CCCaster        ";
                 for (int i = 0; i < nCurrentTime % 8; i++)
                     sLookingForMelty[39 + i] = '.';
                 std::cout << sLookingForMelty;
-                SetConsoleCursorPosition(hConsoleHandle, { 0, 8 });
+                SetConsoleCursorPosition(hConsoleHandle, { 0, 9 });
                 //std::cout << "\x1b[J";
 
                 hMBAAHandle = GetProcessByName(L"MBAA.exe");
@@ -260,7 +260,7 @@ int main(int argc, char* argv[])
 
                 LogInfo("Attached to MBAA");
 
-                SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
+                SetConsoleCursorPosition(hConsoleHandle, { 0, 8 });
                 std::cout << "                                              ";
 
                 Sleep(100);
@@ -275,7 +275,7 @@ int main(int argc, char* argv[])
             if(nGameMode == 1 && nVersusCheck == 1) //Versus
             //if(false)
             {
-                SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
+                SetConsoleCursorPosition(hConsoleHandle, { 0, 8 });
                 std::cout << "Cannot attach to versus mode....        ";
                 //LogInfo("MBAA is in versus mode");
                 continue;
@@ -283,14 +283,14 @@ int main(int argc, char* argv[])
             else if (nTrainingMenuPtr != 0 && !bInjected) //Training menu is open
             //else if(false)
             {
-                SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });
+                SetConsoleCursorPosition(hConsoleHandle, { 0, 8 });
                 std::cout << "Cannot attach while training menu is open....        ";
                 continue;
             }
             else if (nGameMode == 4112 || (nGameMode == 1 && nVersusCheck == 2)) //Training OR Replay
             //else if(true)
             {
-                SetConsoleCursorPosition(hConsoleHandle, { 0, 7 });               
+                SetConsoleCursorPosition(hConsoleHandle, { 0, 8 });               
                 std::cout << "Attached to MBAA.exe        \n\n";
                 
                 if (!bInjected)

@@ -7,8 +7,6 @@
 void* pTable[119];
 tPresent oPresent = nullptr;
 
-HWND window = NULL;
-
 bool bInit = false;
 
 
@@ -33,22 +31,6 @@ char* trampolineHook(char* src, char* dst, int len) {
 
     VirtualProtect(src,len,defaultProtection,&defaultProtection);
     return gate;
-}
-
-BOOL CALLBACK windowCallback(HWND handle, LPARAM lParam) {
-    DWORD windowProcID; GetWindowThreadProcessId(handle, &windowProcID);
-    if (GetCurrentProcessId() != windowProcID) {
-        return TRUE;
-    } else {
-        window = handle;
-        return FALSE;
-    }
-}
-
-HWND getProcessWindow() {
-    window = NULL;
-    EnumWindows(windowCallback, NULL);
-    return window;
 }
 
 HRESULT APIENTRY hkPresent(LPDIRECT3DDEVICE9 pDevice, const RECT *pScourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion)

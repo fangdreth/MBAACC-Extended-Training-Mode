@@ -2413,7 +2413,7 @@ void DoMenuMouseControls() {
 	}
 }
 
-bool CheckLoadedGameFile(LPCSTR filePath)
+bool CheckInternalLoadedGameFile(LPCSTR filePath)
 {
 	const DWORD MBAA_FUN_004db9b0 = 0x004db9b0;
 	__asm {
@@ -2421,6 +2421,19 @@ bool CheckLoadedGameFile(LPCSTR filePath)
 		mov esi, 0x0076e9c4; //this is the game's list of loaded files
 		call[MBAA_FUN_004db9b0];
 	}
+}
+
+bool CheckLoadedGameFile(LPCSTR filePath)
+{
+	if (!CheckInternalLoadedGameFile(filePath))
+	{
+		DWORD fileAttributes = GetFileAttributesA(filePath);
+		if (fileAttributes == 0x10 || fileAttributes == 0xffffffff)
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 void frameDoneCallback()
