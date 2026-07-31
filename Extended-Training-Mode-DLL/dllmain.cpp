@@ -4439,6 +4439,15 @@ MenuWindow* InitExtendedSettingsMenu(MenuWindow* extendedWindow) {
 	InitMenuWindow(extendedWindow);
 	ReadDataFile(&extendedWindow->label, "EXTENDED SETTINGS", 18);
 	int pageNum = 0;
+	Page* trainingPage = XS_Menu.get((int)eXS_PAGES::TRAINING);
+	Setting* healthSetting = trainingPage->get((int)eTRAINING::P1_HEALTH);
+	healthSetting->valueDefault = *(int*)(adMBAABase + 0x0015ded8);
+	if (healthSetting->storage == 2)
+		healthSetting->_default();
+	healthSetting = trainingPage->get((int)eTRAINING::P2_HEALTH);
+	healthSetting->valueDefault = *(int*)(adMBAABase + 0x0015ded8);
+	if (healthSetting->storage == 2)
+		healthSetting->_default();
 	for (auto& page : XS_Menu.pages)
 	{
 		MenuInfo* extendedInfo = NEW_MENU_INFO();
@@ -5229,8 +5238,9 @@ void ExtendedMenuInputChecking() {
 	}
 	case eXS_PAGES::TRAINING:
 	{
-		int healthInterval = aHeld ? 1 : 114;
-		int healthAccel = aHeld ? 10 : 570;
+		int maxHealth = *(int*)(adMBAABase + 0x0015ded8);
+		int healthInterval = aHeld ? 1 : (maxHealth / 100);
+		int healthAccel = aHeld ? 10 : (maxHealth / 20);
 		switch ((eTRAINING)curMenuInfo->selectedElement) {
 		case eTRAINING::P1_METER:
 			if (pP1->subObj.moon != 2) {
@@ -5249,10 +5259,10 @@ void ExtendedMenuInputChecking() {
 			}
 			break;
 		case eTRAINING::P1_HEALTH:
-			NormalScrolling(curElement, XS_p1Health, 0, 11400, healthInterval, healthAccel);
+			NormalScrolling(curElement, XS_p1Health, 0, maxHealth, healthInterval, healthAccel);
 			break;
 		case eTRAINING::P2_HEALTH:
-			NormalScrolling(curElement, XS_p2Health, 0, 11400, healthInterval, healthAccel);
+			NormalScrolling(curElement, XS_p2Health, 0, maxHealth, healthInterval, healthAccel);
 			break;
 		case eTRAINING::HITS_UNTIL_BURST:
 			NormalScrolling(curElement, XS_hitsUntilBurst, 0, 101);
@@ -5328,9 +5338,9 @@ void ExtendedMenuInputChecking() {
 			}
 		}
 
-		snprintf(labelBuf, 31, "%i (%.1f%%)", XS_p1Health, XS_p1Health / 114.0f);
+		snprintf(labelBuf, 31, "%i (%.1f%%)", XS_p1Health, XS_p1Health / (maxHealth / 100.0f));
 		(curMenuInfo->elementList).listStart[(int)eTRAINING::P1_HEALTH]->SetCurItemLabel(labelBuf);
-		snprintf(labelBuf, 31, "%i (%.1f%%)", XS_p2Health, XS_p2Health / 114.0f);
+		snprintf(labelBuf, 31, "%i (%.1f%%)", XS_p2Health, XS_p2Health / (maxHealth / 100.0f));
 		(curMenuInfo->elementList).listStart[(int)eTRAINING::P2_HEALTH]->SetCurItemLabel(labelBuf);
 
 		snprintf(labelBuf, 31, "%i", XS_hitsUntilBurst);
@@ -6338,11 +6348,13 @@ void Handle_METER2(char* buffer) {
 }
 
 void Handle_HEALTH1(char* buffer) {
-	snprintf(buffer, 128, "%sReset health to %i (%.1f%%) (Hold A).", SUB_INFO_PREFIX, XS_p1Health, XS_p1Health / 114.0f);
+	int maxHealth = *(int*)(adMBAABase + 0x0015ded8);
+	snprintf(buffer, 128, "%sReset health to %i (%.1f%%) (Hold A).", SUB_INFO_PREFIX, XS_p1Health, XS_p1Health / (maxHealth / 100.0f));
 }
 
 void Handle_HEALTH2(char* buffer) {
-	snprintf(buffer, 128, "%sReset health to %i (%.1f%%) (Hold A).", SUB_INFO_PREFIX, XS_p2Health, XS_p2Health / 114.0f);
+	int maxHealth = *(int*)(adMBAABase + 0x0015ded8);
+	snprintf(buffer, 128, "%sReset health to %i (%.1f%%) (Hold A).", SUB_INFO_PREFIX, XS_p2Health, XS_p2Health / (maxHealth / 100.0f));
 }
 
 void Handle_BURST(char* buffer) {
