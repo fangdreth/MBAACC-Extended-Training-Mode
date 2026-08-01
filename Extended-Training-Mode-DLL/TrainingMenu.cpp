@@ -424,7 +424,9 @@ void initExtendedMenu() {
 	training.addCustom("P1 METER", &XS_p1Meter, 1, true);
 	training.addCustom("P2 METER", &XS_p2Meter, 1, true);
 	training.addSpace();
+	XS_p1Health = *(int*)(adMBAABase + 0x0015ded8);
 	training.addCustom("P1 HEALTH", &XS_p1Health, 2, true);
+	XS_p2Health = *(int*)(adMBAABase + 0x0015ded8);
 	training.addCustom("P2 HEALTH", &XS_p2Health, 2, true);
 	training.addSpace();
 	training.addCustom("HITS UNTIL BURST", &XS_hitsUntilBurst, 0 , true);
