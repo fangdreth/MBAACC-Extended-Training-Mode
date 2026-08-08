@@ -7849,6 +7849,8 @@ void threadFunc()
 	isWine = RegOpenKeyEx(HKEY_CURRENT_USER,subKey,0,KEY_READ,&res);
 	RegCloseKey(res);
 
+	CreateRegistryKey();
+
 	initPauseCallback();
 	initFrameDoneCallback();
 	initHighlightHook();
