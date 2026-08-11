@@ -204,6 +204,7 @@ int main(int argc, char* argv[])
 
             
             SetConsoleCursorPosition(hConsoleHandle, { 0, 0 });
+            SetConsoleTextAttribute(hConsoleHandle, 15);
             std::cout << "===========================================================================" << "\n";
             std::cout << "|   Fang, gonp, NaN, and meepster99(Inana) present                        |" << "\n";
             std::cout << "|   ";
