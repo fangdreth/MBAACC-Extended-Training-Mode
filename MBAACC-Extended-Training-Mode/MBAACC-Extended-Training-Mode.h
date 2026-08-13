@@ -467,36 +467,81 @@ std::wstring getDLLPath() {
     return dllPath;
 }
 
+std::wstring getPDBPath() {
+    wchar_t buffer[1024];
+    if (!GetTempPathW(1024, buffer)) {
+        printf(RED "Failed to get temp path\n" RESET);
+        return L"";
+    }
+    std::wstring dllPath = std::wstring(buffer) + std::wstring(L"\\Extended-Training-Mode-DLL.pdb");
+    return dllPath;
+}
+
 bool writeDLL() {
 
     std::wstring dllPath = getDLLPath();
+    std::wstring pdbPath = getPDBPath();
 
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
-    HRSRC hRes = FindResource(hInstance, MAKEINTRESOURCE(IDR_DLL1), L"DLL");
+    HRSRC hRes;
+    HGLOBAL hData;
+    void* pData;
+    DWORD dwSize;
+
+    hRes = FindResource(hInstance, MAKEINTRESOURCE(IDR_DLL1), L"DLL");
     if (!hRes) {
         printf(RED "Failed to FindResource %d\n" RESET, GetLastError());
         return false;
     }
 
-    HGLOBAL hData = LoadResource(hInstance, hRes);
+    hData = LoadResource(hInstance, hRes);
     if (!hData) {
         printf(RED "Failed to LoadResource\n" RESET);
         return false;
     }
-    void* pData = LockResource(hData);
+    pData = LockResource(hData);
     if (!pData) {
         printf(RED "Failed to LockResource\n" RESET);
         return false;
     }
 
-    DWORD dwSize = SizeofResource(hInstance, hRes);
+    dwSize = SizeofResource(hInstance, hRes);
 
-    std::ofstream outFile(dllPath, std::ios::binary);
-    if (outFile) {
-        outFile.write(reinterpret_cast<char*>(pData), dwSize);
+    std::ofstream outFileDll(dllPath, std::ios::binary);
+    if (outFileDll) {
+        outFileDll.write(reinterpret_cast<char*>(pData), dwSize);
     } else {
         printf(RED "Failed to open dll file\n" RESET);
+        return false;
+    }
+
+    // write the pdb so if a crash occurs, i get actual debug info. ugh. god. why.
+
+    hRes = FindResource(hInstance, MAKEINTRESOURCE(IDR_DLL2), L"DLL");
+    if (!hRes) {
+        printf(RED "Failed to FindResource %d\n" RESET, GetLastError());
+        return false;
+    }
+
+    hData = LoadResource(hInstance, hRes);
+    if (!hData) {
+        printf(RED "Failed to LoadResource\n" RESET);
+        return false;
+    }
+    pData = LockResource(hData);
+    if (!pData) {
+        printf(RED "Failed to LockResource\n" RESET);
+        return false;
+    }
+
+    dwSize = SizeofResource(hInstance, hRes);
+
+    std::ofstream outFilePdb(pdbPath, std::ios::binary);
+    if (outFilePdb) {
+        outFilePdb.write(reinterpret_cast<char*>(pData), dwSize);
+    } else {
+        printf(RED "Failed to open pdb file\n" RESET);
         return false;
     }
 
