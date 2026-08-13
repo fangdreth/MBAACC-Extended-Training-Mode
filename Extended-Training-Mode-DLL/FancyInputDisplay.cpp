@@ -588,12 +588,21 @@ void InputDisplay::draw() {
 	if (!safeWrite() || isPaused()) {
 		return;
 	}
+	// a crash is occuring somewhere in here.. ? very weird
+	// occurs when,,, idrekm whats happening, the funcs being marked as noinline should help me
+	//ASM_INT3;
 	//handleDrag();
+	ASM_NOP;
 	drawBounds();
+	ASM_NOP;
 	drawBase();
+	ASM_NOP;
 	drawLines();
+	ASM_NOP;
 	drawJoystick();
+	ASM_NOP;
 	drawButtons();
+	ASM_NOP;
 	//drawLine(1, 9, 0xFFFF0000, 0xFF0000FF);
 	if (_naked_newPauseCallback2_IsPaused) {
 		return;

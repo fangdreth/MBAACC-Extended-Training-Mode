@@ -98,6 +98,7 @@ __asm pop ebp		   \
 __asm pop esp		   \
 }
 
+#define ASM_NOP __asm nop;
 #define ASM_RET __asm ret;
 
 #define ASM_INT3 __asm int 3;

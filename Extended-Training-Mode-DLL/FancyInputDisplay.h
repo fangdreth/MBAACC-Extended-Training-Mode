@@ -72,15 +72,15 @@ public:
 
 	void drawLine(int a, int b, DWORD colA, DWORD colB, float lineBaseWidth = 6.0f, float size = 8.0f);
 
-	void drawBounds();
+	__declspec(noinline) void drawBounds();
 
-	void drawBase();
+	__declspec(noinline) void drawBase();
 
-	void drawLines();
+	__declspec(noinline) void drawLines();
 
-	void drawJoystick();
+	__declspec(noinline) void drawJoystick();
 
-	void drawButtons();
+	__declspec(noinline) void drawButtons();
 
 	void draw();
 
