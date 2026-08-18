@@ -20,7 +20,14 @@ InputColumn::InputColumn(unsigned addr_, float xVal_, float yVal_, int inputMaxL
 }
 
 void InputColumn::update() {
-	DWORD inputVal = *(DWORD*)(addr);
+
+	DWORD inputVal = 0;
+	__try { 
+		inputVal = *(DWORD*)(addr); // crash reports showed some bs happening here
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		log("`InputColumn::update() fucked up while getting addr: %08X, why?", addr);
+		return;
+	}
 
 	BYTE buttons = (inputVal & 0xF00000) >> 20;
 	BYTE direction = 0x80 + (inputVal & 0xF);
@@ -581,12 +588,21 @@ void InputDisplay::draw() {
 	if (!safeWrite() || isPaused()) {
 		return;
 	}
+	// a crash is occuring somewhere in here.. ? very weird
+	// occurs when,,, idrekm whats happening, the funcs being marked as noinline should help me
+	//ASM_INT3;
 	//handleDrag();
+	ASM_NOP;
 	drawBounds();
+	ASM_NOP;
 	drawBase();
+	ASM_NOP;
 	drawLines();
+	ASM_NOP;
 	drawJoystick();
+	ASM_NOP;
 	drawButtons();
+	ASM_NOP;
 	//drawLine(1, 9, 0xFFFF0000, 0xFF0000FF);
 	if (_naked_newPauseCallback2_IsPaused) {
 		return;

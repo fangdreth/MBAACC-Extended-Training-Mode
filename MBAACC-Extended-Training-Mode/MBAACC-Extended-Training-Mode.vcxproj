@@ -201,7 +201,14 @@
     <None Include="..\Release\Extended-Training-Mode-DLL.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\Images\icons\ETM128.ico" />
+    <Image Include="..\Images\icons\ETM16.ico" />
+    <Image Include="..\Images\icons\ETM24.ico" />
     <Image Include="..\Images\icons\ETM256.ico" />
+    <Image Include="..\Images\icons\ETM32.ico" />
+    <Image Include="..\Images\icons\ETM40.ico" />
+    <Image Include="..\Images\icons\ETM48.ico" />
+    <Image Include="..\Images\icons\ETM64.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

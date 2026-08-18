@@ -123,7 +123,7 @@ float TASManager::directionMutationRate = 0.05f;
 float TASManager::lengthMutationRate = 0.10f;
 
 void addTasData(std::vector<TASItem>& tasArray, TASItem& item) {
-	item.logItem();
+	//item.logItem();
 	tasArray.push_back(item);
 };
 
@@ -141,9 +141,9 @@ void TASManager::parseLine(const std::string& l) {
 	// the format of this map is key(string hash), val is the rest of the string not containing the command
 	// constexpr doesnt like maps, which is why im using an array, the size is small enough that it will probs be better that way
 	#ifdef _DEBUG
-		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 23> parseArr = {{
+		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 24> parseArr = {{
 	#else
-		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 23> parseArr = {{
+		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 24> parseArr = {{
 	#endif
 	
 		{ hashString("pause"), [](TASManager* t, const std::string& data) -> void {
@@ -279,6 +279,17 @@ void TASManager::parseLine(const std::string& l) {
 			res.command = TASCommand::WaitHitbox;
 			addTasData(t->tasData, res);
 		}},
+
+		{ hashString("waithitstop"), [](TASManager* t, const std::string& data) -> void {
+			// im not sure why im putting this here
+			TASItem res;
+			res.command = TASCommand::Nothing;
+			res.length = 1;
+			addTasData(t->tasData, res);
+
+			res.command = TASCommand::WaitHitstop;
+			addTasData(t->tasData, res);
+		} },
 
 		{ hashString("waitcanmove"), [](TASManager* t, const std::string& data) -> void {
 			// im not sure why im putting this here
@@ -508,6 +519,12 @@ bool canMove(int playerIndex) {
 	return false;
 }
 
+bool hasHitstop(int playerIndex) {
+	//log("hitstop: %d", playerDataArr[playerIndex].subObj.hitstop);
+	// why 2? not sure
+	return playerDataArr[playerIndex].subObj.hitstop > 2;
+}
+
 bool canNormalCancel(int playerIndex) {
 
 	if (playerDataArr[playerIndex].subObj.animationDataPtr->stateData->cancelNormal == 2) {
@@ -727,6 +744,11 @@ void TASManager::setInputs(int playerIndex) {
 			return;
 		}
 		break;
+	case TASCommand::WaitHitstop:
+		if (hasHitstop(playerIndex)) {
+			return;
+		}
+		break;
 	case TASCommand::WaitNormalCancel:
 		if (!canNormalCancel(playerIndex)) {
 			return;
@@ -784,7 +806,7 @@ void TASManager::incInputs() {
 		return;
 	}
 
-	switch (tasData[tasIndex].command) {
+	switch (tasData[tasIndex].command) { // special command (
 		case TASCommand::WaitCancel:
 		case TASCommand::WaitHitbox:
 		case TASCommand::WaitCanMove:
@@ -792,6 +814,7 @@ void TASManager::incInputs() {
 		case TASCommand::WaitGround:
 		case TASCommand::WaitNormalCancel:
 		case TASCommand::WaitSpecialCancel:
+		case TASCommand::WaitHitstop:
 			return;
 		default: 
 			break;

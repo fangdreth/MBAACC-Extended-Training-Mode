@@ -40,6 +40,7 @@ enum class TASCommand : uint8_t {
 	HitboxFlagClear = 23, // internal use, for clearing the hitbox flag
 	P1YPos = 24,
 	P2YPos = 25,
+	WaitHitstop = 26,
 };
 
 static const char* getTASCommandName(TASCommand t) {
@@ -93,6 +94,8 @@ static const char* getTASCommandName(TASCommand t) {
 		return "WaitSpecialCancel";
 	case TASCommand::HitboxFlagClear:
 		return "HitboxFlagClear";
+	case TASCommand::WaitHitstop:
+		return "WaitHitstop";
 	default:
 		break;
 	}
