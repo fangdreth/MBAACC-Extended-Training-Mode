@@ -7540,10 +7540,12 @@ void TakeHitsCallback() {
 				AttackData* attack = defender->receivingAttackDataPtrArr[j];
 				if ((defender->animationDataPtr->stateData->stance == 1 && attack->airBlockable) ||
 					(defender->animationDataPtr->stateData->stance != 1 && (attack->standBlockable || attack->crouchBlockable))) {
-					if (defender->facingLeft == attacker->facingLeft && defender->throwFlag == false && !defender->inBlockstun && displayCrossupProtection) {
+					if (displayCrossupProtection && defender->facingLeft == attacker->facingLeft && defender->throwFlag == false && !defender->inBlockstun) {
 						NewPopup(attacker->ownerIndex, 15);
 					}
-					else if (defender->isOpponentToLeft != defender->facingLeft && defender->inBlockstun && displayTrueStringProtection) {
+					else if (displayTrueStringProtection && defender->inBlockstun && 
+						(defender->facingLeft == attacker->facingLeft) ||
+						(defender->isOpponentToLeft != defender->facingLeft)) {
 						NewPopup(attacker->ownerIndex, 15);
 					}
 				}
