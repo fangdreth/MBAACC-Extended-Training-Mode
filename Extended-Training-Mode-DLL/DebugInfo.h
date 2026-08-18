@@ -571,7 +571,7 @@ typedef struct ActorData {
 	WORD reversedControlsTimer;
 	UNUSED(8);
 	BYTE receivedHitstop;
-	BYTE isHitboxConnect;
+	BYTE numOverlapHitboxes;
 	UNUSED(2);
 	DWORD hitstunBlockstunTimeElapsed;
 	int hitstunTimeRemaining; // -2 if airborne

@@ -87,6 +87,8 @@ extern float effectColorHue;
 extern bool enableCursor;
 extern bool displayComboTimer;
 extern bool displayHitstunBar;
+extern bool displayCrossupProtection;
+extern bool displayTrueStringProtection;
 
 extern int p1LoadMoon;
 extern int p1LoadChar;

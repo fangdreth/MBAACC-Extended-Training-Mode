@@ -46,6 +46,8 @@ float effectColorHue = 0.0f;
 bool enableCursor = true;
 bool displayComboTimer = false;
 bool displayHitstunBar = false;
+bool displayCrossupProtection = false;
+bool displayTrueStringProtection = false;
 
 int p1LoadMoon = 0;
 int p1LoadChar = 0;
@@ -455,6 +457,30 @@ void initUISubmenu() {
 		defaultOnOffNameFunc,
 		sDISPLAY_CURSOR,
 		true
+	);
+
+	ui.add<int>("Show Crossup Protected Popup (Low-ALT)",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			displayCrossupProtection = opt;
+		},
+		defaultOnOffNameFunc,
+		L"",
+		false
+	);
+
+	ui.add<int>(" > Include True Blockstring Protection",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			displayTrueStringProtection = opt;
+		},
+		defaultOnOffNameFunc,
+		L"",
+		false
 	);
 
 	baseMenu.add(ui);

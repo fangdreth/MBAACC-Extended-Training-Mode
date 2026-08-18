@@ -669,7 +669,7 @@ void IncrementFirstActive(FrameBarPlayerData& P1_, FrameBarPlayerData& P2_)
 			P1_.nLinkOTGWindow = 0;
 		}
 
-		if (P2_.playerData->subObj.isHitboxConnect || P1_.playerData->subObj.animationDataPtr->stateData->canMove == false) {
+		if (P2_.playerData->subObj.numOverlapHitboxes != 0 || P1_.playerData->subObj.animationDataPtr->stateData->canMove == false) {
 			P1_.nLinkWindowCounter = 0;
 			P1_.nLinkOTGWindow = 0;
 		}

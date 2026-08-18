@@ -7514,6 +7514,61 @@ __declspec(naked) void _naked_EndUpdateBattleScene() {
 	}
 }
 
+void NewPopup(int popupIndex, byte popupType) {
+	const DWORD MBAA_NewPopup = 0x00476240;
+	__asm {
+		mov eax, popupIndex;
+		push popupType;
+		call[MBAA_NewPopup];
+	}
+}
+
+bool CanPlayerBlock(ActorData* actor) {
+	const DWORD MBAA_CanPlayerBlock = 0x00470260;
+	__asm {
+		mov eax, actor;
+		call[MBAA_CanPlayerBlock];
+	}
+}
+
+void TakeHitsCallback() {
+	for (int i = 0; i < 4; i++) {
+		ActorData* defender = &playerDataArr[i].subObj;
+		if (defender->numOverlapHitboxes != 0 && CanPlayerBlock(defender)) {
+			for (int j = 0; j < defender->numOverlapHitboxes; j++) {
+				ActorData* attacker = defender->attackingSubObjPtrArr[j];
+				AttackData* attack = defender->receivingAttackDataPtrArr[j];
+				if ((defender->animationDataPtr->stateData->stance == 1 && attack->airBlockable) ||
+					(defender->animationDataPtr->stateData->stance != 1 && (attack->standBlockable || attack->crouchBlockable))) {
+					if (defender->facingLeft == attacker->facingLeft && defender->throwFlag == false && !defender->inBlockstun && displayCrossupProtection) {
+						NewPopup(attacker->ownerIndex, 15);
+					}
+					else if (defender->isOpponentToLeft != defender->facingLeft && defender->inBlockstun && displayTrueStringProtection) {
+						NewPopup(attacker->ownerIndex, 15);
+					}
+				}
+			}
+		}
+	}
+}
+
+DWORD TakeHitsCallback_PatchAddr = 0x0046dfd0;
+__declspec(naked) void _naked_TakeHitsCallback() {
+	PUSH_ALL;
+	TakeHitsCallback();
+	POP_ALL;
+
+	__asm {
+		push ebp;
+		mov ebp, esp;
+		and esp, 0xfffffff8;
+		push ebx;
+		push esi;
+		push 0x0046dfd8;
+		ret;
+	}
+}
+
 DWORD didHitboxConnect = 0;
 __declspec(naked) void _naked_HitboxOnConnect() {
 	// patched at 0x0046f8d0
@@ -7811,6 +7866,10 @@ void initEndUpdateBattleScene() {
 	patchJump(EndUpdateBattleScene_PatchAddr, _naked_EndUpdateBattleScene);
 }
 
+void initTakeHitsCallback() {
+	patchJump(TakeHitsCallback_PatchAddr, _naked_TakeHitsCallback);
+}
+
 void initHitboxOnConnect() {
 	patchJump(0x0046f8d0, _naked_HitboxOnConnect);
 }
@@ -7894,6 +7953,8 @@ void threadFunc()
 	init2v2Hack();
 
 	initEndUpdateBattleScene();
+
+	initTakeHitsCallback();
 
 	initHitboxOnConnect();
 
