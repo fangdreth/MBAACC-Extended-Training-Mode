@@ -81,11 +81,15 @@ public:
 
 	bool keyDown();
 
+	void press();
+
 	static void updateControllers();
 
 	static void showControllerState();
 
 	static short pressedButtons();
+
+	static short heldButtons();
 
 	static short releasedButtons();
 
@@ -95,9 +99,11 @@ public:
 private:
 	// lets say that -1 will be a value for when we are using a dinput device instead
 	// or, a value above 0xFF could be used, vkeys are restricted to a byte.
+	// xinput is denoted by nKey & 0x10000
 	int nKey = -1;
 	bool prevState = false;
 	bool tempState = false;
+	bool emulatePress = false;
 	static XINPUT_STATE* xState;
 	static XINPUT_STATE* prevxState;
 };

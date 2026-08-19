@@ -442,6 +442,7 @@ const char pcOffline_8[8] = "OFFLINE";
 typedef LPCTSTR REGKEY;
 
 //extended menu registry keys
+const REGKEY sSHORTCUT_KEY_REG = L"HOTKEY_Shortcut";
 const REGKEY sFREEZE_KEY_REG = L"HOTKEY_Freeze";
 const REGKEY sADVANCE_FRAME_KEY_REG = L"HOTKEY_AdvanceFrame";
 const REGKEY sNEXT_FRAME_KEY_REG = L"HOTKEY_NextFrame";

@@ -617,6 +617,8 @@ enum class eXS_PAGES {
 };
 
 enum class eHK_PAGE1 {
+	SHORTCUT,
+	S0,
 	FREEZE,
 	ADVANCE_FRAME,
 	NEXT_FRAME,
@@ -625,12 +627,13 @@ enum class eHK_PAGE1 {
 	TOGGLE_FRAME_BAR,
 	TOGGLE_HIGHLIGHTS,
 	QUEUE_REVERSAL,
-	S0,
-	RETURN,
 	S1,
+	RETURN,
+	S2,
 	PAGE
 };
 
+extern KeyState oShortcutHotkey;
 extern KeyState oFreezeHotkey;
 extern KeyState oAdvanceFrameHotkey;
 extern KeyState oNextFrameHotkey;

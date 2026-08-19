@@ -85,19 +85,27 @@ void CheckNewHotkey(bool bAPress, KeyState& oHotkey, LPCTSTR sRegKey) {
 	}
 	else if (oHotkey.getKey() == -1 && nHOTKEY_CD_TIMER == 0) {
 		int temp;
-		if (temp = GetHotkeyPressed()) {
+		temp = GetHotkeyPressed();
+		if (temp > 0) {
 			oHotkey.setKey(temp);
 			SetRegistryValue(sRegKey, temp);
 			nHOTKEY_CD_TIMER = 10;
+		}
+		else {
+			temp = KeyState::pressedButtons();
+			if (temp > 0) {
+				temp += 0x10000;
+				oHotkey.setKey(temp);
+				SetRegistryValue(sRegKey, temp);
+				nHOTKEY_CD_TIMER = 10;
+			}
 		}
 	}
 }
 
 void GetKeyStateMenuLabel(char* buffer, KeyState oHotkey) {
 	if (oHotkey.getKey() > 0) {
-		UINT scanCode = MapVirtualKeyA(oHotkey.getKey(), MAPVK_VK_TO_VSC);
-		LONG lParamValue = (scanCode << 16);
-		GetKeyNameTextA(lParamValue, buffer, 19);
+		oHotkey.getKeyName(buffer);
 	}
 	else if (oHotkey.getKey() < 0) {
 		snprintf(buffer, 32, "...");
@@ -553,6 +561,7 @@ void initExtendedMenu() {
 	XS_Menu.add(system);
 }
 
+KeyState oShortcutHotkey(0);
 KeyState oFreezeHotkey(0);
 KeyState oAdvanceFrameHotkey(0);
 KeyState oNextFrameHotkey(0);
@@ -572,6 +581,8 @@ KeyState oFrameBarRightHotkey(0);
 
 void initHotkeyMenu() {
 	Page page1("HOTKEY SETTINGS");
+	page1.addHotkey("OPEN SHORTCUT MENU", &oShortcutHotkey, sSHORTCUT_KEY_REG);
+	page1.addSpace();
 	page1.addHotkey("FREEZE", &oFreezeHotkey, sFREEZE_KEY_REG);
 	page1.addHotkey("ADVANCE FRAME", &oAdvanceFrameHotkey, sADVANCE_FRAME_KEY_REG);
 	page1.addHotkey("NEXT FRAME", &oNextFrameHotkey, sNEXT_FRAME_KEY_REG);
@@ -763,18 +774,19 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_10_12", PAGE_INFO},
 
 	//HOTKEYS 1
-	{"HK_0_0", "Set hotkey to \\@COLOR@<015, 183, 255, 255>freeze the game."},
-	{"HK_0_1", "Set hotkey to \\@COLOR@<015, 183, 255, 255>advance to a new frame." },
-	{"HK_0_2", "Set hotkey to \\@COLOR@<015, 183, 255, 255>load the next saved frame."},
-	{"HK_0_3", "Set hotkey to \\@COLOR@<015, 183, 255, 255>load the previous saved frame."},
-	{"HK_0_4", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle hitbox display."},
-	{"HK_0_5", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle the in-game frame bar."},
-	{"HK_0_6", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle highlights."},
-	{"HK_0_7", "Set hotkey to \\@COLOR@<015, 183, 255, 255>queue up a reversal regardless of settings."},
-	{"HK_0_8", "Set hotkey to \\@COLOR@<015, 183, 255, 255>increment the RNG Seed / Value."},
-	{"HK_0_9", "Set hotkey to \\@COLOR@<015, 183, 255, 255>decrement the RNG Seed / Value."},
-	{"HK_0_11", RETURN_INFO},
-	{"HK_0_13", PAGE_INFO},
+	{ "HK_0_0", "Enable \\@COLOR@<015, 183, 255, 255>FN1 hotkey shortcuts." },
+	{"HK_0_2", "Set hotkey to \\@COLOR@<015, 183, 255, 255>freeze the game."},
+	{"HK_0_3", "Set hotkey to \\@COLOR@<015, 183, 255, 255>advance to a new frame." },
+	{"HK_0_4", "Set hotkey to \\@COLOR@<015, 183, 255, 255>load the next saved frame."},
+	{"HK_0_5", "Set hotkey to \\@COLOR@<015, 183, 255, 255>load the previous saved frame."},
+	{"HK_0_6", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle hitbox display."},
+	{"HK_0_7", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle the in-game frame bar."},
+	{"HK_0_8", "Set hotkey to \\@COLOR@<015, 183, 255, 255>toggle highlights."},
+	{"HK_0_9", "Set hotkey to \\@COLOR@<015, 183, 255, 255>queue up a reversal regardless of settings."},
+	{"HK_0_10", "Set hotkey to \\@COLOR@<015, 183, 255, 255>increment the RNG Seed / Value."},
+	{"HK_0_11", "Set hotkey to \\@COLOR@<015, 183, 255, 255>decrement the RNG Seed / Value."},
+	{"HK_0_13", RETURN_INFO},
+	{"HK_0_14", PAGE_INFO},
 
 	//HOTKEYS 2
 	{"HK_1_0", "Set hotkey to \\@COLOR@<015, 183, 255, 255>save the current game state."},

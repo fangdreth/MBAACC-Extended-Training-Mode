@@ -115,9 +115,6 @@ TrueComboDamageData trueComboData[2][8];
 ActorData* pDefPlayer = nullptr;
 ActorData* pAttPlayer = nullptr;
 
-bool nLastCustomInputDisplay = false;
-bool nLastVanillaInputDisplay = false;
-
 std::vector<std::string> vPatternNames = GetEmptyPatternList();
 std::vector<int> vAirReversals;
 std::vector<int> vGroundReversals;
@@ -2981,6 +2978,58 @@ void frameDoneCallback()
 		*(byte*)(adMBAABase + adNewSceneFlag) = 0xFF;
 	}
 
+	static int shortcutTimer = 0;
+	static byte shortcutSelection = 0;
+	if (oShortcutHotkey.keyHeld()) {
+		shortcutTimer = min(shortcutTimer + 1, 21);
+		if (shortcutTimer > 20)
+		{
+			byte direction = *(byte*)(adMBAABase + adP1MenuDirInput);
+			DWORD colors[10] = { 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000 };
+			if (direction % 2 == 0 && direction > 0 && direction < 10) shortcutSelection = direction;
+			colors[shortcutSelection] = 0xc0000000;
+
+			RectDraw(319, 240 + 29, 20, 20, 0xffffffff);
+			RectDraw(320, 240 + 30, 20, 20, colors[2]);
+			TextDraw(320, 240 + 30, 10, 0xffffffff, "Freeze");
+
+			RectDraw(320 - 31, 239, 20, 20, 0xffffffff);
+			RectDraw(320 - 30, 240, 20, 20, colors[4]);
+			TextDraw(320 - 30, 240, 10, 0xffffffff, "F-");
+
+			RectDraw(320 + 29, 239, 20, 20, 0xffffffff);
+			RectDraw(320 + 30, 240, 20, 20, colors[6]);
+			TextDraw(320 + 30, 240, 10, 0xffffffff, "F+");
+
+			RectDraw(319, 240 - 31, 20, 20, 0xffffffff);
+			RectDraw(320, 240 - 30, 20, 20, colors[8]);
+			TextDraw(320, 240 - 30, 10, 0xffffffff, "Rev");
+		}
+	}
+	else if (shortcutTimer != 0)
+	{
+		if (shortcutTimer < 21)
+		{
+			switch (shortcutSelection)
+			{
+			case 2:
+				oFreezeHotkey.press();
+				break;
+			case 4:
+				oPrevFrameHotkey.press();
+				break;
+			case 6:
+				oAdvanceFrameHotkey.press();
+				break;
+			case 8:
+				oQueueReversalHotkey.press();
+				break;
+			}
+		}
+		shortcutTimer = 0;
+	}
+
+
 	if (nDrawTextTimer != 0 && safeWrite())
 	{
 		static char buffer[256];
@@ -3102,26 +3151,28 @@ void frameDoneCallback()
 	}
 
 	//some janky linking of the extended input display options to the vanilla one
-	bool nInputDisplaySettings = XS_p1InputDisplay || XS_p2InputDisplay;
-	if (nInputDisplaySettings != nLastCustomInputDisplay) {
-		*(bool*)(INPUTDISPLAYTOGGLE) = nInputDisplaySettings;
-		nLastVanillaInputDisplay = nInputDisplaySettings;
+	bool customInputDisplay = XS_p1InputDisplay || XS_p2InputDisplay;
+	static bool lastCustomInputDisplay = customInputDisplay;
+	static bool lastVanillaInputDisplay = *(bool*)(INPUTDISPLAYTOGGLE);
+	if (customInputDisplay != lastCustomInputDisplay) {
+		*(bool*)(INPUTDISPLAYTOGGLE) = customInputDisplay;
+		lastVanillaInputDisplay = customInputDisplay;
 	}
 
-	if (*(bool*)(INPUTDISPLAYTOGGLE) != nLastVanillaInputDisplay) {
+	if (*(bool*)(INPUTDISPLAYTOGGLE) != lastVanillaInputDisplay) {
 		if (*(bool*)(INPUTDISPLAYTOGGLE)) {
 			XS_p1InputDisplay = 1;
-			nLastCustomInputDisplay = true;
+			lastCustomInputDisplay = true;
 			SetRegistryValue(sP1_INPUT_DISPLAY, 1);
 		}
 		else {
 			XS_p1InputDisplay = 0;
 			XS_p2InputDisplay = 0;
-			nLastCustomInputDisplay = false;
+			lastCustomInputDisplay = false;
 			SetRegistryValue(sP1_INPUT_DISPLAY, 0);
 			SetRegistryValue(sP2_INPUT_DISPLAY, 0);
 		}
-		nInputDisplaySettings = XS_p1InputDisplay || XS_p2InputDisplay;
+		customInputDisplay = XS_p1InputDisplay || XS_p2InputDisplay;
 	}
 
 	if (safeWrite()) {
@@ -3138,8 +3189,8 @@ void frameDoneCallback()
 		}
 	}
 
-	nLastCustomInputDisplay = nInputDisplaySettings;
-	nLastVanillaInputDisplay = *(bool*)(INPUTDISPLAYTOGGLE);
+	lastCustomInputDisplay = customInputDisplay;
+	lastVanillaInputDisplay = *(bool*)(INPUTDISPLAYTOGGLE);
 
 	nSavedP1ActiveChar = pdP1Data->activeCharacter;
 	nSavedP2ActiveChar = pdP2Data->activeCharacter;
@@ -5817,6 +5868,9 @@ void HotkeyMenuInputChecking() {
 	switch (hotkeyWindow->menuInfoIndex) {
 	case 0:
 		switch ((eHK_PAGE1)curMenuInfo->selectedElement) {
+		case eHK_PAGE1::SHORTCUT:
+			CheckNewHotkey(aPressed, oShortcutHotkey, sSHORTCUT_KEY_REG);
+			break;
 		case eHK_PAGE1::FREEZE:
 			CheckNewHotkey(aPressed, oFreezeHotkey, sFREEZE_KEY_REG);
 			break;
@@ -5849,6 +5903,8 @@ void HotkeyMenuInputChecking() {
 			break;
 		}
 
+		GetKeyStateMenuLabel(labelBuf, oShortcutHotkey);
+		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::SHORTCUT]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oFreezeHotkey);
 		(curMenuInfo->elementList).listStart[(int)eHK_PAGE1::FREEZE]->SetCurItemLabel(labelBuf);
 		GetKeyStateMenuLabel(labelBuf, oAdvanceFrameHotkey);

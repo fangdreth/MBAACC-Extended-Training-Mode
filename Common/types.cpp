@@ -56,9 +56,37 @@ int KeyState::getKey()
 
 void KeyState::getKeyName(char* buffer)
 {
-	UINT scanCode = MapVirtualKeyA(nKey, MAPVK_VK_TO_VSC);
-	LONG lParamValue = (scanCode << 16);
-	GetKeyNameTextA(lParamValue, buffer, 19);
+	if (nKey < 0x10000)
+	{
+		UINT scanCode = MapVirtualKeyA(nKey, MAPVK_VK_TO_VSC);
+		LONG lParamValue = (scanCode << 16);
+		GetKeyNameTextA(lParamValue, buffer, 19);
+	}
+	else {
+		std::map<WORD, std::string> buttonMap = {
+		{ XINPUT_GAMEPAD_DPAD_UP,        "DPAD UP" },
+		{ XINPUT_GAMEPAD_DPAD_DOWN,      "DPAD DOWN" },
+		{ XINPUT_GAMEPAD_DPAD_LEFT,      "DPAD LEFT" },
+		{ XINPUT_GAMEPAD_DPAD_RIGHT,     "DPAD RIGHT" },
+		{ XINPUT_GAMEPAD_START,          "START" },
+		{ XINPUT_GAMEPAD_BACK,           "BACK" },
+		{ XINPUT_GAMEPAD_LEFT_THUMB,     "L3" },
+		{ XINPUT_GAMEPAD_RIGHT_THUMB,    "R3" },
+		{ XINPUT_GAMEPAD_LEFT_SHOULDER,  "L1" },
+		{ XINPUT_GAMEPAD_RIGHT_SHOULDER, "R1" },
+		{ XINPUT_GAMEPAD_A,              "A" },
+		{ XINPUT_GAMEPAD_B,              "B" },
+		{ XINPUT_GAMEPAD_X,              "X" },
+		{ XINPUT_GAMEPAD_Y,              "Y" }
+		};
+
+		std::string name = "";
+		if (buttonMap.count(nKey))
+			name = buttonMap[nKey];
+
+		snprintf(buffer, 19, "%s", name.c_str());
+	}
+
 }
 
 bool KeyState::isFocused()
@@ -72,8 +100,12 @@ bool KeyState::keyHeld()
 		freqHeldCounter = 0;
 		return false;
 	}
-
-	bool res = nKey != 0x0 && GetAsyncKeyState(nKey) & 0x8000;
+	bool res = false;
+	if (nKey < 0x10000 && GetAsyncKeyState(nKey) & 0x8000)
+		res = true;
+	else if (nKey & 0x10000 && nKey & xState->Gamepad.wButtons)
+		res = true;
+	
 	if (res) {
 		freqHeldCounter++;
 	} else {
@@ -84,12 +116,20 @@ bool KeyState::keyHeld()
 
 bool KeyState::keyDown()
 {
+	if (emulatePress)
+	{
+		emulatePress = false;
+		return true;
+	}
+
 	if (nKey == 0x0 || !isFocused()) {
 		return false;
 	}
 
 	tempState = false;
-	if (GetAsyncKeyState(nKey) & 0x8000)
+	if (nKey < 0x10000 && GetAsyncKeyState(nKey) & 0x8000)
+		tempState = true;
+	else if (nKey & 0x10000 && nKey & xState->Gamepad.wButtons)
 		tempState = true;
 
 	bool res = false;
@@ -101,6 +141,11 @@ bool KeyState::keyDown()
 	prevState = tempState;
 
 	return res;
+}
+
+void KeyState::press()
+{
+	emulatePress = true;
 }
 
 void KeyState::updateControllers() {
@@ -178,6 +223,10 @@ void KeyState::showControllerState() {
 
 short KeyState::pressedButtons() {
 	return (prevxState->Gamepad.wButtons ^ xState->Gamepad.wButtons) & xState->Gamepad.wButtons;
+}
+
+short KeyState::heldButtons() {
+	return xState->Gamepad.wButtons;
 }
 
 short KeyState::releasedButtons() {
