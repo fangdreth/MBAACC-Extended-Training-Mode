@@ -141,9 +141,9 @@ void TASManager::parseLine(const std::string& l) {
 	// the format of this map is key(string hash), val is the rest of the string not containing the command
 	// constexpr doesnt like maps, which is why im using an array, the size is small enough that it will probs be better that way
 	#ifdef _DEBUG
-		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 24> parseArr = {{
+		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 25> parseArr = {{
 	#else
-		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 24> parseArr = {{
+		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 25> parseArr = {{
 	#endif
 	
 		{ hashString("pause"), [](TASManager* t, const std::string& data) -> void {
@@ -283,6 +283,27 @@ void TASManager::parseLine(const std::string& l) {
 		{ hashString("waithitstop"), [](TASManager* t, const std::string& data) -> void {
 			// im not sure why im putting this here
 			TASItem res;
+			res.command = TASCommand::Nothing;
+			res.length = 1;
+			addTasData(t->tasData, res);
+
+			res.command = TASCommand::WaitHitstop;
+			addTasData(t->tasData, res);
+		} },
+
+		{ hashString("waithit"), [](TASManager* t, const std::string& data) -> void {
+			
+			// it would be nice if i could dynamically call the waithitbox and waithitstop things while in here, but that is not in the cards for c++
+			TASItem res;
+
+			res.command = TASCommand::HitboxFlagClear;
+			addTasData(t->tasData, res);
+			res.command = TASCommand::Nothing;
+			res.length = 1;
+			addTasData(t->tasData, res);
+			res.command = TASCommand::WaitHitbox;
+			addTasData(t->tasData, res);
+
 			res.command = TASCommand::Nothing;
 			res.length = 1;
 			addTasData(t->tasData, res);
