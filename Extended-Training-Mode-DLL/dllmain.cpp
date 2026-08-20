@@ -2442,6 +2442,7 @@ void frameDoneCallback()
 {
 	profileFunction();
 
+	static KeyState lCtrlKey(VK_LCONTROL);
 	static KeyState lShiftKey(VK_LSHIFT);
 
 	static uint8_t nFrameCount = 0;
@@ -2535,7 +2536,7 @@ void frameDoneCallback()
 	}
 
 	static KeyState nKey('N');
-	if ((lShiftKey.keyHeld() && nKey.keyDown()) || doCharacterReload)
+	if ((lCtrlKey.keyHeld() && lShiftKey.keyHeld() && nKey.keyDown()) || doCharacterReload)
 	{
 		doCharacterReload = false;
 		ArrayContainer<CSSData*> cssArray = **(ArrayContainer<CSSData*>**)(0x0055df18);
