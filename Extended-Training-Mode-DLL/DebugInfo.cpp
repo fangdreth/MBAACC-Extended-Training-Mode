@@ -530,6 +530,12 @@ void displayDebugInfo() {
 	const int bufferLen = 2048;
 	char buffer[bufferLen];
 
+	int dX = playerDataArr[0].subObj.xPos - playerDataArr[1].subObj.xPos;
+	int dY = playerDataArr[0].subObj.yPos - playerDataArr[1].subObj.yPos;
+
+	snprintf(buffer, bufferLen, "dX: %d dY: %d", dX, dY);
+	TextDraw(0, 0, 6, 0xFFFFFFFF, buffer);
+
 	int xIndex = 100;
 	int xDif = 75;
 
