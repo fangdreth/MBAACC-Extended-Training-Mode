@@ -96,7 +96,7 @@ bool KeyState::isFocused()
 
 bool KeyState::keyHeld()
 {
-	if (!isFocused()) {
+	if (nKey == 0x0 || !isFocused()) {
 		freqHeldCounter = 0;
 		return false;
 	}
