@@ -16,15 +16,15 @@ public:
 
 	InputColumn(unsigned addr_, float xVal_, float yVal_, int inputMaxLen_);
 
-	void update();
+	__declspec(noinline) void update();
 
-	void rollforward();
+	__declspec(noinline) void rollforward();
 
-	void rollback();
+	__declspec(noinline) void rollback();
 
-	void draw();
+	__declspec(noinline) void draw();
 
-	void reset();
+	__declspec(noinline) void reset();
 
 	unsigned addr;
 	float xVal;

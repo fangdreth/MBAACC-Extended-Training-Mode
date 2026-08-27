@@ -125,6 +125,12 @@ void InputColumn::draw() {
 		//int index = (i + inputIndex) % inputMaxLen;
 		int index = i;
 
+		// ive been having some weird crashes here. most likely some corruption of some buffer. im not exactly sure. is it possible buttonstring is fucked up?
+		// its annoying that i cant reproduce it easily. 
+		// im pretty confident its something with dragmanager getting corrupted 
+
+		inputs[index].buttonString[sizeof(inputs[index].buttonString) - 1] = '\0'; // be sure this is nulltermed? i think it is tho??
+
 		TextDraw(xVal - 50.0f, yValTemp, 13, 0xFFFFFFFF, "%c%s", inputs[index].direction, inputs[index].buttonString);
 		TextDraw(xVal - 50.0f + 55, yValTemp, 13, 0xFFFFFFFF, "%3d", inputs[index].length);
 

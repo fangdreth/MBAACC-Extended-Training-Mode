@@ -181,7 +181,10 @@ void SaveStateManager::save() {
 	states.emplace_back(temp);
 
 	if (states.size() > maxStates) {
-		delete states.front();
+		SaveState* s = states.front();
+		if (s != NULL) {
+			delete s; // i had a crash here, soo.... yeah. but it said it read addr 1 not 0? maybe it was in the destructor. i should have the crashlog dump 
+		}
 		states.pop_front();
 		currentState--;
 	}
