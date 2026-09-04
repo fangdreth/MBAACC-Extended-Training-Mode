@@ -41,6 +41,7 @@ enum class TASCommand : uint8_t {
 	P1YPos = 24,
 	P2YPos = 25,
 	WaitHitstop = 26,
+	WaitCrossup = 27, // idk, sounds nice
 };
 
 static const char* getTASCommandName(TASCommand t) {
@@ -96,6 +97,8 @@ static const char* getTASCommandName(TASCommand t) {
 		return "HitboxFlagClear";
 	case TASCommand::WaitHitstop:
 		return "WaitHitstop";
+	case TASCommand::WaitCrossup:
+		return "WaitCrossup";
 	default:
 		break;
 	}

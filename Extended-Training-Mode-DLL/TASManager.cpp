@@ -141,9 +141,9 @@ void TASManager::parseLine(const std::string& l) {
 	// the format of this map is key(string hash), val is the rest of the string not containing the command
 	// constexpr doesnt like maps, which is why im using an array, the size is small enough that it will probs be better that way
 	#ifdef _DEBUG
-		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 25> parseArr = {{
+		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 26> parseArr = {{
 	#else
-		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 25> parseArr = {{
+		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 26> parseArr = {{
 	#endif
 	
 		{ hashString("pause"), [](TASManager* t, const std::string& data) -> void {
@@ -289,7 +289,7 @@ void TASManager::parseLine(const std::string& l) {
 
 			res.command = TASCommand::WaitHitstop;
 			addTasData(t->tasData, res);
-		} },
+		}},
 
 		{ hashString("waithit"), [](TASManager* t, const std::string& data) -> void {
 			
@@ -310,7 +310,24 @@ void TASManager::parseLine(const std::string& l) {
 
 			res.command = TASCommand::WaitHitstop;
 			addTasData(t->tasData, res);
-		} },
+		}},
+
+		{ hashString("waitcrossup"), [](TASManager* t, const std::string& data) -> void {
+
+			// chances are, this will have weird behaviour on... if things are equal, idk
+			// also, having to hold state is kinda annoying (as in the initial crossup direction, in order to detect the change)
+			// can i store that in commandData?
+			
+			TASItem res;
+			
+			res.command = TASCommand::Nothing;
+			res.length = 1;
+			addTasData(t->tasData, res); // still dont know why i do this
+
+			res.command = TASCommand::WaitCrossup;
+			res.commandData = -1; // unknown initial state, so ill set it on first exec, and then wait.
+			addTasData(t->tasData, res);
+		}},
 
 		{ hashString("waitcanmove"), [](TASManager* t, const std::string& data) -> void {
 			// im not sure why im putting this here
@@ -540,6 +557,33 @@ bool canMove(int playerIndex) {
 	return false;
 }
 
+bool waitCrossup(TASItem& t, int playerIndex) {
+
+	// this doesnt really work for 2v2, and... heres the thing, im tired ok
+	// probs also fucks up on if things are equal 
+	// oh god my usecase rn actually does hit 0 :sob:
+	if (playerIndex != 0 && playerIndex != 1) {
+		log("waitcrossup doesnt work for p3/4");
+		return true;
+	}
+
+	int ourPos = playerDataArr[playerIndex].subObj.xPos;
+	int otherPos = playerDataArr[1 - playerIndex].subObj.xPos;
+	bool crossState = ourPos < otherPos;
+
+	if (t.commandData == -1) {
+		// record the initial state of the cross 
+		t.commandData = crossState;
+		return false;
+	}
+
+	if (ourPos == otherPos) {
+		return true; // im just calling it that equal means we dip
+	}
+
+	return t.commandData != crossState;
+}
+
 bool hasHitstop(int playerIndex) {
 	//log("hitstop: %d", playerDataArr[playerIndex].subObj.hitstop);
 	// why 2? not sure
@@ -754,6 +798,11 @@ void TASManager::setInputs(int playerIndex) {
 			return;
 		}
 		break;
+	case TASCommand::WaitCrossup:
+		if (!waitCrossup(tasData[tasIndex], playerIndex)) {
+			return;
+		}
+		break;
 	case TASCommand::WaitHitbox:
 		if (!didHitboxConnect) {
 			return;
@@ -836,6 +885,7 @@ void TASManager::incInputs() {
 		case TASCommand::WaitNormalCancel:
 		case TASCommand::WaitSpecialCancel:
 		case TASCommand::WaitHitstop:
+		case TASCommand::WaitCrossup:
 			return;
 		default: 
 			break;
