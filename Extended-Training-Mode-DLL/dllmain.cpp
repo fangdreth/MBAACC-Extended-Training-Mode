@@ -7601,8 +7601,8 @@ void TakeHitsCallback() {
 						NewPopup(attacker->ownerIndex, 15);
 					}
 					else if (displayTrueStringProtection && defender->inBlockstun && 
-						(defender->facingLeft == attacker->facingLeft) ||
-						(defender->isOpponentToLeft != defender->facingLeft)) {
+						((defender->facingLeft == attacker->facingLeft) ||
+						(defender->isOpponentToLeft != defender->facingLeft))) {
 						NewPopup(attacker->ownerIndex, 15);
 					}
 				}
