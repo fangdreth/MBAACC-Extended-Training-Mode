@@ -1599,6 +1599,18 @@ void ChangeVolume_Debug() {
 	POP_ALL;
 }
 
+void ResizeMelty(int w, int h, HWND* phwnd)
+{
+	const DWORD MBAA_ResizeWindow = 0x00416f70;
+	__asm
+	{
+		push h;
+		push w;
+		mov esi, phwnd;
+		call[MBAA_ResizeWindow];
+	}
+}
+
 const DWORD MBAA_Save_Game_Settings = 0x00401540;
 void SaveGameSettings_Debug() {
 	PUSH_ALL;
@@ -1748,6 +1760,46 @@ void initGameOptionsSubmenu() {
 		},
 		L"",
 		& settings->aspectRatio
+	);
+
+	gameOptions.add<int>(" > Snap Resolution to closest fit",
+		[](int inc, int& opt) {
+			HWND hwnd = *(HWND*)(adMBAABase + 0x0034dfac);
+			RECT rect;
+			GetWindowRect(hwnd, &rect);
+			int newW = rect.right - rect.left;
+			int newH = rect.bottom - rect.top;
+			newH = max(480, round(newH / 480.0f) * 480);
+			int numerator;
+			int denominator;
+			Settings* settings = *(Settings**)(adMBAABase + 0x00154140);
+			switch (settings->aspectRatio)
+			{
+			default:
+				numerator = 4;
+				denominator = 3;
+				break;
+			case 3:
+				numerator = 16;
+				denominator = 9;
+				break;
+			case 4:
+				numerator = 16;
+				denominator = 10;
+				break;
+			case 5:
+				numerator = 5;
+				denominator = 4;
+				break;
+			case 6:
+				numerator = 15;
+				denominator = 9;
+				break;
+			}
+			newW = (int)(newH / denominator) * numerator;
+			ResizeMelty(newW, newH, &hwnd);
+		},
+		buttonNameFunc
 	);
 
 	gameOptions.add<int*>("Screen Filter",

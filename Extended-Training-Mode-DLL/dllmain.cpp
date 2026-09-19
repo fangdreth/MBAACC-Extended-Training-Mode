@@ -99,7 +99,6 @@ bool bShowFrameBarPreview = false;
 bool bShowFrameBarYPreview = false;
 bool bForceGuard = false;
 int dummyDelayTechFramesElapsed = 0;
-bool showFrameScrubber = false;
 int comboTimer = 0;
 
 bool initLoadChars = false;
@@ -2615,11 +2614,6 @@ void frameDoneCallback()
 	}
 	////setFPSLimiter(bDisableFPSLimit);
 
-	static KeyState zKey('Z');
-	if (lShiftKey.keyHeld() && zKey.keyDown()) {
-		showFrameScrubber = !showFrameScrubber;
-	}
-
 	renderModificationsFrameDone();
 
 	if (device != NULL) {
@@ -2782,29 +2776,6 @@ void frameDoneCallback()
 			catch (...)
 			{
 				TextDraw(375.0f, 3.5f, 16.0f, 0xFFFFFFFF, "Advance Frame: <corrupt>");
-			}
-		}
-
-		if (showFrameScrubber) {
-			float x = 10.0f;
-			float y = 390.0f;
-			float unitW = (640.0f - 2 * x) / (float)(saveStateManager.states.size() - 1);
-			float maxW = (640.0f - 2 * x);
-			float h = 10.0f;
-			RectDraw(x, y, maxW, h, 0x99000000); //BG
-			for (int i = 0; i < saveStateManager.currentState; i++) {
-				float x1 = x + unitW * i;
-				RectDraw(x1, y, unitW, h, 0xFF00FF00);
-			}
-
-			if (lHeld && mousePos.y > 380.0f && mousePos.y < 410.0f) {
-				float usedX = mousePos.x;
-				float ratio = (mousePos.x - 10.0f) / 620.0f;
-				int newState = floor(ratio * saveStateManager.states.size());
-				if (newState < 0) newState = 0;
-				else if (newState >= saveStateManager.states.size()) newState = saveStateManager.states.size() - 1;
-				saveStateManager.currentState = newState;
-				saveStateManager.states[newState]->load();
 			}
 		}
 	}
