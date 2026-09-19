@@ -372,10 +372,7 @@ void SaveStateManager::SaveToFile()
 
 		std::FILE* savFile = fopen(fileName, "wb");
 
-		for (int i = 0; i < sizeof(FullSaves) / sizeof(FullSave*); i++)
-		{
-			std::fwrite(FullSaves[i], sizeof(FullSave), 1, savFile);
-		}
+		std::fwrite(fullSaves, sizeof(FullSave), MAX_SAVES, savFile);
 
 		fclose(savFile);
 	}
@@ -413,10 +410,7 @@ void SaveStateManager::LoadFromFile() {
 
 		std::FILE* savFile = fopen(fileName, "rb");
 
-		for (int i = 0; i < sizeof(FullSaves) / sizeof(FullSave*); i++)
-		{
-			std::fread(FullSaves[i], sizeof(FullSave), 1, savFile);
-		}
+		std::fread(fullSaves, sizeof(FullSave), MAX_SAVES, savFile);
 
 		fclose(savFile);
 	}

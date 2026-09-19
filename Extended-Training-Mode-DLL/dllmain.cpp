@@ -2592,9 +2592,9 @@ void frameDoneCallback()
 		if (pP3->exists) UpdateCharPointers(&(pP3->subObj));
 		if (pP4->exists) UpdateCharPointers(&(pP4->subObj));
 
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < MAX_SAVES; i++)
 		{
-			saveStateManager.FullSaves[i]->unsave();
+			saveStateManager.fullSaves[i].unsave();
 		}
 
 		vPatternNames = GetEmptyPatternList();
@@ -2855,7 +2855,7 @@ void frameDoneCallback()
 	if (oSaveStateHotkey.keyDown() && safeWrite())
 	{
 		if (XS_saveStateSlot > 0) {
-			saveStateManager.FullSaves[XS_saveStateSlot - 1]->save();
+			saveStateManager.fullSaves[XS_saveStateSlot - 1].save();
 			if (XS_syncSavesWithFiles) saveStateManager.SaveToFile();
 		}
 		nDrawTextTimer = TEXT_TIMER;
@@ -2870,7 +2870,7 @@ void frameDoneCallback()
 		nClearSaveTimer++;
 		if (nClearSaveTimer == SAVE_RESET_TIME)
 		{
-			saveStateManager.FullSaves[XS_saveStateSlot - 1]->unsave();
+			saveStateManager.fullSaves[XS_saveStateSlot - 1].unsave();
 			if (XS_syncSavesWithFiles) saveStateManager.SaveToFile();
 			nDrawTextTimer = TEXT_TIMER;
 			snprintf(pcTextToDisplay, sizeof(pcTextToDisplay), "%s %i", "CLEARED SAVE", XS_saveStateSlot);
@@ -3202,7 +3202,7 @@ int nP2MeterGain = 0;
 DWORD prevComboPtr = 0;
 
 void ResetCallback() {
-	if (XS_saveStateSlot == 0 || !(saveStateManager.FullSaves[XS_saveStateSlot - 1]->IsSaved)) { // if not loading a save
+	if (XS_saveStateSlot == 0 || !(saveStateManager.fullSaves[XS_saveStateSlot - 1].IsSaved)) { // if not loading a save
 		if (*(int*)(adMBAABase + adBS_MAGIC_CIRCUIT) == 0) { // if Magic Circuit is set to Normal
 			for (int i = 0; i < 4; i++) {
 				PlayerData* curPlayer = &playerDataArr[i];
@@ -3445,7 +3445,7 @@ bool doLoad = false;
 void RoundcallCallback() {
 	if (XS_syncSavesWithFiles) saveStateManager.LoadFromFile();
 
-	if (XS_saveStateSlot > 0 && saveStateManager.FullSaves[XS_saveStateSlot - 1]->IsSaved)
+	if (XS_saveStateSlot > 0 && saveStateManager.fullSaves[XS_saveStateSlot - 1].IsSaved)
 	{
 		doLoad = true;
 	}
@@ -5560,32 +5560,32 @@ void ExtendedMenuInputChecking() {
 		case eSAVE_STATES::SAVE_STATE_SLOT:
 			XS_saveStateSlot = curElement->selectedItem;
 			if (aPressed) {
-				saveStateManager.FullSaves[XS_saveStateSlot - 1]->unsave();
+				saveStateManager.fullSaves[XS_saveStateSlot - 1].unsave();
 				if (XS_syncSavesWithFiles) saveStateManager.SaveToFile();
 			}
 			break;
 		case eSAVE_STATES::SAVE_STATE:
 			if (aPressed && XS_saveStateSlot > 0) {
-				saveStateManager.FullSaves[XS_saveStateSlot - 1]->save();
+				saveStateManager.fullSaves[XS_saveStateSlot - 1].save();
 				if (XS_syncSavesWithFiles) saveStateManager.SaveToFile();
 			}
 			break;
 		case eSAVE_STATES::CLEAR_ALL_SAVES:
 			if (aPressed) {
 				for (int i = 0; i < MAX_SAVES; i++) {
-					saveStateManager.FullSaves[i]->unsave();
+					saveStateManager.fullSaves[i].unsave();
 				}
 				if (XS_syncSavesWithFiles) saveStateManager.SaveToFile();
 			}
 			break;
 		case eSAVE_STATES::IMPORT_SAVE:
 			if (aPressed) {
-				saveStateManager.FullSaves[XS_saveStateSlot - 1]->nport();
+				saveStateManager.fullSaves[XS_saveStateSlot - 1].nport();
 			}
 			break;
 		case eSAVE_STATES::EXPORT_SAVE:
 			if (aPressed) {
-				saveStateManager.FullSaves[XS_saveStateSlot - 1]->xport();
+				saveStateManager.fullSaves[XS_saveStateSlot - 1].xport();
 			}
 			break;
 		case eSAVE_STATES::DEFAULT:
@@ -5600,7 +5600,7 @@ void ExtendedMenuInputChecking() {
 		}
 
 		for (int i = 0; i < MAX_SAVES; i++) {
-			if (saveStateManager.FullSaves[i]->IsSaved) {
+			if (saveStateManager.fullSaves[i].IsSaved) {
 				snprintf(labelBuf, 31, "%s %02i (%s)", "SLOT", i + 1, "SAVED");
 			}
 			else {
@@ -6838,7 +6838,7 @@ void DoCSSMouseControls() {
 
 void CSSCallback() {
 	for (int i = 0; i < MAX_SAVES; i++)
-		saveStateManager.FullSaves[i]->unsave();
+		saveStateManager.fullSaves[i].unsave();
 
 	vPatternNames = GetEmptyPatternList();
 	XS_reversalSlot1 = 0;
@@ -7472,7 +7472,7 @@ void DummyCrossUpNoGuard() {
 }
 
 void LoadSave() {
-	if (doLoad && XS_saveStateSlot > 0 && saveStateManager.FullSaves[XS_saveStateSlot - 1]->IsSaved)
+	if (doLoad && XS_saveStateSlot > 0 && saveStateManager.fullSaves[XS_saveStateSlot - 1].IsSaved)
 	{
 		//save recording status
 		byte p1DoTraining = pP1->subObj.doTrainingAction;
@@ -7481,7 +7481,7 @@ void LoadSave() {
 		byte p4DoTraining = pP4->subObj.doTrainingAction;
 
 		CommandFileData* cmdPtrs[4] = { pP1->cmdFileDataPtr, pP2->cmdFileDataPtr, pP3->cmdFileDataPtr, pP4->cmdFileDataPtr };
-		saveStateManager.FullSaves[XS_saveStateSlot - 1]->load(XS_loadRNG);
+		saveStateManager.fullSaves[XS_saveStateSlot - 1].load(XS_loadRNG);
 		PlayerData* curPlayer;
 		for (int i = 0; i < 4; i++) {
 			curPlayer = &playerDataArr[i];

@@ -132,7 +132,7 @@ public:
 	// tbh i should just use circbuffer for this, but i dont want to alloc all the memory upfront
 	std::deque<SaveState*> states; 
 
-	FullSave* FullSaves[3] = {new FullSave(), new FullSave(), new FullSave()};
+	FullSave* fullSaves = new FullSave[10];
 
 	void SaveToFile();
 	void LoadFromFile();

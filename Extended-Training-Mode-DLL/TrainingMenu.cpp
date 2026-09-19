@@ -499,7 +499,13 @@ void initExtendedMenu() {
 	XS_Menu.add(hitboxes);
 
 	Page savestates("SAVE STATES");
-	savestates.add("SAVE STATE SLOT", { "NONE", "SLOT 01", "SLOT 02", "SLOT 03" }, &XS_saveStateSlot);
+	std::vector<std::string> saveStateLabels = { "NONE" };
+	char buffer[16];
+	for (int i = 1; i <= MAX_SAVES; i++) {
+		snprintf(buffer, 16, "SLOT %02x", i);
+		saveStateLabels.emplace_back(buffer);
+	}
+	savestates.add("SAVE STATE SLOT", saveStateLabels, &XS_saveStateSlot);
 	savestates.addSpace();
 	savestates.add("SAVE STATE");
 	savestates.add("CLEAR ALL SAVES");
@@ -895,7 +901,7 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 	{"XS_5_6_0", "Do not draw the ground."}, {"XS_5_6_1", "Draw a blue line at ground-level."},
 
 	//SAVE STATES
-	{"XS_6_0_0", "No slot selected."}, {"XS_6_0_1", "Slot 1."}, {"XS_6_0_2", "Slot 2."}, {"XS_6_0_3", "Slot 3."},
+	{"XS_6_0_0", "No slot selected."}, {"XS_6_0_1", "Slot 1."}, {"XS_6_0_2", "Slot 2."}, {"XS_6_0_3", "Slot 3."}, {"XS_6_0_4", "Slot 4."}, {"XS_6_0_5", "Slot 5."}, {"XS_6_0_6", "Slot 6."}, {"XS_6_0_7", "Slot 7."}, {"XS_6_0_8", "Slot 8."}, {"XS_6_0_9", "Slot 9."}, {"XS_6_0_10", "Slot 10."},
 
 	{"XS_6_5_0", "Do not sync saves."}, {"XS_6_5_1", "Sync saves."},
 
