@@ -2238,6 +2238,10 @@ void HandleExtendedTrainingEffects() {
 void __stdcall legacyPauseCallback(DWORD dwMilliseconds)
 {
 
+	// im looking through this code. and i have to say. what the fuck was i smoking. this shit clobbers litterally EVERY REGISTER
+	// SHOOTS THE STACK, and just,,,,, WORKS?????
+
+
 	// windows Sleep, the func being overitten is an stdcall, which is why we have __stdcall
 	// this func is legacy, but it seems like the best place for me to init my hooks, for some reason
 
@@ -2260,7 +2264,9 @@ void __stdcall legacyPauseCallback(DWORD dwMilliseconds)
 		isRendererHooked = initRenderModifications();
 	}
 
-	Sleep(dwMilliseconds);
+	// MADDY YOU FOOL DONT SLEEP ITS USELESS OH MY FUCKING GODDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+
+	//Sleep(dwMilliseconds);
 }
 
 // frame start/done callbacks
