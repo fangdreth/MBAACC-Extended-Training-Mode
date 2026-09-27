@@ -3369,7 +3369,7 @@ void ResetCallback() {
 		if (pP4->exists) pP4->subObj.guardGaugeState = 1;
 
 		int tempX;
-		switch (XS_maidsLeadReset)
+		switch (XS_maidsLeadOnReset)
 		{
 		case 0: //default reset behavior (hisui)
 			break;
@@ -5546,6 +5546,9 @@ void ExtendedMenuInputChecking() {
 	case eXS_PAGES::CHARACTER:
 	{
 		switch ((eCHARACTER)curMenuInfo->selectedElement) {
+		case eCHARACTER::MAIDS_LEAD_ON_RESET:
+			SetRegistryValue(sMAIDS_LEAD_ON_RESET, curElement->selectedItem);
+			break;
 		case eCHARACTER::DEFAULT:
 			if (aPressed) XS_Menu.pages[extendedWindow->menuInfoIndex]._default();
 			break;

@@ -467,6 +467,8 @@ const REGKEY sARMOR_HIGHLIGHT = L"ArmorHighlight";
 const REGKEY sTHROW_PROTECTION_HIGHLIGHT = L"ThrowProtectionHighlight";
 const REGKEY sIDLE_HIGHLIGHT = L"IdleHighlight";
 
+const REGKEY sMAIDS_LEAD_ON_RESET = L"MaidsLeadOnReset";
+
 const REGKEY sHITBOX_STYLE = L"HitboxStyle";
 const REGKEY sCOLOR_BLIND_MODE = L"ColorBlindMode";
 const REGKEY sORIGIN_STYLE = L"OriginStyle";

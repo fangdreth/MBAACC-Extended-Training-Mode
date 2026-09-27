@@ -356,7 +356,7 @@ int XS_p2AssistPosition = 29184;
 int XS_sionBullets = 1;
 int XS_roaVisibleCharges = 1;
 int XS_roaHiddenCharges = 1;
-int XS_maidsLeadReset = 2;
+int XS_maidsLeadOnReset = 0;
 int XS_fMaidsHearts = 1;
 int XS_ryougiKnife = 1;
 
@@ -480,7 +480,7 @@ void initExtendedMenu() {
 	character.add("ROA VISIBLE CHARGE", { "INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, &XS_roaVisibleCharges);
 	character.add("ROA HIDDEN CHARGE", { "INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, &XS_roaHiddenCharges);
 	character.addSpace();
-	character.add("MAIDS LEAD ON RESET", { "HISUI", "KOHAKU", "CURRENT" }, &XS_maidsLeadReset);
+	character.add("MAIDS LEAD ON RESET", { "HISUI", "KOHAKU", "CURRENT" }, &XS_maidsLeadOnReset, sMAIDS_LEAD_ON_RESET);
 	character.add("F-MAIDS HEARTS", { "INFINITE", "NORMAL", "4", "3", "2", "1", "0"}, &XS_fMaidsHearts);
 	character.addSpace();
 	character.add("RYOUGI KNIFE", { "INFINITE", "NORMAL" }, &XS_ryougiKnife);
