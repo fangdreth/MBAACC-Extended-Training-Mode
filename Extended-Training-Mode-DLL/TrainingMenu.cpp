@@ -356,6 +356,7 @@ int XS_p2AssistPosition = 29184;
 int XS_sionBullets = 1;
 int XS_roaVisibleCharges = 1;
 int XS_roaHiddenCharges = 1;
+int XS_maidsLeadReset = 2;
 int XS_fMaidsHearts = 1;
 int XS_ryougiKnife = 1;
 
@@ -479,6 +480,7 @@ void initExtendedMenu() {
 	character.add("ROA VISIBLE CHARGE", { "INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, &XS_roaVisibleCharges);
 	character.add("ROA HIDDEN CHARGE", { "INFINITE", "NORMAL", "1", "2", "3", "4", "5", "6", "7", "8", "9" }, &XS_roaHiddenCharges);
 	character.addSpace();
+	character.add("MAIDS LEAD ON RESET", { "HISUI", "KOHAKU", "CURRENT" }, &XS_maidsLeadReset);
 	character.add("F-MAIDS HEARTS", { "INFINITE", "NORMAL", "4", "3", "2", "1", "0"}, &XS_fMaidsHearts);
 	character.addSpace();
 	character.add("RYOUGI KNIFE", { "INFINITE", "NORMAL" }, &XS_ryougiKnife);
@@ -710,11 +712,12 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_4_0", "Set \\@COLOR@<015, 183, 255, 255>Sion bullets on reset."},
 	{"XS_4_2", "Set \\@COLOR@<015, 183, 255, 255>C-Roa visible charges on reset."},
 	{"XS_4_3", "Set \\@COLOR@<015, 183, 255, 255>C-Roa hidden charges on reset."},
-	{"XS_4_5", "Set \\@COLOR@<015, 183, 255, 255>F-Maids hearts on reset."},
-	{"XS_4_7", "Set \\@COLOR@<015, 183, 255, 255>Ryougi knives."},
-	{"XS_4_9", DEFAULT_INFO},
-	{"XS_4_11", RETURN_INFO},
-	{"XS_4_13", PAGE_INFO},
+	{"XS_4_5", "Set \\@COLOR@<015, 183, 255, 255>which maid will be the lead on reset."},
+	{"XS_4_6", "Set \\@COLOR@<015, 183, 255, 255>F-Maids hearts on reset."},
+	{"XS_4_8", "Set \\@COLOR@<015, 183, 255, 255>Ryougi knives."},
+	{"XS_4_10", DEFAULT_INFO},
+	{"XS_4_12", RETURN_INFO},
+	{"XS_4_14", PAGE_INFO},
 
 	//HITBOXES
 	{"XS_5_0", "Set \\@COLOR@<015, 183, 255, 255>hitbox display."},
@@ -886,10 +889,12 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 	{"XS_4_3_5", "Reset to 4 hidden charges."}, {"XS_4_3_6", "Reset to 5 hidden charges."}, {"XS_4_3_7", "Reset to 6 hidden charges."}, {"XS_4_3_8", "Reset to 7 hidden charges."}, {"XS_4_3_9", "Reset to 8 hidden charges."},
 	{"XS_4_3_10", "Reset to 9 hidden charges."},
 
-	{"XS_4_5_0", "Refill hearts on recovery."}, {"XS_4_5_1", "Reset to 5 hearts."}, {"XS_4_5_2", "Reset to 4 hearts."}, {"XS_4_5_3", "Reset to 3 hearts."}, {"XS_4_5_4", "Reset to 2 hearts."},
-	{"XS_4_5_5", "Reset to 1 hearts."}, {"XS_4_6_6", "Reset to 0 hearts."},
+	{"XS_4_5_0", "Reset to Hisui lead."}, {"XS_4_5_1", "Reset to Kohaku lead."}, {"XS_4_5_2", "Reset to current lead."},
 
-	{"XS_4_7_0", "Restore knife on recovery."}, {"XS_4_7_1", "Reset to 1 knife."},
+	{"XS_4_6_0", "Refill hearts on recovery."}, {"XS_4_6_1", "Reset to 5 hearts."}, {"XS_4_6_2", "Reset to 4 hearts."}, {"XS_4_6_3", "Reset to 3 hearts."}, {"XS_4_6_4", "Reset to 2 hearts."},
+	{"XS_4_6_5", "Reset to 1 hearts."}, {"XS_4_6_6", "Reset to 0 hearts."},
+
+	{"XS_4_8_0", "Restore knife on recovery."}, {"XS_4_8_1", "Reset to 1 knife."},
 
 	//HITBOXES
 	{"XS_5_0_0", "Do not show hitboxes."}, {"XS_5_0_1", "Show hitboxes."},

@@ -432,6 +432,7 @@ enum class eCHARACTER {
 	ROA_VISIBLE_CHARGES,
 	ROA_HIDDEN_CHARGES,
 	S1,
+	MAIDS_REMEMBER_LEAD,
 	F_MAIDS_HEARTS,
 	S2,
 	RYOUGI_KNIFE,
@@ -446,6 +447,7 @@ enum class eCHARACTER {
 extern int XS_sionBullets;
 extern int XS_roaVisibleCharges;
 extern int XS_roaHiddenCharges;
+extern int XS_maidsLeadReset;
 extern int XS_fMaidsHearts;
 extern int XS_ryougiKnife;
 

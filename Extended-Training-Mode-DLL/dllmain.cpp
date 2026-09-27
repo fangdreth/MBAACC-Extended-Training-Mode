@@ -3369,22 +3369,49 @@ void ResetCallback() {
 		if (pP4->exists) pP4->subObj.guardGaugeState = 1;
 
 		int tempX;
-		if (nSavedP1ActiveChar != 0) {
-			pdP1Data->activeCharacter = 2;
-			pP1->subObj.tagFlag = 1;
-			pP3->subObj.tagFlag = 0;
-			tempX = pP1->subObj.xPos;
-			pP1->subObj.xPos = pP3->subObj.xPos;
-			pP3->subObj.xPos = tempX;
-		}
+		switch (XS_maidsLeadReset)
+		{
+		case 0: //default reset behavior (hisui)
+			break;
+		case 1: //reset to kohaku
+			if (pP1->subObj.charID == 4) {
+				pdP1Data->activeCharacter = 2;
+				pP1->subObj.tagFlag = 1;
+				pP3->subObj.tagFlag = 0;
+				tempX = pP1->subObj.xPos;
+				pP1->subObj.xPos = pP3->subObj.xPos;
+				pP3->subObj.xPos = tempX;
+			}
 
-		if (nSavedP2ActiveChar != 1) {
-			pdP2Data->activeCharacter = 3;
-			pP2->subObj.tagFlag = 1;
-			pP4->subObj.tagFlag = 0;
-			tempX = pP2->subObj.xPos;
-			pP2->subObj.xPos = pP4->subObj.xPos;
-			pP4->subObj.xPos = tempX;
+			if (pP2->subObj.charID == 4) {
+				pdP2Data->activeCharacter = 3;
+				pP2->subObj.tagFlag = 1;
+				pP4->subObj.tagFlag = 0;
+				tempX = pP2->subObj.xPos;
+				pP2->subObj.xPos = pP4->subObj.xPos;
+				pP4->subObj.xPos = tempX;
+			}
+			break;
+		case 2: //reset to current lead
+			if (pP1->subObj.charID == 4 && nSavedP1ActiveChar != 0) {
+				pdP1Data->activeCharacter = 2;
+				pP1->subObj.tagFlag = 1;
+				pP3->subObj.tagFlag = 0;
+				tempX = pP1->subObj.xPos;
+				pP1->subObj.xPos = pP3->subObj.xPos;
+				pP3->subObj.xPos = tempX;
+			}
+
+			if (pP2->subObj.charID == 4 && nSavedP2ActiveChar != 1) {
+				pdP2Data->activeCharacter = 3;
+				pP2->subObj.tagFlag = 1;
+				pP4->subObj.tagFlag = 0;
+				tempX = pP2->subObj.xPos;
+				pP2->subObj.xPos = pP4->subObj.xPos;
+				pP4->subObj.xPos = tempX;
+			}
+			break;
+
 		}
 
 	}
