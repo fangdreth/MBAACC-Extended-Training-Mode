@@ -7944,6 +7944,10 @@ void initCustomLoadReplay() {
 	patchJump(CustomLoadReplay_PatchAddr, _naked_CustomLoadReplay);
 }
 
+void initRNGCallback() {
+	patchJump(0x00421ac7, _naked_RNGCallback);
+}
+
 // dll thread func
 
 void threadFunc() 
@@ -8027,6 +8031,8 @@ void threadFunc()
 	initCustomLoadReplay();
 
 	initPaletteLoadPatches();
+
+	initRNGCallback();
 
 	ReadFromRegistry(L"ShowDebugMenu", &showDebugMenu);
 

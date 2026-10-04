@@ -10,6 +10,29 @@
 #include "DebugInfo.h"
 #include "dllmain.h"
 
+DWORD _naked_rngShouldSet = 0;
+DWORD _naked_rngValue = 0;
+
+__declspec(naked) void _naked_RNGCallback() {
+	// patched at 0x00421ac7
+	__asm {
+
+		// overwritten asm
+		mov dword ptr ds:[0x00563778], eax; // ds was all i needed this entire time?? and the docs never told me?? god
+		
+		cmp _naked_rngShouldSet, 0;
+		JE _NORNG;
+
+		mov eax, _naked_rngValue;
+
+		mov _naked_rngShouldSet, 0;
+		//sub _naked_rngShouldSet, 1;
+	_NORNG:
+
+		ret;
+	}
+}
+
 // these should probs be in dllmain.h, but then id have to include debuginfo there, which would mess with compile time 
 void setBufferCmd(PlayerData* playerData, WORD dir, WORD buttons);
 
@@ -141,9 +164,9 @@ void TASManager::parseLine(const std::string& l) {
 	// the format of this map is key(string hash), val is the rest of the string not containing the command
 	// constexpr doesnt like maps, which is why im using an array, the size is small enough that it will probs be better that way
 	#ifdef _DEBUG
-		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 26> parseArr = {{
+		std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 28> parseArr = {{
 	#else
-		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 26> parseArr = {{
+		constexpr std::array<std::pair<DWORD, void(*)(TASManager* t, const std::string&)>, 28> parseArr = {{
 	#endif
 	
 		{ hashString("pause"), [](TASManager* t, const std::string& data) -> void {
@@ -372,7 +395,21 @@ void TASManager::parseLine(const std::string& l) {
 			TASItem res;
 			res.command = TASCommand::WaitGround;
 			addTasData(t->tasData, res);
-		}}
+		}},
+
+		{ hashString("setrng"), [](TASManager* t, const std::string& data) -> void {
+			TASItem res;
+			res.command = TASCommand::SetRNG;
+			res.commandData = safeStoi(data);
+			addTasData(t->tasData, res);
+		}},
+
+		{ hashString("setrngindex"), [](TASManager* t, const std::string& data) -> void {
+			TASItem res;
+			res.command = TASCommand::SetRNGIndex;
+			res.commandData = safeStoi(data);
+			addTasData(t->tasData, res);
+		} },
 
 	}};
 
@@ -484,13 +521,13 @@ void TASManager::load(const std::string& filename) {
 		return;
 	}
 
-	log("trying to load file");
+	//log("trying to load file");
 
 	tasData.clear();
 
 	std::ifstream inFile(filename);
 	if (!inFile.is_open()) {
-		log("TASManager couldnt open file %s", filename.c_str());
+		//log("TASManager couldnt open file %s", filename.c_str());
 		return;
 	}
 
@@ -642,6 +679,19 @@ bool canSpecialCancel(int playerIndex) {
 	return false;
 }
 
+void setTASRNG(DWORD data) {
+	log("SETTASRNG %08X", data);
+	//int index = *(uint32_t*)(dwBaseAddress + adRNGIndex);
+	//*(uint32_t*)(dwBaseAddress + adRNGArray + 4 * index) = data;
+	_naked_rngShouldSet = 1;
+	_naked_rngValue = data;
+}
+
+void setTASRNGIndex(DWORD index) {
+	log("settasindex %d", index);
+	*(uint32_t*)(dwBaseAddress + adRNGIndex) = index;
+}
+
 void TASManager::setInputs(int playerIndex) {
 
 	if (!enableTAS) {
@@ -726,7 +776,7 @@ void TASManager::setInputs(int playerIndex) {
 		playerDataArr[3].subObj.magicCircuit = tasData[tasIndex].commandData;
 		break;
 	case TASCommand::RNG:
-		SetSeed(tasData[tasIndex].commandDataU32);
+		//SetSeed(tasData[tasIndex].commandDataU32);
 		break;
 	case TASCommand::Pause:
 		bFreeze = 1;
@@ -829,6 +879,13 @@ void TASManager::setInputs(int playerIndex) {
 			return;
 		}
 		break;
+	case TASCommand::SetRNG:
+		//setTASRNG(tasData[tasIndex].commandDataU32, tasData[tasIndex].commandData2);
+		setTASRNG(tasData[tasIndex].commandDataU32);
+		break;
+	case TASCommand::SetRNGIndex:
+		setTASRNGIndex(tasData[tasIndex].commandDataU32);
+		break;
 	case TASCommand::WaitAir:
 		if (playerDataArr[playerIndex].subObj.animationDataPtr != NULL && 
 			playerDataArr[playerIndex].subObj.animationDataPtr->stateData != NULL &&
@@ -886,6 +943,9 @@ void TASManager::incInputs() {
 		case TASCommand::WaitSpecialCancel:
 		case TASCommand::WaitHitstop:
 		case TASCommand::WaitCrossup:
+		// not sure if these rng commands need to be here, but just in case
+		case TASCommand::SetRNG:
+		case TASCommand::SetRNGIndex:
 			return;
 		default: 
 			break;

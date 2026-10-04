@@ -13,6 +13,8 @@ unsigned getRand();
 float getRandFloat();
 float getRandNorm();
 
+void _naked_RNGCallback();
+
 enum class TASCommand : uint8_t {
 	Nothing = 0,
 	P1XPos = 1,
@@ -23,7 +25,7 @@ enum class TASCommand : uint8_t {
 	P2Meter = 6,
 	P3Meter = 7,
 	P4Meter = 8,
-	RNG = 9, // not implemented
+	RNG = 9, // not implemented (dont use me)
 	Pause = 10,
 	Unpause = 11,
 	StartFF = 12,
@@ -42,6 +44,8 @@ enum class TASCommand : uint8_t {
 	P2YPos = 25,
 	WaitHitstop = 26,
 	WaitCrossup = 27, // idk, sounds nice
+	SetRNG = 28,
+	SetRNGIndex = 29,
 };
 
 static const char* getTASCommandName(TASCommand t) {
@@ -99,6 +103,10 @@ static const char* getTASCommandName(TASCommand t) {
 		return "WaitHitstop";
 	case TASCommand::WaitCrossup:
 		return "WaitCrossup";
+	case TASCommand::SetRNG:
+		return "SetRNG";
+	case TASCommand::SetRNGIndex:
+		return "SetRNGIndex";
 	default:
 		break;
 	}
@@ -132,6 +140,9 @@ typedef struct TASItem {
 		uint32_t commandDataU32;
 	};
 	
+	// i used to care so much about struct sizes. but im tired ok. im so fucking tired.
+	uint32_t commandData2 = 0;
+
 	// remember when i was trying to keep this struct small? funny. but then again that type of programming hurts me in the long run
 	std::string waitCommand = ""; // i could do a const char but.. who cares
 
