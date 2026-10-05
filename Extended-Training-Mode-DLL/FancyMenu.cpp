@@ -1137,6 +1137,8 @@ void initObjViewSubmenu() {
 
 	objInfo.add(HA6ViewSubmenu);
 
+	objInfo.addSimpleOnOff<int*>("Show RNG Table", L"", &showRNGTable);
+
 	baseMenu.add(objInfo);
 	
 }

@@ -865,6 +865,8 @@ extern int verboseShowAttackData;
 extern int verboseShowEFs;
 extern int verboseShowIFs;
 
+extern int showRNGTable;
+
 extern bool overkillVerboseMode;
 extern bool doDrawProfiler;
 extern bool doDrawVertexInfo;

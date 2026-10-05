@@ -1697,6 +1697,52 @@ void drawFrameData()
 	}
 }
 
+void DrawRNGTable()
+{
+	float w = 200.0f;
+	float fontW = w / 21.5f;
+	float fontH = fontW / 0.74f;
+	float h = fontH * 29.0f;
+	float x = 320.0f - (w / 2.0f);
+	float y = 240.0f - (h / 2.0f);
+
+	RectDraw(x - 2, y, w + 3, h + 1, 0x99000000); //Background
+
+	RectDraw(x - 3, y - 2, w + 5, 2, 0xFFFFFFFF);
+	RectDraw(x - 4, y - 1, 2, h + 3, 0xFFFFFFFF);
+	RectDraw(x - 3, y + h + 1, w + 5, 2, 0xFFFFFFFF);
+	RectDraw(x + w + 1, y - 1, 2, h + 3, 0xFFFFFFFF);
+
+	int rngIndex = *(int*)(adMBAABase + adRNGIndex);
+	TextDraw(320.0f - 2.5f * fontW, y, fontH, 0xffffffff, "i = %i", rngIndex);
+	float curX = x;
+	float curY = y + fontH;
+	DWORD curAD = adMBAABase + adRNGArray + 0x4;
+	for (int i = 0; i < 55; i++)
+	{
+		if (i == rngIndex)
+		{
+			RectDraw(curX, curY, 8.5 * fontW, fontH, 0xffff2020);
+		}
+		if ((rngIndex > 34 && i == rngIndex - 34) ||
+			(rngIndex < 35 && i == rngIndex + 21))
+		{
+			RectDraw(curX, curY, 8.5 * fontW, fontH, 0x80ff2020);
+		}
+		TextDraw(curX, curY, fontH, 0xffffffff, "%08x", *(int*)(curAD));
+		if (i == 27)
+		{
+			curY = y + fontH;
+			curX += 13 * fontW;
+		}
+		else
+		{
+			curY += fontH;
+		}
+		curAD += 0x4;
+	}
+}
+
 // highlight states
 
 void highlightStates()
@@ -3126,6 +3172,11 @@ void frameDoneCallback()
 	}
 	else {
 		nInputHeldFrameAdvanceCounter = 0;
+	}
+
+	if (showRNGTable)
+	{
+		DrawRNGTable();
 	}
 
 	//some janky linking of the extended input display options to the vanilla one

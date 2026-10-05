@@ -33,6 +33,8 @@ int verboseShowAttackData = 0;
 int verboseShowEFs = 0;
 int verboseShowIFs = 0;
 
+int showRNGTable = 0;
+
 DWORD _naked_getCancelStatusObj;
 DWORD _naked_getCancelStatusSpecial;
 DWORD _naked_getCancelStatusOutput;
