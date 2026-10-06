@@ -1724,12 +1724,29 @@ void DrawRNGTable()
 		{
 			RectDraw(curX, curY, 8.5 * fontW, fontH, 0xffff2020);
 		}
+
 		if ((rngIndex > 34 && i == rngIndex - 34) ||
 			(rngIndex < 35 && i == rngIndex + 21))
 		{
 			RectDraw(curX, curY, 8.5 * fontW, fontH, 0x80ff2020);
 		}
+
+		if (mousePos.x > curX && mousePos.x < curX + 8 * fontW &&
+			mousePos.y > curY && mousePos.y < curY + fontH)
+		{
+			RectDraw(curX, curY, 8.5 * fontW, fontH, 0x80ffffff);
+			if (lClick)
+			{
+				*(int*)(curAD) += 1;
+			}
+			else if (rClick)
+			{
+				*(int*)(curAD) += -1;
+			}
+		}
+
 		TextDraw(curX, curY, fontH, 0xffffffff, "%08x", *(int*)(curAD));
+
 		if (i == 27)
 		{
 			curY = y + fontH;
