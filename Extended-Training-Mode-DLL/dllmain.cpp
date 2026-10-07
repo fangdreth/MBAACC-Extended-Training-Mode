@@ -3196,6 +3196,34 @@ void frameDoneCallback()
 		DrawRNGTable();
 	}
 
+	//draw with flower petals!
+	if (*(bool*)(adMBAABase + 0x0036e7a4))
+	{
+		static int currentDropObj = 0;
+		struct DropObj
+		{
+			float xPos;
+			float yPos;
+			uint animationRow;
+			uint animationColumn;
+			uint animationWaitCounter;
+			uint idk1;
+			uint idk2;
+			float xVel;
+			float yVel;
+			float xAcc;
+			float yAcc;
+		};
+		DropObj* dropObjArr = (DropObj*)(adMBAABase + 0x00366008);
+		if (lHeld)
+		{
+			dropObjArr[currentDropObj].xPos = mousePos.x - 320.0f;
+			dropObjArr[currentDropObj].yPos = mousePos.y - 440.0f;
+			currentDropObj += 1;
+			if (currentDropObj >= 100) currentDropObj = 0;
+		}
+	}
+
 	//some janky linking of the extended input display options to the vanilla one
 	bool customInputDisplay = XS_p1InputDisplay || XS_p2InputDisplay;
 	static bool lastCustomInputDisplay = customInputDisplay;
