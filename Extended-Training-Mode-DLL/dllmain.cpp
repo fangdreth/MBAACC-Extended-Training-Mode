@@ -1928,6 +1928,7 @@ void SetRN(uint32_t nRN)
 
 //Handle extended training gameplay effects
 bool bDoReversal = false;
+bool bForceReversal = false;
 int nReversalDelayFramesLeft = 0;
 byte nHoldButtons = 0;
 bool bHoldShield = false;
@@ -1940,7 +1941,7 @@ void HandleReversalsPage() {
 		nHoldButtons = 0;
 		bHoldShield = false;
 	}
-	if ((XS_reversalType == 0 && !bDoReversal) || pActiveP2->subObj.doTrainingAction != 1 || pActiveP2->subObj.targetPatternPriority == 30000) return;
+	if ((XS_reversalType == 0 && !bForceReversal) || pActiveP2->subObj.doTrainingAction != 1 || pActiveP2->subObj.targetPatternPriority == 30000) return;
 	std::vector<int> vValidReversals = (pActiveP2->subObj.yPos == 0 && pActiveP2->subObj.prevYPos == 0 ? vGroundReversals : vAirReversals);
 	int pat;
 	if (vValidReversals.size() != 0 && bDoReversal && (pdP2Data->inactionableFrames == 0 || pActiveP2->subObj.shieldSuccessType != 0)) {
@@ -2919,6 +2920,7 @@ void frameDoneCallback()
 		(XS_reversalSlot1 != 0 || XS_reversalSlot2 != 0 || XS_reversalSlot3 != 0 || XS_reversalSlot4 != 0))
 	{
 		bDoReversal = true;
+		bForceReversal = true;
 	}
 
 	if (oSaveStateHotkey.keyDown() && safeWrite())
