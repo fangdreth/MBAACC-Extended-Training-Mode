@@ -48,6 +48,7 @@ bool displayComboTimer = false;
 bool displayHitstunBar = false;
 bool displayCrossupProtection = false;
 bool displayTrueStringProtection = false;
+bool displayPlayStats = false;
 
 int p1LoadMoon = 0;
 int p1LoadChar = 0;
@@ -477,6 +478,18 @@ void initUISubmenu() {
 			opt &= 0b1;
 
 			displayTrueStringProtection = opt;
+		},
+		defaultOnOffNameFunc,
+		L"",
+		false
+	);
+
+	ui.add<int>("Show Play Stats",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			displayPlayStats = opt;
 		},
 		defaultOnOffNameFunc,
 		L"",

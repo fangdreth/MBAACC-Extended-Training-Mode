@@ -1760,6 +1760,33 @@ void DrawRNGTable()
 	}
 }
 
+void DrawPlayStats()
+{
+	struct PlayData
+	{
+		DWORD flagThing;
+		uint totalPlayTime;
+		uint arcadeCompletions;
+		uint someArcadeNum;
+		uint idk1;
+		uint idk2;
+	};
+
+	PlayData* AAPlayDataPtr = *(PlayData**)(adMBAABase + 0x0015413c);
+	uint startPlayTime = *(uint*)(adMBAABase + 0x00154144);
+
+	uint hours = (uint)(AAPlayDataPtr->totalPlayTime / 3600);
+	uint minutes = (uint)((AAPlayDataPtr->totalPlayTime - hours * 3600) / 60);
+	uint seconds = (uint)(AAPlayDataPtr->totalPlayTime - hours * 3600 - minutes * 60);
+	TextDraw(30, 0, 10, 0xffffffff, "Total   : %04i:%02i:%02i", hours, minutes, seconds);
+
+	uint currentPlayTime = AAPlayDataPtr->totalPlayTime - startPlayTime;
+	hours = (uint)(currentPlayTime / 3600);
+	minutes = (uint)((currentPlayTime - hours * 3600) / 60);
+	seconds = (uint)(currentPlayTime - hours * 3600 - minutes * 60);
+	TextDraw(30, 10, 10, 0xffffffff, "Current : %04i:%02i:%02i", hours, minutes, seconds);
+}
+
 // highlight states
 
 void highlightStates()
@@ -3196,6 +3223,11 @@ void frameDoneCallback()
 	if (showRNGTable)
 	{
 		DrawRNGTable();
+	}
+
+	if (displayPlayStats)
+	{
+		DrawPlayStats();
 	}
 
 	//draw with flower petals!

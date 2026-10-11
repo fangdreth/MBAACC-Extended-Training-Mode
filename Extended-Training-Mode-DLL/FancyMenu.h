@@ -89,6 +89,7 @@ extern bool displayComboTimer;
 extern bool displayHitstunBar;
 extern bool displayCrossupProtection;
 extern bool displayTrueStringProtection;
+extern bool displayPlayStats;
 
 extern int p1LoadMoon;
 extern int p1LoadChar;
