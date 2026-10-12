@@ -441,7 +441,7 @@ void initExtendedMenu() {
 	training.addCustom("HITS UNTIL BURST", &XS_hitsUntilBurst, 0 , true);
 	training.addCustom("HITS UNTIL BUNKER", &XS_hitsUntilBunker, 0, true);
 	training.addCustom("HITS UNTIL FORCE GUARD", &XS_hitsUntilForceGuard, 0, true);
-	training.add("FORCE GUARD STANCE", { "STAND", "CROUCH" }, &XS_forceGuardStance);
+	training.add("FORCE GUARD STANCE", { "STAND", "CROUCH", "RANDOM" }, &XS_forceGuardStance);
 	training.addSpace();
 	training.addFooter("PAGE 2");
 	XS_Menu.add(training);
@@ -847,7 +847,7 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 	{"XS_1_10_0", "_BURST"}, {"XS_1_10_1", "_BURST"}, {"XS_1_10_2", "_BURST"},
 	{"XS_1_11_0", "_BUNKER"}, {"XS_1_11_1", "_BUNKER"}, {"XS_1_11_2", "_BUNKER"},
 	{"XS_1_12_0", "_FORCEGUARD"}, {"XS_1_12_1", "_FORCEGUARD"}, {"XS_1_12_2", "_FORCEGUARD"},
-	{"XS_1_13_0", "Force standing guard."}, {"XS_1_13_1", "Force crouching guard."},
+	{"XS_1_13_0", "Force standing guard."}, {"XS_1_13_1", "Force crouching guard."}, {"XS_1_13_2", "Force random guard."},
 
 	//HIGHLIGHTS
 	{"XS_2_0_0", "No highlights."}, {"XS_2_0_1", "Enable highlights."},

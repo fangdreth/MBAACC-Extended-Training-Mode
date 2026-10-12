@@ -97,7 +97,7 @@ DWORD frameBarY = 400;
 bool bDoResetBars = true;
 bool bShowFrameBarPreview = false;
 bool bShowFrameBarYPreview = false;
-bool bForceGuard = false;
+int nUsedForcedGuardStance = -1;
 int dummyDelayTechFramesElapsed = 0;
 int comboTimer = 0;
 
@@ -2252,10 +2252,18 @@ void HandleTrainingPage() {
 		pActiveP2->subObj.onBlockComboCount >= XS_hitsUntilForceGuard &&
 		pActiveP2->subObj.animationDataPtr->stateData->stance != 1 &&
 		pActiveP2->subObj.defensiveStateFlag == 5) {
-		bForceGuard = true;
+		if (XS_forceGuardStance == 2)
+		{
+			nUsedForcedGuardStance = rand() % 2;
+		}
+		else
+		{
+			nUsedForcedGuardStance = XS_forceGuardStance;
+		}
+		
 	}
 	else {
-		bForceGuard = false;
+		nUsedForcedGuardStance = -1;
 	}
 }
 
@@ -7467,9 +7475,9 @@ __declspec(naked) void _naked_ForceDummyGuard() {
 		mov eax, ebp;
 		call[MBAA_GetTrainingDummyBlockType];
 	}
-	if (bForceGuard) {
+	if (nUsedForcedGuardStance != -1) {
 		__asm {
-			mov eax, XS_forceGuardStance;
+			mov eax, nUsedForcedGuardStance;
 			add eax, 0x1;
 		}
 	}
