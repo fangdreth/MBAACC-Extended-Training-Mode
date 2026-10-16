@@ -123,6 +123,7 @@ extern bool doAutoAdvance;
 
 extern bool customLoadReplay;
 extern int enableMouseControls;
+extern bool enableEntityNudge;
 
 extern char customLoadReplayPath[256];
 extern char* customLoadReplayPathPtr;

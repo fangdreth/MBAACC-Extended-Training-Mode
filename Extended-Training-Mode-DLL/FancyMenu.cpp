@@ -91,6 +91,7 @@ char* customLoadReplayPathPtr = customLoadReplayPath;
 bool wikiBoxMode = false;
 
 int enableMouseControls = 0;
+bool enableEntityNudge = false;
 
 static bool LoadFileExplorer(std::wstring& filePath)
 {
@@ -1083,6 +1084,16 @@ void initMiscSubmenu() {
 		},
 		L"",
 		&enableMouseControls
+	);
+
+	misc.add<int>("Entity Nudging",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			enableEntityNudge = opt != 0;
+		},
+		defaultOnOffNameFunc
 	);
 
 	baseMenu.add(misc);

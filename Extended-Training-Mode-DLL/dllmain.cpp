@@ -100,6 +100,7 @@ bool bShowFrameBarYPreview = false;
 int nUsedForcedGuardStance = -1;
 int dummyDelayTechFramesElapsed = 0;
 int comboTimer = 0;
+ActorData* nudgeActor = nullptr;
 
 bool initLoadChars = false;
 
@@ -3236,6 +3237,110 @@ void frameDoneCallback()
 	if (displayPlayStats)
 	{
 		DrawPlayStats();
+	}
+
+	if (enableEntityNudge)
+	{
+		if (lClick)
+		{
+			float camZoom = *(float*)(dwCameraZoom);
+			float camX = *(int*)(dwCameraX);
+			float camY = *(int*)(dwCameraY);
+			int x = ((mousePos.x - 320.0f) * 128.0f) / camZoom + camX;
+			int y = ((mousePos.y - 430.0f) * 128.0f) / camZoom + camY;
+
+			float dist = 10000.0f;
+
+			ActorData* newTarget = nullptr;
+
+			for (int i = 0; i < 4; i++)
+			{
+				if (!playerDataArr[i].exists) continue;
+				ActorData* a = &playerDataArr[i].subObj;
+				float xDist = (x - a->xPos);
+				float yDist = (y - a->yPos);
+				float newDist = sqrt(xDist * xDist + yDist * yDist);
+
+				if (newDist < dist)
+				{
+					dist = newDist;
+					newTarget = a;
+				}
+			}
+
+			int emptyProjCount = 0;
+			for (int i = 0; i < 1000; i++)
+			{
+				if (!effectDataArr[i].exists)
+				{
+					emptyProjCount++;
+					if (emptyProjCount >= 10)
+					{
+						break;
+					}
+					continue;
+				}
+				emptyProjCount = 0;
+
+				ActorData* a = &effectDataArr[i].subObj;
+				float xDist = (x - a->xPos);
+				float yDist = (y - a->yPos);
+				float newDist = sqrt(xDist * xDist + yDist * yDist);
+
+				if (newDist < dist)
+				{
+					dist = newDist;
+					newTarget = a;
+				}
+			}
+
+			nudgeActor = newTarget;
+		}
+
+		if (lHeld || rClick)
+		{
+			float camZoom = *(float*)(dwCameraZoom);
+			float camX = *(int*)(dwCameraX);
+			float camY = *(int*)(dwCameraY);
+			int x = ((mousePos.x - 320.0f) * 128.0f) / camZoom + camX;
+			int y = ((mousePos.y - 430.0f) * 128.0f) / camZoom + camY;
+			//TextDraw(mousePos, 10, 0xffffffff, "%i, %i", x, y);
+
+			if (nudgeActor != nullptr)
+			{
+				float xDist = (x - nudgeActor->xPos);
+				float yDist = (y - nudgeActor->yPos);
+				float dist = sqrt(xDist * xDist + yDist * yDist);
+
+				if (dist < 10000.0f)
+				{
+					if (rClick)
+					{
+						bool xNudge = abs(x - nudgeActor->xPos) > abs(y - nudgeActor->yPos);
+						if (xNudge)
+							nudgeActor->xPos += x > nudgeActor->xPos ? 1 : -1;
+						else
+							nudgeActor->yPos += y > nudgeActor->yPos ? 1 : -1;
+					}
+					else
+					{
+						nudgeActor->xPos = x;
+						nudgeActor->yPos = y;
+					}
+				}
+			}
+			
+		}
+
+		if (nudgeActor != nullptr)
+		{
+			float camZoom = *(float*)(dwCameraZoom);
+			float camX = *(int*)(dwCameraX);
+			float camY = *(int*)(dwCameraY);
+			float x = (((nudgeActor->xPos - camX) * camZoom) / 128.0f) + 320.0f;
+			float y = (((nudgeActor->yPos - camY) * camZoom) / 128.0f) + 430.0f;
+			TextDraw(x, y, 10, 0xffffffff, "%i, %i", nudgeActor->xPos, nudgeActor->yPos);
+		}
 	}
 
 	//draw with flower petals!
