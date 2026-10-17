@@ -35,6 +35,7 @@ extern int nDrawTextTimer;
 extern int nClearSaveTimer;
 
 extern int nAdjustNumbersForFreeze;
+extern int nFramebarSecondaryColorDisplayMode;
 
 class FrameBar
 {
@@ -66,9 +67,11 @@ struct FrameBarCell
 	int numFlag = 0;
 	int edgeFlag = 0;
 
+	int savePattern = -1;
+
 	void reset();
 
-	void draw(float x, float y, float w, float h, float widthMult);
+	void draw(float x, float y, float w, float h, float widthMult, int index);
 };
 
 struct FrameBarPlayerData

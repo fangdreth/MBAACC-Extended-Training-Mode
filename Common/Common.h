@@ -505,6 +505,7 @@ const REGKEY sFRAME_BAR_W = L"FrameBarW";
 const REGKEY sFRAME_BAR_H = L"FrameBarH";
 const REGKEY sFRAME_BAR_NUMCELLS = L"FrameBarNumCells";
 const REGKEY sFRAME_BAR_CELLWIDTH = L"FrameBarCellWidth";
+const REGKEY sFRAME_BAR_SECONDARY_MODE = L"FrameBarSecondaryMode";
 
 const REGKEY sDISPLAY_CURSOR = L"DisplayCursor";
 const REGKEY sDEBUG_MENU_FONT_SIZE = L"DebugMenuFontSize";

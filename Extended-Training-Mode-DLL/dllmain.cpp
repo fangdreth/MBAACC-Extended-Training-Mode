@@ -70,22 +70,12 @@ DWORD tempRegister4;
 DWORD __frameDoneCount = 0;
 DWORD unpausedFrameCount = 0;
 
-int nFreezeKey;
-int nFrameStepKey;
-int nHitboxesDisplayKey;
-int nFrameDataDisplayKey;
-int nHighlightsOnKey;
-int nSaveStateKey;
-
 DWORD showCSS = 1;
 int showDebugMenu = 0;
 int showReplayMenu = 0;
 bool bFreeze = false;
 bool bSlow = false;
 int nInputHeldFrameAdvanceCounter = 0;
-bool bFrameDataDisplay = false;
-bool bHitboxesDisplay = false;
-bool bHighlightsOn = true;
 DWORD shouldDrawBackground = 1;
 DWORD shouldDrawHud = 1;
 DWORD shouldDrawGroundLine = 0;
@@ -93,8 +83,6 @@ DWORD backgroundColor = 0xFFFFFFFF;
 DWORD shouldDrawShadow = 0;
 DWORD fastReversePenalty = 0;
 DWORD shouldDrawMeter = 1;
-DWORD frameBarY = 400;
-bool bDoResetBars = true;
 bool bShowFrameBarPreview = false;
 bool bShowFrameBarYPreview = false;
 int nUsedForcedGuardStance = -1;
@@ -171,6 +159,7 @@ void initRegistryValues()
 	ReadFromRegistry(sFRAME_BAR_H, &frameBar.h);
 	ReadFromRegistry(sFRAME_BAR_NUMCELLS, &frameBar.numCells);
 	ReadFromRegistry(sFRAME_BAR_CELLWIDTH, &frameBar.cellWidth);
+	ReadFromRegistry(sFRAME_BAR_SECONDARY_MODE, &nFramebarSecondaryColorDisplayMode);
 
 	ReadFromRegistry(sDISPLAY_CURSOR, &enableCursor);
 	ReadFromRegistry(sDEBUG_MENU_COMPACT_VIEW, &compactView);
@@ -1761,33 +1750,6 @@ void DrawRNGTable()
 	}
 }
 
-void DrawPlayStats()
-{
-	struct PlayData
-	{
-		DWORD flagThing;
-		uint totalPlayTime;
-		uint arcadeCompletions;
-		uint someArcadeNum;
-		uint idk1;
-		uint idk2;
-	};
-
-	PlayData* AAPlayDataPtr = *(PlayData**)(adMBAABase + 0x0015413c);
-	uint startPlayTime = *(uint*)(adMBAABase + 0x00154144);
-
-	uint hours = (uint)(AAPlayDataPtr->totalPlayTime / 3600);
-	uint minutes = (uint)((AAPlayDataPtr->totalPlayTime - hours * 3600) / 60);
-	uint seconds = (uint)(AAPlayDataPtr->totalPlayTime - hours * 3600 - minutes * 60);
-	TextDraw(30, 0, 10, 0xffffffff, "Total   : %04i:%02i:%02i", hours, minutes, seconds);
-
-	uint currentPlayTime = AAPlayDataPtr->totalPlayTime - startPlayTime;
-	hours = (uint)(currentPlayTime / 3600);
-	minutes = (uint)((currentPlayTime - hours * 3600) / 60);
-	seconds = (uint)(currentPlayTime - hours * 3600 - minutes * 60);
-	TextDraw(30, 10, 10, 0xffffffff, "Current : %04i:%02i:%02i", hours, minutes, seconds);
-}
-
 // highlight states
 
 void highlightStates()
@@ -3232,11 +3194,6 @@ void frameDoneCallback()
 	if (showRNGTable)
 	{
 		DrawRNGTable();
-	}
-
-	if (displayPlayStats)
-	{
-		DrawPlayStats();
 	}
 
 	if (enableEntityNudge)

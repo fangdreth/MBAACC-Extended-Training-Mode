@@ -9,6 +9,7 @@
 #include <filesystem>
 
 #include "TrainingMenu.h"
+#include "FrameBar.h"
 
 /*
 
@@ -17,8 +18,6 @@ what was i smoking;
 i seriously just ended a sentance with a semicolon. wow
 
 */
-
-#include "FrameBar.h"
 
 extern bool shouldDisplayDebugInfo;
 extern bool shouldDisplayLinkedListInfo;
@@ -48,7 +47,6 @@ bool displayComboTimer = false;
 bool displayHitstunBar = false;
 bool displayCrossupProtection = false;
 bool displayTrueStringProtection = false;
-bool displayPlayStats = false;
 
 int p1LoadMoon = 0;
 int p1LoadChar = 0;
@@ -485,18 +483,6 @@ void initUISubmenu() {
 		false
 	);
 
-	ui.add<int>("Show Play Stats",
-		[](int inc, int& opt) {
-			opt += inc;
-			opt &= 0b1;
-
-			displayPlayStats = opt;
-		},
-		defaultOnOffNameFunc,
-		L"",
-		false
-	);
-
 	baseMenu.add(ui);
 
 	// -----
@@ -712,6 +698,26 @@ void initFramebarSubmenu() {
 		},
 		L"",
 		&nAdjustNumbersForFreeze
+	);
+
+	Framebar.add<int*>("Secondary Color Display Mode",
+		[](int inc, int*& opt) {
+			*opt += inc;
+			*opt = CLAMP(*opt, 0, 2);
+		},
+		[](int* opt) -> std::string {
+			switch (*opt)
+			{
+			case 0:
+				return "STRIPES";
+			case 1:
+				return "DOT";
+			case 2:
+				return "PATTERN";
+			}
+		},
+		sFRAME_BAR_SECONDARY_MODE,
+		&nFramebarSecondaryColorDisplayMode
 	);
 
 	Framebar.add<int>("Default Settings",
@@ -1073,7 +1079,7 @@ void initMiscSubmenu() {
 		buttonNameFunc
 	);
 
-	misc.add<int*>("Enable Mouse Controls",
+	misc.add<int*>("Mouse Controls",
 		[](int inc, int*& opt) {
 			*opt += inc;
 			*opt &= 0b1;

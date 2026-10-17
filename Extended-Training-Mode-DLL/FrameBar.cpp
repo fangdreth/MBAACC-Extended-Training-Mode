@@ -26,6 +26,7 @@ int nDrawTextTimer = 0;
 int nClearSaveTimer = 0;
 
 int nAdjustNumbersForFreeze = 0;
+int nFramebarSecondaryColorDisplayMode = 0;
 
 FrameBarPlayerData::FrameBarPlayerData(char playerNum_, DWORD playerDataAddress, DWORD playerAuxDataAddress) {
 	playerNum = playerNum_;
@@ -75,7 +76,7 @@ const DWORD FB_THROW_ACTIVE = 0xFFC00080;
 const DWORD FB_CLASH = 0xFFE1B800;
 const DWORD FB_INVULN = 0xFFFFFFFF;
 const DWORD FB_ASSIST_ACTIVE = 0xFFFF8000;
-const DWORD FB_COUNTER = 0xFFC485EA;
+const DWORD FB_SPECIAL = 0xFFC465EA;
 const DWORD FB_NOCOUNTERHIT = 0xFF0870BC;
 
 FrameBar::FrameBar(float x_, float y_, float w_, float h_, int numCells_, float cellWidth_)
@@ -121,21 +122,9 @@ void FrameBar::draw()
 	RectDraw(l - 3, t + h + 1, w + 5, 2, 0xFFFFFFFF);
 	RectDraw(l + w + 1, t - 1, 2, h + 3, 0xFFFFFFFF);
 
-	int j = 0;
-	for (int i = nForStart; i < nForEnd; i++)
-	{
-		j = i < 0 ? i + BAR_MEMORY_SIZE : i;
-
-		float cellX = l + w / (float)numCells * (float)nBarDrawCounter;
-		float fullCellW = w / (float)numCells;
-		FB_Main1->cells[j].draw(cellX, t + h * 0.06, fullCellW, h * 0.38, cellWidth);
-		FB_Main2->cells[j].draw(cellX, t + h * 0.56, fullCellW, h * 0.38, cellWidth);
-
-		nBarDrawCounter++;
-	}
 	static char buffer[256];
 	int total = FB_Main1->nInactionableMemory % 1000;
-	if(nAdjustNumbersForFreeze) total = FB_Main1->nInactionCounterMemory % 1000;
+	if (nAdjustNumbersForFreeze) total = FB_Main1->nInactionCounterMemory % 1000;
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF / Link Window %3iF (%3iF)", FB_Main1->nFirstActive % 1000, total, nPlayerAdvantage % 1000, FB_Main1->nLinkWindowCounterMemory % 1000, FB_Main1->nLinkOTGWindowMemory % 1000);
 	TextDraw(l, t - 12, 10, 0xFFFFFFFF, buffer);
 
@@ -143,11 +132,24 @@ void FrameBar::draw()
 	if (nAdjustNumbersForFreeze) total = FB_Main2->nInactionCounterMemory % 1000;
 	snprintf(buffer, 256, "Startup %3iF / Total %3iF / Advantage %3iF / Link Window %3iF (%3iF)", FB_Main2->nFirstActive % 1000, total, -nPlayerAdvantage % 1000, FB_Main2->nLinkWindowCounterMemory % 1000, FB_Main2->nLinkOTGWindowMemory % 1000);
 	TextDraw(l, t + h + 3, 10, 0xFFFFFFFF, buffer);
+
+	int j = 0;
+	for (int i = nForStart; i < nForEnd; i++)
+	{
+		j = i < 0 ? i + BAR_MEMORY_SIZE : i;
+
+		float cellX = l + w / (float)numCells * (float)nBarDrawCounter;
+		float fullCellW = w / (float)numCells;
+		FB_Main1->cells[j].draw(cellX, t + h * 0.06, fullCellW, h * 0.38, cellWidth, j);
+		FB_Main2->cells[j].draw(cellX, t + h * 0.56, fullCellW, h * 0.38, cellWidth, j);
+
+		nBarDrawCounter++;
+	}
 }
 
 FrameBar frameBar(320.0f, 410.0f, 600.0f, 26.0f, 75, 0.90f);
 
-void FrameBarCell::draw(float x, float y, float w, float h, float widthMult)
+void FrameBarCell::draw(float x, float y, float w, float h, float widthMult, int index)
 {
 	float adjW = w * widthMult;
 
@@ -166,9 +168,20 @@ void FrameBarCell::draw(float x, float y, float w, float h, float widthMult)
 	if (mainColor != 0x0) RectDraw(x, y, adjW, h, mainColor);
 
 	if (subColor != 0x0) {
-		//RectDraw(x + (adjW / 2), y, adjW / 2, h, subColor);
-		for (float i = 0.0f; i < h; i += 2) {
-			RectDraw(x, y + i, adjW, 1.0f, subColor);
+		switch (nFramebarSecondaryColorDisplayMode)
+		{
+		case 0: //stripes
+			for (float i = 0.0f; i < h; i += 2) {
+				RectDraw(x, y + i, adjW, 1.0f, subColor);
+			}
+			break;
+		case 1: //dot
+			RectDraw(x + (w * 0.35), y + (h * 0.35), w * 0.3, h * 0.3, subColor);
+			break;
+		case 2: //pattern
+			float yOffset = 0.3 + 0.2 * (index % 2);
+			RectDraw(x, y + (h * yOffset), w, h * 0.2, subColor);
+			break;
 		}
 	}
 
@@ -185,6 +198,13 @@ void FrameBarCell::draw(float x, float y, float w, float h, float widthMult)
 		snprintf(buffer, 8, "%i", number);
 		TextDraw(x - (size * 0.72 * nLength + 1), y, size, 0xFFFFFFFF, buffer);
 	}
+
+	if (mousePos.x >= x && mousePos.x < x + w && mousePos.y >= y && mousePos.y <= y + h)
+	{
+		RectDraw(x, y, w, h, 0x80ffffff);
+		RectDraw(mousePos.x - 0.5, mousePos.y - 20 - 0.5, 50, 11, 0x99000000);
+		TextDraw(mousePos.x, mousePos.y - 20, 10, 0xffffffff, "P: %03i", savePattern);
+	}
 }
 
 void FrameBarCell::reset()
@@ -195,6 +215,7 @@ void FrameBarCell::reset()
 	airborneColor = 0x0;
 	number = -1;
 	numFlag = 0;
+	savePattern = -1;
 }
 
 void UpdatePlayers() //Called after bar handling
@@ -398,14 +419,16 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 	else if (P.playerData->subObj.hitstop != 0) //in hitstop
 	{
 		dwMainColor = FB_HITSTOP;
+		nNumber = P.playerData->subObj.hitstop;
 		if (P.playerData->subObj.didAdvanceFramesIntoCurrentPattern != 0)
 		{
 			nNumFlag = 1;
+			nNumber = P.playerData->subObj.hitstunTimeRemaining - 1;
 		}
 		else if (P.playerData->subObj.attackDataPtr != 0)
 		{
 			nNumFlag = 3;
-			nNumber = -1;
+			//nNumber = -1;
 		}
 	}
 	else if (bIsShield)
@@ -451,7 +474,7 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 	else if (P.playerData->subObj.animationDataPtr->highestNonHitboxIndex == 10 &&
 		bIsBoxCheck) //Special Box 1 and IFTP 14
 	{
-		dwSubColor = FB_COUNTER;
+		dwSubColor = FB_SPECIAL;
 	}
 
 	if (P.playerData->subObj.animationDataPtr->stateData->stance == 1) //Airborne
@@ -595,6 +618,7 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].number = nNumber;
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].numFlag = nNumFlag;
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].edgeFlag = nEdgeFlag;
+	P.cells[nBarCounter % BAR_MEMORY_SIZE].savePattern = P.playerData->subObj.pattern;
 
 	if (nNumFlag != 2 &&
 		nNumber >= 0 &&
@@ -615,8 +639,14 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 		int i = 1;
 		while (P.cells[posMod(nBarCounter - i, BAR_MEMORY_SIZE)].numFlag == 3)
 		{
-			P.cells[posMod(nBarCounter - ++i, BAR_MEMORY_SIZE)].number = -1;
+			P.cells[posMod(nBarCounter - i++, BAR_MEMORY_SIZE)].number = -1;
 		}
+		P.cells[posMod(nBarCounter - i, BAR_MEMORY_SIZE)].number = -1;
+	}
+	else if (nNumFlag == 3 &&
+		P.cells[previousIndex].numFlag == 3)
+	{
+		P.cells[previousIndex].number = -1;
 	}
 }
 
@@ -877,8 +907,8 @@ void drawColorGuide()
 	RectDraw(74, 45, 3, 10, FB_INVULN);
 	TextDraw(77, 45, 10, 0xFFFFFFFF, "INVULN");
 	RectDraw(130, 45, 7, 10, FB_INACTIONABLE);
-	RectDraw(134, 45, 3, 10, FB_COUNTER);
-	TextDraw(137, 45, 10, 0xFFFFFFFF, "COUNTER");
+	RectDraw(134, 45, 3, 10, FB_SPECIAL);
+	TextDraw(137, 45, 10, 0xFFFFFFFF, "SPECIAL");
 	RectDraw(200, 45, 7, 10, FB_INACTIONABLE);
 	RectDraw(200, 44, 7, 2, FB_JUMP);
 	TextDraw(207, 45, 10, 0xFFFFFFFF, "AIRBORNE");
