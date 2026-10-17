@@ -3241,15 +3241,23 @@ void frameDoneCallback()
 
 	if (enableEntityNudge)
 	{
+		static bool justChangedTarget = false;
+		static Point lastClick = Point(0, 0);
+		if (rClick)
+		{
+			nudgeActor = nullptr;
+		}
+
 		if (lClick)
 		{
+			justChangedTarget = false;
 			float camZoom = *(float*)(dwCameraZoom);
 			float camX = *(int*)(dwCameraX);
 			float camY = *(int*)(dwCameraY);
 			int x = ((mousePos.x - 320.0f) * 128.0f) / camZoom + camX;
 			int y = ((mousePos.y - 430.0f) * 128.0f) / camZoom + camY;
 
-			float dist = 10000.0f;
+			float dist = 5000.0f;
 
 			ActorData* newTarget = nullptr;
 
@@ -3294,10 +3302,15 @@ void frameDoneCallback()
 				}
 			}
 
-			nudgeActor = newTarget;
+			if (nudgeActor != newTarget && newTarget != nullptr)
+			{
+				nudgeActor = newTarget;
+				justChangedTarget = true;
+			}
+			
 		}
 
-		if (lHeld || rClick)
+		if (lHeld && !justChangedTarget)
 		{
 			float camZoom = *(float*)(dwCameraZoom);
 			float camX = *(int*)(dwCameraX);
@@ -3306,30 +3319,26 @@ void frameDoneCallback()
 			int y = ((mousePos.y - 430.0f) * 128.0f) / camZoom + camY;
 			//TextDraw(mousePos, 10, 0xffffffff, "%i, %i", x, y);
 
+			if (lClick) lastClick = Point(x, y);
+
 			if (nudgeActor != nullptr)
 			{
 				float xDist = (x - nudgeActor->xPos);
 				float yDist = (y - nudgeActor->yPos);
 				float dist = sqrt(xDist * xDist + yDist * yDist);
 
-				if (dist < 10000.0f)
+				if (dist < 5000.0f)
 				{
-					if (rClick)
-					{
-						bool xNudge = abs(x - nudgeActor->xPos) > abs(y - nudgeActor->yPos);
-						if (xNudge)
-							nudgeActor->xPos += x > nudgeActor->xPos ? 1 : -1;
-						else
-							nudgeActor->yPos += y > nudgeActor->yPos ? 1 : -1;
-					}
-					else
-					{
-						nudgeActor->xPos = x;
-						nudgeActor->yPos = y;
-					}
+					nudgeActor->xPos = x;
+					nudgeActor->yPos = y;
+				}
+				else
+				{
+					nudgeActor->xPos += (x - lastClick.x) / 128;
+					nudgeActor->yPos += (y - lastClick.y) / 128;
 				}
 			}
-			
+			lastClick = Point(x, y);
 		}
 
 		if (nudgeActor != nullptr)
