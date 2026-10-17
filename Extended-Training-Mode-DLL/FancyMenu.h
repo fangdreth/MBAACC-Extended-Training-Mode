@@ -114,6 +114,7 @@ extern bool freezeCamera;
 extern float customCameraZoom;
 extern int customCameraX;
 extern int customCameraY;
+extern bool enableCustomCameraMouse;
 
 extern bool compactView;
 

@@ -74,6 +74,7 @@ int customCameraZoomInterval = 1;
 int customCameraX = 0;
 int customCameraY = 0;
 int customCameraCoordInterval = 1;
+bool enableCustomCameraMouse = false;
 
 bool compactView = false;
 int bgAlpha = 0x00;
@@ -1560,7 +1561,7 @@ void initCameraSubmenu() {
 		&customCameraCoordInterval
 	);
 
-	camera.add<int>("Set to current",
+	camera.add<int>("Set to Current",
 		[](int inc, int& opt) {
 			customCameraZoom = *(float*)(adMBAABase + 0x0014eb70);
 			customCameraX = *(int*)(adMBAABase + 0x00155124);
@@ -1571,11 +1572,25 @@ void initCameraSubmenu() {
 		0
 	);
 
-	camera.add<int>("Try Click and Drag!",
-		[](int inc, int& opt) {},
+	camera.add<int>("Default",
+		[](int inc, int& opt) {
+			customCameraZoom = 1.0f;
+			customCameraX = 0;
+			customCameraY = 0;
+		},
 		buttonNameFunc,
 		L"",
 		0
+	);
+
+	camera.add<int>("Mouse Controls",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			enableCustomCameraMouse = opt != 0;
+		},
+		defaultOnOffNameFunc
 	);
 
 	baseMenu.add(camera);

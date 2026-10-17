@@ -622,19 +622,19 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 
 	if (nNumFlag != 2 &&
 		nNumber >= 0 &&
-		P.cells[previousIndex].numFlag == 0) //clear last frame if current frame has info and last frame numFlag = 0
+		P.cells[previousIndex].numFlag == 0) //clear last frame if current frame has info and last frame numFlag = 0 - clears most normal numbers
 	{
 		P.cells[previousIndex].number = -1;
 	}
 	else if (nNumFlag == 2 &&
 		nNumber >= 0 &&
-		P.cells[previousIndex].numFlag == 2) //clear last frame if current and last frame numFlag = 2
+		P.cells[previousIndex].numFlag == 2) //clear last frame if current and last frame numFlag = 2 - clears active counter
 	{
 		P.cells[previousIndex].number = -1;
 	}
 	else if (nNumFlag == 2 &&
 		nNumber >= 0 &&
-		P.cells[previousIndex].numFlag == 3) //continuous clear if numFlag = 2 and previous = 3
+		P.cells[previousIndex].numFlag == 3) //continuous clear if numFlag = 2 and previous = 3 - clears active counter through hitstop
 	{
 		int i = 1;
 		while (P.cells[posMod(nBarCounter - i, BAR_MEMORY_SIZE)].numFlag == 3)
@@ -644,7 +644,7 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 		P.cells[posMod(nBarCounter - i, BAR_MEMORY_SIZE)].number = -1;
 	}
 	else if (nNumFlag == 3 &&
-		P.cells[previousIndex].numFlag == 3)
+		P.cells[previousIndex].numFlag == 3) //clear last frame if current and last frame numFlag = 3 - clears hitstop
 	{
 		P.cells[previousIndex].number = -1;
 	}

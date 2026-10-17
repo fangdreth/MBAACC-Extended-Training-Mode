@@ -3148,29 +3148,32 @@ void frameDoneCallback()
 
 	if (freezeCamera)
 	{
-		static Point customCameraMouseTracker;
-		if (lClick) {
-			customCameraMouseTracker = mousePos;
-		}
-		else if (lHeld) {
-			customCameraX += (customCameraMouseTracker.x - mousePos.x) * 128 / customCameraZoom;
-			customCameraY += (customCameraMouseTracker.y - mousePos.y) * 128 / customCameraZoom;
-			customCameraMouseTracker = mousePos;
-		}
+		if (enableCustomCameraMouse)
+		{
+			static Point customCameraMouseTracker;
+			if (lClick) {
+				customCameraMouseTracker = mousePos;
+			}
+			else if (lHeld) {
+				customCameraX += (customCameraMouseTracker.x - mousePos.x) * 128 / customCameraZoom;
+				customCameraY += (customCameraMouseTracker.y - mousePos.y) * 128 / customCameraZoom;
+				customCameraMouseTracker = mousePos;
+			}
 
-		static Point customCameraMouseTracker2;
-		if (rClick) {
-			customCameraMouseTracker2 = mousePos;
-		}
-		else if (rHeld) {
-			float xDist = 320.0f - customCameraMouseTracker2.x;
-			float yDist = 240.0f - customCameraMouseTracker2.y;
-			float trackerCenterDist = sqrt(xDist * xDist + yDist * yDist);
-			xDist = 320.0f - mousePos.x;
-			yDist = 240.0f - mousePos.y;
-			float mouseCenterDist = sqrt(xDist * xDist + yDist * yDist);
-			customCameraZoom += (mouseCenterDist - trackerCenterDist) / 100.0f;
-			customCameraMouseTracker2 = mousePos;
+			static Point customCameraMouseTracker2;
+			if (rClick) {
+				customCameraMouseTracker2 = mousePos;
+			}
+			else if (rHeld) {
+				float xDist = 320.0f - customCameraMouseTracker2.x;
+				float yDist = 240.0f - customCameraMouseTracker2.y;
+				float trackerCenterDist = sqrt(xDist * xDist + yDist * yDist);
+				xDist = 320.0f - mousePos.x;
+				yDist = 240.0f - mousePos.y;
+				float mouseCenterDist = sqrt(xDist * xDist + yDist * yDist);
+				customCameraZoom += (mouseCenterDist - trackerCenterDist) / 100.0f;
+				customCameraMouseTracker2 = mousePos;
+			}
 		}
 
 		*(byte*)(adMBAABase + 0x00157d2b) = 0x1;
