@@ -201,9 +201,12 @@ void FrameBarCell::draw(float x, float y, float w, float h, float widthMult, int
 
 	if (mousePos.x >= x && mousePos.x < x + w && mousePos.y >= y && mousePos.y <= y + h)
 	{
-		RectDraw(x, y, w, h, 0x80ffffff);
-		RectDraw(mousePos.x - 0.5, mousePos.y - 20 - 0.5, 50, 11, 0x99000000);
-		TextDraw(mousePos.x, mousePos.y - 20, 10, 0xffffffff, "P: %03i", savePattern);
+		RectDraw(x, y, w, h, 0x80ffffff); //highlight cell
+		int bgWidth = 7.2 * 6 + 1; //7.2 * longest text + 1
+		int bgHeight = 10 * 2 + 1; //10 * number of rows + 1
+		RectDraw(mousePos.x - 0.5, mousePos.y - 30 - 0.5, bgWidth, bgHeight, 0x99000000);
+		TextDraw(mousePos.x, mousePos.y - 30, 10, 0xffffffff, "P: %03i", pattern);
+		TextDraw(mousePos.x, mousePos.y - 20, 10, 0xffffffff, "S: %03i", state);
 	}
 }
 
@@ -215,7 +218,8 @@ void FrameBarCell::reset()
 	airborneColor = 0x0;
 	number = -1;
 	numFlag = 0;
-	savePattern = -1;
+	pattern = -1;
+	state = -1;
 }
 
 void UpdatePlayers() //Called after bar handling
@@ -618,7 +622,8 @@ void UpdateBars(FrameBarPlayerData& P, FrameBarPlayerData& Assist)
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].number = nNumber;
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].numFlag = nNumFlag;
 	P.cells[nBarCounter % BAR_MEMORY_SIZE].edgeFlag = nEdgeFlag;
-	P.cells[nBarCounter % BAR_MEMORY_SIZE].savePattern = P.playerData->subObj.pattern;
+	P.cells[nBarCounter % BAR_MEMORY_SIZE].pattern = P.playerData->subObj.pattern;
+	P.cells[nBarCounter % BAR_MEMORY_SIZE].state = P.playerData->subObj.state;
 
 	if (nNumFlag != 2 &&
 		nNumber >= 0 &&

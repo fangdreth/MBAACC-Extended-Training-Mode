@@ -3202,7 +3202,6 @@ void frameDoneCallback()
 	if (enableEntityNudge)
 	{
 		static bool justChangedTarget = false;
-		static Point lastClick = Point(0, 0);
 		if (rClick)
 		{
 			nudgeActor = nullptr;
@@ -3272,6 +3271,8 @@ void frameDoneCallback()
 
 		if (lHeld && !justChangedTarget)
 		{
+			static Point lastClick = Point(0, 0);
+
 			float camZoom = *(float*)(dwCameraZoom);
 			float camX = *(int*)(dwCameraX);
 			float camY = *(int*)(dwCameraY);
@@ -3294,11 +3295,17 @@ void frameDoneCallback()
 				}
 				else
 				{
+					int xDiff = (x - lastClick.x) / 128;
+					int yDiff = (y - lastClick.y) / 128;
 					nudgeActor->xPos += (x - lastClick.x) / 128;
 					nudgeActor->yPos += (y - lastClick.y) / 128;
+					if (xDiff + yDiff != 0)
+					{
+						lastClick = Point(x, y);
+					}
 				}
 			}
-			lastClick = Point(x, y);
+			
 		}
 
 		if (nudgeActor != nullptr)
