@@ -1754,71 +1754,33 @@ void DrawRNGTable()
 
 void highlightStates()
 {
-	static int nP1ThrowProtectionTimer = 0;
-	static int nP2ThrowProtectionTimer = 0;
-
 	if (!safeWrite()) {
 		return;
 	}
 
-	static int nOldFrameTimer = 0;
-	int nFrameTimer = *reinterpret_cast<int*>(dwBaseAddress + dwFrameTimer);	// frametimer is prob not needed
-	int nGlobalExFlash = *reinterpret_cast<int*>(dwBaseAddress + dwGlobalExFlash);
-	int nP1ExFlash = *reinterpret_cast<int*>(dwBaseAddress + dwP1ExFlash);
-	int nP2ExFlash = *reinterpret_cast<int*>(dwBaseAddress + dwP2ExFlash);
-	if (nFrameTimer != nOldFrameTimer && nGlobalExFlash == 0 && nP1ExFlash == 0 && nP2ExFlash == 0)
-	{
-		nP1ThrowProtectionTimer = max(0, nP1ThrowProtectionTimer - 1);
-		nP2ThrowProtectionTimer = max(0, nP2ThrowProtectionTimer - 1);
-	}
-	nOldFrameTimer = nFrameTimer;
-
-	auto updateAnimation = [](DWORD animDataAddr, BYTE blockState, DWORD patternState, DWORD notInCombo, BYTE armorTimer, DWORD throwInvuln) -> void
+	auto updateAnimation = [](PlayerData* player) -> void
 		{
+			void* dest = &player->subObj.animationDataPtr->r;
 			// the order of this if block denotes the priority for each highlight
 			if (XS_highlights == 0)
-				patchMemcpy(animDataAddr + 0x18, arrDefaultHighlightSetting.data(), 3);
-			else if (arrBlockingHighlightSetting[3] == 1 && blockState == 1)	// BLOCKING
-				patchMemcpy(animDataAddr + 0x18, arrBlockingHighlightSetting.data(), 3);
-			else if (arrArmorHighlightSetting[3] == 1 && armorTimer != 0)
-				patchMemcpy(animDataAddr + 0x18, arrArmorHighlightSetting.data(), 3);
-			else if (arrHitHighlightSetting[3] == 1 && notInCombo == 0)
-				patchMemcpy(animDataAddr + 0x18, arrHitHighlightSetting.data(), 3);
-			else if (arrThrowProtectionHighlightSetting[3] == 1 && throwInvuln != 0)
-				patchMemcpy(animDataAddr + 0x18, arrThrowProtectionHighlightSetting.data(), 3);
-			else if (arrIdleHighlightSetting[3] == 1 && blockState != 1) // last check is IDLE
+				patchMemcpy(dest, arrDefaultHighlightSetting.data(), 3);
+			else if (arrBlockingHighlightSetting[3] == 1 && player->subObj.inBlockstun)	// BLOCKING
+				patchMemcpy(dest, arrBlockingHighlightSetting.data(), 3);
+			else if (arrArmorHighlightSetting[3] == 1 && player->subObj.armorTimer != 0) // ARMOR
+				patchMemcpy(dest, arrArmorHighlightSetting.data(), 3);
+			else if (arrHitHighlightSetting[3] == 1 && (!player->subObj.notInCombo || player->subObj.throwFlag)) // HIT
+				patchMemcpy(dest, arrHitHighlightSetting.data(), 3);
+			else if (arrThrowProtectionHighlightSetting[3] == 1 && player->subObj.throwInvuln != 0) // THROW INVULN
+				patchMemcpy(dest, arrThrowProtectionHighlightSetting.data(), 3);
+			else if (arrIdleHighlightSetting[3] == 1 && player->subObj.animationDataPtr->stateData->canMove &&
+				!player->subObj.animationDataPtr->stateData->cantBlock && !player->subObj.animationDataPtr->stateData->dontTransitionToWalking) // last check is IDLE
 			{
-				switch (patternState)
-				{
-				case 0:			// stand
-				case 10:		// walk forward
-				case 11:		// walk back
-				case 12:		// to crouch
-				case 13:		// crouch
-				case 14:		// from crouch
-				case 15:		// turn around
-				case 17:		// stand block
-				case 18:		// crouch block
-				case 19:		// jump block
-				case 35:		// j9
-				case 36:		// j8
-				case 37:		// j7
-				case 38:		// dj9
-				case 39:		// dj 8
-				case 40:		// dj7
-				case 360:		// sj8
-					// this does not work for every character.
-					// come back to this and fix it later.
-					patchMemcpy(animDataAddr + 0x18, arrIdleHighlightSetting.data(), 3);
-					break;
-				default:
-					break;
-				}
+				patchMemcpy(dest, arrIdleHighlightSetting.data(), 3);
 			}
 			else
 			{
 				// reset the color in case it falls through
-				patchMemcpy(animDataAddr + 0x18, arrDefaultHighlightSetting.data(), 3);
+				patchMemcpy(dest, arrDefaultHighlightSetting.data(), 3);
 			}
 
 			
@@ -1836,22 +1798,12 @@ void highlightStates()
 	// i strongly dislike my method of derefing here. a class could fix this
 	if (*(DWORD*)(dwBaseAddress + dwP1AnimationPtr) > dwBaseAddress)
 	{
-		updateAnimation(*(DWORD*)(dwBaseAddress + dwP1AnimationPtr),
-						*(BYTE*)(dwBaseAddress + dwP1Blocking),
-						*(DWORD*)(dwBaseAddress + dwP1PatternRead),
-						*(DWORD*)(dwBaseAddress + dwP1NotInCombo),
-						*(BYTE*)(dwBaseAddress + dwP1ArmorTimer),
-						*(BYTE*)(dwBaseAddress + dwP1ThrowInvuln));
+		updateAnimation(pActiveP1);
 	}
 
 	if (*(DWORD*)(dwBaseAddress + dwP2AnimationPtr) > dwBaseAddress)
 	{
-		updateAnimation(*(DWORD*)(dwBaseAddress + dwP2AnimationPtr),
-						*(BYTE*)(dwBaseAddress + dwP2Blocking),
-						*(DWORD*)(dwBaseAddress + dwP2PatternRead),
-						*(DWORD*)(dwBaseAddress + dwP2NotInCombo),
-						*(BYTE*)(dwBaseAddress + dwP2ArmorTimer),
-						*(BYTE*)(dwBaseAddress + dwP2ThrowInvuln));
+		updateAnimation(pActiveP2);
 	}
 }
 
