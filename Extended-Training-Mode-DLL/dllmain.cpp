@@ -628,8 +628,8 @@ bool drawObject(DWORD objAddr, bool isProjectile, int playerIndex)
 
 	BoxObjects* res = new BoxObjects; // res is dealloced during the draw call! so dont worry about it.
 
-	float windowWidth = *(uint32_t*)0x0054d048;
-	float windowHeight = *(uint32_t*)0x0054d04c;
+	float windowWidth = 640; //*(uint32_t*)0x0054d048;
+	float windowHeight = 480; //*(uint32_t*)0x0054d04c;
 
 	int cameraX = *(int*)(0x0055dec4);
 	int cameraY = *(int*)(0x0055dec8);
