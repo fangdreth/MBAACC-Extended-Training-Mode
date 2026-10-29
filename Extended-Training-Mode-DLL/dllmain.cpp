@@ -7722,6 +7722,18 @@ void LoadSave() {
 		pP3->subObj.doTrainingAction = p3DoTraining;
 		pP4->subObj.doTrainingAction = p4DoTraining;
 
+		if (enableRandomLoadPosition)
+		{
+			int offset = ((rand() % randomLoadRange) - (randomLoadRange / 2)) * 128;
+			pActiveP1->subObj.xPos = CLAMP(pActiveP1->subObj.xPos + offset, -65535, 65535);
+			if (pActiveP1->subObj.yPos != 0)
+			{
+				offset = ((rand() % randomLoadRange) - (randomLoadRange / 2)) * 128;
+				pActiveP1->subObj.yPos = min(pActiveP1->subObj.yPos + offset, 0);
+			}
+			
+		}
+
 		doLoad = false;
 	}
 }

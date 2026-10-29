@@ -91,6 +91,8 @@ bool wikiBoxMode = false;
 
 int enableMouseControls = 0;
 bool enableEntityNudge = false;
+bool enableRandomLoadPosition = false;
+int randomLoadRange = 64;
 
 static bool LoadFileExplorer(std::wstring& filePath)
 {
@@ -1101,6 +1103,26 @@ void initMiscSubmenu() {
 			enableEntityNudge = opt != 0;
 		},
 		defaultOnOffNameFunc
+	);
+
+	misc.add<int>("Randomize Load State Position",
+		[](int inc, int& opt) {
+			opt += inc;
+			opt &= 0b1;
+
+			enableRandomLoadPosition = opt != 0;
+		},
+		defaultOnOffNameFunc
+	);
+
+	misc.add<int*>(" > Range (pixels)",
+		[](int inc, int*& opt) {
+			*opt += inc * 16;
+			*opt = CLAMP(*opt, 16, 256);
+		},
+		pointerIntSliderNameFunc,
+		L"",
+		& randomLoadRange
 	);
 
 	baseMenu.add(misc);
