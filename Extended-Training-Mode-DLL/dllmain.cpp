@@ -1466,7 +1466,7 @@ void drawStats()
 			nResetOffset = 48.0f * fScroll;
 
 		int exGuardMultTimer = pActiveP1->subObj.exGuardMeterPenaltyTimer;
-		float otgMeterMult = playerAuxDataArr[0].comboCalcData[playerAuxDataArr[0].comboCalcIndex].otgMeterMult / 100.0f;
+		float otgMeterMult = playerAuxDataArr[0].comboCalcData[playerAuxDataArr[0].currentComboIndex].otgMeterMult / 100.0f;
 		int meterMultTimer = pActiveP1->subObj.meterMultTimer;
 		float y = 464.0f + nResetOffset;
 		if (exGuardMultTimer > 0) {
@@ -1484,7 +1484,7 @@ void drawStats()
 		}
 		
 		exGuardMultTimer = pActiveP2->subObj.exGuardMeterPenaltyTimer;
-		otgMeterMult = playerAuxDataArr[1].comboCalcData[playerAuxDataArr[1].comboCalcIndex].otgMeterMult / 100.0f;
+		otgMeterMult = playerAuxDataArr[1].comboCalcData[playerAuxDataArr[1].currentComboIndex].otgMeterMult / 100.0f;
 		meterMultTimer = pActiveP2->subObj.meterMultTimer;
 		y = 464.0f + nResetOffset;
 		if (exGuardMultTimer > 0) {
@@ -1587,6 +1587,8 @@ void drawHitstunBar()
 				float xPos = playerData->comboCalcData[j].xPos;
 				float yPos = playerData->comboCalcData[j].yPos;
 				byte alpha = playerData->comboCalcData[j].alpha;
+				RectDraw(xPos - 1, yPos + 42.0f, 278.0f, 4, (alpha << 24)); // draw bg
+				if (playerData->comboCalcData[j].someFlag > 100) continue;
 				DWORD ARGB = (alpha << 24) | 0x00FFFFFF;
 				DWORD bgARGB = (alpha << 24) | 0x0046A0E6;
 				PlayerData* opponent = i == 0 ? pActiveP2 : pActiveP1;
@@ -1606,7 +1608,7 @@ void drawHitstunBar()
 				}
 
 				int untechDecay = 0;
-				if (opponent->subObj.gravity > 0.072) untechDecay = max(0, (int)256 - floor(256 - (opponent->subObj.gravity - 0.072f) / 0.928f * 19)); //(opponent->subObj.gravity - 0.072f) / 0.928f * 19.0f;
+				if (opponent->subObj.gravity > 0.072) untechDecay = max(0, (int)256 - floor(256 - (opponent->subObj.gravity - 0.072f) / 0.928f * 19));
 
 				if (opponent->subObj.bounceCount > 2) {
 					ARGB = (alpha << 24) | 0x00BF6716;
@@ -1622,7 +1624,6 @@ void drawHitstunBar()
 					bgARGB = (alpha << 24) | 0x0078F0F0;
 				}
 
-				RectDraw(xPos - 1, yPos + 42.0f, 278.0f, 4, 0xFF000000);
 				if (i == 0) {
 					bgWidth = CLAMP(bgWidth, 0.0f, 1.0f);
 					bgWidth *= 276.0f;
@@ -3327,12 +3328,12 @@ void frameDoneCallback()
 	if (safeWrite()) {
 		byte curComboData;
 		if (pActiveP2->subObj.notInCombo) {
-			curComboData = playerAuxDataArr[0].comboCalcData[0].index;
+			curComboData = playerAuxDataArr[0].currentComboIndex;
 			trueComboData[0][curComboData].startingHealth = pActiveP2->subObj.health;
 			trueComboData[0][curComboData].defender = &(pActiveP2->subObj);
 		}
 		if (pActiveP1->subObj.notInCombo) {
-			curComboData = playerAuxDataArr[1].comboCalcData[0].index;
+			curComboData = playerAuxDataArr[1].currentComboIndex;
 			trueComboData[1][curComboData].startingHealth = pActiveP1->subObj.health;
 			trueComboData[1][curComboData].defender = &(pActiveP1->subObj);
 		}
@@ -7524,7 +7525,7 @@ void GetInitialHealthForTrueComboDamage() {
 	if (pAttPlayer->OwnerSubObjPtr != 0) {
 		pAttPlayer = pAttPlayer->OwnerSubObjPtr;
 	}
-	byte curComboData = playerAuxDataArr[pAttPlayer->ownerIndex].comboCalcData[0].index;
+	byte curComboData = playerAuxDataArr[pAttPlayer->ownerIndex].currentComboIndex;
 	if (playerAuxDataArr[pAttPlayer->ownerIndex].comboCalcData[curComboData].numHits == 0) {
 		trueComboData[pAttPlayer->ownerIndex][curComboData].startingHealth = pDefPlayer->health;
 		trueComboData[pAttPlayer->ownerIndex][curComboData].defender = pDefPlayer;
