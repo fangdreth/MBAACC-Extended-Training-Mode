@@ -62,7 +62,7 @@ int dummyGuardFirstHitOnly = 0;
 int dummyGuardFirstHitNumGaps = 1;
 int dummyGuardFirstHitDropChance = 100;
 int dummyGuardUntilCrossUp = 0;
-int dummyTechDelay = 0;
+bool enableDummyRecoveryTXT = false;
 int dummyBurstChance = 100;
 int dummyDelayBurstChance = 100;
 int dummyBunkerChance = 100;
@@ -790,20 +790,9 @@ void initDummySubmenu() {
 	);
 	
 
-	dummy.add<int*>("Delay Tech Frames",
-		[](int inc, int*& opt) {
-			*opt += inc;
-			*opt = CLAMP(*opt, 0, 3);
-		},
-		[](int* opt) -> std::string {
-			if (*opt == 3)
-			{
-				return "RANDOM";
-			}
-			return std::to_string(*opt);
-		},
-		L"",
-		&dummyTechDelay
+	dummy.add<int>("Use DUMMY_RECOVERY.txt",
+		getDefaultOnOffOptionFunc(&enableDummyRecoveryTXT),
+		defaultOnOffNameFunc
 	);
 
 	dummy.add<int*>("Burst Chance",

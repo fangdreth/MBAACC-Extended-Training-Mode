@@ -89,6 +89,7 @@ int nUsedForcedGuardStance = -1;
 int dummyDelayTechFramesElapsed = 0;
 int comboTimer = 0;
 ActorData* nudgeActor = nullptr;
+bool enabledTechs[10]; // neutral, 1d, 2d, back, 1d, 2d, forward, 1d, 2d, no tech
 
 bool initLoadChars = false;
 
@@ -3373,6 +3374,51 @@ __declspec(naked) void nakedFrameDoneCallback_RAW() {
 
 // reset funcs
 
+void LoadCustomDummyTechs()
+{
+	memset(enabledTechs, 0, sizeof(enabledTechs));
+	std::ifstream inFile("DUMMY_RECOVERY.txt");
+	if (!inFile.is_open()) {
+		return;
+	}
+
+	std::string line;
+	while (std::getline(inFile, line)) {
+		if (line.length() == 0) continue;
+		byte dir = 0;
+		byte delay = 0;
+
+		switch (line[0])
+		{
+		case 'n': // neutral
+		case 'N':
+			break;
+		case 'b': // back
+		case 'B':
+			dir = 1;
+			break;
+		case 'f': // forward
+		case 'F':
+			dir = 2;
+			break;
+		case 'x': // no tech
+		case 'X':
+			delay = 9;
+			break;
+		}
+
+		if (line.length() > 1 && delay != 9)
+		{
+			if (isdigit(line[1]))
+			{
+				delay = CLAMP(line[1] - 48, 0, 2); // ascii to num
+			}
+		}
+		
+		enabledTechs[dir * 3 + delay] = true;
+	}
+}
+
 int nTempP1MeterGain = 0;
 int nTempP2MeterGain = 0;
 int nP1MeterGain = 0;
@@ -3622,6 +3668,8 @@ void ResetCallback() {
 	TASManagerObj[3].load("TAS4.txt");
 
 	didHitboxConnect = 0;
+
+	LoadCustomDummyTechs();
 
 	loadCustomShader();
 }
@@ -7590,30 +7638,113 @@ __declspec(naked) void _naked_SetTrueComboDamage() {
 	}
 }
 
-byte randomTechDelay = 0xff;
-DWORD MBAA_IsInGroundTechWindow = 0x00463760;
-DWORD DummyDelayTech_PatchAddr = 0x00451346;
-__declspec(naked) void _naked_DummyDelayTech() {
-	ActorData* cso;
-	__asm {
-		mov cso, esi;
-	}
-	if (randomTechDelay == 0xff) randomTechDelay = rand() % 3;
-	if ((dummyTechDelay == 3 && cso->untechTimeElapsed - 2 < randomTechDelay) ||
-		(dummyTechDelay < 3 && cso->untechTimeElapsed - 2 < dummyTechDelay))
+bool IsInGroundTechWindow(ActorData* actor)
+{
+	if (actor->completedHitVectors != 0 && actor->receivedHitVector != 0xff && actor->hitstunTimeRemaining < 1 && actor->untechTimeElapsed < 5)
 	{
-		__asm {
-			push 0x0045137b; //skip ground tech
-			ret;
+		return true;
+	}
+	return false;
+}
+
+int DOWN_RECOVERY_MEM = 0;
+void PreDummyTech()
+{
+	static int techIndex = 0;
+
+	if (!IsInGroundTechWindow(&pDummy->subObj) || !enableDummyRecoveryTXT)
+	{
+		techIndex = -1;
+		return;
+	}
+	
+	int* downPtr = (int*)0x00557d20;
+	DOWN_RECOVERY_MEM = *downPtr; // save dummy ground tech setting to restore it later
+	if (pDummy->subObj.untechTimeElapsed == 2) //only roll rng once per tech on first frame of window
+	{
+		int numEnabled = 0;
+		for (int i = 0; i < 10; i++)
+		{
+			if (enabledTechs[i]) numEnabled++;
+		}
+		if (numEnabled == 0)
+		{
+			return;
+		}
+		int r = rand() % numEnabled;
+		int chosen = 0;
+		for (int i = 0; i < 10; i++)
+		{
+			if (enabledTechs[i])
+			{
+				if (chosen == r)
+				{
+					techIndex = i;
+					break;
+				}
+				else chosen++;
+			}
 		}
 	}
-	randomTechDelay = 0xff;
-	__asm {
-		mov eax, 0x00557d20;
-		mov eax, [eax];
-		cmp eax, 0x4;
-		mov byte ptr[esi + 0x17b], bl;
-		push 0x00451354;
+
+	byte dir = 0;
+	byte delay = 0;
+	switch (techIndex)
+	{
+	case 0: // neutral techs
+	case 1:
+	case 2:
+		dir = 0;
+		delay = techIndex;
+		break;
+	case 3: // back techs
+	case 4:
+	case 5:
+		dir = 1;
+		delay = techIndex - 3;
+		break;
+	case 6: // forward techs
+	case 7:
+	case 8:
+		dir = 2;
+		delay = techIndex - 6;
+		break;
+	case 9: // no tech
+		delay = 10;
+		break;
+	}
+
+	if (delay <= pDummy->subObj.untechTimeElapsed - 2) *downPtr = dir;
+	else *downPtr = 5;
+}
+
+void PostDummyTech()
+{
+	if (!IsInGroundTechWindow(&pDummy->subObj) || !enableDummyRecoveryTXT) return;
+	int* downPtr = (int*)0x00557d20;
+	*downPtr = DOWN_RECOVERY_MEM; //return tech setting to initial value
+}
+
+DWORD DummyTech_PatchAddr = 0x00452f43;
+const DWORD MBAA_HandleDummyTechs = 0x00451300;
+__declspec(naked) void _naked_DummyTech() {
+	PUSH_ALL;
+	PreDummyTech();
+	POP_ALL;
+
+	__asm
+	{
+		add esp, 0x4;
+		call [MBAA_HandleDummyTechs];
+	}
+
+	PUSH_ALL;
+	PostDummyTech();
+	POP_ALL;
+
+	__asm
+	{
+		push 0x00452f4b;
 		ret;
 	}
 }
@@ -8105,7 +8236,7 @@ void initTrueComboDamage() {
 }
 
 void initDummyDelayTech() {
-	patchJump(DummyDelayTech_PatchAddr, _naked_DummyDelayTech);
+	patchJump(DummyTech_PatchAddr, _naked_DummyTech);
 }
 
 void init2v2Hack() {

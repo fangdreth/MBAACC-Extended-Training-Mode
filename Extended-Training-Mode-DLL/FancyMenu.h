@@ -104,7 +104,7 @@ extern int dummyGuardFirstHitOnly;
 extern int dummyGuardFirstHitNumGaps;
 extern int dummyGuardFirstHitDropChance;
 extern int dummyGuardUntilCrossUp;
-extern int dummyTechDelay;
+extern bool enableDummyRecoveryTXT;
 extern int dummyBurstChance;
 extern int dummyDelayBurstChance;
 extern int dummyBunkerChance;
