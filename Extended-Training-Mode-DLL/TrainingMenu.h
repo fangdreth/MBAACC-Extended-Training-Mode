@@ -346,6 +346,7 @@ enum class eTRAINING {
 	PENALTY_RESET,
 	GUARD_BAR_RESET,
 	EX_GUARD,
+	RECORDING_RESET,
 	S1,
 	P1_METER,
 	P2_METER,
@@ -368,6 +369,7 @@ enum class eTRAINING {
 extern int XS_penaltyReset;
 extern int XS_guardBarReset;
 extern int XS_exGuard;
+extern int XS_recordingReset;
 extern int XS_p1Meter;
 extern int XS_p2Meter;
 extern int XS_p1Health;

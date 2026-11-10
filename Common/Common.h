@@ -460,6 +460,8 @@ const REGKEY sNEXT_SAVE_SLOT_KEY_REG = L"HOTKEY_NextSaveSlot";
 const REGKEY sFRAME_BAR_LEFT_KEY_REG = L"HOTKEY_FrameBarLeft";
 const REGKEY sFRAME_BAR_RIGHT_KEY_REG = L"HOTKEY_FrameBarRight";
 
+const REGKEY sRECORDING_RESET = L"RecordingReset";
+
 const REGKEY sHIGHLIGHTS = L"Highlights";
 const REGKEY sBLOCKING_HIGHLIGHT = L"BlockingHighlight";
 const REGKEY sHIT_HIGHLIGHT = L"HitHighlight";

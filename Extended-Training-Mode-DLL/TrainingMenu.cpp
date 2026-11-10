@@ -331,6 +331,7 @@ int* XS_reversalWeights[4] = { &XS_weight1, &XS_weight2, &XS_weight3, &XS_weight
 int XS_penaltyReset = 0;
 int XS_guardBarReset = 0;
 int XS_exGuard = 0;
+int XS_recordingReset = 0;
 int XS_p1Meter = 10000;
 int XS_p2Meter = 10000;
 int XS_p1Health = 11400;
@@ -429,6 +430,7 @@ void initExtendedMenu() {
 	training.add("PENALTY RESET", { "NORMAL", "INSTANT" }, &XS_penaltyReset);
 	training.add("GUARD BAR RESET", { "NORMAL", "INSTANT" }, &XS_guardBarReset);
 	training.add("EX GUARD", { "OFF", "ON", "RANDOM" }, &XS_exGuard);
+	training.add("RECORDING RESET", { "RECORDING ONLY", "FULL RESET" }, &XS_recordingReset, sRECORDING_RESET);
 	training.addSpace();
 	training.addCustom("P1 METER", &XS_p1Meter, 1, true);
 	training.addCustom("P2 METER", &XS_p2Meter, 1, true);
@@ -672,17 +674,18 @@ const std::map<std::string, const char*> MAIN_INFORMATION_MAP = {
 	{"XS_1_0", "Set the \\@COLOR@<015, 183, 255, 255>speed at which Reverse Penalty resets."},
 	{"XS_1_1", "Set the \\@COLOR@<015, 183, 255, 255>speed at which the Guard Bar resets."},
 	{"XS_1_2", "Set dummy \\@COLOR@<015, 183, 255, 255>ex guard."},
-	{"XS_1_4", "Set \\@COLOR@<015, 183, 255, 255>P1 meter on reset."},
-	{"XS_1_5", "Set \\@COLOR@<015, 183, 255, 255>P2 meter on reset."},
-	{"XS_1_7", "Set \\@COLOR@<015, 183, 255, 255>P1 health on reset."},
-	{"XS_1_8", "Set \\@COLOR@<015, 183, 255, 255>P2 health on reset."},
-	{"XS_1_10", "Set \\@COLOR@<015, 183, 255, 255>hits until the dummy will burst."},
-	{"XS_1_11", "Set \\@COLOR@<015, 183, 255, 255>hits until the dummy will bunker."},
-	{"XS_1_12", "Set \\@COLOR@<015, 183, 255, 255>hits until the dummy will guard with forced stance."},
-	{"XS_1_13", "Set \\@COLOR@<015, 183, 255, 255>stance to force the dummy to guard with."},
-	{"XS_1_15", DEFAULT_INFO},
-	{"XS_1_17", RETURN_INFO},
-	{"XS_1_19", PAGE_INFO},
+	{"XS_1_3", "Set reset behavior during \\@COLOR@<015, 183, 255, 255>dummy recording/playback."},
+	{"XS_1_5", "Set \\@COLOR@<015, 183, 255, 255>P1 meter on reset."},
+	{"XS_1_6", "Set \\@COLOR@<015, 183, 255, 255>P2 meter on reset."},
+	{"XS_1_8", "Set \\@COLOR@<015, 183, 255, 255>P1 health on reset."},
+	{"XS_1_9", "Set \\@COLOR@<015, 183, 255, 255>P2 health on reset."},
+	{"XS_1_11", "Set \\@COLOR@<015, 183, 255, 255>hits until the dummy will burst."},
+	{"XS_1_12", "Set \\@COLOR@<015, 183, 255, 255>hits until the dummy will bunker."},
+	{"XS_1_13", "Set \\@COLOR@<015, 183, 255, 255>hits until the dummy will guard with forced stance."},
+	{"XS_1_14", "Set \\@COLOR@<015, 183, 255, 255>stance to force the dummy to guard with."},
+	{"XS_1_16", DEFAULT_INFO},
+	{"XS_1_18", RETURN_INFO},
+	{"XS_1_20", PAGE_INFO},
 
 	//HIGHLIGHTS
 	{"XS_2_0", "Set \\@COLOR@<015, 183, 255, 255>highlights display."},
@@ -837,17 +840,18 @@ const std::map<std::string, const char*> SUB_INFORMATION_MAP = {
 	{"XS_1_0_0", "Normal."}, {"XS_1_0_1", "Instant."},
 	{"XS_1_1_0", "Normal."}, {"XS_1_1_1", "Instant."},
 	{"XS_1_2_0", "No EX Guard."}, {"XS_1_2_1", "EX Guard all hits."}, {"XS_1_2_2", "EX Guard at random (50% chance)."},
+	{"XS_1_3_0", "Reset just playback when FN2 is pressed."}, {"XS_1_3_1", "Do a full reset when FN2 is pressed."},
 
-	{"XS_1_4_0", "_METER1"}, {"XS_1_4_1", "_METER1"}, {"XS_1_4_2", "_METER1"},
-	{"XS_1_5_0", "_METER2"}, {"XS_1_5_1", "_METER2"}, {"XS_1_5_2", "_METER2"},
+	{"XS_1_5_0", "_METER1"}, {"XS_1_5_1", "_METER1"}, {"XS_1_5_2", "_METER1"},
+	{"XS_1_6_0", "_METER2"}, {"XS_1_6_1", "_METER2"}, {"XS_1_6_2", "_METER2"},
 
-	{"XS_1_7_0", "_HEALTH1"}, {"XS_1_7_1", "_HEALTH1"}, {"XS_1_7_2", "_HEALTH1"},
-	{"XS_1_8_0", "_HEALTH2"}, {"XS_1_8_1", "_HEALTH2"}, {"XS_1_8_2", "_HEALTH2"},
+	{"XS_1_8_0", "_HEALTH1"}, {"XS_1_8_1", "_HEALTH1"}, {"XS_1_8_2", "_HEALTH1"},
+	{"XS_1_9_0", "_HEALTH2"}, {"XS_1_9_1", "_HEALTH2"}, {"XS_1_9_2", "_HEALTH2"},
 
-	{"XS_1_10_0", "_BURST"}, {"XS_1_10_1", "_BURST"}, {"XS_1_10_2", "_BURST"},
-	{"XS_1_11_0", "_BUNKER"}, {"XS_1_11_1", "_BUNKER"}, {"XS_1_11_2", "_BUNKER"},
-	{"XS_1_12_0", "_FORCEGUARD"}, {"XS_1_12_1", "_FORCEGUARD"}, {"XS_1_12_2", "_FORCEGUARD"},
-	{"XS_1_13_0", "Force standing guard."}, {"XS_1_13_1", "Force crouching guard."}, {"XS_1_13_2", "Force random guard."},
+	{"XS_1_11_0", "_BURST"}, {"XS_1_11_1", "_BURST"}, {"XS_1_11_2", "_BURST"},
+	{"XS_1_12_0", "_BUNKER"}, {"XS_1_12_1", "_BUNKER"}, {"XS_1_12_2", "_BUNKER"},
+	{"XS_1_13_0", "_FORCEGUARD"}, {"XS_1_13_1", "_FORCEGUARD"}, {"XS_1_13_2", "_FORCEGUARD"},
+	{"XS_1_14_0", "Force standing guard."}, {"XS_1_14_1", "Force crouching guard."}, {"XS_1_14_2", "Force random guard."},
 
 	//HIGHLIGHTS
 	{"XS_2_0_0", "No highlights."}, {"XS_2_0_1", "Enable highlights."},

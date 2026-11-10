@@ -2968,7 +2968,8 @@ void frameDoneCallback()
 	if (*(byte*)(adMBAABase + adP1FN2Input) &&
 		(*(byte*)(adMBAABase + adDummyState) == 0xFF || *(byte*)(adMBAABase + adDummyState) == 0x5) &&
 		!isPaused() &&
-		safeWrite())
+		safeWrite() &&
+		XS_recordingReset == 1)
 	{
 		*(byte*)(adMBAABase + adNewSceneFlag) = 0xFF;
 	}
@@ -5523,6 +5524,9 @@ void ExtendedMenuInputChecking() {
 		int healthInterval = aHeld ? 1 : (maxHealth / 100);
 		int healthAccel = aHeld ? 10 : (maxHealth / 20);
 		switch ((eTRAINING)curMenuInfo->selectedElement) {
+		case eTRAINING::RECORDING_RESET:
+			SetRegistryValue(sRECORDING_RESET, XS_recordingReset);
+			break;
 		case eTRAINING::P1_METER:
 			if (pP1->subObj.moon != 2) {
 				CFMeterScrolling(curElement, XS_p1Meter, aHeld);
