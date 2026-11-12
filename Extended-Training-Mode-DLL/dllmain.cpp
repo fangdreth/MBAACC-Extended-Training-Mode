@@ -1057,7 +1057,7 @@ bool tryCmdPattern(PlayerData* playerData, int nPattern) {
 	if (nPattern < 41) {
 		return false;
 	}
-	else if (nPattern == 260 || nPattern == playerData->cmdFileDataPtr->groundThrowPat) {
+	else if (nPattern == 260 || nPattern == playerData->cmdFileDataPtr->groundThrowPat || nPattern == playerData->cmdFileDataPtr->airThrowPat) {
 		playerData->subObj.targetPattern = nPattern;
 	}
 	int id = -1;
