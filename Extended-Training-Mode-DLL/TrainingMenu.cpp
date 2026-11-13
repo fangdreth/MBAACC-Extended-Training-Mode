@@ -331,7 +331,6 @@ int* XS_reversalWeights[4] = { &XS_weight1, &XS_weight2, &XS_weight3, &XS_weight
 int XS_penaltyReset = 0;
 int XS_guardBarReset = 0;
 int XS_exGuard = 0;
-int XS_recordingReset = 0;
 int XS_p1Meter = 10000;
 int XS_p2Meter = 10000;
 int XS_p1Health = 11400;
@@ -405,6 +404,7 @@ int XS_hideHUD = 0;
 int XS_hideShadows = 0;
 int XS_hideExtras = 0;
 int XS_background = 0;
+int XS_recordingReset = 0;
 
 void initExtendedMenu() {
 	Page reversals("REVERSALS");
@@ -430,7 +430,6 @@ void initExtendedMenu() {
 	training.add("PENALTY RESET", { "NORMAL", "INSTANT" }, &XS_penaltyReset);
 	training.add("GUARD BAR RESET", { "NORMAL", "INSTANT" }, &XS_guardBarReset);
 	training.add("EX GUARD", { "OFF", "ON", "RANDOM" }, &XS_exGuard);
-	training.add("RECORDING RESET", { "RECORDING ONLY", "FULL RESET" }, &XS_recordingReset, sRECORDING_RESET);
 	training.addSpace();
 	training.addCustom("P1 METER", &XS_p1Meter, 1, true);
 	training.addCustom("P2 METER", &XS_p2Meter, 1, true);
@@ -566,6 +565,8 @@ void initExtendedMenu() {
 	system.add("HIDE EXTRAS", offONItems, &XS_hideExtras, sHIDE_EXTRAS);
 	system.addSpace();
 	system.add("BACKGROUND", { "NORMAL", "WHITE", "GRAY", "BLACK", "RED", "YELLOW", "GREEN", "BLUE", "PURPLE" }, &XS_background);
+	system.addSpace();
+	system.add("RECORDING RESET", { "RECORDING ONLY", "FULL RESET" }, &XS_recordingReset, sRECORDING_RESET);
 	system.addSpace();
 	system.addFooter("PAGE 11");
 	XS_Menu.add(system);

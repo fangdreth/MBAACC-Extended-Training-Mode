@@ -5524,9 +5524,6 @@ void ExtendedMenuInputChecking() {
 		int healthInterval = aHeld ? 1 : (maxHealth / 100);
 		int healthAccel = aHeld ? 10 : (maxHealth / 20);
 		switch ((eTRAINING)curMenuInfo->selectedElement) {
-		case eTRAINING::RECORDING_RESET:
-			SetRegistryValue(sRECORDING_RESET, XS_recordingReset);
-			break;
 		case eTRAINING::P1_METER:
 			if (pP1->subObj.moon != 2) {
 				CFMeterScrolling(curElement, XS_p1Meter, aHeld);
@@ -6010,6 +6007,9 @@ void ExtendedMenuInputChecking() {
 			break;
 		case eSYSTEM::BACKGROUND:
 			XS_background = curElement->selectedItem;
+			break;
+		case eSYSTEM::RECORDING_RESET:
+			SetRegistryValue(sRECORDING_RESET, XS_recordingReset);
 			break;
 		case eSYSTEM::DEFAULT:
 			if (aPressed) XS_Menu.pages[extendedWindow->menuInfoIndex]._default();
