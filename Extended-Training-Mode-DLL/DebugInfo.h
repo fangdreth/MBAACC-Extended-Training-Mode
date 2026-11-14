@@ -364,19 +364,44 @@ typedef struct CommandData {
 	int ID;
 	char input[20];
 	int pattern;
-	int specialFlag;
+	int cancelType; // 0 = normal, 1 = special, 2 = EX
 	int meterSpend;
 	byte assistVar;
 	byte specialVar;
 	byte dashVar;
 	UNUSED(1);
-	uint8_t flagsets[4]; //flagset 1, flagset 2, unused, unused
+	union {
+		BYTE flagset1;
+		struct {
+			BYTE standOK : 1;
+			BYTE airOK : 1;
+			BYTE crouchOK : 1;
+			BYTE noCancel : 1;
+			BYTE clearBuffer : 1;
+			BYTE followupOnly : 1;
+			BYTE guardCancelOK : 1;
+			UNUSEDBITS(1);
+		};
+	};
+	union {
+		BYTE flagset2;
+		struct {
+			UNUSEDBITS(2);
+			BYTE preRoundOK : 1;
+			BYTE selfCancelOK : 1;
+			BYTE guardCancelOnly : 1;
+			BYTE whiffCancelOnly : 1;
+			BYTE karaCancelOK : 1;
+			UNUSEDBITS(1);
+		};
+	};
+	UNUSED(2);
 } CommandData;
 #pragma pack(pop)
 
 #define CHECKOFFSET(v, n) static_assert(offsetof(CommandData, v) == n, "CommandData offset incorrect for " #v);
 
-CHECKOFFSET(flagsets, 0x28);
+CHECKOFFSET(flagset1, 0x28);
 
 static_assert(sizeof(CommandData) == 0x2C, "CommandData must have size 0x2C.");
 #undef CHECKOFFSET

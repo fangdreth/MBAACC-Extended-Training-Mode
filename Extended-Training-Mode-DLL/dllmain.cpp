@@ -1022,7 +1022,7 @@ int getPatternFromCmd(PlayerData* playerData, const char* cmd, int stance = 7, i
 		if (playerData->cmdFileDataPtr->cmdDataPtr->array[i])
 		{
 			if (strcmp(cmd, playerData->cmdFileDataPtr->cmdDataPtr->array[i]->input) == 0 &&
-				playerData->cmdFileDataPtr->cmdDataPtr->array[i]->flagsets[0] & stance) {
+				playerData->cmdFileDataPtr->cmdDataPtr->array[i]->flagset1 & stance) {
 				retVal = playerData->cmdFileDataPtr->cmdDataPtr->array[i]->pattern;
 				nthMatch--;
 				if (nthMatch == 0) return retVal;
@@ -1190,39 +1190,39 @@ byte getShieldCancel(PlayerData* playerData, int pat) {
 		pat == playerData->cmdFileDataPtr->airThrowPat) return exOnly;
 	int ID = getIDFromPattern(playerData, pat, 1);
 	if (ID == -1) return 0x0;
-	WORD flagsets = *(WORD*)playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets;
-	int specialFlag = playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->specialFlag;
-	if (flagsets & 0x8) { // if no cancel
-		if (flagsets & 0x40 && !(flagsets & 0x1000)) { //if guard/shield cancel and not guard cancel only (covers D > D)
+	CommandData* cmd = playerData->cmdFileDataPtr->cmdDataPtr->array[ID];
+	int cancelType = playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->cancelType;
+	if (cmd->noCancel) { // if no cancel
+		if (cmd->guardCancelOK && cmd->whiffCancelOnly) { // covers D > D
 			retVal = 0x3;
 		}
 		else {
 			retVal = 0x0;
 		}
 	}
-	else if (specialFlag == 1 || specialFlag == 2) { //if special or ex
+	else if (cancelType == 1 || cancelType == 2) { //if special or ex
 		retVal = 0x3;
 	}
-	else if (specialFlag == 0) { //if normal or movement
+	else if (cancelType == 0) { //if normal or movement
 		retVal = exOnly;
 	}
 	
 	ID = getIDFromPattern(playerData, pat, 2);
 	if (ID == -1) return retVal;
-	flagsets = *(WORD*)playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets;
-	specialFlag = playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->specialFlag;
-	if (flagsets & 0x8) {
-		if (flagsets & 0x40 && !(flagsets & 0x1000)) {
+	cmd = playerData->cmdFileDataPtr->cmdDataPtr->array[ID];
+	cancelType = playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->cancelType;
+	if (cmd->noCancel) {
+		if (cmd->guardCancelOK && cmd->whiffCancelOnly) {  // covers D > D
 			retVal = 0x3;
 		}
 		else {
 			retVal = 0x0;
 		}
 	}
-	else if (specialFlag == 1 || specialFlag == 2) {
+	else if (cancelType == 1 || cancelType == 2) {
 		retVal |= 0x3;
 	}
-	else if (specialFlag == 0) {
+	else if (cancelType == 0) {
 		retVal |= exOnly;
 	}
 	return retVal;
@@ -1230,7 +1230,7 @@ byte getShieldCancel(PlayerData* playerData, int pat) {
 
 //returns AND of 1 = stand, 2 = airborne, 4 = crouch
 byte getCmdStance(PlayerData* playerData, int ID) {
-	return playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->flagsets[0] & 0x7;
+	return playerData->cmdFileDataPtr->cmdDataPtr->array[ID]->flagset1 & 0x7;
 }
 
 //returns AND of 1 = stand, 2 = airborne, 4 = crouch
