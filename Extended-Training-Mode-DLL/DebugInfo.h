@@ -484,7 +484,8 @@ typedef struct ActorData {
 	DWORD nextSprite;
 	DWORD framesInCurrentState;
 	BYTE isFirstFramePlusOne;
-	UNUSED(2);
+	BYTE hasNotProcessedEFs;
+	UNUSED(1);
 	BYTE didPatternTransition;
 	UNUSED(1);
 	BYTE remainingLoops;

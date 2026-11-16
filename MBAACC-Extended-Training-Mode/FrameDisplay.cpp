@@ -127,7 +127,8 @@ FrameDisplayPlayerData* FD_Assist2 = &FD_P4;
 void CheckProjectiles(HANDLE hMBAAHandle)
 {
 	char cBlankEffectCount = 0;
-	bool bProjectileExists = 0;
+	bool bProjectileExists = false;
+	bool bProjectileDespawnQueued = false;
 	uint8_t cProjectileStatus = 0;
 	char cProjectileOwner = 0;
 	int nProjectilePattern = 0;
@@ -142,6 +143,8 @@ void CheckProjectiles(HANDLE hMBAAHandle)
 		cBlankEffectCount++;
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i), &bProjectileExists, 1, 0);
 		if (!bProjectileExists) continue;
+		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectBase + dwEffectStructSize * i + 0x2f5), &bProjectileDespawnQueued, 1, 0);
+		if (bProjectileDespawnQueued) continue;
 		cBlankEffectCount = 0;
 		ReadProcessMemory(hMBAAHandle, (LPVOID)(adMBAABase + adEffectSubBase + dwEffectStructSize * i + adEffectStatus), &cProjectileStatus, 1, 0);
 		if (cProjectileStatus != 0xFF) continue;

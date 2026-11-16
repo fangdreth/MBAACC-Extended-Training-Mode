@@ -191,6 +191,7 @@
     <ClInclude Include="..\Common\types.h" />
     <ClInclude Include="..\Common\version.h" />
     <ClInclude Include="..\MBAACC-Extended-Training-Mode\Logger.h" />
+    <ClInclude Include="Commands.h" />
     <ClInclude Include="DebugInfo.h" />
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="dllmain.h" />
@@ -213,6 +214,7 @@
     <ClCompile Include="..\Common\types.cpp" />
     <ClCompile Include="..\Common\version.cpp" />
     <ClCompile Include="..\MBAACC-Extended-Training-Mode\Logger.cpp" />
+    <ClCompile Include="Commands.cpp" />
     <ClCompile Include="DebugInfo.cpp" />
     <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="dllmain.cpp" />

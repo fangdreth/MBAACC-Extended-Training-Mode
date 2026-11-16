@@ -250,7 +250,7 @@ void CheckProjectiles()
 	{
 		if (cBlankEffectCount > 16) break;
 		cBlankEffectCount++;
-		if (curFX->exists)
+		if (curFX->exists && !curFX->subObj.queueDespawn)
 		{
 			cBlankEffectCount = 0;
 			if (curFX->subObj.attackDataPtr != 0 &&
